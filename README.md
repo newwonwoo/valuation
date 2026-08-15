@@ -28,9 +28,8 @@ AI/Space  ≈ 500,501원
 
 ```text
 AGENTS.md
-skills/valuation-analysis/
+.agents/skills/valuation-analysis/
   SKILL.md
-  references/
 src/valuation_engine/
   engine.py
   audit.py
@@ -38,7 +37,6 @@ src/valuation_engine/
   config.py
 examples/oci/company.yaml
 tests/
-configs/
 ```
 
 ## 실행
@@ -47,6 +45,8 @@ configs/
 PYTHONPATH=src pytest -q
 PYTHONPATH=src python -m valuation_engine.cli examples/oci/company.yaml
 ```
+
+로컬 검증에서 6개 테스트가 통과했고 OCI 엑셀 v1.1 회귀값과 일치합니다.
 
 ## 다음 개발 순서
 
@@ -58,6 +58,8 @@ PYTHONPATH=src python -m valuation_engine.cli examples/oci/company.yaml
 6. Excel export / dashboard export
 7. 회귀테스트 종목 확대
 
+구체 작업 명세는 GitHub Issue #1에 있습니다.
+
 ## ChatGPT / Codex
 
-이 저장소의 `SKILL.md`는 `분석시작`과 기업가치 평가 요청을 반복 가능한 workflow로 정의합니다. `AGENTS.md`는 Codex가 코드 수정 시 지켜야 할 프로젝트 규칙입니다.
+Codex는 저장소 루트의 `.agents/skills`를 repo-scoped skill 위치로 탐색합니다. 이 프로젝트의 `SKILL.md`는 `분석시작`과 기업가치 평가 요청을 반복 가능한 workflow로 정의하고, `AGENTS.md`는 Codex가 코드 수정 시 지켜야 할 프로젝트 규칙을 고정합니다.
