@@ -1,0 +1,151 @@
+version: "0.1"
+name: "rocketesla-probability-weighted-valuation"
+trigger:
+  primary_command: "분석시작"
+  active_target_required: true
+  target_resolution:
+    explicit_target_overrides_context: true
+    otherwise_use_active_target: true
+
+principles:
+  current_price_anchoring: forbidden
+  fact_plan_assumption_separation: required
+  policy_direct_to_value: forbidden
+  evidence_to_assumption_bridge: required
+  double_counting: forbidden
+  audit_before_output: required
+  probability_change_log: required
+
+source_layers:
+  L0:
+    name: realized_disclosed
+    examples: [DART, SEC, audited_financials, legal_disclosure]
+  L1:
+    name: official_company_plan
+    examples: [IR, earnings_guidance, official_capacity_plan]
+  L2:
+    name: policy_original
+    examples: [law, executive_order, ministry_notice, tariff_rule]
+  L3:
+    name: external_validation
+    examples: [customer_official, supplier_official, Reuters, academic_paper, industry_body]
+  L4:
+    name: model_assumption
+  L5:
+    name: model_output
+
+analysis_state:
+  target:
+    name: null
+    ticker: null
+    market: null
+  as_of: null
+  active_industry_module: null
+  evidence: []
+  hypotheses: []
+  bridges: []
+  valuation_models: []
+  scenarios: []
+  triggers: []
+  kill_conditions: []
+  audit_results: []
+  change_log: []
+
+hypothesis_schema:
+  id: null
+  statement: null
+  causal_chain: []
+  supporting_evidence_ids: []
+  contradicting_evidence_ids: []
+  prior_probability: null
+  current_probability: null
+  valuation_variables_impacted: []
+  kill_conditions: []
+  next_checks: []
+
+bridge_schema:
+  hypothesis_id: null
+  assumption_key: null
+  mechanism: null
+  base_value: null
+  candidate_value: null
+  probability_weight: null
+  evidence_ids: []
+  double_count_guard: null
+
+scenario_schema:
+  id: null
+  name: null
+  probability: null
+  assumptions:
+    price: {}
+    quantity: {}
+    mix: {}
+    yield: {}
+    margin: {}
+    capex: {}
+    funding: {}
+    net_debt: {}
+    discount_rate: null
+    exit_multiple: null
+  fair_value: null
+
+required_audits:
+  - probability_sum_equals_one
+  - current_price_not_referenced_by_fair_value
+  - policy_not_directly_linked_to_value_without_bridge
+  - ev_to_equity_net_debt_check
+  - unit_conversion_check
+  - capex_double_count_check
+  - evidence_double_count_check
+  - company_plan_not_marked_realized
+  - discount_timing_check
+  - formula_error_zero
+
+scanners:
+  - headline_decomposition
+  - money_flow
+  - bottleneck
+  - behavior_sequence
+  - exploration_confirmation
+  - digital_trace
+  - pxq_mix_yield
+  - chain_proof
+  - long_short
+  - bottleneck_migration
+  - second_order_effect
+  - reserved_demand_slot
+  - time_to_power
+  - policy_revealed_preference
+  - raw_material_policy_floor
+  - quarterly_question_ledger
+  - ipo_lockup_flow
+  - macro_transmission
+  - kill_condition
+
+model_router:
+  order_equipment: backlog_normalized_ebitda_dcf
+  construction_shipbuilding: progress_dcf
+  materials_commodity: price_volume_margin_exit_multiple
+  energy_infrastructure: asset_npv_sotp
+  consumer_retail: dcf_sotp
+  software_platform: revenue_grossprofit_fcf
+  pharma_bio: rnpv
+  financials: pb_roe_residual_income
+  holding_company: sotp_nav_discount
+
+output_contract:
+  sections:
+    - conclusion
+    - known_by_market
+    - underappreciated_change
+    - leading_actions
+    - numerical_validation
+    - bottleneck
+    - exploration_to_confirmation
+    - long_short_scenarios
+    - probability_weighted_future_value
+    - kill_conditions
+    - valuation_range
+    - current_price_comparison
+    - next_verification_events
