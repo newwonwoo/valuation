@@ -1,0 +1,27 @@
+company:
+  name: OCI홀딩스
+  ticker: "010060"
+  shares: 18670232
+
+market_comparison:
+  price: 279000
+  as_of: "2026-08-14"
+
+common:
+  fx_krw_per_usd: 1420
+  terminal_years: 3.3812457221
+  poly_capacity_kmt: 70
+  wafer_capacity_gw: 11.5
+  wafer_economic_share: 0.65
+  poly_cash_cost_usd_per_kg: 11.5
+  poly_other_cost_usd_per_kg: 1.0
+
+policy:
+  polysilicon_mip_usd_per_kg: 21
+  rule: "MIP is not OCI ASP; Malaysia is in scope unless an applicable exception is verified."
+
+scenarios:
+  - {name: Bear, probability: 0.15, poly_asp_usd_per_kg: 17.5, poly_utilization: 0.82, poly_multiple: 4.5, wafer_utilization: 0.80, wafer_ebitda_usd_per_w: 0.008, wafer_multiple: 5.0, discount_rate: 0.12, net_debt_trn_krw: 1.60, other_business_pv_trn_krw: 1.90}
+  - {name: Base, probability: 0.50, poly_asp_usd_per_kg: 19.5, poly_utilization: 0.90, poly_multiple: 5.5, wafer_utilization: 0.90, wafer_ebitda_usd_per_w: 0.015, wafer_multiple: 6.0, discount_rate: 0.105, net_debt_trn_krw: 1.30, other_business_pv_trn_krw: 2.40}
+  - {name: Bull, probability: 0.25, poly_asp_usd_per_kg: 22.0, poly_utilization: 0.95, poly_multiple: 6.5, wafer_utilization: 0.95, wafer_ebitda_usd_per_w: 0.020, wafer_multiple: 7.0, discount_rate: 0.095, net_debt_trn_krw: 1.00, other_business_pv_trn_krw: 3.00}
+  - {name: AI/Space, probability: 0.10, poly_asp_usd_per_kg: 23.5, poly_utilization: 0.97, poly_multiple: 7.0, wafer_utilization: 0.97, wafer_ebitda_usd_per_w: 0.022, wafer_multiple: 7.5, discount_rate: 0.09, net_debt_trn_krw: 0.90, other_business_pv_trn_krw: 3.20}
