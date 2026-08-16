@@ -1,65 +1,75 @@
-# Insight Valuation Engine
+# Auto Investment Research OS
 
-채팅에서 `분석시작 <회사>`라고 말하면 **산업 구조 → 증거 → 인사이트 → 가정 → 밸류에이션 → 감사 → 현재가 비교** 순서로 작동시키기 위한 프로젝트입니다.
+`분석시작 <기업>`을 Evidence-first 연구 흐름과 결정론적 밸류에이션으로 연결하는 저장소입니다.
 
-## 핵심 원칙
+## 현재 구현 수준
 
-- **가격이 가정을 만들지 않는다.** 현재가는 마지막 비교에만 사용합니다.
-- 숫자는 `실적·공시값 / 회사 공식 IR 계획 / 정책 원문 / 외부 참고치 / 모델 가정 / 모델 산출값 / 시장 비교값`으로 분리합니다.
-- LLM은 인과·가설·증거 품질을 판단하고, 계산은 결정론적 코드가 담당합니다.
-- 미확정 미래는 0/100이 아니라 근거가 있는 확률로 반영합니다.
-- 산업 판별을 먼저 하고, 산업마다 가치 드라이버와 모델을 바꿉니다.
+v0.3-alpha는 OCI홀딩스 v1.1 모델을 보존한 **오프라인 수직 슬라이스**입니다.
 
-## 현재 상태
+- 구조화 Evidence Ledger와 append-only supersession
+- Evidence → Hypothesis → Bridge → Assumption 추적성
+- `market_comparison` 및 정책가격의 intrinsic input 누출 차단
+- holding-company 우선 routing과 segment model contract
+- Bear/Base/Bull 정합성 및 `UNCALIBRATED` 확률 표시
+- Blind Red Team 입출력 계약과 최대 3회 Research Loop
+- Audit 실패 시 `VALUATION BLOCKED`, 가치·현재가 출력 금지
+- 성공 Run만 current state로 atomic promotion
+- 실패 Run을 포함한 immutable run history와 Thesis Delta
+- OCI v1.1 회귀값 보존
 
-v0.1은 OCI홀딩스에서 만든 엑셀 엔진을 Python 회귀테스트로 옮긴 최소 코어입니다.
+아직 실시간 DART/SEC/IR/정책 수집과 실제 LLM Researcher/Red Team 호출은 연결되지 않았습니다. 현재 기본 실행은 구조·감사·상태 전이를 검증하는 fixture이며 최신 투자 분석으로 사용하면 안 됩니다.
 
-```text
-Bear      ≈ 122,709원
-Base      ≈ 243,344원
-Bull      ≈ 406,697원
-AI/Space  ≈ 500,501원
-확률가중   ≈ 291,803원
+## 설치와 검증
+
+```bash
+python -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/pytest -q
 ```
 
-이 숫자는 예시 회귀테스트이며, 시장가격으로 역산하지 않습니다.
+OCI 결정론적 코어:
+
+```bash
+.venv/bin/valuation-engine examples/oci/company.yaml
+```
+
+Research OS 수직 슬라이스:
+
+```bash
+.venv/bin/valuation-engine "분석시작 OCI홀딩스" \
+  --config examples/oci/company.yaml \
+  --state-root ../valuation-vault-local
+```
+
+`--state-root`에는 private 경로를 사용하십시오. 실제 Thesis, Evidence, Position 규칙, API key를 이 public 저장소에 커밋하지 않습니다.
 
 ## 구조
 
 ```text
-AGENTS.md
-.agents/skills/valuation-analysis/
-  SKILL.md
+.agents/skills/valuation-analysis/SKILL.md  # Codex 실행 계약
 src/valuation_engine/
-  engine.py
-  audit.py
-  router.py
-  config.py
-examples/oci/company.yaml
+  records.py       # Evidence/Hypothesis/Bridge/Assumption/Run 타입
+  ledger.py        # Evidence 저장·traceability gate
+  provenance.py    # OCI legacy fixture migration trace
+  research.py      # Researcher/Blind Red Team/3-round loop 계약
+  router.py        # industry ModelSpec와 segment delegation
+  scenario.py      # scenario integrity
+  engine.py        # 기존 OCI deterministic math
+  audit.py         # sensitivity/double-count/audit gate
+  state.py         # immutable runs + atomic current state
+  workflow.py      # 분석시작 orchestration
 tests/
+examples/oci/
+docs/V03_HANDOFF.md
 ```
 
-## 실행
+## 실행 불변조건
 
-```bash
-PYTHONPATH=src pytest -q
-PYTHONPATH=src python -m valuation_engine.cli examples/oci/company.yaml
-```
+1. Market price는 Audit PASS 이후에만 읽습니다.
+2. 모든 valuation assumption은 Bridge를 가져야 합니다.
+3. 정책 가격만으로 기업 ASP를 바꾸지 않습니다.
+4. Audit 실패와 unresolved critical issue는 valuation을 차단합니다.
+5. Blocked run은 보존하지만 last-good state를 덮지 않습니다.
+6. OCI 회귀값은 의도적 모델 변경이 없는 한 ±1원 이내로 유지합니다.
 
-로컬 검증에서 6개 테스트가 통과했고 OCI 엑셀 v1.1 회귀값과 일치합니다.
-
-## 다음 개발 순서
-
-1. Evidence Ledger 스키마 구현
-2. 한국 DART / 미국 SEC 등 primary-source adapter 분리
-3. 산업 라우터 확장
-4. 수주형·소재형·에너지형·소프트웨어형·금융·바이오 valuation adapter 구현
-5. Evidence → Assumption Bridge 및 probability update rule 구현
-6. Excel export / dashboard export
-7. 회귀테스트 종목 확대
-
-구체 작업 명세는 GitHub Issue #1에 있습니다.
-
-## ChatGPT / Codex
-
-Codex는 저장소 루트의 `.agents/skills`를 repo-scoped skill 위치로 탐색합니다. 이 프로젝트의 `SKILL.md`는 `분석시작`과 기업가치 평가 요청을 반복 가능한 workflow로 정의하고, `AGENTS.md`는 Codex가 코드 수정 시 지켜야 할 프로젝트 규칙을 고정합니다.
+다음 구현 경계와 인수인계 순서는 [docs/V03_HANDOFF.md](docs/V03_HANDOFF.md)를 따릅니다.
