@@ -23,5 +23,13 @@ Build a reusable valuation system where the user can type `분석시작 <company
 ## Validation
 Before reporting results run pytest, current-price anchor stress test, probability-sum test, unit consistency tests, and scenario sensitivity checks.
 
+## v0.3 workflow gates
+- Treat `.agents/skills/valuation-analysis/SKILL.md` as the canonical runtime contract; keep root `SKILL.md` identical for compatibility.
+- Do not call a market-price loader before Audit PASS.
+- Do not emit intrinsic value from a blocked run. Save `valuation.json` as suppressed and preserve the last successful current state.
+- Keep Researcher and Red Team adapters replaceable. Red Team context must not contain market, valuation, target-price, or position fields and must not expose a market loader.
+- Store live thesis/evidence/run history outside this public repository. Fixtures must be clearly labeled.
+- Preserve the existing OCI formula engine behind the traced v0.3 workflow until a replacement has its own regression and audit fixtures.
+
 ## Delegation
 For large additions, use bounded subagents when available: Evidence/data-source, Industry/model-router, Valuation implementation, Audit/red-team. The main agent reconciles conflicts and owns the final model.
