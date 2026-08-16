@@ -25,7 +25,7 @@ def value_scenario(s: Scenario, shares: int) -> ScenarioValue:
     return ScenarioValue(s.name, s.probability, poly_ebitda_trn, wafer_ebitda_trn, terminal_ev_trn, terminal_core_equity_trn, pv_core_equity_trn, total_equity_trn, fair_value_per_share)
 
 
-def run_valuation(scenarios: list[Scenario], shares: int, *, market_price: float | None = None) -> ValuationResult:
+def run_valuation(scenarios: list[Scenario], shares: int) -> ValuationResult:
     probability_sum = sum(s.probability for s in scenarios)
     if abs(probability_sum - 1.0) > 1e-9:
         raise ValueError(f"scenario probabilities must sum to 1.0, got {probability_sum}")
@@ -33,5 +33,10 @@ def run_valuation(scenarios: list[Scenario], shares: int, *, market_price: float
     values = [value_scenario(s, shares) for s in scenarios]
     expected_equity = sum(v.probability * v.total_equity_trn for v in values)
     expected_per_share = sum(v.probability * v.fair_value_per_share for v in values)
-    market_gap = None if market_price is None else market_price / expected_per_share - 1
-    return ValuationResult(values, expected_equity, expected_per_share, market_price, market_gap, {"probability_sum": probability_sum, "market_price_used_in_valuation": False})
+    return ValuationResult(values, expected_equity, expected_per_share, {"probability_sum": probability_sum})
+
+
+def compare_to_market(result: ValuationResult, market_price: float) -> float:
+    if market_price <= 0:
+        raise ValueError("market price must be positive")
+    return market_price / result.expected_value_per_share - 1
