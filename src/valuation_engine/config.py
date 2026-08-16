@@ -8,8 +8,29 @@ from .models import Scenario
 
 def load_company_config(path: str | Path) -> tuple[int, float | None, list[Scenario], dict]:
     raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    shares = int(raw["company"]["shares"])
+    shares, scenarios = _parse_intrinsic(raw)
     market_price = raw.get("market_comparison", {}).get("price")
+    return shares, market_price, scenarios, raw
+
+
+def load_intrinsic_company_config(path: str | Path) -> tuple[int, list[Scenario], dict]:
+    """Load only intrinsic inputs. Market data is intentionally not returned."""
+    raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    shares, scenarios = _parse_intrinsic(raw)
+    intrinsic_raw = {key: value for key, value in raw.items() if key != "market_comparison"}
+    return shares, scenarios, intrinsic_raw
+
+
+def load_market_comparison(path: str | Path) -> dict:
+    raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    market = raw.get("market_comparison")
+    if not market or market.get("price") is None or market.get("as_of") is None:
+        raise ValueError("market comparison price and as_of are required")
+    return dict(market)
+
+
+def _parse_intrinsic(raw: dict) -> tuple[int, list[Scenario]]:
+    shares = int(raw["company"]["shares"])
     common = raw["common"]
     scenarios = []
     for item in raw["scenarios"]:
@@ -26,4 +47,4 @@ def load_company_config(path: str | Path) -> tuple[int, float | None, list[Scena
             discount_rate=float(item["discount_rate"]), terminal_years=float(common["terminal_years"]),
             net_debt_trn_krw=float(item["net_debt_trn_krw"]), other_business_pv_trn_krw=float(item["other_business_pv_trn_krw"]),
         ))
-    return shares, market_price, scenarios, raw
+    return shares, scenarios
