@@ -76,6 +76,4 @@ class ValuationResult:
     scenarios: list[ScenarioValue]
     expected_equity_trn: float
     expected_value_per_share: float
-    market_price: float | None = None
-    market_gap: float | None = None
     audit: dict[str, Any] = field(default_factory=dict)
