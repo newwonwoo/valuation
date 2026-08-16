@@ -61,6 +61,8 @@ src/valuation_engine/
 tests/
 examples/oci/
 docs/V03_HANDOFF.md
+docs/GENERIC_ENGINE_DESIGN.md
+docs/LIVE_VALIDATION_AND_CALIBRATION.md
 ```
 
 ## 실행 불변조건
@@ -72,4 +74,4 @@ docs/V03_HANDOFF.md
 5. Blocked run은 보존하지만 last-good state를 덮지 않습니다.
 6. OCI 회귀값은 의도적 모델 변경이 없는 한 ±1원 이내로 유지합니다.
 
-다음 구현 경계와 인수인계 순서는 [docs/V03_HANDOFF.md](docs/V03_HANDOFF.md)를 따릅니다.
+다음 작업은 [v0.3 Codex Handoff](docs/V03_HANDOFF.md)의 M1부터 시작합니다. 미구현 영역의 타입·계산·차단 계약은 [Generic Valuation Engine Design](docs/GENERIC_ENGINE_DESIGN.md), 회사별 검증과 확률 보정 기준은 [Live Validation and Probability Calibration](docs/LIVE_VALIDATION_AND_CALIBRATION.md)에 고정했습니다.
