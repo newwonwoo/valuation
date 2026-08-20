@@ -4,20 +4,25 @@
 
 ## 현재 구현 수준
 
-v0.3-alpha는 OCI홀딩스 v1.1 모델을 보존한 **오프라인 수직 슬라이스**입니다.
+실행 CLI의 범용 live engine은 아직 v0.3-alpha OCI홀딩스 수직 슬라이스를 보존합니다. 방법론/순수 계산 계약은 **RocketSLA v0.4**까지 확장되었습니다. 구현되지 않은 live adapter를 실행된 것처럼 표시하면 안 됩니다.
 
-- 구조화 Evidence Ledger와 append-only supersession
+### v0.3 legacy/live-workflow baseline
 - Evidence → Hypothesis → Bridge → Assumption 추적성
-- `market_comparison` 및 정책가격의 intrinsic input 누출 차단
-- holding-company 우선 routing과 segment model contract
-- Bear/Base/Bull 정합성 및 `UNCALIBRATED` 확률 표시
-- Blind Red Team 입출력 계약과 최대 3회 Research Loop
-- Audit 실패 시 `VALUATION BLOCKED`, 가치·현재가 출력 금지
-- 성공 Run만 current state로 atomic promotion
-- 실패 Run을 포함한 immutable run history와 Thesis Delta
+- current-price/market-comparison intrinsic leakage 차단
+- industry routing, Blind Red Team, 최대 3회 Research Loop
+- Audit 실패 시 `VALUATION BLOCKED`
+- immutable run history / atomic last-good state
 - OCI v1.1 회귀값 보존
 
-아직 실시간 DART/SEC/IR/정책 수집과 실제 LLM Researcher/Red Team 호출은 연결되지 않았습니다. 현재 기본 실행은 구조·감사·상태 전이를 검증하는 fixture이며 최신 투자 분석으로 사용하면 안 됩니다.
+### v0.4 methodology + pure-function contracts
+- **Funded Demand / Upstream Funding & Constraint Ladder**
+- **4-Level Hierarchical Bottom-up Beta**: L1 Broad Sector → L2 Industry → L3 Risk-Driver Subindustry → L4 Economic Twins; unlever → partial pool → target relever
+- **WACC Validation Engine**: 통화 일치 Risk-free Rate, market ERP, exposure-adjusted country risk, marginal Cost of Debt, market-value Target D/E, Terminal consistency
+- **Customer Advances Gate**: 선수금은 FCFF/ROIC에 먼저 반영하고 실제 신용위험이 개선될 때만 WACC에 2차 반영
+- **Hierarchical Warranted PER Engine v1.0**: Core Fundamental / Expansion-Adjusted / Market-Realization PER; DCF–PER Assumption Consistency; residual-not-raw-PER pooling
+- **Cross-Method Double-Count Gate**: 동일 economic path를 Beta/WACC/FCF/PER에 중복 자본화하지 않음
+- **Street Gap Analyzer / Consensus Reconciliation**: Intrinsic Value Freeze 이후에만 Street 목표가/추정치 로드
+- `Policy Intent ≠ Transmission Effect`
 
 ## 설치와 검증
 
@@ -27,13 +32,13 @@ python -m venv .venv
 .venv/bin/pytest -q
 ```
 
-OCI 결정론적 코어:
+OCI legacy deterministic core:
 
 ```bash
 .venv/bin/valuation-engine examples/oci/company.yaml
 ```
 
-Research OS 수직 슬라이스:
+Research OS vertical slice:
 
 ```bash
 .venv/bin/valuation-engine "분석시작 OCI홀딩스" \
@@ -41,37 +46,53 @@ Research OS 수직 슬라이스:
   --state-root ../valuation-vault-local
 ```
 
-`--state-root`에는 private 경로를 사용하십시오. 실제 Thesis, Evidence, Position 규칙, API key를 이 public 저장소에 커밋하지 않습니다.
+실제 Thesis/Evidence/Position/API key/유료 증권사 원문은 public repo에 커밋하지 않습니다.
 
-## 구조
+## 핵심 구조
 
 ```text
-.agents/skills/valuation-analysis/SKILL.md  # Codex 실행 계약
+.agents/skills/valuation-analysis/SKILL.md  # canonical runtime contract
+SKILL.md                                    # byte-identical compatibility copy
+AGENTS.md                                   # project/coding gates
+01_Rocketesla_Insight_Valuation_Framework.md
+03_valuation_engine_schema.yaml
+
+docs/
+  V04_ROCKETSLA_EXTENSION.md                # v0.4 methodology + rationale/limits
+  GENERIC_ENGINE_DESIGN.md
+  LIVE_VALIDATION_AND_CALIBRATION.md
+
 src/valuation_engine/
-  records.py       # Evidence/Hypothesis/Bridge/Assumption/Run 타입
-  ledger.py        # Evidence 저장·traceability gate
-  provenance.py    # OCI legacy fixture migration trace
-  research.py      # Researcher/Blind Red Team/3-round loop 계약
-  router.py        # industry ModelSpec와 segment delegation
-  scenario.py      # scenario integrity
-  engine.py        # 기존 OCI deterministic math
-  audit.py         # sensitivity/double-count/audit gate
-  state.py         # immutable runs + atomic current state
-  workflow.py      # 분석시작 orchestration
+  risk.py       # Hierarchical Beta + Blume/Vasicek helpers
+  wacc.py       # WACC / customer-funded-growth / terminal gates
+  per.py        # Hierarchical Warranted PER + DCF-PER consistency
+  funding.py    # Upstream funding ladder contracts
+  street.py     # Street consensus/gap arithmetic
+  ...           # existing v0.3 engine/workflow modules
+
 tests/
-examples/oci/
-docs/V03_HANDOFF.md
-docs/GENERIC_ENGINE_DESIGN.md
-docs/LIVE_VALIDATION_AND_CALIBRATION.md
+  test_v04_contracts.py
+  ...
 ```
 
 ## 실행 불변조건
 
-1. Market price는 Audit PASS 이후에만 읽습니다.
-2. 모든 valuation assumption은 Bridge를 가져야 합니다.
-3. 정책 가격만으로 기업 ASP를 바꾸지 않습니다.
-4. Audit 실패와 unresolved critical issue는 valuation을 차단합니다.
-5. Blocked run은 보존하지만 last-good state를 덮지 않습니다.
-6. OCI 회귀값은 의도적 모델 변경이 없는 한 ±1원 이내로 유지합니다.
+1. 현재주가와 Street 목표/추정은 Intrinsic Value Freeze 전 intrinsic input이 아닙니다.
+2. Street에서 새 사실을 발견하면 primary/독립 Evidence로 재검증한 **새 run**을 시작합니다.
+3. 모든 valuation assumption은 Bridge/economic path를 가져야 합니다.
+4. 정책가격은 실제 ASP/물량/원가/자금조달 전달경로 없이 가치로 직접 들어가지 않습니다.
+5. Beta는 fixed peer/level 평균이 아니라 risk-driver hierarchy와 partial pooling을 사용합니다.
+6. WACC는 통화·자본구조·한계조달비용·Terminal 가정이 일관되어야 합니다.
+7. 선수금은 FCFF/ROIC에 먼저 반영하며, WACC 인하는 별도 credit evidence가 필요합니다.
+8. PER는 positive normalized forward EPS를 사용하고 Core DCF와 경제가정을 공유합니다.
+9. Expansion PER는 committed/pre-invested evidence가 있을 때만 성장기간을 늘립니다.
+10. Market-Realization PER는 raw peer P/E가 아니라 `ln(Market PER / Fundamental PER)` residual을 계층적으로 pooling합니다.
+11. Beta/WACC/FCF/PER의 동일 질적 장점은 `economic_path_id` 없이 중복 자본화하지 않습니다.
+12. Audit 실패/critical unresolved issue는 valuation과 market comparison을 차단합니다.
+13. 기존 OCI 회귀값은 의도적 모델 변경이 없는 한 ±1원 이내로 유지합니다.
 
-다음 작업은 [v0.3 Codex Handoff](docs/V03_HANDOFF.md)의 M1부터 시작합니다. 미구현 영역의 타입·계산·차단 계약은 [Generic Valuation Engine Design](docs/GENERIC_ENGINE_DESIGN.md), 회사별 검증과 확률 보정 기준은 [Live Validation and Probability Calibration](docs/LIVE_VALIDATION_AND_CALIBRATION.md)에 고정했습니다.
+## 방법론의 위치
+
+v0.4는 **academically grounded engineering synthesis**로 정의합니다. Blume/Vasicek, non-synchronous beta correction, unlever/relever, standard WACC consistency, forward/fundamental multiple literature 등 기존 기반과 RocketSLA 고유의 L1→L4 Economic-Twin taxonomy, customer-advance WACC transmission, three-layer Warranted PER, residual pooling 및 fail-closed audit orchestration을 구분합니다.
+
+상세 근거·실무적 가치·한계는 [docs/V04_ROCKETSLA_EXTENSION.md](docs/V04_ROCKETSLA_EXTENSION.md)를 기준으로 합니다.

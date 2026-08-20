@@ -1,67 +1,57 @@
-version: "0.1"
+version: "0.4"
 name: "rocketesla-probability-weighted-valuation"
+
 trigger:
   primary_command: "분석시작"
   active_target_required: true
-  target_resolution:
-    explicit_target_overrides_context: true
-    otherwise_use_active_target: true
 
 principles:
   current_price_anchoring: forbidden
+  street_reference_pre_intrinsic: forbidden
+  street_same_run_assumption_mutation: forbidden
   fact_plan_assumption_separation: required
-  policy_direct_to_value: forbidden
   evidence_to_assumption_bridge: required
-  double_counting: forbidden
+  policy_direct_to_value: forbidden
+  policy_intent_transmission_separation: required
+  funded_demand_scan_when_material: required
+  hierarchical_beta_when_peer_beta_used: required
+  wacc_validation: required
+  hierarchical_warranted_per_when_routed: required
+  dcf_per_assumption_consistency: required
+  cross_method_double_counting: forbidden
+  intrinsic_value_freeze_before_comparison: required
   audit_before_output: required
-  probability_change_log: required
 
 source_layers:
-  L0:
-    name: realized_disclosed
-    examples: [DART, SEC, audited_financials, legal_disclosure]
-  L1:
-    name: official_company_plan
-    examples: [IR, earnings_guidance, official_capacity_plan]
-  L2:
-    name: policy_original
-    examples: [law, executive_order, ministry_notice, tariff_rule]
-  L3:
-    name: external_validation
-    examples: [customer_official, supplier_official, Reuters, academic_paper, industry_body]
-  L4:
-    name: model_assumption
-  L5:
-    name: model_output
+  L0: {name: realized_disclosed}
+  L1: {name: official_company_plan}
+  L2: {name: policy_original}
+  L3: {name: external_validation}
+  L4: {name: model_assumption}
+  L5: {name: model_output}
 
 analysis_state:
-  target:
-    name: null
-    ticker: null
-    market: null
+  target: {name: null, ticker: null, market: null}
   as_of: null
   active_industry_module: null
   evidence: []
   hypotheses: []
+  funding_ladder: []
   bridges: []
-  valuation_models: []
+  beta_hierarchy: null
+  wacc_validation: null
+  warranted_per: null
+  dcf_per_consistency: null
   scenarios: []
-  triggers: []
+  probability_distribution: null
+  intrinsic_value_freeze: null
+  street_references: []
+  street_gap: null
+  consensus_lag: []
+  reverse_checks: []
   kill_conditions: []
   audit_results: []
   change_log: []
-
-hypothesis_schema:
-  id: null
-  statement: null
-  causal_chain: []
-  supporting_evidence_ids: []
-  contradicting_evidence_ids: []
-  prior_probability: null
-  current_probability: null
-  valuation_variables_impacted: []
-  kill_conditions: []
-  next_checks: []
 
 bridge_schema:
   hypothesis_id: null
@@ -71,81 +61,167 @@ bridge_schema:
   candidate_value: null
   probability_weight: null
   evidence_ids: []
+  economic_path_id: null
   double_count_guard: null
 
-scenario_schema:
-  id: null
-  name: null
-  probability: null
-  assumptions:
-    price: {}
-    quantity: {}
-    mix: {}
-    yield: {}
-    margin: {}
-    capex: {}
-    funding: {}
-    net_debt: {}
-    discount_rate: null
-    exit_multiple: null
-  fair_value: null
+funding_ladder_schema:
+  ordered_layers:
+    - PRODUCT_OR_PROJECT
+    - BUYER_CASH_FLOW
+    - FINANCING_CHANNEL
+    - COLLATERAL_VALUE
+    - LENDING_TERMS
+    - CREDIT_SPREAD
+    - BENCHMARK_RATE
+    - MARKET_PLUMBING
+    - POLICY_BACKSTOP
+  policy_intent_separate_from_transmission: true
+  bridge_tests: [mechanical_link, materiality, lead_lag, market_confirmation]
+
+beta_hierarchy_schema:
+  required_order:
+    - L1_BROAD_SECTOR
+    - L2_INDUSTRY
+    - L3_RISK_DRIVER_SUBINDUSTRY
+    - L4_ECONOMIC_TWINS
+  peer_beta_normalization_required: true
+  standard_error_preserved_when_available: true
+  blume_vasicek_allowed_and_auditable: true
+  nonsynchronous_trade_adjustment_when_material: true
+  peers_unlevered_before_pooling: true
+  fixed_level_weights_forbidden: true
+  partial_pooling_required: true
+  target_relever_after_pooling: true
+  audit_fields:
+    - peer_id
+    - estimation_method
+    - levered_beta
+    - beta_standard_error
+    - debt
+    - equity
+    - tax_rate
+    - asset_beta
+    - group_mean_asset_beta
+    - group_dispersion_variance
+    - measurement_variance
+    - likelihood_variance
+    - prior_mean
+    - prior_variance
+    - posterior_mean
+    - posterior_variance
+
+wacc_schema:
+  risk_free_currency_matches_cash_flow_currency: true
+  nominal_real_consistency_required: true
+  equity_risk_premium_is_market_level: true
+  country_risk_exposure_adjusted: true
+  generic_small_cap_premium_forbidden_without_evidence: true
+  marginal_cost_of_debt_required: true
+  market_value_target_capital_structure_required: true
+  same_target_de_used_for_beta_and_wacc: true
+  customer_advances_direct_wacc_cut_forbidden: true
+  customer_advance_credit_confirmation_required:
+    - repeated_and_structural
+    - net_debt_to_ebitda_improved
+    - interest_coverage_improved
+    - external_borrowing_growth_slowed
+    - borrowing_rate_or_credit_spread_declined
+    - liquidity_risk_reduced
+  terminal_checks:
+    - wacc_gt_g
+    - currency_consistency
+    - nominal_real_consistency
+    - reinvestment_equals_g_over_roic
+
+warranted_per_schema:
+  eps_positive_and_normalized: true
+  layers:
+    - core_fundamental
+    - expansion_adjusted_fundamental
+    - market_realization
+  layers_must_not_be_averaged: true
+  core_uses_dcf_economic_assumptions: true
+  expansion_requires_committed_or_preinvested_evidence: true
+  peer_pooling_target: log_market_per_over_fundamental_per_residual
+  hierarchy:
+    - L1_BROAD_SECTOR
+    - L2_INDUSTRY
+    - L3_RISK_DRIVER_SUBINDUSTRY
+    - L4_ECONOMIC_TWINS
+  economic_twin_drivers:
+    - growth_rate
+    - growth_duration
+    - roe_roic
+    - incremental_roic
+    - reinvestment
+    - cash_conversion
+    - margin_stability
+    - revenue_visibility
+    - cyclicality
+    - capital_intensity
+    - balance_sheet_risk
+    - customer_concentration
+    - pricing_power
+    - dilution
+
+dcf_per_consistency_schema:
+  compare:
+    - growth_path
+    - margin_normalization
+    - eps_economics
+    - reinvestment
+    - capital_intensity
+    - growth_duration
+    - cost_of_equity_risk
+  hidden_growth_extension: forbidden
+
+street_gap_schema:
+  load_after_intrinsic_freeze: true
+  same_run_mutation_forbidden: true
+  driver_categories:
+    - operating
+    - financing
+    - valuation_policy
+    - option
+    - capital_structure
+    - unexplained
+  valuation_policy_only_gap_is_high_quality_alpha: false
 
 required_audits:
   - probability_sum_equals_one
   - current_price_not_referenced_by_fair_value
-  - policy_not_directly_linked_to_value_without_bridge
+  - street_reference_not_loaded_before_intrinsic_freeze
+  - street_reference_cannot_mutate_same_run_intrinsic_value
+  - policy_intent_separated_from_transmission_effect
   - ev_to_equity_net_debt_check
   - unit_conversion_check
   - capex_double_count_check
   - evidence_double_count_check
-  - company_plan_not_marked_realized
-  - discount_timing_check
+  - funding_double_count_check
+  - hierarchical_beta_trace_check
+  - wacc_currency_and_target_structure_check
+  - customer_advances_fcff_wacc_double_count_check
+  - terminal_wacc_growth_reinvestment_check
+  - warranted_per_eps_quality_check
+  - dcf_per_assumption_consistency_check
+  - per_residual_pooling_check
+  - beta_wacc_per_cross_method_double_count_check
   - formula_error_zero
-
-scanners:
-  - headline_decomposition
-  - money_flow
-  - bottleneck
-  - behavior_sequence
-  - exploration_confirmation
-  - digital_trace
-  - pxq_mix_yield
-  - chain_proof
-  - long_short
-  - bottleneck_migration
-  - second_order_effect
-  - reserved_demand_slot
-  - time_to_power
-  - policy_revealed_preference
-  - raw_material_policy_floor
-  - quarterly_question_ledger
-  - ipo_lockup_flow
-  - macro_transmission
-  - kill_condition
-
-model_router:
-  order_equipment: backlog_normalized_ebitda_dcf
-  construction_shipbuilding: progress_dcf
-  materials_commodity: price_volume_margin_exit_multiple
-  energy_infrastructure: asset_npv_sotp
-  consumer_retail: dcf_sotp
-  software_platform: revenue_grossprofit_fcf
-  pharma_bio: rnpv
-  financials: pb_roe_residual_income
-  holding_company: sotp_nav_discount
 
 output_contract:
   sections:
     - conclusion
-    - known_by_market
-    - underappreciated_change
-    - leading_actions
-    - numerical_validation
-    - bottleneck
-    - exploration_to_confirmation
-    - long_short_scenarios
-    - probability_weighted_future_value
-    - kill_conditions
-    - valuation_range
+    - thesis_delta
+    - known_vs_underappreciated
+    - strongest_red_team_objection
+    - funded_demand_and_upstream_constraints
+    - scenario_worldviews
+    - beta_wacc_per_audit_summary
+    - intrinsic_value_distribution
+    - street_gap_reconciliation
+    - consensus_lag_or_reverse_check
     - current_price_comparison
+    - kill_conditions
     - next_verification_events
+    - data_quality
+    - limitations
