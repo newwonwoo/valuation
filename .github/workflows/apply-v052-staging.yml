@@ -1,0 +1,151 @@
+name: apply-v052-staging
+
+on:
+  push:
+    branches: [feature/v052-industry-signal]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-v052-staging
+  cancel-in-progress: false
+
+jobs:
+  materialize-and-validate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct candidate archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          find .staging/v052 -type f -name '*.b64' | sort | xargs cat | base64 -d > /tmp/v052.tar.xz
+          echo '7d4a9a7d15d6181ed961c42445d1860441e31a944d827be4b6d61524657bceeb  /tmp/v052.tar.xz' | sha256sum -c -
+          mkdir -p /tmp/v052
+          tar -xJf /tmp/v052.tar.xz -C /tmp/v052
+          test -d /tmp/v052/industry_knowledge_v05_patch/src
+
+      - name: Materialize v0.5.2 candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC=/tmp/v052/industry_knowledge_v05_patch
+          for d in config data docs scripts src tests; do
+            mkdir -p "$d"
+            cp -a "$SRC/$d/." "$d/"
+          done
+          rm -rf tests/.pytest_cache
+          rm -f PATCH_MANIFEST.md FINAL_STATUS.md CANDIDATE_SUMMARY.json
+
+      - name: Integrate v0.5.2 runtime contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          # README: retain the live CLI caveat while documenting v0.5.2 methodology/contracts.
+          p = Path('README.md')
+          s = p.read_text()
+          s = s.replace(
+              '방법론/순수 계산 계약은 **RocketSLA v0.4**까지 확장되었습니다.',
+              '방법론/순수 계산 계약과 산업 지식·신호 계층은 **RocketSLA v0.5.2**까지 확장되었습니다.'
+          )
+          marker = '## 설치와 검증'
+          section = '''### v0.5.2 Industry Knowledge + Signal Intelligence\n- **Industry Knowledge Snapshot / Freshness Gate**: run마다 산업 지식·source-watch snapshot을 고정하고 revision/definition/schema break를 추적\n- **Segment-first Industry DNA Router**: company-wide 단일 라벨이 아니라 segment별 Economic Archetype + Sector Adapter를 evidence로 라우팅\n- **Module Requirement Plan**: valuation 전에 required evidence/KPI/twin features/scenario/funding/kill conditions/forbidden methods를 컴파일\n- **Knowledge Placement Gate**: classification/metric/provenance standards, structural priors, primary evidence, broker research, calibration reference, market reference의 사용 위치를 분리\n- **Broker/IB Research Layer**: pre-freeze에는 KPI·value-chain·mechanism·investor-debate 발견만 허용; target-company forecast/target price/rating/multiple/consensus는 freeze 이후 Street Gap 전용\n- **Signal Intelligence Layer**: permit/procurement/grid/project-realization/patent/jobs/credit/logistics/clinical/remote-sensing 등의 선행 신호를 authority와 별개로 분류\n- **Market-role split**: financing market reference는 Bridge를 거쳐 funding/WACC에 사용 가능, positioning signal은 monitoring 전용, target-equity market reference는 post-freeze 전용\n- **Negative Evidence / Representativeness / Latency Gates**: `NOT_OBSERVED != NO_EVENT`; coverage·reporting lag·source health·representativeness와 first-seen/revision 시간을 보존\n- **Dynamic Economic Twin candidates**: static industry code 외 product text/end-market/supply-chain/patent/business-model/capital-intensity/concentration/contract structure를 후보 특징으로 사용하되 최종 peer는 auditable driver check를 통과\n\n'''
+          if '### v0.5.2 Industry Knowledge + Signal Intelligence' not in s:
+              s = s.replace(marker, section + marker)
+          # Add knowledge/signal invariants before methodology section.
+          inv = '''13. Industry route는 segment-first multi-label evidence route이며 keyword match가 최종 route를 확정하지 않습니다.\n14. Broker/alternative data는 intrinsic assumption으로 직접 compile하지 않고 discovery/corroboration/verification request 역할만 가집니다.\n15. `SOURCE_FAILURE` 또는 `NOT_OBSERVED`를 부정적 산업 Evidence로 해석하지 않습니다.\n16. 같은 economic event의 `event_time/effective_as_of/published_at/first_seen_at/revised_at`을 분리해 look-ahead를 차단합니다.\n17. Unsupported archetype/missing critical module input/method conflict는 generic DCF fallback이 아니라 `VALUATION BLOCKED`입니다.\n'''
+          if '17. Unsupported archetype' not in s:
+              s = s.replace('## 방법론의 위치', inv + '\n## 방법론의 위치')
+          s = s.replace(
+              'v0.4는 **academically grounded engineering synthesis**로 정의합니다.',
+              'v0.4 금융 calibration 계층은 **academically grounded engineering synthesis**로 정의합니다. v0.5.2는 여기에 evidence-governed Industry Knowledge, Broker Research, Source Freshness 및 Signal Intelligence orchestration을 추가하며, 각 source의 authority와 허용 workflow stage를 분리합니다.'
+          )
+          p.write_text(s)
+
+          # SKILL: promote workflow contract to v0.5.2, preserving v0.4 finance-calibration rules.
+          p = Path('SKILL.md')
+          s = p.read_text()
+          s = s.replace('# Insight Valuation Analysis v0.4', '# Insight Valuation Analysis v0.5.2')
+          s = s.replace(
+              'Read `AGENTS.md`, `01_Rocketesla_Insight_Valuation_Framework.md`, `docs/V04_ROCKETSLA_EXTENSION.md`, `docs/GENERIC_ENGINE_DESIGN.md`, and `docs/LIVE_VALIDATION_AND_CALIBRATION.md` before changing model architecture.',
+              'Read `AGENTS.md`, `01_Rocketesla_Insight_Valuation_Framework.md`, `docs/V04_ROCKETSLA_EXTENSION.md`, `docs/V05_WORKFLOW_CONTRACT.md`, `docs/README_V05_OPERATOR_INDEX.md`, `docs/SIGNAL_INTELLIGENCE_LAYER_V1.md`, `docs/GENERIC_ENGINE_DESIGN.md`, and `docs/LIVE_VALIDATION_AND_CALIBRATION.md` before changing model architecture.'
+          )
+          workflow = '''## Required workflow\n\nExecute in this order; unavailable live modules must be labelled `CONTRACT_ONLY` or `NOT_IMPLEMENTED`.\n\n1. `COMPANY_RESOLUTION`\n2. `LOAD_COMPANY_STATE`\n3. `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`\n4. `SOURCE_FRESHNESS_PRECHECK`\n5. `SEGMENT_DECOMPOSITION`\n6. `INDUSTRY_DNA_ROUTE`\n7. `MODULE_REQUIREMENT_PLAN`\n8. `PRIMARY_EVIDENCE_COLLECTION`\n9. `EVIDENCE_LEDGER`\n10. `ROCKET_INSIGHT_SCAN`\n11. `UPSTREAM_FUNDING_SCAN` when external finance is material\n12. `RESEARCHER_A`\n13. `BLIND_RED_TEAM_B`\n14. up to three targeted `RESEARCH_LOOP` rounds\n15. `EVIDENCE_TO_ASSUMPTION_BRIDGE`\n16. `SCENARIO_BUILD`\n17. `HIERARCHICAL_BETA_ESTIMATION` when peer beta is used\n18. `WACC_VALIDATION`\n19. `DETERMINISTIC_VALUATION`\n20. `HIERARCHICAL_WARRANTED_PER` when PER is allowed\n21. `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`\n22. `CROSS_METHOD_DOUBLE_COUNT_AUDIT`\n23. `PROBABILITY_DISTRIBUTION_ANALYSIS` when calibrated\n24. `AUDIT_GATE`\n25. `INTRINSIC_VALUE_FREEZE`\n26. `STREET_REFERENCE_LOAD`\n27. `STREET_GAP_ANALYZER` including consensus-lag reverse check\n28. `MARKET_PRICE_LOAD`\n29. `MARKET_COMPARE`\n30. `THESIS_DELTA` / `SAVE_STATE` / `FINAL_REPORT`\n\nIf a blocking issue remains after round three or a blocking audit fails, return `VALUATION BLOCKED`. Do not output fair value or load Street/current-price data.\n\n'''
+          s = re.sub(r'## Required workflow\n.*?(?=## Separation rules)', workflow, s, count=1, flags=re.S)
+          knowledge = '''## Industry Knowledge & Signal Intelligence v0.5.2\n\n- Freeze `industry_knowledge_snapshot_hash`, `source_watch_snapshot_hash`, taxonomy/module versions and routing evidence for every valuation run. Later reports cannot silently mutate an in-progress run.\n- Decompose economically distinct segments before routing. `INDUSTRY_DNA_ROUTE` is multi-label and evidence-driven: one or more Economic Archetypes may apply, while Sector Adapters are defaults rather than authority. Keyword matching cannot finalize the route.\n- Compile `MODULE_REQUIREMENT_PLAN` before collection: required evidence/KPIs, accounting normalization, Beta/PER twin features, scenario variables, funding checks, forbidden methods, terminal policy, double-count traps and kill conditions.\n- Fail closed instead of generic-DCF fallback when no supported archetype can be established, a critical module input is missing/definition-conflicted, or a method is forbidden by a material archetype without segment split.\n- Assign every source to a Knowledge Layer and enforce `config/knowledge_placement_policy.yaml` plus `config/workflow_source_injection_map.yaml`. Classification/metric/provenance standards define requirements; structural input-output data is a prior; primary/company evidence may reach a Bridge; broker/alternative data is discovery/corroboration; target Street/market remains post-freeze.\n- Broker/IB material before freeze may supply value-chain maps, KPI definitions, mechanism candidates, investor debates, channel-check leads and underlying-data locations. Target-company broker revenue/EPS forecasts, target price, rating, target multiple and consensus are forbidden before freeze. Multiple brokers sharing one underlying data family do not count as independent corroboration.\n- `SignalClass` is orthogonal to evidence authority. Permit, procurement, interconnection, patent, hiring, physical-production, customs/logistics, credit, clinical and remote-sensing signals require the same provenance/placement gates as other evidence.\n- Split market inputs into: `financing_market_reference` (funding/WACC only through an economic Bridge), `positioning_market_signal` (monitoring/post-freeze; never mutates intrinsic), and `target_equity_market_reference` (post-freeze only).\n- `NOT_OBSERVED != NO_EVENT`. Negative evidence requires complete/near-complete coverage, mandatory or near-mandatory reporting, elapsed reporting lag, healthy source and no known alternate channel. `SOURCE_FAILURE` is operational evidence only.\n- Apply the Representativeness Gate before extrapolating spot/channel/alternative data: coverage share, selection bias, duplicate risk, granularity match, mapping stability and definition stability.\n- Track project realization as evidence-backed states (`announced → applied → funded → permitted → awarded/contracted → under construction → commissioned/delivered → revenue`) rather than treating announced capacity as funded demand.\n- Preserve `event_time`, `effective_as_of`, `published_at`, `first_seen_at`, `revised_at` and expected reporting lag. Historical/backtest analysis may not use a revision before its first-seen time.\n- Dynamic Economic-Twin candidate generation may use product-text similarity, end-market mix, supply-chain topology, patent similarity, revenue model, capital intensity, customer concentration and contract structure. Final Beta/PER peers still require an auditable systematic-risk/fundamental-driver rationale.\n\n'''
+          if '## Industry Knowledge & Signal Intelligence v0.5.2' not in s:
+              s = s.replace('## Non-negotiable gates', knowledge + '## Non-negotiable gates')
+          s = s.replace(
+              'The full v0.4 architecture is **academically grounded engineering synthesis**.',
+              'The v0.4 finance-calibration architecture remains **academically grounded engineering synthesis**. v0.5.2 adds evidence-governed Industry Knowledge, Broker Research, Freshness/Revision Watch and Signal Intelligence orchestration; these are repository-specific operating contracts, not a claim that every causal mechanism is academically established.'
+          )
+          s = s.replace(
+              'Lead with conclusion, thesis delta, known vs underappreciated evidence, strongest Red Team objection, funded-demand constraints when material,',
+              'Lead with conclusion, thesis delta, frozen industry-knowledge/source-freshness status, known vs underappreciated evidence, strongest Red Team objection, funded-demand constraints when material,'
+          )
+          p.write_text(s)
+
+          # Canonical skill must remain byte-identical.
+          canonical = Path('.agents/skills/valuation-analysis/SKILL.md')
+          canonical.parent.mkdir(parents=True, exist_ok=True)
+          canonical.write_bytes(p.read_bytes())
+
+          # AGENTS: source-of-truth order and architecture gates.
+          p = Path('AGENTS.md')
+          s = p.read_text()
+          if 'docs/V05_WORKFLOW_CONTRACT.md' not in s:
+              s = s.replace(
+                  '4. `docs/GENERIC_ENGINE_DESIGN.md` — generic deterministic-engine implementation contract.\n5. `docs/LIVE_VALIDATION_AND_CALIBRATION.md` — live validation/probability calibration.',
+                  '4. `docs/V05_WORKFLOW_CONTRACT.md` — v0.5.2 Industry Knowledge/Industry DNA workflow ordering and fail-closed gates.\n5. `docs/README_V05_OPERATOR_INDEX.md` — source/module/operator navigation.\n6. `docs/SIGNAL_INTELLIGENCE_LAYER_V1.md` — deep-signal, negative-evidence, latency and market-role contracts.\n7. `docs/GENERIC_ENGINE_DESIGN.md` — generic deterministic-engine implementation contract.\n8. `docs/LIVE_VALIDATION_AND_CALIBRATION.md` — live validation/probability calibration.'
+              )
+          s = s.replace('6. Industry routing happens before valuation-method selection.', '6. Segment decomposition → evidence-driven multi-label Industry DNA routing → Module Requirement Plan happens before valuation-method selection/data collection.')
+          gates = '''\n## Industry Knowledge / Signal Intelligence gates\n- Freeze Industry Knowledge and source-watch snapshots per run; do not let later publications silently mutate an in-flight valuation.\n- Use `KnowledgeLayer` placement contracts. Structural priors, broker research, alternative data and calibration references cannot bypass primary/company Evidence → Bridge requirements.\n- Broker/IB research before intrinsic freeze is discovery/corroboration only; target-company forecast/target price/rating/multiple/consensus are post-freeze Street objects.\n- `NOT_OBSERVED` is not `NO_EVENT`; source failure, reporting lag and incomplete coverage cannot be converted into negative evidence.\n- Preserve event/effective/published/first-seen/revision timestamps to prevent look-ahead.\n- Financing-market references may support funding/WACC through an explicit Bridge; positioning signals never mutate intrinsic; target-equity market references are post-freeze only.\n- Unsupported archetype or critical module conflict blocks valuation instead of falling back to generic DCF.\n- Public repo stores structured derived facts/metadata, not paid/licensed broker-report bodies or secrets.\n'''
+          if '## Industry Knowledge / Signal Intelligence gates' not in s:
+              s = s.replace('## Coding style', gates + '\n## Coding style')
+          s = s.replace(
+              'The v0.4 system is **academically grounded engineering synthesis**.',
+              'The v0.4 finance-calibration system is **academically grounded engineering synthesis**. v0.5.2 adds repository-specific evidence-governed Industry Knowledge and Signal Intelligence operating contracts.'
+          )
+          p.write_text(s)
+          PY
+
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+
+      - name: Validate full repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          pytest -q
+          valuation-engine examples/oci/company.yaml
+          python scripts/validate_industry_seed.py
+          python scripts/validate_module_registries.py
+          python scripts/validate_broker_research_layer.py
+          python scripts/validate_knowledge_placement.py
+          python scripts/validate_workflow_source_injection.py
+          python scripts/validate_probe_fixtures.py
+          cmp -s SKILL.md .agents/skills/valuation-analysis/SKILL.md
+
+      - name: Commit materialized v0.5.2
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- config data docs scripts src tests README.md SKILL.md .agents/skills/valuation-analysis/SKILL.md AGENTS.md
+          if git diff --cached --quiet; then
+            echo 'No materialized changes to commit.'
+            exit 0
+          fi
+          git commit -m 'v0.5.2: integrate industry knowledge and signal intelligence'
+          git push origin HEAD:${GITHUB_REF_NAME}
