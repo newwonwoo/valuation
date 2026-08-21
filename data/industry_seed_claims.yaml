@@ -1,0 +1,975 @@
+seed_version: 2026-08-21.4
+claims:
+- claim_id: CL_KIET_MFG_JUL_01
+  document_id: DOC_KIET_PSI_2026_07_AUG_OUTLOOK
+  source_id: KR_KIET_PSI
+  source_family: KIET
+  industry_node: manufacturing
+  kind: forecast
+  role: forward_hypothesis
+  period: 2026-07
+  metric: psi_business_conditions
+  value: 95
+  unit: index
+  statement: July manufacturing conditions PSI remained below 100 while exports stayed
+    comparatively strong.
+  economic_path_id: mfg.external_demand_vs_domestic
+- claim_id: CL_KIET_MFG_JUL_02
+  document_id: DOC_KIET_PSI_2026_07_AUG_OUTLOOK
+  source_id: KR_KIET_PSI
+  source_family: KIET
+  industry_node: semiconductor
+  kind: forecast
+  role: forward_hypothesis
+  period: 2026-08
+  metric: sector_direction
+  statement: Semiconductors were the notable sector expected to remain above the neutral
+    100 threshold in August while most industries were below it.
+  economic_path_id: semiconductor.relative_cycle_strength
+- claim_id: CL_KITA_Q3_01
+  document_id: DOC_KITA_EBSI_2026Q3
+  source_id: KR_KITA_EBSI
+  source_family: KITA
+  industry_node: exports
+  kind: forecast
+  role: forward_hypothesis
+  period: 2026Q3
+  metric: ebsi_total
+  value: 107.0
+  unit: index
+  statement: Q3 export business survey stayed above the 100 neutral line for a fourth
+    consecutive quarter.
+  economic_path_id: exports.forward_demand
+- claim_id: CL_KITA_Q3_02
+  document_id: DOC_KITA_EBSI_2026Q3
+  source_id: KR_KITA_EBSI
+  source_family: KITA
+  industry_node: semiconductor
+  kind: forecast
+  role: forward_hypothesis
+  period: 2026Q3
+  metric: ebsi_semiconductor
+  value: 142.6
+  unit: index
+  statement: Semiconductor exporters remained strongly positive, supported by server
+    DRAM demand and high-performance SSD demand.
+  economic_path_id: semiconductor.memory_ai_demand
+- claim_id: CL_KITA_Q3_03
+  document_id: DOC_KITA_EBSI_2026Q3
+  source_id: KR_KITA_EBSI
+  source_family: KITA
+  industry_node: shipping.shipbuilding
+  kind: forecast
+  role: forward_hypothesis
+  period: 2026Q3
+  metric: ebsi_ships
+  value: 115.7
+  unit: index
+  statement: Ship export conditions were expected to improve in Q3.
+  economic_path_id: shipbuilding.delivery_cycle
+- claim_id: CL_KITA_Q3_04
+  document_id: DOC_KITA_EBSI_2026Q3
+  source_id: KR_KITA_EBSI
+  source_family: KITA
+  industry_node: automotive
+  kind: forecast
+  role: forward_hypothesis
+  period: 2026Q3
+  metric: ebsi_auto
+  value: 97.7
+  unit: index
+  statement: Automotive and parts export conditions were slightly below the neutral
+    line in the Q3 survey.
+  economic_path_id: automotive.export_cycle
+- claim_id: CL_KISDI_2026_01
+  document_id: DOC_KISDI_ICT_2026_2030
+  source_id: KR_KISDI_ICT
+  source_family: KISDI
+  industry_node: ict
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: ict_production_growth
+  value: 3.2
+  unit: percent_yoy
+  statement: KISDI projected domestic ICT production growth of 3.2% in 2026.
+  economic_path_id: ict.ai_vs_legacy_mix
+- claim_id: CL_KISDI_2026_02
+  document_id: DOC_KISDI_ICT_2026_2030
+  source_id: KR_KISDI_ICT
+  source_family: KISDI
+  industry_node: semiconductor
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: semiconductor_export_growth
+  value: 10.5
+  unit: percent_yoy
+  statement: Semiconductor exports were projected to rise 10.5%, with AI-oriented
+    high-value memory a main driver.
+  economic_path_id: semiconductor.memory_ai_demand
+- claim_id: CL_KISDI_2026_03
+  document_id: DOC_KISDI_ICT_2026_2030
+  source_id: KR_KISDI_ICT
+  source_family: KISDI
+  industry_node: storage.ssd
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: computer_peripheral_export_growth
+  value: 12.1
+  unit: percent_yoy
+  statement: Computer/peripheral exports were projected to grow 12.1%, led by enterprise
+    SSD demand from AI data centers.
+  economic_path_id: semiconductor.storage_ai_demand
+- claim_id: CL_KISDI_2026_04
+  document_id: DOC_KISDI_ICT_2026_2030
+  source_id: KR_KISDI_ICT
+  source_family: KISDI
+  industry_node: information_services
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: growth
+  value: 4.3
+  unit: percent_yoy
+  statement: Information services were projected to grow 4.3% in 2026 as AI-agent
+    and mobile-ad services expand.
+  economic_path_id: software.ai_monetization
+- claim_id: CL_KISDI_2026_05
+  document_id: DOC_KISDI_ICT_2026_2030
+  source_id: KR_KISDI_ICT
+  source_family: KISDI
+  industry_node: software
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: growth
+  value: 3.2
+  unit: percent_yoy
+  statement: Software was projected to grow 3.2% with AI transformation and SaaS/cloud
+    demand.
+  economic_path_id: software.recurring_cloud_growth
+- claim_id: CL_KISDI_2026_06
+  document_id: DOC_KISDI_ICT_2026_2030
+  source_id: KR_KISDI_ICT
+  source_family: KISDI
+  industry_node: ict
+  kind: kill_condition
+  role: industry_structure
+  period: 2026-2030
+  metric: constraint
+  statement: Power and skilled-labor shortages were identified as medium-term constraints
+    on AI infrastructure growth.
+  economic_path_id: ict.ai_infrastructure_constraints
+- claim_id: CL_WSTS_2025_01
+  document_id: DOC_WSTS_2025_Q4_ACTUAL
+  source_id: INT_WSTS
+  source_family: WSTS
+  industry_node: semiconductor
+  kind: fact
+  role: observed_state
+  period: '2025'
+  metric: market_sales
+  statement: The 2025 global semiconductor market finished near USD 800 billion, its
+    strongest year on record.
+  economic_path_id: semiconductor.global_cycle
+- claim_id: CL_WSTS_2025_02
+  document_id: DOC_WSTS_2025_Q4_ACTUAL
+  source_id: INT_WSTS
+  source_family: WSTS
+  industry_node: semiconductor.memory
+  kind: mechanism
+  role: industry_structure
+  period: '2025'
+  metric: growth_driver
+  statement: Memory growth in 2025 was supported by improved pricing and demand for
+    high-bandwidth and high-capacity memory.
+  economic_path_id: semiconductor.memory_ai_demand
+- claim_id: CL_WSTS_2026_01
+  document_id: DOC_WSTS_SPRING_2026
+  source_id: INT_WSTS
+  source_family: WSTS
+  industry_node: semiconductor
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: market_size
+  value: 1.51
+  unit: usd_trillion
+  statement: WSTS Spring 2026 forecast put the global semiconductor market at about
+    USD 1.51 trillion in 2026.
+  economic_path_id: semiconductor.global_cycle
+- claim_id: CL_WSTS_2026_02
+  document_id: DOC_WSTS_SPRING_2026
+  source_id: INT_WSTS
+  source_family: WSTS
+  industry_node: semiconductor.memory
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: memory_growth
+  value: 250
+  unit: percent_yoy_approx
+  statement: Memory was forecast to expand roughly 250% year over year, primarily
+    on AI infrastructure, HBM and accelerated-computing demand.
+  economic_path_id: semiconductor.memory_ai_demand
+- claim_id: CL_WSTS_2026_03
+  document_id: DOC_WSTS_SPRING_2026
+  source_id: INT_WSTS
+  source_family: WSTS
+  industry_node: semiconductor.logic
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: logic_growth
+  value: 37
+  unit: percent_yoy
+  statement: Logic was forecast to grow 37% in 2026.
+  economic_path_id: semiconductor.logic_ai_demand
+- claim_id: CL_SEMI_WFE_01
+  document_id: DOC_SEMI_WFE_2025_MIDYEAR
+  source_id: INT_SEMI
+  source_family: SEMI
+  industry_node: semiconductor_equipment
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: wfe_market_size
+  value: 122
+  unit: usd_billion
+  statement: SEMI projected wafer-fab equipment spending of about USD 122 billion
+    in 2026, up 10%.
+  economic_path_id: semiconductor.wfe_cycle
+- claim_id: CL_SEMI_WFE_02
+  document_id: DOC_SEMI_WFE_2025_MIDYEAR
+  source_id: INT_SEMI
+  source_family: SEMI
+  industry_node: semiconductor.memory.dram
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: dram_wfe_spending
+  value: 23
+  unit: usd_billion
+  statement: DRAM wafer-fab equipment spending was projected at USD 23 billion in
+    2026, about 12% growth, linked to capacity expansion and HBM investment.
+  economic_path_id: semiconductor.memory_to_wfe
+- claim_id: CL_SEMI_WFE_03
+  document_id: DOC_SEMI_WFE_2025_MIDYEAR
+  source_id: INT_SEMI
+  source_family: SEMI
+  industry_node: semiconductor.memory.nand
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: nand_wfe_growth
+  value: 10
+  unit: percent_yoy
+  statement: NAND wafer-fab equipment spending was projected to grow another 10% in
+    2026 after a strong rebound in 2025.
+  economic_path_id: semiconductor.nand_to_wfe
+- claim_id: CL_SEMI_WFE_04
+  document_id: DOC_SEMI_WFE_2025_MIDYEAR
+  source_id: INT_SEMI
+  source_family: SEMI
+  industry_node: semiconductor_equipment
+  kind: kill_condition
+  role: industry_structure
+  period: 2025-2027
+  metric: risk
+  statement: A slowdown in AI investment/adoption was identified as a major risk to
+    semiconductor equipment demand.
+  economic_path_id: semiconductor.memory_to_wfe
+- claim_id: CL_SEMI_MATERIAL_01
+  document_id: DOC_SEMI_WFE_2025_MIDYEAR
+  source_id: INT_SEMI
+  source_family: SEMI
+  industry_node: semiconductor.materials
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: wafer_fab_materials
+  value: 48.9
+  unit: usd_billion
+  statement: Wafer-fab materials were projected to reach about USD 48.9 billion in
+    2026.
+  economic_path_id: semiconductor.wfe_to_materials
+- claim_id: CL_IEA_GRID_01
+  document_id: DOC_IEA_ELECTRICITY_2026_GRIDS
+  source_id: INT_IEA
+  source_family: IEA
+  industry_node: power.grid
+  kind: fact
+  role: industry_structure
+  period: '2026'
+  metric: connection_queue
+  value: 2500
+  unit: gw_plus
+  statement: More than 2,500 GW of generation, storage and large-load projects were
+    reported as stalled in grid connection queues globally.
+  economic_path_id: power.grid_queue_bottleneck
+- claim_id: CL_IEA_GRID_02
+  document_id: DOC_IEA_ELECTRICITY_2026_GRIDS
+  source_id: INT_IEA
+  source_family: IEA
+  industry_node: power.grid
+  kind: forecast
+  role: forward_hypothesis
+  period: '2030'
+  metric: grid_investment_change
+  value: 50
+  unit: percent_vs_current
+  statement: IEA estimated annual grid investment needs to rise roughly 50% by 2030
+    from about USD 400 billion currently.
+  economic_path_id: power.grid_capex_cycle
+- claim_id: CL_IEA_GRID_03
+  document_id: DOC_IEA_ELECTRICITY_2026_GRIDS
+  source_id: INT_IEA
+  source_family: IEA
+  industry_node: power.grid
+  kind: benchmark
+  role: industry_structure
+  period: '2026'
+  metric: build_time_grid
+  value: 5
+  unit: years_min
+  statement: Grid planning/permitting/build timelines were described as roughly 5-15
+    years, materially longer than many new-load projects.
+  economic_path_id: power.time_to_power
+- claim_id: CL_IEA_MID_01
+  document_id: DOC_IEA_ELECTRICITY_MIDYEAR_2026
+  source_id: INT_IEA
+  source_family: IEA
+  industry_node: power.demand
+  kind: forecast
+  role: forward_hypothesis
+  period: '2026'
+  metric: electricity_demand_growth
+  value: 3.6
+  unit: percent_yoy
+  statement: Global electricity demand was forecast to grow 3.6% in 2026.
+  economic_path_id: power.demand_growth
+- claim_id: CL_IEA_MID_02
+  document_id: DOC_IEA_ELECTRICITY_MIDYEAR_2026
+  source_id: INT_IEA
+  source_family: IEA
+  industry_node: power.demand
+  kind: forecast
+  role: forward_hypothesis
+  period: '2027'
+  metric: electricity_demand_growth
+  value: 3.8
+  unit: percent_yoy
+  statement: Global electricity demand growth was forecast to accelerate to 3.8% in
+    2027.
+  economic_path_id: power.demand_growth
+- claim_id: CL_DOE_GRID_01
+  document_id: DOC_DOE_TRANSFORMER_2026_03
+  source_id: US_DOE_GRID
+  source_family: US_DOE
+  industry_node: power.transformers
+  kind: fact
+  role: observed_state
+  period: 2019-2024
+  metric: distribution_transformer_demand_change
+  value: 41
+  unit: percent
+  statement: DOE reported U.S. distribution-transformer demand up 41% since 2019.
+  economic_path_id: power.transformer_supply_constraint
+- claim_id: CL_DOE_GRID_02
+  document_id: DOC_DOE_TRANSFORMER_2026_03
+  source_id: US_DOE_GRID
+  source_family: US_DOE
+  industry_node: power.transformers
+  kind: benchmark
+  role: industry_structure
+  period: '2024'
+  metric: distribution_transformer_lead_time
+  statement: Distribution-transformer order lead times were described as one to two
+    years or longer in 2024, versus three to six months in 2019.
+  economic_path_id: power.transformer_supply_constraint
+- claim_id: CL_DOE_GRID_03
+  document_id: DOC_DOE_TRANSFORMER_2026_03
+  source_id: US_DOE_GRID
+  source_family: US_DOE
+  industry_node: power.transformers.large
+  kind: benchmark
+  role: industry_structure
+  period: '2024'
+  metric: large_transformer_lead_time
+  value: 4
+  unit: years_max
+  statement: Large substation/generator transformers were described as having lead
+    times extending to about four years.
+  economic_path_id: power.transformer_supply_constraint
+- claim_id: CL_DOE_GRID_04
+  document_id: DOC_DOE_GRID_SUPPLY_2026_08
+  source_id: US_DOE_GRID
+  source_family: US_DOE
+  industry_node: power.grid_components
+  kind: mechanism
+  role: industry_structure
+  period: '2026'
+  metric: supply_constraint
+  statement: DOE linked long grid-equipment lead times to limited domestic capacity,
+    import dependence and excessive customization.
+  economic_path_id: power.transformer_supply_constraint
+- claim_id: CL_DOE_GRID_05
+  document_id: DOC_DOE_GRID_SUPPLY_2026_08
+  source_id: US_DOE_GRID
+  source_family: US_DOE
+  industry_node: power.grid_components
+  kind: leading_indicator
+  role: industry_structure
+  period: '2026'
+  metric: equipment_lead_time
+  statement: Lead times for transformers, breakers, substation components and power
+    electronics are a direct monitor of grid supply tightness.
+  economic_path_id: power.transformer_supply_constraint
+- claim_id: CL_DOE_GRID_06
+  document_id: DOC_DOE_GRID_SUPPLY_2026_08
+  source_id: US_DOE_GRID
+  source_family: US_DOE
+  industry_node: power.grid_components
+  kind: valuation_link
+  role: industry_structure
+  period: '2026'
+  metric: pricing_capacity
+  statement: Persistent lead-time and capacity constraints support higher order visibility
+    and pricing power for qualified grid-equipment suppliers, subject to mix and contract
+    terms.
+  economic_path_id: power.transformer_supply_constraint
+- claim_id: CL_DOE_GRID_07
+  document_id: DOC_DOE_GRID_SUPPLY_2026_08
+  source_id: US_DOE_GRID
+  source_family: US_DOE
+  industry_node: power.grid_components
+  kind: kill_condition
+  role: industry_structure
+  period: 2026+
+  metric: constraint_easing
+  statement: The bottleneck thesis weakens if standardized designs and new manufacturing
+    capacity materially reduce equipment lead times without equivalent demand growth.
+  economic_path_id: power.transformer_supply_constraint
+- claim_id: CL_KESIS_MAY_01
+  document_id: DOC_KESIS_2026_05_JULY
+  source_id: KR_KEEI_KESIS
+  source_family: KEEI
+  industry_node: manufacturing
+  kind: fact
+  role: observed_state
+  period: 2026-05
+  metric: manufacturing_production_growth
+  value: -0.9
+  unit: percent_yoy
+  statement: KESIS reported May manufacturing production down 0.9% year over year
+    as semiconductor momentum slowed and chemicals/autos fell.
+  economic_path_id: kr.manufacturing_cycle
+- claim_id: CL_KESIS_MAY_02
+  document_id: DOC_KESIS_2026_05_JULY
+  source_id: KR_KEEI_KESIS
+  source_family: KEEI
+  industry_node: energy.commodities
+  kind: fact
+  role: observed_state
+  period: 2026-05
+  metric: crude_price_mom
+  value: -2.4
+  unit: percent_mom
+  statement: Crude prices fell 2.4% month over month in May as geopolitical risk eased.
+  economic_path_id: energy.input_cost_cycle
+- claim_id: CL_KAMA_JUN_01
+  document_id: DOC_KAMA_AUTO_2026_06_FINAL
+  source_id: KR_KAMA
+  source_family: KAMA
+  industry_node: automotive.oem
+  kind: fact
+  role: observed_state
+  period: 2026-06
+  metric: domestic_sales
+  value: 159684
+  unit: vehicles
+  statement: June domestic vehicle sales were 159,684 units, up 9.5% year over year.
+  economic_path_id: automotive.volume_cycle
+- claim_id: CL_KAMA_JUN_02
+  document_id: DOC_KAMA_AUTO_2026_06_FINAL
+  source_id: KR_KAMA
+  source_family: KAMA
+  industry_node: automotive.oem
+  kind: fact
+  role: observed_state
+  period: 2026-06
+  metric: exports
+  value: 268351
+  unit: vehicles
+  statement: June vehicle exports were 268,351 units, up 9.8% year over year, with
+    eco-friendly exports contributing to recovery.
+  economic_path_id: automotive.export_cycle
+- claim_id: CL_KAMA_JUN_03
+  document_id: DOC_KAMA_AUTO_2026_06_FINAL
+  source_id: KR_KAMA
+  source_family: KAMA
+  industry_node: automotive.oem
+  kind: fact
+  role: observed_state
+  period: 2026-06
+  metric: production
+  value: 394331
+  unit: vehicles
+  statement: June vehicle production was 394,331 units, up 11.6% year over year as
+    parts-supply disruptions eased.
+  economic_path_id: automotive.production_recovery
+- claim_id: CL_KOBC_KCCI_01
+  document_id: DOC_KOBC_KCCI_2026_08_10
+  source_id: KR_KOBC
+  source_family: KOBC
+  industry_node: shipping.container
+  kind: fact
+  role: observed_state
+  period: '2026-08-10'
+  metric: kcci
+  value: 4288
+  unit: index
+  statement: KOBC container composite index was 4,288 on 10 August 2026, up 3.62%
+    week over week.
+  economic_path_id: shipping.container_freight_cycle
+- claim_id: CL_KOBC_KCCI_02
+  document_id: DOC_KOBC_KCCI_2026_08_10
+  source_id: KR_KOBC
+  source_family: KOBC
+  industry_node: shipping.container.uswc
+  kind: fact
+  role: observed_state
+  period: '2026-08-10'
+  metric: route_index
+  value: 6733
+  unit: index
+  statement: The U.S. West Coast route index rose 9.09% week over week to 6,733.
+  economic_path_id: shipping.container_route_mix
+- claim_id: CL_KOBC_KDCI_01
+  document_id: DOC_KOBC_KDCI_2026_08_12
+  source_id: KR_KOBC
+  source_family: KOBC
+  industry_node: shipping.dry_bulk
+  kind: fact
+  role: observed_state
+  period: '2026-08-12'
+  metric: kdci
+  value: 28241
+  unit: index
+  statement: KOBC dry-bulk composite index stood at 28,241 on 12 August 2026.
+  economic_path_id: shipping.drybulk_freight_cycle
+- claim_id: CL_KOBC_KDCI_02
+  document_id: DOC_KOBC_KDCI_2026_08_12
+  source_id: KR_KOBC
+  source_family: KOBC
+  industry_node: shipping.dry_bulk.capesize
+  kind: fact
+  role: observed_state
+  period: '2026-08-12'
+  metric: capesize_tc
+  value: 49270
+  unit: usd_per_day
+  statement: Capesize time-charter equivalent was USD 49,270/day on 12 August 2026.
+  economic_path_id: shipping.drybulk_vessel_earnings
+- claim_id: CL_NAREIT_Q1_01
+  document_id: DOC_NAREIT_TRACKER_2026Q1
+  source_id: INT_NAREIT
+  source_family: NAREIT
+  industry_node: reit
+  kind: fact
+  role: observed_state
+  period: 2026Q1
+  metric: ffo_yoy_growth
+  value: 14.8
+  unit: percent_yoy
+  statement: Listed U.S. equity REIT FFO increased 14.8% year over year in Q1 2026.
+  economic_path_id: reit.operating_cashflow
+- claim_id: CL_NAREIT_Q1_02
+  document_id: DOC_NAREIT_TRACKER_2026Q1
+  source_id: INT_NAREIT
+  source_family: NAREIT
+  industry_node: reit
+  kind: fact
+  role: observed_state
+  period: 2026Q1
+  metric: occupancy
+  value: 93.2
+  unit: percent
+  statement: All-equity REIT occupancy was 93.2% in Q1 2026.
+  economic_path_id: reit.property_fundamentals
+- claim_id: CL_NAREIT_Q1_03
+  document_id: DOC_NAREIT_TRACKER_2026Q1
+  source_id: INT_NAREIT
+  source_family: NAREIT
+  industry_node: reit
+  kind: fact
+  role: observed_state
+  period: 2026Q1
+  metric: debt_to_market_assets
+  value: 35.4
+  unit: percent
+  statement: Debt-to-market-assets leverage was 35.4%.
+  economic_path_id: reit.balance_sheet
+- claim_id: CL_NAREIT_Q1_04
+  document_id: DOC_NAREIT_TRACKER_2026Q1
+  source_id: INT_NAREIT
+  source_family: NAREIT
+  industry_node: reit
+  kind: fact
+  role: observed_state
+  period: 2026Q1
+  metric: implied_cap_rate
+  value: 5.9
+  unit: percent
+  statement: The industry implied cap rate was 5.9% in Q1 2026.
+  economic_path_id: reit.nav_yield
+- claim_id: CL_NAREIT_Q1_05
+  document_id: DOC_NAREIT_TRACKER_2026Q1
+  source_id: INT_NAREIT
+  source_family: NAREIT
+  industry_node: reit.data_center
+  kind: fact
+  role: observed_state
+  period: 2026Q1
+  metric: ffo
+  value: 1723
+  unit: usd_million
+  statement: Data-center REIT FFO was USD 1.723 billion in Q1 2026, versus USD 1.332
+    billion a year earlier.
+  economic_path_id: reit.data_center_operating_growth
+- claim_id: CL_NAREIT_CAP_01
+  document_id: DOC_NAREIT_CAPITAL_2026Q2
+  source_id: INT_NAREIT
+  source_family: NAREIT
+  industry_node: reit.financing
+  kind: fact
+  role: observed_state
+  period: 2026Q2
+  metric: capital_raised
+  value: 20.0
+  unit: usd_billion
+  statement: REITs raised about USD 20 billion in capital offerings in Q2 2026.
+  economic_path_id: reit.funding_access
+- claim_id: CL_NAREIT_CAP_02
+  document_id: DOC_NAREIT_CAPITAL_2026Q2
+  source_id: INT_NAREIT
+  source_family: NAREIT
+  industry_node: reit.financing
+  kind: fact
+  role: observed_state
+  period: 2026Q2
+  metric: unsecured_debt_coupon
+  value: 5.5
+  unit: percent
+  statement: Average coupon on unsecured REIT debt offerings in Q2 2026 was 5.5%.
+  economic_path_id: reit.cost_of_debt
+- claim_id: CL_KHIDI_592_01
+  document_id: DOC_KHIDI_GLOBAL_592
+  source_id: KR_KHIDI
+  source_family: KHIDI
+  industry_node: pharma
+  kind: policy_intent
+  role: industry_structure
+  period: 2026-06
+  metric: china_drug_law
+  statement: KHIDI highlighted China’s revised drug-administration framework as strengthening
+    support for innovative drugs and potentially changing global pharma competition.
+  economic_path_id: pharma.regulatory_competition
+- claim_id: CL_KHIDI_592_02
+  document_id: DOC_KHIDI_GLOBAL_592
+  source_id: KR_KHIDI
+  source_family: KHIDI
+  industry_node: pharma
+  kind: kill_condition
+  role: industry_structure
+  period: 2026-06
+  metric: trade_policy_risk
+  statement: Tariff and trade-policy uncertainty remained a material risk for globally
+    exposed pharmaceutical supply chains.
+  economic_path_id: pharma.trade_risk
+- claim_id: CL_IEA_MES_AUG_01
+  document_id: DOC_IEA_MES_2026_08_TOOL
+  source_id: INT_IEA
+  source_family: IEA
+  industry_node: power.generation
+  kind: fact
+  role: observed_state
+  period: 2026-05
+  metric: india_net_electricity_production
+  value: 191.6
+  unit: TWh
+  statement: IEA monthly data showed India net electricity production at a record
+    191.6 TWh in May 2026.
+  economic_path_id: power.demand_generation_growth
+- claim_id: CL_IEA_MES_AUG_02
+  document_id: DOC_IEA_MES_2026_08_TOOL
+  source_id: INT_IEA
+  source_family: IEA
+  industry_node: power.data_infrastructure
+  kind: definition
+  role: definition_standard
+  period: 2026-08
+  metric: dataset_format_transition
+  statement: IEA is transitioning Monthly Electricity Statistics to harmonised SDMX
+    codes; the August 2026 publication is the final parallel release with the legacy
+    CSV format.
+  economic_path_id: source.schema_transition
+- claim_id: CL_IEA_MES_AUG_03
+  document_id: DOC_IEA_MES_2026_08_TOOL
+  source_id: INT_IEA
+  source_family: IEA
+  industry_node: power.generation
+  kind: definition
+  role: definition_standard
+  period: 2026-08
+  metric: dataset_coverage
+  value: 47
+  unit: countries
+  statement: The IEA Monthly Electricity Statistics product covers monthly production
+    and trade data for 47 countries.
+  economic_path_id: power.observed_state_coverage
+- claim_id: CL_UNCTAD_RMT_01
+  document_id: DOC_UNCTAD_RMT_2025
+  source_id: INT_UNCTAD_RMT
+  source_family: UNCTAD
+  industry_node: shipping
+  kind: fact
+  role: observed_state
+  period: '2024'
+  metric: seaborne_trade_growth
+  value: 2.2
+  unit: percent_yoy
+  statement: UNCTAD reported global seaborne trade volume growth of 2.2% in 2024.
+  economic_path_id: shipping.global_trade_volume
+- claim_id: CL_UNCTAD_RMT_02
+  document_id: DOC_UNCTAD_RMT_2025
+  source_id: INT_UNCTAD_RMT
+  source_family: UNCTAD
+  industry_node: shipping
+  kind: fact
+  role: observed_state
+  period: '2024'
+  metric: ton_mile_growth
+  value: 5.9
+  unit: percent_yoy
+  statement: UNCTAD reported ton-mile growth of 5.9% in 2024 as rerouting lengthened
+    voyages.
+  economic_path_id: shipping.route_distance_effective_capacity
+- claim_id: CL_UNCTAD_RMT_03
+  document_id: DOC_UNCTAD_RMT_2025
+  source_id: INT_UNCTAD_RMT
+  source_family: UNCTAD
+  industry_node: shipping
+  kind: forecast
+  role: forward_hypothesis
+  period: '2025'
+  metric: seaborne_trade_growth
+  value: 0.5
+  unit: percent_yoy
+  statement: UNCTAD expected seaborne trade volume growth to slow to about 0.5% in
+    2025.
+  economic_path_id: shipping.global_trade_volume
+- claim_id: CL_UNCTAD_RMT_04
+  document_id: DOC_UNCTAD_RMT_2025
+  source_id: INT_UNCTAD_RMT
+  source_family: UNCTAD
+  industry_node: shipping
+  kind: forecast
+  role: forward_hypothesis
+  period: 2026-2030
+  metric: seaborne_trade_avg_growth
+  value: 2.0
+  unit: percent_per_year
+  statement: UNCTAD projected average annual maritime-trade growth of about 2% over
+    2026-2030.
+  economic_path_id: shipping.global_trade_volume
+- claim_id: CL_UNCTAD_RMT_05
+  document_id: DOC_UNCTAD_RMT_2025
+  source_id: INT_UNCTAD_RMT
+  source_family: UNCTAD
+  industry_node: shipping
+  kind: mechanism
+  role: industry_structure
+  period: 2024-2025
+  metric: rerouting_effect
+  statement: Longer rerouting increases voyage distance, absorbs effective vessel
+    capacity and raises operating and freight costs even when cargo-volume growth
+    is modest.
+  economic_path_id: shipping.route_distance_effective_capacity
+- claim_id: CL_UNCTAD_RMT_06
+  document_id: DOC_UNCTAD_RMT_2025
+  source_id: INT_UNCTAD_RMT
+  source_family: UNCTAD
+  industry_node: shipbuilding
+  kind: fact
+  role: observed_state
+  period: 2025-01
+  metric: alternative_fuel_new_order_share
+  statement: Alternative-fuel vessels represented more than half of new-order tonnage
+    while more than 90% of active fleet tonnage still used conventional fuels.
+  economic_path_id: shipbuilding.fuel_transition_order_mix
+- claim_id: CL_UNCTAD_RMT_07
+  document_id: DOC_UNCTAD_RMT_2025
+  source_id: INT_UNCTAD_RMT
+  source_family: UNCTAD
+  industry_node: shipping
+  kind: fact
+  role: observed_state
+  period: '2024'
+  metric: fleet_capacity_growth
+  value: 3.4
+  unit: percent_yoy
+  statement: UNCTAD reported global fleet capacity growth of 3.4% in 2024, faster
+    than cargo-volume growth.
+  economic_path_id: shipping.supply_demand_balance
+- claim_id: CL_EIA_RES_01
+  document_id: DOC_EIA_PROVED_RESERVES_2024
+  source_id: US_EIA
+  source_family: US_EIA
+  industry_node: oil_gas_ep
+  kind: fact
+  role: observed_state
+  period: '2024-12-31'
+  metric: us_crude_proved_reserves
+  value: 46.0
+  unit: billion_barrels
+  statement: EIA reported U.S. crude oil and lease condensate proved reserves of about
+    46.0 billion barrels at year-end 2024, down 1% from 2023.
+  economic_path_id: oil_gas.reserve_base
+- claim_id: CL_EIA_RES_02
+  document_id: DOC_EIA_PROVED_RESERVES_2024
+  source_id: US_EIA
+  source_family: US_EIA
+  industry_node: oil_gas_ep
+  kind: fact
+  role: observed_state
+  period: '2024-12-31'
+  metric: us_gas_proved_reserves
+  value: 583.9
+  unit: Tcf
+  statement: EIA reported U.S. natural-gas proved reserves of about 583.9 Tcf at year-end
+    2024, down 3% from 2023.
+  economic_path_id: oil_gas.reserve_base
+- claim_id: CL_EIA_RES_03
+  document_id: DOC_EIA_PROVED_RESERVES_2024
+  source_id: US_EIA
+  source_family: US_EIA
+  industry_node: oil_gas_ep
+  kind: definition
+  role: definition_standard
+  period: '2024'
+  metric: proved_reserves_definition
+  statement: EIA defines proved reserves as volumes demonstrated with reasonable certainty
+    to be recoverable under existing economic and operating conditions.
+  economic_path_id: oil_gas.reserve_definition
+- claim_id: CL_USGS_MCS_01
+  document_id: DOC_USGS_MCS_2026
+  source_id: US_USGS_MCS
+  source_family: USGS_NMIC
+  industry_node: mining
+  kind: fact
+  role: observed_state
+  period: '2025'
+  metric: commodity_coverage
+  value: 90
+  unit: more_than_count
+  statement: USGS Mineral Commodity Summaries 2026 covers more than 90 individual
+    nonfuel minerals and materials and is an early comprehensive government source
+    for 2025 world mineral production data.
+  economic_path_id: mining.data_coverage
+- claim_id: CL_USGS_MCS_02
+  document_id: DOC_USGS_MCS_2026
+  source_id: US_USGS_MCS
+  source_family: USGS_NMIC
+  industry_node: mining
+  kind: definition
+  role: definition_standard
+  period: '2026'
+  metric: reserve_resource_framework
+  statement: The 2026 MCS includes explicit reserves/resources appendices and commodity-level
+    production, reserve, resource, trade and industry-structure definitions that should
+    be preserved before comparing mine or commodity economics.
+  economic_path_id: mining.reserve_definition
+- claim_id: CL_USGS_MCS_03
+  document_id: DOC_USGS_MCS_2026
+  source_id: US_USGS_MCS
+  source_family: USGS_NMIC
+  industry_node: critical_minerals
+  kind: mechanism
+  role: industry_structure
+  period: '2025_2026'
+  metric: supply_security_structure
+  statement: USGS organizes import reliance, production concentration, reserves/resources
+    and critical-mineral classifications as separate supply-security dimensions rather
+    than treating price alone as supply risk.
+  economic_path_id: mining.supply_security
+- claim_id: CL_NERC_LTRA_01
+  document_id: DOC_NERC_LTRA_2025_CURRENT
+  source_id: US_NERC_LTRA
+  source_family: NERC
+  industry_node: power.demand
+  kind: forecast
+  role: forward_hypothesis
+  period: '2025_2035'
+  metric: summer_peak_demand_growth
+  value: 224
+  unit: GW
+  statement: NERC projected 224 GW of U.S./Canadian bulk-system summer peak-demand
+    growth over the next ten years in its 2025 LTRA, with new AI/data-center loads
+    accounting for most of the projected increase.
+  economic_path_id: power.large_load_growth
+- claim_id: CL_NERC_LTRA_02
+  document_id: DOC_NERC_LTRA_2025_CURRENT
+  source_id: US_NERC_LTRA
+  source_family: NERC
+  industry_node: power.demand
+  kind: forecast
+  role: forward_hypothesis
+  period: '2025_2035'
+  metric: winter_peak_demand_growth
+  value: 246
+  unit: GW
+  statement: NERC projected 246 GW of winter demand growth over the next ten years,
+    exceeding projected summer growth.
+  economic_path_id: power.large_load_growth
+- claim_id: CL_NERC_LTRA_03
+  document_id: DOC_NERC_LTRA_2025_CURRENT
+  source_id: US_NERC_LTRA
+  source_family: NERC
+  industry_node: power.grid
+  kind: mechanism
+  role: industry_structure
+  period: '2025_2035'
+  metric: infrastructure_pace_risk
+  statement: NERC identifies uncertainty and lag in resource additions, supply-chain
+    constraints, interconnection processes and approval delays as reliability risks
+    when large-load demand grows faster than infrastructure delivery.
+  economic_path_id: power.grid_queue_equipment
+- claim_id: CL_REB_DEF_01
+  document_id: DOC_REB_COMMERCIAL_DEFINITION_2026
+  source_id: KR_REB_COMMERCIAL
+  source_family: KOREA_REB
+  industry_node: commercial_real_estate
+  kind: definition
+  role: definition_standard
+  period: '2026'
+  metric: commercial_property_scope
+  statement: Korea Real Estate Board separates office, medium/large retail, small
+    retail and strata retail using building use, floor count and floor-area criteria;
+    these property types should not be pooled without scope normalization.
+  economic_path_id: reit.property_scope
+- claim_id: CL_REB_Q2_META_01
+  document_id: DOC_REB_COMMERCIAL_2026Q2
+  source_id: KR_REB_COMMERCIAL
+  source_family: KOREA_REB
+  industry_node: commercial_real_estate
+  kind: fact
+  role: observed_state
+  period: 2026Q2
+  metric: quarterly_survey_release
+  statement: Korea Real Estate Board released the 2026 Q2 commercial real-estate rental
+    trend survey on 30 July 2026; the attached primary survey should be parsed before
+    ingesting its numeric vacancy, rent or return series.
+  economic_path_id: reit.quarterly_property_state

@@ -1,0 +1,346 @@
+snapshot_version: 2026-08-21.1
+generated_at: '2026-08-21T09:42:40+00:00'
+summary:
+  total_series: 29
+  fixture_verified_series: 3
+  baseline_only_series: 26
+  endpoint_divergence_warnings: 1
+  note: This is an offline fixture/baseline QA report, not a production live-fetch
+    freshness attestation.
+series:
+- series_id: DAMODARAN_SECTOR_CALIBRATION
+  source_id: NYU_DAMODARAN_SECTOR_DATA
+  cadence: periodic
+  check_frequency: quarterly
+  baseline_latest_published_at: null
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - valuation_calibration.beta
+  - valuation_calibration.per
+  - valuation_calibration.roic
+- series_id: DOE_GRID_SUPPLY_CHAIN
+  source_id: US_DOE_GRID
+  cadence: event
+  check_frequency: weekly
+  baseline_latest_published_at: '2026-08-10'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - power.transformers
+  - power.switchgear
+  - power.grid_components
+- series_id: EIA_PROVED_RESERVES
+  source_id: US_EIA
+  cadence: annual
+  check_frequency: monthly_during_mar_may
+  baseline_latest_published_at: '2026-04-07'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - oil_gas_ep
+  - oil
+  - gas
+- series_id: IEA_ELECTRICITY_OUTLOOK
+  source_id: INT_IEA
+  cadence: annual_plus_midyear
+  check_frequency: monthly
+  baseline_latest_published_at: '2026-07-23'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - power.grid
+  - power.demand
+  - data_centers
+- series_id: IEA_MONTHLY_ELECTRICITY
+  source_id: INT_IEA
+  cadence: monthly
+  check_frequency: weekly
+  baseline_latest_published_at: '2026-08-17'
+  probe_state: fixture_verified
+  operational_warning: source endpoints disagree on latest vintage; freshest healthy
+    endpoint retained for freshness only
+  freshest_probe_published_at: '2026-08-17'
+  impact_nodes:
+  - power.generation
+  - power.trade
+  freshness_result: matches_baseline
+- series_id: IFRS_ACCOUNTING_TAXONOMY
+  source_id: IFRS_ACCOUNTING_TAXONOMY_CURRENT
+  cadence: taxonomy_release
+  check_frequency: monthly
+  baseline_latest_published_at: null
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - foundation.metric_ontology
+  - accounting_taxonomy
+- series_id: ISIC_REV5_CLASSIFICATION
+  source_id: UN_ISIC_REV5
+  cadence: revision_cycle
+  check_frequency: quarterly
+  baseline_latest_published_at: null
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - foundation.classification
+  - industry_taxonomy
+- series_id: KAMA_AUTO_MONTHLY
+  source_id: KR_KAMA
+  cadence: monthly
+  check_frequency: weekly
+  baseline_latest_published_at: '2026-07-28'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - automotive
+- series_id: KAMA_PRODUCTION_STATS_MEMBER
+  source_id: KR_KAMA_STATS_MEMBER
+  cadence: monthly
+  check_frequency: weekly
+  baseline_latest_published_at: null
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - automotive.oem
+  - automotive.parts
+  access_posture: metadata_only_public_probe; raw statistics require licensed/member
+    access
+- series_id: KESIS_ENERGY_SUPPLY
+  source_id: KR_KEEI_KESIS
+  cadence: monthly
+  check_frequency: weekly
+  baseline_latest_published_at: '2026-07-28'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - energy
+  - manufacturing
+  - oil
+  - gas
+- series_id: KHIDI_GLOBAL_BIOHEALTH
+  source_id: KR_KHIDI
+  cadence: weekly
+  check_frequency: weekly
+  baseline_latest_published_at: '2026-06-08'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - pharma
+  - biotech
+  - medtech
+- series_id: KIET_PSI
+  source_id: KR_KIET_PSI
+  cadence: monthly
+  check_frequency: weekly
+  baseline_latest_published_at: '2026-07-26'
+  probe_state: fixture_verified
+  operational_warning: null
+  freshest_probe_published_at: '2026-07-26'
+  impact_nodes:
+  - manufacturing
+  - semiconductor
+  - automotive
+  - machinery
+  - materials
+  freshness_result: matches_baseline
+- series_id: KISDI_ICT_MEDIUM_TERM
+  source_id: KR_KISDI_ICT
+  cadence: annual
+  check_frequency: monthly
+  baseline_latest_published_at: '2025-12-31'
+  probe_state: fixture_verified
+  operational_warning: null
+  freshest_probe_published_at: '2025-12-31'
+  impact_nodes:
+  - semiconductor
+  - software
+  - telecom
+  - display
+  freshness_result: matches_baseline
+- series_id: KITA_EBSI
+  source_id: KR_KITA_EBSI
+  cadence: quarterly
+  check_frequency: weekly_during_release_window
+  baseline_latest_published_at: '2026-06-28'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - exports
+  - semiconductor
+  - shipping.shipbuilding
+  - automotive
+  - machinery
+- series_id: KOBC_KCCI
+  source_id: KR_KOBC
+  cadence: weekly
+  check_frequency: daily
+  baseline_latest_published_at: '2026-08-10'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - shipping.container
+- series_id: KOBC_KDCI
+  source_id: KR_KOBC
+  cadence: business_daily
+  check_frequency: daily
+  baseline_latest_published_at: '2026-08-12'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - shipping.dry_bulk
+- series_id: KSIC_CLASSIFICATION
+  source_id: KR_KSIC_REV11
+  cadence: revision_cycle
+  check_frequency: quarterly
+  baseline_latest_published_at: null
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - foundation.classification
+  - korea_industry_taxonomy
+- series_id: NAICS_CLASSIFICATION
+  source_id: US_NAICS_2022
+  cadence: revision_cycle
+  check_frequency: monthly_during_revision_cycle
+  baseline_latest_published_at: null
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - foundation.classification
+  - us_industry_taxonomy
+- series_id: NAREIT_MARKET_DATA
+  source_id: INT_NAREIT
+  cadence: monthly
+  check_frequency: weekly
+  baseline_latest_published_at: '2026-07-21'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - reit
+- series_id: NAREIT_TRACKER
+  source_id: INT_NAREIT
+  cadence: quarterly
+  check_frequency: monthly
+  baseline_latest_published_at: '2026-05-15'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - reit
+- series_id: NERC_LTRA
+  source_id: US_NERC_LTRA
+  cadence: annual_with_updates
+  check_frequency: monthly
+  baseline_latest_published_at: '2026-02-24'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - power.grid
+  - power.demand
+  - power.data_infrastructure
+- series_id: OECD_ICIO_EDITION
+  source_id: OECD_ICIO_2025
+  cadence: edition_with_revisions
+  check_frequency: quarterly
+  baseline_latest_published_at: null
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - foundation.supply_chain_topology
+  - global_value_chain
+- series_id: REB_COMMERCIAL_RENT
+  source_id: KR_REB_COMMERCIAL
+  cadence: quarterly
+  check_frequency: monthly_during_release_window
+  baseline_latest_published_at: '2026-07-30'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - commercial_real_estate
+  - reit
+- series_id: SASB_STANDARDS_MAINTENANCE
+  source_id: IFRS_SASB_STANDARDS
+  cadence: maintained_with_exposure_drafts
+  check_frequency: monthly
+  baseline_latest_published_at: null
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - foundation.metric_ontology
+  - industry_module_requirements
+- series_id: SEC_XBRL_FINANCIAL_DATASETS
+  source_id: US_SEC_XBRL_FINANCIAL_DATASETS
+  cadence: quarterly
+  check_frequency: monthly
+  baseline_latest_published_at: null
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - foundation.metric_ontology
+  - us_company_financials
+- series_id: SEMI_WFE_OUTLOOK
+  source_id: INT_SEMI
+  cadence: quarterly_or_event
+  check_frequency: monthly
+  baseline_latest_published_at: '2025-09-25'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - semiconductor_equipment
+  - semiconductor_materials
+- series_id: UNCTAD_RMT_ANNUAL
+  source_id: INT_UNCTAD_RMT
+  cadence: annual
+  check_frequency: monthly_during_aug_oct
+  baseline_latest_published_at: '2025-09-24'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - shipping
+  - ports
+  - shipbuilding
+- series_id: USGS_MCS_ANNUAL
+  source_id: US_USGS_MCS
+  cadence: annual_with_revisions
+  check_frequency: monthly_during_jan_may
+  baseline_latest_published_at: '2026-02-06'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - mining
+  - critical_minerals
+- series_id: WSTS_FORECAST
+  source_id: INT_WSTS
+  cadence: semiannual
+  check_frequency: monthly
+  baseline_latest_published_at: '2026-06-24'
+  probe_state: baseline_only
+  operational_warning: null
+  freshest_probe_published_at: null
+  impact_nodes:
+  - semiconductor

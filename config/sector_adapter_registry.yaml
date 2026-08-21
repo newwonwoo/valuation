@@ -1,0 +1,514 @@
+version: 1.0
+rule: Defaults are hypotheses for routing, never substitutes for segment evidence.
+  Multi-label archetypes are allowed.
+adapters:
+  semiconductor.memory:
+    default_archetypes:
+    - capacity_manufacturing
+    - commodity_price_taker
+    key_evidence:
+    - bit_shipments
+    - wafer_starts
+    - utilization
+    - inventory
+    - pricing
+    - node_mix
+    - hbm_mix
+    - capex
+    special_risks:
+    - technology_transition
+    - oligopoly_supply_response
+    - inventory_cycle
+  semiconductor.foundry_logic:
+    default_archetypes:
+    - capacity_manufacturing
+    key_evidence:
+    - wafer_capacity
+    - utilization
+    - node_mix
+    - yield
+    - customer_commitments
+    - capex
+    special_risks:
+    - node_execution
+    - customer_concentration
+    - advanced_packaging_constraint
+  semiconductor.equipment:
+    default_archetypes:
+    - contracted_backlog
+    - capacity_manufacturing
+    key_evidence:
+    - orders
+    - backlog
+    - book_to_bill
+    - lead_time
+    - shipments
+    - service_mix
+    - customer_capex
+    special_risks:
+    - customer_capex_cycle
+    - export_controls
+    - qualification
+  semiconductor.materials:
+    default_archetypes:
+    - capacity_manufacturing
+    optional_archetypes:
+    - commodity_price_taker
+    - process_spread
+    key_evidence:
+    - customer_wafer_starts
+    - content_per_wafer
+    - utilization
+    - yield
+    - pricing
+    - raw_material_cost
+  semiconductor.osat:
+    default_archetypes:
+    - capacity_manufacturing
+    - contracted_backlog
+    key_evidence:
+    - package_mix
+    - utilization
+    - yield
+    - capex
+    - customer_concentration
+    - advanced_packaging_demand
+  power.regulated_utility:
+    default_archetypes:
+    - regulated_rate_base
+    key_evidence:
+    - rate_base
+    - allowed_roe
+    - capex
+    - load_growth
+    - regulatory_lag
+    - capital_structure
+  power.merchant_generation:
+    default_archetypes:
+    - commodity_price_taker
+    - project_finance
+    key_evidence:
+    - generation
+    - heat_rate
+    - fuel_price
+    - power_price
+    - capacity_payment
+    - hedges
+    - debt
+  power.transformer_switchgear:
+    default_archetypes:
+    - contracted_backlog
+    - capacity_manufacturing
+    key_evidence:
+    - backlog
+    - slot_utilization
+    - lead_time
+    - customer_advances
+    - capacity
+    - qualified_supply
+    - asp
+  power.turbine_oem:
+    default_archetypes:
+    - contracted_backlog
+    - capacity_manufacturing
+    key_evidence:
+    - slots
+    - orders
+    - backlog
+    - deliveries
+    - service_contracts
+    - capacity
+    - lead_time
+  power.project_developer:
+    default_archetypes:
+    - project_finance
+    key_evidence:
+    - interconnection
+    - permitting
+    - offtake
+    - financing_close
+    - capex
+    - cod
+    - dscr
+  software.saas:
+    default_archetypes:
+    - recurring_subscription
+    key_evidence:
+    - arr
+    - nrr
+    - churn
+    - rpo
+    - gross_margin
+    - sales_efficiency
+    - fcf
+  software.usage_cloud:
+    default_archetypes:
+    - metered_usage_network
+    optional_archetypes:
+    - recurring_subscription
+    key_evidence:
+    - usage
+    - committed_spend
+    - unit_price
+    - infrastructure_cost
+    - capex
+    - gross_margin
+  software.database:
+    default_archetypes:
+    - recurring_subscription
+    - metered_usage_network
+    optional_archetypes:
+    - ip_royalty_licensing
+    key_evidence:
+    - subscription_arr
+    - cloud_consumption
+    - license_support
+    - workload_retention
+    - capex
+  software.marketplace:
+    default_archetypes:
+    - transaction_marketplace
+    key_evidence:
+    - gmv
+    - take_rate
+    - buyers
+    - sellers
+    - frequency
+    - contribution_margin
+  software.gaming:
+    default_archetypes:
+    - hit_driven_content
+    optional_archetypes:
+    - recurring_subscription
+    key_evidence:
+    - bookings
+    - dau_mau
+    - payer_conversion
+    - title_pipeline
+    - cohort_decay
+    - development_cost
+  software.advertising_platform:
+    default_archetypes:
+    - advertising_attention
+    key_evidence:
+    - users
+    - engagement
+    - impressions
+    - cpm
+    - ad_load
+    - fill_rate
+    - traffic_cost
+  financials.bank:
+    default_archetypes:
+    - financial_balance_sheet
+    key_evidence:
+    - nim
+    - loan_growth
+    - deposit_mix
+    - credit_cost
+    - npl
+    - cet1
+    - payout
+  financials.life_insurance:
+    default_archetypes:
+    - financial_balance_sheet
+    key_evidence:
+    - csm
+    - new_business_csm
+    - investment_margin
+    - k_ics
+    - surrender
+    - payout
+  financials.pnc_insurance:
+    default_archetypes:
+    - financial_balance_sheet
+    key_evidence:
+    - combined_ratio
+    - loss_ratio
+    - reserve_development
+    - investment_income
+    - solvency
+  financials.securities:
+    default_archetypes:
+    - financial_balance_sheet
+    key_evidence:
+    - brokerage
+    - ib_pipeline
+    - trading
+    - capital
+    - risk_exposure
+    - payout
+  healthcare.pre_revenue_biotech:
+    default_archetypes:
+    - probabilistic_pipeline
+    key_evidence:
+    - trial_registry
+    - patient_poc
+    - dose_response
+    - enrollment
+    - runway
+    - ownership_economics
+  healthcare.commercial_pharma:
+    default_archetypes:
+    - consumer_unit_economics
+    optional_archetypes:
+    - probabilistic_pipeline
+    key_evidence:
+    - volume
+    - net_price
+    - patent_life
+    - gross_to_net
+    - pipeline
+    - sales_force
+  healthcare.cdmo_cro:
+    default_archetypes:
+    - contracted_backlog
+    - capacity_manufacturing
+    key_evidence:
+    - backlog
+    - bookings
+    - capacity
+    - utilization
+    - customer_concentration
+    - project_conversion
+  consumer.branded_consumer:
+    default_archetypes:
+    - consumer_unit_economics
+    key_evidence:
+    - volume
+    - price_mix
+    - distribution
+    - gross_margin
+    - inventory
+    - marketing
+  consumer.retailer:
+    default_archetypes:
+    - consumer_unit_economics
+    key_evidence:
+    - sssg
+    - traffic
+    - ticket
+    - inventory_turn
+    - openings
+    - store_capex
+  consumer.franchise:
+    default_archetypes:
+    - consumer_unit_economics
+    - recurring_subscription
+    key_evidence:
+    - system_sales
+    - same_store_sales
+    - royalty_rate
+    - openings
+    - closures
+    - franchisee_economics
+  transport_industrial.automotive_oem:
+    default_archetypes:
+    - capacity_manufacturing
+    - consumer_unit_economics
+    key_evidence:
+    - production
+    - wholesales
+    - retail
+    - inventory
+    - incentives
+    - mix
+    - capacity
+    - warranty
+  transport_industrial.auto_parts:
+    default_archetypes:
+    - contracted_backlog
+    - capacity_manufacturing
+    key_evidence:
+    - customer_programs
+    - content_per_vehicle
+    - volumes
+    - utilization
+    - pricing
+    - raw_material
+  transport_industrial.shipbuilder:
+    default_archetypes:
+    - contracted_backlog
+    key_evidence:
+    - backlog
+    - order_price
+    - delivery_schedule
+    - cost_to_complete
+    - contract_assets_liabilities
+    - slots
+  transport_industrial.shipping:
+    default_archetypes:
+    - asset_yield_nav
+    - commodity_price_taker
+    key_evidence:
+    - spot_rate
+    - charter_rate
+    - contract_coverage
+    - fleet
+    - utilization
+    - asset_value
+    - debt
+  transport_industrial.aerospace_defense:
+    default_archetypes:
+    - contracted_backlog
+    - capacity_manufacturing
+    key_evidence:
+    - funded_backlog
+    - program_of_record
+    - production_rate
+    - supplier_constraints
+    - aftermarket
+  real_assets.reit:
+    default_archetypes:
+    - asset_yield_nav
+    key_evidence:
+    - noi
+    - ffo_affo
+    - occupancy
+    - rent
+    - cap_rate
+    - debt_maturities
+    - maintenance_capex
+  real_assets.oil_gas_ep:
+    default_archetypes:
+    - reserve_depletion
+    - commodity_price_taker
+    key_evidence:
+    - proved_reserves
+    - production
+    - decline
+    - replacement
+    - lifting_cost
+    - strip_price
+    - capex
+  real_assets.mining:
+    default_archetypes:
+    - reserve_depletion
+    - commodity_price_taker
+    key_evidence:
+    - reserves
+    - grade
+    - recovery
+    - production
+    - cash_cost
+    - development_capex
+    - price
+  real_assets.midstream:
+    default_archetypes:
+    - project_finance
+    optional_archetypes:
+    - regulated_rate_base
+    key_evidence:
+    - contracted_volume
+    - tariff
+    - take_or_pay
+    - capex
+    - leverage
+    - counterparty
+  semiconductor.fabless:
+    default_archetypes:
+    - design_led_product
+    optional_archetypes:
+    - ip_royalty_licensing
+    key_evidence:
+    - design_wins
+    - units
+    - asp
+    - product_mix
+    - gross_margin
+    - rd
+    - wafer_supply
+    - inventory
+    special_risks:
+    - foundry_dependency
+    - product_cycle
+    - customer_concentration
+    - architecture_substitution
+  power.distributed_power:
+    default_archetypes:
+    - contracted_backlog
+    - capacity_manufacturing
+    optional_archetypes:
+    - project_finance
+    key_evidence:
+    - orders
+    - backlog
+    - manufacturing_capacity
+    - lead_time
+    - installed_base
+    - service
+    - customer_financing
+    - fuel_or_input_economics
+  financials.asset_manager:
+    default_archetypes:
+    - aum_fee_economics
+    key_evidence:
+    - aum
+    - net_flows
+    - management_fee_rate
+    - performance_fees
+    - fund_performance
+    - operating_margin
+    - seed_capital
+  financials.exchange:
+    default_archetypes:
+    - transaction_marketplace
+    optional_archetypes:
+    - recurring_subscription
+    key_evidence:
+    - trading_volume
+    - open_interest
+    - take_rate
+    - listing_data_revenue
+    - clearing_revenue
+    - market_share
+  healthcare.medtech:
+    default_archetypes:
+    - design_led_product
+    optional_archetypes:
+    - consumer_unit_economics
+    key_evidence:
+    - procedure_volume
+    - installed_base
+    - consumables
+    - asp
+    - reimbursement
+    - gross_margin
+    - rd
+    - regulatory_clearance
+  healthcare.diagnostics:
+    default_archetypes:
+    - consumer_unit_economics
+    optional_archetypes:
+    - design_led_product
+    key_evidence:
+    - test_volume
+    - price_per_test
+    - installed_instruments
+    - reagent_pull_through
+    - reimbursement
+    - gross_margin
+  consumer.distributor:
+    default_archetypes:
+    - consumer_unit_economics
+    key_evidence:
+    - sell_in
+    - sell_through
+    - price_mix
+    - inventory_turn
+    - channel_margin
+    - working_capital
+    - supplier_concentration
+  consumer.ecommerce:
+    default_archetypes:
+    - transaction_marketplace
+    optional_archetypes:
+    - consumer_unit_economics
+    key_evidence:
+    - gmv
+    - orders
+    - buyers
+    - frequency
+    - take_rate_or_gross_margin
+    - fulfillment_cost
+    - inventory_if_first_party

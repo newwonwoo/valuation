@@ -1,0 +1,34 @@
+probe_version: 2026-08-21.1
+captured_at: '2026-08-21T09:55:00+09:00'
+posture: concise metadata manually captured from currently verified public pages; used to regression-test parsers, not a substitute for production live fetch
+probes:
+  - series_id: KIET_PSI
+    source_id: KR_KIET_PSI
+    endpoint_id: kiet_media_list
+    observed_text: '산업경기 전문가 서베이조사결과(`26년 7월 현황과 8월 전망) 2026.07.26'
+    expected_latest_published_at: '2026-07-26'
+  - series_id: IEA_MONTHLY_ELECTRICITY
+    source_id: INT_IEA
+    endpoint_id: iea_mes_product
+    observed_text: |
+      # Monthly Electricity Statistics
+      Last updated July 2026
+      Next release 17th August 2026
+      20/07/2026 Latest
+      Starting In March 2026 SDMX is available and the legacy CSV will discontinue after August 2026.
+    expected_latest_published_at: '2026-07-20'
+  - series_id: IEA_MONTHLY_ELECTRICITY
+    source_id: INT_IEA
+    endpoint_id: iea_mes_tool
+    observed_text: |
+      # Monthly Electricity Statistics
+      Last updated 17 Aug 2026
+      17/08/2026 Latest
+    expected_latest_published_at: '2026-08-17'
+  - series_id: KISDI_ICT_MEDIUM_TERM
+    source_id: KR_KISDI_ICT
+    endpoint_id: kisdi_report
+    observed_text: |
+      #### ICT 산업 중장기 전망(2026~2030) 및 대응 전략
+      발행일 2025-12-31
+    expected_latest_published_at: '2025-12-31'

@@ -1,0 +1,121 @@
+baseline_version: 2026-08-21.4
+captured_at: '2026-08-21T09:50:00+09:00'
+note: Discovery baseline from public web research. Production watcher must live-refetch
+  before issuing a missed-release or valuation-blocking finding.
+series:
+- series_id: KIET_PSI
+  source_id: KR_KIET_PSI
+  latest_document_id: DOC_KIET_PSI_2026_07_AUG_OUTLOOK
+  latest_published_at: '2026-07-26'
+  baseline_hash: d298b94f2640490b467294f80f079f3b5b1fae944618c555e26264d1b3b98cf5
+  revision_note: Publication date corrected from 2026-07-22 to 2026-07-26 after source-list
+    verification.
+- series_id: KITA_EBSI
+  source_id: KR_KITA_EBSI
+  latest_document_id: DOC_KITA_EBSI_2026Q3
+  latest_published_at: '2026-06-28'
+  baseline_hash: ac259e4e8ea1b0c5ec150c63a0f072f9e5195ee42cc34689d0125c4b5d740a33
+- series_id: KISDI_ICT_MEDIUM_TERM
+  source_id: KR_KISDI_ICT
+  latest_document_id: DOC_KISDI_ICT_2026_2030
+  latest_published_at: '2025-12-31'
+  baseline_hash: 4be7e4a2abb173fbcc0b6d85b2efcab06dc7d6d1d331833c8e3a09625bdb907e
+- series_id: WSTS_FORECAST
+  source_id: INT_WSTS
+  latest_document_id: DOC_WSTS_SPRING_2026
+  latest_published_at: '2026-06-24'
+  baseline_hash: 2085ffca64df8ede6c2346ba213d7aa04adf2a2100c86370cccb4cde5bdc12eb
+- series_id: SEMI_WFE_OUTLOOK
+  source_id: INT_SEMI
+  latest_document_id: DOC_SEMI_WFE_2025_MIDYEAR
+  latest_published_at: '2025-09-25'
+  baseline_hash: dc8ff93fa315272a0befd25aab1492287551182b5d2b1469be727ad226c083ae
+- series_id: IEA_MONTHLY_ELECTRICITY
+  source_id: INT_IEA
+  latest_document_id: DOC_IEA_MES_2026_08_TOOL
+  latest_published_at: '2026-08-17'
+  page_declared_next_release: '2026-09-16'
+  live_refetch_required: true
+  baseline_hash: 1fd35e85eeae805bd07aa646eadb0a923afc0ac340a115e08cbc9f98d4bbb89c
+  endpoint_observations:
+  - endpoint_id: iea_mes_product
+    observed_latest: '2026-07-20'
+    note: product page still displayed July as latest when checked
+  - endpoint_id: iea_mes_tool
+    observed_latest: '2026-08-17'
+    note: data tool displayed Last updated 17 Aug 2026
+  endpoint_divergence: true
+- series_id: IEA_ELECTRICITY_OUTLOOK
+  source_id: INT_IEA
+  latest_document_id: DOC_IEA_ELECTRICITY_MIDYEAR_2026
+  latest_published_at: '2026-07-23'
+  baseline_hash: 15fbf4a1747b99275150d8b55390135f706970bd847a388eede309f875cf13a3
+- series_id: DOE_GRID_SUPPLY_CHAIN
+  source_id: US_DOE_GRID
+  latest_document_id: DOC_DOE_GRID_SUPPLY_2026_08
+  latest_published_at: '2026-08-10'
+  baseline_hash: 48b2511e073ecf00ae0575de07d57bbf076008a6d1b6707df880f559f6d9cf61
+- series_id: KESIS_ENERGY_SUPPLY
+  source_id: KR_KEEI_KESIS
+  latest_document_id: DOC_KESIS_2026_05_JULY
+  latest_published_at: '2026-07-28'
+  baseline_hash: 21a1191f8b9d52545e5d774f23d6220a779a0da83555e9ec06b8fcea28e2acd7
+- series_id: KAMA_AUTO_MONTHLY
+  source_id: KR_KAMA
+  latest_document_id: DOC_KAMA_AUTO_2026_06_FINAL
+  latest_published_at: '2026-07-28'
+  baseline_hash: 1bd44ae7308b79f8604063dc77b33c152104e7a5f85503715805a24f721c86c1
+- series_id: KOBC_KCCI
+  source_id: KR_KOBC
+  latest_document_id: DOC_KOBC_KCCI_2026_08_10
+  latest_published_at: '2026-08-10'
+  baseline_hash: 5fcdf8ba4728b6cf042508cba8b46df94b0cc5a5e9ce1ff5c363cce893ad4511
+- series_id: KOBC_KDCI
+  source_id: KR_KOBC
+  latest_document_id: DOC_KOBC_KDCI_2026_08_12
+  latest_published_at: '2026-08-12'
+  baseline_hash: 375b2b10fe4ab300ee2bce16406b06a7219340f4c23eb57481d3c031fbdbd682
+- series_id: NAREIT_TRACKER
+  source_id: INT_NAREIT
+  latest_document_id: DOC_NAREIT_TRACKER_2026Q1
+  latest_published_at: '2026-05-15'
+  baseline_hash: 5d7d9d8aa94bb6bebc3f10be332e98716d0b30e704a974c466836f3e93c485f8
+- series_id: NAREIT_MARKET_DATA
+  source_id: INT_NAREIT
+  latest_document_id: DOC_NAREIT_CAPITAL_2026Q2
+  latest_published_at: '2026-07-21'
+  baseline_hash: c7f341d22fb14a35bb828fe97bf2db00cdccc36567819a5b2caa78b5b14d3207
+- series_id: KHIDI_GLOBAL_BIOHEALTH
+  source_id: KR_KHIDI
+  latest_document_id: DOC_KHIDI_GLOBAL_592
+  latest_published_at: '2026-06-08'
+  baseline_hash: 7a2c15453d24f4e497fd75a0ccd6c196ddfa13bd389f4a9c14be3a2eb78147dd
+- series_id: UNCTAD_RMT_ANNUAL
+  source_id: INT_UNCTAD_RMT
+  latest_document_id: DOC_UNCTAD_RMT_2025
+  latest_published_at: '2025-09-24'
+  baseline_hash: 373ab779d910a579175980b959be0526713d75d6d281dd50821e69945f91d09f
+- series_id: EIA_PROVED_RESERVES
+  source_id: US_EIA
+  latest_document_id: DOC_EIA_PROVED_RESERVES_2024
+  latest_published_at: '2026-04-07'
+  baseline_hash: f31a05b9c283913437f9dc0fc81c279f1317d5edf56aa1ce0f2e60d17ec72149
+- series_id: USGS_MCS_ANNUAL
+  source_id: US_USGS_MCS
+  latest_document_id: DOC_USGS_MCS_2026
+  latest_published_at: '2026-02-06'
+  current_version_note: v1.3 May 2026; revision exact date not normalized in seed
+  live_refetch_required: true
+  baseline_hash: b600d0311e9d699931ab26ee3b5244852a4c5bafd353ab8f1e1c62d9727f11b4
+- series_id: NERC_LTRA
+  source_id: US_NERC_LTRA
+  latest_document_id: DOC_NERC_LTRA_2025_CURRENT
+  latest_published_at: '2026-02-24'
+  live_refetch_required: true
+  baseline_hash: efb4e1d770072ac1db545c4bac9238adf4fbbad3474ff838e323250428fb6e8d
+- series_id: REB_COMMERCIAL_RENT
+  source_id: KR_REB_COMMERCIAL
+  latest_document_id: DOC_REB_COMMERCIAL_2026Q2
+  latest_published_at: '2026-07-30'
+  live_refetch_required: true
+  baseline_hash: 32fcb74536d3f6960f91a01c17a0b16ae55f1fe767a17792b9a39252f63a1cee

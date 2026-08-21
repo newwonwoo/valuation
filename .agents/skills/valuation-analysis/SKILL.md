@@ -3,9 +3,9 @@ name: insight-valuation-analysis
 description: Run evidence-first equity research and deterministic valuation when the user says "분석시작 기업명", asks to update a thesis, validate assumptions, compare intrinsic value with market/Street references, inspect funding constraints, or inspect kill conditions. Use for Korean and global equities; not for simple price/news lookup without valuation intent.
 ---
 
-# Insight Valuation Analysis v0.4
+# Insight Valuation Analysis v0.5.2
 
-Read `AGENTS.md`, `01_Rocketesla_Insight_Valuation_Framework.md`, `docs/V04_ROCKETSLA_EXTENSION.md`, `docs/GENERIC_ENGINE_DESIGN.md`, and `docs/LIVE_VALIDATION_AND_CALIBRATION.md` before changing model architecture.
+Read `AGENTS.md`, `01_Rocketesla_Insight_Valuation_Framework.md`, `docs/V04_ROCKETSLA_EXTENSION.md`, `docs/V05_WORKFLOW_CONTRACT.md`, `docs/README_V05_OPERATOR_INDEX.md`, `docs/SIGNAL_INTELLIGENCE_LAYER_V1.md`, `docs/GENERIC_ENGINE_DESIGN.md`, and `docs/LIVE_VALIDATION_AND_CALIBRATION.md` before changing model architecture.
 
 The current CLI remains a v0.3-alpha offline vertical slice unless a newer live adapter is explicitly implemented. Never present fixture evidence or contract-only modules as current research.
 
@@ -15,33 +15,34 @@ Execute in this order; unavailable live modules must be labelled `CONTRACT_ONLY`
 
 1. `COMPANY_RESOLUTION`
 2. `LOAD_COMPANY_STATE`
-3. `INDUSTRY_ROUTE`
-4. `PRIMARY_EVIDENCE_COLLECTION`
-5. `EVIDENCE_LEDGER`
-6. `ROCKET_INSIGHT_SCAN`
-7. `UPSTREAM_FUNDING_SCAN` when external finance is material
-8. `RESEARCHER_A`
-9. `BLIND_RED_TEAM_B`
-10. up to three targeted `RESEARCH_LOOP` rounds
-11. `EVIDENCE_TO_ASSUMPTION_BRIDGE`
-12. `SCENARIO_BUILD`
-13. `HIERARCHICAL_BETA_ESTIMATION` when peer beta is used
-14. `WACC_VALIDATION`
-15. `DETERMINISTIC_VALUATION`
-16. `HIERARCHICAL_WARRANTED_PER` when PER is allowed
-17. `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`
-18. `CROSS_METHOD_DOUBLE_COUNT_AUDIT`
-19. `PROBABILITY_DISTRIBUTION_ANALYSIS` when calibrated
-20. `AUDIT_GATE`
-21. `INTRINSIC_VALUE_FREEZE`
-22. `STREET_REFERENCE_LOAD`
-23. `STREET_GAP_ANALYZER`
-24. `CONSENSUS_LAG_REVERSE_CHECK`
-25. `MARKET_PRICE_LOAD`
-26. `MARKET_COMPARE`
-27. `THESIS_DELTA`
-28. `SAVE_STATE`
-29. `FINAL_REPORT`
+3. `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`
+4. `SOURCE_FRESHNESS_PRECHECK`
+5. `SEGMENT_DECOMPOSITION`
+6. `INDUSTRY_DNA_ROUTE`
+7. `MODULE_REQUIREMENT_PLAN`
+8. `PRIMARY_EVIDENCE_COLLECTION`
+9. `EVIDENCE_LEDGER`
+10. `ROCKET_INSIGHT_SCAN`
+11. `UPSTREAM_FUNDING_SCAN` when external finance is material
+12. `RESEARCHER_A`
+13. `BLIND_RED_TEAM_B`
+14. up to three targeted `RESEARCH_LOOP` rounds
+15. `EVIDENCE_TO_ASSUMPTION_BRIDGE`
+16. `SCENARIO_BUILD`
+17. `HIERARCHICAL_BETA_ESTIMATION` when peer beta is used
+18. `WACC_VALIDATION`
+19. `DETERMINISTIC_VALUATION`
+20. `HIERARCHICAL_WARRANTED_PER` when PER is allowed
+21. `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`
+22. `CROSS_METHOD_DOUBLE_COUNT_AUDIT`
+23. `PROBABILITY_DISTRIBUTION_ANALYSIS` when calibrated
+24. `AUDIT_GATE`
+25. `INTRINSIC_VALUE_FREEZE`
+26. `STREET_REFERENCE_LOAD`
+27. `STREET_GAP_ANALYZER` including consensus-lag reverse check
+28. `MARKET_PRICE_LOAD`
+29. `MARKET_COMPARE`
+30. `THESIS_DELTA` / `SAVE_STATE` / `FINAL_REPORT`
 
 If a blocking issue remains after round three or a blocking audit fails, return `VALUATION BLOCKED`. Do not output fair value or load Street/current-price data.
 
@@ -54,6 +55,22 @@ If a blocking issue remains after round three or a blocking audit fails, return 
 - Deterministic code owns units, valuation math, beta/PER pooling, WACC arithmetic, probability weighting, duplicate-path detection and audit.
 - LLM reasoning owns interpretation, Economic-Twin rationale, counter-theses and missing-evidence requests.
 - Street reports and target-company price are comparison objects, not intrinsic inputs.
+
+## Industry Knowledge & Signal Intelligence v0.5.2
+
+- Freeze `industry_knowledge_snapshot_hash`, `source_watch_snapshot_hash`, taxonomy/module versions and routing evidence for every valuation run. Later reports cannot silently mutate an in-progress run.
+- Decompose economically distinct segments before routing. `INDUSTRY_DNA_ROUTE` is multi-label and evidence-driven: one or more Economic Archetypes may apply, while Sector Adapters are defaults rather than authority. Keyword matching cannot finalize the route.
+- Compile `MODULE_REQUIREMENT_PLAN` before collection: required evidence/KPIs, accounting normalization, Beta/PER twin features, scenario variables, funding checks, forbidden methods, terminal policy, double-count traps and kill conditions.
+- Fail closed instead of generic-DCF fallback when no supported archetype can be established, a critical module input is missing/definition-conflicted, or a method is forbidden by a material archetype without segment split.
+- Assign every source to a Knowledge Layer and enforce `config/knowledge_placement_policy.yaml` plus `config/workflow_source_injection_map.yaml`. Classification/metric/provenance standards define requirements; structural input-output data is a prior; primary/company evidence may reach a Bridge; broker/alternative data is discovery/corroboration; target Street/market remains post-freeze.
+- Broker/IB material before freeze may supply value-chain maps, KPI definitions, mechanism candidates, investor debates, channel-check leads and underlying-data locations. Target-company broker revenue/EPS forecasts, target price, rating, target multiple and consensus are forbidden before freeze. Multiple brokers sharing one underlying data family do not count as independent corroboration.
+- `SignalClass` is orthogonal to evidence authority. Permit, procurement, interconnection, patent, hiring, physical-production, customs/logistics, credit, clinical and remote-sensing signals require the same provenance/placement gates as other evidence.
+- Split market inputs into: `financing_market_reference` (funding/WACC only through an economic Bridge), `positioning_market_signal` (monitoring/post-freeze; never mutates intrinsic), and `target_equity_market_reference` (post-freeze only).
+- `NOT_OBSERVED != NO_EVENT`. Negative evidence requires complete/near-complete coverage, mandatory or near-mandatory reporting, elapsed reporting lag, healthy source and no known alternate channel. `SOURCE_FAILURE` is operational evidence only.
+- Apply the Representativeness Gate before extrapolating spot/channel/alternative data: coverage share, selection bias, duplicate risk, granularity match, mapping stability and definition stability.
+- Track project realization as evidence-backed states (`announced → applied → funded → permitted → awarded/contracted → under construction → commissioned/delivered → revenue`) rather than treating announced capacity as funded demand.
+- Preserve `event_time`, `effective_as_of`, `published_at`, `first_seen_at`, `revised_at` and expected reporting lag. Historical/backtest analysis may not use a revision before its first-seen time.
+- Dynamic Economic-Twin candidate generation may use product-text similarity, end-market mix, supply-chain topology, patent similarity, revenue model, capital intensity, customer concentration and contract structure. Final Beta/PER peers still require an auditable systematic-risk/fundamental-driver rationale.
 
 ## Non-negotiable gates
 
@@ -179,8 +196,8 @@ Confirm: OCI regression ±1 KRW unless intentionally changed; market/Street isol
 
 ## Methodology status
 
-The full v0.4 architecture is **academically grounded engineering synthesis**. Established components include Blume/Vasicek beta shrinkage, non-synchronous-trading corrections, unlever/relever bottom-up beta practice, standard WACC consistency principles, and fundamental/forward-earnings multiple literature. The L1→L4 Economic-Twin taxonomy, customer-advance transmission gate, three-layer Hierarchical Warranted PER, residual pooling orchestration and cross-method fail-closed gates are repository-specific synthesis. See `docs/V04_ROCKETSLA_EXTENSION.md` for references, practical value and limitations.
+The v0.4 finance-calibration architecture remains **academically grounded engineering synthesis**. v0.5.2 adds evidence-governed Industry Knowledge, Broker Research, Freshness/Revision Watch and Signal Intelligence orchestration; these are repository-specific operating contracts, not a claim that every causal mechanism is academically established. Established components include Blume/Vasicek beta shrinkage, non-synchronous-trading corrections, unlever/relever bottom-up beta practice, standard WACC consistency principles, and fundamental/forward-earnings multiple literature. The L1→L4 Economic-Twin taxonomy, customer-advance transmission gate, three-layer Hierarchical Warranted PER, residual pooling orchestration and cross-method fail-closed gates are repository-specific synthesis. See `docs/V04_ROCKETSLA_EXTENSION.md` for references, practical value and limitations.
 
 ## Report contract
 
-Lead with conclusion, thesis delta, known vs underappreciated evidence, strongest Red Team objection, funded-demand constraints when material, scenario worldviews, Core/Expected/Verified Bull values, Beta/WACC/PER audit summary, frozen intrinsic value, Street Gap/Consensus Lag or reverse-check, current-market comparison, kill conditions, next verification events, data quality and limitations. Clearly label fixture, stale, uncalibrated, contract-only or missing evidence.
+Lead with conclusion, thesis delta, frozen industry-knowledge/source-freshness status, known vs underappreciated evidence, strongest Red Team objection, funded-demand constraints when material, scenario worldviews, Core/Expected/Verified Bull values, Beta/WACC/PER audit summary, frozen intrinsic value, Street Gap/Consensus Lag or reverse-check, current-market comparison, kill conditions, next verification events, data quality and limitations. Clearly label fixture, stale, uncalibrated, contract-only or missing evidence.

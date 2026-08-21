@@ -1,0 +1,107 @@
+version: 1.0
+datasets:
+- id: ALT_FACILITY_BUILD_STATUS
+  provider_class: facility_project_data
+  industries:
+  - ai.datacenter
+  - power
+  methodology: facility-level permitting/construction/activation tracking; may include
+    satellite imagery
+  coverage: project pipeline and realization stage
+  lag: weekly_to_monthly
+  license: licensed_or_public_mixed
+  biases:
+  - announcements can be stale
+  - satellite inference needs ground truth
+- id: ALT_JOB_LISTINGS
+  provider_class: jobs
+  industries:
+  - software
+  - semiconductor
+  - industrial
+  methodology: job-posting counts and skill taxonomy
+  coverage: hiring intent / capacity build
+  lag: daily_to_weekly
+  license: provider_specific
+  biases:
+  - duplicate postings
+  - hiring freeze can lag demand
+  - outsourcing not captured
+- id: ALT_CLOUD_GPU_PRICE
+  provider_class: cloud_compute_pricing
+  industries:
+  - ai.infrastructure
+  - neocloud
+  methodology: rental/offering price and availability monitor by GPU SKU
+  coverage: rental clearing price / scarcity
+  lag: daily_to_weekly
+  license: public_and_licensed_mixed
+  biases:
+  - posted price may differ from contracted price
+  - quality/term heterogeneity
+- id: ALT_DISTRIBUTOR_INVENTORY
+  provider_class: electronics_distribution
+  industries:
+  - semiconductor
+  - electronics
+  methodology: distributor inventory / lead-time / availability monitoring
+  coverage: channel inventory and component tightness
+  lag: weekly_to_monthly
+  license: licensed
+  biases:
+  - channel mix
+  - consignment inventory
+  - double counting
+- id: ALT_MARITIME_TRADE
+  provider_class: shipping_tracking
+  industries:
+  - shipping
+  - commodity
+  - industrial
+  methodology: AIS/vessel/port movement and cargo estimates
+  coverage: physical trade flows
+  lag: daily
+  license: licensed_or_public_mixed
+  biases:
+  - dark activity
+  - cargo classification error
+  - transshipment
+- id: ALT_APP_WEB_TRAFFIC
+  provider_class: digital_traffic
+  industries:
+  - consumer.internet
+  - software
+  - gaming
+  methodology: panel / device / web traffic estimates
+  coverage: engagement and acquisition trends
+  lag: daily_to_monthly
+  license: licensed
+  biases:
+  - panel representativeness
+  - bot traffic
+  - cross-device attribution
+- id: ALT_CARD_TRANSACTION
+  provider_class: payments_panel
+  industries:
+  - consumer
+  - retail
+  - travel
+  methodology: anonymized card-spend panel
+  coverage: consumer transaction demand
+  lag: weekly
+  license: licensed
+  biases:
+  - issuer/card mix
+  - cash payments missing
+  - merchant mapping
+- id: ALT_CLINICAL_CHANGE_LOG
+  provider_class: clinical_registry
+  industries:
+  - healthcare.biotech
+  methodology: registry status/date/end-point change monitoring
+  coverage: trial progression and protocol changes
+  lag: daily
+  license: public
+  biases:
+  - sponsor reporting delay
+  - registry does not prove efficacy

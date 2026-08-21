@@ -1,0 +1,210 @@
+seed_version: 2026-08-21.4
+mechanisms:
+- mechanism_id: MECH_SEMI_AI_MEMORY_TO_WFE
+  industry_scope:
+  - semiconductor.memory
+  - semiconductor_equipment
+  statement: AI infrastructure demand raises HBM/server-memory demand, which can lift
+    DRAM capacity/process investment and upstream wafer-fab equipment/material demand.
+  evidence_claim_ids:
+  - CL_WSTS_2025_02
+  - CL_WSTS_2026_02
+  - CL_KISDI_2026_02
+  - CL_SEMI_WFE_02
+  - CL_KITA_Q3_02
+  - CL_SEMI_WFE_04
+  leading_indicators:
+  - memory pricing
+  - HBM/server DRAM demand
+  - DRAM WFE spending
+  - fab utilization
+  valuation_links:
+  - equipment backlog/shipments
+  - materials volume
+  - utilization
+  - normalized margin
+  kill_conditions:
+  - AI infrastructure capex slowdown
+  - HBM supply growth materially exceeds demand
+  - DRAM WFE forecast cuts
+  initial_status: corroborated_candidate_not_canonical
+- mechanism_id: MECH_GRID_QUEUE_TO_EQUIPMENT_SCARCITY
+  industry_scope:
+  - power.grid
+  - power.transformers
+  - power.switchgear
+  statement: Rapid load and generation additions collide with slow grid build cycles
+    and constrained equipment supply, extending time-to-power and supporting backlog/pricing
+    for qualified equipment suppliers.
+  evidence_claim_ids:
+  - CL_IEA_GRID_01
+  - CL_IEA_GRID_02
+  - CL_IEA_GRID_03
+  - CL_IEA_MID_01
+  - CL_DOE_GRID_01
+  - CL_DOE_GRID_02
+  - CL_DOE_GRID_03
+  - CL_DOE_GRID_04
+  - CL_DOE_GRID_05
+  - CL_DOE_GRID_06
+  - CL_DOE_GRID_07
+  - CL_NERC_LTRA_03
+  leading_indicators:
+  - interconnection queue GW
+  - transformer lead time
+  - grid capex
+  - equipment order backlog
+  - qualified capacity
+  valuation_links:
+  - quantity/backlog conversion
+  - ASP/pricing power
+  - capacity expansion
+  - customer advances
+  - margin
+  kill_conditions:
+  - lead times normalize rapidly
+  - queue reforms release capacity without new hardware demand
+  - new manufacturing capacity outruns demand
+  initial_status: manual_approval_candidate
+- mechanism_id: MECH_AUTO_SUPPLY_NORMALIZATION_TO_VOLUME
+  industry_scope:
+  - automotive.oem
+  statement: Easing component disruptions can restore production and exports, but
+    demand pull-forward and policy expiries can distort monthly volume signals.
+  evidence_claim_ids:
+  - CL_KAMA_JUN_01
+  - CL_KAMA_JUN_02
+  - CL_KAMA_JUN_03
+  - CL_KITA_Q3_04
+  leading_indicators:
+  - production
+  - exports
+  - domestic registrations
+  - EV mix
+  - parts disruption
+  valuation_links:
+  - volume
+  - mix
+  - fixed-cost absorption
+  - working capital
+  kill_conditions:
+  - exports weaken after supply normalization
+  - domestic sales reverse after tax pull-forward
+  initial_status: single_cycle_candidate
+- mechanism_id: MECH_REIT_OPERATIONS_AND_FUNDING
+  industry_scope:
+  - reit
+  statement: REIT equity value depends jointly on property cash-flow fundamentals
+    and capital-market access; stronger FFO/occupancy can be offset by higher marginal
+    financing cost or cap-rate expansion.
+  evidence_claim_ids:
+  - CL_NAREIT_Q1_01
+  - CL_NAREIT_Q1_02
+  - CL_NAREIT_Q1_03
+  - CL_NAREIT_Q1_04
+  - CL_NAREIT_CAP_01
+  - CL_NAREIT_CAP_02
+  leading_indicators:
+  - same-store NOI
+  - occupancy
+  - implied cap rate
+  - debt coupon
+  - capital raised
+  valuation_links:
+  - FFO/AFFO
+  - NAV
+  - cap rate
+  - cost of debt
+  - dividend capacity
+  kill_conditions:
+  - occupancy/NOI deterioration
+  - cap-rate expansion without rent growth
+  - refinancing cost spike
+  initial_status: corroborated_within_family_needs_independent_property_data
+- mechanism_id: MECH_SHIPPING_FREIGHT_TO_EARNINGS
+  industry_scope:
+  - shipping.container
+  - shipping.dry_bulk
+  statement: Freight indices and time-charter rates are high-frequency operating-state
+    inputs, but route/vessel mix and contract coverage determine company earnings
+    transmission.
+  evidence_claim_ids:
+  - CL_KOBC_KCCI_01
+  - CL_KOBC_KCCI_02
+  - CL_KOBC_KDCI_01
+  - CL_KOBC_KDCI_02
+  - CL_UNCTAD_RMT_01
+  - CL_UNCTAD_RMT_02
+  - CL_UNCTAD_RMT_05
+  - CL_UNCTAD_RMT_07
+  leading_indicators:
+  - KCCI
+  - KDCI
+  - route indices
+  - TC rates
+  valuation_links:
+  - voyage revenue
+  - time-charter earnings
+  - fleet utilization
+  - cash flow
+  kill_conditions:
+  - spot index divergence from contracted book
+  - bunker/charter cost offsets
+  - route exposure mismatch
+  initial_status: cross_source_corroborated_candidate
+- mechanism_id: MECH_RESERVE_DEPLETION_REPLACEMENT
+  industry_scope:
+  - oil_gas_ep
+  statement: Finite proved reserves deplete through production; sustainable asset
+    value requires replacement or development investment at economics that remain
+    viable under normalized commodity prices.
+  evidence_claim_ids:
+  - CL_EIA_RES_01
+  - CL_EIA_RES_02
+  - CL_EIA_RES_03
+  leading_indicators:
+  - proved reserves
+  - production
+  - reserve replacement ratio
+  - finding and development cost
+  - strip price
+  valuation_links:
+  - reserve_npv
+  - production decline
+  - development capex
+  - terminal depletion
+  kill_conditions:
+  - reserve definitions not comparable
+  - acquisition-driven reserve growth mistaken for organic replacement
+  - commodity-price assumptions make reserves uneconomic
+  initial_status: single_source_candidate_needs_independent_geology_or_company_evidence
+- mechanism_id: MECH_MINERAL_RESERVE_SUPPLY_SECURITY
+  industry_scope:
+  - mining
+  - critical_minerals
+  statement: Mining and critical-mineral economics depend on reserve/resource quality,
+    production capacity, import reliance and supply concentration in addition to commodity
+    price; reserve definitions and country/processing concentration must be normalized
+    before NAV or cycle assumptions.
+  evidence_claim_ids:
+  - CL_USGS_MCS_01
+  - CL_USGS_MCS_02
+  - CL_USGS_MCS_03
+  leading_indicators:
+  - reserves
+  - mine production
+  - capacity
+  - import reliance
+  - price
+  - project pipeline
+  valuation_links:
+  - reserve_npv
+  - production_volume
+  - development_capex
+  - normalized_price
+  - country_risk
+  kill_conditions:
+  - resources mistaken for economically recoverable reserves
+  - price-only signal used despite supply concentration changes
+  - reserve revisions not tracked
+  initial_status: single_source_candidate_needs_independent_country_or_company_evidence

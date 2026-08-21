@@ -1,0 +1,398 @@
+version: 1.0
+purpose: Metadata-only seed set for report discovery and extraction-pattern testing. No copyrighted report body is stored
+  here.
+documents:
+- id: BR_KR_LS_SEMI_VALUECHAIN_202602
+  source_id: KR_HANKYUNG_CONSENSUS
+  origin_broker: LSSecurities
+  date: '2026-02-13'
+  report_type: industry_deep_dive
+  title: Value & Growth - 반도체 중소형주 밸류체인
+  industry_nodes:
+  - semiconductor.memory
+  - semiconductor.equipment
+  - semiconductor.materials
+  - semiconductor.fabless
+  extraction_targets:
+  - industry_definition
+  - value_chain
+  - growth_trigger
+  - rerating_conditions
+  - source_lineage
+  key_pattern: Same semiconductor upcycle does not benefit IDM/foundry/fabless/equipment/materials equally; map front-end
+    change to each business domain.
+  url: https://consensus.hankyung.com/analysis/downpdf?report_idx=647123
+- id: BR_KR_HANWHA_WARPAGE_BSD_20260602
+  source_id: KR_HANWHA_RESEARCH
+  origin_broker: HanwhaInvestmentSecurities
+  date: '2026-06-02'
+  report_type: industry_deep_dive
+  title: 웨이퍼 워피지와 BSD 장비의 중요성
+  industry_nodes:
+  - semiconductor.memory
+  - semiconductor.equipment
+  extraction_targets:
+  - mechanism_candidate
+  - equipment_intensity
+  - yield_bottleneck
+  - technology_transition
+  key_pattern: Process complexity -> warpage/yield problem -> incremental equipment intensity per wafer-start capacity.
+  url: https://consensus.hankyung.com/analysis/downpdf?report_idx=649826
+- id: BR_KR_DAISHIN_MEMORY_SIGNAL_20260331
+  source_id: KR_DAISHIN_RESEARCH
+  origin_broker: DaishinSecurities
+  date: '2026-03-31'
+  report_type: channel_check
+  title: 반도체 - 현물가보다 중요한 고정가/서버 수요
+  industry_nodes:
+  - semiconductor.memory
+  extraction_targets:
+  - leading_indicator_candidate
+  - indicator_quality
+  - channel_check
+  - demand_mix
+  key_pattern: Spot-price signal loses relevance when transaction mix shifts toward server/mobile fixed-price contracts; verify
+    indicator representativeness before using it.
+  url: https://money2.daishin.com/
+- id: BR_KR_IBKS_SEMI_CLUSTER_TIMING_20260630
+  source_id: KR_HANKYUNG_CONSENSUS
+  origin_broker: IBKSecurities
+  date: '2026-06-30'
+  report_type: thematic
+  title: 전국토 반도체 클러스터 시대, 용인이 출발점
+  industry_nodes:
+  - construction
+  - semiconductor.infrastructure
+  extraction_targets:
+  - project_stage
+  - time_to_revenue
+  - permitting
+  - utilities_dependency
+  - pipeline_haircut
+  key_pattern: Announced capex is not revenue; land, compensation, permitting, power and water determine realization timing.
+  url: https://consensus.hankyung.com/analysis/downpdf?report_idx=650348
+- id: BR_KR_HANWHA_BANK_RORWA_20260605
+  source_id: KR_HANWHA_RESEARCH
+  origin_broker: HanwhaInvestmentSecurities
+  date: '2026-06-05'
+  report_type: industry_deep_dive
+  title: 은행 - ROE와 RoRWA의 동반 개선
+  industry_nodes:
+  - financials.bank
+  extraction_targets:
+  - kpi_definition
+  - capital_allocation
+  - fee_income
+  - shareholder_distribution
+  key_pattern: Sustainable ROE depends on risk-weighted asset returns and capital allocation; fee/service income can raise
+    ROE with less capital consumption.
+  url: https://www.hanwhawm.com/main/research/main/view.cmd?depth3_id=anls2&seq=66043&templet=default
+- id: BR_KR_HANWHA_FOOD_BRAND_CAPA_20260528
+  source_id: KR_HANWHA_RESEARCH
+  origin_broker: HanwhaInvestmentSecurities
+  date: '2026-05-28'
+  report_type: industry_deep_dive
+  title: 음식료 - 브랜드가 숫자를 만든다
+  industry_nodes:
+  - consumer.branded_food
+  extraction_targets:
+  - pricing_power
+  - brand_equity
+  - geographic_mix
+  - capacity_constraint
+  - valuation_driver
+  key_pattern: Industry value driver can migrate from input-cost/ASP cycles to brand, content, platform and global distribution;
+    capacity shortage becomes evidence of demand quality only if utilization and pricing corroborate.
+  url: https://www.hanwhawm.com/main/research/main/view.cmd?depth3_id=anls2&seq=66015&templet=default
+- id: BR_KR_MIRAE_BIOTECH_RNAI_20260528
+  source_id: KR_MIRAE_INDUSTRY_RESEARCH
+  origin_broker: MiraeAssetSecurities
+  date: '2026-05-28'
+  report_type: industry_primer
+  title: Biotech Investor Primer
+  industry_nodes:
+  - healthcare.biotech
+  extraction_targets:
+  - modality_ontology
+  - clinical_evidence_questions
+  - competitive_landscape
+  - platform_risk
+  key_pattern: Use primer to build modality-specific evidence checklist, not as target-company probability-of-success input.
+  url: https://securities.miraeasset.com/bbs/board/message/list.do?categoryId=1525
+- id: BR_KR_MIRAE_AI_BOTTLENECK_20260616
+  source_id: KR_MIRAE_INDUSTRY_RESEARCH
+  origin_broker: MiraeAssetSecurities
+  date: '2026-06-16'
+  report_type: thematic
+  title: AI Bottleneck Issue - AI 인프라 2막의 병목
+  industry_nodes:
+  - ai.infrastructure
+  - power
+  - semiconductor
+  extraction_targets:
+  - cross_sector_mechanism
+  - bottleneck
+  - capacity
+  - lead_time
+  key_pattern: Theme report is a mechanism-discovery input; each bottleneck must be verified against primary/industry datasets
+    before module promotion.
+  url: https://securities.miraeasset.com/bbs/board/message/list.do?categoryId=1525
+- id: BR_KR_IM_ENTERTAINMENT_2026
+  source_id: KR_HANKYUNG_CONSENSUS
+  origin_broker: iMSecurities
+  date: '2025-12-10'
+  report_type: industry_outlook
+  title: 2026년 엔터테인먼트 전망
+  industry_nodes:
+  - media.entertainment
+  extraction_targets:
+  - tour_unit_economics
+  - ip_platform
+  - geographic_expansion
+  - operating_leverage
+  key_pattern: Concert scale, attendance, ticket/MD monetization and fixed-cost leverage can be modeled separately from content-release
+    volatility.
+  url: https://www.imfnsec.com/upload/R_E09/2025/12/%5B10070215%5D_252163.pdf
+- id: BR_GLOBAL_GS_DC_POWER_20260520
+  source_id: US_GOLDMAN_PUBLIC_RESEARCH
+  origin_broker: GoldmanSachsResearch
+  date: '2026-05-20'
+  report_type: thematic
+  title: US Data Center Power Demand Projected to Double by 2027
+  industry_nodes:
+  - ai.datacenter
+  - power.grid
+  extraction_targets:
+  - scheduled_vs_realized_capacity
+  - utilization_assumption
+  - regional_power_constraint
+  - permitting
+  key_pattern: Scheduled capacity needs an explicit realization haircut; public summary cites facility-level permitting/construction/satellite
+    data and only 50-60% on-time realization expectation.
+  url: https://www.goldmansachs.com/insights/articles/us-data-center-power-demand-projected-to-double-by-2027
+- id: BR_GLOBAL_MS_AI_POWER_20260227
+  source_id: US_MORGAN_STANLEY_PUBLIC
+  origin_broker: MorganStanleyResearch
+  date: '2026-02-27'
+  report_type: thematic
+  title: Energy Markets Race to Solve the AI Power Bottleneck
+  industry_nodes:
+  - ai.datacenter
+  - power
+  - project_finance
+  extraction_targets:
+  - power_shortfall
+  - offgrid
+  - equipment_bottleneck
+  - financing
+  - credit
+  key_pattern: Data-center deployment is constrained by power access and financing; separate demand desire from financed/executable
+    demand.
+  url: https://www.morganstanley.com/insights/articles/powering-ai-energy-market-outlook-2026
+- id: BR_GLOBAL_MS_MEMORY_20260608
+  source_id: US_MORGAN_STANLEY_PUBLIC
+  origin_broker: MorganStanleyResearch
+  date: '2026-06-08'
+  report_type: industry_deep_dive
+  title: The High Cost of AI Memory
+  industry_nodes:
+  - semiconductor.memory
+  - ai.infrastructure
+  extraction_targets:
+  - end_market_mix
+  - memory_intensity
+  - demand_shift
+  - price_regime
+  key_pattern: Server share of memory demand and HBM intensity can structurally change the relevance of legacy PC/mobile indicators.
+  url: https://www.morganstanley.com/insights/podcasts/thoughts-on-the-market/high-cost-of-AI-memory-shawn-kim
+- id: BR_GLOBAL_JPM_APAC_TMT
+  source_id: US_JPM_GLOBAL_RESEARCH_PUBLIC
+  origin_broker: JPMorganGlobalResearch
+  date: '2026-01-01'
+  report_type: thematic
+  title: Key Themes in Technology, Media and Telecom in Asia Pacific
+  industry_nodes:
+  - semiconductor
+  - cloud
+  - technology
+  extraction_targets:
+  - capex_leading_indicator
+  - earnings_revision
+  - trade_policy
+  - ai_monetization
+  key_pattern: Cloud-service-provider capex and earnings revisions are explicit sector-health indicators; capex acceleration
+    should be mapped to equipment/material beneficiaries with lag.
+  url: https://www.jpmorgan.com/insights/technology/tmt-asia-pacific
+- id: BR_GLOBAL_BOFA_AI_HARDWARE_2026
+  source_id: US_BOFA_GLOBAL_RESEARCH
+  origin_broker: BofAGlobalResearch
+  date: '2026-08-01'
+  report_type: thematic
+  title: Asia and the AI hardware era
+  industry_nodes:
+  - ai.infrastructure
+  - semiconductor.memory
+  - packaging
+  - power
+  - cooling
+  extraction_targets:
+  - system_bottleneck
+  - stack_coordination
+  - memory_bandwidth
+  - integration
+  key_pattern: AI scale is a synchronized stack problem; surplus compute cannot offset shortages in memory, power, cooling,
+    packaging or integration.
+  url: https://business.bofa.com/en-us/content/breakthrough-technology/asia-ai-hardware-era.html
+- id: BR_GLOBAL_NOMURA_EARNINGS_20260605
+  source_id: JP_NOMURA_GLOBAL_RESEARCH
+  origin_broker: NomuraGlobalResearch
+  date: '2026-06-05'
+  report_type: strategy
+  title: Outlook for FY26-27 corporate earnings
+  industry_nodes:
+  - japan_equity
+  - financials
+  - technology
+  - healthcare
+  extraction_targets:
+  - sector_profit_contribution
+  - earnings_breadth
+  - rating_methodology
+  - valuation_methodology
+  key_pattern: Sector contribution-to-profit-growth provides a breadth/state signal; report also documents target-price methodology
+    and distribution channels.
+  url: https://www.nomuraholdings.com/en/news/nr/nsc20260605/main/0/link/20260605_nsc.pdf
+- id: BR_KR_SAMSUNG_CHINA_STRATEGIC_INDUSTRIES_20260804
+  source_id: KR_SAMSUNG_RESEARCH
+  origin_broker: SamsungSecurities
+  date: '2026-08-04'
+  report_type: strategy
+  title: 8월 중국 투자전략 - 5대 전략 산업 경쟁력 비교
+  industry_nodes:
+  - ai
+  - semiconductor
+  - healthcare.biotech
+  - battery
+  - robotics
+  extraction_targets:
+  - cross_country_competitiveness
+  - industry_structure
+  - capacity
+  - technology_position
+  key_pattern: Compare countries by sector-specific capability dimensions rather than a single market-growth score; useful
+    for geographic exposure and Economic-Twin context.
+  url: https://www.samsungpop.com/common.do?cmd=down&contentType=application%2Fpdf&fileName=1010%2F2026080412461274K_02_02.pdf&inlineYn=Y&saveKey=research.pdf
+- id: BR_KR_YUANTA_POWER_SEMI_20260515
+  source_id: KR_HANKYUNG_CONSENSUS
+  origin_broker: YuantaSecuritiesKorea
+  date: '2026-05-15'
+  report_type: industry_deep_dive
+  title: 전력반도체 산업 구조 및 기업동향
+  industry_nodes:
+  - semiconductor.power
+  - power.electronics
+  extraction_targets:
+  - material_transition
+  - architecture
+  - supplier_map
+  - policy_timing
+  - technology_roadmap
+  key_pattern: SiC/GaN economics differ from silicon; map voltage/temperature/application requirements to materials, wafer
+    size, device architecture and supplier capability.
+  url: https://consensus.hankyung.com/analysis/downpdf?report_idx=649411
+- id: BR_KR_EUGENE_SEMI_ACCELERATION_20260728
+  source_id: KR_ALPHASQUARE_REPORT_AGGREGATOR
+  origin_broker: EugeneInvestmentSecurities
+  date: '2026-07-28'
+  report_type: industry_deep_dive
+  title: 반도체 - 가속의 시간에서 증명의 시간으로
+  industry_nodes:
+  - semiconductor
+  - ai.infrastructure
+  extraction_targets:
+  - sovereign_ai
+  - funding_source
+  - project_pipeline
+  - government_capex
+  - realization_risk
+  key_pattern: Sovereign AI expands the funding-source map beyond hyperscalers, but announced government-backed pipelines
+    must still pass funding and execution gates.
+  url: https://file.alphasquare.co.kr/media/pdfs/market-report/%EB%B0%98%EB%8F%84%EC%B2%B4%EA%B0%80%EC%86%8D%EC%9D%9820260728%EC%9C%A0%EC%A7%84%ED%88%AC%EC%9E%90%EC%A6%9D%EA%B6%8C.pdf
+- id: BR_KR_MERITZ_DC_UTILITY_20260630
+  source_id: KR_HANKYUNG_CONSENSUS
+  origin_broker: MeritzSecurities
+  date: '2026-06-30'
+  report_type: thematic
+  title: 유틸리티/건설 - AI 데이터센터와 전력공급 경로
+  industry_nodes:
+  - ai.datacenter
+  - power.utility
+  - renewable
+  - construction
+  extraction_targets:
+  - load_pipeline
+  - power_mix
+  - project_timing
+  - beneficiary_map
+  key_pattern: Data-center load announcements need a power-supply path and construction timeline before translating into equipment/project
+    revenue.
+  url: https://consensus.hankyung.com/analysis/downpdf?report_idx=650331
+- id: BR_GLOBAL_GS_6P_POWER_20260304
+  source_id: US_GOLDMAN_PUBLIC_RESEARCH
+  origin_broker: GoldmanSachsResearch
+  date: '2026-03-04'
+  report_type: thematic
+  title: How Rising Hyperscaler Reinvestment Impacts the 6 Ps Driving Power Growth / Constraints
+  industry_nodes:
+  - ai.datacenter
+  - power.grid
+  - power.generation
+  extraction_targets:
+  - constraint_taxonomy
+  - parts
+  - people
+  - policy
+  - electricity_price
+  - compute_productivity
+  key_pattern: Power-demand realization is jointly constrained by AI pervasiveness, compute productivity, power prices, policy,
+    parts and people; use as a multi-constraint checklist, not one-factor forecast.
+  url: https://www.goldmansachs.com/insights/goldman-sachs-research/how-rising-hyperscaler-reinvestment-impacts-power-growth-constraints
+- id: BR_GLOBAL_BOFA_MICRO_THEMES_20260212
+  source_id: US_BOFA_GLOBAL_RESEARCH
+  origin_broker: BofAGlobalResearch
+  date: '2026-02-12'
+  report_type: thematic
+  title: 2026 Economic Micro Themes - AI hardware and infrastructure constraints
+  industry_nodes:
+  - ai.infrastructure
+  - semiconductor.memory
+  - semiconductor.equipment
+  - optics
+  - power
+  extraction_targets:
+  - capex_cycle
+  - gpu_useful_life
+  - component_bottleneck
+  - financing_risk
+  - inference_mix
+  key_pattern: AI capex must be reconciled with depreciation/useful life, financing and long-lead component bottlenecks; capex
+    growth alone is not funded executable demand.
+  url: https://business.bofa.com/content/dam/flagship/global-research/economic-micro-themes.pdf
+- id: BR_GLOBAL_OPPENHEIMER_VIEWPOINTS_202607
+  source_id: US_OPPENHEIMER_PUBLIC
+  origin_broker: Oppenheimer
+  date: '2026-07-20'
+  report_type: strategy
+  title: Research Viewpoints - Everything's AI
+  industry_nodes:
+  - ai.infrastructure
+  - equity.market
+  - credit
+  extraction_targets:
+  - cross_asset_concentration
+  - credit_funding
+  - private_finance
+  - earnings_concentration
+  key_pattern: AI exposure can create hidden common-factor concentration across equity and credit; diversification should
+    be tested by economic driver rather than sector label.
+  url: https://oppenheimer.com/getContentAsset/79f232f4-20b5-45cc-b7ae-27594df9e70f/c7457923-fb44-4ba3-82e6-d567e6afe238/OAM-Research-Viewpoints-07-20-26.pdf

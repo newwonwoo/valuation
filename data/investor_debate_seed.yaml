@@ -1,0 +1,96 @@
+version: 1.0
+debates:
+- id: DEBATE_MEMORY_SIGNAL_REPRESENTATIVENESS
+  industry: semiconductor.memory
+  question: 현물 DRAM/NAND 가격이 실제 계약 ASP와 업황을 얼마나 대표하는가?
+  trigger_sources:
+  - Daishin 2026 memory channel-check pattern
+  - Morgan Stanley AI memory mix
+  resolution_evidence:
+  - spot transaction share
+  - fixed-contract ASP
+  - server/mobile mix
+  - inventory
+  - shipment
+  - wafer-start utilization
+- id: DEBATE_DC_PIPELINE_REALIZATION
+  industry: ai.datacenter
+  question: 발표된 데이터센터 GW 중 실제 전력 인가·준공·매출로 전환될 비율과 시차는 얼마인가?
+  trigger_sources:
+  - Goldman Sachs facility schedule research
+  - IBKS semiconductor-cluster realization pattern
+  resolution_evidence:
+  - funding
+  - land
+  - permit
+  - utility interconnection
+  - construction start
+  - energization
+  - commissioning
+- id: DEBATE_AI_POWER_VS_FINANCING
+  industry: ai.infrastructure
+  question: AI 인프라의 다음 구속조건은 전력인가, 자금조달/담보인가, 특정 부품인가?
+  trigger_sources:
+  - Morgan Stanley power bottleneck
+  - Goldman 6Ps
+  - BofA hardware bottleneck
+  resolution_evidence:
+  - grid queue
+  - equipment lead time
+  - credit spread
+  - advance rate
+  - GPU residual/rental value
+  - project cancellation
+- id: DEBATE_BANK_ROE_QUALITY
+  industry: financials.bank
+  question: ROE 개선이 레버리지 확대가 아니라 RoRWA·수수료·자본배분 개선에서 오는가?
+  trigger_sources:
+  - Hanwha bank RoRWA deep dive
+  resolution_evidence:
+  - RoRWA
+  - CET1
+  - RWA growth
+  - NIM
+  - credit cost
+  - fee income
+  - payout
+- id: DEBATE_BRAND_CAPA
+  industry: consumer.branded_food
+  question: CAPA 부족이 구조적 브랜드 수요/가격결정력의 증거인가 단기 과열인가?
+  trigger_sources:
+  - Hanwha branded-food deep dive
+  resolution_evidence:
+  - utilization
+  - backorders
+  - price realization
+  - repeat purchase
+  - channel inventory
+  - gross margin
+  - capacity payback
+- id: DEBATE_SEMICAP_TOOL_INTENSITY
+  industry: semiconductor.equipment
+  question: 공정 복잡도 증가가 wafer-start당 특정 장비/소재 intensity를 구조적으로 높이는가?
+  trigger_sources:
+  - Hanwha warpage/BSD deep dive
+  resolution_evidence:
+  - process-step count
+  - yield issue
+  - tool count per K wafers
+  - qualification
+  - order conversion
+  - competitor capacity
+- id: DEBATE_AI_CAPEX_RETURN
+  industry: ai.infrastructure
+  question: AI CAPEX 증가가 충분한 토큰/매출/생산성 수익으로 전환되어 자본비용을 상회하는가?
+  trigger_sources:
+  - BofA 2026 AI hardware
+  - JPM APAC TMT
+  - Goldman hyperscaler reinvestment
+  resolution_evidence:
+  - revenue per token
+  - tokens per watt
+  - AI revenue
+  - utilization
+  - depreciation life
+  - FCF
+  - incremental ROIC
