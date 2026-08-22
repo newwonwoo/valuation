@@ -1,36 +1,33 @@
-# 산업 판별 라우터
+# Industry Operator References
 
-**밸류에이션 전에 반드시 이 표로 산업 유형을 확정하고 해당 모듈을 읽는다.**
-유형을 틀리면 지표도 계층 정의도 전부 틀린다.
+> **Canonical routing is not this directory.** v0.5.2 routes `segment → Industry DNA → Economic Archetype(s) → Sector Adapter` using `config/industry_taxonomy.yaml`, `config/archetype_module_registry.yaml`, and `config/sector_adapter_registry.yaml`. These Markdown files are operator supplements for accounting quirks, practical KPIs and diligence questions.
 
-## 판별 순서
+## Routing order
 
-1. **수익인식 방식**을 먼저 본다 (반기보고서 주석 「수익인식」)
-   - 한 시점 인식(point-in-time) + 수주잔고 있음 → `order-equipment.md`
-   - 기간에 걸쳐 인식(over-time) + 미청구공사 있음 → `construction-shipbuilding.md`
-2. 수주잔고가 없으면 매출 동인으로 분류
-   - 점포/채널 수 × 객단가 → `consumer-retail.md`
-   - 이용자 수 × 결제액 → `platform-game.md`
-   - 임상 파이프라인, 매출 미미 → `pharma-bio.md`
-   - 이자·수수료 수익 → `financials.md`
+1. Decompose economically distinct segments.
+2. Read revenue-recognition, asset ownership, contract structure, price formation, capital intensity, regulation, reinvestment model and cash-flow duration.
+3. Assign one or more Economic Archetypes from evidence; keyword/industry-name matching cannot finalize the route.
+4. Use the Sector Adapter as a default evidence/KPI map, not as authority.
+5. Compile the Module Requirement Plan before collecting valuation inputs.
+6. If no supported archetype can be established or a material archetype forbids the proposed method, fail closed rather than falling back to generic DCF.
 
-## 유형별 핵심 차이 요약
+## Manual supplements in this directory
 
-| 유형 | ③계층 정의 | 1순위 지표 | DCF 적합성 |
-|---|---|---|---|
-| 수주형 장비 | 수주잔고 전량 인식 | 계약부채/수주잔고 | 사이클 정규화 필수 |
-| 건설·조선 | 수주잔고 × 진행률 | 미청구공사, 원가율 | 적합(공사기간 명확) |
-| 소비재·유통 | 출점계획 완료 | SSSG, 재고회전 | 적합 |
-| 플랫폼·게임 | 신작 파이프라인 출시 | MAU/ARPU, 이연매출 | 부적합(콘텐츠 수명) |
-| 제약·바이오 | 파이프라인 상업화 | 임상단계, 마일스톤 | **부적합 → rNPV** |
-| 금융 | 대출 성장 계획 | NIM, 대손비용률 | **부적합 → P/B-ROE** |
+| File | Useful for | Canonical v0.5.2 mapping / caution |
+|---|---|---|
+| `order-equipment.md` | order/backlog equipment | usually `contracted_backlog + capacity_manufacturing`; short/long-cycle distinction required |
+| `construction-shipbuilding.md` | over-time project accounting | revenue-recognition/cost-to-complete supplement; not “backlog = revenue” |
+| `consumer-retail.md` | stores/retail/franchise | `consumer_unit_economics`, sometimes `recurring_subscription` |
+| `platform-game.md` | legacy broad platform/game notes | v0.5.2 splits SaaS, usage cloud, marketplace, gaming and advertising; registry wins |
+| `pharma-bio.md` | pipeline-dominant / commercial bio | use Clinical Evidence Gate and healthcare adapters; fixed phase labels are insufficient |
+| `financials.md` | legacy financial-sector overview | bank/life/P&C/securities/asset-manager/exchange are separate adapters; registry wins |
+| `capital-intensive.md` | capacity-heavy manufacturing | `capacity_manufacturing` operator checklist |
+| `materials-parts.md` | materials/consumables/parts | capacity, process-spread and/or commodity archetypes |
+| `holding-company.md` | conglomerate/SOTP | segment route + SOTP aggregation; no generic holding discount |
+| `reit-realestate.md` | REIT/property | `real_assets.reit` / `asset_yield_nav` |
 
-## 공통으로 유지되는 것 (P2~P5)
+The supplied `utilities-telecom.md` and `techbio-platform.md` are intentionally **not adopted as canonical modules** because they combine economically different businesses that v0.5.2 routes separately or multi-labels. Their useful ideas should be expressed through the relevant archetypes/adapters, not by reintroducing coarse single-label routing.
 
-산업이 달라도 아래는 그대로 적용한다.
-- P2 기대 분리 (현재 EV − 확인가치)
-- P3 순차입금 차감 (**단 금융업 제외** — 차입이 영업자산이므로 무의미)
-- P4 출처 등급
-- P5 반증 우선
+## Precedence
 
-**P1의 ③계층 정의만 산업별로 바뀐다.**
+If an operator reference conflicts with `SKILL.md`, `AGENTS.md`, `docs/V04_ROCKETSLA_EXTENSION.md`, `docs/V05_WORKFLOW_CONTRACT.md`, deterministic code, or the v0.5.2 registries, the canonical contract wins. Do not copy a simplified rule into valuation assumptions merely because it appears in a reference file.
