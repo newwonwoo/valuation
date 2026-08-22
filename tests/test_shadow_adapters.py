@@ -14,7 +14,7 @@ from valuation_engine.shadow_adapters import (
 def dna() -> IndustryDNAProfile:
     return IndustryDNAProfile(
         segment_id="transformers",
-        sector_adapter="power_equipment",
+        sector_adapter="power.transformer_switchgear",
         archetypes=(EconomicArchetype.CONTRACTED_BACKLOG, EconomicArchetype.CAPACITY_MANUFACTURING),
         revenue_recognition="delivery",
         price_formation="negotiated",
@@ -28,8 +28,23 @@ def dna() -> IndustryDNAProfile:
     )
 
 
-def test_stage_ii_shadow_adapters_compile_real_module_requirement_plan(tmp_path):
+def paths():
     root = Path(__file__).resolve().parents[1]
+    return (
+        root / "config" / "archetype_module_registry.yaml",
+        root / "config" / "archetype_control_requirements.yaml",
+    )
+
+
+def module_adapter():
+    registry, controls = paths()
+    return module_requirement_plan_adapter(
+        registry_path=registry,
+        control_requirements_path=controls,
+    )
+
+
+def test_stage_ii_shadow_adapters_compile_real_module_requirement_plan(tmp_path):
     sequence = (
         "COMPANY_RESOLUTION",
         "LOAD_COMPANY_STATE",
@@ -40,9 +55,7 @@ def test_stage_ii_shadow_adapters_compile_real_module_requirement_plan(tmp_path)
         "COMPANY_RESOLUTION": company_resolution_adapter(company="Example", ticker="EXM"),
         "LOAD_COMPANY_STATE": load_company_state_adapter(state_root=tmp_path),
         "INDUSTRY_DNA_ROUTE": industry_dna_adapter(profiles=(dna(),)),
-        "MODULE_REQUIREMENT_PLAN": module_requirement_plan_adapter(
-            registry_path=root / "config" / "archetype_module_registry.yaml"
-        ),
+        "MODULE_REQUIREMENT_PLAN": module_adapter(),
     }
 
     result = run_controlled_workflow(
@@ -57,21 +70,19 @@ def test_stage_ii_shadow_adapters_compile_real_module_requirement_plan(tmp_path)
     assert all(trace.status is StageStatus.PASS for trace in result.stage_traces)
     assert "backlog" in result.data["required_evidence"]
     assert "effective_capacity" in result.data["required_evidence"]
+    assert "book_to_bill" in result.data["required_kpis"]
+    assert "CAPACITY_RAMP" in result.data["mandatory_scanners"]
+    assert result.data["kill_conditions"]
     assert "contracted_backlog" in result.data["expected_module_ids"]
     assert "capacity_manufacturing" in result.data["expected_module_ids"]
 
 
-def test_module_plan_adapter_requests_recovery_without_industry_dna(tmp_path):
-    root = Path(__file__).resolve().parents[1]
+def test_module_plan_adapter_requests_recovery_without_industry_dna():
     result = run_controlled_workflow(
         run_id="SHADOW2",
         execution_mode=ExecutionMode.PRIMARY_SHADOW,
         stage_sequence=("MODULE_REQUIREMENT_PLAN",),
-        adapters={
-            "MODULE_REQUIREMENT_PLAN": module_requirement_plan_adapter(
-                registry_path=root / "config" / "archetype_module_registry.yaml"
-            )
-        },
+        adapters={"MODULE_REQUIREMENT_PLAN": module_adapter()},
         required_stages=("MODULE_REQUIREMENT_PLAN",),
     )
 
