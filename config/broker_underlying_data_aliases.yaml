@@ -1,0 +1,120 @@
+version: 1.0
+purpose: Normalize underlying information families so repeated Street citations do
+  not fake independent corroboration.
+families:
+  TRENDFORCE:
+    aliases:
+    - TrendForce
+    - DRAMeXchange
+    - dramexchange
+    class: industry_data
+  OMDIA:
+    aliases:
+    - Omdia
+    class: industry_data
+  SEMI:
+    aliases:
+    - SEMI
+    class: industry_association
+  WSTS:
+    aliases:
+    - WSTS
+    - World Semiconductor Trade Statistics
+    class: industry_association
+  COUNTERPOINT:
+    aliases:
+    - Counterpoint
+    - Counterpoint Research
+    class: industry_data
+  IDC:
+    aliases:
+    - IDC
+    - International Data Corporation
+    class: industry_data
+  GARTNER:
+    aliases:
+    - Gartner
+    class: industry_data
+  SNE_RESEARCH:
+    aliases:
+    - SNE Research
+    - SNE리서치
+    class: industry_data
+  FACTSET:
+    aliases:
+    - FactSet
+    - Factset
+    class: market_data
+  LSEG:
+    aliases:
+    - LSEG
+    - Refinitiv
+    - Thomson Reuters
+    class: market_data
+  BLOOMBERG:
+    aliases:
+    - Bloomberg
+    class: market_data
+  FNGUIDE:
+    aliases:
+    - FnGuide
+    - Quantiwise
+    - QuantiWise
+    class: market_data
+  CLARKSONS:
+    aliases:
+    - Clarksons
+    - Clarksons Research
+    class: shipping_data
+  DREWRY:
+    aliases:
+    - Drewry
+    class: shipping_data
+  SPGCI:
+    aliases:
+    - S&P Global Commodity Insights
+    - Platts
+    class: commodity_data
+  WOOD_MACKENZIE:
+    aliases:
+    - Wood Mackenzie
+    class: energy_data
+  RYSTAD:
+    aliases:
+    - Rystad
+    - Rystad Energy
+    class: energy_data
+  BNEF:
+    aliases:
+    - BloombergNEF
+    - BNEF
+    class: energy_data
+  IQVIA:
+    aliases:
+    - IQVIA
+    class: healthcare_data
+  EVALUATE:
+    aliases:
+    - Evaluate Pharma
+    - Evaluate
+    class: healthcare_data
+  SENSOR_TOWER:
+    aliases:
+    - Sensor Tower
+    - data.ai
+    - App Annie
+    class: app_data
+  SIMILARWEB:
+    aliases:
+    - Similarweb
+    class: web_traffic
+  COMPANY_CHANNEL:
+    aliases:
+    - channel check
+    - company channel
+    - supply-chain check
+    class: proprietary_channel
+  ATERIO:
+    aliases:
+    - Aterio
+    class: facility_project_data

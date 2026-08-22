@@ -1,25 +1,33 @@
-# 수주형 장비산업 (반도체·디스플레이·2차전지 장비)
+# Order / Backlog Equipment — Operator Supplement
 
-이 대화의 원본 로직. 테크윙·제너셈 사례에서 도출.
+> Canonical route is usually `contracted_backlog + capacity_manufacturing`, but the exact route is evidence-driven. This file does not override `config/archetype_module_registry.yaml` or `config/sector_adapter_registry.yaml`.
 
-## 계층 정의
-- ① 실현: 반기 실적 × 2
-- ② IR계획: 회사 발표 연간 목표
-- ③ 공시계획: **반기보고서 수주잔고 전량 연내 인식**
+## Do not equate backlog with one-year revenue
 
-## 1순위 지표: 계약부채 ÷ 수주잔고
-회사 발표 수주잔고는 취소·연기가 가능하지만 **선수금은 실제 입금된 현금**이다.
-40% 이상 → ③ 신뢰 / 10% 미만 → ① 후퇴.
+Revenue recognition, delivery/installation milestones, lead time, cancellations, customer acceptance and slot availability determine backlog conversion. Short-cycle equipment can convert rapidly; transformers, turbines, defense/aerospace and other long-cycle equipment can carry multi-year backlog.
 
-## 사이클 정규화 (반드시)
-장비주는 CAPEX 사이클로 마진이 5~25%를 오간다.
-**정점 OPM을 영구성장에 넣으면 안 된다.**
-- 터미널 밸류는 **직전 3~5년 평균 OPM(mid-cycle)** 으로 계산
-- 또는 Gordon 대신 **exit EV/EBITDA (사이클 평균 배수)** 사용
-- 두 방법의 결과를 병기하고 차이가 30% 이상이면 가정 재검토
+Required evidence includes orders, backlog, backlog age, cancellation terms, revenue-recognition policy, customer advances/contract liabilities, lead time, effective capacity/slots, utilization and customer concentration.
 
-## 추가 확인
-- 수주잔고 기준일이 보고서 작성일과 다를 수 있다(테크윙 사례: 6/30 아닌 8/7)
-- "부품 수주 미포함" 등 각주를 반드시 읽는다. 잔고가 과소 표시된다
-- 리드타임이 짧은 장비는 회사가 직접 "수주잔고로 매출 예상 어렵다"고 기재한다
-- 고객 = 소수 IDM. 고객집중도 자체보다 **그 고객이 선수금을 냈는지**가 중요
+## Customer advances / contract liabilities
+
+`customer advances ÷ backlog` can be a useful **screening indicator of funding/commitment**, but fixed cutoffs are not calibrated probabilities and must not mechanically select a scenario.
+
+Valuation treatment follows `docs/V04_ROCKETSLA_EXTENSION.md` §3 and `src/valuation_engine/wacc.py`:
+
+`Customer Advances ↑ → NWC need ↓ → external funding need ↓ → FCFF / invested-capital economics improve` **first**.
+
+A lower WACC is a separate second-order claim and requires recurring/structural advances plus independent evidence of improved leverage, coverage, borrowing cost/spread, liquidity or refinancing risk. The same advance benefit cannot be fully capitalized in both FCFF/ROIC and WACC without distinct economic paths.
+
+Also inspect prepayment discounts, refund/cancellation rights, delay penalties, performance guarantees and fixed-price inflation exposure.
+
+## Cycle / terminal treatment
+
+Do not capitalize peak backlog, peak utilization or peak margin forever. Explicit forecasts may reflect the current cycle; convergence and terminal economics must normalize price/utilization/margin/reinvestment consistently. See `references/methods/cycle-normalization.md` and the DCF–PER consistency gate.
+
+## Additional checks
+
+- backlog reference date may differ from financial-statement date,
+- disclosed backlog may exclude parts/service/short-lead orders,
+- customer CAPEX is not the same as the supplier's funded order,
+- qualification/design-win evidence is not a purchase order,
+- service/aftermarket revenue may have a different archetype from new equipment.

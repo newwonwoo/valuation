@@ -1,0 +1,312 @@
+version: 1.0
+principle: Route by economic DNA before sector label. Segment-first and multi-label;
+  never generic-DCF fallback.
+economic_archetypes:
+  contracted_backlog:
+    drivers:
+    - backlog
+    - conversion
+    - lead_time
+    - slots
+    - customer_advances
+    - cancellation
+    leading_indicators:
+    - book_to_bill
+    - backlog_age
+    - advance_ratio
+    - slot_utilization
+  capacity_manufacturing:
+    drivers:
+    - capacity
+    - utilization
+    - yield
+    - asp
+    - mix
+    - variable_cost
+    - expansion_capex
+    leading_indicators:
+    - utilization
+    - lead_time
+    - inventory
+    - capacity_ramp
+    - yield
+  recurring_subscription:
+    drivers:
+    - arr
+    - nrr
+    - churn
+    - gross_margin
+    - sales_efficiency
+    - fcf_margin
+    leading_indicators:
+    - nrr
+    - gross_retention
+    - rpo
+    - cRPO
+    - bookings
+  transaction_marketplace:
+    drivers:
+    - gmv
+    - take_rate
+    - transactions
+    - contribution_margin
+    - buyer_seller_density
+    leading_indicators:
+    - active_buyers
+    - active_sellers
+    - frequency
+    - take_rate
+  commodity_price_taker:
+    drivers:
+    - normalized_price
+    - volume
+    - cash_cost
+    - utilization
+    - inventory
+    leading_indicators:
+    - inventory_days
+    - capacity_additions
+    - spreads
+    - exports
+  process_spread:
+    drivers:
+    - input_price
+    - output_price
+    - crack_or_product_spread
+    - utilization
+    - turnaround
+    leading_indicators:
+    - spread_curve
+    - refinery_or_plant_runs
+    - inventory
+  regulated_rate_base:
+    drivers:
+    - rate_base
+    - allowed_roe
+    - capex
+    - regulatory_lag
+    - demand
+    leading_indicators:
+    - rate_case
+    - allowed_roe
+    - capex_plan
+    - load_growth
+  asset_yield_nav:
+    drivers:
+    - asset_value
+    - cap_rate
+    - occupancy
+    - rent_growth
+    - leverage
+    - financing_cost
+    leading_indicators:
+    - leasing_spread
+    - vacancy
+    - cap_rate
+    - refinancing
+  financial_balance_sheet:
+    drivers:
+    - roe
+    - spread
+    - credit_cost
+    - capital_ratio
+    - payout
+    - growth
+    leading_indicators:
+    - nim
+    - npl
+    - cet1
+    - k_ics
+    - csm
+    - trading_var
+  probabilistic_pipeline:
+    drivers:
+    - clinical_evidence
+    - probability_of_success
+    - market_size
+    - net_price
+    - burn
+    - runway
+    leading_indicators:
+    - patient_poc
+    - dose_response
+    - enrollment
+    - regulatory_milestones
+  reserve_depletion:
+    drivers:
+    - proved_reserves
+    - production
+    - decline
+    - replacement
+    - commodity_price
+    - development_capex
+    leading_indicators:
+    - reserve_replacement
+    - finding_cost
+    - decline_rate
+    - strip_price
+  consumer_unit_economics:
+    drivers:
+    - units
+    - price
+    - channel_mix
+    - gross_margin
+    - inventory
+    - store_or_customer_growth
+    leading_indicators:
+    - sssg
+    - traffic
+    - ticket
+    - inventory_turn
+    - returns
+  project_finance:
+    drivers:
+    - contracted_cashflow
+    - capex
+    - dscr
+    - leverage
+    - tenor
+    - cod
+    - utilization
+    leading_indicators:
+    - notice_to_proceed
+    - financing_close
+    - interconnection
+    - permitting
+    - cod
+  metered_usage_network:
+    drivers:
+    - active_users
+    - usage_volume
+    - unit_price
+    - infrastructure_cost
+    - gross_margin
+    - capacity_commitment
+    leading_indicators:
+    - usage_growth
+    - unit_price
+    - capacity_utilization
+    - committed_spend
+    - traffic
+  ip_royalty_licensing:
+    drivers:
+    - licensed_units
+    - royalty_rate
+    - license_fee
+    - installed_base
+    - renewal_cycle
+    leading_indicators:
+    - design_wins
+    - licensed_shipments
+    - royalty_rate
+    - renewals
+  hit_driven_content:
+    drivers:
+    - title_cohorts
+    - bookings
+    - engagement
+    - content_cost
+    - lifetime_curve
+    - pipeline_probability
+    leading_indicators:
+    - preorders
+    - concurrent_users
+    - retention_curve
+    - wishlist_or_engagement
+    - release_schedule
+  advertising_attention:
+    drivers:
+    - active_users
+    - engagement
+    - ad_load
+    - impressions
+    - cpm
+    - fill_rate
+    - traffic_acquisition_cost
+    leading_indicators:
+    - time_spent
+    - impressions
+    - cpm
+    - ad_load
+    - advertiser_demand
+  design_led_product:
+    drivers:
+    - units
+    - asp
+    - product_mix
+    - gross_margin
+    - rd
+    - supply_commitments
+    - product_lifecycle
+    leading_indicators:
+    - design_wins
+    - channel_inventory
+    - launch_schedule
+    - wafer_or_supplier_allocation
+    - gross_margin
+  aum_fee_economics:
+    drivers:
+    - aum
+    - net_flows
+    - market_performance
+    - management_fee_rate
+    - performance_fees
+    - operating_margin
+    leading_indicators:
+    - net_flows
+    - aum
+    - fee_rate
+    - performance_fee_eligibility
+    - fund_performance
+sector_adapters_phase1:
+  semiconductor:
+  - memory
+  - foundry_logic
+  - fabless
+  - equipment
+  - materials
+  - osat
+  power:
+  - regulated_utility
+  - merchant_generation
+  - transformer_switchgear
+  - turbine_oem
+  - distributed_power
+  - project_developer
+  software:
+  - saas
+  - usage_cloud
+  - database
+  - marketplace
+  - gaming
+  - advertising_platform
+  financials:
+  - bank
+  - life_insurance
+  - pnc_insurance
+  - securities
+  - asset_manager
+  - exchange
+  healthcare:
+  - commercial_pharma
+  - pre_revenue_biotech
+  - medtech
+  - diagnostics
+  - cdmo_cro
+  consumer:
+  - branded_consumer
+  - retailer
+  - franchise
+  - distributor
+  - ecommerce
+  transport_industrial:
+  - automotive_oem
+  - auto_parts
+  - shipbuilder
+  - shipping
+  - aerospace_defense
+  real_assets:
+  - reit
+  - oil_gas_ep
+  - mining
+  - midstream

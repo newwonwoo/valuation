@@ -1,0 +1,36 @@
+version: 1.0
+market_role_split:
+  financing_market_reference:
+    pre_freeze_allowed_stages: [upstream_funding_scan, wacc_validation, evidence_to_assumption_bridge]
+    bridge_required: true
+    examples: [risk_free_curve, target_bond_yield, credit_spread, fx, commodity_market_reference]
+    blocked_fields: [target_equity_price, target_market_cap, target_per, target_pbr, target_price]
+  positioning_market_signal:
+    pre_freeze_allowed_stages: [monitoring]
+    post_freeze_allowed_stages: [street_gap, market_compare, monitoring]
+    intrinsic_mutation: false
+    examples: [short_interest, securities_lending, options_positioning, investor_flows, insider_behavior]
+  target_equity_market_reference:
+    pre_freeze_allowed_stages: []
+    post_freeze_allowed_stages: [street_gap, market_compare]
+    examples: [current_share_price, current_market_cap, consensus_target, target_multiple]
+
+signal_gates:
+  negative_evidence:
+    required: [coverage_complete, reporting_mandatory_or_near_complete, expected_lag_elapsed, source_healthy, no_known_alternate_channel]
+  representativeness:
+    required: [coverage_share, selection_bias, duplicate_risk, granularity_match, mapping_stability, definition_stability]
+  project_realization:
+    states: [announced, applied, funded, permitted, awarded_contracted, under_construction, commissioned_delivered, revenue]
+    skip_state_only_if_source_contract_implies: true
+  dynamic_peer_graph:
+    candidate_features: [product_text_similarity, end_market_mix, supply_chain_topology, patent_similarity, revenue_model, capital_intensity, customer_concentration, contract_structure]
+    final_peer_requires_human_auditable_driver_check: true
+
+latency_fields:
+  - event_time
+  - effective_as_of
+  - published_at
+  - first_seen_at
+  - revised_at
+  - expected_reporting_lag_days

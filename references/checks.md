@@ -1,71 +1,37 @@
-# 검증 지표 (수주형 장비산업 기준)
+# Screening Checks — Order/Backlog Equipment
 
-> 다른 산업 유형이면 `industry/` 해당 모듈을 따른다. 이 문서는 범용이 아니다.
+> This is an operator checklist, not a universal scoring model. Other industries follow the v0.5.2 Industry DNA / module registries. Numeric bands below, where used, are screening heuristics rather than calibrated valuation probabilities.
 
-원문에서 뽑은 숫자로 계산한다. 하나라도 건너뛰면 판단이 흔들린다.
-
-## 1. 계약부채(선수금) 증감  ★최우선
+## 1. Contract liabilities / customer advances
 
 ```
-현금선수령률 = 계약부채 ÷ 수주잔고
+advance coverage = relevant customer advances or contract liabilities / comparable backlog
 ```
 
-| 값 | 해석 |
-|---|---|
-| 40% 이상 | 수주가 현금으로 뒷받침됨. ③계층 신뢰 가능 |
-| 10~40% | 통상 구간. ②계층까지 |
-| 10% 미만 | 수주잔고가 종이 숫자일 위험. ①계층으로 후퇴 |
+Interpret the ratio together with definition, scope, backlog age, cancellation/refund rights, lead time and revenue-recognition policy. Direction and contractual quality often matter more than a universal cutoff.
 
-**전기말 대비 증감이 절대값보다 중요하다.** 급증은 하반기 매출의 선행지표.
-위치: 반기보고서 주석 「기타유동부채」 또는 「계약자산 및 계약부채」.
-재무상태표 본문의 '선수금' 행과 다를 수 있으니 주석을 본다.
+**Valuation sequence:** `docs/V04_ROCKETSLA_EXTENSION.md` §3 and `src/valuation_engine/wacc.py` are authoritative. Customer advances improve working-capital/external-funding/FCFF and invested-capital economics first. WACC may fall only after separate credit evidence confirms lower leverage/refinancing/liquidity risk. Audit the direct and indirect paths for double counting.
 
-## 2. 매출채권 회전율 (3개년)
+## 2. Receivable turns / collection days
 
-```
-회전율 = 매출 ÷ 평균매출채권      회수일 = 365 ÷ 회전율
-평균매출채권 = (기초 + 기말) ÷ 2
-반기는 매출을 ×2로 연환산
-```
-절대값이 아니라 **방향**을 본다. 3년 연속 악화면 구조적 문제.
+Use period matching and average balances (`references/methods/period-matching.md`). Compare direction through time and against revenue growth, billing milestones and customer terms rather than treating a longer collection period as bad debt by itself.
 
-## 3. 매출채권 연령분석 + 대손충당금 방향
+## 3. Aging + allowance direction
 
-| 관찰 | 판정 |
-|---|---|
-| 6개월 초과 감소 + 충당금 환입 | **대손 아님.** 납품 사이클 지연 |
-| 6개월 초과 증가 + 충당금 전입 | **대손 진행.** 매출 인식 품질 의심 |
-| 3~6개월만 급증 | 최근 매출의 결제 대기. 다음 분기 재확인 |
+Combine aging buckets, allowance roll-forward, write-offs/recoveries and customer concentration. Deteriorating age plus provisioning is stronger evidence than collection days alone; improvement plus allowance release can indicate normalization. Preserve alternative explanations until verified.
 
-회수일이 길어졌다는 것만으로 대손이라 쓰지 않는다.
+## 4. Debt / fixed-charge burden
 
-## 4. 순차입금과 이자보상배율
+Track net debt, gross debt, maturity wall, interest expense, interest coverage and **marginal/current borrowing cost**. Historical coupon or a single coverage threshold cannot replace the WACC/Funding validation engine.
 
-```
-순차입금 = (단기차입 + 유동성장기부채 + 사채 + 장기차입) − (현금 + 단기금융자산)
-이자보상배율 = 영업이익 ÷ 이자비용
-```
+Convertible/exchangeable securities require the contractual-path analysis in `references/methods/dilution.md`.
 
-| 이자보상 | 판정 |
-|---|---|
-| 5배 이상 | 안전 |
-| 2~5배 | 영업이익 변동에 취약. 하방 증폭 구간 |
-| 2배 미만 | 재무위험 |
+## 5. Customer concentration
 
-전환사채·교환사채는 **희석 요인**이므로 교환가액·행사기간을 별도 확인한다.
+Concentration is neither automatically good nor bad. Evaluate customer credit quality, advances/commitments, qualification/switching costs, pricing power, cancellation terms and whether a single failure can break the thesis.
 
-## 5. 고객 집중도
+Geographic revenue and the actual credit/contracting entity are separate concepts.
 
-주석 「주요 고객에 대한 정보」에서 매출 10% 이상 단일 고객 비중을 확인한다.
-집중도 자체보다 **그 고객이 선수금을 넣었는지**가 중요하다.
-집중도 높음 + 선수금 있음 = 강한 파트너십.
-집중도 높음 + 선수금 없음 = 단일 실패점.
+## 6. Guidance / plan changes
 
-지역별 매출이 있으면 **소재지와 신용주체를 구분한다.**
-중국 매출이라도 고객이 한국 대기업 현지법인이면 중국 리스크가 아니다.
-
-## 6. 회사 가이던스 변경 이력
-
-연초 발표 목표와 최근 실적발표 목표를 비교한다.
-**기중 하향은 ②계층을 무효화하는 강력한 신호다.**
-IR 자료·보도자료·실적발표 코멘트에서 확인한다.
+Track original guidance, revisions and realized delivery. A downgrade is material evidence, but the valuation response depends on which mechanism/assumption changed. Management guidance remains a plan, never realized evidence.

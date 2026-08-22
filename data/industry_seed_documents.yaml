@@ -1,0 +1,530 @@
+seed_version: 2026-08-21.4
+documents:
+- document_id: DOC_KIET_PSI_2026_07_AUG_OUTLOOK
+  source_id: KR_KIET_PSI
+  source_family: KIET
+  title: 산업경기 전문가 서베이조사결과(`26년 7월 현황과 8월 전망)
+  published_at: '2026-07-26'
+  period: 2026-07_to_2026-08
+  document_class: survey_outlook
+  roles:
+  - forward_hypothesis
+  - industry_structure
+  industry_nodes:
+  - manufacturing
+  - semiconductor
+  - automotive
+  - machinery
+  - chemicals
+  - steel
+  url: https://www.kiet.re.kr/communicate/medataList
+  locator: '보도자료 목록: 산업경기 전문가 서베이조사결과(`26년 7월 현황과 8월 전망)'
+  license_note: Public page; store metadata and paraphrased claims only.
+  retrieval_fingerprint: a9df34a4d132592492d699e70f6f306a65e792af8a72e6a0dde7750a0980a965
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_verified_2026-08-21; production crawler must refresh
+    before valuation use
+- document_id: DOC_KITA_EBSI_2026Q3
+  source_id: KR_KITA_EBSI
+  source_family: KITA
+  title: 2026년 3/4분기 수출산업경기전망조사(EBSI)
+  published_at: '2026-06-28'
+  period: 2026Q3
+  document_class: survey_outlook
+  roles:
+  - forward_hypothesis
+  - industry_structure
+  industry_nodes:
+  - exports
+  - semiconductor
+  - shipping.shipbuilding
+  - automotive
+  - machinery
+  - chemicals
+  - electronics
+  url: https://www.kita.net/researchTrade/report/tradeFocus/tradeFocusDetail.do?no=2964
+  locator: 보고서 요약/품목별 EBSI
+  license_note: Public report; paraphrase only.
+  retrieval_fingerprint: 9de22253ee2ac50f0796400c9ac9aa6c8fa99d55627814990529b8199536ffa9
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_KISDI_ICT_2026_2030
+  source_id: KR_KISDI_ICT
+  source_family: KISDI
+  title: ICT 산업 중장기 전망(2026~2030) 및 대응 전략
+  published_at: '2025-12-31'
+  period: 2026-2030
+  document_class: medium_term_outlook
+  roles:
+  - industry_structure
+  - forward_hypothesis
+  industry_nodes:
+  - semiconductor
+  - display
+  - software
+  - information_services
+  - telecom
+  url: https://www.kisdi.re.kr/report/view.do?arrMasterId=3934580&artId=1943576&key=m2101113024770&masterId=3934580
+  locator: 요약 및 p.117
+  license_note: Public research report; paraphrase only.
+  retrieval_fingerprint: a3a9c6a00e25327d13ec408118ed3910b98f8f74f293bf42e46c305765af0b55
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_WSTS_SPRING_2026
+  source_id: INT_WSTS
+  source_family: WSTS
+  title: Spring 2026 semiconductor market forecast
+  published_at: '2026-06-24'
+  period: 2026-2027
+  document_class: industry_forecast
+  roles:
+  - forward_hypothesis
+  - industry_structure
+  industry_nodes:
+  - semiconductor
+  - semiconductor.memory
+  - semiconductor.logic
+  url: https://www.wsts.org/esraCMS/extension/esrapdf/generate/105
+  locator: page 1
+  license_note: Public release; derived facts only.
+  retrieval_fingerprint: d341058c08c9cb8d561bd9cced0f23c8f09ec86f4105fcc0f8fead9d79163cec
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_WSTS_2025_Q4_ACTUAL
+  source_id: INT_WSTS
+  source_family: WSTS
+  title: WSTS Q4 Release 2025
+  published_at: '2026-03-06'
+  period: '2025'
+  document_class: industry_actuals
+  roles:
+  - observed_state
+  - industry_structure
+  industry_nodes:
+  - semiconductor
+  - semiconductor.memory
+  - semiconductor.logic
+  url: https://www.wsts.org/esraCMS/extension/media/f/WST/7495/WSTS-Q4-Release-2025_-_06-Mar-2026.pdf
+  locator: page 2
+  license_note: Public release; derived facts only.
+  retrieval_fingerprint: 80a2ae7d9dc6509820395afe8a8d4ce9332fbf37409efe8cbccaa5a762588355
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_SEMI_WFE_2025_MIDYEAR
+  source_id: INT_SEMI
+  source_family: SEMI
+  title: 'Building the Future: AI Investment, Equipment & Materials Market Outlook'
+  published_at: '2025-09-25'
+  period: 2025-2027
+  document_class: industry_forecast
+  roles:
+  - industry_structure
+  - forward_hypothesis
+  - market_reference
+  industry_nodes:
+  - semiconductor_equipment
+  - semiconductor.memory
+  - semiconductor.logic
+  - semiconductor.materials
+  url: https://www.semi.org/sites/semi.org/files/2025-09/5%20Clark%20Tseng_Building%20the%20Future-AI%20Investment%2C%20Equipment%20%26%20Materials%20Market%20Outlook.pdf
+  locator: pages 16, 21, 24
+  license_note: Public conference material; derived facts only.
+  retrieval_fingerprint: 71853187b49184f231dc61646b4962adfca0278e82dfa2a5d48c3c45491abc66
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_IEA_ELECTRICITY_2026_GRIDS
+  source_id: INT_IEA
+  source_family: IEA
+  title: Electricity 2026 - Grids
+  published_at: '2026-02-06'
+  period: 2026-2030
+  document_class: industry_structure_outlook
+  roles:
+  - industry_structure
+  - forward_hypothesis
+  industry_nodes:
+  - power.grid
+  - data_centers
+  - renewables
+  - storage
+  url: https://www.iea.org/reports/electricity-2026/grids
+  locator: Grids chapter
+  license_note: CC BY 4.0 page; still store concise claims.
+  retrieval_fingerprint: c6248ec039e17acbac316de9f369243fdd76a709c1a6c3dfe84eaf7e92d1d207
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_IEA_ELECTRICITY_MIDYEAR_2026
+  source_id: INT_IEA
+  source_family: IEA
+  title: Electricity Mid-Year Update 2026 - Executive Summary
+  published_at: '2026-07-23'
+  period: 2026-2027
+  document_class: industry_outlook
+  roles:
+  - forward_hypothesis
+  - industry_structure
+  industry_nodes:
+  - power.demand
+  - data_centers
+  - ev
+  - cooling
+  url: https://www.iea.org/reports/electricity-mid-year-update-2026/executive-summary
+  locator: Executive summary
+  license_note: CC BY 4.0 page; concise structured claims.
+  retrieval_fingerprint: 50745fb8474e26981b2186c60dc33354735644113b195a0446e1723713dcadf8
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_IEA_MES_2026_07_PAGE
+  source_id: INT_IEA
+  source_family: IEA
+  title: Monthly Electricity Statistics
+  published_at: '2026-07-20'
+  period: data_to_2026-04
+  document_class: official_dataset_index
+  roles:
+  - observed_state
+  - definition_standard
+  industry_nodes:
+  - power.generation
+  - power.trade
+  url: https://www.iea.org/data-and-statistics/data-product/monthly-electricity-statistics
+  locator: Dataset schedule and documentation
+  license_note: Dataset terms apply; public metadata only.
+  retrieval_fingerprint: 425c43ff3d31dbd487d01961c31044f45f574da0495adc95e445003298eefc57
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_DOE_GRID_SUPPLY_2026_08
+  source_id: US_DOE_GRID
+  source_family: US_DOE
+  title: Strengthening America’s Grid Supply Chain
+  published_at: '2026-08-10'
+  period: '2026'
+  document_class: supply_chain_update
+  roles:
+  - industry_structure
+  - regulation_policy
+  industry_nodes:
+  - power.transformers
+  - power.switchgear
+  - power.grid_components
+  url: https://www.energy.gov/oe/articles/strengthening-americas-grid-supply-chain
+  locator: main article
+  license_note: US government public page.
+  retrieval_fingerprint: add0d0898fde50e18d5e4a29a2e603cb2c3060a54467ce5bb15fa7a25271df06
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_DOE_TRANSFORMER_2026_03
+  source_id: US_DOE_GRID
+  source_family: US_DOE
+  title: Distribution Transformer Webinar Text Alternative
+  published_at: '2026-03-05'
+  period: 2019-2024_observed
+  document_class: supply_chain_observation
+  roles:
+  - observed_state
+  - industry_structure
+  industry_nodes:
+  - power.transformers
+  url: https://www.energy.gov/oe/distribution-transformer-webinar-text-alternative
+  locator: 00:03:00-00:03:32
+  license_note: US government public page.
+  retrieval_fingerprint: a8e1f5edb78b2320953e999aa1553f1d3ca97d924fa7ef6173a22cfed4ef70f7
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_KESIS_2026_05_JULY
+  source_id: KR_KEEI_KESIS
+  source_family: KEEI
+  title: 에너지수급동향(2026.05)_2026년 7월호
+  published_at: '2026-07-28'
+  period: 2026-05
+  document_class: monthly_energy_state
+  roles:
+  - observed_state
+  - industry_structure
+  industry_nodes:
+  - energy
+  - manufacturing
+  - oil
+  - gas
+  - coal
+  url: https://kesis.keei.re.kr/board.es?act=list&bid=0018&mid=a10302010000
+  locator: 2026년 7월호 목록 요약
+  license_note: Public research publication; concise claims.
+  retrieval_fingerprint: 4152c95d49ef7590917d280ca4fa06c52990dcb6edadd54035520a0b76f4718d
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_KAMA_AUTO_2026_06_FINAL
+  source_id: KR_KAMA
+  source_family: KAMA
+  title: 2026년 6월 자동차산업 동향(확정)
+  published_at: '2026-07-28'
+  period: 2026-06
+  document_class: monthly_industry_actuals
+  roles:
+  - observed_state
+  - industry_structure
+  industry_nodes:
+  - automotive.oem
+  - automotive.ev
+  url: https://www.kama.or.kr/NewsController?board_id=12388&boardmaster_id=industry&cmd=V&menunum=0004
+  locator: 본문 요약
+  license_note: Public page; derived facts only.
+  retrieval_fingerprint: 63a71d5d319198262f7e6ddf20eb8e3f802892dd4e3e602935d397d508a73808
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_KOBC_KCCI_2026_08_10
+  source_id: KR_KOBC
+  source_family: KOBC
+  title: KOBC Container Composite Index 2026-08-10
+  published_at: '2026-08-10'
+  period: '2026-08-10'
+  document_class: market_index
+  roles:
+  - observed_state
+  - market_reference
+  industry_nodes:
+  - shipping.container
+  url: https://www.kobc.or.kr/ebz/shippinginfo/kcci/gridList.do?mId=0304000000
+  locator: 2026-08-10 row
+  license_note: Public index page.
+  retrieval_fingerprint: 2352ac7cb5b17a9dffc17bb367297548365ad5f1699b8fb136bd01f121776db0
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_KOBC_KDCI_2026_08_12
+  source_id: KR_KOBC
+  source_family: KOBC
+  title: KOBC Dry Bulk Composite Index 2026-08-12
+  published_at: '2026-08-12'
+  period: '2026-08-12'
+  document_class: market_index
+  roles:
+  - observed_state
+  - market_reference
+  industry_nodes:
+  - shipping.dry_bulk
+  url: https://www.kobc.or.kr/ebz/shippinginfo/kdci/gridList.do?mId=0301000000
+  locator: 2026-08-12 row
+  license_note: Public index page.
+  retrieval_fingerprint: 15171b32f29b5ebe1e8012e80e2f3d8c58d90c436d2c5e804a1d92928b2d0b31
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_NAREIT_TRACKER_2026Q1
+  source_id: INT_NAREIT
+  source_family: NAREIT
+  title: Nareit REIT Industry Tracker Q1 2026
+  published_at: '2026-05-15'
+  period: 2026Q1
+  document_class: quarterly_industry_actuals
+  roles:
+  - observed_state
+  - industry_structure
+  - market_reference
+  - definition_standard
+  industry_nodes:
+  - reit
+  - reit.data_center
+  - reit.industrial
+  - reit.office
+  url: https://www.reit.com/data-research/reit-market-data/report/nareit-reit-industry-tracker
+  locator: Key takeaways / PDF page 3
+  license_note: Public summary and downloadable report; derived facts only.
+  retrieval_fingerprint: 1a6c7ca0b9bc105824ade0c462297825a5a5522dfd0ceb00b1fdd6317d588f84
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_NAREIT_CAPITAL_2026Q2
+  source_id: INT_NAREIT
+  source_family: NAREIT
+  title: 'REITs Raised $20 Billion in Capital Offerings in 2026: Q2'
+  published_at: '2026-07-21'
+  period: 2026Q2
+  document_class: capital_market_actuals
+  roles:
+  - observed_state
+  - industry_structure
+  industry_nodes:
+  - reit
+  - reit.financing
+  url: https://www.reit.com/news/blog/market-commentary/reits-raised-20-billion-capital-offerings-2026-q2
+  locator: Capital Offerings section
+  license_note: Public article; concise derived facts.
+  retrieval_fingerprint: 89102a295b0b662678b9768a2b3a23b3244f4687844c366eda6396d6b2b6c366
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_KHIDI_GLOBAL_592
+  source_id: KR_KHIDI
+  source_family: KHIDI
+  title: 글로벌 바이오헬스산업 동향 Vol.592
+  published_at: '2026-06-08'
+  period: 2026-06
+  document_class: weekly_industry_monitor
+  roles:
+  - industry_structure
+  - forward_hypothesis
+  industry_nodes:
+  - pharma
+  - biotech
+  - healthcare_trade
+  url: https://www.khidi.or.kr/board/view?linkId=48945719&menuId=MENU02184
+  locator: FOCUS / 무역통상
+  license_note: Public trend summary; paraphrase only.
+  retrieval_fingerprint: 3f1f3657296f8f13290760e65ad6d164955c6eee53076f3101f70cc126c48d08
+  ingested_at: '2026-08-21T09:13:00+09:00'
+  retrieval_posture: public_web_seed; production crawler must refresh before valuation
+    use
+- document_id: DOC_IEA_MES_2026_08_TOOL
+  source_id: INT_IEA
+  source_family: IEA
+  title: Monthly Electricity Statistics - August 2026 data tool update
+  published_at: '2026-08-17'
+  period: data_to_2026-05
+  document_class: official_dataset_update
+  roles:
+  - observed_state
+  - definition_standard
+  industry_nodes:
+  - power.generation
+  - power.trade
+  - power.demand
+  url: https://www.iea.org/data-and-statistics/data-tools/monthly-electricity-statistics
+  locator: Last updated 17 Aug 2026; highlight of the month
+  license_note: CC BY 4.0 data-tool page; concise structured claims only.
+  ingested_at: '2026-08-21T09:50:00+09:00'
+  retrieval_posture: public_web_verified_2026-08-21
+  retrieval_fingerprint: aa871159429c41201affb144f87ef88f898c9e38189e5c86215a8875d70e5899
+- document_id: DOC_UNCTAD_RMT_2025
+  source_id: INT_UNCTAD_RMT
+  source_family: UNCTAD
+  title: 'Review of Maritime Transport 2025: Staying the course in turbulent waters'
+  published_at: '2025-09-24'
+  period: 2024_actual_2025_2030_outlook
+  document_class: annual_shipping_structure_outlook
+  roles:
+  - observed_state
+  - industry_structure
+  - forward_hypothesis
+  industry_nodes:
+  - shipping
+  - shipping.container
+  - shipping.dry_bulk
+  - shipbuilding
+  - ports
+  url: https://unctad.org/publication/review-maritime-transport-2025
+  locator: Overview; chapters 1-3
+  license_note: UNCTAD public publication; concise paraphrases and numeric facts only.
+  ingested_at: '2026-08-21T09:58:00+09:00'
+  retrieval_posture: public_web_verified_2026-08-21
+  retrieval_fingerprint: 8dd0812fe070ddb178a66e1af1d70a54d5ba1994ae42192e81b0187410479556
+- document_id: DOC_EIA_PROVED_RESERVES_2024
+  source_id: US_EIA
+  source_family: US_EIA
+  title: U.S. Crude Oil and Natural Gas Proved Reserves, Year-End 2024
+  published_at: '2026-04-07'
+  period: '2024'
+  document_class: annual_reserve_actuals
+  roles:
+  - observed_state
+  - definition_standard
+  - industry_structure
+  industry_nodes:
+  - oil_gas_ep
+  - oil
+  - gas
+  url: https://www.eia.gov/about/new/?r=120
+  locator: Apr 7 2026 release summary; reserve definition corroborated by EIA analysis
+  license_note: U.S. government public statistics; concise structured claims.
+  ingested_at: '2026-08-21T09:58:00+09:00'
+  retrieval_posture: public_web_verified_2026-08-21
+  retrieval_fingerprint: 8a7ea95ac853c1491a45a596ca80ae299cd8abb3102f02f6f8b8a1f597c306be
+- document_id: DOC_USGS_MCS_2026
+  source_id: US_USGS_MCS
+  source_family: USGS_NMIC
+  title: Mineral Commodity Summaries 2026
+  published_at: '2026-02-06'
+  period: 2025_actuals_2026_structure
+  document_class: annual_minerals_statistics
+  roles:
+  - observed_state
+  - industry_structure
+  - definition_standard
+  industry_nodes:
+  - mining
+  - critical_minerals
+  url: https://pubs.usgs.gov/publication/mcs2026
+  locator: publication landing page; version history through v1.3 May 2026
+  license_note: USGS public-domain authored data with third-party-content caveat;
+    structured facts only.
+  ingested_at: '2026-08-21T10:15:00+09:00'
+  retrieval_posture: public_web_verified_2026-08-21
+  retrieval_fingerprint: 294a0949a3ec9f5b4a0d742a782d5218726d1ca30f0bbff6254af44c98722318
+- document_id: DOC_NERC_LTRA_2025_CURRENT
+  source_id: US_NERC_LTRA
+  source_family: NERC
+  title: 2025 Long-Term Reliability Assessment
+  published_at: '2026-02-24'
+  period: 2025_2035_outlook
+  document_class: annual_reliability_outlook
+  roles:
+  - industry_structure
+  - forward_hypothesis
+  industry_nodes:
+  - power.grid
+  - power.demand
+  - power.data_infrastructure
+  url: https://www.nerc.com/our-work/assessments/long-term-reliability-assessments
+  locator: 2025 Assessment; page modified 2026-02-24
+  license_note: Public NERC assessment; concise paraphrases only.
+  ingested_at: '2026-08-21T10:15:00+09:00'
+  retrieval_posture: public_web_verified_2026-08-21
+  retrieval_fingerprint: 3bd82b0f2302c18281df07834cb3cfdcdff3b18d4853993eb09d548925f66f0d
+- document_id: DOC_REB_COMMERCIAL_2026Q2
+  source_id: KR_REB_COMMERCIAL
+  source_family: KOREA_REB
+  title: 2026년 2분기 상업용부동산 임대동향조사 결과 발표
+  published_at: '2026-07-30'
+  period: 2026Q2
+  document_class: quarterly_commercial_property_survey
+  roles:
+  - observed_state
+  industry_nodes:
+  - commercial_real_estate
+  - reit
+  url: https://www.reb.or.kr/reb/na/ntt/selectNttInfo.do?mi=9565&nttSn=115895
+  locator: official press-release metadata and attached survey PDF
+  license_note: Official public page; numeric facts require attachment/parser verification
+    before primary-source claim ingestion.
+  ingested_at: '2026-08-21T10:15:00+09:00'
+  retrieval_posture: public_web_metadata_verified_2026-08-21
+  retrieval_fingerprint: b70ebbdc923ef770ad9fd6d3c30236aa11ca8cef5403f29737128448ef7e3aba
+- document_id: DOC_REB_COMMERCIAL_DEFINITION_2026
+  source_id: KR_REB_COMMERCIAL
+  source_family: KOREA_REB
+  title: 상업용부동산 임대동향조사 조사대상 정의
+  published_at: '2026-02-11'
+  period: current_definition_2026
+  document_class: official_metric_definition
+  roles:
+  - definition_standard
+  industry_nodes:
+  - commercial_real_estate
+  url: https://www.reb.or.kr/reb/na/ntt/selectNttInfo.do?mi=9665&nttSn=112047
+  locator: FAQ property-type definitions
+  license_note: Official public definition; concise paraphrase only.
+  ingested_at: '2026-08-21T10:15:00+09:00'
+  retrieval_posture: public_web_verified_2026-08-21
+  retrieval_fingerprint: 24666b606da28222b30b0aa50f6a856d7cf8e112d66141acf5b78d7b3adc330b

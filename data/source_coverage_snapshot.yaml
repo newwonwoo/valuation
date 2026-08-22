@@ -1,0 +1,509 @@
+snapshot_version: 2026-08-21.3
+method: deterministic heuristic; exact claim-node scoring plus declared mechanism-scope
+  source-family corroboration; not an investment-quality rating
+coverage:
+- industry_node: automotive
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 30
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+- industry_node: automotive.oem
+  independent_source_families: 2
+  roles:
+  - mechanism_corroboration
+  - observed_state
+  claim_count: 3
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 60
+  grade: B
+  gaps: []
+- industry_node: commercial_real_estate
+  independent_source_families: 1
+  roles:
+  - definition_standard
+  - observed_state
+  claim_count: 2
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 35
+  grade: C+
+  gaps:
+  - needs independent source family
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: critical_minerals
+  independent_source_families: 1
+  roles:
+  - industry_structure
+  - mechanism_corroboration
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 35
+  grade: C+
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+- industry_node: energy.commodities
+  independent_source_families: 1
+  roles:
+  - observed_state
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 30
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: exports
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 25
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: ict
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  - industry_structure
+  claim_count: 2
+  watch_coverage: false
+  mechanism_coverage: false
+  score: 30
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - no freshness watch
+  - no mechanism candidate
+- industry_node: information_services
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  claim_count: 1
+  watch_coverage: false
+  mechanism_coverage: false
+  score: 20
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+  - no freshness watch
+  - no mechanism candidate
+- industry_node: manufacturing
+  independent_source_families: 2
+  roles:
+  - forward_hypothesis
+  - observed_state
+  claim_count: 2
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 50
+  grade: B-
+  gaps:
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: mining
+  independent_source_families: 1
+  roles:
+  - definition_standard
+  - mechanism_corroboration
+  - observed_state
+  claim_count: 2
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 50
+  grade: C+
+  gaps:
+  - needs independent source family
+- industry_node: oil_gas_ep
+  independent_source_families: 1
+  roles:
+  - definition_standard
+  - mechanism_corroboration
+  - observed_state
+  claim_count: 3
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 50
+  grade: C+
+  gaps:
+  - needs independent source family
+- industry_node: pharma
+  independent_source_families: 1
+  roles:
+  - industry_structure
+  claim_count: 2
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 30
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - no mechanism candidate
+- industry_node: power.data_infrastructure
+  independent_source_families: 1
+  roles:
+  - definition_standard
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 25
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: power.demand
+  independent_source_families: 2
+  roles:
+  - forward_hypothesis
+  claim_count: 4
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 40
+  grade: C+
+  gaps:
+  - missing observed-state source
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: power.generation
+  independent_source_families: 1
+  roles:
+  - definition_standard
+  - observed_state
+  claim_count: 2
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 35
+  grade: C+
+  gaps:
+  - needs independent source family
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: power.grid
+  independent_source_families: 3
+  roles:
+  - forward_hypothesis
+  - industry_structure
+  - mechanism_corroboration
+  claim_count: 4
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 70
+  grade: B
+  gaps:
+  - missing observed-state source
+- industry_node: power.grid_components
+  independent_source_families: 1
+  roles:
+  - industry_structure
+  claim_count: 4
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 30
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - no mechanism candidate
+- industry_node: power.switchgear
+  independent_source_families: 3
+  roles:
+  - mechanism_corroboration
+  claim_count: 0
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 65
+  grade: B
+  gaps:
+  - missing observed-state source
+- industry_node: power.transformers
+  independent_source_families: 3
+  roles:
+  - industry_structure
+  - mechanism_corroboration
+  - observed_state
+  claim_count: 2
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 75
+  grade: A-
+  gaps: []
+- industry_node: power.transformers.large
+  independent_source_families: 1
+  roles:
+  - industry_structure
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 35
+  grade: C+
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+- industry_node: reit
+  independent_source_families: 1
+  roles:
+  - mechanism_corroboration
+  - observed_state
+  claim_count: 4
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 45
+  grade: C+
+  gaps:
+  - needs independent source family
+- industry_node: reit.data_center
+  independent_source_families: 1
+  roles:
+  - observed_state
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 35
+  grade: C+
+  gaps:
+  - needs independent source family
+  - missing structure/mechanism source
+- industry_node: reit.financing
+  independent_source_families: 1
+  roles:
+  - observed_state
+  claim_count: 2
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 35
+  grade: C+
+  gaps:
+  - needs independent source family
+  - missing structure/mechanism source
+- industry_node: semiconductor
+  independent_source_families: 4
+  roles:
+  - forward_hypothesis
+  - observed_state
+  claim_count: 5
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 85
+  grade: B
+  gaps:
+  - missing structure/mechanism source
+- industry_node: semiconductor.logic
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 25
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: semiconductor.materials
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 25
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: semiconductor.memory
+  independent_source_families: 4
+  roles:
+  - forward_hypothesis
+  - industry_structure
+  - mechanism_corroboration
+  claim_count: 2
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 85
+  grade: B
+  gaps:
+  - missing observed-state source
+- industry_node: semiconductor.memory.dram
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 30
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+- industry_node: semiconductor.memory.nand
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 30
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+- industry_node: semiconductor_equipment
+  independent_source_families: 4
+  roles:
+  - forward_hypothesis
+  - industry_structure
+  - mechanism_corroboration
+  claim_count: 2
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 85
+  grade: B
+  gaps:
+  - missing observed-state source
+- industry_node: shipbuilding
+  independent_source_families: 1
+  roles:
+  - observed_state
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 30
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: shipping
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  - industry_structure
+  - observed_state
+  claim_count: 6
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 50
+  grade: C+
+  gaps:
+  - needs independent source family
+- industry_node: shipping.container
+  independent_source_families: 2
+  roles:
+  - mechanism_corroboration
+  - observed_state
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 60
+  grade: B
+  gaps: []
+- industry_node: shipping.container.uswc
+  independent_source_families: 1
+  roles:
+  - observed_state
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 35
+  grade: C+
+  gaps:
+  - needs independent source family
+  - missing structure/mechanism source
+- industry_node: shipping.dry_bulk
+  independent_source_families: 2
+  roles:
+  - mechanism_corroboration
+  - observed_state
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 60
+  grade: B
+  gaps: []
+- industry_node: shipping.dry_bulk.capesize
+  independent_source_families: 1
+  roles:
+  - observed_state
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: true
+  score: 35
+  grade: C+
+  gaps:
+  - needs independent source family
+  - missing structure/mechanism source
+- industry_node: shipping.shipbuilding
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 25
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: software
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  claim_count: 1
+  watch_coverage: true
+  mechanism_coverage: false
+  score: 25
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+  - no mechanism candidate
+- industry_node: storage.ssd
+  independent_source_families: 1
+  roles:
+  - forward_hypothesis
+  claim_count: 1
+  watch_coverage: false
+  mechanism_coverage: false
+  score: 20
+  grade: C
+  gaps:
+  - needs independent source family
+  - missing observed-state source
+  - missing structure/mechanism source
+  - no freshness watch
+  - no mechanism candidate
