@@ -71,8 +71,10 @@ def test_damodaran_like_reference_cannot_be_direct_assumption():
     assert not blocked.allowed
 
 
-def test_market_reference_is_quarantined_before_freeze():
+def test_market_reference_is_quarantined_before_and_at_freeze():
     blocked = decide_placement(KnowledgeLayer.MARKET_REFERENCE, WorkflowStage.SCENARIO_BUILD)
     assert not blocked.allowed
+    freeze = decide_placement(KnowledgeLayer.MARKET_REFERENCE, WorkflowStage.INTRINSIC_VALUE_FREEZE)
+    assert not freeze.allowed
     ok = decide_placement(KnowledgeLayer.MARKET_REFERENCE, WorkflowStage.MARKET_COMPARE)
     assert ok.allowed

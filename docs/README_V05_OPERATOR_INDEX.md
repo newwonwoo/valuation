@@ -2,6 +2,23 @@
 
 Use this file as the first navigation page.
 
+## 0. Who commands the workflow?
+
+Read/use:
+- `docs/CONTROL_PLANE_ARCHITECTURE.md`
+- `config/control_plane_stage_registry.yaml`
+- `src/valuation_engine/control_plane.py`
+
+Canonical authority:
+- Doctrine defines rules.
+- Control Plane commands stages, module/scanner loadout, recovery and access.
+- LLM observes, reasons, proposes, recovers, designs and asks; it never commits assumptions or authorizes stages.
+- Compiler commits validated assumptions.
+- Deterministic engines calculate.
+- Audit alone authorizes the Intrinsic Freeze.
+
+`None` or a failed method enters the canonical recovery ladder before `VALUATION_BLOCKED`. A material reusable capability gap may be designed by the LLM, but build work requires an explicit user decision. Every applicable module/scanner/gate must leave a doctrine-coverage status; silent skip is forbidden.
+
 ## 1. What industry is this business?
 Read/use:
 - `config/foundation_source_registry.yaml` — ISIC/KSIC/NAICS classification foundations
