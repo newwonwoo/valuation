@@ -97,7 +97,15 @@ Read/use:
 
 Required: independent-source corroboration + leading indicator + valuation link + kill condition + multi-period evidence + Red Team + regression + explicit approval.
 
-## 10. Validation
+## 10. Does a module actually affect the conclusion?
+Read/use:
+- `docs/DECISION_IMPACT_SENSITIVITY.md`
+- `config/decision_impact_policy.yaml`
+- `src/valuation_engine/decision_impact.py`
+
+Every active module/scanner/gate must declare an impact path to assumptions, decisions, economic paths, final outputs, or guardrail protection. Use leave-one-module-out counterfactuals and evidence-backed numeric perturbations to measure value/decision/timing/guardrail impact. Repeated costly zero-impact research becomes a down-rank or retire candidate; mandatory guardrails are retained even when ordinary value delta is zero.
+
+## 11. Validation
 Run:
 ```bash
 PYTHONPATH=src python scripts/validate_industry_seed.py
