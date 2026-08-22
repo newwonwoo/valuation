@@ -64,7 +64,11 @@ def industry_dna_adapter(*, profiles: tuple[IndustryDNAProfile, ...]) -> StageAd
     return run
 
 
-def module_requirement_plan_adapter(*, registry_path: str | Path) -> StageAdapter:
+def module_requirement_plan_adapter(
+    *,
+    registry_path: str | Path,
+    control_requirements_path: str | Path,
+) -> StageAdapter:
     def run(context: OrchestratorContext) -> StageExecutionResult:
         profiles = context.data.get("industry_dna_profiles")
         if not isinstance(profiles, tuple) or not profiles or not all(
@@ -75,7 +79,11 @@ def module_requirement_plan_adapter(*, registry_path: str | Path) -> StageAdapte
                 "Industry DNA profiles are missing or invalid",
                 blocking=True,
             )
-        plan = build_module_requirement_plan(profiles, registry_path=registry_path)
+        plan = build_module_requirement_plan(
+            profiles,
+            registry_path=registry_path,
+            control_requirements_path=control_requirements_path,
+        )
         expected_modules = tuple(
             dict.fromkeys(
                 (*plan.common_core_modules, *(archetype for segment in plan.segments for archetype in segment.archetypes))
@@ -83,10 +91,13 @@ def module_requirement_plan_adapter(*, registry_path: str | Path) -> StageAdapte
         )
         return StageExecutionResult(
             StageStatus.PASS,
-            "Industry DNA compiled into required evidence, scenario, risk and valuation-method contracts",
+            "Industry DNA compiled into evidence, KPI, scanner, kill-condition, scenario and valuation-method contracts",
             {
                 "module_requirement_plan": plan,
                 "required_evidence": plan.required_evidence,
+                "required_kpis": plan.required_kpis,
+                "mandatory_scanners": plan.mandatory_scanners,
+                "kill_conditions": plan.kill_conditions,
                 "scenario_variables": plan.scenario_variables,
                 "expected_module_ids": expected_modules,
             },
