@@ -1,4 +1,4 @@
-# PRISM Valuation Control Plane — Canonical Architecture v1.0
+# PRISM Valuation Control Plane — Canonical Architecture v1.1
 
 Status: canonical control-plane contract.
 
@@ -124,3 +124,21 @@ A Street-discovered fact may create a verification request, but cannot mutate th
 - Compiler cannot invent evidence.
 - Evaluator cannot interpret sources.
 - Audit cannot be overridden.
+
+## 8. Executable orchestration boundary
+
+`src/valuation_engine/orchestrator.py` is the generic execution shell for `PRIMARY_SHADOW` and future `LIVE_PRIMARY` runs. It is intentionally thin: it does not collect evidence, perform LLM reasoning, compile assumptions, or calculate value. Those capabilities enter as stage adapters with explicit outputs.
+
+The orchestrator:
+
+- loads or accepts the canonical V05 stage order;
+- records an explicit terminal trace for every attempted stage;
+- fails closed when a required stage adapter is absent;
+- records unsupported optional capability as `NOT_IMPLEMENTED`, never as a silent success;
+- treats the run context as append-only so a later stage cannot silently rewrite an upstream output;
+- issues the Intrinsic Freeze Token only from audit-passed, doctrine-covered and hash-bound data;
+- refuses all post-freeze stages until that token exists and validates for the same run.
+
+`LEGACY_REGRESSION` remains isolated in `workflow.py`; it is not routed through the new generic orchestrator. `PRIMARY_SHADOW` is the migration path: newly connected source/reasoning/compiler/evaluator adapters can execute the canonical sequence without replacing the proven OCI regression path. `LIVE_PRIMARY` may use the same shell only when its required adapters are implemented and validated.
+
+A missing live adapter is a visible capability state, not permission to fall back to the old keyword router, a generic DCF, fabricated evidence, or a market-anchored estimate.
