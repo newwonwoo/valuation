@@ -105,7 +105,15 @@ Read/use:
 
 Every active module/scanner/gate must declare an impact path to assumptions, decisions, economic paths, final outputs, or guardrail protection. Use leave-one-module-out counterfactuals and evidence-backed numeric perturbations to measure value/decision/timing/guardrail impact. Repeated costly zero-impact research becomes a down-rank or retire candidate; mandatory guardrails are retained even when ordinary value delta is zero.
 
-## 11. Validation
+## 11. What does each unit consume, emit and affect?
+Read/use:
+- `config/unit_contract_registry.yaml` — canonical machine-readable Unit Contract & Impact Registry
+- `docs/UNIT_CONTRACT_AND_IMPACT_MAP.md` — maintenance guide
+- `src/valuation_engine/unit_contracts.py` — forward/reverse dependency lookup and expected-vs-actual effect audit
+
+Use this layer before editing a scanner/gate/engine. It records inputs, outputs, downstream consumers, allowed effect classes, final-output reach, forbidden effects and canonical implementation references. `ModuleImpactTrace` remains run-specific actual truth; the Unit Contract Registry is static expected design truth.
+
+## 12. Validation
 Run:
 ```bash
 PYTHONPATH=src python scripts/validate_industry_seed.py
@@ -113,6 +121,7 @@ PYTHONPATH=src python scripts/validate_module_registries.py
 PYTHONPATH=src python scripts/validate_broker_research_layer.py
 PYTHONPATH=src python scripts/validate_knowledge_placement.py
 PYTHONPATH=src python scripts/validate_workflow_source_injection.py
+PYTHONPATH=src python scripts/validate_unit_contract_registry.py
 PYTHONPATH=src pytest -q
 ```
 
