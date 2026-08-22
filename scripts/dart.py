@@ -7,7 +7,9 @@ DART 정기보고서 원문 추출기 (API 키 불필요)
     python dart.py find   <회사명> [YYYYMMDD_시작]      # 접수번호 조회
     python dart.py toc    <접수번호>                     # 목차 출력
     python dart.py get    <접수번호> <섹션명일부>        # 섹션 본문 추출
-    python dart.py facts  <접수번호>                     # 핵심 수치 자동 추출
+    python dart.py facts  <접수번호>                     # 밸류에이션 핵심 수치
+    python dart.py credit <접수번호>                     # 신용위험 항목
+    python dart.py brief  <접수번호>                     # 기업 개요
 
 예:
     python dart.py find 제너셈 20260801
@@ -93,11 +95,31 @@ FACTS = {
 }
 
 
-def facts(s, rcp, window=1400):
+CREDIT = {
+    "차입금":     ("3. 연결재무제표 주석", [r"차입금의 구성내역", r"단기차입금의 내역"]),
+    "우발부채":   ("3. 연결재무제표 주석", [r"우발부채", r"지급보증", r"약정사항"]),
+    "담보제공":   ("3. 연결재무제표 주석", [r"담보로 제공", r"담보제공"]),
+    "소송":       ("3. 연결재무제표 주석", [r"계류중인 소송", r"소송사건"]),
+    "대손충당금": ("3. 연결재무제표 주석", [r"대손충당금 변동", r"손실충당금"]),
+    "매출채권연령":("3. 연결재무제표 주석", [r"연체일을 기준", r"만기 경과"]),
+    "특수관계자": ("3. 연결재무제표 주석", [r"특수관계자와의 거래", r"특수관계자"]),
+    "요약재무":   ("1. 요약재무정보", [r"자산총계", r"부채총계"]),
+}
+BRIEF = {
+    "사업개요":   ("1. 사업의 개요", [r"."]),
+    "주요제품":   ("2. 주요 제품 및 서비스", [r"주요 제품"]),
+    "생산설비":   ("3. 원재료 및 생산설비", [r"생산능력", r"가동률"]),
+    "매출수주":   ("4. 매출 및 수주상황", [r"매출실적", r"수주"]),
+    "고객집중도": ("3. 연결재무제표 주석", [r"주요 고객에 대한", r"10% 이상"]),
+    "요약재무":   ("1. 요약재무정보", [r"자산총계"]),
+}
+
+
+def facts(s, rcp, window=1400, table=None):
     secs = sections(s, rcp)
     cache = {}
     out = {}
-    for key, (secname, pats) in FACTS.items():
+    for key, (secname, pats) in (table or FACTS).items():
         hit = next((x for x in secs if x[0].strip() == secname), None)
         if not hit:
             hit = next((x for x in secs if secname.split(". ")[-1] in x[0]), None)
@@ -137,8 +159,9 @@ def main():
             if key in t[0]:
                 print(f"===== {t[0]} =====")
                 print(body(s, rcp, *t[1:]))
-    elif cmd == "facts":
-        res = facts(s, sys.argv[2])
+    elif cmd in ("facts", "credit", "brief"):
+        tbl = {"facts": FACTS, "credit": CREDIT, "brief": BRIEF}[cmd]
+        res = facts(s, sys.argv[2], table=tbl)
         for k, v in res.items():
             print(f"\n{'=' * 60}\n[{k}]")
             print(v if v else "  (미검출 — 해당 항목 없음 또는 목차명 상이. toc로 확인할 것)")
