@@ -1,6 +1,6 @@
-# Signal Intelligence Layer v1.0
+# Signal Intelligence Layer v1.1
 
-Status: v0.5.2 candidate extension. This layer sits between the Industry Knowledge Store and valuation assumptions.
+Status: canonical v0.5.x signal-intelligence contract integrated with the Control Plane and Unit Contract Registry.
 
 ## 1. Why this exists
 
@@ -25,13 +25,26 @@ The system must not treat all of these as Evidence of the same kind. `SignalClas
 - `SUPPLY_CHAIN_NETWORK`: product similarity, input-output topology, supplier/customer links.
 - `CONSUMER_DEMAND`: spend, traffic, downloads, transaction panels.
 
-## 3. Evidence-state machine
+## 3. Project-realization GateSet
 
-Do not convert pipeline activity directly to realized revenue.
+Do not force all projects through one universal linear state machine. Land, financing, permits, offtake and grid access can be secured in different orders depending on jurisdiction and project structure.
 
-`ANNOUNCED -> FILED/APPLIED -> FUNDED -> PERMITTED -> AWARDED/CONTRACTED -> UNDER_CONSTRUCTION -> COMMISSIONED/DELIVERED -> REVENUE`
+The canonical representation is an independent `ProjectGateSet` with required gates selected for the project:
 
-Each transition needs its own evidence. Missing stages remain uncertain; a later verified state may imply earlier states only when the source contract guarantees that implication.
+- `ANNOUNCEMENT`
+- `LAND_CONTROL`
+- `FINANCING`
+- `PERMIT_APPLICATION`
+- `PERMIT_APPROVAL`
+- `OFFTAKE_CONTRACT`
+- `GRID_UTILITIES`
+- `CONSTRUCTION`
+- `COMMISSIONING`
+- `REVENUE`
+
+Each verified gate requires its own evidence. `realization_maturity` is only the fraction of required gates verified; it is **not** an execution probability. Probability remains a separately calibrated object.
+
+Legacy linear enums in `signal_intelligence.py` and `broker_research.py` exist only for regression/backward compatibility. Adapters translate each legacy stage to the single canonical gate it actually proves; a later legacy stage does not automatically prove every earlier gate.
 
 ## 4. Latency contract
 
@@ -40,7 +53,7 @@ Every signal must distinguish:
 - `event_time`: when the economic event occurred.
 - `effective_as_of`: period the observation measures.
 - `published_at`: when the source made it public.
-- `first_seen_at`: when RocketSLA first observed it.
+- `first_seen_at`: when PRISM first observed it.
 - `revised_at`: when the source changed the observation.
 - `expected_reporting_lag_days`: normal publication lag.
 
@@ -96,23 +109,25 @@ Static industry codes are only a prior. Economic Twins should use a dynamic grap
 - revenue model and capital intensity;
 - customer concentration and contract structure.
 
-Text-based product similarity is academically grounded by Hoberg-Phillips/TNIC. RocketSLA uses the idea as a peer-discovery input, not as a copied proprietary dataset.
+Text-based product similarity is academically grounded by Hoberg-Phillips/TNIC. PRISM uses the idea as a peer-discovery input, not as a copied proprietary dataset.
 
 The graph supplies candidate peers to Hierarchical Beta and Hierarchical Warranted PER. Final peers still require auditable risk-driver checks.
 
 ## 9. Project-realization stack
 
-For infrastructure/capacity projects, combine independent layers:
+For infrastructure/capacity projects, combine independent evidence layers rather than assuming a fixed order:
 
-`procurement -> permit/regulatory docket -> interconnection/utilities -> financing -> construction -> satellite/physical confirmation -> commissioning`
+`land | financing | permit | offtake | interconnection/utilities | construction | physical confirmation | commissioning`
 
-A project may be large on paper while having a low realization probability. Project-value quantity must be multiplied by the verified realization state/probability, not announcement size alone.
+The Control Plane selects which gates are required for that project. A project may be large on paper while key gates remain unresolved. Announcement size alone never becomes project-value quantity or revenue.
+
+If an execution probability is used, it must come from an explicitly calibrated probability process; GateSet completeness by itself is not a probability model.
 
 ## 10. Signal-to-valuation rules
 
 - Procurement plan: demand candidate only.
 - Award/contract: stronger funded-demand evidence, subject to cancellation/termination terms.
-- Permit grant: execution probability/timing evidence, not revenue itself.
+- Permit grant: execution/timing evidence, not revenue itself.
 - Interconnection agreement: Time-to-Power evidence, not commercial operation.
 - Patent count: innovation activity only; no direct revenue premium.
 - Patent legal status/citations/family breadth: technology-option verification input.

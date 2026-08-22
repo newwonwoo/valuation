@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+from .signal_intelligence import ProjectGate, ProjectGateEvidence
+
 
 class BrokerAccessMode(str, Enum):
     PUBLIC_SUMMARY = "public_summary"
@@ -75,12 +77,7 @@ class BrokerClaim:
 
 
 def pre_freeze_allowed(claim: BrokerClaim) -> bool:
-    """Protect blind intrinsic valuation while still allowing industry-learning use.
-
-    Company-specific Street estimates/targets/ratings/consensus never cross the blind-value
-    boundary. Industry-wide structure, definitions and forecasts may be used only as
-    secondary/candidate knowledge; downstream compilation must still apply evidence gates.
-    """
+    """Protect blind intrinsic valuation while still allowing industry-learning use."""
     if claim.target_company_specific:
         return False
     if claim.field_class in {
@@ -118,7 +115,6 @@ def canonical_rule_eligible(
         return False
     if any(not pre_freeze_allowed(c) for c in broker_claims):
         return False
-    # At least two genuinely different information families overall, with one non-broker family.
     broker_keys = {k for claim in broker_claims for k in independence_key(claim)}
     total = broker_keys | {f"NONBROKER:{x}" for x in non_broker_source_families}
     return len(total) >= 2
@@ -150,6 +146,8 @@ class IndicatorRepresentativenessAssessment:
 
 
 class ProjectRealizationStage(str, Enum):
+    """Legacy broker adapter state; canonical project reasoning uses ProjectGateSet."""
+
     ANNOUNCED = "announced"
     FUNDED = "funded"
     LAND_ASSET_SECURED = "land_asset_secured"
@@ -171,6 +169,17 @@ _PROJECT_STAGE_ORDER = {
     ProjectRealizationStage.REVENUE: 7,
 }
 
+_BROKER_STAGE_TO_GATE = {
+    ProjectRealizationStage.ANNOUNCED: ProjectGate.ANNOUNCEMENT,
+    ProjectRealizationStage.FUNDED: ProjectGate.FINANCING,
+    ProjectRealizationStage.LAND_ASSET_SECURED: ProjectGate.LAND_CONTROL,
+    ProjectRealizationStage.PERMITTED: ProjectGate.PERMIT_APPROVAL,
+    ProjectRealizationStage.UTILITIES_SECURED: ProjectGate.GRID_UTILITIES,
+    ProjectRealizationStage.UNDER_CONSTRUCTION: ProjectGate.CONSTRUCTION,
+    ProjectRealizationStage.COMMISSIONED_ENERGIZED: ProjectGate.COMMISSIONING,
+    ProjectRealizationStage.REVENUE: ProjectGate.REVENUE,
+}
+
 
 @dataclass(frozen=True)
 class ProjectRealizationRecord:
@@ -186,9 +195,19 @@ class ProjectRealizationRecord:
         if self.execution_probability is not None and not 0.0 <= self.execution_probability <= 1.0:
             raise ValueError("execution_probability must be within [0, 1]")
 
+    def to_gate_evidence(self) -> ProjectGateEvidence:
+        """Convert broker state evidence to the canonical independent gate representation."""
+        self.validate()
+        return ProjectGateEvidence(
+            gate=_BROKER_STAGE_TO_GATE[self.stage],
+            verified=True,
+            evidence_ids=self.evidence_ids,
+            note="adapted from legacy broker project-realization stage",
+        )
+
 
 def project_stage_can_advance(previous: ProjectRealizationStage, new: ProjectRealizationStage) -> bool:
-    """Project state cannot jump backwards; evidence for the new stage is validated elsewhere."""
+    """Legacy regression helper only; live reasoning must not assume this universal order."""
     return _PROJECT_STAGE_ORDER[new] >= _PROJECT_STAGE_ORDER[previous]
 
 

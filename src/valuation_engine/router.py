@@ -14,7 +14,7 @@ class IndustryModel(str, Enum):
     HOLDING_COMPANY = "holding_company"
     FINANCIALS = "financials"
     PHARMA_BIO = "pharma_bio"
-    GENERIC = "generic"
+    GENERIC = "generic"  # legacy compatibility only; never a LIVE_PRIMARY fallback
 
 
 KEYWORDS = {
@@ -30,7 +30,16 @@ KEYWORDS = {
 }
 
 
+class LegacyRouterAccessError(PermissionError):
+    pass
+
+
 def route_industry(description: str) -> IndustryModel:
+    """Legacy keyword router retained for regression fixtures only.
+
+    Live-primary routing must use `industry_dna.py` and evidence-backed segment/archetype
+    reasoning. `GENERIC` is not an acceptable live fallback.
+    """
     text = description.lower()
     if any(keyword.lower() in text for keyword in KEYWORDS[IndustryModel.HOLDING_COMPANY]):
         return IndustryModel.HOLDING_COMPANY
@@ -41,6 +50,16 @@ def route_industry(description: str) -> IndustryModel:
         scores[model] = sum(1 for keyword in keywords if keyword.lower() in text)
     best = max(scores, key=scores.get)
     return best if scores[best] > 0 else IndustryModel.GENERIC
+
+
+def route_industry_for_execution(description: str, *, execution_mode: str) -> IndustryModel:
+    """Fail closed if the legacy keyword router is invoked outside regression mode."""
+    if execution_mode != "legacy_regression":
+        raise LegacyRouterAccessError(
+            "keyword/GENERIC router is LEGACY_REGRESSION only; PRIMARY_SHADOW and "
+            "LIVE_PRIMARY must route through Industry DNA"
+        )
+    return route_industry(description)
 
 
 @dataclass(frozen=True)
@@ -71,9 +90,13 @@ class RoutingDecision:
     def validate(self) -> None:
         if not self.rationale_evidence_keys:
             raise ValueError("industry routing requires evidence")
+        if self.company_model is IndustryModel.GENERIC:
+            raise ValueError("GENERIC is not a valid evidence-backed routing decision")
         if self.company_model is IndustryModel.HOLDING_COMPANY and not self.segments:
             raise ValueError("holding company routing requires segment delegation")
         for segment in self.segments:
+            if segment.industry is IndustryModel.GENERIC:
+                raise ValueError(f"segment {segment.segment_id} cannot use GENERIC routing")
             spec = MODEL_SPECS.get(segment.industry)
             if spec is None or segment.model_method not in spec.allowed_methods:
                 raise ValueError(f"method {segment.model_method} not allowed for {segment.industry.value}")
