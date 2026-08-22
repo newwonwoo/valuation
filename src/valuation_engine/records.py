@@ -22,7 +22,14 @@ class EvidenceStatus(str, Enum):
 
 class CalibrationStatus(str, Enum):
     UNCALIBRATED = "UNCALIBRATED"
+    CALIBRATING = "CALIBRATING"
     CALIBRATED = "CALIBRATED"
+    DEGRADED = "DEGRADED"
+
+    @property
+    def allows_intrinsic_probability_weight(self) -> bool:
+        """Only empirically calibrated probability states may drive intrinsic weighting."""
+        return self is CalibrationStatus.CALIBRATED
 
 
 class AffectedVariable(str, Enum):
