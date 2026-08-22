@@ -1,6 +1,6 @@
-# Industry DNA Router v1.0
+# Industry DNA Router v1.1
 
-Status: v0.5 candidate contract. The router is segment-first and multi-label. Sector names are adapters, not valuation models.
+Status: canonical v0.5.x routing and Module Requirement Plan contract. The router is segment-first and multi-label. Sector names are adapters, not valuation models.
 
 ## 1. Composition model
 
@@ -10,6 +10,7 @@ Common Valuation Core
   → Economic Archetype(s)
   → Sector Adapter
   → Company Overlay (private/live state)
+  → Module Requirement Plan
   → Allowed Evaluator Set
   → Segment Valuation
   → SOTP / Aggregation
@@ -25,24 +26,33 @@ The registry currently defines 19 archetypes, including contracted backlog, capa
 
 ## 3. Sector adapters
 
-`config/sector_adapter_registry.yaml` contains 35 initial adapters. Adapter archetypes are hypotheses, not facts. They must be verified against segment evidence such as revenue recognition, contract structure, asset ownership, price formation, capital intensity, customer concentration, regulation, reinvestment and cash-flow duration.
+`config/sector_adapter_registry.yaml` contains domain adapters. Adapter archetypes are hypotheses, not facts. They must be verified against segment evidence such as revenue recognition, contract structure, asset ownership, price formation, capital intensity, customer concentration, regulation, reinvestment and cash-flow duration.
 
-No generic DCF fallback is allowed when routing confidence is insufficient. The run should request evidence or block the segment valuation.
+No generic DCF fallback is allowed when routing confidence is insufficient. The run should request evidence or block the segment valuation. The old keyword/`GENERIC` router is `LEGACY_REGRESSION` compatibility only and is forbidden in `PRIMARY_SHADOW` and `LIVE_PRIMARY`.
 
-## 4. Module contract
+## 4. Module Requirement Plan contract
 
-Each archetype declares:
+`src/valuation_engine/module_plan.py` compiles validated Industry DNA into a deterministic per-segment deployment contract.
+
+`config/archetype_module_registry.yaml` owns operating-economics requirements:
 - required evidence;
 - accounting normalization;
 - Beta Economic-Twin features;
 - PER Economic-Twin features;
-- scenario variables/correlations;
+- scenario variables;
 - funding scan trigger;
 - terminal-value policy;
-- forbidden methods;
+- forbidden/allowed methods;
 - double-count traps.
 
-Sector adapters add domain-specific evidence, definitions, sources, leading indicators, valuation links and kill conditions. Company overlays contain only company-specific facts and belong in private state rather than the reusable public module.
+`config/archetype_control_requirements.yaml` owns only Control Plane deployment requirements and deliberately does not repeat the economics above:
+- required KPIs;
+- mandatory scanner IDs;
+- reusable kill-condition templates.
+
+The compiled Module Requirement Plan unions these requirements for multi-archetype segments while retaining the segment boundary. A missing registry entry is a capability/configuration failure, not permission to silently drop the module.
+
+Mandatory scanners are requirements, not claims that the scanner implementation exists. If a required scanner is unavailable, the Control Plane records `NOT_IMPLEMENTED` and follows the Capability Gap → Design → Ask/Build governance path.
 
 ## 5. Routing evidence and confidence
 
