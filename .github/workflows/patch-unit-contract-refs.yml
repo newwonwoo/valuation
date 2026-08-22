@@ -1,0 +1,45 @@
+name: patch-unit-contract-refs
+
+on:
+  push:
+    branches: [feature/module-requirement-plan]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/module-requirement-plan
+      - name: Patch implementation references
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('config/unit_contract_registry.yaml')
+          text = p.read_text(encoding='utf-8')
+          replacements = {
+            'canonical_refs: [src/valuation_engine/control_plane.py, config/control_plane_stage_registry.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md]':
+            'canonical_refs: [src/valuation_engine/control_plane.py, src/valuation_engine/orchestrator.py, config/control_plane_stage_registry.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md]',
+            'canonical_refs: [src/valuation_engine/module_plan.py, src/valuation_engine/shadow_adapters.py, config/archetype_module_registry.yaml, docs/INDUSTRY_DNA_ROUTER_V1.md]':
+            'canonical_refs: [src/valuation_engine/module_plan.py, src/valuation_engine/shadow_adapters.py, config/archetype_module_registry.yaml, config/archetype_control_requirements.yaml, docs/INDUSTRY_DNA_ROUTER_V1.md]',
+            'canonical_refs: [src/valuation_engine/decision_impact.py, config/decision_impact_policy.yaml, docs/DECISION_IMPACT_SENSITIVITY.md]':
+            'canonical_refs: [src/valuation_engine/decision_impact.py, src/valuation_engine/ablation.py, config/decision_impact_policy.yaml, docs/DECISION_IMPACT_SENSITIVITY.md]',
+          }
+          for old, new in replacements.items():
+              if old not in text:
+                  raise SystemExit(f'pattern not found: {old}')
+              text = text.replace(old, new, 1)
+          p.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit contract refs
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add config/unit_contract_registry.yaml
+          git commit -m 'docs: sync unit contract implementation refs'
+          git push origin HEAD:feature/module-requirement-plan
