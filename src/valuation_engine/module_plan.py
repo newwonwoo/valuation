@@ -15,6 +15,9 @@ class SegmentModuleRequirementPlan:
     sector_adapter: str
     archetypes: tuple[str, ...]
     required_evidence: tuple[str, ...]
+    required_kpis: tuple[str, ...]
+    mandatory_scanners: tuple[str, ...]
+    kill_conditions: tuple[str, ...]
     normalization_rules: tuple[str, ...]
     beta_peer_features: tuple[str, ...]
     per_peer_features: tuple[str, ...]
@@ -30,6 +33,12 @@ class SegmentModuleRequirementPlan:
             raise ValueError("segment module plan requires segment, sector adapter and archetypes")
         if not self.required_evidence:
             raise ValueError(f"segment {self.segment_id} has no required evidence")
+        if not self.required_kpis:
+            raise ValueError(f"segment {self.segment_id} has no required KPIs")
+        if not self.mandatory_scanners:
+            raise ValueError(f"segment {self.segment_id} has no mandatory scanner loadout")
+        if not self.kill_conditions:
+            raise ValueError(f"segment {self.segment_id} has no kill conditions")
         if not self.allowed_valuation_methods:
             raise ValueError(f"segment {self.segment_id} has no allowed valuation methods")
         overlap = set(self.allowed_valuation_methods).intersection(self.forbidden_methods)
@@ -44,6 +53,9 @@ class ModuleRequirementPlan:
     segments: tuple[SegmentModuleRequirementPlan, ...]
     common_core_modules: tuple[str, ...]
     required_evidence: tuple[str, ...]
+    required_kpis: tuple[str, ...]
+    mandatory_scanners: tuple[str, ...]
+    kill_conditions: tuple[str, ...]
     scenario_variables: tuple[str, ...]
     double_count_traps: tuple[str, ...]
     forbidden_methods: tuple[str, ...]
@@ -84,12 +96,20 @@ def _ordered_unique(values: list[str]) -> tuple[str, ...]:
     return tuple(dict.fromkeys(value for value in values if value))
 
 
-def load_archetype_module_registry(path: str | Path) -> dict[str, dict[str, Any]]:
+def _load_mapping(path: str | Path, key: str, *, label: str) -> dict[str, dict[str, Any]]:
     payload = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    modules = payload.get("modules")
-    if not isinstance(modules, dict) or not modules:
-        raise ValueError("archetype module registry requires non-empty modules")
-    return modules
+    mapping = payload.get(key)
+    if not isinstance(mapping, dict) or not mapping:
+        raise ValueError(f"{label} requires non-empty {key}")
+    return mapping
+
+
+def load_archetype_module_registry(path: str | Path) -> dict[str, dict[str, Any]]:
+    return _load_mapping(path, "modules", label="archetype module registry")
+
+
+def load_archetype_control_requirements(path: str | Path) -> dict[str, dict[str, Any]]:
+    return _load_mapping(path, "requirements", label="archetype control requirements")
 
 
 def _list_field(spec: dict[str, Any], key: str) -> list[str]:
@@ -114,22 +134,27 @@ def build_module_requirement_plan(
     profiles: tuple[IndustryDNAProfile, ...],
     *,
     registry_path: str | Path,
+    control_requirements_path: str | Path,
 ) -> ModuleRequirementPlan:
-    """Compile Industry DNA into an auditable per-segment research/valuation contract.
+    """Compile Industry DNA into the complete research/valuation deployment contract.
 
-    Multi-archetype segments union their evidence/scenario requirements and permitted methods.
-    The output does not invent company assumptions and does not decide whether evidence is
-    satisfied; it tells downstream stages what must be collected, normalized, checked and
-    which methods are eligible.
+    `archetype_module_registry` owns operating economics and valuation-method requirements.
+    `archetype_control_requirements` owns only Control Plane deployment fields: required KPIs,
+    mandatory scanners and generic kill-condition templates. Neither file duplicates the
+    other's responsibility.
     """
     if not profiles:
         raise ValueError("Industry DNA profiles are required")
     registry = load_archetype_module_registry(registry_path)
+    controls = load_archetype_control_requirements(control_requirements_path)
     segment_plans: list[SegmentModuleRequirementPlan] = []
 
     for profile in profiles:
         profile.validate()
         required_evidence: list[str] = []
+        required_kpis: list[str] = []
+        mandatory_scanners: list[str] = []
+        kill_conditions: list[str] = []
         normalization: list[str] = []
         beta_features: list[str] = []
         per_features: list[str] = []
@@ -143,9 +168,15 @@ def build_module_requirement_plan(
 
         for archetype in archetypes:
             raw = registry.get(archetype)
+            control = controls.get(archetype)
             if not isinstance(raw, dict):
                 raise ValueError(f"archetype registry missing module: {archetype}")
+            if not isinstance(control, dict):
+                raise ValueError(f"archetype control requirements missing module: {archetype}")
             required_evidence.extend(_list_field(raw, "required_evidence"))
+            required_kpis.extend(_list_field(control, "required_kpis"))
+            mandatory_scanners.extend(_list_field(control, "mandatory_scanners"))
+            kill_conditions.extend(_list_field(control, "kill_conditions"))
             normalization.extend(_list_field(raw, "normalization"))
             beta_features.extend(_list_field(raw, "beta_peer_features"))
             per_features.extend(_list_field(raw, "per_peer_features"))
@@ -161,6 +192,9 @@ def build_module_requirement_plan(
             sector_adapter=profile.sector_adapter,
             archetypes=archetypes,
             required_evidence=_ordered_unique(required_evidence),
+            required_kpis=_ordered_unique(required_kpis),
+            mandatory_scanners=_ordered_unique(mandatory_scanners),
+            kill_conditions=_ordered_unique(kill_conditions),
             normalization_rules=_ordered_unique(normalization),
             beta_peer_features=_ordered_unique(beta_features),
             per_peer_features=_ordered_unique(per_features),
@@ -177,18 +211,13 @@ def build_module_requirement_plan(
     plan = ModuleRequirementPlan(
         segments=tuple(segment_plans),
         common_core_modules=COMMON_CORE_MODULES,
-        required_evidence=_ordered_unique(
-            [item for segment in segment_plans for item in segment.required_evidence]
-        ),
-        scenario_variables=_ordered_unique(
-            [item for segment in segment_plans for item in segment.scenario_variables]
-        ),
-        double_count_traps=_ordered_unique(
-            [item for segment in segment_plans for item in segment.double_count_traps]
-        ),
-        forbidden_methods=_ordered_unique(
-            [item for segment in segment_plans for item in segment.forbidden_methods]
-        ),
+        required_evidence=_ordered_unique([item for segment in segment_plans for item in segment.required_evidence]),
+        required_kpis=_ordered_unique([item for segment in segment_plans for item in segment.required_kpis]),
+        mandatory_scanners=_ordered_unique([item for segment in segment_plans for item in segment.mandatory_scanners]),
+        kill_conditions=_ordered_unique([item for segment in segment_plans for item in segment.kill_conditions]),
+        scenario_variables=_ordered_unique([item for segment in segment_plans for item in segment.scenario_variables]),
+        double_count_traps=_ordered_unique([item for segment in segment_plans for item in segment.double_count_traps]),
+        forbidden_methods=_ordered_unique([item for segment in segment_plans for item in segment.forbidden_methods]),
     )
     plan.validate()
     return plan
