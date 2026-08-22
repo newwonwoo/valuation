@@ -64,7 +64,7 @@ units:
     consumers: [INDUSTRY_DNA_ROUTER, MODULE_REQUIREMENT_PLAN, PRIMARY_EVIDENCE_COLLECTION, LLM_STAFF, AUDIT_GATE]
     effect_types: [routing_effect, method_effect, guardrail_effect]
     final_outputs: [run_status, doctrine_coverage]
-    canonical_refs: [src/valuation_engine/control_plane.py, config/control_plane_stage_registry.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md]
+    canonical_refs: [src/valuation_engine/control_plane.py, src/valuation_engine/orchestrator.py, config/control_plane_stage_registry.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md]
     forbidden_effects: [perform_valuation_math, commit_assumption, bypass_audit]
 
   - unit_id: INDUSTRY_DNA_ROUTER
@@ -82,7 +82,7 @@ units:
 
   - unit_id: MODULE_REQUIREMENT_PLAN
     unit_type: controller
-    implementation_status: contract_only
+    implementation_status: implemented
     stages: [MODULE_REQUIREMENT_PLAN]
     purpose: Convert Industry DNA into mandatory evidence, KPIs, scanners, risk checks, methods, and kill conditions.
     inputs: [segment_routes, economic_archetypes, metric_standards, archetype_module_registry]
@@ -90,7 +90,7 @@ units:
     consumers: [PRIMARY_EVIDENCE_COLLECTION, ROCKET_INSIGHT_SCAN, UPSTREAM_FUNDING_SCAN, ASSUMPTION_COMPILER, AUDIT_GATE]
     effect_types: [evidence_effect, routing_effect, method_effect, guardrail_effect]
     final_outputs: [research_scope, doctrine_coverage]
-    canonical_refs: [config/archetype_module_registry.yaml, docs/INDUSTRY_DNA_ROUTER_V1.md]
+    canonical_refs: [src/valuation_engine/module_plan.py, src/valuation_engine/shadow_adapters.py, config/archetype_module_registry.yaml, config/archetype_control_requirements.yaml, docs/INDUSTRY_DNA_ROUTER_V1.md]
     forbidden_effects: [direct_assumption_value]
 
   - unit_id: KNOWLEDGE_PLACEMENT_GATE
@@ -350,7 +350,7 @@ units:
     consumers: [VALUATION_CONTROL_PLANE, STATE_LEARNING, MODULE_REQUIREMENT_PLAN]
     effect_types: [reporting_effect, routing_effect]
     final_outputs: [research_priority, retire_candidate, keep_guardrail]
-    canonical_refs: [src/valuation_engine/decision_impact.py, config/decision_impact_policy.yaml, docs/DECISION_IMPACT_SENSITIVITY.md]
+    canonical_refs: [src/valuation_engine/decision_impact.py, src/valuation_engine/ablation.py, config/decision_impact_policy.yaml, docs/DECISION_IMPACT_SENSITIVITY.md]
     forbidden_effects: [automatic_canonical_deletion]
 
   - unit_id: IMPACT_PROPAGATION
