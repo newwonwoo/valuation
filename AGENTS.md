@@ -15,6 +15,8 @@ Use these files in order and keep them consistent:
 7. `docs/GENERIC_ENGINE_DESIGN.md` — generic deterministic-engine implementation contract.
 8. `docs/LIVE_VALIDATION_AND_CALIBRATION.md` — live validation/probability calibration.
 
+`references/methods/`, `references/industry/`, and `references/modes/` are **operator supplements, not parallel sources of truth**. They may provide checklists or fallback procedures but never override the canonical documents, deterministic code, or v0.5.2 registries. When a simplified reference conflicts with a canonical gate, the canonical gate wins and the conflict must not be silently averaged.
+
 If documents conflict, preserve the conflict and reconcile the newest intentional design decision across source-of-truth files. Do not silently choose whichever produces a convenient valuation.
 
 ## Non-negotiable architecture
@@ -24,7 +26,7 @@ If documents conflict, preserve the conflict and reconcile the newest intentiona
 4. Street targets/forecasts are inaccessible until `INTRINSIC_VALUE_FREEZE`; a Street-discovered claim cannot mutate the same frozen run.
 5. Evidence, Hypothesis, Bridge, Assumption and Model Output are separate object types.
 6. Segment decomposition → evidence-driven multi-label Industry DNA routing → Module Requirement Plan happens before valuation-method selection/data collection.
-7. Unverified futures are probability-weighted from evidence, not automatic 0/100.
+7. Unverified futures are probability-weighted from evidence, not automatic 0/100. Numeric probabilities require calibration; otherwise label them `UNCALIBRATED`.
 8. CAPEX, funding shocks and qualitative advantages must not be double-counted across economic paths.
 9. Policy Intent and downstream Transmission Effect are separate claims.
 10. Every model change requires regression/audit tests.
@@ -34,7 +36,6 @@ If documents conflict, preserve the conflict and reconcile the newest intentiona
 - **WACC:** currency-consistent risk-free rate, market-level ERP, exposure-adjusted country risk, marginal Cost of Debt, market-value target capital structure, terminal consistency. Customer advances improve FCFF/ROIC first; WACC falls only after separate credit-risk evidence.
 - **PER:** positive normalized forward EPS; Core Fundamental / Expansion-Adjusted / Market-Realization PER kept separate; Core must share DCF economics; Expansion needs committed/pre-invested evidence; peer market residuals, not raw P/E, are hierarchically pooled.
 - **Cross-method:** track material quality/risk drivers with `economic_path_id`; do not capitalize the same visibility/cyclicality/leverage benefit through Beta, WACC, FCF and PER premium without distinct mechanisms/evidence.
-
 
 ## Industry Knowledge / Signal Intelligence gates
 - Freeze Industry Knowledge and source-watch snapshots per run; do not let later publications silently mutate an in-flight valuation.
@@ -60,6 +61,7 @@ Before reporting/publishing model changes run the full pytest suite plus current
 ## Workflow gates
 - Keep root and canonical Skill byte-identical.
 - Do not load Street/current price before Audit PASS and intrinsic freeze.
+- Reverse DCF/current-market implied expectations are post-freeze only and cannot mutate the same frozen run.
 - Do not emit intrinsic value from blocked runs; blocked runs cannot replace last-good state.
 - Red Team must not see market/Street targets, intrinsic value, position data or market loaders.
 - Preserve the OCI legacy formula engine until replacements have regression fixtures.
