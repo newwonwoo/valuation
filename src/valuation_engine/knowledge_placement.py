@@ -174,8 +174,8 @@ def decide_placement(
                                  "sector calibration datasets are sanity checks/priors, never plug values for the target")
 
     if layer is KnowledgeLayer.MARKET_REFERENCE:
-        allowed = stage in {WorkflowStage.INTRINSIC_VALUE_FREEZE, WorkflowStage.STREET_GAP, WorkflowStage.MARKET_COMPARE}
+        allowed = stage in {WorkflowStage.STREET_GAP, WorkflowStage.MARKET_COMPARE}
         return PlacementDecision(allowed, PlacementDisposition.POST_FREEZE_ONLY if allowed else PlacementDisposition.BLOCKED, False,
-                                 "market references are comparison objects after the blind intrinsic-value boundary")
+                                 "market references require a completed intrinsic freeze token and are comparison objects only")
 
     return PlacementDecision(False, PlacementDisposition.BLOCKED, False, "unrecognized knowledge layer")

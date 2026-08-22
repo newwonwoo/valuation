@@ -1,6 +1,6 @@
 # RocketSLA v0.5 workflow contract — Industry Knowledge before valuation
 
-Status: candidate integration contract; not yet merged into the repository runtime `SKILL.md`.
+Status: canonical runtime contract, merged into repository `SKILL.md` as v0.5.2. Control-plane authority and recovery semantics are defined in `docs/CONTROL_PLANE_ARCHITECTURE.md`.
 
 ## Required order
 
@@ -37,6 +37,8 @@ Status: candidate integration contract; not yet merged into the repository runti
 30 THESIS_DELTA / SAVE_STATE / FINAL_REPORT
 ```
 
+The Control Plane groups these stages into operational phases but may not reorder or bypass them. `None`, a failed method, or missing data enters the canonical recovery ladder before `VALUATION BLOCKED`, unless a non-recoverable audit/safety invariant is violated.
+
 ## New v0.5 gates
 
 ### LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT
@@ -56,12 +58,17 @@ Compile required evidence, normalization, Beta/PER Economic-Twin features, scena
 
 ## Fail-closed behavior
 
-Valuation is blocked rather than falling back to generic DCF when:
-- no supported Economic Archetype can be established;
-- a required module input is unavailable or definition-conflicted;
+`VALUATION BLOCKED` is the terminal outcome when a blocking issue remains after the Control Plane's recovery ladder or when a non-recoverable invariant fails.
+
+Examples:
+- no supported Economic Archetype can be established after route recovery;
+- a required module input remains unavailable or definition-conflicted after research/reconcile/derive/proxy/alternate-model recovery;
 - a method is forbidden by any material archetype without an explicit segment split;
 - a critical industry source has an unresolved definition/schema break and no substitute evidence;
-- a company overlay attempts to override a reusable module rule without evidence.
+- a company overlay attempts to override a reusable module rule without evidence;
+- Audit detects a blocking invariant such as market-price leakage or duplicate economic paths.
+
+When only some independent segments are unsupported, the Control Plane may emit `PARTIAL_INTRINSIC` and mark unsupported value `UNVALUED_NOT_ZERO`; it must not label the subtotal as full fair value.
 
 ## Versioning
 
@@ -72,7 +79,10 @@ A valuation run should retain:
 - sector adapter version;
 - routing evidence IDs;
 - selected archetypes;
-- module requirement-plan hash.
+- module requirement-plan hash;
+- doctrine coverage status for every applicable module/scanner/gate;
+- Control Plane mission/execution mode;
+- intrinsic-freeze token hash when issued.
 
 This makes later thesis changes attributable to either new company evidence, new industry evidence, a module-version change or a market-only change.
 
