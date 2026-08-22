@@ -1,31 +1,36 @@
-# 제약·바이오
+# Pharma / Biotech — Operator Supplement
 
-**DCF 부적합.** 매출이 없거나 파이프라인 가치가 대부분인 경우 rNPV를 쓴다.
+> Canonical routing uses the healthcare Sector Adapters and the Bio Clinical Evidence Gate. Company-reported phase labels alone do not determine probability or value.
 
-## 권장 방법: rNPV (위험조정 순현재가치)
-```
-rNPV = Σ (파이프라인별) 성공확률 × 예상 현금흐름의 현가 − 개발비 현가
-```
-파이프라인 각각을 별도 자산으로 평가하고 합산한다.
+## Route by economics first
 
-## 임상단계별 통상 성공확률 (참고치 — 질환별로 크게 다름)
-| 단계 | 승인까지 성공확률 |
-|---|---|
-| 전임상 | 5~10% |
-| 임상 1상 | 10~15% |
-| 임상 2상 | 20~30% |
-| 임상 3상 | 50~60% |
-| 승인신청 | 85~90% |
+- **Pre-revenue / pipeline-dominant biotech:** usually `probabilistic_pipeline`; pipeline-by-pipeline rNPV is primary.
+- **Commercial pharma:** existing product cash flows can use operating valuation, with pipeline options valued separately.
+- **Mixed company:** decompose `Cash Cow − Parent Burn + Pipeline Options` rather than letting pipeline headlines obscure the cash-generating base or corporate burn.
 
-**이 수치는 반드시 해당 질환군 최신 통계로 갱신한다.** 항암은 낮고 감염병은 높다.
+## Clinical Evidence Gate
 
-## 계층 정의
-- ① 실현: 확정 매출(기술이전 수령분, 판매 제품)만
-- ② IR계획: 회사가 공시한 마일스톤 수령 일정
-- ③ 공시계획: 계약상 총 마일스톤 전액 수령
+Classify what has actually been demonstrated:
 
-## 1순위 확인
-- **기술이전 계약의 마일스톤 구조** — 총액이 아니라 **수령 확정분(upfront)** 을 구분한다.
-  언론이 "조 단위 계약"이라 쓴 것의 대부분은 미수령 조건부 금액이다
-- 임상 중단·지연 공시 이력
-- **현금소진율(burn rate)과 잔여 런웨이** — 증자 리스크가 밸류에이션보다 급하다
+`healthy-volunteer safety → PK/PD → target engagement / biological effect → patient proof-of-concept → dose response → controlled confirmatory evidence → regulatory/launch execution`
+
+A nominal “Phase 2” program without patient efficacy/PoC should not receive the same prior as a Phase 2 asset with replicated patient response and dose-response evidence.
+
+Phase-transition/base-rate statistics, when used, must be current and matched to disease, modality, endpoint, development stage and cohort definition. **Do not use a fixed universal phase-success table as the Base case.** Internal/company evidence updates the prior; it does not replace benchmark normalization.
+
+## Licensing / partnership economics
+
+Separate:
+- upfront cash already received,
+- contingent development/regulatory/commercial milestones,
+- royalty/profit-share economics,
+- partner opt-out/termination rights,
+- remaining development and commercialization obligations.
+
+Headline “total deal value” is not current shareholder value.
+
+## Runway / dilution
+
+Cash burn, financing runway and future dilution can dominate near-term equity value. Apply `references/methods/dilution.md`; do not use current share price before intrinsic freeze to choose the dilution path.
+
+Pipeline value already captured in an operating segment or option must not be counted again in rNPV/SOTP.
