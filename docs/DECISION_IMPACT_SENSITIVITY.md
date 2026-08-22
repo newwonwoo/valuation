@@ -1,6 +1,6 @@
-# PRISM Decision Impact & Research Sensitivity Layer v1.0
+# PRISM Decision Impact & Research Sensitivity Layer v1.1
 
-Status: canonical measurement contract for deciding whether Gates, scanners and modules earn their research cost.
+Status: canonical measurement and orchestration contract for deciding whether Gates, scanners and modules earn their research cost.
 
 ## 1. Why this exists
 
@@ -120,7 +120,7 @@ Where two modules repeatedly produce the same impact path, test joint and leave-
 
 ## 8. Relationship to Control Plane
 
-The Control Plane must eventually maintain, for every mandatory module/scanner/gate:
+The Control Plane maintains, for every mandatory module/scanner/gate:
 
 - applicability;
 - activation status;
@@ -136,9 +136,9 @@ This creates a feedback loop:
 
 The feedback loop may change *what gets researched next time*. It may not rewrite the current frozen intrinsic value, and it may not use market price to decide which module "worked".
 
-## 9. Initial implementation scope
+## 9. Automatic ablation orchestration
 
-`src/valuation_engine/decision_impact.py` provides:
+`src/valuation_engine/decision_impact.py` remains the deterministic measurement engine. It provides:
 - counterfactual outcome comparison;
 - guardrail-critical detection;
 - numeric three-point sensitivity;
@@ -147,4 +147,15 @@ The feedback loop may change *what gets researched next time*. It may not rewrit
 - repeated-run research-intensity recommendations;
 - direct non-applicable research-waste detection.
 
-The current generic live engine is not yet automatically rerunning every module ablation. This layer is the deterministic measurement contract that the Control Plane/orchestrator will call as live evaluators are migrated from legacy/shadow to live-primary.
+`src/valuation_engine/ablation.py` is the orchestration component of the same Decision Impact unit. It provides:
+- leave-one-module-out execution over a stable baseline outcome;
+- explicit `NOT_APPLICABLE`, `NOT_MEASURABLE`, `FAILED`, and `MEASURED` observations;
+- guardrail probes that preserve zero-delta but safety-critical Gates;
+- joint ablation for correlated modules sharing the same economic path;
+- prior-history + current-run research-intensity recommendations;
+- next-run loadout proposals;
+- retirement-governance candidates only after false-pruning checks.
+
+The orchestrator **never mutates the current run or the canonical Module Requirement Plan**. A `RETIRE_CANDIDATE` only becomes a governance proposal. If a joint ablation is material, correlated members are withheld from naive retirement because leave-one-out zero may reflect substitution rather than irrelevance.
+
+Live-primary adoption still requires each module/evaluator to expose a reproducible counterfactual adapter that preserves the evidence snapshot and unrelated assumptions. Modules without such an adapter are recorded as `NOT_MEASURABLE`, not silently treated as zero-impact.
