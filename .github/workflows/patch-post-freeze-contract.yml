@@ -1,0 +1,62 @@
+name: patch-post-freeze-contract
+
+on:
+  push:
+    branches: [feature/post-freeze-state-report]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/post-freeze-state-report
+      - name: Patch Unit Contract Registry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('config/unit_contract_registry.yaml')
+          text = p.read_text(encoding='utf-8')
+          replacements = {
+            '''  - unit_id: STREET_GAP_ANALYZER\n    unit_type: market_layer\n    implementation_status: implemented\n''':
+            '''  - unit_id: STREET_GAP_ANALYZER\n    unit_type: market_layer\n    implementation_status: implemented_generic_post_freeze\n''',
+            '''  - unit_id: MARKET_COMPARE\n    unit_type: market_layer\n    implementation_status: implemented_legacy_and_contract\n''':
+            '''  - unit_id: MARKET_COMPARE\n    unit_type: market_layer\n    implementation_status: implemented_generic_and_legacy\n''',
+            '''  - unit_id: STATE_LEARNING\n    unit_type: learning\n    implementation_status: implemented_partial\n''':
+            '''  - unit_id: STATE_LEARNING\n    unit_type: learning\n    implementation_status: implemented_generic_state_core\n''',
+            '''  - unit_id: FINAL_REPORT\n    unit_type: reporter\n    implementation_status: doctrine_driven\n''':
+            '''  - unit_id: FINAL_REPORT\n    unit_type: reporter\n    implementation_status: implemented_generic_reporter\n''',
+          }
+          for old, new in replacements.items():
+              if old not in text:
+                  raise SystemExit(f'status pattern not found: {old.splitlines()[0]}')
+              text = text.replace(old, new, 1)
+
+          ref_replacements = {
+            '    canonical_refs: [src/valuation_engine/street.py, src/valuation_engine/broker_research.py]\n':
+            '    canonical_refs: [src/valuation_engine/post_freeze.py, src/valuation_engine/post_freeze_adapters.py, src/valuation_engine/street.py, src/valuation_engine/broker_research.py, docs/POST_FREEZE_RUNTIME.md]\n',
+            '    canonical_refs: [src/valuation_engine/engine.py, references/methods/reverse-dcf.md]\n':
+            '    canonical_refs: [src/valuation_engine/post_freeze.py, src/valuation_engine/post_freeze_adapters.py, src/valuation_engine/engine.py, references/methods/reverse-dcf.md, docs/POST_FREEZE_RUNTIME.md]\n',
+            '    canonical_refs: [src/valuation_engine/state.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]\n':
+            '    canonical_refs: [src/valuation_engine/state.py, src/valuation_engine/generic_reporting.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md, docs/POST_FREEZE_RUNTIME.md]\n',
+            '    canonical_refs: [SKILL.md]\n':
+            '    canonical_refs: [src/valuation_engine/generic_reporting.py, docs/POST_FREEZE_RUNTIME.md, SKILL.md]\n',
+          }
+          for old, new in ref_replacements.items():
+              if old not in text:
+                  raise SystemExit(f'ref pattern not found: {old.strip()}')
+              text = text.replace(old, new, 1)
+          p.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit contract sync
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add config/unit_contract_registry.yaml
+          git commit -m 'docs: sync post-freeze runtime contracts'
+          git push origin HEAD:feature/post-freeze-state-report
