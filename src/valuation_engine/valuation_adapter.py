@@ -51,31 +51,66 @@ def deterministic_valuation_adapter(
                 "BoundScenarioSet is missing; SCENARIO_BUILD must complete before valuation",
                 blocking=True,
             )
-        compilation: ValuationPlanCompilation | None = None
+
         try:
             effective_registry = registry if registry is not None else registry_loader(context)
             if not isinstance(effective_registry, EvaluatorRegistry):
                 raise TypeError("registry_loader must return EvaluatorRegistry")
-            effective_plan = plan
-            if plan_loader is not None:
+        except KeyError as exc:
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                f"valuation registry loader is missing upstream context: {exc}",
+                blocking=True,
+            )
+        except (ValueError, TypeError, PermissionError) as exc:
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                f"valuation registry loading failed: {exc}",
+                blocking=True,
+            )
+
+        compilation: ValuationPlanCompilation | None = None
+        effective_plan = plan
+        if plan_loader is not None:
+            try:
                 compilation = plan_loader(context, effective_registry)
                 if not isinstance(compilation, ValuationPlanCompilation):
                     raise TypeError("plan_loader must return ValuationPlanCompilation")
-                if not compilation.ready:
-                    status = (
-                        StageStatus.NOT_IMPLEMENTED
-                        if compilation.status is ValuationPlanStatus.CAPABILITY_GAP
-                        else StageStatus.RECOVERY_REQUIRED
-                    )
-                    return StageExecutionResult(
-                        status,
-                        f"valuation plan compilation did not resolve: {compilation.status.value}",
-                        {"valuation_plan_compilation": compilation},
-                        blocking=True,
-                    )
-                effective_plan = compilation.plan
-            if not isinstance(effective_plan, CompanyValuationPlan):
-                raise TypeError("resolved valuation plan must be CompanyValuationPlan")
+            except KeyError as exc:
+                return StageExecutionResult(
+                    StageStatus.RECOVERY_REQUIRED,
+                    f"valuation plan loader is missing upstream context: {exc}",
+                    blocking=True,
+                )
+            except (ValueError, TypeError, PermissionError) as exc:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    f"valuation plan loading failed: {exc}",
+                    blocking=True,
+                )
+            if not compilation.ready:
+                status = (
+                    StageStatus.NOT_IMPLEMENTED
+                    if compilation.status is ValuationPlanStatus.CAPABILITY_GAP
+                    else StageStatus.RECOVERY_REQUIRED
+                )
+                return StageExecutionResult(
+                    status,
+                    f"valuation plan compilation did not resolve: {compilation.status.value}",
+                    {"valuation_plan_compilation": compilation},
+                    blocking=True,
+                )
+            effective_plan = compilation.plan
+
+        if not isinstance(effective_plan, CompanyValuationPlan):
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "resolved valuation plan must be CompanyValuationPlan",
+                {"valuation_plan_compilation": compilation} if compilation is not None else {},
+                blocking=True,
+            )
+
+        try:
             selected_methods, route_hash = _plan_identity(effective_plan)
             result = execute_company_valuation(
                 scenario_set,
@@ -85,7 +120,7 @@ def deterministic_valuation_adapter(
         except KeyError as exc:
             return StageExecutionResult(
                 StageStatus.NOT_IMPLEMENTED,
-                f"exact evaluator or compiled assumption is unavailable: {exc}",
+                f"exact evaluator is unavailable during valuation execution: {exc}",
                 {"valuation_plan_compilation": compilation} if compilation is not None else {},
                 blocking=True,
             )
