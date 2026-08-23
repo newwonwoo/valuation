@@ -30,11 +30,19 @@ class EvidenceCollectionBatch:
     document_ids: tuple[str, ...] = ()
 
     def validate(self) -> None:
-        if not self.source_id or not self.checked_at or not self.source_fingerprint:
-            raise ValueError("evidence batch requires source_id, checked_at and source_fingerprint")
+        if (
+            not self.source_id
+            or not self.checked_at
+            or not self.source_fingerprint
+        ):
+            raise ValueError(
+                "evidence batch requires source_id, checked_at and source_fingerprint"
+            )
         ids = tuple(item.id for item in self.records)
         if len(ids) != len(set(ids)):
-            raise ValueError(f"duplicate evidence IDs inside source batch {self.source_id}")
+            raise ValueError(
+                f"duplicate evidence IDs inside source batch {self.source_id}"
+            )
         for item in self.records:
             if item.target == "":
                 raise ValueError("evidence target cannot be blank")
@@ -44,12 +52,16 @@ class EvidenceCollectionBatch:
                 EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
             }:
                 raise ValueError(
-                    f"source batch {self.source_id} contains non-primary intrinsic layer: {item.source_layer.value}"
+                    f"source batch {self.source_id} contains non-primary "
+                    f"intrinsic layer: {item.source_layer.value}"
                 )
 
 
 class EvidenceCollector(Protocol):
-    def __call__(self, request: EvidenceCollectionRequest) -> EvidenceCollectionBatch: ...
+    def __call__(
+        self,
+        request: EvidenceCollectionRequest,
+    ) -> EvidenceCollectionBatch: ...
 
 
 @dataclass(frozen=True)
@@ -66,6 +78,16 @@ class PrimaryEvidenceCollectionResult:
         return not self.missing_metrics
 
 
+def _batch_snapshot_row(batch: EvidenceCollectionBatch) -> dict[str, object]:
+    return {
+        "source_id": batch.source_id,
+        "checked_at": batch.checked_at,
+        "source_fingerprint": batch.source_fingerprint,
+        "document_ids": sorted(batch.document_ids),
+        "evidence_ids": sorted(item.id for item in batch.records),
+    }
+
+
 def collect_primary_evidence(
     *,
     target_id: str,
@@ -78,39 +100,51 @@ def collect_primary_evidence(
 
     ledger = EvidenceLedger()
     batches: list[EvidenceCollectionBatch] = []
-    source_ids: set[str] = set()
     for collector in collectors:
         batch = collector(request)
         batch.validate()
-        if batch.source_id in source_ids:
-            raise ValueError(f"duplicate source batch in one collection run: {batch.source_id}")
-        source_ids.add(batch.source_id)
         for record in batch.records:
             if record.target != target_id:
                 raise ValueError(
-                    f"evidence target mismatch for {record.id}: expected {target_id}, got {record.target}"
+                    f"evidence target mismatch for {record.id}: expected "
+                    f"{target_id}, got {record.target}"
                 )
             ledger.append(record)
         batches.append(batch)
 
     active_metrics = {item.metric for item in ledger.active()}
-    covered = tuple(metric for metric in required_metrics if metric in active_metrics)
-    missing = tuple(metric for metric in required_metrics if metric not in active_metrics)
+    covered = tuple(
+        metric for metric in required_metrics if metric in active_metrics
+    )
+    missing = tuple(
+        metric for metric in required_metrics if metric not in active_metrics
+    )
+    batch_rows = [_batch_snapshot_row(batch) for batch in batches]
+    batch_rows.sort(
+        key=lambda row: json.dumps(
+            row,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+    )
     snapshot_payload = {
         "target_id": target_id,
-        "batches": [
-            {
-                "source_id": batch.source_id,
-                "checked_at": batch.checked_at,
-                "source_fingerprint": batch.source_fingerprint,
-                "document_ids": sorted(batch.document_ids),
-            }
-            for batch in sorted(batches, key=lambda item: item.source_id)
-        ],
-        "evidence": ledger.to_list(),
+        # Multiple collector implementations may legitimately partition metrics from
+        # one primary source. Preserve every batch instead of collapsing by source_id.
+        "batches": batch_rows,
+        "evidence": sorted(
+            ledger.to_list(),
+            key=lambda item: str(item.get("id", "")),
+        ),
     }
     snapshot_hash = sha256(
-        json.dumps(snapshot_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        json.dumps(
+            snapshot_payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
     ).hexdigest()
     return PrimaryEvidenceCollectionResult(
         ledger=ledger,
@@ -130,7 +164,7 @@ def static_evidence_collector(
     source_fingerprint: str,
     document_ids: tuple[str, ...] = (),
 ) -> EvidenceCollector:
-    """Fixture/manual adapter that obeys the same Collector contract as live transports."""
+    """Fixture/manual adapter that obeys the live Collector contract."""
 
     def collect(_: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
         return EvidenceCollectionBatch(

@@ -1,0 +1,834 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from enum import Enum
+from hashlib import sha256
+import json
+from pathlib import Path
+import re
+from typing import Any
+
+import yaml
+
+from .live_primary_adapters import ResolvedCompanyIdentity
+from .module_plan import ModuleRequirementPlan, SegmentModuleRequirementPlan
+
+
+_PRIMARY_SOURCE_ROLES = frozenset({"observed_state", "company_primary"})
+_BROAD_SOURCE_INDUSTRIES = frozenset({"cross_industry", "listed_companies"})
+_PLAN_VERSION = "0.5.2"
+
+
+class _UniqueKeyLoader(yaml.SafeLoader):
+    pass
+
+
+def _construct_unique_mapping(loader, node, deep=False):
+    mapping = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in mapping:
+            raise ValueError(f"duplicate YAML key in source registry: {key}")
+        mapping[key] = loader.construct_object(value_node, deep=deep)
+    return mapping
+
+
+_UniqueKeyLoader.add_constructor(
+    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+    _construct_unique_mapping,
+)
+
+
+class CollectionRequirementKind(str, Enum):
+    REQUIRED_EVIDENCE = "required_evidence"
+    SUPPORTING_KPI = "supporting_kpi"
+
+
+class SourceMatchKind(str, Enum):
+    EXACT_METRIC = "exact_metric"
+    COMPANY_PRIMARY_FALLBACK = "company_primary_fallback"
+
+
+class CollectionReadiness(str, Enum):
+    COLLECTOR_READY = "COLLECTOR_READY"
+    SOURCE_CANDIDATE_ONLY = "SOURCE_CANDIDATE_ONLY"
+    NO_SOURCE_CANDIDATE = "NO_SOURCE_CANDIDATE"
+
+
+CollectionRequirementContractRow = tuple[str, str, str, str, bool]
+
+
+@dataclass(frozen=True)
+class SourceDescriptor:
+    source_id: str
+    authority: str
+    roles: tuple[str, ...]
+    access: str
+    industries: tuple[str, ...]
+    metrics: tuple[str, ...]
+
+    def validate(self) -> None:
+        if (
+            not self.source_id
+            or not self.authority
+            or not self.roles
+            or not self.access
+        ):
+            raise ValueError(
+                f"source descriptor {self.source_id!r} is incomplete"
+            )
+
+
+@dataclass(frozen=True)
+class SourceCandidate:
+    source_id: str
+    authority: str
+    access: str
+    match_kind: SourceMatchKind
+
+
+@dataclass(frozen=True)
+class CollectorCapability:
+    collector_id: str
+    source_id: str
+    supported_metrics: tuple[str, ...]
+    jurisdictions: tuple[str, ...]
+    implementation_ref: str
+
+    def validate(self) -> None:
+        if not all(
+            (
+                self.collector_id,
+                self.source_id,
+                self.supported_metrics,
+                self.jurisdictions,
+                self.implementation_ref,
+            )
+        ):
+            raise ValueError(
+                "collector capability requires identity, source, metric, "
+                "jurisdiction and implementation"
+            )
+        if len(self.supported_metrics) != len(set(self.supported_metrics)):
+            raise ValueError(
+                f"collector capability {self.collector_id} has duplicate metrics"
+            )
+
+    def supports(self, *, metric: str, jurisdiction: str) -> bool:
+        jurisdiction_key = normalize_jurisdiction(jurisdiction)
+        supported = {
+            normalize_jurisdiction(value) for value in self.jurisdictions
+        }
+        return metric in self.supported_metrics and (
+            "GLOBAL" in supported or jurisdiction_key in supported
+        )
+
+
+@dataclass(frozen=True)
+class CollectionRequirement:
+    requirement_id: str
+    segment_id: str
+    metric: str
+    kind: CollectionRequirementKind
+    mandatory: bool
+    source_candidates: tuple[SourceCandidate, ...]
+    collector_ids: tuple[str, ...]
+
+    def validate(self) -> None:
+        if not self.requirement_id or not self.segment_id or not self.metric:
+            raise ValueError("CollectionRequirement requires identity, segment and metric")
+        expected_id = f"{self.segment_id}:{self.kind.value}:{self.metric}"
+        if self.requirement_id != expected_id:
+            raise ValueError(
+                f"CollectionRequirement ID mismatch: expected {expected_id}, "
+                f"got {self.requirement_id}"
+            )
+        expected_mandatory = (
+            self.kind is CollectionRequirementKind.REQUIRED_EVIDENCE
+        )
+        if self.mandatory is not expected_mandatory:
+            raise ValueError(
+                f"CollectionRequirement {self.requirement_id} mandatory flag "
+                "does not match its kind"
+            )
+        if len(self.collector_ids) != len(set(self.collector_ids)):
+            raise ValueError(
+                f"CollectionRequirement {self.requirement_id} has duplicate collectors"
+            )
+        candidate_ids = tuple(item.source_id for item in self.source_candidates)
+        if len(candidate_ids) != len(set(candidate_ids)):
+            raise ValueError(
+                f"CollectionRequirement {self.requirement_id} has duplicate source candidates"
+            )
+
+    @property
+    def readiness(self) -> CollectionReadiness:
+        if self.collector_ids:
+            return CollectionReadiness.COLLECTOR_READY
+        if self.source_candidates:
+            return CollectionReadiness.SOURCE_CANDIDATE_ONLY
+        return CollectionReadiness.NO_SOURCE_CANDIDATE
+
+    @property
+    def contract_row(self) -> CollectionRequirementContractRow:
+        return (
+            self.requirement_id,
+            self.segment_id,
+            self.metric,
+            self.kind.value,
+            self.mandatory,
+        )
+
+
+@dataclass(frozen=True)
+class CollectionTask:
+    task_id: str
+    collector_id: str
+    source_id: str
+    requirement_ids: tuple[str, ...]
+
+    @property
+    def expected_task_id(self) -> str:
+        return _collection_task_id(
+            collector_id=self.collector_id,
+            source_id=self.source_id,
+            requirement_ids=self.requirement_ids,
+        )
+
+
+@dataclass(frozen=True)
+class CompanyCollectionPlan:
+    plan_id: str
+    version: str
+    company: ResolvedCompanyIdentity
+    routing_hash: str
+    requirements: tuple[CollectionRequirement, ...]
+    tasks: tuple[CollectionTask, ...]
+
+    def validate(self) -> None:
+        self.company.validate()
+        if (
+            not self.plan_id
+            or not self.version
+            or not self.routing_hash
+            or not self.requirements
+        ):
+            raise ValueError(
+                "CompanyCollectionPlan requires identity, version, routing hash "
+                "and requirements"
+            )
+        for requirement in self.requirements:
+            requirement.validate()
+        requirement_ids = tuple(
+            item.requirement_id for item in self.requirements
+        )
+        if len(requirement_ids) != len(set(requirement_ids)):
+            raise ValueError(
+                "CompanyCollectionPlan contains duplicate requirement IDs"
+            )
+
+        task_ids = tuple(item.task_id for item in self.tasks)
+        if len(task_ids) != len(set(task_ids)):
+            raise ValueError("CompanyCollectionPlan contains duplicate task IDs")
+        task_collectors = tuple(item.collector_id for item in self.tasks)
+        if len(task_collectors) != len(set(task_collectors)):
+            raise ValueError(
+                "CompanyCollectionPlan requires one task per collector ID"
+            )
+
+        requirement_by_id = {
+            item.requirement_id: item for item in self.requirements
+        }
+        task_by_collector = {
+            item.collector_id: item for item in self.tasks
+        }
+        known_requirements = set(requirement_ids)
+        for task in self.tasks:
+            if (
+                not task.task_id
+                or not task.collector_id
+                or not task.source_id
+                or not task.requirement_ids
+            ):
+                raise ValueError("CollectionTask is incomplete")
+            if len(task.requirement_ids) != len(set(task.requirement_ids)):
+                raise ValueError(
+                    f"CollectionTask {task.task_id} has duplicate requirements"
+                )
+            expected_task_id = task.expected_task_id
+            if task.task_id != expected_task_id:
+                raise ValueError(
+                    f"CollectionTask ID mismatch: expected {expected_task_id}, "
+                    f"got {task.task_id}"
+                )
+            unknown = set(task.requirement_ids) - known_requirements
+            if unknown:
+                raise ValueError(
+                    "CollectionTask references unknown requirements: "
+                    f"{sorted(unknown)}"
+                )
+            for requirement_id in task.requirement_ids:
+                requirement = requirement_by_id[requirement_id]
+                if task.collector_id not in requirement.collector_ids:
+                    raise ValueError(
+                        f"CollectionTask {task.task_id} is not authorized by "
+                        f"requirement {requirement_id}"
+                    )
+                candidate_sources = {
+                    item.source_id for item in requirement.source_candidates
+                }
+                if task.source_id not in candidate_sources:
+                    raise ValueError(
+                        f"CollectionTask {task.task_id} source {task.source_id} "
+                        f"is not a candidate for {requirement_id}"
+                    )
+
+        known_collectors = set(task_by_collector)
+        for requirement in self.requirements:
+            unknown_collectors = (
+                set(requirement.collector_ids) - known_collectors
+            )
+            if unknown_collectors:
+                raise ValueError(
+                    f"CollectionRequirement {requirement.requirement_id} references "
+                    f"collectors without tasks: {sorted(unknown_collectors)}"
+                )
+            for collector_id in requirement.collector_ids:
+                if (
+                    requirement.requirement_id
+                    not in task_by_collector[collector_id].requirement_ids
+                ):
+                    raise ValueError(
+                        f"collector task {collector_id} omits authorized requirement "
+                        f"{requirement.requirement_id}"
+                    )
+
+        expected_plan_id = self.expected_plan_id
+        if self.plan_id != expected_plan_id:
+            raise ValueError(
+                f"CompanyCollectionPlan ID mismatch: expected {expected_plan_id}, "
+                f"got {self.plan_id}"
+            )
+
+    @property
+    def expected_plan_id(self) -> str:
+        return _company_collection_plan_id(
+            version=self.version,
+            company=self.company,
+            routing_hash=self.routing_hash,
+            requirements=self.requirements,
+            tasks=self.tasks,
+        )
+
+    @property
+    def requirement_contract(
+        self,
+    ) -> tuple[CollectionRequirementContractRow, ...]:
+        return tuple(item.contract_row for item in self.requirements)
+
+    @property
+    def required_evidence(self) -> tuple[CollectionRequirement, ...]:
+        return tuple(item for item in self.requirements if item.mandatory)
+
+    @property
+    def supporting_kpis(self) -> tuple[CollectionRequirement, ...]:
+        return tuple(item for item in self.requirements if not item.mandatory)
+
+    @property
+    def missing_required_requirements(self) -> tuple[str, ...]:
+        return tuple(
+            item.requirement_id
+            for item in self.required_evidence
+            if item.readiness is not CollectionReadiness.COLLECTOR_READY
+        )
+
+    @property
+    def missing_required_metrics(self) -> tuple[str, ...]:
+        return tuple(
+            dict.fromkeys(
+                item.metric
+                for item in self.required_evidence
+                if item.readiness is not CollectionReadiness.COLLECTOR_READY
+            )
+        )
+
+    @property
+    def no_source_required_metrics(self) -> tuple[str, ...]:
+        return tuple(
+            dict.fromkeys(
+                item.metric
+                for item in self.required_evidence
+                if item.readiness is CollectionReadiness.NO_SOURCE_CANDIDATE
+            )
+        )
+
+    @property
+    def runnable_collector_ids(self) -> tuple[str, ...]:
+        return tuple(task.collector_id for task in self.tasks)
+
+    def task_for_collector(self, collector_id: str) -> CollectionTask:
+        if not collector_id:
+            raise ValueError("collector_id is required")
+        for task in self.tasks:
+            if task.collector_id == collector_id:
+                return task
+        raise KeyError(collector_id)
+
+    def authorized_segment_metrics_for_collector(
+        self,
+        collector_id: str,
+    ) -> tuple[tuple[str, str], ...]:
+        task = self.task_for_collector(collector_id)
+        requirement_by_id = {
+            item.requirement_id: item for item in self.requirements
+        }
+        return tuple(
+            (
+                requirement_by_id[requirement_id].segment_id,
+                requirement_by_id[requirement_id].metric,
+            )
+            for requirement_id in task.requirement_ids
+        )
+
+
+def _planned_requirement_rows(
+    plan: ModuleRequirementPlan,
+) -> tuple[
+    tuple[
+        SegmentModuleRequirementPlan,
+        CollectionRequirementKind,
+        bool,
+        str,
+    ],
+    ...,
+]:
+    plan.validate()
+    rows: list[
+        tuple[
+            SegmentModuleRequirementPlan,
+            CollectionRequirementKind,
+            bool,
+            str,
+        ]
+    ] = []
+    for segment in plan.segments:
+        required = tuple(segment.required_evidence)
+        required_set = set(required)
+        supporting = tuple(
+            metric
+            for metric in segment.required_kpis
+            if metric not in required_set
+        )
+        for kind, mandatory, metrics in (
+            (
+                CollectionRequirementKind.REQUIRED_EVIDENCE,
+                True,
+                required,
+            ),
+            (
+                CollectionRequirementKind.SUPPORTING_KPI,
+                False,
+                supporting,
+            ),
+        ):
+            for metric in metrics:
+                rows.append((segment, kind, mandatory, metric))
+    return tuple(rows)
+
+
+def module_plan_collection_requirement_contract(
+    plan: ModuleRequirementPlan,
+) -> tuple[CollectionRequirementContractRow, ...]:
+    return tuple(
+        (
+            f"{segment.segment_id}:{kind.value}:{metric}",
+            segment.segment_id,
+            metric,
+            kind.value,
+            mandatory,
+        )
+        for segment, kind, mandatory, metric in _planned_requirement_rows(plan)
+    )
+
+
+def module_plan_routing_hash(plan: ModuleRequirementPlan) -> str:
+    plan.validate()
+    rows = [
+        {
+            "segment_id": segment.segment_id,
+            "sector_adapter": segment.sector_adapter,
+            "archetypes": segment.archetypes,
+            "required_evidence": segment.required_evidence,
+            "required_kpis": segment.required_kpis,
+            "allowed_valuation_methods": segment.allowed_valuation_methods,
+        }
+        for segment in plan.segments
+    ]
+    return _stable_hash(rows)
+
+
+def _collection_task_id(
+    *,
+    collector_id: str,
+    source_id: str,
+    requirement_ids: tuple[str, ...],
+) -> str:
+    payload = "|".join((collector_id, source_id, *requirement_ids))
+    return f"TASK_{sha256(payload.encode('utf-8')).hexdigest()[:16]}"
+
+
+def _company_collection_plan_id(
+    *,
+    version: str,
+    company: ResolvedCompanyIdentity,
+    routing_hash: str,
+    requirements: tuple[CollectionRequirement, ...],
+    tasks: tuple[CollectionTask, ...],
+) -> str:
+    payload = {
+        "version": version,
+        "company": {
+            "target_id": company.target_id,
+            "legal_name": company.legal_name,
+            "ticker": company.ticker,
+            "jurisdiction": normalize_jurisdiction(company.jurisdiction),
+            "external_ids": company.external_ids,
+            "source_refs": company.source_refs,
+        },
+        "routing_hash": routing_hash,
+        "requirements": [
+            {
+                "id": item.requirement_id,
+                "segment": item.segment_id,
+                "metric": item.metric,
+                "kind": item.kind.value,
+                "mandatory": item.mandatory,
+                "collectors": item.collector_ids,
+                "sources": [
+                    {
+                        "source_id": candidate.source_id,
+                        "authority": candidate.authority,
+                        "access": candidate.access,
+                        "match_kind": candidate.match_kind.value,
+                    }
+                    for candidate in item.source_candidates
+                ],
+            }
+            for item in requirements
+        ],
+        "tasks": [
+            {
+                "task_id": task.task_id,
+                "collector": task.collector_id,
+                "source": task.source_id,
+                "requirements": task.requirement_ids,
+            }
+            for task in tasks
+        ],
+    }
+    return f"COLLECTION_{_stable_hash(payload)[:20]}"
+
+
+def load_source_descriptors(
+    path: str | Path,
+) -> tuple[SourceDescriptor, ...]:
+    payload = yaml.load(
+        Path(path).read_text(encoding="utf-8"),
+        Loader=_UniqueKeyLoader,
+    )
+    rows = payload.get("sources") if isinstance(payload, dict) else None
+    if not isinstance(rows, list) or not rows:
+        raise ValueError(
+            "industry source registry requires non-empty sources"
+        )
+    result: list[SourceDescriptor] = []
+    seen: set[str] = set()
+    for row in rows:
+        if not isinstance(row, dict):
+            raise ValueError(
+                "industry source registry rows must be mappings"
+            )
+        source_id = str(row.get("id") or "").strip()
+        if source_id in seen:
+            raise ValueError(f"duplicate source id: {source_id}")
+        seen.add(source_id)
+        descriptor = SourceDescriptor(
+            source_id=source_id,
+            authority=str(row.get("authority") or "").strip(),
+            roles=_strings(row.get("roles")),
+            access=str(row.get("access") or "").strip(),
+            industries=_strings(row.get("industries")),
+            metrics=_strings(row.get("metrics")),
+        )
+        descriptor.validate()
+        result.append(descriptor)
+    return tuple(result)
+
+
+def compile_company_collection_plan(
+    plan: ModuleRequirementPlan,
+    *,
+    company: ResolvedCompanyIdentity,
+    source_registry_path: str | Path,
+    collector_capabilities: tuple[CollectorCapability, ...] = (),
+    target_is_listed: bool = True,
+) -> CompanyCollectionPlan:
+    plan.validate()
+    company.validate()
+    for capability in collector_capabilities:
+        capability.validate()
+    collector_ids = tuple(
+        item.collector_id for item in collector_capabilities
+    )
+    if len(collector_ids) != len(set(collector_ids)):
+        raise ValueError(
+            "collector capabilities contain duplicate collector IDs"
+        )
+    capability_by_id = {
+        item.collector_id: item for item in collector_capabilities
+    }
+
+    sources = load_source_descriptors(source_registry_path)
+    requirements: list[CollectionRequirement] = []
+    for segment, kind, mandatory, metric in _planned_requirement_rows(plan):
+        candidates = _source_candidates(
+            metric,
+            sources=sources,
+            jurisdiction=company.jurisdiction,
+            segment=segment,
+            target_is_listed=target_is_listed,
+        )
+        candidate_ids = {item.source_id for item in candidates}
+        runnable = tuple(
+            sorted(
+                capability.collector_id
+                for capability in collector_capabilities
+                if capability.source_id in candidate_ids
+                and capability.supports(
+                    metric=metric,
+                    jurisdiction=company.jurisdiction,
+                )
+            )
+        )
+        requirement = CollectionRequirement(
+            requirement_id=f"{segment.segment_id}:{kind.value}:{metric}",
+            segment_id=segment.segment_id,
+            metric=metric,
+            kind=kind,
+            mandatory=mandatory,
+            source_candidates=candidates,
+            collector_ids=runnable,
+        )
+        requirement.validate()
+        requirements.append(requirement)
+
+    routing_hash = module_plan_routing_hash(plan)
+    tasks: list[CollectionTask] = []
+    for collector_id in sorted(
+        {cid for item in requirements for cid in item.collector_ids}
+    ):
+        capability = capability_by_id[collector_id]
+        requirement_ids = tuple(
+            item.requirement_id
+            for item in requirements
+            if collector_id in item.collector_ids
+        )
+        tasks.append(
+            CollectionTask(
+                task_id=_collection_task_id(
+                    collector_id=collector_id,
+                    source_id=capability.source_id,
+                    requirement_ids=requirement_ids,
+                ),
+                collector_id=collector_id,
+                source_id=capability.source_id,
+                requirement_ids=requirement_ids,
+            )
+        )
+
+    requirement_tuple = tuple(requirements)
+    task_tuple = tuple(tasks)
+    result = CompanyCollectionPlan(
+        plan_id=_company_collection_plan_id(
+            version=_PLAN_VERSION,
+            company=company,
+            routing_hash=routing_hash,
+            requirements=requirement_tuple,
+            tasks=task_tuple,
+        ),
+        version=_PLAN_VERSION,
+        company=company,
+        routing_hash=routing_hash,
+        requirements=requirement_tuple,
+        tasks=task_tuple,
+    )
+    result.validate()
+    return result
+
+
+def _source_candidates(
+    metric: str,
+    *,
+    sources: tuple[SourceDescriptor, ...],
+    jurisdiction: str,
+    segment: SegmentModuleRequirementPlan,
+    target_is_listed: bool,
+) -> tuple[SourceCandidate, ...]:
+    exact: list[SourceCandidate] = []
+    fallback: list[SourceCandidate] = []
+    for source in sources:
+        if not set(source.roles).intersection(_PRIMARY_SOURCE_ROLES):
+            continue
+        if not _jurisdiction_matches(source.source_id, jurisdiction):
+            continue
+        if not _source_matches_route(source, segment):
+            continue
+        if (
+            not target_is_listed
+            and "listed_companies" in {
+                value.strip().lower() for value in source.industries
+            }
+        ):
+            continue
+        if metric in source.metrics:
+            exact.append(
+                SourceCandidate(
+                    source.source_id,
+                    source.authority,
+                    source.access,
+                    SourceMatchKind.EXACT_METRIC,
+                )
+            )
+            continue
+        if (
+            target_is_listed
+            and "company_primary" in source.roles
+            and "listed_companies" in source.industries
+        ):
+            fallback.append(
+                SourceCandidate(
+                    source.source_id,
+                    source.authority,
+                    source.access,
+                    SourceMatchKind.COMPANY_PRIMARY_FALLBACK,
+                )
+            )
+    return tuple(
+        sorted(
+            (*exact, *fallback),
+            key=lambda item: (
+                0
+                if item.match_kind is SourceMatchKind.EXACT_METRIC
+                else 1,
+                item.source_id,
+            ),
+        )
+    )
+
+
+def _source_matches_route(
+    source: SourceDescriptor,
+    segment: SegmentModuleRequirementPlan,
+) -> bool:
+    normalized_industries = {
+        value.strip().lower() for value in source.industries
+    }
+    if normalized_industries.intersection(_BROAD_SOURCE_INDUSTRIES):
+        return True
+    source_tokens = _industry_tokens(source.industries)
+    route_tokens = _industry_tokens(
+        (segment.sector_adapter, *segment.archetypes)
+    )
+    return bool(source_tokens.intersection(route_tokens))
+
+
+def _industry_tokens(values: tuple[str, ...]) -> set[str]:
+    tokens: set[str] = set()
+    for value in values:
+        for raw in re.split(r"[^a-zA-Z0-9]+", value.lower()):
+            if not raw:
+                continue
+            token = _canonical_industry_token(raw)
+            if token:
+                tokens.add(token)
+    return tokens
+
+
+def _canonical_industry_token(token: str) -> str:
+    aliases = {
+        "auto": "automotive",
+        "automotive": "automotive",
+        "bank": "financial",
+        "banks": "financial",
+        "financial": "financial",
+        "financials": "financial",
+        "insurance": "financial",
+        "insurer": "financial",
+        "insurers": "financial",
+        "securities": "financial",
+        "pharma": "healthcare",
+        "biotech": "healthcare",
+        "biohealth": "healthcare",
+        "medtech": "healthcare",
+        "healthcare": "healthcare",
+        "ship": "maritime",
+        "ships": "maritime",
+        "shipbuilder": "maritime",
+        "shipbuilding": "maritime",
+        "shipping": "maritime",
+    }
+    value = aliases.get(token, token)
+    if value.endswith("s") and len(value) > 4:
+        value = value[:-1]
+    return value
+
+
+def _stable_hash(value: Any) -> str:
+    return sha256(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=str,
+        ).encode("utf-8")
+    ).hexdigest()
+
+
+def normalize_jurisdiction(value: str) -> str:
+    text = value.strip().upper().replace(" ", "_")
+    aliases = {
+        "KOR": "KR",
+        "KOREA": "KR",
+        "SOUTH_KOREA": "KR",
+        "REPUBLIC_OF_KOREA": "KR",
+        "USA": "US",
+        "UNITED_STATES": "US",
+        "UNITED_STATES_OF_AMERICA": "US",
+    }
+    return aliases.get(text, text)
+
+
+def _jurisdiction_matches(
+    source_id: str,
+    jurisdiction: str,
+) -> bool:
+    target = normalize_jurisdiction(jurisdiction)
+    prefix = source_id.split("_", 1)[0].upper()
+    if prefix in {"GLOBAL", "INTL", "INT", "OECD", "IEA"}:
+        return True
+    if len(prefix) == 2 and prefix.isalpha():
+        return prefix == target
+    return True
+
+
+def _strings(value: Any) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    if isinstance(value, str):
+        return (value,)
+    if isinstance(value, (list, tuple)):
+        return tuple(
+            str(item) for item in value if item not in (None, "")
+        )
+    raise ValueError(f"expected string/list, got {type(value).__name__}")
