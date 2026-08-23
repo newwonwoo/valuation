@@ -19,6 +19,8 @@ jobs:
         run: PYTHONPATH=src python scripts/validate_unit_contract_registry.py
       - name: Module requirement plans
         run: PYTHONPATH=src python scripts/validate_module_requirement_plans.py
+      - name: LIVE_PRIMARY readiness registry
+        run: PYTHONPATH=src python scripts/validate_live_primary_readiness.py
       - name: Tests
         run: pytest -q
       - name: OCI regression output
