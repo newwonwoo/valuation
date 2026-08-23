@@ -8,9 +8,11 @@ from .evaluator_registry import EvaluatorRegistry
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .scenario_binding import BoundScenarioSet
 from .valuation_execution import CompanyValuationPlan, execute_company_valuation
+from .valuation_plan_compiler import ValuationPlanCompilation, ValuationPlanStatus
 
 
 RegistryLoader = Callable[[OrchestratorContext], EvaluatorRegistry]
+ValuationPlanLoader = Callable[[OrchestratorContext, EvaluatorRegistry], ValuationPlanCompilation]
 
 
 def _plan_identity(plan: CompanyValuationPlan) -> tuple[tuple[str, ...], str]:
@@ -31,13 +33,15 @@ def _plan_identity(plan: CompanyValuationPlan) -> tuple[tuple[str, ...], str]:
 
 def deterministic_valuation_adapter(
     *,
-    plan: CompanyValuationPlan,
+    plan: CompanyValuationPlan | None = None,
+    plan_loader: ValuationPlanLoader | None = None,
     registry: EvaluatorRegistry | None = None,
     registry_loader: RegistryLoader | None = None,
 ) -> StageAdapter:
     if (registry is None) == (registry_loader is None):
         raise ValueError("supply exactly one of registry or registry_loader")
-    selected_methods, route_hash = _plan_identity(plan)
+    if (plan is None) == (plan_loader is None):
+        raise ValueError("supply exactly one of plan or plan_loader")
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
         scenario_set = context.data.get("bound_scenario_set")
@@ -47,39 +51,68 @@ def deterministic_valuation_adapter(
                 "BoundScenarioSet is missing; SCENARIO_BUILD must complete before valuation",
                 blocking=True,
             )
+        compilation: ValuationPlanCompilation | None = None
         try:
             effective_registry = registry if registry is not None else registry_loader(context)
             if not isinstance(effective_registry, EvaluatorRegistry):
                 raise TypeError("registry_loader must return EvaluatorRegistry")
+            effective_plan = plan
+            if plan_loader is not None:
+                compilation = plan_loader(context, effective_registry)
+                if not isinstance(compilation, ValuationPlanCompilation):
+                    raise TypeError("plan_loader must return ValuationPlanCompilation")
+                if not compilation.ready:
+                    status = (
+                        StageStatus.NOT_IMPLEMENTED
+                        if compilation.status is ValuationPlanStatus.CAPABILITY_GAP
+                        else StageStatus.RECOVERY_REQUIRED
+                    )
+                    return StageExecutionResult(
+                        status,
+                        f"valuation plan compilation did not resolve: {compilation.status.value}",
+                        {"valuation_plan_compilation": compilation},
+                        blocking=True,
+                    )
+                effective_plan = compilation.plan
+            if not isinstance(effective_plan, CompanyValuationPlan):
+                raise TypeError("resolved valuation plan must be CompanyValuationPlan")
+            selected_methods, route_hash = _plan_identity(effective_plan)
             result = execute_company_valuation(
                 scenario_set,
-                plan=plan,
+                plan=effective_plan,
                 registry=effective_registry,
             )
         except KeyError as exc:
             return StageExecutionResult(
                 StageStatus.NOT_IMPLEMENTED,
                 f"exact evaluator or compiled assumption is unavailable: {exc}",
+                {"valuation_plan_compilation": compilation} if compilation is not None else {},
                 blocking=True,
             )
         except (ValueError, TypeError, PermissionError) as exc:
             return StageExecutionResult(
                 StageStatus.BLOCKED,
                 f"deterministic valuation validation failed: {exc}",
+                {"valuation_plan_compilation": compilation} if compilation is not None else {},
                 blocking=True,
             )
 
+        outputs = {
+            "generic_valuation_result": result,
+            "valuation_hash": result.valuation_hash,
+            "intrinsic_scenario_values": result.scenarios,
+            "expected_value_per_share": result.expected_value_per_share,
+            "selected_methods": selected_methods,
+            "route_hash": route_hash,
+        }
+        if compilation is not None:
+            outputs["valuation_plan_compilation"] = compilation
+            outputs["warranted_per_segments"] = compilation.warranted_per_segments
+            outputs["valuation_aggregator_bindings"] = compilation.aggregator_bindings
         return StageExecutionResult(
             StageStatus.PASS,
             "registered deterministic evaluators and SOTP aggregation completed",
-            {
-                "generic_valuation_result": result,
-                "valuation_hash": result.valuation_hash,
-                "intrinsic_scenario_values": result.scenarios,
-                "expected_value_per_share": result.expected_value_per_share,
-                "selected_methods": selected_methods,
-                "route_hash": route_hash,
-            },
+            outputs,
         )
 
     return run
