@@ -14,12 +14,8 @@ from .live_indexers import parse_json_response, require_env_credential
 from .records import EvidenceRecord, EvidenceSourceLayer
 
 
-_REPORT_END_DATES = {
-    "11013": (3, 31),   # Q1
-    "11012": (6, 30),   # half-year
-    "11014": (9, 30),   # Q3
-    "11011": (12, 31),  # annual
-}
+_REPORT_CODES = frozenset({"11013", "11012", "11014", "11011"})
+_YTD_FALLBACK_REPORT_CODES = frozenset({"11013", "11011"})  # Q1 and annual
 
 
 class DartAmountBasis(str, Enum):
@@ -113,13 +109,18 @@ def _json_safe_amount(amount: Decimal) -> int | str:
     return int(integral) if amount == integral else format(amount, "f")
 
 
-def _effective_date(business_year: str, report_code: str) -> str:
+def _validated_fiscal_period_end(value: object) -> str:
+    text = str(value or "").strip()
     try:
-        year = int(business_year)
-        month, day = _REPORT_END_DATES[report_code]
-    except (ValueError, KeyError) as exc:
-        raise ValueError(f"unsupported DART business year/report code: {business_year}/{report_code}") from exc
-    return date(year, month, day).isoformat()
+        parsed = date.fromisoformat(text)
+    except ValueError as exc:
+        raise ValueError(
+            "fiscal_period_end is required as an ISO date derived from issuer fiscal-calendar "
+            "or filing-period metadata"
+        ) from exc
+    if parsed.isoformat() != text:
+        raise ValueError("fiscal_period_end must use canonical YYYY-MM-DD format")
+    return text
 
 
 def _receipt_date(receipt_no: object, fallback: str) -> str:
@@ -145,6 +146,36 @@ def _row_matches_fs_div(row: Mapping[str, object], fs_div: str) -> bool:
     return not row_fs_div or row_fs_div == fs_div
 
 
+def _validate_filing_identity(
+    rows: Sequence[Mapping[str, object]],
+    *,
+    corp_code: str,
+    business_year: str,
+    report_code: str,
+) -> None:
+    if len(corp_code) != 8 or not corp_code.isdigit():
+        raise ValueError("OpenDART corp_code must be 8 digits")
+    if len(business_year) != 4 or not business_year.isdigit():
+        raise ValueError("OpenDART business_year must be 4 digits")
+    if report_code not in _REPORT_CODES:
+        raise ValueError("unsupported OpenDART report_code")
+    for row in rows:
+        row_corp = str(row.get("corp_code") or "").strip()
+        row_year = str(row.get("bsns_year") or "").strip()
+        row_report = str(row.get("reprt_code") or "").strip()
+        if (
+            (row_corp and row_corp != corp_code)
+            or row_year != business_year
+            or row_report != report_code
+        ):
+            raise ValueError(
+                "DART row does not match requested filing: "
+                f"expected {corp_code}/{business_year}/{report_code}, "
+                f"got {row_corp or '<blank>'}/{row_year or '<blank>'}/"
+                f"{row_report or '<blank>'}"
+            )
+
+
 def _select_rows(
     rows: Sequence[Mapping[str, object]],
     *,
@@ -164,6 +195,9 @@ def _select_rows(
 
 
 def _amount_field(spec: DartFactMetricSpec, row: Mapping[str, object]) -> tuple[str, DartAmountBasis]:
+    report_code = str(row.get("reprt_code") or "").strip()
+    if report_code not in _REPORT_CODES:
+        raise ValueError(f"unsupported DART report code: {report_code or '<blank>'}")
     basis = spec.amount_basis
     if basis is DartAmountBasis.AUTO:
         basis = (
@@ -178,7 +212,9 @@ def _amount_field(spec: DartFactMetricSpec, row: Mapping[str, object]) -> tuple[
         # thstrm_add_amount as cumulative. Annual/Q1 records may not need a separate cumulative field.
         if row.get("thstrm_add_amount") not in (None, "", "-"):
             return "thstrm_add_amount", basis
-        return "thstrm_amount", basis
+        if report_code in _YTD_FALLBACK_REPORT_CODES:
+            return "thstrm_amount", basis
+        return "thstrm_add_amount", basis
     raise ValueError(f"unsupported amount basis: {basis}")
 
 
@@ -188,6 +224,10 @@ def parse_opendart_financial_facts(
     target_id: str,
     published_date: str,
     source_ref: str,
+    fiscal_period_end: str | None,
+    corp_code: str,
+    business_year: str,
+    report_code: str,
     specs: tuple[DartFactMetricSpec, ...] = DEFAULT_CORE_FACT_SPECS,
     fs_div: str = "CFS",
     segment: str = "company",
@@ -196,13 +236,29 @@ def parse_opendart_financial_facts(
 
     No account-name fuzzy matching is used. Company-specific metrics such as contract liabilities
     require an explicit MetricSpec. Multiple materially different rows for one metric fail closed.
-    Interim flow metrics default to the cumulative thstrm_add_amount when available.
+    Half-year and Q3 flow metrics require cumulative thstrm_add_amount. Rows must match the
+    explicitly requested corporation, business year and report code. The exact fiscal period end
+    must come from issuer fiscal-calendar or filing-period metadata; report codes alone are not
+    treated as fixed calendar dates.
     """
     if not target_id or not source_ref:
         raise ValueError("target_id and source_ref are required")
-    date.fromisoformat(published_date[:10])
+    published = date.fromisoformat(published_date[:10])
+    effective = _validated_fiscal_period_end(fiscal_period_end)
+    effective_on = date.fromisoformat(effective)
+    if effective_on > published:
+        raise ValueError("fiscal_period_end cannot be after published_date")
     if fs_div not in {"CFS", "OFS"}:
         raise ValueError("fs_div must be CFS or OFS")
+    _validate_filing_identity(
+        rows,
+        corp_code=corp_code,
+        business_year=business_year,
+        report_code=report_code,
+    )
+    requested_year = int(business_year)
+    if effective_on.year not in {requested_year, requested_year + 1}:
+        raise ValueError("fiscal_period_end is not aligned with requested business_year")
 
     records: list[EvidenceRecord] = []
     seen_metrics: set[str] = set()
@@ -215,12 +271,25 @@ def parse_opendart_financial_facts(
             continue
 
         candidates: list[tuple[Mapping[str, object], Decimal, str, DartAmountBasis]] = []
+        missing_required_ytd_codes: set[str] = set()
         for row in matches:
             field_name, basis = _amount_field(spec, row)
             if row.get(field_name) in (None, "", "-"):
+                row_report_code = str(row.get("reprt_code") or "").strip()
+                if (
+                    basis is DartAmountBasis.YEAR_TO_DATE
+                    and row_report_code not in _YTD_FALLBACK_REPORT_CODES
+                ):
+                    missing_required_ytd_codes.add(row_report_code)
                 continue
             candidates.append((row, _decimal_amount(row.get(field_name)), field_name, basis))
         if not candidates:
+            if missing_required_ytd_codes:
+                report_codes = ", ".join(sorted(missing_required_ytd_codes))
+                raise ValueError(
+                    f"DART YEAR_TO_DATE metric {spec.metric} requires thstrm_add_amount "
+                    f"for interim report {report_codes}"
+                )
             continue
         unique_amounts = {amount for _, amount, _, _ in candidates}
         if len(unique_amounts) != 1:
@@ -229,10 +298,12 @@ def parse_opendart_financial_facts(
                 f"ambiguous DART fact for {spec.metric}: multiple current-period values across {ids}"
             )
         row, amount, field_name, basis = candidates[0]
-        business_year = str(row.get("bsns_year") or "")
-        report_code = str(row.get("reprt_code") or "")
-        effective = _effective_date(business_year, report_code)
         receipt = str(row.get("rcept_no") or "").strip()
+        observed = _receipt_date(receipt, published_date)
+        if effective_on > date.fromisoformat(observed):
+            raise ValueError("fiscal_period_end cannot be after observed receipt date")
+        if date.fromisoformat(observed) > published:
+            raise ValueError("observed receipt date cannot be after published_date")
         account_id = str(row.get("account_id") or "").strip()
         row_currency = str(row.get("currency") or "").strip()
         if row_currency and row_currency != spec.unit:
@@ -251,7 +322,7 @@ def parse_opendart_financial_facts(
                 unit=spec.unit,
                 source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
                 effective_date=effective,
-                observed_date=_receipt_date(receipt, published_date),
+                observed_date=observed,
                 source_name="OpenDART financial statements",
                 source_ref=(
                     f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={receipt}"
@@ -284,7 +355,7 @@ def build_opendart_full_financials_url(
         raise ValueError("OpenDART corp_code must be 8 digits")
     if len(business_year) != 4 or not business_year.isdigit():
         raise ValueError("OpenDART business_year must be 4 digits")
-    if report_code not in _REPORT_END_DATES:
+    if report_code not in _REPORT_CODES:
         raise ValueError("unsupported OpenDART report_code")
     if fs_div not in {"CFS", "OFS"}:
         raise ValueError("fs_div must be CFS or OFS")
@@ -309,6 +380,7 @@ def live_opendart_fact_collector(
     corp_code: str,
     business_year: str,
     report_code: str,
+    fiscal_period_end: str,
     fs_div: str = "CFS",
     api_key: str | None = None,
     specs: tuple[DartFactMetricSpec, ...] = DEFAULT_CORE_FACT_SPECS,
@@ -336,11 +408,27 @@ def live_opendart_fact_collector(
             target_id=request.target_id,
             published_date=checked_at,
             source_ref=url.split("?", 1)[0],
+            fiscal_period_end=fiscal_period_end,
+            corp_code=corp_code,
+            business_year=business_year,
+            report_code=report_code,
             specs=specs,
             fs_div=fs_div,
             segment=segment,
         )
-        payload = json.dumps(rows, ensure_ascii=False, sort_keys=True, default=str, separators=(",", ":"))
+        payload = json.dumps(
+            {
+                "corp_code": corp_code,
+                "business_year": business_year,
+                "report_code": report_code,
+                "fiscal_period_end": fiscal_period_end,
+                "rows": rows,
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+            default=str,
+            separators=(",", ":"),
+        )
         document_ids = tuple(sorted({str(row.get("rcept_no")) for row in rows if row.get("rcept_no")}))
         return EvidenceCollectionBatch(
             source_id=source_id,
@@ -360,6 +448,10 @@ def opendart_fact_collector(
     rows: Sequence[Mapping[str, object]],
     published_date: str,
     source_ref: str,
+    fiscal_period_end: str,
+    corp_code: str,
+    business_year: str,
+    report_code: str,
     specs: tuple[DartFactMetricSpec, ...] = DEFAULT_CORE_FACT_SPECS,
     fs_div: str = "CFS",
     segment: str = "company",
@@ -374,11 +466,27 @@ def opendart_fact_collector(
             target_id=request.target_id,
             published_date=published_date,
             source_ref=source_ref,
+            fiscal_period_end=fiscal_period_end,
+            corp_code=corp_code,
+            business_year=business_year,
+            report_code=report_code,
             specs=specs,
             fs_div=fs_div,
             segment=segment,
         )
-        payload = json.dumps(list(rows), ensure_ascii=False, sort_keys=True, default=str, separators=(",", ":"))
+        payload = json.dumps(
+            {
+                "corp_code": corp_code,
+                "business_year": business_year,
+                "report_code": report_code,
+                "fiscal_period_end": fiscal_period_end,
+                "rows": list(rows),
+            },
+            ensure_ascii=False,
+            sort_keys=True,
+            default=str,
+            separators=(",", ":"),
+        )
         document_ids = tuple(sorted({str(row.get("rcept_no")) for row in rows if row.get("rcept_no")}))
         return EvidenceCollectionBatch(
             source_id=source_id,

@@ -84,8 +84,8 @@ stages:
     status: RUNTIME_READY
     reason: same-run hash-bound Freeze Token is implemented.
   STREET_REFERENCE_LOAD:
-    status: LIVE_READY
-    reason: post-freeze loader contract is implemented; actual entitled/public Street loader is supplied by caller.
+    status: ADAPTER_REQUIRED
+    reason: post-freeze callback contract is implemented, but no repository-provided entitled/public Street source adapter exists.
   STREET_GAP_ANALYZER:
     status: RUNTIME_READY
     reason: scenario-envelope and calibrated Expected gap analysis are implemented.
