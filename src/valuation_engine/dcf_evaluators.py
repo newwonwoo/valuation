@@ -57,6 +57,7 @@ class ExplicitFCFFDCFEvaluator:
     discount_rate: Decimal
     discount_rate_path_id: str
     assumption_prefix: str = ""
+    beta_path_id: str | None = None
 
     def __post_init__(self) -> None:
         if not all((self.archetype, self.method, self.version, self.discount_rate_path_id)):
@@ -65,6 +66,8 @@ class ExplicitFCFFDCFEvaluator:
             raise ValueError("forecast_years must be in [1, 30]")
         if not self.discount_rate.is_finite() or self.discount_rate <= 0:
             raise ValueError("discount_rate must be finite and positive")
+        if self.beta_path_id is not None and not self.beta_path_id:
+            raise ValueError("beta_path_id cannot be blank")
 
     @property
     def key(self) -> ModelKey:
@@ -121,13 +124,16 @@ class ExplicitFCFFDCFEvaluator:
             terminal_growth_assumption.measure.as_of,
             terminal_roic_assumption.measure.as_of,
         )
+        upstream_paths = [f"{self.discount_rate_path_id}:{segment_id}"]
+        if self.beta_path_id is not None:
+            upstream_paths.append(f"{self.beta_path_id}:{segment_id}")
         economic_paths = tuple(
             dict.fromkeys(
                 (
                     *(item.economic_path_id for item in fcff_assumptions),
                     terminal_growth_assumption.economic_path_id,
                     terminal_roic_assumption.economic_path_id,
-                    f"{self.discount_rate_path_id}:{segment_id}",
+                    *upstream_paths,
                 )
             )
         )
@@ -191,6 +197,7 @@ def live_fcff_dcf_registry_loader(
                     discount_rate=discount_rate,
                     discount_rate_path_id=f"wacc:{wacc_result.snapshot_hash}",
                     assumption_prefix=item.assumption_prefix,
+                    beta_path_id=f"beta:{wacc_result.beta_result.snapshot_hash}",
                 )
             )
         return registry

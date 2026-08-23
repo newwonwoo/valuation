@@ -285,7 +285,7 @@ units:
     consumers: [WACC_ENGINE]
     effect_types: [assumption_effect, value_effect]
     final_outputs: [cost_of_equity_input, intrinsic_value]
-    canonical_refs: [src/valuation_engine/risk.py, docs/V04_ROCKETSLA_EXTENSION.md]
+    canonical_refs: [src/valuation_engine/risk.py, src/valuation_engine/risk_adapters.py, src/valuation_engine/risk_impact.py, docs/V04_ROCKETSLA_EXTENSION.md]
     forbidden_effects: [copy_sector_beta, price_target_tuned_beta]
 
   - unit_id: WACC_ENGINE
@@ -298,7 +298,7 @@ units:
     consumers: [DETERMINISTIC_VALUATION, WARRANTED_PER_ENGINE, AUDIT_GATE]
     effect_types: [assumption_effect, value_effect, guardrail_effect]
     final_outputs: [intrinsic_value]
-    canonical_refs: [src/valuation_engine/wacc.py, docs/V04_ROCKETSLA_EXTENSION.md]
+    canonical_refs: [src/valuation_engine/wacc.py, src/valuation_engine/risk_adapters.py, src/valuation_engine/risk_impact.py, docs/V04_ROCKETSLA_EXTENSION.md]
     forbidden_effects: [generic_size_premium, historical_interest_expense_as_marginal_debt_cost]
 
   - unit_id: DETERMINISTIC_VALUATION
@@ -311,7 +311,7 @@ units:
     consumers: [SOTP_AGGREGATOR, AUDIT_GATE, DECISION_IMPACT]
     effect_types: [value_effect]
     final_outputs: [intrinsic_value_components]
-    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/valuation_execution.py, src/valuation_engine/valuation_adapter.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md]
+    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/dcf_evaluators.py, src/valuation_engine/valuation_execution.py, src/valuation_engine/valuation_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md]
     forbidden_effects: [network_access, evidence_interpretation, current_price_access, unknown_model_generic_fallback]
 
   - unit_id: WARRANTED_PER_ENGINE
@@ -376,7 +376,7 @@ units:
     consumers: [INTRINSIC_FREEZE, VALUATION_CONTROL_PLANE, DECISION_IMPACT]
     effect_types: [guardrail_effect, value_effect]
     final_outputs: [run_validity, freeze_eligibility]
-    canonical_refs: [src/valuation_engine/generic_audit.py, src/valuation_engine/audit_adapter.py, src/valuation_engine/audit.py, SKILL.md]
+    canonical_refs: [src/valuation_engine/generic_audit.py, src/valuation_engine/audit_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/audit.py, SKILL.md]
     forbidden_effects: [override_failure_without_new_run]
 
   - unit_id: INTRINSIC_FREEZE
