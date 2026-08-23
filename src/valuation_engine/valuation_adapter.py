@@ -11,13 +11,13 @@ from .valuation_execution import CompanyValuationPlan, execute_company_valuation
 
 def _plan_identity(plan: CompanyValuationPlan) -> tuple[tuple[str, ...], str]:
     selected_methods = tuple(
-        f"{item.model_key.industry}/{item.model_key.method}/{item.model_key.version}"
+        f"{item.model_key.archetype}/{item.model_key.method}/{item.model_key.version}"
         for item in plan.segments
     )
     serialized = "\n".join(
         [plan.reporting_unit, plan.diluted_shares_key]
         + [
-            f"{item.asset_id}|{item.segment_id}|{item.model_key.industry}|{item.model_key.method}|{item.model_key.version}|{item.ownership_key}|{item.ev_to_equity_adjustment_key or ''}"
+            f"{item.asset_id}|{item.segment_id}|{item.model_key.archetype}|{item.model_key.method}|{item.model_key.version}|{item.ownership_key}|{item.ev_to_equity_adjustment_key or ''}"
             for item in plan.segments
         ]
         + [f"PARENT|{item.asset_id}|{item.assumption_key}" for item in plan.parent_adjustments]
