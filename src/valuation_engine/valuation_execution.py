@@ -30,7 +30,10 @@ class SegmentValuationPlan:
 
     def __post_init__(self) -> None:
         if not all((self.asset_id, self.segment_id, self.ownership_key)):
-            raise ValueError("segment valuation plan requires asset, segment and ownership assumption key")
+            raise ValueError(
+                "segment valuation plan requires asset, segment and ownership "
+                "assumption key"
+            )
 
 
 @dataclass(frozen=True)
@@ -40,7 +43,9 @@ class ParentAdjustmentPlan:
 
     def __post_init__(self) -> None:
         if not self.asset_id or not self.assumption_key:
-            raise ValueError("parent adjustment plan requires asset_id and assumption_key")
+            raise ValueError(
+                "parent adjustment plan requires asset_id and assumption_key"
+            )
 
 
 @dataclass(frozen=True)
@@ -54,10 +59,33 @@ class CompanyValuationPlan:
         if not self.segments:
             raise ValueError("company valuation plan requires segments")
         if not self.reporting_unit or not self.diluted_shares_key:
-            raise ValueError("company valuation plan requires reporting unit and diluted-shares key")
-        asset_ids = [item.asset_id for item in self.segments] + [item.asset_id for item in self.parent_adjustments]
-        if len(asset_ids) != len(set(asset_ids)):
-            raise ValueError("company valuation plan has duplicate asset IDs")
+            raise ValueError(
+                "company valuation plan requires reporting unit and "
+                "diluted-shares key"
+            )
+        asset_ids = tuple(item.asset_id for item in self.segments) + tuple(
+            item.asset_id for item in self.parent_adjustments
+        )
+        duplicate_assets = _duplicates(asset_ids)
+        if duplicate_assets:
+            raise ValueError(
+                "company valuation plan has duplicate asset IDs: "
+                + ", ".join(duplicate_assets)
+            )
+        adjustment_keys = tuple(
+            item.ev_to_equity_adjustment_key
+            for item in self.segments
+            if item.ev_to_equity_adjustment_key is not None
+        ) + tuple(
+            item.assumption_key for item in self.parent_adjustments
+        )
+        duplicate_adjustments = _duplicates(adjustment_keys)
+        if duplicate_adjustments:
+            raise ValueError(
+                "company valuation plan reuses EV-to-equity/parent adjustment "
+                "assumption keys: "
+                + ", ".join(duplicate_adjustments)
+            )
 
 
 @dataclass(frozen=True)
@@ -80,10 +108,11 @@ class GenericValuationResult:
     valuation_hash: str
 
 
-
 def default_evaluator_registry() -> EvaluatorRegistry:
     registry = EvaluatorRegistry()
-    registry.register(NormalizedMultipleEvaluator("commodity_price_taker"))
+    registry.register(
+        NormalizedMultipleEvaluator("commodity_price_taker")
+    )
     registry.register(NormalizedMultipleEvaluator("process_spread"))
     return registry
 
@@ -101,24 +130,47 @@ def execute_company_valuation(
     for scenario in scenario_set.scenarios:
         aggregation_inputs: list[SegmentAggregationInput] = []
         scenario_paths: list[str] = []
+        adjustment_paths: list[str] = []
         for segment_plan in plan.segments:
-            valuation = registry.evaluate(segment_plan.model_key, scenario, segment_id=segment_plan.segment_id)
+            valuation = registry.evaluate(
+                segment_plan.model_key,
+                scenario,
+                segment_id=segment_plan.segment_id,
+            )
             scenario_paths.extend(valuation.economic_path_ids)
-            ownership_assumption = scenario.get(segment_plan.ownership_key)
+            ownership_assumption = scenario.get(
+                segment_plan.ownership_key
+            )
             scenario_paths.append(ownership_assumption.economic_path_id)
-            ownership = ownership_assumption.measure.convert_to("ratio").amount
+            ownership = ownership_assumption.measure.convert_to(
+                "ratio"
+            ).amount
             if not Decimal("0") <= ownership <= Decimal("1"):
-                raise ValueError(f"ownership assumption out of range for {segment_plan.segment_id}")
+                raise ValueError(
+                    f"ownership assumption out of range for "
+                    f"{segment_plan.segment_id}"
+                )
 
             adjustment = None
             if valuation.value_kind is ValueKind.ENTERPRISE_VALUE:
                 if not segment_plan.ev_to_equity_adjustment_key:
                     raise ValueError(
-                        f"segment {segment_plan.segment_id} produces enterprise value but has no EV-to-equity adjustment key"
+                        f"segment {segment_plan.segment_id} produces "
+                        "enterprise value but has no EV-to-equity "
+                        "adjustment key"
                     )
-                adjustment_assumption = scenario.get(segment_plan.ev_to_equity_adjustment_key)
-                scenario_paths.append(adjustment_assumption.economic_path_id)
-                adjustment = adjustment_assumption.measure.convert_to(plan.reporting_unit)
+                adjustment_assumption = scenario.get(
+                    segment_plan.ev_to_equity_adjustment_key
+                )
+                scenario_paths.append(
+                    adjustment_assumption.economic_path_id
+                )
+                adjustment_paths.append(
+                    adjustment_assumption.economic_path_id
+                )
+                adjustment = adjustment_assumption.measure.convert_to(
+                    plan.reporting_unit
+                )
 
             aggregation_inputs.append(
                 SegmentAggregationInput(
@@ -133,8 +185,21 @@ def execute_company_valuation(
         for item in plan.parent_adjustments:
             assumption = scenario.get(item.assumption_key)
             scenario_paths.append(assumption.economic_path_id)
+            adjustment_paths.append(assumption.economic_path_id)
             parent_adjustments_list.append(
-                ParentAdjustment(item.asset_id, assumption.measure.convert_to(plan.reporting_unit))
+                ParentAdjustment(
+                    item.asset_id,
+                    assumption.measure.convert_to(plan.reporting_unit),
+                )
+            )
+        duplicate_adjustment_paths = _duplicates(
+            tuple(adjustment_paths)
+        )
+        if duplicate_adjustment_paths:
+            raise ValueError(
+                f"scenario {scenario.scenario_id} reuses valuation adjustment "
+                "economic paths: "
+                + ", ".join(duplicate_adjustment_paths)
             )
         parent_adjustments = tuple(parent_adjustments_list)
 
@@ -148,10 +213,16 @@ def execute_company_valuation(
 
         shares_assumption = scenario.get(plan.diluted_shares_key)
         scenario_paths.append(shares_assumption.economic_path_id)
-        diluted_shares = shares_assumption.measure.convert_to("shares").amount
+        diluted_shares = shares_assumption.measure.convert_to(
+            "shares"
+        ).amount
         if diluted_shares <= 0:
-            raise ValueError(f"diluted shares must be positive for {scenario.scenario_id}")
-        equity_amount = company_value.equity_value.convert_to(plan.reporting_unit).amount
+            raise ValueError(
+                f"diluted shares must be positive for {scenario.scenario_id}"
+            )
+        equity_amount = company_value.equity_value.convert_to(
+            plan.reporting_unit
+        ).amount
         per_share_values.append(
             ScenarioPerShareValue(
                 scenario_id=scenario.scenario_id,
@@ -164,22 +235,41 @@ def execute_company_valuation(
             )
         )
 
-    equity_aggregation = aggregate_scenario_equity_values(scenario_set, tuple(scenario_company_values))
+    equity_aggregation = aggregate_scenario_equity_values(
+        scenario_set,
+        tuple(scenario_company_values),
+    )
     expected_per_share: Decimal | None = None
     if scenario_set.numeric_weighting_allowed:
         by_id = {item.scenario_id: item for item in per_share_values}
         expected_per_share = sum(
-            (by_id[scenario.scenario_id].value_per_share * scenario.probability for scenario in scenario_set.scenarios),
+            (
+                by_id[scenario.scenario_id].value_per_share
+                * scenario.probability
+                for scenario in scenario_set.scenarios
+            ),
             Decimal("0"),
         )
 
     serialized = "\n".join(
         [scenario_set.scenario_set_hash, plan.reporting_unit]
         + [
-            f"{item.scenario_id}|{item.equity_value_amount}|{item.diluted_shares}|{item.value_per_share}|{item.aggregation_hash}|{','.join(item.economic_path_ids)}"
+            (
+                f"{item.scenario_id}|{item.equity_value_amount}|"
+                f"{item.diluted_shares}|{item.value_per_share}|"
+                f"{item.aggregation_hash}|"
+                f"{','.join(item.economic_path_ids)}"
+            )
             for item in per_share_values
         ]
-        + [f"expected={expected_per_share if expected_per_share is not None else 'NA'}"]
+        + [
+            "expected="
+            + (
+                str(expected_per_share)
+                if expected_per_share is not None
+                else "NA"
+            )
+        ]
     )
     return GenericValuationResult(
         scenarios=tuple(per_share_values),
@@ -187,4 +277,13 @@ def execute_company_valuation(
         expected_value_per_share=expected_per_share,
         reporting_unit=plan.reporting_unit,
         valuation_hash=sha256(serialized.encode("utf-8")).hexdigest(),
+    )
+
+
+def _duplicates(values: tuple[str, ...]) -> tuple[str, ...]:
+    counts: dict[str, int] = {}
+    for value in values:
+        counts[value] = counts.get(value, 0) + 1
+    return tuple(
+        sorted(value for value, count in counts.items() if count > 1)
     )
