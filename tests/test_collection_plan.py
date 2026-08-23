@@ -1,6 +1,8 @@
 from dataclasses import replace
 from pathlib import Path
 
+import pytest
+
 from valuation_engine.collection_plan import (
     CollectionReadiness,
     CollectorCapability,
@@ -297,6 +299,65 @@ def test_company_collection_plan_distinguishes_source_candidate_from_runnable_co
     assert result.task_for_collector("dart-backlog").source_id == "KR_OPENDART"
 
 
+def test_company_collection_plan_rejects_payload_that_retains_stale_plan_id(
+    tmp_path,
+):
+    plan = compile_company_collection_plan(
+        module_plan(),
+        company=identity(),
+        source_registry_path=source_registry(tmp_path),
+    )
+    original = plan.requirements[0]
+    candidate = original.source_candidates[0]
+    forged = replace(
+        plan,
+        requirements=(
+            replace(
+                original,
+                source_candidates=(
+                    replace(candidate, access="forged-access"),
+                    *original.source_candidates[1:],
+                ),
+            ),
+            *plan.requirements[1:],
+        ),
+    )
+
+    with pytest.raises(ValueError, match="CompanyCollectionPlan ID mismatch"):
+        forged.validate()
+
+
+def test_unlisted_target_excludes_listed_company_exact_sources(tmp_path):
+    path = source_registry(tmp_path)
+    payload = path.read_text(encoding="utf-8").replace(
+        "metrics: [financials, contracts]",
+        "metrics: [financials, contracts, backlog]",
+        1,
+    )
+    path.write_text(payload, encoding="utf-8")
+
+    plan = compile_company_collection_plan(
+        module_plan(segment_plan("core", required=("backlog",))),
+        company=identity(),
+        source_registry_path=path,
+        collector_capabilities=(
+            CollectorCapability(
+                "dart-backlog",
+                "KR_OPENDART",
+                ("backlog",),
+                ("KR",),
+                "tests.fixture",
+            ),
+        ),
+        target_is_listed=False,
+    )
+
+    requirement = plan.required_evidence[0]
+    assert requirement.source_candidates == ()
+    assert requirement.collector_ids == ()
+    assert requirement.readiness is CollectionReadiness.NO_SOURCE_CANDIDATE
+
+
 def test_industry_specific_source_is_not_routed_to_unrelated_segment(
     tmp_path,
 ):
@@ -505,20 +566,29 @@ def test_dynamic_collection_rejects_corrupted_exact_segment_requirement(
         requirement_id=corrupted_id,
         segment_id="stale",
     )
-    corrupted_tasks = tuple(
-        replace(
+    corrupted_tasks = []
+    for task in plan.tasks:
+        corrupted_task = replace(
             task,
             requirement_ids=tuple(
                 corrupted_id if item == original.requirement_id else item
                 for item in task.requirement_ids
             ),
         )
-        for task in plan.tasks
-    )
+        corrupted_tasks.append(
+            replace(
+                corrupted_task,
+                task_id=corrupted_task.expected_task_id,
+            )
+        )
     corrupted_plan = replace(
         plan,
         requirements=(corrupted_requirement, *plan.requirements[1:]),
-        tasks=corrupted_tasks,
+        tasks=tuple(corrupted_tasks),
+    )
+    corrupted_plan = replace(
+        corrupted_plan,
+        plan_id=corrupted_plan.expected_plan_id,
     )
     corrupted_plan.validate()
     adapter = primary_evidence_collection_adapter(

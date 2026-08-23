@@ -187,6 +187,14 @@ class CollectionTask:
     source_id: str
     requirement_ids: tuple[str, ...]
 
+    @property
+    def expected_task_id(self) -> str:
+        return _collection_task_id(
+            collector_id=self.collector_id,
+            source_id=self.source_id,
+            requirement_ids=self.requirement_ids,
+        )
+
 
 @dataclass(frozen=True)
 class CompanyCollectionPlan:
@@ -247,6 +255,12 @@ class CompanyCollectionPlan:
                 raise ValueError(
                     f"CollectionTask {task.task_id} has duplicate requirements"
                 )
+            expected_task_id = task.expected_task_id
+            if task.task_id != expected_task_id:
+                raise ValueError(
+                    f"CollectionTask ID mismatch: expected {expected_task_id}, "
+                    f"got {task.task_id}"
+                )
             unknown = set(task.requirement_ids) - known_requirements
             if unknown:
                 raise ValueError(
@@ -288,6 +302,23 @@ class CompanyCollectionPlan:
                         f"collector task {collector_id} omits authorized requirement "
                         f"{requirement.requirement_id}"
                     )
+
+        expected_plan_id = self.expected_plan_id
+        if self.plan_id != expected_plan_id:
+            raise ValueError(
+                f"CompanyCollectionPlan ID mismatch: expected {expected_plan_id}, "
+                f"got {self.plan_id}"
+            )
+
+    @property
+    def expected_plan_id(self) -> str:
+        return _company_collection_plan_id(
+            version=self.version,
+            company=self.company,
+            routing_hash=self.routing_hash,
+            requirements=self.requirements,
+            tasks=self.tasks,
+        )
 
     @property
     def requirement_contract(
@@ -436,6 +467,68 @@ def module_plan_routing_hash(plan: ModuleRequirementPlan) -> str:
     return _stable_hash(rows)
 
 
+def _collection_task_id(
+    *,
+    collector_id: str,
+    source_id: str,
+    requirement_ids: tuple[str, ...],
+) -> str:
+    payload = "|".join((collector_id, source_id, *requirement_ids))
+    return f"TASK_{sha256(payload.encode('utf-8')).hexdigest()[:16]}"
+
+
+def _company_collection_plan_id(
+    *,
+    version: str,
+    company: ResolvedCompanyIdentity,
+    routing_hash: str,
+    requirements: tuple[CollectionRequirement, ...],
+    tasks: tuple[CollectionTask, ...],
+) -> str:
+    payload = {
+        "version": version,
+        "company": {
+            "target_id": company.target_id,
+            "legal_name": company.legal_name,
+            "ticker": company.ticker,
+            "jurisdiction": normalize_jurisdiction(company.jurisdiction),
+            "external_ids": company.external_ids,
+            "source_refs": company.source_refs,
+        },
+        "routing_hash": routing_hash,
+        "requirements": [
+            {
+                "id": item.requirement_id,
+                "segment": item.segment_id,
+                "metric": item.metric,
+                "kind": item.kind.value,
+                "mandatory": item.mandatory,
+                "collectors": item.collector_ids,
+                "sources": [
+                    {
+                        "source_id": candidate.source_id,
+                        "authority": candidate.authority,
+                        "access": candidate.access,
+                        "match_kind": candidate.match_kind.value,
+                    }
+                    for candidate in item.source_candidates
+                ],
+            }
+            for item in requirements
+        ],
+        "tasks": [
+            {
+                "task_id": task.task_id,
+                "collector": task.collector_id,
+                "source": task.source_id,
+                "requirements": task.requirement_ids,
+            }
+            for task in tasks
+        ],
+    }
+    return f"COLLECTION_{_stable_hash(payload)[:20]}"
+
+
 def load_source_descriptors(
     path: str | Path,
 ) -> tuple[SourceDescriptor, ...]:
@@ -542,17 +635,10 @@ def compile_company_collection_plan(
         )
         tasks.append(
             CollectionTask(
-                task_id=(
-                    "TASK_"
-                    + sha256(
-                        (
-                            collector_id
-                            + "|"
-                            + capability.source_id
-                            + "|"
-                            + "|".join(requirement_ids)
-                        ).encode("utf-8")
-                    ).hexdigest()[:16]
+                task_id=_collection_task_id(
+                    collector_id=collector_id,
+                    source_id=capability.source_id,
+                    requirement_ids=requirement_ids,
                 ),
                 collector_id=collector_id,
                 source_id=capability.source_id,
@@ -560,42 +646,21 @@ def compile_company_collection_plan(
             )
         )
 
-    plan_payload = {
-        "version": _PLAN_VERSION,
-        "target_id": company.target_id,
-        "jurisdiction": normalize_jurisdiction(company.jurisdiction),
-        "routing_hash": routing_hash,
-        "requirements": [
-            {
-                "id": item.requirement_id,
-                "segment": item.segment_id,
-                "metric": item.metric,
-                "kind": item.kind.value,
-                "mandatory": item.mandatory,
-                "collectors": item.collector_ids,
-                "sources": tuple(
-                    candidate.source_id
-                    for candidate in item.source_candidates
-                ),
-            }
-            for item in requirements
-        ],
-        "tasks": [
-            {
-                "collector": task.collector_id,
-                "source": task.source_id,
-                "requirements": task.requirement_ids,
-            }
-            for task in tasks
-        ],
-    }
+    requirement_tuple = tuple(requirements)
+    task_tuple = tuple(tasks)
     result = CompanyCollectionPlan(
-        plan_id=f"COLLECTION_{_stable_hash(plan_payload)[:20]}",
+        plan_id=_company_collection_plan_id(
+            version=_PLAN_VERSION,
+            company=company,
+            routing_hash=routing_hash,
+            requirements=requirement_tuple,
+            tasks=task_tuple,
+        ),
         version=_PLAN_VERSION,
         company=company,
         routing_hash=routing_hash,
-        requirements=tuple(requirements),
-        tasks=tuple(tasks),
+        requirements=requirement_tuple,
+        tasks=task_tuple,
     )
     result.validate()
     return result
@@ -617,6 +682,13 @@ def _source_candidates(
         if not _jurisdiction_matches(source.source_id, jurisdiction):
             continue
         if not _source_matches_route(source, segment):
+            continue
+        if (
+            not target_is_listed
+            and "listed_companies" in {
+                value.strip().lower() for value in source.industries
+            }
+        ):
             continue
         if metric in source.metrics:
             exact.append(
