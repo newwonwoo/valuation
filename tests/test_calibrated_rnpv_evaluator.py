@@ -155,6 +155,16 @@ def test_higher_calibrated_success_probability_increases_rnpv():
     assert high.value.amount > low.value.amount
 
 
+def test_higher_wacc_reduces_rnpv_for_positive_later_commercial_cashflows():
+    low_rate = registry(cert=certificate(), rate=0.08).evaluate(
+        ModelKey("probabilistic_pipeline", "rnpv", "asset-v1"), scenario("0.5"), segment_id="asset"
+    )
+    high_rate = registry(cert=certificate(), rate=0.12).evaluate(
+        ModelKey("probabilistic_pipeline", "rnpv", "asset-v1"), scenario("0.5"), segment_id="asset"
+    )
+    assert high_rate.value.amount < low_rate.value.amount
+
+
 def test_rnpv_registry_requires_matching_calibration_certificate():
     with pytest.raises(PermissionError, match="no CalibrationCertificate"):
         registry(cert=None)
