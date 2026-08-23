@@ -121,7 +121,7 @@ units:
 
   - unit_id: PRIMARY_EVIDENCE_COLLECTION
     unit_type: source_adapter
-    implementation_status: partial
+    implementation_status: implemented_collection_core_partial_live_sources
     stages: [PRIMARY_EVIDENCE_COLLECTION]
     purpose: Acquire and index primary/company evidence with provenance, timestamps, hashes, and locators.
     inputs: [company_identity, required_evidence, source_registry, credentials]
@@ -129,7 +129,7 @@ units:
     consumers: [EVIDENCE_LEDGER, INDUSTRY_KNOWLEDGE, SOURCE_WATCH]
     effect_types: [evidence_effect]
     final_outputs: [evidence_coverage]
-    canonical_refs: [src/valuation_engine/live_indexers.py, src/valuation_engine/source_index.py, config/industry_source_registry.yaml, config/foundation_source_registry.yaml]
+    canonical_refs: [src/valuation_engine/evidence_collection.py, src/valuation_engine/evidence_adapter.py, src/valuation_engine/live_indexers.py, src/valuation_engine/source_index.py, config/industry_source_registry.yaml, config/foundation_source_registry.yaml]
     forbidden_effects: [interpret_as_assumption, direct_value_effect]
 
   - unit_id: INDUSTRY_KNOWLEDGE
@@ -181,7 +181,7 @@ units:
     consumers: [LLM_STAFF, EVIDENCE_TO_ASSUMPTION_BRIDGE, ASSUMPTION_COMPILER, AUDIT_GATE]
     effect_types: [evidence_effect, guardrail_effect]
     final_outputs: [ledger_snapshot_hash, run_validity]
-    canonical_refs: [src/valuation_engine/ledger.py, src/valuation_engine/records.py]
+    canonical_refs: [src/valuation_engine/ledger.py, src/valuation_engine/evidence_adapter.py, src/valuation_engine/records.py]
     forbidden_effects: [silent_conflict_deletion]
 
   - unit_id: ROCKET_INSIGHT_SCAN
