@@ -5,15 +5,17 @@ from enum import Enum
 from hashlib import sha256
 import json
 from pathlib import Path
+import re
 from typing import Any
 
 import yaml
 
 from .live_primary_adapters import ResolvedCompanyIdentity
-from .module_plan import ModuleRequirementPlan
+from .module_plan import ModuleRequirementPlan, SegmentModuleRequirementPlan
 
 
 _PRIMARY_SOURCE_ROLES = frozenset({"observed_state", "company_primary"})
+_BROAD_SOURCE_INDUSTRIES = frozenset({"cross_industry", "listed_companies"})
 _PLAN_VERSION = "0.5.2"
 
 
@@ -89,8 +91,8 @@ class CollectorCapability:
             raise ValueError(f"collector capability {self.collector_id} has duplicate metrics")
 
     def supports(self, *, metric: str, jurisdiction: str) -> bool:
-        jurisdiction_key = _normalize_jurisdiction(jurisdiction)
-        supported = {_normalize_jurisdiction(value) for value in self.jurisdictions}
+        jurisdiction_key = normalize_jurisdiction(jurisdiction)
+        supported = {normalize_jurisdiction(value) for value in self.jurisdictions}
         return metric in self.supported_metrics and ("GLOBAL" in supported or jurisdiction_key in supported)
 
 
@@ -166,23 +168,17 @@ class CompanyCollectionPlan:
 
     @property
     def missing_required_metrics(self) -> tuple[str, ...]:
-        return tuple(
-            dict.fromkeys(
-                item.metric
-                for item in self.required_evidence
-                if item.readiness is not CollectionReadiness.COLLECTOR_READY
-            )
-        )
+        return tuple(dict.fromkeys(
+            item.metric for item in self.required_evidence
+            if item.readiness is not CollectionReadiness.COLLECTOR_READY
+        ))
 
     @property
     def no_source_required_metrics(self) -> tuple[str, ...]:
-        return tuple(
-            dict.fromkeys(
-                item.metric
-                for item in self.required_evidence
-                if item.readiness is CollectionReadiness.NO_SOURCE_CANDIDATE
-            )
-        )
+        return tuple(dict.fromkeys(
+            item.metric for item in self.required_evidence
+            if item.readiness is CollectionReadiness.NO_SOURCE_CANDIDATE
+        ))
 
     @property
     def runnable_collector_ids(self) -> tuple[str, ...]:
@@ -196,6 +192,22 @@ class CompanyCollectionPlan:
             for item in self.requirements
             if collector_id in item.collector_ids
         )
+
+
+def module_plan_routing_hash(plan: ModuleRequirementPlan) -> str:
+    plan.validate()
+    rows = [
+        {
+            "segment_id": segment.segment_id,
+            "sector_adapter": segment.sector_adapter,
+            "archetypes": segment.archetypes,
+            "required_evidence": segment.required_evidence,
+            "required_kpis": segment.required_kpis,
+            "allowed_valuation_methods": segment.allowed_valuation_methods,
+        }
+        for segment in plan.segments
+    ]
+    return _stable_hash(rows)
 
 
 def load_source_descriptors(path: str | Path) -> tuple[SourceDescriptor, ...]:
@@ -244,15 +256,7 @@ def compile_company_collection_plan(
 
     sources = load_source_descriptors(source_registry_path)
     requirements: list[CollectionRequirement] = []
-    routing_rows: list[dict[str, Any]] = []
     for segment in plan.segments:
-        routing_rows.append(
-            {
-                "segment_id": segment.segment_id,
-                "sector_adapter": segment.sector_adapter,
-                "archetypes": segment.archetypes,
-            }
-        )
         required = tuple(segment.required_evidence)
         supporting = tuple(metric for metric in segment.required_kpis if metric not in set(required))
         for kind, mandatory, metrics in (
@@ -264,50 +268,42 @@ def compile_company_collection_plan(
                     metric,
                     sources=sources,
                     jurisdiction=company.jurisdiction,
+                    segment=segment,
                     target_is_listed=target_is_listed,
                 )
                 candidate_ids = {item.source_id for item in candidates}
-                runnable = tuple(
-                    sorted(
-                        capability.collector_id
-                        for capability in collector_capabilities
-                        if capability.source_id in candidate_ids
-                        and capability.supports(metric=metric, jurisdiction=company.jurisdiction)
-                    )
-                )
-                requirement_id = f"{segment.segment_id}:{kind.value}:{metric}"
-                requirements.append(
-                    CollectionRequirement(
-                        requirement_id=requirement_id,
-                        segment_id=segment.segment_id,
-                        metric=metric,
-                        kind=kind,
-                        mandatory=mandatory,
-                        source_candidates=candidates,
-                        collector_ids=runnable,
-                    )
-                )
+                runnable = tuple(sorted(
+                    capability.collector_id
+                    for capability in collector_capabilities
+                    if capability.source_id in candidate_ids
+                    and capability.supports(metric=metric, jurisdiction=company.jurisdiction)
+                ))
+                requirements.append(CollectionRequirement(
+                    requirement_id=f"{segment.segment_id}:{kind.value}:{metric}",
+                    segment_id=segment.segment_id,
+                    metric=metric,
+                    kind=kind,
+                    mandatory=mandatory,
+                    source_candidates=candidates,
+                    collector_ids=runnable,
+                ))
 
-    routing_hash = _stable_hash(routing_rows)
+    routing_hash = module_plan_routing_hash(plan)
     tasks: list[CollectionTask] = []
     for collector_id in sorted({cid for item in requirements for cid in item.collector_ids}):
         capability = capability_by_id[collector_id]
-        requirement_ids = tuple(
-            item.requirement_id for item in requirements if collector_id in item.collector_ids
-        )
-        tasks.append(
-            CollectionTask(
-                task_id=f"TASK_{sha256((collector_id + '|' + '|'.join(requirement_ids)).encode('utf-8')).hexdigest()[:16]}",
-                collector_id=collector_id,
-                source_id=capability.source_id,
-                requirement_ids=requirement_ids,
-            )
-        )
+        requirement_ids = tuple(item.requirement_id for item in requirements if collector_id in item.collector_ids)
+        tasks.append(CollectionTask(
+            task_id=f"TASK_{sha256((collector_id + '|' + '|'.join(requirement_ids)).encode('utf-8')).hexdigest()[:16]}",
+            collector_id=collector_id,
+            source_id=capability.source_id,
+            requirement_ids=requirement_ids,
+        ))
 
     plan_payload = {
         "version": _PLAN_VERSION,
         "target_id": company.target_id,
-        "jurisdiction": company.jurisdiction,
+        "jurisdiction": normalize_jurisdiction(company.jurisdiction),
         "routing_hash": routing_hash,
         "requirements": [
             {
@@ -338,6 +334,7 @@ def _source_candidates(
     *,
     sources: tuple[SourceDescriptor, ...],
     jurisdiction: str,
+    segment: SegmentModuleRequirementPlan,
     target_is_listed: bool,
 ) -> tuple[SourceCandidate, ...]:
     exact: list[SourceCandidate] = []
@@ -347,24 +344,74 @@ def _source_candidates(
             continue
         if not _jurisdiction_matches(source.source_id, jurisdiction):
             continue
+        if not _source_matches_route(source, segment):
+            continue
         if metric in source.metrics:
             exact.append(SourceCandidate(source.source_id, source.authority, source.access, SourceMatchKind.EXACT_METRIC))
             continue
         if target_is_listed and "company_primary" in source.roles and "listed_companies" in source.industries:
             fallback.append(SourceCandidate(source.source_id, source.authority, source.access, SourceMatchKind.COMPANY_PRIMARY_FALLBACK))
-    return tuple(
-        sorted(
-            (*exact, *fallback),
-            key=lambda item: (0 if item.match_kind is SourceMatchKind.EXACT_METRIC else 1, item.source_id),
-        )
-    )
+    return tuple(sorted(
+        (*exact, *fallback),
+        key=lambda item: (0 if item.match_kind is SourceMatchKind.EXACT_METRIC else 1, item.source_id),
+    ))
+
+
+def _source_matches_route(source: SourceDescriptor, segment: SegmentModuleRequirementPlan) -> bool:
+    normalized_industries = {value.strip().lower() for value in source.industries}
+    if normalized_industries.intersection(_BROAD_SOURCE_INDUSTRIES):
+        return True
+    source_tokens = _industry_tokens(source.industries)
+    route_tokens = _industry_tokens((segment.sector_adapter, *segment.archetypes))
+    return bool(source_tokens.intersection(route_tokens))
+
+
+def _industry_tokens(values: tuple[str, ...]) -> set[str]:
+    tokens: set[str] = set()
+    for value in values:
+        for raw in re.split(r"[^a-zA-Z0-9]+", value.lower()):
+            if not raw:
+                continue
+            token = _canonical_industry_token(raw)
+            if token:
+                tokens.add(token)
+    return tokens
+
+
+def _canonical_industry_token(token: str) -> str:
+    aliases = {
+        "auto": "automotive",
+        "automotive": "automotive",
+        "bank": "financial",
+        "banks": "financial",
+        "financial": "financial",
+        "financials": "financial",
+        "insurance": "financial",
+        "insurer": "financial",
+        "insurers": "financial",
+        "securities": "financial",
+        "pharma": "healthcare",
+        "biotech": "healthcare",
+        "biohealth": "healthcare",
+        "medtech": "healthcare",
+        "healthcare": "healthcare",
+        "ship": "maritime",
+        "ships": "maritime",
+        "shipbuilder": "maritime",
+        "shipbuilding": "maritime",
+        "shipping": "maritime",
+    }
+    value = aliases.get(token, token)
+    if value.endswith("s") and len(value) > 4:
+        value = value[:-1]
+    return value
 
 
 def _stable_hash(value: Any) -> str:
     return sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")).hexdigest()
 
 
-def _normalize_jurisdiction(value: str) -> str:
+def normalize_jurisdiction(value: str) -> str:
     text = value.strip().upper().replace(" ", "_")
     aliases = {
         "KOR": "KR",
@@ -379,9 +426,9 @@ def _normalize_jurisdiction(value: str) -> str:
 
 
 def _jurisdiction_matches(source_id: str, jurisdiction: str) -> bool:
-    target = _normalize_jurisdiction(jurisdiction)
+    target = normalize_jurisdiction(jurisdiction)
     prefix = source_id.split("_", 1)[0].upper()
-    if prefix in {"GLOBAL", "INTL", "OECD", "IEA"}:
+    if prefix in {"GLOBAL", "INTL", "INT", "OECD", "IEA"}:
         return True
     if len(prefix) == 2 and prefix.isalpha():
         return prefix == target
