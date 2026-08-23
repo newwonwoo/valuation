@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable
 
 from .evaluator_registry import EvaluatorRegistry, ModelKey
 from .method_capabilities import (
@@ -228,10 +227,11 @@ def _segment_capabilities(
     registry: MethodCapabilityRegistry,
 ) -> tuple[MethodCapability, ...]:
     allowed = set(segment.allowed_valuation_methods)
+    archetypes = set(segment.archetypes)
     return tuple(
         item
         for item in registry.capabilities
-        if item.archetype in set(segment.archetypes) and item.method in allowed
+        if item.archetype in archetypes and item.method in allowed
     )
 
 
@@ -298,9 +298,40 @@ def _resolve_segment(
                 None,
                 f"requested method {choice.archetype}/{choice.method} is not implemented",
             )
-        eligible = candidate.assumption_ready_model_keys
+
         if choice.version is not None:
-            eligible = tuple(key for key in eligible if key.version == choice.version)
+            registered_version = tuple(
+                key for key in candidate.registered_model_keys if key.version == choice.version
+            )
+            if not registered_version:
+                return SegmentPlanResolution(
+                    segment.segment_id,
+                    ValuationPlanStatus.CAPABILITY_GAP,
+                    candidates,
+                    None,
+                    f"requested exact evaluator {choice.archetype}/{choice.method}/{choice.version} is not registered",
+                )
+            eligible_version = tuple(
+                key for key in candidate.assumption_ready_model_keys if key.version == choice.version
+            )
+            if len(eligible_version) == 1:
+                return SegmentPlanResolution(
+                    segment.segment_id,
+                    ValuationPlanStatus.READY,
+                    candidates,
+                    eligible_version[0],
+                    "explicit method/version choice validated against Industry DNA, capability, registry and assumptions",
+                )
+            return SegmentPlanResolution(
+                segment.segment_id,
+                ValuationPlanStatus.ASSUMPTION_GAP,
+                candidates,
+                None,
+                "requested exact evaluator version is registered but required compiled assumptions are missing: "
+                + ", ".join(candidate.missing_assumptions),
+            )
+
+        eligible = candidate.assumption_ready_model_keys
         if len(eligible) == 1:
             return SegmentPlanResolution(
                 segment.segment_id,
@@ -312,7 +343,7 @@ def _resolve_segment(
         if not candidate.registered_model_keys:
             status = ValuationPlanStatus.CAPABILITY_GAP
             rationale = "requested method has no exact evaluator registration"
-        elif candidate.missing_assumptions:
+        elif candidate.missing_assumptions and not eligible:
             status = ValuationPlanStatus.ASSUMPTION_GAP
             rationale = "requested method is missing compiled assumptions: " + ", ".join(candidate.missing_assumptions)
         else:
@@ -343,9 +374,7 @@ def _resolve_segment(
             "multiple exact allowed evaluators are executable; economic method selection must be proposed explicitly",
         )
     registered = tuple(key for candidate in candidates for key in candidate.registered_model_keys)
-    missing = tuple(
-        dict.fromkeys(value for candidate in candidates for value in candidate.missing_assumptions)
-    )
+    missing = tuple(dict.fromkeys(value for candidate in candidates for value in candidate.missing_assumptions))
     if registered and missing:
         return SegmentPlanResolution(
             segment.segment_id,
