@@ -10,6 +10,7 @@ from .actual_units import Measure, measure_from_raw, to_decimal
 from .ledger import EvidenceLedger
 from .records import (
     AssumptionRecord,
+    AffectedVariable,
     BridgeRecord,
     CalibrationStatus,
     EvidenceSourceLayer,
@@ -26,6 +27,7 @@ class CompilationStatus(str, Enum):
 class AssumptionSpec:
     key: str
     scenario_id: str
+    bridge_id: str
     canonical_unit: str
     transform_id: str
     required: bool = True
@@ -34,8 +36,8 @@ class AssumptionSpec:
     probability_only_if_calibrated: bool = False
 
     def validate(self) -> None:
-        if not self.key or not self.scenario_id or not self.canonical_unit or not self.transform_id:
-            raise ValueError("assumption spec requires key, scenario, unit and transform")
+        if not all((self.key, self.scenario_id, self.bridge_id, self.canonical_unit, self.transform_id)):
+            raise ValueError("assumption spec requires key, scenario, bridge, unit and transform")
         if self.min_value is not None and self.max_value is not None and self.min_value > self.max_value:
             raise ValueError("assumption spec min_value cannot exceed max_value")
 
@@ -106,17 +108,24 @@ def _ratio(inputs: tuple[Measure, ...], output_unit: str) -> Measure:
         raise ValueError("ratio transform requires matching base units")
     if denominator_base.amount == 0:
         raise ValueError("ratio denominator cannot be zero")
-    return Measure(numerator_base.amount / denominator_base.amount, "ratio", max(numerator.as_of, denominator.as_of))
+    return Measure(
+        numerator_base.amount / denominator_base.amount,
+        "ratio",
+        max(numerator.as_of, denominator.as_of),
+    )
 
 
 def _product(inputs: tuple[Measure, ...], output_unit: str) -> Measure:
     if len(inputs) != 2:
         raise ValueError("product transform requires two inputs")
     left, right = inputs
-    if left.unit == "ratio":
-        return Measure(left.amount * right.convert_to(output_unit).amount, output_unit, max(left.as_of, right.as_of))
-    if right.unit == "ratio":
-        return Measure(right.amount * left.convert_to(output_unit).amount, output_unit, max(left.as_of, right.as_of))
+    for ratio_candidate, value_candidate in ((left, right), (right, left)):
+        try:
+            ratio = ratio_candidate.convert_to("ratio")
+        except ValueError:
+            continue
+        value = value_candidate.convert_to(output_unit)
+        return Measure(ratio.amount * value.amount, output_unit, max(left.as_of, right.as_of))
     raise ValueError("product transform currently requires one ratio input")
 
 
@@ -166,9 +175,11 @@ def compile_assumptions(
         findings.append(CompilationFinding("DUPLICATE_HYPOTHESIS", "duplicate hypothesis id"))
     if len(bridge_map) != len(bridges):
         findings.append(CompilationFinding("DUPLICATE_BRIDGE", "duplicate bridge id"))
+    spec_keys = [(item.scenario_id, item.key) for item in specs]
+    if len(spec_keys) != len(set(spec_keys)):
+        findings.append(CompilationFinding("DUPLICATE_SPEC", "duplicate scenario/key assumption spec"))
 
     compiled: list[CompiledAssumption] = []
-    economic_paths: set[tuple[str, str, str]] = set()
     for spec in specs:
         try:
             spec.validate()
@@ -176,18 +187,13 @@ def compile_assumptions(
             findings.append(CompilationFinding("INVALID_SPEC", str(exc)))
             continue
 
-        matches = [bridge for bridge in bridges if bridge.id == spec.key or bridge.id.endswith(f":{spec.key}")]
-        if not matches:
-            # Explicit bridge-id convention may differ, so also match by AssumptionRecord-style key in rationale-free callers.
-            matches = [bridge for bridge in bridges if bridge.economic_path_id == f"{spec.scenario_id}:{spec.key}"]
-        if not matches:
+        bridge = bridge_map.get(spec.bridge_id)
+        if bridge is None:
             if spec.required:
-                findings.append(CompilationFinding("MISSING_BRIDGE", f"{spec.scenario_id}/{spec.key} has no bridge"))
+                findings.append(
+                    CompilationFinding("MISSING_BRIDGE", f"{spec.scenario_id}/{spec.key} missing {spec.bridge_id}")
+                )
             continue
-        if len(matches) > 1:
-            findings.append(CompilationFinding("AMBIGUOUS_BRIDGE", f"{spec.scenario_id}/{spec.key} has multiple bridges"))
-            continue
-        bridge = matches[0]
         hypothesis = hypothesis_map.get(bridge.hypothesis_id)
         if hypothesis is None:
             findings.append(CompilationFinding("UNKNOWN_HYPOTHESIS", f"bridge {bridge.id} references unknown hypothesis"))
@@ -196,7 +202,9 @@ def compile_assumptions(
             findings.append(CompilationFinding("INCOMPLETE_BRIDGE", f"bridge {bridge.id} lacks kill/verification contract"))
             continue
         if spec.probability_only_if_calibrated and hypothesis.calibration_status is not CalibrationStatus.CALIBRATED:
-            findings.append(CompilationFinding("UNCALIBRATED_PROBABILITY", f"{spec.key} requires CALIBRATED hypothesis probability"))
+            findings.append(
+                CompilationFinding("UNCALIBRATED_PROBABILITY", f"{spec.key} requires CALIBRATED hypothesis probability")
+            )
             continue
 
         input_ids = bridge_input_map.get(bridge.id, bridge.evidence_ids)
@@ -205,13 +213,13 @@ def compile_assumptions(
             continue
         measures: list[Measure] = []
         evidence_hash_parts: list[str] = []
-        market_leak = False
+        source_layers: list[EvidenceSourceLayer] = []
         try:
             for evidence_id in input_ids:
                 evidence = ledger.get(evidence_id)
+                source_layers.append(evidence.source_layer)
                 if evidence.source_layer is EvidenceSourceLayer.MARKET_COMPARISON:
-                    market_leak = True
-                    break
+                    raise ValueError("market comparison evidence cannot enter intrinsic compilation")
                 measures.append(measure_from_raw(evidence.value, evidence.unit, evidence.effective_date))
                 evidence_hash_parts.append(
                     f"{evidence.id}|{evidence.metric}|{evidence.value}|{evidence.unit}|{evidence.effective_date}|{evidence.source_ref}"
@@ -219,8 +227,13 @@ def compile_assumptions(
         except ValueError as exc:
             findings.append(CompilationFinding("INVALID_EVIDENCE_INPUT", f"bridge {bridge.id}: {exc}"))
             continue
-        if market_leak:
-            findings.append(CompilationFinding("TARGET_MARKET_LEAK", f"bridge {bridge.id} uses market comparison evidence"))
+
+        if bridge.affected_variable is AffectedVariable.PRICE and source_layers and all(
+            layer is EvidenceSourceLayer.POLICY_PRIMARY_SOURCE for layer in source_layers
+        ):
+            findings.append(
+                CompilationFinding("POLICY_PRICE_AS_ENTERPRISE_PRICE", f"bridge {bridge.id} uses policy-only price evidence")
+            )
             continue
 
         transform = TRANSFORMS.get(spec.transform_id)
@@ -250,11 +263,6 @@ def compile_assumptions(
             findings.append(CompilationFinding("DOMAIN_VIOLATION", f"{spec.key} above maximum"))
             continue
 
-        path_key = (spec.scenario_id, spec.key, bridge.economic_path_id)
-        if path_key in economic_paths:
-            findings.append(CompilationFinding("DUPLICATE_ECONOMIC_PATH", str(path_key)))
-            continue
-        economic_paths.add(path_key)
         evidence_hash = sha256("\n".join(sorted(evidence_hash_parts)).encode("utf-8")).hexdigest()
         compiled.append(
             CompiledAssumption(
