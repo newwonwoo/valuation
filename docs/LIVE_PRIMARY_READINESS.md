@@ -1,4 +1,4 @@
-# PRISM LIVE_PRIMARY Readiness Map v1.1
+# PRISM LIVE_PRIMARY Readiness Map v1.2
 
 Status: canonical maintenance record for distinguishing full PRIMARY_SHADOW integration from real-source LIVE_PRIMARY readiness.
 
@@ -12,7 +12,7 @@ Readiness states:
 
 - `LIVE_READY`: can execute with current/live inputs under a declared source/loader contract.
 - `PARTIAL_LIVE`: at least one reusable live path exists, but material source/method coverage remains incomplete.
-- `RUNTIME_READY`: deterministic runtime is complete once typed upstream inputs are supplied.
+- `RUNTIME_READY`: deterministic/runtime stage is complete once typed upstream inputs are supplied.
 - `ADAPTER_REQUIRED`: reusable components exist, but a canonical live stage adapter is still missing.
 - `SHADOW_ONLY`: current stage behavior proves integration only.
 - `CONDITIONAL_NOT_IMPLEMENTED`: stage is route-dependent and intentionally fails closed when required without an implementation.
@@ -21,23 +21,23 @@ A new workflow stage without a readiness row is a maintenance error.
 
 ## 2. Current snapshot
 
-At the v1.1 registry snapshot:
+At the v1.2 registry snapshot:
 
 - canonical stages: **32 / 32 mapped**;
 - `LIVE_READY` or `RUNTIME_READY`: **24**;
-- `PARTIAL_LIVE`: **3**;
-- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **5**.
+- `PARTIAL_LIVE`: **4**;
+- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **4**.
 
 These counts are not a percentage-complete score. A single unresolved stage can still block a company if its Industry DNA makes that capability material.
 
 The remaining highest-value live gaps are:
 
-1. actual Rocket Insight scanner dispatch rather than plan-only inspection;
-2. route-specific Upstream Funding adapter;
-3. live Economic-Twin/Beta and WACC input adapters;
-4. Warranted PER stage adapter;
-5. broader exact-evaluator coverage across the 19 Economic Archetypes;
-6. probability calibration datasets beyond the gating contract.
+1. route-specific Upstream Funding adapter;
+2. live Economic-Twin/Beta and WACC input adapters;
+3. Warranted PER stage adapter;
+4. broader exact-evaluator coverage across the 19 Economic Archetypes;
+5. probability calibration datasets beyond the gating contract;
+6. source-aware handler coverage for every mandatory Rocket Insight scanner family.
 
 ## 3. LIVE_PRIMARY front-half contract
 
@@ -73,7 +73,29 @@ Every `SegmentDescriptor` must explicitly state revenue recognition, price forma
 
 The live router must cover every decomposed segment exactly once with an `IndustryDNAProfile`. Every `evidence_key` in the route must already exist in either the loaded Industry Knowledge snapshot or that run's segment evidence. Invented/unresolved Evidence IDs fail closed.
 
-## 4. OpenDART company-fact vertical
+## 4. Typed Rocket Insight scanner runtime
+
+`src/valuation_engine/scanner_runtime.py` is the canonical generic dispatcher for `ROCKET_INSIGHT_SCAN`.
+
+The Module Requirement Plan owns the exact mandatory scanner IDs. LLM Staff may add reinforcement scanners, but cannot remove or replace a mandatory scanner.
+
+The dispatcher enforces:
+
+- exact handler coverage for every mandatory scanner;
+- one typed finding per executed scanner;
+- active Evidence-ID lineage for supporting/contradicting claims;
+- an explicit affected variable, economic path, kill-condition hit or reinforcement request for PASS/WARNING findings;
+- explicit missing-evidence metric requests;
+- deterministic scanner-result hashing;
+- `NOT_IMPLEMENTED` for missing mandatory handlers;
+- `RECOVERY_REQUIRED` for evidence gaps;
+- blocking failure for mismatched scanner IDs, invented Evidence IDs or invalid findings.
+
+The dispatcher itself cannot emit compiled assumptions or valuation outputs. Scanner-specific handlers feed typed findings to LLM Staff, Red Team and the ordinary Bridge/Compiler path.
+
+The stage is `PARTIAL_LIVE`, not `LIVE_READY`, because source-aware handlers and fixtures do not yet cover every scanner ID in `config/module_requirement_scanner_map.yaml`. See `docs/ROCKET_INSIGHT_SCANNER_RUNTIME.md`.
+
+## 5. OpenDART company-fact vertical
 
 `src/valuation_engine/dart_facts.py` is the first reusable LIVE_PRIMARY company-fact adapter.
 
@@ -99,7 +121,7 @@ Design rules:
 
 The live collector uses an injected `fetch_text` transport. Network/credential handling therefore stays outside deterministic valuation code, while fixtures and historical replays use the same fact parser.
 
-## 5. What the live front half does not solve
+## 6. What the live front half does not solve
 
 A `LIVE_READY` stage means its typed source/loader contract, traceability and fail-closed behavior are complete. It does **not** claim every jurisdiction, every source family or every company-specific KPI is built in.
 
@@ -107,7 +129,7 @@ OpenDART standard financial facts do not provide every Industry DNA requirement.
 
 Absence of a standard XBRL account ID is not permission to guess from a similar account name. The Control Plane should record the missing metric and enter Recovery/Capability handling.
 
-## 6. Promotion rule
+## 7. Promotion rule
 
 A stage moves toward `LIVE_READY` only when:
 
