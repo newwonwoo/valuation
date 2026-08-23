@@ -288,6 +288,68 @@ def test_deterministic_stage_can_compile_plan_after_registry_load():
     assert result.outputs["warranted_per_segments"] == ("core",)
 
 
+def test_deterministic_stage_reuses_matching_pre_risk_warranted_per_scope():
+    module = plan_for(segment(("capacity_manufacturing",), ("driver_dcf", "warranted_per")))
+    scenarios = scenario_set(*common_assumptions())
+    registry = dcf_registry("capacity_manufacturing", "driver_dcf")
+
+    adapter = deterministic_valuation_adapter(
+        registry=registry,
+        plan_loader=lambda context, effective_registry: compile_company_valuation_plan(
+            module,
+            context.data["bound_scenario_set"],
+            evaluator_registry=effective_registry,
+            capability_registry=load_default_method_capability_registry(),
+            inputs=inputs(),
+        ),
+    )
+    result = adapter(
+        OrchestratorContext(
+            "RUN",
+            ExecutionMode.LIVE_PRIMARY,
+            {
+                "bound_scenario_set": scenarios,
+                "warranted_per_segments": ("core",),
+            },
+        )
+    )
+
+    assert result.status is StageStatus.PASS
+    assert "warranted_per_segments" not in result.outputs
+    assert result.outputs["valuation_plan_warranted_per_segments"] == ("core",)
+
+
+def test_deterministic_stage_blocks_pre_risk_warranted_per_scope_mismatch():
+    module = plan_for(segment(("capacity_manufacturing",), ("driver_dcf", "warranted_per")))
+    scenarios = scenario_set(*common_assumptions())
+    registry = dcf_registry("capacity_manufacturing", "driver_dcf")
+
+    adapter = deterministic_valuation_adapter(
+        registry=registry,
+        plan_loader=lambda context, effective_registry: compile_company_valuation_plan(
+            module,
+            context.data["bound_scenario_set"],
+            evaluator_registry=effective_registry,
+            capability_registry=load_default_method_capability_registry(),
+            inputs=inputs(),
+        ),
+    )
+    result = adapter(
+        OrchestratorContext(
+            "RUN",
+            ExecutionMode.LIVE_PRIMARY,
+            {
+                "bound_scenario_set": scenarios,
+                "warranted_per_segments": (),
+            },
+        )
+    )
+
+    assert result.status is StageStatus.BLOCKED
+    assert result.blocking
+    assert "routing drifted from the compiled valuation plan" in result.rationale
+
+
 def test_deterministic_stage_returns_recovery_for_ambiguous_method_selection():
     module = plan_for(
         segment(
