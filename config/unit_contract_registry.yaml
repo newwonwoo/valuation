@@ -394,7 +394,7 @@ units:
 
   - unit_id: STREET_GAP_ANALYZER
     unit_type: market_layer
-    implementation_status: implemented
+    implementation_status: implemented_generic_post_freeze
     stages: [STREET_REFERENCE_LOAD, STREET_GAP_ANALYZER]
     purpose: Compare frozen intrinsic assumptions/value with broker forecasts, targets, and valuation policies only after freeze.
     inputs: [intrinsic_freeze_token, frozen_intrinsic_value, street_reports, gap_drivers]
@@ -402,12 +402,12 @@ units:
     consumers: [FINAL_REPORT, STATE_LEARNING]
     effect_types: [reporting_effect]
     final_outputs: [street_gap]
-    canonical_refs: [src/valuation_engine/street.py, src/valuation_engine/broker_research.py]
+    canonical_refs: [src/valuation_engine/post_freeze.py, src/valuation_engine/post_freeze_adapters.py, src/valuation_engine/street.py, src/valuation_engine/broker_research.py, docs/POST_FREEZE_RUNTIME.md]
     forbidden_effects: [same_run_intrinsic_mutation]
 
   - unit_id: MARKET_COMPARE
     unit_type: market_layer
-    implementation_status: implemented_legacy_and_contract
+    implementation_status: implemented_generic_and_legacy
     stages: [MARKET_PRICE_LOAD, MARKET_COMPARE]
     purpose: Compare frozen intrinsic value/distribution with current market price and derive post-freeze expectations.
     inputs: [intrinsic_freeze_token, frozen_intrinsic_value, current_market_price]
@@ -415,12 +415,12 @@ units:
     consumers: [FINAL_REPORT, STATE_LEARNING]
     effect_types: [reporting_effect]
     final_outputs: [market_comparison]
-    canonical_refs: [src/valuation_engine/engine.py, references/methods/reverse-dcf.md]
+    canonical_refs: [src/valuation_engine/post_freeze.py, src/valuation_engine/post_freeze_adapters.py, src/valuation_engine/engine.py, references/methods/reverse-dcf.md, docs/POST_FREEZE_RUNTIME.md]
     forbidden_effects: [price_to_assumption, price_to_scenario_weight]
 
   - unit_id: STATE_LEARNING
     unit_type: learning
-    implementation_status: implemented_partial
+    implementation_status: implemented_generic_state_core
     stages: [THESIS_DELTA, SAVE_STATE]
     purpose: Persist immutable runs, thesis deltas, module impact histories, kill conditions, next verification events, and last-good state.
     inputs: [run_result, thesis_delta, impact_assessments, source_changes, probability_forecasts]
@@ -428,7 +428,7 @@ units:
     consumers: [VALUATION_CONTROL_PLANE, DECISION_IMPACT, SOURCE_WATCH, MODULE_PROMOTION]
     effect_types: [routing_effect, reporting_effect]
     final_outputs: [future_research_priority, delta_revalidation_context]
-    canonical_refs: [src/valuation_engine/state.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]
+    canonical_refs: [src/valuation_engine/state.py, src/valuation_engine/generic_reporting.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md, docs/POST_FREEZE_RUNTIME.md]
     forbidden_effects: [mutate_prior_run]
 
   - unit_id: MODULE_PROMOTION
@@ -446,7 +446,7 @@ units:
 
   - unit_id: FINAL_REPORT
     unit_type: reporter
-    implementation_status: doctrine_driven
+    implementation_status: implemented_generic_reporter
     stages: [FINAL_REPORT]
     purpose: Present frozen intrinsic results, assumptions, uncertainty, Street/market comparison, unresolved gaps, and impact/efficiency notes without mixing layers.
     inputs: [frozen_intrinsic_value, valuation_components, doctrine_coverage, street_gap, market_comparison, impact_assessments]
@@ -454,5 +454,5 @@ units:
     consumers: [USER]
     effect_types: [reporting_effect]
     final_outputs: [user_decision_support]
-    canonical_refs: [SKILL.md]
+    canonical_refs: [src/valuation_engine/generic_reporting.py, docs/POST_FREEZE_RUNTIME.md, SKILL.md]
     forbidden_effects: [temporary_number_as_final, unvalued_option_as_zero, hidden_blocker]
