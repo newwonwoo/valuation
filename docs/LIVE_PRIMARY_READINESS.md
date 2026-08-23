@@ -30,6 +30,8 @@ At the v1.0 registry snapshot:
 
 These counts are not a percentage-complete score. A single unresolved stage can still block a company if its Industry DNA makes that capability material.
 
+The current `main` already includes executable Module Requirement planning, automatic ablation, append-only impact history, adaptive Control Plane loadout, atomic state persistence and a full 32-stage PRIMARY_SHADOW runtime. None of those integration achievements should be relabelled as complete live-source coverage.
+
 The highest-value remaining live gaps are currently:
 
 1. company/entity resolution from live identifiers;
