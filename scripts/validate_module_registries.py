@@ -16,30 +16,30 @@ if set(mods['modules']) != archetypes:
     errors.append(f"archetype registry mismatch taxonomy_only={sorted(archetypes-set(mods['modules']))} module_only={sorted(set(mods['modules'])-archetypes)}")
 
 # Code and YAML must expose the same method contract; never maintain two silent truths.
-all_yaml_methods=set()
+yaml_pairs=set()
 for name,spec in mods['modules'].items():
     a=EconomicArchetype(name)
     profile=IndustryDNAProfile('registry', 'registry.validation', (a,), 'na','na','na','na','na','na','na','na',('REGISTRY',))
     code_methods=set(compose_modules(profile).allowed_valuation_methods)
     yaml_methods=set(spec.get('allowed_valuation_methods',[]))
-    all_yaml_methods.update(yaml_methods)
+    yaml_pairs.update((name, method) for method in yaml_methods)
     if code_methods != yaml_methods:
         errors.append(f"method registry drift {name}: code={sorted(code_methods)} yaml={sorted(yaml_methods)}")
 
-# The method-capability registry owns execution-role metadata, not archetype permission.
-# Its method universe must nevertheless be exactly the same universe exposed by Industry DNA.
+# The capability registry owns execution metadata only. Exact archetype/method permission
+# remains in the Industry DNA contracts, so the pair universes must be identical.
 try:
     method_capabilities=load_method_capability_registry(ROOT/'config/valuation_method_capability_registry.yaml')
     method_capabilities.validate(
         archetype_registry_path=ROOT/'config/archetype_module_registry.yaml',
         repo_root=ROOT,
     )
-    capability_methods={item.method for item in method_capabilities.capabilities}
-    if capability_methods != all_yaml_methods:
+    capability_pairs={item.identity for item in method_capabilities.capabilities}
+    if capability_pairs != yaml_pairs:
         errors.append(
             'method capability drift '
-            f'yaml_only={sorted(all_yaml_methods-capability_methods)} '
-            f'capability_only={sorted(capability_methods-all_yaml_methods)}'
+            f'yaml_only={sorted(yaml_pairs-capability_pairs)} '
+            f'capability_only={sorted(capability_pairs-yaml_pairs)}'
         )
 except (OSError, ValueError) as exc:
     errors.append(f"method capability registry invalid: {exc}")
@@ -67,5 +67,5 @@ if errors: raise SystemExit('\n'.join(errors))
 print(
     f"PASS archetypes={len(archetypes)} sector_adapters={len(sectors['adapters'])} "
     f"impact_edges={len(impact['edges'])} method_contracts_synced=True "
-    f"method_capabilities={len(method_capabilities.capabilities)}"
+    f"method_capability_bindings={len(method_capabilities.capabilities)}"
 )
