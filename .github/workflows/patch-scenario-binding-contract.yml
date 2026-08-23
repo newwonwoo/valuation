@@ -1,0 +1,46 @@
+name: patch-scenario-binding-contract
+
+on:
+  push:
+    branches: [feature/scenario-binding-core]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/scenario-binding-core
+      - name: Patch Scenario Engine contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('config/unit_contract_registry.yaml')
+          text = p.read_text(encoding='utf-8')
+          old = '''  - unit_id: SCENARIO_ENGINE\n    unit_type: scenario_engine\n    implementation_status: partial\n'''
+          new = '''  - unit_id: SCENARIO_ENGINE\n    unit_type: scenario_engine\n    implementation_status: implemented_binding_core\n'''
+          if old not in text:
+              raise SystemExit('SCENARIO_ENGINE status pattern not found')
+          text = text.replace(old, new, 1)
+          anchor = text.index('  - unit_id: SCENARIO_ENGINE')
+          tail = text[anchor:]
+          old_ref = '    canonical_refs: [src/valuation_engine/engine.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]\n'
+          new_ref = '    canonical_refs: [src/valuation_engine/scenario_binding.py, src/valuation_engine/shadow_adapters.py, src/valuation_engine/engine.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]\n'
+          if old_ref not in tail:
+              raise SystemExit('SCENARIO_ENGINE canonical ref pattern not found')
+          tail = tail.replace(old_ref, new_ref, 1)
+          text = text[:anchor] + tail
+          p.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit contract sync
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add config/unit_contract_registry.yaml
+          git commit -m 'docs: sync scenario binding implementation status'
+          git push origin HEAD:feature/scenario-binding-core
