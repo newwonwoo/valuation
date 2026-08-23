@@ -36,8 +36,8 @@ stages:
     status: RUNTIME_READY
     reason: append-only ledger, supersession and snapshot hashing are implemented.
   ROCKET_INSIGHT_SCAN:
-    status: SHADOW_ONLY
-    reason: mandatory scanner loadout is recorded, but scanners are not yet dispatched as a complete live evidence acquisition layer.
+    status: PARTIAL_LIVE
+    reason: a typed mandatory-scanner dispatcher validates exact loadout coverage, Evidence lineage, impact paths, missing evidence and reinforcement requests; source- and industry-specific handler coverage remains incomplete.
   UPSTREAM_FUNDING_SCAN:
     status: CONDITIONAL_NOT_IMPLEMENTED
     reason: funding module exists, but full runtime intentionally fails closed when a route requires funding and no dedicated adapter is supplied.
