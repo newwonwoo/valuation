@@ -56,6 +56,14 @@ def module_requirement_plan_adapter(
                 trigger_state=trigger_state,
                 unit_aliases=aliases,
             )
+            expected_modules = tuple(
+                dict.fromkeys(
+                    (
+                        *plan.common_core_modules,
+                        *(archetype for segment in plan.segments for archetype in segment.archetypes),
+                    )
+                )
+            )
         except Exception as exc:
             return StageExecutionResult(
                 StageStatus.BLOCKED,
@@ -67,6 +75,12 @@ def module_requirement_plan_adapter(
             "compiled canonical Module Requirement Plan and non-destructive learned research loadout",
             {
                 "module_requirement_plan": plan,
+                "required_evidence": plan.required_evidence,
+                "required_kpis": plan.required_kpis,
+                "mandatory_scanners": plan.mandatory_scanners,
+                "kill_conditions": plan.kill_conditions,
+                "scenario_variables": plan.scenario_variables,
+                "expected_module_ids": expected_modules,
                 "adaptive_research_loadout": loadout,
                 "mandatory_research_units": loadout.mandatory_units,
                 "active_research_units": loadout.active_units,
