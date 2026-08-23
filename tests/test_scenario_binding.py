@@ -90,7 +90,7 @@ def test_missing_required_assumption_blocks_binding():
     assert any(item.code == "MISSING_REQUIRED_ASSUMPTION" for item in result.findings)
 
 
-def test_probability_sum_must_be_one_before_weighting():
+def test_calibrated_probability_sum_must_equal_one():
     items = []
     for scenario, probability in (("Bear", "0.2"), ("Base", "0.5"), ("Bull", "0.4")):
         items.extend((
@@ -101,6 +101,5 @@ def test_probability_sum_must_be_one_before_weighting():
         compiled(*items),
         ScenarioBindingSpec(("Bear", "Base", "Bull"), ("margin", "scenario_probability"), "scenario_probability"),
     )
-    assert result.passed
-    assert not result.scenario_set.numeric_weighting_allowed
-    assert all(item.probability is None for item in result.scenario_set.scenarios)
+    assert not result.passed
+    assert any(item.code == "CALIBRATED_PROBABILITY_SUM_INVALID" for item in result.findings)
