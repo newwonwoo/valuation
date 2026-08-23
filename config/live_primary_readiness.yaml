@@ -9,23 +9,23 @@ status_definitions:
   CONDITIONAL_NOT_IMPLEMENTED: stage is only needed for some Industry DNA routes and currently fails closed when required
 stages:
   COMPANY_RESOLUTION:
-    status: ADAPTER_REQUIRED
-    reason: PRIMARY_SHADOW accepts caller-supplied company identity; canonical live entity resolution is not yet wired.
+    status: LIVE_READY
+    reason: typed live resolver contract is implemented with fail-closed identity validation; OpenDART corpCode is the first official resolver implementation and other jurisdictions can supply the same contract.
   LOAD_COMPANY_STATE:
     status: RUNTIME_READY
     reason: immutable local StateStore and research-learning state are implemented.
   LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT:
-    status: ADAPTER_REQUIRED
-    reason: current full runtime accepts a versioned snapshot hash supplied by the caller.
+    status: LIVE_READY
+    reason: typed live snapshot loader contract validates source/content lineage and a deterministic snapshot hash before downstream use.
   SOURCE_FRESHNESS_PRECHECK:
-    status: ADAPTER_REQUIRED
-    reason: source-watch components exist but full runtime currently uses a shadow cleanliness assertion.
+    status: LIVE_READY
+    reason: typed live source-watch loader contract blocks source failures, unreviewed changes and revalidation-required findings before downstream analysis.
   SEGMENT_DECOMPOSITION:
-    status: ADAPTER_REQUIRED
-    reason: current runtime receives validated segment profiles from the caller.
+    status: LIVE_READY
+    reason: typed live decomposer contract requires complete economic-structure fields and explicit Evidence IDs for every segment.
   INDUSTRY_DNA_ROUTE:
-    status: ADAPTER_REQUIRED
-    reason: Industry DNA contracts are implemented, but live routing evidence acquisition/entity-to-segment composition is not automatic.
+    status: LIVE_READY
+    reason: typed live router contract requires exact segment coverage and rejects Industry DNA Evidence IDs not present in the loaded snapshot or segment evidence.
   MODULE_REQUIREMENT_PLAN:
     status: RUNTIME_READY
     reason: Industry DNA compiles to evidence, KPI, scanner, kill-condition and method requirements.
