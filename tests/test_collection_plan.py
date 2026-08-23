@@ -128,6 +128,7 @@ def test_collection_plan_distinguishes_source_candidate_from_runnable_collector(
     assert by_metric["lead_time"].readiness is CollectionReadiness.SOURCE_CANDIDATE_ONLY
     assert result.missing_required_metrics == ("utilization",)
     assert result.runnable_collector_ids == ("dart-backlog",)
+    assert result.authorized_metrics_for_collector("dart-backlog") == ("backlog",)
 
 
 def test_collection_plan_does_not_mix_kr_sources_into_us_target(tmp_path):
@@ -150,8 +151,13 @@ def test_primary_evidence_stage_accepts_runtime_collection_selection(tmp_path):
         jurisdiction="KR",
         source_registry_path=source_registry(tmp_path),
         collector_capabilities=(
-            CollectorCapability("c-util", "KR_KOSIS_API", ("utilization",), ("KR",), "tests.fixture"),
-            CollectorCapability("c-backlog", "KR_OPENDART", ("backlog",), ("KR",), "tests.fixture"),
+            CollectorCapability(
+                "c-combined",
+                "KR_OPENDART",
+                ("utilization", "backlog"),
+                ("KR",),
+                "tests.fixture",
+            ),
         ),
     )
     collector = static_evidence_collector(
@@ -163,10 +169,42 @@ def test_primary_evidence_stage_accepts_runtime_collection_selection(tmp_path):
     adapter = primary_evidence_collection_adapter(
         selection_loader=lambda _: EvidenceCollectorSelection(
             plan,
-            (
-                SelectedEvidenceCollector("c-util", collector),
-                SelectedEvidenceCollector("c-backlog", collector),
-            ),
+            (SelectedEvidenceCollector("c-combined", collector),),
+        )
+    )
+    result = adapter(
+        OrchestratorContext(
+            "RUN",
+            ExecutionMode.LIVE_PRIMARY,
+            {"target_id": "T", "required_evidence": ("utilization", "backlog")},
+        )
+    )
+    assert result.status is StageStatus.PASS
+    assert result.outputs["collection_plan"] == plan
+    assert result.outputs["collection_selected_collector_ids"] == ("c-combined",)
+    assert result.outputs["evidence_missing_metrics"] == ()
+
+
+def test_primary_evidence_stage_rejects_collector_not_authorized_by_plan(tmp_path):
+    plan = compile_primary_collection_plan(
+        module_plan(),
+        target_id="T",
+        jurisdiction="KR",
+        source_registry_path=source_registry(tmp_path),
+        collector_capabilities=(
+            CollectorCapability("c-backlog", "KR_OPENDART", ("backlog",), ("KR",), "tests.fixture"),
+        ),
+    )
+    collector = static_evidence_collector(
+        source_id="fixture-primary",
+        checked_at="2026-08-01",
+        records=(evidence("backlog"),),
+        source_fingerprint="fixture-hash",
+    )
+    adapter = primary_evidence_collection_adapter(
+        selection_loader=lambda _: EvidenceCollectorSelection(
+            plan,
+            (SelectedEvidenceCollector("unplanned", collector),),
         )
     )
     result = adapter(
@@ -177,28 +215,10 @@ def test_primary_evidence_stage_accepts_runtime_collection_selection(tmp_path):
         )
     )
     assert result.status is StageStatus.BLOCKED
-    assert "duplicate source batch" in result.detail
-
-    adapter = primary_evidence_collection_adapter(
-        selection_loader=lambda _: EvidenceCollectorSelection(
-            plan,
-            (SelectedEvidenceCollector("c-backlog", collector),),
-        )
-    )
-    result = adapter(
-        OrchestratorContext(
-            "RUN2",
-            ExecutionMode.LIVE_PRIMARY,
-            {"target_id": "T", "required_evidence": ("utilization", "backlog")},
-        )
-    )
-    assert result.status is StageStatus.PASS
-    assert result.outputs["collection_plan"] == plan
-    assert result.outputs["collection_selected_collector_ids"] == ("c-backlog",)
-    assert result.outputs["evidence_missing_metrics"] == ()
+    assert "not authorized" in result.detail
 
 
-def test_primary_evidence_stage_rejects_collector_not_authorized_by_plan(tmp_path):
+def test_primary_evidence_stage_rejects_metrics_outside_collector_scope(tmp_path):
     plan = compile_primary_collection_plan(
         module_plan(),
         target_id="T",
@@ -217,7 +237,7 @@ def test_primary_evidence_stage_rejects_collector_not_authorized_by_plan(tmp_pat
     adapter = primary_evidence_collection_adapter(
         selection_loader=lambda _: EvidenceCollectorSelection(
             plan,
-            (SelectedEvidenceCollector("unplanned", collector),),
+            (SelectedEvidenceCollector("c-backlog", collector),),
         )
     )
     result = adapter(
@@ -228,7 +248,8 @@ def test_primary_evidence_stage_rejects_collector_not_authorized_by_plan(tmp_pat
         )
     )
     assert result.status is StageStatus.BLOCKED
-    assert "not authorized" in result.detail
+    assert "outside Collection Plan" in result.detail
+    assert "utilization" in result.detail
 
 
 def test_primary_evidence_stage_fails_closed_when_plan_has_no_runnable_collector(tmp_path):
