@@ -1,214 +1,116 @@
-version: 1.0
-purpose: Classify every valuation method exposed by Industry DNA by execution role and runtime family. Runtime status is derived from execution_family; it is not a manually editable readiness label.
-method_kinds:
-  - segment_evaluator
-  - cross_method_engine
-  - aggregator
+version: 1.1
+purpose: Classify each exact Industry DNA archetype/method binding by execution role and runtime family. Archetype permission remains authoritative in archetype_module_registry.yaml; this registry owns execution metadata only.
 execution_families:
-  - normalized_multiple
-  - explicit_fcff_dcf
-  - finite_life_npv
-  - calibrated_single_event_rnpv
-  - warranted_per
-  - sotp
-  - not_implemented
-methods:
-  normalized_dcf:
+  normalized_multiple:
     kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
+    runtime_status: RUNTIME_READY
+    requires_beta: false
+    requires_wacc: false
+    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/valuation_execution.py, tests/test_generic_evaluator_sotp.py]
+  explicit_fcff_dcf:
+    kind: segment_evaluator
+    runtime_status: PARTIAL_RUNTIME
     requires_beta: true
     requires_wacc: true
     canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  normalized_ebitda:
+  finite_life_npv:
     kind: segment_evaluator
-    execution_family: not_implemented
-    output_kind: enterprise_value
-    requires_beta: false
-    requires_wacc: false
-    canonical_refs: [config/archetype_module_registry.yaml, docs/GENERIC_ENGINE_DESIGN.md]
+    runtime_status: RUNTIME_READY
+    requires_beta: true
+    requires_wacc: true
+    canonical_refs: [src/valuation_engine/finite_life_evaluators.py, docs/FINITE_LIFE_NPV_EVALUATORS.md, tests/test_finite_life_npv_evaluators.py]
+  calibrated_single_event_rnpv:
+    kind: segment_evaluator
+    runtime_status: PARTIAL_RUNTIME
+    requires_beta: true
+    requires_wacc: true
+    canonical_refs: [src/valuation_engine/rnpv_evaluator.py, docs/CALIBRATED_RNPV_EVALUATOR.md, tests/test_calibrated_rnpv_evaluator.py]
   warranted_per:
     kind: cross_method_engine
-    execution_family: warranted_per
-    output_kind: cross_method_reference
+    runtime_status: RUNTIME_READY
     requires_beta: true
     requires_wacc: true
     stage: HIERARCHICAL_WARRANTED_PER
     canonical_refs: [src/valuation_engine/per.py, src/valuation_engine/per_adapters.py, tests/test_live_warranted_per_adapter.py]
-  driver_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  arr_fcf_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  usage_driver_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  gmv_take_rate_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  attention_monetization_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  royalty_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  cohort_npv:
-    kind: segment_evaluator
-    execution_family: finite_life_npv
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/finite_life_evaluators.py, docs/FINITE_LIFE_NPV_EVALUATORS.md, tests/test_finite_life_npv_evaluators.py]
-  pipeline_option_sotp:
-    kind: aggregator
-    execution_family: not_implemented
-    output_kind: aggregation
-    requires_beta: false
-    requires_wacc: false
-    stage: DETERMINISTIC_VALUATION
-    canonical_refs: [config/archetype_module_registry.yaml, docs/GENERIC_ENGINE_DESIGN.md]
-  midcycle_price_volume_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  normalized_multiple:
-    kind: segment_evaluator
-    execution_family: normalized_multiple
-    output_kind: enterprise_value
-    requires_beta: false
-    requires_wacc: false
-    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/valuation_execution.py, tests/test_generic_evaluator_sotp.py]
-  midcycle_spread_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  ddm:
-    kind: segment_evaluator
-    execution_family: not_implemented
-    output_kind: equity_value
-    requires_beta: false
-    requires_wacc: false
-    canonical_refs: [config/archetype_module_registry.yaml, docs/GENERIC_ENGINE_DESIGN.md]
-  rate_base_roe:
-    kind: segment_evaluator
-    execution_family: not_implemented
-    output_kind: equity_value
-    requires_beta: false
-    requires_wacc: false
-    canonical_refs: [config/archetype_module_registry.yaml, docs/GENERIC_ENGINE_DESIGN.md]
-  regulated_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  ffo_multiple:
-    kind: segment_evaluator
-    execution_family: not_implemented
-    output_kind: equity_value
-    requires_beta: false
-    requires_wacc: false
-    canonical_refs: [config/archetype_module_registry.yaml, docs/GENERIC_ENGINE_DESIGN.md]
-  nav:
-    kind: segment_evaluator
-    execution_family: not_implemented
-    output_kind: equity_value
-    requires_beta: false
-    requires_wacc: false
-    canonical_refs: [config/archetype_module_registry.yaml, docs/GENERIC_ENGINE_DESIGN.md]
-  pb_roe:
-    kind: segment_evaluator
-    execution_family: not_implemented
-    output_kind: equity_value
-    requires_beta: false
-    requires_wacc: false
-    canonical_refs: [config/archetype_module_registry.yaml, docs/GENERIC_ENGINE_DESIGN.md]
-  residual_income:
-    kind: segment_evaluator
-    execution_family: not_implemented
-    output_kind: equity_value
-    requires_beta: false
-    requires_wacc: false
-    canonical_refs: [config/archetype_module_registry.yaml, docs/GENERIC_ENGINE_DESIGN.md]
-  rnpv:
-    kind: segment_evaluator
-    execution_family: calibrated_single_event_rnpv
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/rnpv_evaluator.py, docs/CALIBRATED_RNPV_EVALUATOR.md, tests/test_calibrated_rnpv_evaluator.py]
-  reserve_npv:
-    kind: segment_evaluator
-    execution_family: finite_life_npv
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/finite_life_evaluators.py, docs/FINITE_LIFE_NPV_EVALUATORS.md, tests/test_finite_life_npv_evaluators.py]
-  unit_economics_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  project_npv:
-    kind: segment_evaluator
-    execution_family: finite_life_npv
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/finite_life_evaluators.py, docs/FINITE_LIFE_NPV_EVALUATORS.md, tests/test_finite_life_npv_evaluators.py]
   sotp:
     kind: aggregator
-    execution_family: sotp
-    output_kind: aggregation
+    runtime_status: RUNTIME_READY
     requires_beta: false
     requires_wacc: false
     stage: DETERMINISTIC_VALUATION
     canonical_refs: [src/valuation_engine/sotp.py, src/valuation_engine/valuation_execution.py, tests/test_generic_evaluator_sotp.py]
-  product_driver_dcf:
+  not_implemented_segment:
     kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
-  aum_fee_dcf:
-    kind: segment_evaluator
-    execution_family: explicit_fcff_dcf
-    output_kind: enterprise_value
-    requires_beta: true
-    requires_wacc: true
-    canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
+    runtime_status: NOT_IMPLEMENTED
+    requires_beta: false
+    requires_wacc: false
+    canonical_refs: [config/archetype_module_registry.yaml, docs/GENERIC_ENGINE_DESIGN.md]
+  not_implemented_aggregator:
+    kind: aggregator
+    runtime_status: NOT_IMPLEMENTED
+    requires_beta: false
+    requires_wacc: false
+    stage: DETERMINISTIC_VALUATION
+    canonical_refs: [config/archetype_module_registry.yaml, docs/GENERIC_ENGINE_DESIGN.md]
+
+bindings:
+  contracted_backlog:
+    normalized_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    normalized_ebitda: {execution_family: not_implemented_segment, output_kind: unresolved}
+    warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}
+  capacity_manufacturing:
+    driver_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}
+  recurring_subscription:
+    arr_fcf_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}
+  metered_usage_network:
+    usage_driver_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}
+  transaction_marketplace:
+    gmv_take_rate_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}
+  advertising_attention:
+    attention_monetization_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}
+  ip_royalty_licensing:
+    royalty_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}
+  hit_driven_content:
+    cohort_npv: {execution_family: finite_life_npv, output_kind: enterprise_value}
+    pipeline_option_sotp: {execution_family: not_implemented_aggregator, output_kind: aggregation}
+  commodity_price_taker:
+    midcycle_price_volume_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    normalized_multiple: {execution_family: normalized_multiple, output_kind: enterprise_value}
+  process_spread:
+    midcycle_spread_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    normalized_multiple: {execution_family: normalized_multiple, output_kind: enterprise_value}
+  regulated_rate_base:
+    ddm: {execution_family: not_implemented_segment, output_kind: equity_value}
+    rate_base_roe: {execution_family: not_implemented_segment, output_kind: equity_value}
+    regulated_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+  asset_yield_nav:
+    ddm: {execution_family: not_implemented_segment, output_kind: equity_value}
+    ffo_multiple: {execution_family: not_implemented_segment, output_kind: equity_value}
+    nav: {execution_family: not_implemented_segment, output_kind: equity_value}
+  financial_balance_sheet:
+    ddm: {execution_family: not_implemented_segment, output_kind: equity_value}
+    pb_roe: {execution_family: not_implemented_segment, output_kind: equity_value}
+    residual_income: {execution_family: not_implemented_segment, output_kind: equity_value}
+  probabilistic_pipeline:
+    rnpv: {execution_family: calibrated_single_event_rnpv, output_kind: enterprise_value}
+  reserve_depletion:
+    nav: {execution_family: not_implemented_segment, output_kind: unresolved}
+    reserve_npv: {execution_family: finite_life_npv, output_kind: enterprise_value}
+  consumer_unit_economics:
+    unit_economics_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}
+  project_finance:
+    project_npv: {execution_family: finite_life_npv, output_kind: enterprise_value}
+    sotp: {execution_family: sotp, output_kind: aggregation}
+  design_led_product:
+    product_driver_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}
+  aum_fee_economics:
+    aum_fee_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+    warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}
