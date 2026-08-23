@@ -89,6 +89,12 @@ def _decimal_amount(value: object) -> Decimal:
     return -amount if negative else amount
 
 
+def _json_safe_amount(amount: Decimal) -> int | str:
+    """Preserve exact DART precision while keeping Evidence snapshots JSON-serializable."""
+    integral = amount.to_integral_value()
+    return int(integral) if amount == integral else format(amount, "f")
+
+
 def _effective_date(business_year: str, report_code: str) -> str:
     try:
         year = int(business_year)
@@ -172,7 +178,7 @@ def parse_opendart_financial_facts(
                 id=evidence_id,
                 target=target_id,
                 metric=spec.metric,
-                value=float(amount),
+                value=_json_safe_amount(amount),
                 unit=spec.unit,
                 source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
                 effective_date=effective,
