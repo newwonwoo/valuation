@@ -3,7 +3,7 @@ from __future__ import annotations
 from hashlib import sha256
 
 from .control_plane import StageStatus
-from .evaluator_registry import EvaluatorRegistry
+from .evaluator_registry import EvaluatorRegistry, ValuationRuntimeInputs
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .scenario_binding import BoundScenarioSet
 from .valuation_execution import CompanyValuationPlan, execute_company_valuation
@@ -40,12 +40,24 @@ def deterministic_valuation_adapter(
                 "BoundScenarioSet is missing; SCENARIO_BUILD must complete before valuation",
                 blocking=True,
             )
+        runtime_inputs = context.data.get("valuation_runtime_inputs", ValuationRuntimeInputs())
+        if not isinstance(runtime_inputs, ValuationRuntimeInputs):
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "valuation_runtime_inputs must be a typed ValuationRuntimeInputs object",
+                blocking=True,
+            )
         try:
-            result = execute_company_valuation(scenario_set, plan=plan, registry=registry)
+            result = execute_company_valuation(
+                scenario_set,
+                plan=plan,
+                registry=registry,
+                runtime_inputs=runtime_inputs,
+            )
         except KeyError as exc:
             return StageExecutionResult(
                 StageStatus.NOT_IMPLEMENTED,
-                f"exact evaluator or compiled assumption is unavailable: {exc}",
+                f"exact evaluator or compiled/runtime input is unavailable: {exc}",
                 blocking=True,
             )
         except ValueError as exc:
@@ -57,7 +69,7 @@ def deterministic_valuation_adapter(
 
         return StageExecutionResult(
             StageStatus.PASS,
-            "registered deterministic evaluators and SOTP aggregation completed",
+            "registered deterministic evaluators and SOTP aggregation completed; declared runtime risk inputs were consumed and traced where required",
             {
                 "generic_valuation_result": result,
                 "valuation_hash": result.valuation_hash,
@@ -65,6 +77,7 @@ def deterministic_valuation_adapter(
                 "expected_value_per_share": result.expected_value_per_share,
                 "selected_methods": selected_methods,
                 "route_hash": route_hash,
+                "valuation_runtime_input_keys": tuple(item.key for item in runtime_inputs.inputs),
             },
         )
 
