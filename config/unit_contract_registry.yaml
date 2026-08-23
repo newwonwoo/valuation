@@ -368,7 +368,7 @@ units:
 
   - unit_id: AUDIT_GATE
     unit_type: audit
-    implementation_status: implemented
+    implementation_status: implemented_generic_and_legacy
     stages: [DCF_PER_ASSUMPTION_CONSISTENCY_GATE, CROSS_METHOD_DOUBLE_COUNT_AUDIT, AUDIT_GATE]
     purpose: Independently validate price isolation, probability integrity, sensitivity direction, traceability, duplicate paths, and valuation consistency.
     inputs: [compiled_assumptions, valuation_outputs, method_outputs, traceability, doctrine_coverage]
@@ -376,7 +376,7 @@ units:
     consumers: [INTRINSIC_FREEZE, VALUATION_CONTROL_PLANE, DECISION_IMPACT]
     effect_types: [guardrail_effect, value_effect]
     final_outputs: [run_validity, freeze_eligibility]
-    canonical_refs: [src/valuation_engine/audit.py, SKILL.md]
+    canonical_refs: [src/valuation_engine/generic_audit.py, src/valuation_engine/audit_adapter.py, src/valuation_engine/audit.py, SKILL.md]
     forbidden_effects: [override_failure_without_new_run]
 
   - unit_id: INTRINSIC_FREEZE
