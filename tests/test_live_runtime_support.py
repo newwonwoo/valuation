@@ -8,11 +8,28 @@ from valuation_engine.collection_plan import (
     CollectorCapability,
 )
 from valuation_engine.control_plane import ExecutionMode, StageStatus
-from valuation_engine.doctrine_runtime import build_doctrine_coverage, load_default_unit_contract_registry
-from valuation_engine.evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequest
+from valuation_engine.doctrine_runtime import (
+    build_doctrine_coverage,
+    load_default_unit_contract_registry,
+)
+from valuation_engine.evidence_collection import (
+    EvidenceCollectionBatch,
+    EvidenceCollectionRequest,
+)
 from valuation_engine.live_primary_adapters import ResolvedCompanyIdentity
-from valuation_engine.live_runtime import LiveCollectorProvider, _task_bound_collector
-from valuation_engine.orchestrator import StageTrace
+from valuation_engine.live_runtime import (
+    LiveCollectorProvider,
+    _task_bound_collector,
+    run_prism,
+)
+from valuation_engine.llm_staff import RedTeamProposal
+from valuation_engine.orchestrator import (
+    OrchestratorContext,
+    StageExecutionResult,
+    StageTrace,
+)
+from valuation_engine.records import CriticalIssue
+from valuation_engine.runtime_support_adapters import research_loop_recovery_adapter
 
 
 def identity() -> ResolvedCompanyIdentity:
@@ -71,6 +88,10 @@ def collection_plan() -> CompanyCollectionPlan:
     return plan
 
 
+def test_run_prism_entrypoint_is_importable():
+    assert callable(run_prism)
+
+
 def test_live_collector_provider_rejects_source_lineage_mismatch():
     capability = CollectorCapability(
         "dart",
@@ -119,7 +140,11 @@ def test_task_bound_collector_requests_required_and_supporting_metrics():
 
     plan = collection_plan()
     provider = LiveCollectorProvider(capability, collector)
-    bound = _task_bound_collector(provider, task=plan.tasks[0], collection_plan=plan)
+    bound = _task_bound_collector(
+        provider,
+        task=plan.tasks[0],
+        collection_plan=plan,
+    )
     bound(EvidenceCollectionRequest("T", ("backlog",)))
     assert seen == [("backlog", "lead_time")]
 
@@ -144,11 +169,72 @@ def test_research_loop_recovered_trace_clears_prior_recovery_request_in_doctrine
             ),
         ),
     )
-    affected = tuple(
-        item
-        for item in snapshot.entries
-        if "BLIND_RED_TEAM_B=RECOVERY_REQUIRED" in item.rationale
+    entry = next(
+        item for item in snapshot.entries if item.module_id == "BLIND_RED_TEAM_B"
     )
-    assert affected
-    assert all(item.status is StageStatus.RECOVERED for item in affected)
-    assert all(not item.unresolved_blocker for item in affected)
+    assert "BLIND_RED_TEAM_B=recovery_required" in entry.rationale
+    assert entry.status is StageStatus.RECOVERED
+    assert not entry.unresolved_blocker
+
+
+def _original_red_team_proposal() -> RedTeamProposal:
+    return RedTeamProposal(
+        issues=(CriticalIssue("RT-1", "material unresolved challenge"),),
+        counter_thesis="the base thesis may fail",
+    )
+
+
+def test_research_recovery_cannot_omit_an_original_blocker():
+    def recovery(_):
+        return StageExecutionResult(
+            StageStatus.PASS,
+            "recovery attempted",
+            {
+                "recovered_red_team_proposal": RedTeamProposal(
+                    issues=(),
+                    counter_thesis="blocker was silently omitted",
+                )
+            },
+        )
+
+    result = research_loop_recovery_adapter(recovery)(
+        OrchestratorContext(
+            "RUN",
+            ExecutionMode.LIVE_PRIMARY,
+            {"red_team_proposal": _original_red_team_proposal()},
+        )
+    )
+    assert result.status is StageStatus.RECOVERY_REQUIRED
+    assert result.blocking
+    assert "omitted=RT-1" in result.rationale
+
+
+def test_research_recovery_requires_explicit_resolution_of_original_blocker():
+    def recovery(_):
+        return StageExecutionResult(
+            StageStatus.PASS,
+            "recovery completed",
+            {
+                "recovered_red_team_proposal": RedTeamProposal(
+                    issues=(
+                        CriticalIssue(
+                            "RT-1",
+                            "material challenge resolved with targeted evidence",
+                            resolved=True,
+                        ),
+                    ),
+                    counter_thesis="challenge tested and resolved",
+                )
+            },
+        )
+
+    result = research_loop_recovery_adapter(recovery)(
+        OrchestratorContext(
+            "RUN",
+            ExecutionMode.LIVE_PRIMARY,
+            {"red_team_proposal": _original_red_team_proposal()},
+        )
+    )
+    assert result.status is StageStatus.RECOVERED
+    assert not result.blocking
+    assert result.outputs["recovered_red_team_issue_ids"] == ("RT-1",)
