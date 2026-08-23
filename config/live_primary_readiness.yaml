@@ -57,11 +57,11 @@ stages:
     status: RUNTIME_READY
     reason: deterministic Assumption Compiler and Scenario Binding are implemented.
   HIERARCHICAL_BETA_ESTIMATION:
-    status: ADAPTER_REQUIRED
-    reason: hierarchical beta component exists; route-specific live peer/return adapter is not universally wired.
+    status: PARTIAL_LIVE
+    reason: typed L1→L4 peer-universe loader, Evidence-backed Economic-Twin selection, normalized return-convention validation and target relevering are implemented; universal live peer/return providers remain caller- and jurisdiction-specific.
   WACC_VALIDATION:
-    status: ADAPTER_REQUIRED
-    reason: WACC component exists; live risk-free, ERP, marginal debt and target-capital-structure adapter is not universally wired.
+    status: PARTIAL_LIVE
+    reason: typed currency-consistent risk-free/ERP/country-risk/marginal-debt/target-structure loader and same-structure Beta→WACC validation are implemented; universal market/credit data providers remain caller-specific.
   DETERMINISTIC_VALUATION:
     status: PARTIAL_LIVE
     reason: exact evaluator registry and SOTP runtime are implemented, but evaluator coverage across all 19 archetypes is incomplete.
