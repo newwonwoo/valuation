@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from valuation_engine.assumption_compiler import AssumptionSpec
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.ledger import EvidenceLedger
@@ -89,8 +91,8 @@ def test_scenario_build_adapter_compiles_and_binds():
 
     assert result.blocked_reasons == ()
     assert result.stage_traces[0].status is StageStatus.PASS
-    assert result.data["compiled_assumption_set"].get("margin", "Base").measure.amount == 0.2
-    assert result.data["bound_scenario_set"].get("Bull").get("margin").measure.amount == 0.3
+    assert result.data["compiled_assumption_set"].get("margin", "Base").measure.amount == Decimal("0.2")
+    assert result.data["bound_scenario_set"].get("Bull").get("margin").measure.amount == Decimal("0.3")
     assert not result.data["probability_weighting_allowed"]
 
 
