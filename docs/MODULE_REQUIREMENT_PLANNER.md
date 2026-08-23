@@ -78,6 +78,8 @@ ModuleRequirementPlan.scanners
 → next Control Plane mission
 ```
 
+현재 canonical Decision Impact 실행은 `impact_orchestrator.py`와 `impact_history.py`를 사용한다. Planner는 이 실행계층에 병력 명세를 공급하며 가치 산식을 직접 변경하지 않는다.
+
 주의:
 
 - Plan의 mandatory scanner는 **현재 Industry DNA에서 반드시 조사할 병력**이다.
@@ -103,6 +105,7 @@ ModuleRequirementPlan.scanners
 ## 7. 구현
 
 - `src/valuation_engine/module_requirements.py`
+- `src/valuation_engine/impact_orchestrator.py`
 - `config/module_requirement_scanner_map.yaml`
 - `tests/test_module_requirements.py`
 - `scripts/validate_module_requirement_plans.py`
