@@ -35,7 +35,9 @@ class SegmentValueBinding:
 
     def validate(self) -> None:
         if not self.segment_id or not self.asset_id or not self.ownership_key:
-            raise ValueError("segment value binding requires segment, asset and ownership key")
+            raise ValueError(
+                "segment value binding requires segment, asset and ownership key"
+            )
 
 
 @dataclass(frozen=True)
@@ -46,16 +48,51 @@ class CompanyValuationPlanInputs:
     parent_adjustments: tuple[ParentAdjustmentPlan, ...] = ()
 
     def validate(self, *, expected_segment_ids: tuple[str, ...]) -> None:
-        if not self.reporting_unit or not self.diluted_shares_key or not self.segment_bindings:
-            raise ValueError("valuation plan inputs require reporting unit, diluted shares and segment bindings")
+        if (
+            not self.reporting_unit
+            or not self.diluted_shares_key
+            or not self.segment_bindings
+        ):
+            raise ValueError(
+                "valuation plan inputs require reporting unit, diluted shares "
+                "and segment bindings"
+            )
         for item in self.segment_bindings:
             item.validate()
         ids = tuple(item.segment_id for item in self.segment_bindings)
         if len(ids) != len(set(ids)):
-            raise ValueError("valuation plan inputs contain duplicate segment bindings")
+            raise ValueError(
+                "valuation plan inputs contain duplicate segment bindings"
+            )
         if set(ids) != set(expected_segment_ids):
             raise ValueError(
-                f"valuation plan binding coverage mismatch: expected={sorted(expected_segment_ids)}, got={sorted(ids)}"
+                "valuation plan binding coverage mismatch: "
+                f"expected={sorted(expected_segment_ids)}, got={sorted(ids)}"
+            )
+
+        asset_ids = tuple(
+            item.asset_id for item in self.segment_bindings
+        ) + tuple(item.asset_id for item in self.parent_adjustments)
+        duplicate_assets = _duplicates(asset_ids)
+        if duplicate_assets:
+            raise ValueError(
+                "valuation plan inputs reuse asset IDs: "
+                + ", ".join(duplicate_assets)
+            )
+
+        adjustment_keys = tuple(
+            item.ev_to_equity_adjustment_key
+            for item in self.segment_bindings
+            if item.ev_to_equity_adjustment_key is not None
+        ) + tuple(
+            item.assumption_key for item in self.parent_adjustments
+        )
+        duplicate_adjustments = _duplicates(adjustment_keys)
+        if duplicate_adjustments:
+            raise ValueError(
+                "valuation plan inputs reuse EV-to-equity/parent adjustment "
+                "assumption keys: "
+                + ", ".join(duplicate_adjustments)
             )
 
     def binding_for(self, segment_id: str) -> SegmentValueBinding:
@@ -74,9 +111,13 @@ class SegmentMethodChoice:
 
     def validate(self) -> None:
         if not self.segment_id or not self.archetype or not self.method:
-            raise ValueError("segment method choice requires segment, archetype and method")
+            raise ValueError(
+                "segment method choice requires segment, archetype and method"
+            )
         if self.version is not None and not self.version:
-            raise ValueError("segment method choice version cannot be blank")
+            raise ValueError(
+                "segment method choice version cannot be blank"
+            )
 
 
 @dataclass(frozen=True)
@@ -88,10 +129,20 @@ class SegmentMethodCandidate:
     registered_model_keys: tuple[ModelKey, ...]
     assumption_ready_model_keys: tuple[ModelKey, ...]
     missing_assumptions: tuple[str, ...]
+    missing_assumptions_by_model_key: tuple[
+        tuple[ModelKey, tuple[str, ...]],
+        ...,
+    ]
 
     @property
     def selectable(self) -> bool:
         return bool(self.assumption_ready_model_keys)
+
+    def missing_for(self, model_key: ModelKey) -> tuple[str, ...]:
+        for key, missing in self.missing_assumptions_by_model_key:
+            if key == model_key:
+                return missing
+        raise KeyError(model_key)
 
 
 @dataclass(frozen=True)
@@ -101,12 +152,14 @@ class SegmentPlanResolution:
     candidates: tuple[SegmentMethodCandidate, ...]
     selected_model_key: ModelKey | None
     rationale: str
+    missing_assumptions: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
 class ValuationPlanCompilation:
     status: ValuationPlanStatus
     plan: CompanyValuationPlan | None
+    scenario_set_hash: str
     segment_resolutions: tuple[SegmentPlanResolution, ...]
     warranted_per_segments: tuple[str, ...]
     aggregator_bindings: tuple[str, ...]
@@ -114,7 +167,10 @@ class ValuationPlanCompilation:
 
     @property
     def ready(self) -> bool:
-        return self.status is ValuationPlanStatus.READY and self.plan is not None
+        return (
+            self.status is ValuationPlanStatus.READY
+            and self.plan is not None
+        )
 
 
 def compile_company_valuation_plan(
@@ -127,7 +183,13 @@ def compile_company_valuation_plan(
     method_choices: tuple[SegmentMethodChoice, ...] = (),
 ) -> ValuationPlanCompilation:
     module_plan.validate()
-    expected_segment_ids = tuple(item.segment_id for item in module_plan.segments)
+    if not scenario_set.scenarios or not scenario_set.scenario_set_hash:
+        raise ValueError(
+            "valuation plan compilation requires a non-empty hashed scenario set"
+        )
+    expected_segment_ids = tuple(
+        item.segment_id for item in module_plan.segments
+    )
     inputs.validate(expected_segment_ids=expected_segment_ids)
     choices = _validate_choices(method_choices, expected_segment_ids)
 
@@ -137,11 +199,15 @@ def compile_company_valuation_plan(
     compiled_segments: list[SegmentValuationPlan] = []
 
     for segment in module_plan.segments:
-        capabilities = _segment_capabilities(segment, capability_registry)
+        capabilities = _segment_capabilities(
+            segment,
+            capability_registry,
+        )
         if any(
             item.kind is MethodKind.CROSS_METHOD_ENGINE
             and item.method == "warranted_per"
-            and item.runtime_status is not MethodRuntimeStatus.NOT_IMPLEMENTED
+            and item.runtime_status
+            is not MethodRuntimeStatus.NOT_IMPLEMENTED
             for item in capabilities
         ):
             warranted_per_segments.append(segment.segment_id)
@@ -152,14 +218,25 @@ def compile_company_valuation_plan(
         )
 
         candidates = tuple(
-            _candidate_for(capability, scenario_set=scenario_set, evaluator_registry=evaluator_registry)
+            _candidate_for(
+                capability,
+                scenario_set=scenario_set,
+                evaluator_registry=evaluator_registry,
+            )
             for capability in capabilities
             if capability.kind is MethodKind.SEGMENT_EVALUATOR
         )
         choice = choices.get(segment.segment_id)
-        resolution = _resolve_segment(segment, candidates, choice)
+        resolution = _resolve_segment(
+            segment,
+            candidates,
+            choice,
+        )
         resolutions.append(resolution)
-        if resolution.status is not ValuationPlanStatus.READY or resolution.selected_model_key is None:
+        if (
+            resolution.status is not ValuationPlanStatus.READY
+            or resolution.selected_model_key is None
+        ):
             continue
 
         binding = inputs.binding_for(segment.segment_id)
@@ -168,22 +245,42 @@ def compile_company_valuation_plan(
             resolution.selected_model_key.method,
         )
         ev_adjustment = binding.ev_to_equity_adjustment_key
-        if capability.output_kind == "enterprise_value" and not ev_adjustment:
+        if (
+            capability.output_kind == "enterprise_value"
+            and not ev_adjustment
+        ):
+            missing = (
+                f"PLAN/{segment.segment_id}/ev_to_equity_adjustment_key",
+            )
             resolutions[-1] = SegmentPlanResolution(
-                segment.segment_id,
-                ValuationPlanStatus.ASSUMPTION_GAP,
-                candidates,
-                None,
-                "enterprise-value evaluator requires an explicit EV-to-equity adjustment assumption key",
+                segment_id=segment.segment_id,
+                status=ValuationPlanStatus.ASSUMPTION_GAP,
+                candidates=candidates,
+                selected_model_key=None,
+                rationale=(
+                    "enterprise-value evaluator requires an explicit "
+                    "EV-to-equity adjustment assumption key"
+                ),
+                missing_assumptions=missing,
             )
             continue
-        if capability.output_kind == "equity_value" and ev_adjustment is not None:
+        if (
+            capability.output_kind == "equity_value"
+            and ev_adjustment is not None
+        ):
+            missing = (
+                f"PLAN/{segment.segment_id}/remove_ev_to_equity_adjustment_key",
+            )
             resolutions[-1] = SegmentPlanResolution(
-                segment.segment_id,
-                ValuationPlanStatus.ASSUMPTION_GAP,
-                candidates,
-                None,
-                "equity-value evaluator must not apply a second EV-to-equity adjustment",
+                segment_id=segment.segment_id,
+                status=ValuationPlanStatus.ASSUMPTION_GAP,
+                candidates=candidates,
+                selected_model_key=None,
+                rationale=(
+                    "equity-value evaluator must not apply a second "
+                    "EV-to-equity adjustment"
+                ),
+                missing_assumptions=missing,
             )
             continue
         compiled_segments.append(
@@ -201,7 +298,18 @@ def compile_company_valuation_plan(
         inputs=inputs,
         selected_segments=tuple(compiled_segments),
     )
-    overall = _overall_status(tuple(resolutions), missing_global)
+    resolution_missing = tuple(
+        value
+        for resolution in resolutions
+        for value in resolution.missing_assumptions
+    )
+    missing_all = tuple(
+        dict.fromkeys((*missing_global, *resolution_missing))
+    )
+    overall = _overall_status(
+        tuple(resolutions),
+        missing_global,
+    )
     plan: CompanyValuationPlan | None = None
     if overall is ValuationPlanStatus.READY:
         plan = CompanyValuationPlan(
@@ -215,10 +323,15 @@ def compile_company_valuation_plan(
     return ValuationPlanCompilation(
         status=overall,
         plan=plan,
+        scenario_set_hash=scenario_set.scenario_set_hash,
         segment_resolutions=tuple(resolutions),
-        warranted_per_segments=tuple(dict.fromkeys(warranted_per_segments)),
-        aggregator_bindings=tuple(dict.fromkeys(aggregator_bindings)),
-        missing_assumptions=missing_global,
+        warranted_per_segments=tuple(
+            dict.fromkeys(warranted_per_segments)
+        ),
+        aggregator_bindings=tuple(
+            dict.fromkeys(aggregator_bindings)
+        ),
+        missing_assumptions=missing_all,
     )
 
 
@@ -242,21 +355,36 @@ def _candidate_for(
     evaluator_registry: EvaluatorRegistry,
 ) -> SegmentMethodCandidate:
     registered = tuple(
-        key
-        for key in evaluator_registry.keys()
-        if key.archetype == capability.archetype and key.method == capability.method
+        sorted(
+            (
+                key
+                for key in evaluator_registry.keys()
+                if key.archetype == capability.archetype
+                and key.method == capability.method
+            ),
+            key=lambda key: (
+                key.archetype,
+                key.method,
+                key.version,
+            ),
+        )
     )
     ready: list[ModelKey] = []
-    missing: set[str] = set()
+    missing_union: list[str] = []
+    missing_by_key: list[tuple[ModelKey, tuple[str, ...]]] = []
     for key in registered:
         evaluator = evaluator_registry.get(key)
-        key_missing: set[str] = set()
+        key_missing: list[str] = []
         for scenario in scenario_set.scenarios:
             for assumption_key in evaluator.required_assumption_keys:
                 if not _scenario_has(scenario, assumption_key):
-                    key_missing.add(f"{scenario.scenario_id}/{assumption_key}")
-        if key_missing:
-            missing.update(key_missing)
+                    key_missing.append(
+                        f"{scenario.scenario_id}/{assumption_key}"
+                    )
+        exact_missing = tuple(dict.fromkeys(key_missing))
+        missing_by_key.append((key, exact_missing))
+        if exact_missing:
+            missing_union.extend(exact_missing)
         else:
             ready.append(key)
     return SegmentMethodCandidate(
@@ -266,7 +394,27 @@ def _candidate_for(
         output_kind=capability.output_kind,
         registered_model_keys=registered,
         assumption_ready_model_keys=tuple(ready),
-        missing_assumptions=tuple(sorted(missing)),
+        missing_assumptions=tuple(dict.fromkeys(missing_union)),
+        missing_assumptions_by_model_key=tuple(missing_by_key),
+    )
+
+
+def _resolution(
+    *,
+    segment: SegmentModuleRequirementPlan,
+    status: ValuationPlanStatus,
+    candidates: tuple[SegmentMethodCandidate, ...],
+    selected_model_key: ModelKey | None,
+    rationale: str,
+    missing_assumptions: tuple[str, ...] = (),
+) -> SegmentPlanResolution:
+    return SegmentPlanResolution(
+        segment_id=segment.segment_id,
+        status=status,
+        candidates=candidates,
+        selected_model_key=selected_model_key,
+        rationale=rationale,
+        missing_assumptions=missing_assumptions,
     )
 
 
@@ -279,116 +427,191 @@ def _resolve_segment(
         matches = tuple(
             candidate
             for candidate in candidates
-            if candidate.archetype == choice.archetype and candidate.method == choice.method
+            if candidate.archetype == choice.archetype
+            and candidate.method == choice.method
         )
         if not matches:
-            return SegmentPlanResolution(
-                segment.segment_id,
-                ValuationPlanStatus.CAPABILITY_GAP,
-                candidates,
-                None,
-                f"requested method {choice.archetype}/{choice.method} is not an allowed segment evaluator",
+            return _resolution(
+                segment=segment,
+                status=ValuationPlanStatus.CAPABILITY_GAP,
+                candidates=candidates,
+                selected_model_key=None,
+                rationale=(
+                    f"requested method {choice.archetype}/{choice.method} "
+                    "is not an allowed segment evaluator"
+                ),
             )
         candidate = matches[0]
-        if candidate.runtime_status is MethodRuntimeStatus.NOT_IMPLEMENTED:
-            return SegmentPlanResolution(
-                segment.segment_id,
-                ValuationPlanStatus.CAPABILITY_GAP,
-                candidates,
-                None,
-                f"requested method {choice.archetype}/{choice.method} is not implemented",
+        if (
+            candidate.runtime_status
+            is MethodRuntimeStatus.NOT_IMPLEMENTED
+        ):
+            return _resolution(
+                segment=segment,
+                status=ValuationPlanStatus.CAPABILITY_GAP,
+                candidates=candidates,
+                selected_model_key=None,
+                rationale=(
+                    f"requested method {choice.archetype}/{choice.method} "
+                    "is not implemented"
+                ),
             )
 
         if choice.version is not None:
             registered_version = tuple(
-                key for key in candidate.registered_model_keys if key.version == choice.version
+                key
+                for key in candidate.registered_model_keys
+                if key.version == choice.version
             )
-            if not registered_version:
-                return SegmentPlanResolution(
-                    segment.segment_id,
-                    ValuationPlanStatus.CAPABILITY_GAP,
-                    candidates,
-                    None,
-                    f"requested exact evaluator {choice.archetype}/{choice.method}/{choice.version} is not registered",
+            if len(registered_version) != 1:
+                return _resolution(
+                    segment=segment,
+                    status=ValuationPlanStatus.CAPABILITY_GAP,
+                    candidates=candidates,
+                    selected_model_key=None,
+                    rationale=(
+                        "requested exact evaluator "
+                        f"{choice.archetype}/{choice.method}/{choice.version} "
+                        "is not registered"
+                    ),
                 )
-            eligible_version = tuple(
-                key for key in candidate.assumption_ready_model_keys if key.version == choice.version
-            )
-            if len(eligible_version) == 1:
-                return SegmentPlanResolution(
-                    segment.segment_id,
-                    ValuationPlanStatus.READY,
-                    candidates,
-                    eligible_version[0],
-                    "explicit method/version choice validated against Industry DNA, capability, registry and assumptions",
+            exact_key = registered_version[0]
+            exact_missing = candidate.missing_for(exact_key)
+            if not exact_missing:
+                return _resolution(
+                    segment=segment,
+                    status=ValuationPlanStatus.READY,
+                    candidates=candidates,
+                    selected_model_key=exact_key,
+                    rationale=(
+                        "explicit method/version choice validated against "
+                        "Industry DNA, capability, registry and assumptions"
+                    ),
                 )
-            return SegmentPlanResolution(
-                segment.segment_id,
-                ValuationPlanStatus.ASSUMPTION_GAP,
-                candidates,
-                None,
-                "requested exact evaluator version is registered but required compiled assumptions are missing: "
-                + ", ".join(candidate.missing_assumptions),
+            return _resolution(
+                segment=segment,
+                status=ValuationPlanStatus.ASSUMPTION_GAP,
+                candidates=candidates,
+                selected_model_key=None,
+                rationale=(
+                    "requested exact evaluator version is registered but "
+                    "required compiled assumptions are missing: "
+                    + ", ".join(exact_missing)
+                ),
+                missing_assumptions=exact_missing,
             )
 
         eligible = candidate.assumption_ready_model_keys
         if len(eligible) == 1:
-            return SegmentPlanResolution(
-                segment.segment_id,
-                ValuationPlanStatus.READY,
-                candidates,
-                eligible[0],
-                "explicit method choice validated against Industry DNA, capability, registry and assumptions",
+            return _resolution(
+                segment=segment,
+                status=ValuationPlanStatus.READY,
+                candidates=candidates,
+                selected_model_key=eligible[0],
+                rationale=(
+                    "explicit method choice validated against Industry DNA, "
+                    "capability, registry and assumptions"
+                ),
             )
         if not candidate.registered_model_keys:
-            status = ValuationPlanStatus.CAPABILITY_GAP
-            rationale = "requested method has no exact evaluator registration"
-        elif candidate.missing_assumptions and not eligible:
-            status = ValuationPlanStatus.ASSUMPTION_GAP
-            rationale = "requested method is missing compiled assumptions: " + ", ".join(candidate.missing_assumptions)
-        else:
-            status = ValuationPlanStatus.METHOD_CHOICE_REQUIRED
-            rationale = "requested method has multiple eligible evaluator versions; specify version"
-        return SegmentPlanResolution(segment.segment_id, status, candidates, None, rationale)
+            return _resolution(
+                segment=segment,
+                status=ValuationPlanStatus.CAPABILITY_GAP,
+                candidates=candidates,
+                selected_model_key=None,
+                rationale=(
+                    "requested method has no exact evaluator registration"
+                ),
+            )
+        if not eligible and candidate.missing_assumptions:
+            return _resolution(
+                segment=segment,
+                status=ValuationPlanStatus.ASSUMPTION_GAP,
+                candidates=candidates,
+                selected_model_key=None,
+                rationale=(
+                    "requested method is missing compiled assumptions: "
+                    + ", ".join(candidate.missing_assumptions)
+                ),
+                missing_assumptions=candidate.missing_assumptions,
+            )
+        return _resolution(
+            segment=segment,
+            status=ValuationPlanStatus.METHOD_CHOICE_REQUIRED,
+            candidates=candidates,
+            selected_model_key=None,
+            rationale=(
+                "requested method has multiple eligible evaluator versions; "
+                "specify version"
+            ),
+        )
 
+    implemented = tuple(
+        candidate
+        for candidate in candidates
+        if candidate.runtime_status
+        is not MethodRuntimeStatus.NOT_IMPLEMENTED
+    )
     eligible = tuple(
         key
-        for candidate in candidates
-        if candidate.runtime_status is not MethodRuntimeStatus.NOT_IMPLEMENTED
+        for candidate in implemented
         for key in candidate.assumption_ready_model_keys
     )
     if len(eligible) == 1:
-        return SegmentPlanResolution(
-            segment.segment_id,
-            ValuationPlanStatus.READY,
-            candidates,
-            eligible[0],
-            "only one exact allowed evaluator is executable from the compiled scenario assumptions",
+        return _resolution(
+            segment=segment,
+            status=ValuationPlanStatus.READY,
+            candidates=candidates,
+            selected_model_key=eligible[0],
+            rationale=(
+                "only one exact allowed evaluator is executable from the "
+                "compiled scenario assumptions"
+            ),
         )
     if len(eligible) > 1:
-        return SegmentPlanResolution(
-            segment.segment_id,
-            ValuationPlanStatus.METHOD_CHOICE_REQUIRED,
-            candidates,
-            None,
-            "multiple exact allowed evaluators are executable; economic method selection must be proposed explicitly",
+        return _resolution(
+            segment=segment,
+            status=ValuationPlanStatus.METHOD_CHOICE_REQUIRED,
+            candidates=candidates,
+            selected_model_key=None,
+            rationale=(
+                "multiple exact allowed evaluators are executable; economic "
+                "method selection must be proposed explicitly"
+            ),
         )
-    registered = tuple(key for candidate in candidates for key in candidate.registered_model_keys)
-    missing = tuple(dict.fromkeys(value for candidate in candidates for value in candidate.missing_assumptions))
+    registered = tuple(
+        key
+        for candidate in implemented
+        for key in candidate.registered_model_keys
+    )
+    missing = tuple(
+        dict.fromkeys(
+            value
+            for candidate in implemented
+            for value in candidate.missing_assumptions
+        )
+    )
     if registered and missing:
-        return SegmentPlanResolution(
-            segment.segment_id,
-            ValuationPlanStatus.ASSUMPTION_GAP,
-            candidates,
-            None,
-            "registered allowed evaluators lack compiled assumptions: " + ", ".join(missing),
+        return _resolution(
+            segment=segment,
+            status=ValuationPlanStatus.ASSUMPTION_GAP,
+            candidates=candidates,
+            selected_model_key=None,
+            rationale=(
+                "registered allowed evaluators lack compiled assumptions: "
+                + ", ".join(missing)
+            ),
+            missing_assumptions=missing,
         )
-    return SegmentPlanResolution(
-        segment.segment_id,
-        ValuationPlanStatus.CAPABILITY_GAP,
-        candidates,
-        None,
-        "no exact implemented segment evaluator is registered for the selected Industry DNA",
+    return _resolution(
+        segment=segment,
+        status=ValuationPlanStatus.CAPABILITY_GAP,
+        candidates=candidates,
+        selected_model_key=None,
+        rationale=(
+            "no exact implemented segment evaluator is registered for the "
+            "selected Industry DNA"
+        ),
     )
 
 
@@ -401,9 +624,13 @@ def _validate_choices(
     for item in choices:
         item.validate()
         if item.segment_id not in allowed_segments:
-            raise ValueError(f"method choice references unknown segment {item.segment_id}")
+            raise ValueError(
+                f"method choice references unknown segment {item.segment_id}"
+            )
         if item.segment_id in result:
-            raise ValueError(f"duplicate method choice for segment {item.segment_id}")
+            raise ValueError(
+                f"duplicate method choice for segment {item.segment_id}"
+            )
         result[item.segment_id] = item
     return result
 
@@ -415,11 +642,15 @@ def _missing_plan_assumptions(
     selected_segments: tuple[SegmentValuationPlan, ...],
 ) -> tuple[str, ...]:
     required: list[str] = [inputs.diluted_shares_key]
+    required.extend(
+        item.ownership_key for item in inputs.segment_bindings
+    )
     for segment in selected_segments:
-        required.append(segment.ownership_key)
         if segment.ev_to_equity_adjustment_key:
             required.append(segment.ev_to_equity_adjustment_key)
-    required.extend(item.assumption_key for item in inputs.parent_adjustments)
+    required.extend(
+        item.assumption_key for item in inputs.parent_adjustments
+    )
     missing: list[str] = []
     for scenario in scenario_set.scenarios:
         for key in dict.fromkeys(required):
@@ -432,13 +663,27 @@ def _overall_status(
     resolutions: tuple[SegmentPlanResolution, ...],
     missing_global: tuple[str, ...],
 ) -> ValuationPlanStatus:
-    if any(item.status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED for item in resolutions):
-        return ValuationPlanStatus.METHOD_CHOICE_REQUIRED
-    if missing_global or any(item.status is ValuationPlanStatus.ASSUMPTION_GAP for item in resolutions):
-        return ValuationPlanStatus.ASSUMPTION_GAP
-    if any(item.status is ValuationPlanStatus.CAPABILITY_GAP for item in resolutions):
+    # An unrecoverable capability gap dominates choices or missing assumptions in
+    # other segments: resolving the recoverable work cannot make the company plan run.
+    if any(
+        item.status is ValuationPlanStatus.CAPABILITY_GAP
+        for item in resolutions
+    ):
         return ValuationPlanStatus.CAPABILITY_GAP
-    if not resolutions or any(item.status is not ValuationPlanStatus.READY for item in resolutions):
+    if any(
+        item.status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+        for item in resolutions
+    ):
+        return ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+    if missing_global or any(
+        item.status is ValuationPlanStatus.ASSUMPTION_GAP
+        for item in resolutions
+    ):
+        return ValuationPlanStatus.ASSUMPTION_GAP
+    if not resolutions or any(
+        item.status is not ValuationPlanStatus.READY
+        for item in resolutions
+    ):
         return ValuationPlanStatus.CAPABILITY_GAP
     return ValuationPlanStatus.READY
 
@@ -449,3 +694,10 @@ def _scenario_has(scenario, key: str) -> bool:
         return True
     except KeyError:
         return False
+
+
+def _duplicates(values: tuple[str, ...]) -> tuple[str, ...]:
+    counts: dict[str, int] = {}
+    for value in values:
+        counts[value] = counts.get(value, 0) + 1
+    return tuple(sorted(value for value, count in counts.items() if count > 1))
