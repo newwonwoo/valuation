@@ -7,6 +7,8 @@ from .ablation import AblationBatchResult, AblationStatus
 from .assumption_compiler import CompiledAssumptionSet
 from .control_plane import DoctrineCoverageEntry, validate_doctrine_coverage
 from .records import AuditFinding, AuditReport, CalibrationStatus
+from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
+from .risk_impact import audit_risk_consumption
 from .scenario_binding import BoundScenarioSet
 from .valuation_execution import GenericValuationResult
 
@@ -41,6 +43,9 @@ def audit_generic_intrinsic(
     expected_module_ids: tuple[str, ...],
     run_context_keys: tuple[str, ...] = (),
     decision_impact: AblationBatchResult | None = None,
+    selected_methods: tuple[str, ...] = (),
+    beta_result: LiveBetaStageResult | None = None,
+    wacc_result: LiveWACCStageResult | None = None,
 ) -> GenericAuditResult:
     findings: list[AuditFinding] = []
 
@@ -109,6 +114,31 @@ def audit_generic_intrinsic(
             path_trace_ok,
             True,
             "each scenario value must preserve unique economic paths including ownership/debt/dilution",
+        )
+    )
+
+    risk_consumption = audit_risk_consumption(
+        valuation=valuation,
+        selected_methods=selected_methods,
+        beta_result=beta_result,
+        wacc_result=wacc_result,
+    )
+    risk_detail = (
+        "selected valuation methods do not require a discount-rate risk chain"
+        if not risk_consumption.required
+        else (
+            "Beta→WACC economic paths are present in every DCF/NPV scenario valuation"
+            if risk_consumption.passed
+            else "DCF/NPV valuation omitted required Beta/WACC paths for scenarios: "
+            + ", ".join(risk_consumption.missing_scenarios)
+        )
+    )
+    findings.append(
+        AuditFinding(
+            "risk_to_valuation_consumption",
+            risk_consumption.passed,
+            True,
+            risk_detail,
         )
     )
 
