@@ -207,7 +207,7 @@ units:
     consumers: [EVIDENCE_TO_ASSUMPTION_BRIDGE, WACC_ENGINE, SCENARIO_ENGINE]
     effect_types: [assumption_effect, probability_effect, value_effect, guardrail_effect]
     final_outputs: [funding_risk, intrinsic_value]
-    canonical_refs: [src/valuation_engine/funding.py, src/valuation_engine/wacc.py, docs/V04_ROCKETSLA_EXTENSION.md]
+    canonical_refs: [src/valuation_engine/funding.py, src/valuation_engine/funding_runtime.py, src/valuation_engine/funding_adapter.py, src/valuation_engine/wacc.py, docs/V04_ROCKETSLA_EXTENSION.md, docs/LIVE_PRIMARY_READINESS.md]
     forbidden_effects: [automatic_wacc_reduction_from_advances]
 
   - unit_id: LLM_STAFF

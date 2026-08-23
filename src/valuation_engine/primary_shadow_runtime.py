@@ -9,6 +9,8 @@ from .control_plane import ExecutionMode, StageStatus
 from .evidence_adapter import evidence_ledger_adapter, primary_evidence_collection_adapter
 from .evidence_collection import EvidenceCollector
 from .generic_reporting import final_report_adapter, save_state_adapter, thesis_delta_adapter
+from .funding_adapter import FundingRuntimeConfig, upstream_funding_runtime_adapter
+from .funding_runtime import FundingSourceUseBinding
 from .impact_adapter import GenericDecisionImpactConfig
 from .industry_dna import IndustryDNAProfile
 from .llm_adapters import (
@@ -48,6 +50,7 @@ from .state_learning_adapter import (
 )
 from .valuation_adapter import deterministic_valuation_adapter
 from .valuation_execution import CompanyValuationPlan, EvaluatorRegistry
+from .wacc import CustomerAdvanceCreditEvidence
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -79,6 +82,8 @@ class PrimaryShadowRuntimeConfig:
     research_trigger_state: Mapping[str, bool] = field(default_factory=dict)
     research_unit_aliases: Mapping[str, str] = field(default_factory=dict)
     impact_config: GenericDecisionImpactConfig | None = None
+    funding_binding: FundingSourceUseBinding | None = None
+    funding_credit_evidence: CustomerAdvanceCreditEvidence | None = None
     stage_registry_path: str | Path = _REPO_ROOT / "config" / "control_plane_stage_registry.yaml"
     archetype_registry_path: str | Path = _REPO_ROOT / "config" / "archetype_module_registry.yaml"
     control_requirements_path: str | Path = _REPO_ROOT / "config" / "archetype_control_requirements.yaml"
@@ -368,7 +373,12 @@ def build_primary_shadow_adapters(config: PrimaryShadowRuntimeConfig) -> dict[st
         ),
         "EVIDENCE_LEDGER": evidence_ledger_adapter(),
         "ROCKET_INSIGHT_SCAN": _rocket_insight_adapter(),
-        "UPSTREAM_FUNDING_SCAN": _upstream_funding_adapter(),
+        "UPSTREAM_FUNDING_SCAN": upstream_funding_runtime_adapter(
+            config=FundingRuntimeConfig(
+                binding=config.funding_binding,
+                credit_evidence=config.funding_credit_evidence,
+            )
+        ),
         "RESEARCHER_A": researcher_a_adapter(officer=config.intelligence_officer),
         "BLIND_RED_TEAM_B": blind_red_team_adapter(officer=config.red_team_officer),
         "RESEARCH_LOOP": _research_loop_adapter(),

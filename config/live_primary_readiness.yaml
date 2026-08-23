@@ -39,8 +39,8 @@ stages:
     status: SHADOW_ONLY
     reason: mandatory scanner loadout is recorded, but scanners are not yet dispatched as a complete live evidence acquisition layer.
   UPSTREAM_FUNDING_SCAN:
-    status: CONDITIONAL_NOT_IMPLEMENTED
-    reason: funding module exists, but full runtime intentionally fails closed when a route requires funding and no dedicated adapter is supplied.
+    status: PARTIAL_LIVE
+    reason: evidence-backed funding sources/uses assessment is wired into the full runtime; specialized collateral, credit-market and financing-channel source adapters remain incomplete.
   RESEARCHER_A:
     status: RUNTIME_READY
     reason: typed LLM callback contract is implemented; model/provider remains injectable.

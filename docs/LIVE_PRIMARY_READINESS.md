@@ -25,8 +25,8 @@ At the v1.0 registry snapshot:
 
 - canonical stages: **32 / 32 mapped**;
 - `LIVE_READY` or `RUNTIME_READY`: **19**;
-- `PARTIAL_LIVE`: **3**;
-- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **10**.
+- `PARTIAL_LIVE`: **4**;
+- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **9**.
 
 These counts are not a percentage-complete score. A single unresolved stage can still block a company if its Industry DNA makes that capability material.
 
@@ -36,7 +36,7 @@ The highest-value remaining live gaps are currently:
 2. live Industry Knowledge snapshot/freshness orchestration;
 3. evidence-backed segment decomposition and Industry DNA route construction;
 4. actual Rocket Insight scanner dispatch rather than plan-only inspection;
-5. route-specific Upstream Funding adapter;
+5. deeper collateral/credit-market funding source adapters;
 6. live Economic-Twin/Beta and WACC input adapters;
 7. Warranted PER stage adapter;
 8. broader exact-evaluator coverage across the 19 Economic Archetypes;
