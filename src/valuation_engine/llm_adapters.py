@@ -8,12 +8,13 @@ from .llm_staff import (
     LLMStaffContext,
     RedTeamOfficer,
     materialize_bridge_bundle,
+    merge_hypothesis_context,
     run_bridge_analyst,
     run_intelligence_officer,
     run_red_team,
 )
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
-from .records import HypothesisRecord
+from .records import EvidenceSourceLayer, HypothesisRecord
 
 
 def _staff_context(context: OrchestratorContext) -> LLMStaffContext:
@@ -26,6 +27,8 @@ def _staff_context(context: OrchestratorContext) -> LLMStaffContext:
         raise ValueError("ticker missing for LLM Staff")
     if not isinstance(ledger, EvidenceLedger):
         raise ValueError("EvidenceLedger missing for LLM Staff")
+    if any(item.source_layer is EvidenceSourceLayer.MARKET_COMPARISON for item in ledger.active()):
+        raise PermissionError("pre-freeze LLM Staff context contains market-comparison Evidence")
     prior = context.data.get("prior_hypotheses", ())
     if not isinstance(prior, tuple) or not all(isinstance(item, HypothesisRecord) for item in prior):
         raise ValueError("prior_hypotheses must be a typed tuple")
@@ -43,6 +46,7 @@ def researcher_a_adapter(*, officer: IntelligenceOfficer) -> StageAdapter:
         try:
             staff = _staff_context(context)
             proposal = run_intelligence_officer(staff, officer)
+            active_hypotheses = merge_hypothesis_context(staff.prior_hypotheses, proposal.hypotheses)
         except Exception as exc:
             return StageExecutionResult(
                 StageStatus.BLOCKED,
@@ -54,7 +58,7 @@ def researcher_a_adapter(*, officer: IntelligenceOfficer) -> StageAdapter:
             "LLM Intelligence Officer produced typed hypotheses/evidence requests without committing assumptions",
             {
                 "intelligence_proposal": proposal,
-                "hypotheses": proposal.hypotheses,
+                "hypotheses": active_hypotheses,
                 "llm_requested_evidence": proposal.requested_evidence,
                 "scanner_reinforcements": proposal.scanner_reinforcements,
             },
