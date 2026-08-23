@@ -100,6 +100,7 @@ class LLMStaffContext:
     prior_hypotheses: tuple[HypothesisRecord, ...] = ()
     module_requirement_plan: object | None = None
     scanner_findings: tuple[object, ...] = ()
+    funding_scan_result: object | None = None
 
 
 IntelligenceOfficer = Callable[[LLMStaffContext], IntelligenceProposal]
