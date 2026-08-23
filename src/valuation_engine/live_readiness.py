@@ -72,23 +72,27 @@ def _deterministic_method_coverage(
         for item in registry.capabilities
         if item.kind is not MethodKind.CROSS_METHOD_ENGINE
     )
+
+    def label(item) -> str:
+        return f"{item.archetype}/{item.method}"
+
     ready = tuple(
         sorted(
-            item.method
+            label(item)
             for item in relevant
             if item.runtime_status is MethodRuntimeStatus.RUNTIME_READY
         )
     )
     partial = tuple(
         sorted(
-            item.method
+            label(item)
             for item in relevant
             if item.runtime_status is MethodRuntimeStatus.PARTIAL_RUNTIME
         )
     )
     missing = tuple(
         sorted(
-            item.method
+            label(item)
             for item in relevant
             if item.runtime_status is MethodRuntimeStatus.NOT_IMPLEMENTED
         )
