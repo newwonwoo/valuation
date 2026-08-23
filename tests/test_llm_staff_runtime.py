@@ -40,18 +40,20 @@ def evidence(*, layer=EvidenceSourceLayer.REALIZED_OR_FILING):
     )
 
 
+def hypothesis(hypothesis_id: str) -> HypothesisRecord:
+    return HypothesisRecord(
+        id=hypothesis_id,
+        statement=f"{hypothesis_id} margin hypothesis",
+        causal_chain=("filing evidence", "margin", "intrinsic value"),
+        supporting_evidence_ids=("E1",),
+        kill_conditions=("margin reverses",),
+    )
+
+
 def researcher(context):
     assert context.prior_hypotheses == ()
     return IntelligenceProposal(
-        hypotheses=(
-            HypothesisRecord(
-                id="H1",
-                statement="margin remains structurally supported",
-                causal_chain=("filing evidence", "margin", "intrinsic value"),
-                supporting_evidence_ids=("E1",),
-                kill_conditions=("margin reverses",),
-            ),
-        ),
+        hypotheses=(hypothesis("H1"),),
         requested_evidence=("next quarterly filing",),
         scanner_reinforcements=("CAPACITY_RAMP",),
         rationale="primary evidence supports a margin hypothesis",
@@ -121,6 +123,33 @@ def test_llm_staff_runs_as_typed_proposal_pipeline_without_committing():
     assert "compiled_assumption_set" not in result.data
 
 
+def test_prior_hypotheses_remain_in_active_context_without_silent_rewrite():
+    prior = hypothesis("H0")
+
+    def researcher_with_prior(context):
+        assert context.prior_hypotheses == (prior,)
+        return IntelligenceProposal(
+            hypotheses=(hypothesis("H1"),),
+            rationale="add a new hypothesis while preserving the prior state",
+        )
+
+    result = run_controlled_workflow(
+        run_id="LLM-PRIOR",
+        execution_mode=ExecutionMode.PRIMARY_SHADOW,
+        stage_sequence=("RESEARCHER_A",),
+        adapters={"RESEARCHER_A": researcher_a_adapter(officer=researcher_with_prior)},
+        required_stages=("RESEARCHER_A",),
+        initial_data={
+            "company": "Example",
+            "ticker": "EXM",
+            "evidence_ledger": EvidenceLedger((evidence(),)),
+            "prior_hypotheses": (prior,),
+        },
+    )
+    assert result.blocked_reasons == ()
+    assert tuple(item.id for item in result.data["hypotheses"]) == ("H0", "H1")
+
+
 def test_unregistered_transform_from_llm_is_blocked_before_compiler():
     def bad_bridge(context, hypotheses, red_team_output):
         good = bridge_analyst(context, hypotheses, red_team_output).drafts[0]
@@ -159,7 +188,7 @@ def test_unregistered_transform_from_llm_is_blocked_before_compiler():
     assert "unregistered transform" in result.stage_traces[-1].rationale
 
 
-def test_blind_red_team_rejects_market_comparison_evidence_context():
+def test_all_pre_freeze_llm_staff_reject_market_comparison_evidence_context():
     result = run_controlled_workflow(
         run_id="LLM-BLIND",
         execution_mode=ExecutionMode.PRIMARY_SHADOW,
@@ -176,8 +205,7 @@ def test_blind_red_team_rejects_market_comparison_evidence_context():
             "prior_hypotheses": (),
         },
     )
-    # Researcher can see only what caller supplied here; Blind Red Team independently enforces its lock.
     assert result.blocked_reasons
-    assert result.stage_traces[-1].stage == "BLIND_RED_TEAM_B"
+    assert result.stage_traces[-1].stage == "RESEARCHER_A"
     assert result.stage_traces[-1].status is StageStatus.BLOCKED
     assert "market-comparison" in result.stage_traces[-1].rationale
