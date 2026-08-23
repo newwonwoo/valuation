@@ -1,0 +1,106 @@
+version: 1.0
+purpose: Explicitly distinguish canonical runtime integration from real-source LIVE_PRIMARY readiness.
+status_definitions:
+  LIVE_READY: stage can execute with live/current inputs under its declared source/loader contract
+  PARTIAL_LIVE: at least one reusable live path exists but material source/method coverage is incomplete
+  RUNTIME_READY: deterministic/runtime stage is complete once upstream typed inputs are supplied
+  ADAPTER_REQUIRED: reusable component exists but the canonical LIVE_PRIMARY stage still needs a stage/source adapter
+  SHADOW_ONLY: current canonical implementation is integration/shadow behavior, not live evidence execution
+  CONDITIONAL_NOT_IMPLEMENTED: stage is only needed for some Industry DNA routes and currently fails closed when required
+stages:
+  COMPANY_RESOLUTION:
+    status: ADAPTER_REQUIRED
+    reason: PRIMARY_SHADOW accepts caller-supplied company identity; canonical live entity resolution is not yet wired.
+  LOAD_COMPANY_STATE:
+    status: RUNTIME_READY
+    reason: immutable local StateStore and research-learning state are implemented.
+  LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT:
+    status: ADAPTER_REQUIRED
+    reason: current full runtime accepts a versioned snapshot hash supplied by the caller.
+  SOURCE_FRESHNESS_PRECHECK:
+    status: ADAPTER_REQUIRED
+    reason: source-watch components exist but full runtime currently uses a shadow cleanliness assertion.
+  SEGMENT_DECOMPOSITION:
+    status: ADAPTER_REQUIRED
+    reason: current runtime receives validated segment profiles from the caller.
+  INDUSTRY_DNA_ROUTE:
+    status: ADAPTER_REQUIRED
+    reason: Industry DNA contracts are implemented, but live routing evidence acquisition/entity-to-segment composition is not automatic.
+  MODULE_REQUIREMENT_PLAN:
+    status: RUNTIME_READY
+    reason: Industry DNA compiles to evidence, KPI, scanner, kill-condition and method requirements.
+  PRIMARY_EVIDENCE_COLLECTION:
+    status: PARTIAL_LIVE
+    reason: typed collector core is implemented and OpenDART standard financial facts are supported; company-specific KPI/IR/source coverage remains incomplete.
+  EVIDENCE_LEDGER:
+    status: RUNTIME_READY
+    reason: append-only ledger, supersession and snapshot hashing are implemented.
+  ROCKET_INSIGHT_SCAN:
+    status: SHADOW_ONLY
+    reason: mandatory scanner loadout is recorded, but scanners are not yet dispatched as a complete live evidence acquisition layer.
+  UPSTREAM_FUNDING_SCAN:
+    status: CONDITIONAL_NOT_IMPLEMENTED
+    reason: funding module exists, but full runtime intentionally fails closed when a route requires funding and no dedicated adapter is supplied.
+  RESEARCHER_A:
+    status: RUNTIME_READY
+    reason: typed LLM callback contract is implemented; model/provider remains injectable.
+  BLIND_RED_TEAM_B:
+    status: RUNTIME_READY
+    reason: blind typed Red Team contract with market isolation is implemented.
+  RESEARCH_LOOP:
+    status: RUNTIME_READY
+    reason: bounded research-loop semantics are implemented; live evidence refresh between rounds depends on collectors.
+  EVIDENCE_TO_ASSUMPTION_BRIDGE:
+    status: RUNTIME_READY
+    reason: typed Bridge proposals are implemented and cannot commit assumptions.
+  SCENARIO_BUILD:
+    status: RUNTIME_READY
+    reason: deterministic Assumption Compiler and Scenario Binding are implemented.
+  HIERARCHICAL_BETA_ESTIMATION:
+    status: ADAPTER_REQUIRED
+    reason: hierarchical beta component exists; route-specific live peer/return adapter is not universally wired.
+  WACC_VALIDATION:
+    status: ADAPTER_REQUIRED
+    reason: WACC component exists; live risk-free, ERP, marginal debt and target-capital-structure adapter is not universally wired.
+  DETERMINISTIC_VALUATION:
+    status: PARTIAL_LIVE
+    reason: exact evaluator registry and SOTP runtime are implemented, but evaluator coverage across all 19 archetypes is incomplete.
+  HIERARCHICAL_WARRANTED_PER:
+    status: ADAPTER_REQUIRED
+    reason: warranted-PER component exists; full route-specific adapter is not universally wired.
+  DCF_PER_ASSUMPTION_CONSISTENCY_GATE:
+    status: RUNTIME_READY
+    reason: may be explicitly not applicable when the selected exact method does not use both DCF and PER.
+  CROSS_METHOD_DOUBLE_COUNT_AUDIT:
+    status: RUNTIME_READY
+    reason: economic-path and SOTP duplicate protections are implemented.
+  PROBABILITY_DISTRIBUTION_ANALYSIS:
+    status: PARTIAL_LIVE
+    reason: calibrated weighting gate is implemented; calibration datasets/distributions are not complete for all event families.
+  AUDIT_GATE:
+    status: RUNTIME_READY
+    reason: generic audit, doctrine coverage and Decision Impact prerequisites are integrated.
+  INTRINSIC_VALUE_FREEZE:
+    status: RUNTIME_READY
+    reason: same-run hash-bound Freeze Token is implemented.
+  STREET_REFERENCE_LOAD:
+    status: LIVE_READY
+    reason: post-freeze loader contract is implemented; actual entitled/public Street loader is supplied by caller.
+  STREET_GAP_ANALYZER:
+    status: RUNTIME_READY
+    reason: scenario-envelope and calibrated Expected gap analysis are implemented.
+  MARKET_PRICE_LOAD:
+    status: LIVE_READY
+    reason: post-freeze market loader contract is implemented; actual price source is supplied by caller.
+  MARKET_COMPARE:
+    status: RUNTIME_READY
+    reason: scenario/Expected comparison is implemented without upstream mutation.
+  THESIS_DELTA:
+    status: RUNTIME_READY
+    reason: current thesis is compared against prior immutable successful state.
+  SAVE_STATE:
+    status: RUNTIME_READY
+    reason: atomic valuation + learning persistence with compensating rollback is implemented.
+  FINAL_REPORT:
+    status: RUNTIME_READY
+    reason: final report renders the immutable saved payload and Decision Impact visibility.
