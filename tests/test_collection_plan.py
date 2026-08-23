@@ -1,4 +1,3 @@
-from decimal import Decimal
 from pathlib import Path
 
 from valuation_engine.collection_plan import (
@@ -86,7 +85,7 @@ def evidence(metric: str) -> EvidenceRecord:
         id=f"EV-{metric}",
         target="T",
         metric=metric,
-        value=Decimal("1"),
+        value=1,
         unit="ratio" if metric == "utilization" else "KRW",
         source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
         effective_date="2026-06-30",
