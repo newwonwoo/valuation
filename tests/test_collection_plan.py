@@ -227,7 +227,7 @@ def test_primary_evidence_stage_rejects_collector_not_authorized_by_plan(tmp_pat
         )
     )
     assert result.status is StageStatus.BLOCKED
-    assert "not authorized" in result.detail
+    assert "not authorized" in result.rationale
 
 
 def test_primary_evidence_stage_rejects_metrics_outside_collector_scope(tmp_path):
@@ -260,8 +260,8 @@ def test_primary_evidence_stage_rejects_metrics_outside_collector_scope(tmp_path
         )
     )
     assert result.status is StageStatus.BLOCKED
-    assert "outside Collection Plan" in result.detail
-    assert "utilization" in result.detail
+    assert "outside Collection Plan" in result.rationale
+    assert "utilization" in result.rationale
 
 
 def test_primary_evidence_stage_fails_closed_when_plan_has_no_runnable_collector(tmp_path):
