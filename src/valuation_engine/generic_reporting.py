@@ -358,11 +358,12 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
         except Exception as exc:
             rollback_errors: list[str] = []
             if isinstance(ticker, str) and ticker:
-                try:
-                    expected_run = Path("runs") / ticker / context.run_id
-                    _rollback_exact_path(root, str(run_dir or (root / expected_run)), expected_run)
-                except Exception as rollback_exc:
-                    rollback_errors.append(f"run rollback: {rollback_exc}")
+                if run_dir is not None:
+                    try:
+                        expected_run = Path("runs") / ticker / context.run_id
+                        _rollback_exact_path(root, str(run_dir), expected_run)
+                    except Exception as rollback_exc:
+                        rollback_errors.append(f"run rollback: {rollback_exc}")
                 try:
                     expected_learning = Path("learning") / ticker / "module-impact" / f"{context.run_id}.json"
                     _rollback_exact_path(root, learning_path, expected_learning)

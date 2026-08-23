@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shutil
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
@@ -26,13 +27,17 @@ class StateStore:
         if run_dir.exists():
             raise FileExistsError(f"run is immutable and already exists: {manifest.run_id}")
         run_dir.mkdir(parents=True)
-        self._write_json(run_dir / "manifest.json", _jsonable(asdict(manifest)))
-        for filename, payload in artifacts.items():
-            path = run_dir / filename
-            if isinstance(payload, str):
-                path.write_text(payload, encoding="utf-8")
-            else:
-                self._write_json(path, _jsonable(payload))
+        try:
+            self._write_json(run_dir / "manifest.json", _jsonable(asdict(manifest)))
+            for filename, payload in artifacts.items():
+                path = run_dir / filename
+                if isinstance(payload, str):
+                    path.write_text(payload, encoding="utf-8")
+                else:
+                    self._write_json(path, _jsonable(payload))
+        except Exception:
+            shutil.rmtree(run_dir)
+            raise
         return run_dir
 
     def promote_current(self, manifest: RunManifest, current_state: dict[str, Any]) -> None:
