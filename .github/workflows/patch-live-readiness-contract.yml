@@ -1,0 +1,43 @@
+name: patch-live-readiness-contract
+
+on:
+  push:
+    branches: [feature/live-primary-dart-readiness-r2]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/live-primary-dart-readiness-r2
+      - name: Patch Unit Contract refs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('config/unit_contract_registry.yaml')
+          text = p.read_text(encoding='utf-8')
+          old = '    canonical_refs: [src/valuation_engine/control_plane.py, src/valuation_engine/orchestrator.py, config/control_plane_stage_registry.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md]\n'
+          new = '    canonical_refs: [src/valuation_engine/control_plane.py, src/valuation_engine/orchestrator.py, src/valuation_engine/live_readiness.py, config/control_plane_stage_registry.yaml, config/live_primary_readiness.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md, docs/LIVE_PRIMARY_READINESS.md]\n'
+          if old not in text:
+              raise SystemExit('Control Plane canonical refs pattern not found')
+          text = text.replace(old, new, 1)
+          old = '    canonical_refs: [src/valuation_engine/evidence_collection.py, src/valuation_engine/evidence_adapter.py, src/valuation_engine/live_indexers.py, src/valuation_engine/source_index.py, config/industry_source_registry.yaml, config/foundation_source_registry.yaml]\n'
+          new = '    canonical_refs: [src/valuation_engine/evidence_collection.py, src/valuation_engine/evidence_adapter.py, src/valuation_engine/dart_facts.py, src/valuation_engine/live_indexers.py, src/valuation_engine/source_index.py, config/industry_source_registry.yaml, config/foundation_source_registry.yaml, docs/LIVE_PRIMARY_READINESS.md]\n'
+          if old not in text:
+              raise SystemExit('Primary Evidence canonical refs pattern not found')
+          text = text.replace(old, new, 1)
+          p.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit contract sync
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add config/unit_contract_registry.yaml
+          git commit -m 'docs: register LIVE readiness and OpenDART evidence adapter'
+          git push origin HEAD:feature/live-primary-dart-readiness-r2
