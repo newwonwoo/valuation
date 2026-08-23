@@ -99,6 +99,7 @@ class LLMStaffContext:
     ledger: EvidenceLedger
     prior_hypotheses: tuple[HypothesisRecord, ...] = ()
     module_requirement_plan: object | None = None
+    scanner_findings: tuple[object, ...] = ()
 
 
 IntelligenceOfficer = Callable[[LLMStaffContext], IntelligenceProposal]
