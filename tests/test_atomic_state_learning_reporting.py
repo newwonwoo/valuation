@@ -42,14 +42,17 @@ def _valuation():
         scenarios=(
             ScenarioPerShareValue(
                 scenario_id="Base",
-                company_equity_value=Decimal("700"),
+                equity_value_amount=Decimal("700"),
+                reporting_unit="KRW",
+                diluted_shares=Decimal("10"),
                 value_per_share=Decimal("70"),
+                aggregation_hash="AGG:BASE",
                 economic_path_ids=("PATH:BASE",),
             ),
         ),
+        equity_aggregation=ScenarioEquityAggregation((), None, False),
         expected_value_per_share=None,
         reporting_unit="KRW",
-        aggregation=ScenarioEquityAggregation((), None, False),
         valuation_hash="VALUATION",
     )
 
