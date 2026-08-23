@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from .assumption_compiler import AssumptionSpec, compile_assumptions
 from .control_plane import StageStatus
 from .industry_dna import IndustryDNAProfile, compose_modules
+from .ledger import EvidenceLedger
 from .module_plan import build_module_requirement_plan
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
+from .records import BridgeRecord, HypothesisRecord
+from .scenario_binding import ScenarioBindingSpec, bind_scenarios
 from .state import StateStore
 
 
@@ -100,6 +104,86 @@ def module_requirement_plan_adapter(
                 "kill_conditions": plan.kill_conditions,
                 "scenario_variables": plan.scenario_variables,
                 "expected_module_ids": expected_modules,
+            },
+        )
+
+    return run
+
+
+def scenario_build_adapter() -> StageAdapter:
+    """Compile Bridge proposals and bind scenarios inside the canonical SCENARIO_BUILD stage.
+
+    The two components remain separate deterministic units; this adapter merely sequences them.
+    Upstream evidence/research stages must supply the required typed objects in the run context.
+    """
+
+    def run(context: OrchestratorContext) -> StageExecutionResult:
+        target_id = context.data.get("target_id")
+        ledger = context.data.get("evidence_ledger")
+        hypotheses = context.data.get("hypotheses")
+        bridges = context.data.get("bridges")
+        specs = context.data.get("assumption_specs")
+        bridge_input_map = context.data.get("bridge_input_map", {})
+        binding_spec = context.data.get("scenario_binding_spec")
+
+        if not isinstance(target_id, str) or not target_id:
+            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "target_id missing for compilation", blocking=True)
+        if not isinstance(ledger, EvidenceLedger):
+            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "EvidenceLedger missing for compilation", blocking=True)
+        if not isinstance(hypotheses, tuple) or not all(isinstance(item, HypothesisRecord) for item in hypotheses):
+            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "Hypothesis records missing for compilation", blocking=True)
+        if not isinstance(bridges, tuple) or not all(isinstance(item, BridgeRecord) for item in bridges):
+            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "Bridge proposals missing for compilation", blocking=True)
+        if not isinstance(specs, tuple) or not specs or not all(isinstance(item, AssumptionSpec) for item in specs):
+            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "Assumption specs missing for compilation", blocking=True)
+        if not isinstance(bridge_input_map, dict):
+            return StageExecutionResult(StageStatus.BLOCKED, "bridge_input_map must be a dict", blocking=True)
+        if not isinstance(binding_spec, ScenarioBindingSpec):
+            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "ScenarioBindingSpec missing", blocking=True)
+
+        compilation = compile_assumptions(
+            target_id=target_id,
+            ledger=ledger,
+            hypotheses=hypotheses,
+            bridges=bridges,
+            specs=specs,
+            bridge_input_map=bridge_input_map,
+        )
+        if not compilation.passed:
+            codes = tuple(item.code for item in compilation.findings)
+            recoverable = {"MISSING_BRIDGE", "MISSING_TRANSFORM_INPUT", "UNKNOWN_HYPOTHESIS", "EMPTY_COMPILED_SET"}
+            status = StageStatus.RECOVERY_REQUIRED if codes and set(codes).issubset(recoverable) else StageStatus.BLOCKED
+            return StageExecutionResult(
+                status,
+                "assumption compilation failed: " + ", ".join(codes),
+                {"compilation_findings": compilation.findings},
+                blocking=True,
+            )
+
+        bound = bind_scenarios(compilation.assumption_set, binding_spec)
+        if not bound.passed:
+            codes = tuple(item.code for item in bound.findings)
+            recoverable = {"MISSING_REQUIRED_ASSUMPTION", "MISSING_SCENARIO_PROBABILITY"}
+            status = StageStatus.RECOVERY_REQUIRED if codes and set(codes).issubset(recoverable) else StageStatus.BLOCKED
+            return StageExecutionResult(
+                status,
+                "scenario binding failed: " + ", ".join(codes),
+                {"scenario_binding_findings": bound.findings},
+                blocking=True,
+            )
+
+        scenario_set = bound.scenario_set
+        return StageExecutionResult(
+            StageStatus.PASS,
+            "Bridge proposals deterministically compiled and bound into generic scenarios",
+            {
+                "compiled_assumption_set": compilation.assumption_set,
+                "assumption_set_hash": compilation.assumption_set.assumption_set_hash,
+                "bound_scenario_set": scenario_set,
+                "scenario_set_hash": scenario_set.scenario_set_hash,
+                "probability_calibration_status": scenario_set.calibration_status,
+                "probability_weighting_allowed": scenario_set.numeric_weighting_allowed,
+                "scenario_binding_findings": bound.findings,
             },
         )
 

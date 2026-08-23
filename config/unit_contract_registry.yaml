@@ -264,7 +264,7 @@ units:
 
   - unit_id: SCENARIO_ENGINE
     unit_type: scenario_engine
-    implementation_status: partial
+    implementation_status: implemented_binding_core
     stages: [SCENARIO_BUILD, PROBABILITY_DISTRIBUTION_ANALYSIS]
     purpose: Bind compiled assumptions into coherent scenarios and calibrated distributions without current-price anchoring.
     inputs: [compiled_assumption_set, event_probabilities, correlation_policy]
@@ -272,7 +272,7 @@ units:
     consumers: [DETERMINISTIC_VALUATION, DECISION_IMPACT, AUDIT_GATE]
     effect_types: [probability_effect, assumption_effect, value_effect]
     final_outputs: [value_distribution]
-    canonical_refs: [src/valuation_engine/engine.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]
+    canonical_refs: [src/valuation_engine/scenario_binding.py, src/valuation_engine/shadow_adapters.py, src/valuation_engine/engine.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]
     forbidden_effects: [price_implied_probability, uncalibrated_precision_as_fact]
 
   - unit_id: HIERARCHICAL_BETA_ENGINE
