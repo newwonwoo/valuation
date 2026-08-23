@@ -109,6 +109,7 @@ from .valuation_plan_compiler import (
 )
 
 
+_REPO_ROOT = Path(__file__).resolve().parents[2]
 ValuationPlanInputsLoader = Callable[[OrchestratorContext], CompanyValuationPlanInputs]
 
 
@@ -206,13 +207,21 @@ class LivePrimaryRuntimeConfig:
     providers: LivePrimaryProviders
     method_choices: tuple[SegmentMethodChoice, ...] = ()
     market_currency: str | None = None
-    stage_registry_path: str | Path = "config/control_plane_stage_registry.yaml"
-    archetype_registry_path: str | Path = "config/archetype_module_registry.yaml"
-    archetype_control_requirements_path: str | Path = (
-        "config/archetype_control_requirements.yaml"
+    stage_registry_path: str | Path = (
+        _REPO_ROOT / "config" / "control_plane_stage_registry.yaml"
     )
-    industry_source_registry_path: str | Path = "config/industry_source_registry.yaml"
-    unit_contract_registry_path: str | Path = "config/unit_contract_registry.yaml"
+    archetype_registry_path: str | Path = (
+        _REPO_ROOT / "config" / "archetype_module_registry.yaml"
+    )
+    archetype_control_requirements_path: str | Path = (
+        _REPO_ROOT / "config" / "archetype_control_requirements.yaml"
+    )
+    industry_source_registry_path: str | Path = (
+        _REPO_ROOT / "config" / "industry_source_registry.yaml"
+    )
+    unit_contract_registry_path: str | Path = (
+        _REPO_ROOT / "config" / "unit_contract_registry.yaml"
+    )
     capability_registry: MethodCapabilityRegistry | None = None
     impact_config: GenericDecisionImpactConfig | None = None
     initial_data: Mapping[str, object] = field(default_factory=dict)
