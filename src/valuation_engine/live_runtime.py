@@ -327,6 +327,26 @@ def _unavailable_stage(label: str) -> StageAdapter:
     return run
 
 
+def _freshness_precheck_adapter(loader: FreshnessLoader) -> StageAdapter:
+    """Namespace the pre-collection freshness hash away from the Evidence snapshot hash."""
+    inner = live_source_freshness_adapter(loader=loader)
+
+    def run(context: OrchestratorContext) -> StageExecutionResult:
+        result = inner(context)
+        outputs = dict(result.outputs)
+        freshness_hash = outputs.pop("source_snapshot_hash", None)
+        if freshness_hash is not None:
+            outputs["source_freshness_snapshot_hash"] = freshness_hash
+        return StageExecutionResult(
+            result.status,
+            result.rationale,
+            outputs,
+            result.blocking,
+        )
+
+    return run
+
+
 def _valuation_plan_loader(
     config: LivePrimaryRuntimeConfig,
     capability_registry: MethodCapabilityRegistry,
@@ -464,8 +484,8 @@ def build_live_primary_adapters(
         "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT": live_industry_snapshot_adapter(
             loader=providers.industry_snapshot_loader
         ),
-        "SOURCE_FRESHNESS_PRECHECK": live_source_freshness_adapter(
-            loader=providers.freshness_loader
+        "SOURCE_FRESHNESS_PRECHECK": _freshness_precheck_adapter(
+            providers.freshness_loader
         ),
         "SEGMENT_DECOMPOSITION": live_segment_decomposition_adapter(
             decomposer=providers.segment_decomposer
