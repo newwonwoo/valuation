@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from valuation_engine.control_plane import DoctrineCoverageEntry, ExecutionMode, StageStatus
+from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.generic_reporting import (
     final_report_adapter,
     save_state_adapter,
@@ -13,7 +13,7 @@ from valuation_engine.post_freeze_adapters import (
     street_gap_analyzer_adapter,
     street_reference_load_adapter,
 )
-from valuation_engine.records import MarketObservation
+from valuation_engine.records import AuditReport, MarketObservation
 from valuation_engine.sotp import ScenarioEquityAggregation
 from valuation_engine.street import StreetResearchReport
 from valuation_engine.valuation_execution import GenericValuationResult, ScenarioPerShareValue
@@ -96,16 +96,13 @@ def run_post_freeze(tmp_path, *, expected=None):
             "current_thesis": "new thesis",
             "generic_valuation_result": valuation(expected=expected),
             "audit_passed": True,
-            "generic_audit_report": __import__("valuation_engine.records", fromlist=["AuditReport"]).AuditReport(()),
+            "decision_impact_completed": True,
+            "generic_audit_report": AuditReport(()),
             "assumption_set_hash": "ASSUMPTION_HASH",
             "valuation_hash": "VALUATION_HASH",
             "audit_hash": "AUDIT_HASH",
             "industry_snapshot_hash": "INDUSTRY_HASH",
             "source_snapshot_hash": "SOURCE_HASH",
-            "expected_module_ids": ("core",),
-            "doctrine_coverage": (
-                DoctrineCoverageEntry("core", StageStatus.PASS, "core completed"),
-            ),
         },
     )
 
