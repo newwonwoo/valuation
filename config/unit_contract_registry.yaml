@@ -311,7 +311,7 @@ units:
     consumers: [SOTP_AGGREGATOR, AUDIT_GATE, DECISION_IMPACT]
     effect_types: [value_effect]
     final_outputs: [intrinsic_value_components]
-    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/dcf_evaluators.py, src/valuation_engine/finite_life_evaluators.py, src/valuation_engine/valuation_execution.py, src/valuation_engine/valuation_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md, docs/FINITE_LIFE_NPV_EVALUATORS.md]
+    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/dcf_evaluators.py, src/valuation_engine/finite_life_evaluators.py, src/valuation_engine/rnpv_evaluator.py, src/valuation_engine/valuation_execution.py, src/valuation_engine/valuation_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md, docs/FINITE_LIFE_NPV_EVALUATORS.md, docs/CALIBRATED_RNPV_EVALUATOR.md]
     forbidden_effects: [network_access, evidence_interpretation, current_price_access, unknown_model_generic_fallback]
 
   - unit_id: WARRANTED_PER_ENGINE
