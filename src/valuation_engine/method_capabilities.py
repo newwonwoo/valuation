@@ -6,6 +6,39 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+from yaml.resolver import BaseResolver
+
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_DEFAULT_METHOD_CAPABILITY_PATH = _REPO_ROOT / "config" / "valuation_method_capability_registry.yaml"
+_DEFAULT_ARCHETYPE_REGISTRY_PATH = _REPO_ROOT / "config" / "archetype_module_registry.yaml"
+
+
+class _UniqueKeyLoader(yaml.SafeLoader):
+    pass
+
+
+def _construct_unique_mapping(loader: _UniqueKeyLoader, node, deep: bool = False):
+    mapping = {}
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node, deep=deep)
+        if key in mapping:
+            raise ValueError(f"duplicate YAML key: {key!r}")
+        mapping[key] = loader.construct_object(value_node, deep=deep)
+    return mapping
+
+
+_UniqueKeyLoader.add_constructor(
+    BaseResolver.DEFAULT_MAPPING_TAG,
+    _construct_unique_mapping,
+)
+
+
+def _load_yaml_unique(path: str | Path) -> dict[str, Any]:
+    value = yaml.load(Path(path).read_text(encoding="utf-8"), Loader=_UniqueKeyLoader)
+    if not isinstance(value, dict):
+        raise ValueError(f"YAML root must be a mapping: {path}")
+    return value
 
 
 class MethodKind(str, Enum):
@@ -113,7 +146,7 @@ class MethodCapabilityRegistry:
         for item in self.capabilities:
             item.validate()
 
-        archetype_payload = yaml.safe_load(Path(archetype_registry_path).read_text(encoding="utf-8"))
+        archetype_payload = _load_yaml_unique(archetype_registry_path)
         modules = archetype_payload.get("modules")
         if not isinstance(modules, dict) or not modules:
             raise ValueError("archetype module registry requires non-empty modules")
@@ -209,7 +242,7 @@ def _bool_field(spec: dict[str, Any], key: str) -> bool:
 
 
 def load_method_capability_registry(path: str | Path) -> MethodCapabilityRegistry:
-    payload = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    payload = _load_yaml_unique(path)
     raw_families = payload.get("execution_families")
     raw_bindings = payload.get("bindings")
     if not isinstance(raw_families, dict) or not raw_families:
@@ -272,3 +305,38 @@ def load_method_capability_registry(path: str | Path) -> MethodCapabilityRegistr
                 )
             )
     return MethodCapabilityRegistry(tuple(families), tuple(capabilities))
+
+
+def load_default_method_capability_registry() -> MethodCapabilityRegistry:
+    registry = load_method_capability_registry(_DEFAULT_METHOD_CAPABILITY_PATH)
+    registry.validate(
+        archetype_registry_path=_DEFAULT_ARCHETYPE_REGISTRY_PATH,
+        repo_root=_REPO_ROOT,
+    )
+    return registry
+
+
+def require_execution_family(
+    *,
+    archetype: str,
+    method: str,
+    expected_family: str,
+    registry: MethodCapabilityRegistry | None = None,
+) -> MethodCapability:
+    effective = registry or load_default_method_capability_registry()
+    try:
+        capability = effective.get(archetype, method)
+    except KeyError as exc:
+        raise ValueError(
+            f"no method capability binding for {archetype}/{method}"
+        ) from exc
+    if capability.execution_family != expected_family:
+        raise ValueError(
+            f"method {archetype}/{method} belongs to execution family "
+            f"{capability.execution_family}, not {expected_family}"
+        )
+    if capability.kind is not MethodKind.SEGMENT_EVALUATOR:
+        raise ValueError(
+            f"method {archetype}/{method} is {capability.kind.value}, not a segment evaluator"
+        )
+    return capability
