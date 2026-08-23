@@ -9,6 +9,7 @@ from .control_plane import ExecutionMode, StageStatus
 from .evidence_adapter import evidence_ledger_adapter, primary_evidence_collection_adapter
 from .evidence_collection import EvidenceCollector
 from .generic_reporting import final_report_adapter, save_state_adapter, thesis_delta_adapter
+from .impact_adapter import GenericDecisionImpactConfig
 from .industry_dna import IndustryDNAProfile
 from .llm_adapters import (
     blind_red_team_adapter,
@@ -16,6 +17,7 @@ from .llm_adapters import (
     researcher_a_adapter,
 )
 from .llm_staff import BridgeAnalyst, IntelligenceOfficer, RedTeamOfficer
+from .module_plan_adapter import module_requirement_plan_adapter
 from .orchestrator import (
     ControlledRunResult,
     OrchestratorContext,
@@ -32,13 +34,17 @@ from .post_freeze_adapters import (
     street_gap_analyzer_adapter,
     street_reference_load_adapter,
 )
+from .research_learning import ResearchLearningStore
 from .scenario_binding import BoundScenarioSet, ScenarioBindingSpec
 from .shadow_adapters import (
     company_resolution_adapter,
     industry_dna_adapter,
     load_company_state_adapter,
-    module_requirement_plan_adapter,
     scenario_build_adapter,
+)
+from .state_learning_adapter import (
+    load_research_learning_adapter,
+    save_research_learning_adapter,
 )
 from .valuation_adapter import deterministic_valuation_adapter
 from .valuation_execution import CompanyValuationPlan, EvaluatorRegistry
@@ -68,6 +74,11 @@ class PrimaryShadowRuntimeConfig:
     street_loader: StreetLoader
     market_loader: MarketLoader
     market_currency: str
+    strict_evidence_coverage: bool = True
+    optional_research_units: tuple[str, ...] = ()
+    research_trigger_state: Mapping[str, bool] = field(default_factory=dict)
+    research_unit_aliases: Mapping[str, str] = field(default_factory=dict)
+    impact_config: GenericDecisionImpactConfig | None = None
     stage_registry_path: str | Path = _REPO_ROOT / "config" / "control_plane_stage_registry.yaml"
     archetype_registry_path: str | Path = _REPO_ROOT / "config" / "archetype_module_registry.yaml"
     control_requirements_path: str | Path = _REPO_ROOT / "config" / "archetype_control_requirements.yaml"
@@ -82,14 +93,25 @@ class PrimaryShadowRuntimeConfig:
             self.industry_snapshot_hash,
             self.market_currency,
         )
-        if any(not value for value in text_fields):
+        if any(not isinstance(value, str) or not value.strip() for value in text_fields):
             raise ValueError("primary-shadow runtime requires non-empty identity/hash/currency fields")
         if not self.profiles or not self.collectors or not self.selected_methods:
             raise ValueError("primary-shadow runtime requires profiles, collectors and selected methods")
+        if len(self.selected_methods) != len(set(self.selected_methods)):
+            raise ValueError("selected_methods contains duplicates")
         for profile in self.profiles:
             profile.validate()
         self.scenario_binding_spec.validate()
         self.valuation_plan.validate()
+        if not all(isinstance(item, str) and item for item in self.optional_research_units):
+            raise ValueError("optional_research_units must contain non-empty strings")
+        if not all(isinstance(key, str) and isinstance(value, bool) for key, value in self.research_trigger_state.items()):
+            raise ValueError("research_trigger_state must be str→bool")
+        if not all(isinstance(key, str) and isinstance(value, str) for key, value in self.research_unit_aliases.items()):
+            raise ValueError("research_unit_aliases must be str→str")
+        unknown_overrides = set(self.stage_overrides).difference(load_stage_sequence(self.stage_registry_path))
+        if unknown_overrides:
+            raise ValueError(f"stage overrides contain unknown stages: {sorted(unknown_overrides)}")
 
 
 def _static_adapter(
@@ -103,6 +125,57 @@ def _static_adapter(
 
     def run(_: OrchestratorContext) -> StageExecutionResult:
         return StageExecutionResult(status, rationale, dict(frozen_outputs), blocking=blocking)
+
+    return run
+
+
+def _chain_stage_adapters(label: str, *adapters: StageAdapter) -> StageAdapter:
+    """Compose same-stage adapters while preserving append-only context semantics."""
+    if not adapters:
+        raise ValueError("chained stage requires at least one adapter")
+
+    def run(context: OrchestratorContext) -> StageExecutionResult:
+        working = OrchestratorContext(
+            context.run_id,
+            context.execution_mode,
+            dict(context.data),
+            list(context.stage_traces),
+            context.freeze_token,
+        )
+        merged: dict[str, object] = {}
+        rationales: list[str] = []
+        overall = StageStatus.PASS
+        unresolved = {
+            StageStatus.BLOCKED,
+            StageStatus.NOT_IMPLEMENTED,
+            StageStatus.RECOVERY_REQUIRED,
+            StageStatus.AWAITING_USER_DECISION,
+        }
+        for adapter in adapters:
+            result = adapter(working)
+            overlap = set(result.outputs).intersection(working.data)
+            if overlap:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    f"{label} attempted duplicate output keys: {sorted(overlap)}",
+                    merged,
+                    blocking=True,
+                )
+            working.data.update(result.outputs)
+            merged.update(result.outputs)
+            rationales.append(result.rationale)
+            if result.status in unresolved and result.blocking:
+                return StageExecutionResult(
+                    result.status,
+                    f"{label}: " + " | ".join(rationales),
+                    merged,
+                    blocking=True,
+                )
+            if result.status is StageStatus.WARNING:
+                overall = StageStatus.WARNING
+            elif result.status is StageStatus.RECOVERED and overall is StageStatus.PASS:
+                overall = StageStatus.RECOVERED
+        return StageExecutionResult(overall, f"{label}: " + " | ".join(rationales), merged)
 
     return run
 
@@ -272,10 +345,15 @@ def build_primary_shadow_adapters(config: PrimaryShadowRuntimeConfig) -> dict[st
     selected = tuple(config.selected_methods)
     uses_dcf_like = any(token in method for method in selected for token in _DCF_LIKE_TOKENS)
     uses_warranted_per = any("warranted_per" in method for method in selected)
+    learning_store = ResearchLearningStore(config.state_root)
 
     adapters: dict[str, StageAdapter] = {
         "COMPANY_RESOLUTION": company_resolution_adapter(company=config.company, ticker=config.ticker),
-        "LOAD_COMPANY_STATE": load_company_state_adapter(state_root=config.state_root),
+        "LOAD_COMPANY_STATE": _chain_stage_adapters(
+            "company state and prior research-learning load",
+            load_company_state_adapter(state_root=config.state_root),
+            load_research_learning_adapter(store=learning_store),
+        ),
         "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT": _industry_snapshot_adapter(config.industry_snapshot_hash),
         "SOURCE_FRESHNESS_PRECHECK": _source_freshness_adapter(),
         "SEGMENT_DECOMPOSITION": _segment_decomposition_adapter(config.profiles),
@@ -284,7 +362,10 @@ def build_primary_shadow_adapters(config: PrimaryShadowRuntimeConfig) -> dict[st
             registry_path=config.archetype_registry_path,
             control_requirements_path=config.control_requirements_path,
         ),
-        "PRIMARY_EVIDENCE_COLLECTION": primary_evidence_collection_adapter(collectors=config.collectors),
+        "PRIMARY_EVIDENCE_COLLECTION": primary_evidence_collection_adapter(
+            collectors=config.collectors,
+            strict_required_coverage=config.strict_evidence_coverage,
+        ),
         "EVIDENCE_LEDGER": evidence_ledger_adapter(),
         "ROCKET_INSIGHT_SCAN": _rocket_insight_adapter(),
         "UPSTREAM_FUNDING_SCAN": _upstream_funding_adapter(),
@@ -323,7 +404,7 @@ def build_primary_shadow_adapters(config: PrimaryShadowRuntimeConfig) -> dict[st
         ),
         "CROSS_METHOD_DOUBLE_COUNT_AUDIT": _cross_method_double_count_adapter(),
         "PROBABILITY_DISTRIBUTION_ANALYSIS": _probability_distribution_adapter(),
-        "AUDIT_GATE": generic_audit_adapter(),
+        "AUDIT_GATE": generic_audit_adapter(impact_config=config.impact_config),
         "STREET_REFERENCE_LOAD": street_reference_load_adapter(loader=config.street_loader),
         "STREET_GAP_ANALYZER": street_gap_analyzer_adapter(),
         "MARKET_PRICE_LOAD": market_price_load_adapter(
@@ -332,7 +413,11 @@ def build_primary_shadow_adapters(config: PrimaryShadowRuntimeConfig) -> dict[st
         ),
         "MARKET_COMPARE": market_compare_adapter(),
         "THESIS_DELTA": thesis_delta_adapter(),
-        "SAVE_STATE": save_state_adapter(state_root=config.state_root),
+        "SAVE_STATE": _chain_stage_adapters(
+            "module-impact learning and immutable run state save",
+            save_research_learning_adapter(store=learning_store),
+            save_state_adapter(state_root=config.state_root),
+        ),
         "FINAL_REPORT": final_report_adapter(),
     }
     adapters.update(dict(config.stage_overrides))
@@ -353,6 +438,8 @@ def run_primary_shadow(config: PrimaryShadowRuntimeConfig) -> ControlledRunResul
             "target_id": config.target_id,
             "prior_hypotheses": (),
             "scenario_binding_spec": config.scenario_binding_spec,
-            "selected_methods": config.selected_methods,
+            "optional_research_units": config.optional_research_units,
+            "research_trigger_state": dict(config.research_trigger_state),
+            "research_unit_aliases": dict(config.research_unit_aliases),
         },
     )
