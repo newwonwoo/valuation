@@ -9,6 +9,7 @@ from valuation_engine.collection_plan import (
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.evidence_adapter import (
     EvidenceCollectorSelection,
+    SelectedEvidenceCollector,
     primary_evidence_collection_adapter,
 )
 from valuation_engine.evidence_collection import static_evidence_collector
@@ -160,7 +161,13 @@ def test_primary_evidence_stage_accepts_runtime_collection_selection(tmp_path):
         source_fingerprint="fixture-hash",
     )
     adapter = primary_evidence_collection_adapter(
-        selection_loader=lambda _: EvidenceCollectorSelection(plan, (collector,))
+        selection_loader=lambda _: EvidenceCollectorSelection(
+            plan,
+            (
+                SelectedEvidenceCollector("c-util", collector),
+                SelectedEvidenceCollector("c-backlog", collector),
+            ),
+        )
     )
     result = adapter(
         OrchestratorContext(
@@ -169,9 +176,59 @@ def test_primary_evidence_stage_accepts_runtime_collection_selection(tmp_path):
             {"target_id": "T", "required_evidence": ("utilization", "backlog")},
         )
     )
+    assert result.status is StageStatus.BLOCKED
+    assert "duplicate source batch" in result.detail
+
+    adapter = primary_evidence_collection_adapter(
+        selection_loader=lambda _: EvidenceCollectorSelection(
+            plan,
+            (SelectedEvidenceCollector("c-backlog", collector),),
+        )
+    )
+    result = adapter(
+        OrchestratorContext(
+            "RUN2",
+            ExecutionMode.LIVE_PRIMARY,
+            {"target_id": "T", "required_evidence": ("utilization", "backlog")},
+        )
+    )
     assert result.status is StageStatus.PASS
     assert result.outputs["collection_plan"] == plan
+    assert result.outputs["collection_selected_collector_ids"] == ("c-backlog",)
     assert result.outputs["evidence_missing_metrics"] == ()
+
+
+def test_primary_evidence_stage_rejects_collector_not_authorized_by_plan(tmp_path):
+    plan = compile_primary_collection_plan(
+        module_plan(),
+        target_id="T",
+        jurisdiction="KR",
+        source_registry_path=source_registry(tmp_path),
+        collector_capabilities=(
+            CollectorCapability("c-backlog", "KR_OPENDART", ("backlog",), ("KR",), "tests.fixture"),
+        ),
+    )
+    collector = static_evidence_collector(
+        source_id="fixture-primary",
+        checked_at="2026-08-01",
+        records=(evidence("utilization"), evidence("backlog")),
+        source_fingerprint="fixture-hash",
+    )
+    adapter = primary_evidence_collection_adapter(
+        selection_loader=lambda _: EvidenceCollectorSelection(
+            plan,
+            (SelectedEvidenceCollector("unplanned", collector),),
+        )
+    )
+    result = adapter(
+        OrchestratorContext(
+            "RUN",
+            ExecutionMode.LIVE_PRIMARY,
+            {"target_id": "T", "required_evidence": ("utilization", "backlog")},
+        )
+    )
+    assert result.status is StageStatus.BLOCKED
+    assert "not authorized" in result.detail
 
 
 def test_primary_evidence_stage_fails_closed_when_plan_has_no_runnable_collector(tmp_path):
