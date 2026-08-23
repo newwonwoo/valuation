@@ -3,7 +3,11 @@ from types import SimpleNamespace
 
 from valuation_engine.collection_plan import CollectorCapability
 from valuation_engine.live_primary_adapters import CompanyResolutionRequest
-from valuation_engine.live_runtime import LiveCollectorProvider, build_live_primary_adapters
+from valuation_engine.live_runtime import (
+    LiveCollectorProvider,
+    LivePrimaryRuntimeConfig,
+    build_live_primary_adapters,
+)
 from valuation_engine.orchestrator import load_stage_sequence
 
 
@@ -80,3 +84,22 @@ def test_live_runtime_assembler_covers_every_canonical_stage_except_builtin_free
     assert set(adapters) == set(sequence) - {"INTRINSIC_VALUE_FREEZE"}
     assert len(sequence) == 32
     assert len(adapters) == 31
+
+
+def test_live_runtime_default_registry_paths_are_repo_anchored():
+    fields = LivePrimaryRuntimeConfig.__dataclass_fields__
+    expected = {
+        "stage_registry_path": ROOT / "config" / "control_plane_stage_registry.yaml",
+        "archetype_registry_path": ROOT / "config" / "archetype_module_registry.yaml",
+        "archetype_control_requirements_path": (
+            ROOT / "config" / "archetype_control_requirements.yaml"
+        ),
+        "industry_source_registry_path": (
+            ROOT / "config" / "industry_source_registry.yaml"
+        ),
+        "unit_contract_registry_path": ROOT / "config" / "unit_contract_registry.yaml",
+    }
+    for name, path in expected.items():
+        default = Path(fields[name].default)
+        assert default.is_absolute()
+        assert default == path
