@@ -4,12 +4,15 @@ from dataclasses import asdict, is_dataclass
 from decimal import Decimal
 from enum import Enum
 from pathlib import Path
+import shutil
 from typing import Any
 
+from .ablation import AblationBatchResult
 from .control_plane import DoctrineCoverageEntry, StageStatus
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .post_freeze import MarketComparisonBundle, StreetComparisonBundle
 from .records import AuditReport, RunManifest, RunStatus, iso_now
+from .research_learning import ResearchLearningRecordRef, ResearchLearningStore
 from .state import StateStore, thesis_delta
 from .valuation_execution import GenericValuationResult
 
@@ -128,6 +131,18 @@ def render_generic_report(data: dict[str, Any]) -> str:
             item = market.envelope.expected_gap
             lines.append(f"- Expected 기대수익 간격: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})")
 
+    impact = data.get("decision_impact_result")
+    if impact is not None:
+        measured = tuple(getattr(impact.batch, "measured_modules", ()))
+        not_measurable = tuple(getattr(impact, "not_measurable_modules", ()))
+        lines.extend((
+            "",
+            "## Decision Impact & Research Efficiency",
+            f"- Measured modules: {', '.join(measured) or '없음'}",
+            f"- Explicit NOT_MEASURABLE: {', '.join(not_measurable) or '없음'}",
+            f"- Governance review candidates: {', '.join(getattr(impact, 'retirement_review_candidates', ())) or '없음'}",
+        ))
+
     non_pass = tuple(
         item for item in coverage
         if item.status not in {StageStatus.PASS, StageStatus.WARNING, StageStatus.SKIPPED_NOT_APPLICABLE}
@@ -155,22 +170,30 @@ def render_generic_report(data: dict[str, Any]) -> str:
         "## Run Integrity",
         f"- Assumption set: {data.get('assumption_set_hash', '')}",
         f"- Valuation: {data.get('valuation_hash', '')}",
+        f"- Decision impact: {data.get('decision_impact_hash', '')}",
         f"- Audit: {data.get('audit_hash', '')}",
         f"- Freeze token: {getattr(data.get('intrinsic_freeze_token'), 'token_hash', '')}",
     ))
     return "\n".join(lines) + "\n"
 
 
-def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
+def save_state_adapter(
+    *,
+    state_root: str | Path,
+    research_learning_store: ResearchLearningStore | None = None,
+) -> StageAdapter:
     store = StateStore(state_root)
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
+        learning_ref: ResearchLearningRecordRef | None = None
+        run_dir: Path | None = None
         try:
             ticker = context.data.get("ticker")
             company = context.data.get("company")
             valuation = context.data.get("generic_valuation_result")
             audit = context.data.get("generic_audit_report")
             token = context.data.get("intrinsic_freeze_token")
+            impact_batch = context.data.get("decision_impact_batch")
             if not isinstance(ticker, str) or not ticker:
                 raise ValueError("ticker is required")
             if not isinstance(company, str) or not company:
@@ -181,6 +204,8 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 raise ValueError("audit PASS is required")
             if token is None or getattr(token, "run_id", None) != context.run_id:
                 raise ValueError("same-run IntrinsicFreezeToken is required")
+            if research_learning_store is not None and not isinstance(impact_batch, AblationBatchResult):
+                raise ValueError("Decision Impact batch is required for research-learning persistence")
 
             report = render_generic_report(context.data)
             prior = context.data.get("company_state", {})
@@ -199,11 +224,21 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 parent_run_id=parent_run,
                 blocked_reasons=(),
             )
+
+            if research_learning_store is not None:
+                learning_ref = research_learning_store.save_batch(
+                    ticker=ticker,
+                    run_id=context.run_id,
+                    batch=impact_batch,
+                )
+
             artifacts = {
                 "control_plane_trace.json": _jsonable(tuple(context.stage_traces)),
                 "compiled_assumptions.json": _jsonable(context.data.get("compiled_assumption_set")),
                 "scenario_set.json": _jsonable(context.data.get("bound_scenario_set")),
                 "valuation.json": _jsonable(valuation),
+                "decision_impact.json": _jsonable(context.data.get("decision_impact_result")),
+                "research_loadout_recommendations.json": _jsonable(context.data.get("research_loadout_recommendations", ())),
                 "audit.json": _jsonable(audit),
                 "doctrine_coverage.json": _jsonable(context.data.get("doctrine_coverage", ())),
                 "street_compare.json": _jsonable(context.data.get("street_comparison")),
@@ -212,6 +247,9 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 "freeze_token.json": _jsonable(token),
                 "final_report.md": report,
             }
+            if learning_ref is not None:
+                artifacts["research_learning_record.json"] = _jsonable(learning_ref)
+
             run_dir = store.save_run(manifest, artifacts)
             current_state = {
                 "schema_version": "0.6",
@@ -222,6 +260,7 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 "thesis": _current_thesis(context.data),
                 "assumption_set_hash": context.data.get("assumption_set_hash"),
                 "valuation_hash": context.data.get("valuation_hash"),
+                "decision_impact_hash": context.data.get("decision_impact_hash"),
                 "audit_hash": context.data.get("audit_hash"),
                 "scenario_values_per_share": {
                     item.scenario_id: str(item.value_per_share) for item in valuation.scenarios
@@ -232,22 +271,37 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                     else None
                 ),
                 "freeze_token_hash": token.token_hash,
+                "research_learning_record_hash": learning_ref.content_hash if learning_ref else None,
             }
             store.promote_current(manifest, current_state)
         except Exception as exc:
+            if run_dir is not None and run_dir.exists():
+                shutil.rmtree(run_dir, ignore_errors=True)
+            if learning_ref is not None:
+                Path(learning_ref.path).unlink(missing_ok=True)
             return StageExecutionResult(
                 StageStatus.BLOCKED,
                 f"state persistence failed: {type(exc).__name__}: {exc}",
                 blocking=True,
             )
+
+        outputs: dict[str, Any] = {
+            "saved_run_dir": str(run_dir),
+            "saved_current_state": current_state,
+            "saved_report_markdown": report,
+        }
+        if learning_ref is not None:
+            outputs.update(
+                {
+                    "research_learning_record_path": learning_ref.path,
+                    "research_learning_record_hash": learning_ref.content_hash,
+                    "research_learning_recorded_at": learning_ref.recorded_at,
+                }
+            )
         return StageExecutionResult(
             StageStatus.PASS,
-            "immutable run artifacts saved and audit-passed current state promoted",
-            {
-                "saved_run_dir": str(run_dir),
-                "saved_current_state": current_state,
-                "saved_report_markdown": report,
-            },
+            "immutable run, decision-impact learning and audit-passed current state persisted",
+            outputs,
         )
 
     return run
