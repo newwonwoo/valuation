@@ -122,6 +122,21 @@ def test_higher_wacc_reduces_finite_life_project_value():
     assert high.value.amount < low.value.amount
 
 
+def test_negative_project_npv_is_preserved_not_floored_to_zero():
+    loss_project = BoundScenario(
+        "Base",
+        (
+            assumption("project_cashflow_year_0", "-100", "KRW_billion", "project:construction-capex"),
+            assumption("project_cashflow_year_1", "20", "KRW_billion", "project:cod-year1"),
+            assumption("project_cashflow_year_2", "20", "KRW_billion", "project:cod-year2"),
+        ),
+    )
+    value = loader().evaluate(
+        ModelKey("project_finance", "project_npv", "project-v1"), loss_project, segment_id="project"
+    )
+    assert value.value.amount < 0
+
+
 def test_reserve_and_cohort_require_exact_registrations():
     registry = loader()
     reserve = BoundScenario(
