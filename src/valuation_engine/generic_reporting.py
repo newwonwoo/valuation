@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass, is_dataclass
+from dataclasses import asdict, is_dataclass
 from decimal import Decimal
 from enum import Enum
 from pathlib import Path
@@ -55,13 +55,15 @@ def thesis_delta_adapter() -> StageAdapter:
         current = _current_thesis(context.data)
         if not current:
             current = "No material thesis statement was produced in this run."
+        outputs: dict[str, Any] = {
+            "thesis_delta_result": thesis_delta(previous, current),
+        }
+        if "current_thesis" not in context.data:
+            outputs["current_thesis"] = current
         return StageExecutionResult(
             StageStatus.PASS,
             "current thesis compared with the prior immutable successful state",
-            {
-                "current_thesis": current,
-                "thesis_delta_result": thesis_delta(previous, current),
-            },
+            outputs,
         )
 
     return run
