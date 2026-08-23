@@ -1,4 +1,4 @@
-# PRISM LIVE_PRIMARY Readiness Map v1.2
+# PRISM LIVE_PRIMARY Readiness Map v1.3
 
 Status: canonical maintenance record for distinguishing full PRIMARY_SHADOW integration from real-source LIVE_PRIMARY readiness.
 
@@ -12,7 +12,7 @@ Readiness states:
 
 - `LIVE_READY`: can execute with current/live inputs under a declared source/loader contract.
 - `PARTIAL_LIVE`: at least one reusable live path exists, but material source/method coverage remains incomplete.
-- `RUNTIME_READY`: deterministic runtime is complete once typed upstream inputs are supplied.
+- `RUNTIME_READY`: deterministic/runtime stage is complete once typed upstream inputs are supplied.
 - `ADAPTER_REQUIRED`: reusable components exist, but a canonical live stage adapter is still missing.
 - `SHADOW_ONLY`: current stage behavior proves integration only.
 - `CONDITIONAL_NOT_IMPLEMENTED`: stage is route-dependent and intentionally fails closed when required without an implementation.
@@ -21,22 +21,22 @@ A new workflow stage without a readiness row is a maintenance error.
 
 ## 2. Current snapshot
 
-At the v1.2 registry snapshot:
+At the v1.3 registry snapshot:
 
 - canonical stages: **32 / 32 mapped**;
 - `LIVE_READY` or `RUNTIME_READY`: **26**;
-- `PARTIAL_LIVE`: **3**;
-- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **3**.
+- `PARTIAL_LIVE`: **5**;
+- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **1**.
 
 These counts are not a percentage-complete score. A single unresolved stage can still block a company if its Industry DNA makes that capability material.
 
 The remaining highest-value live gaps are:
 
-1. live Economic-Twin/Beta adapter;
-2. live WACC market/credit/capital-structure input adapter;
-3. Warranted PER stage adapter;
-4. broader exact-evaluator coverage across the 19 Economic Archetypes;
-5. probability calibration datasets beyond the gating contract.
+1. Warranted PER stage adapter;
+2. broader exact-evaluator coverage across the 19 Economic Archetypes;
+3. probability calibration datasets beyond the gating contract;
+4. broader company-specific KPI/IR/primary-regulatory source adapters;
+5. reusable jurisdiction/source providers for live peer returns, market risk inputs and company credit observations.
 
 ## 3. LIVE_PRIMARY front-half contract
 
@@ -82,9 +82,9 @@ Rules:
 - scanner Evidence IDs must already exist in the pre-freeze `EvidenceLedger`;
 - target-market Evidence is forbidden;
 - an active scanner must connect to a hypothesis candidate, verification request, economic path, final-output reference, or explicitly declare `context_only`;
-- `context_only` is not treated as hidden usefulness — it is recorded as a research-only path so repeated cost/low impact can be down-ranked;
+- `context_only` is recorded as a research-only path so repeated cost/low impact can be down-ranked;
 - each live finding records `ResearchEffort` and a `ModuleImpactTrace`-compatible path;
-- typed scanner findings are included in `LLMStaffContext`, so Researcher A can use them instead of receiving only a scanner-name plan.
+- typed scanner findings are included in `LLMStaffContext`.
 
 The dispatcher does not commit assumptions. It produces structured research input for LLM Staff and later Decision Impact / ablation.
 
@@ -103,7 +103,35 @@ Crucially:
 
 Funding results are also exposed to `LLMStaffContext` so the Researcher/Bridge stages can reason from the verified financing chain without bypassing the Assumption Compiler.
 
-## 6. OpenDART company-fact vertical
+## 6. Live Hierarchical Beta and WACC
+
+`src/valuation_engine/risk_adapters.py` is the typed live adapter layer for `HIERARCHICAL_BETA_ESTIMATION` and `WACC_VALIDATION`.
+
+### Hierarchical Beta
+
+The live universe must be exactly:
+
+`L1 Broad Sector → L2 Industry → L3 Risk-Driver Subindustry → L4 Economic Twins`.
+
+Each level requires an explicit selection rationale and active Evidence IDs. Peer observations carry Beta, unlevering capital structure, tax rate, benchmark, frequency, estimation window, as-of date, source and optional standard error. One run must use a normalized benchmark/frequency/window convention; a peer cannot be counted in multiple levels.
+
+The existing deterministic partial-pooling engine fixes asset Beta first, then the adapter relevers once using a typed target capital structure. Target current market capitalization is not a permitted pre-freeze source for choosing that structure.
+
+### WACC
+
+WACC consumes the `LiveBetaStageResult`; its loader cannot override Beta. It loads typed currency-consistent risk-free, ERP, country-risk, marginal debt cost and target-capital-structure observations.
+
+The same equity/debt weights, tax rate and target-structure method must be used for Beta relevering and WACC weighting. A mismatch fails closed.
+
+Positive additional risk premia require an explicit evidenced basis and active Evidence IDs. Generic small-cap plugs are not accepted.
+
+Customer-advance/funding Evidence may be recorded as a credit-improvement candidate, but does not mechanically lower WACC. Actual WACC changes must appear through separately observed/rebuilt Beta, marginal Cost of Debt, target structure or another evidenced input.
+
+Both stages reject target-company current price, target market capitalization, target price, consensus targets/multiples and target-company Street references before Intrinsic Freeze.
+
+The stages are `PARTIAL_LIVE`: deterministic contracts and fail-closed calculation are complete, while universal jurisdiction/source providers for live peer-return, sovereign-curve, ERP and company-credit data remain outside the repository. See `docs/LIVE_BETA_WACC_ADAPTERS.md`.
+
+## 7. OpenDART company-fact vertical
 
 `src/valuation_engine/dart_facts.py` is the first reusable LIVE_PRIMARY company-fact adapter.
 
@@ -129,15 +157,15 @@ Design rules:
 
 The live collector uses an injected `fetch_text` transport. Network/credential handling therefore stays outside deterministic valuation code, while fixtures and historical replays use the same fact parser.
 
-## 7. What LIVE_READY does not mean
+## 8. What LIVE_READY does not mean
 
-A `LIVE_READY` stage means its typed source/loader/runner contract, traceability and fail-closed behavior are complete. It does **not** claim every jurisdiction, every source family, every scanner implementation or every company-specific KPI is built in.
+A `LIVE_READY` stage means its typed source/loader/runner contract, traceability and fail-closed behavior are complete. It does **not** claim every jurisdiction, every source family, every scanner implementation, every risk-data provider or every company-specific KPI is built in.
 
 OpenDART standard financial facts do not provide every Industry DNA requirement. Backlog quality, effective capacity, customer advances, qualification, project COD, clinical evidence, customer concentration and many segment KPIs still need company-specific filing-note, IR, primary-regulatory or calibrated alternative-data adapters.
 
 Absence of a standard XBRL account ID is not permission to guess from a similar account name. The Control Plane should record the missing metric and enter Recovery/Capability handling.
 
-## 8. Promotion rule
+## 9. Promotion rule
 
 A stage moves toward `LIVE_READY` only when:
 
