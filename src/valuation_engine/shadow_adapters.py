@@ -3,11 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 
 from .assumption_compiler import AssumptionSpec, compile_assumptions
-from .control_plane import StageStatus
+from .control_plane import ExecutionMode, StageStatus
 from .industry_dna import IndustryDNAProfile, compose_modules
 from .ledger import EvidenceLedger
 from .module_plan import build_module_requirement_plan
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
+from .probability_calibration import CalibrationCertificate
 from .records import BridgeRecord, HypothesisRecord
 from .scenario_binding import ScenarioBindingSpec, bind_scenarios
 from .state import StateStore
@@ -113,8 +114,9 @@ def module_requirement_plan_adapter(
 def scenario_build_adapter() -> StageAdapter:
     """Compile Bridge proposals and bind scenarios inside the canonical SCENARIO_BUILD stage.
 
-    The two components remain separate deterministic units; this adapter merely sequences them.
-    Upstream evidence/research stages must supply the required typed objects in the run context.
+    LIVE_PRIMARY additionally requires a real CalibrationCertificate before any CALIBRATED
+    probability assumptions may enable numeric scenario weighting. PRIMARY_SHADOW keeps the
+    historical compatibility path so regression fixtures do not masquerade as live evidence.
     """
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
@@ -125,6 +127,7 @@ def scenario_build_adapter() -> StageAdapter:
         specs = context.data.get("assumption_specs")
         bridge_input_map = context.data.get("bridge_input_map", {})
         binding_spec = context.data.get("scenario_binding_spec")
+        calibration_certificate = context.data.get("probability_calibration_certificate")
 
         if not isinstance(target_id, str) or not target_id:
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "target_id missing for compilation", blocking=True)
@@ -140,6 +143,12 @@ def scenario_build_adapter() -> StageAdapter:
             return StageExecutionResult(StageStatus.BLOCKED, "bridge_input_map must be a dict", blocking=True)
         if not isinstance(binding_spec, ScenarioBindingSpec):
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "ScenarioBindingSpec missing", blocking=True)
+        if calibration_certificate is not None and not isinstance(calibration_certificate, CalibrationCertificate):
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "probability_calibration_certificate must be a typed CalibrationCertificate",
+                blocking=True,
+            )
 
         compilation = compile_assumptions(
             target_id=target_id,
@@ -160,7 +169,16 @@ def scenario_build_adapter() -> StageAdapter:
                 blocking=True,
             )
 
-        bound = bind_scenarios(compilation.assumption_set, binding_spec)
+        require_certificate = (
+            context.execution_mode is ExecutionMode.LIVE_PRIMARY
+            and binding_spec.probability_key is not None
+        )
+        bound = bind_scenarios(
+            compilation.assumption_set,
+            binding_spec,
+            calibration_certificate=calibration_certificate,
+            require_calibration_certificate=require_certificate,
+        )
         if not bound.passed:
             codes = tuple(item.code for item in bound.findings)
             recoverable = {"MISSING_REQUIRED_ASSUMPTION", "MISSING_SCENARIO_PROBABILITY"}
@@ -173,18 +191,21 @@ def scenario_build_adapter() -> StageAdapter:
             )
 
         scenario_set = bound.scenario_set
+        outputs = {
+            "compiled_assumption_set": compilation.assumption_set,
+            "assumption_set_hash": compilation.assumption_set.assumption_set_hash,
+            "bound_scenario_set": scenario_set,
+            "scenario_set_hash": scenario_set.scenario_set_hash,
+            "probability_calibration_status": scenario_set.calibration_status,
+            "probability_weighting_allowed": scenario_set.numeric_weighting_allowed,
+            "scenario_binding_findings": bound.findings,
+        }
+        if scenario_set.calibration_snapshot_hash is not None:
+            outputs["probability_calibration_snapshot_hash"] = scenario_set.calibration_snapshot_hash
         return StageExecutionResult(
             StageStatus.PASS,
             "Bridge proposals deterministically compiled and bound into generic scenarios",
-            {
-                "compiled_assumption_set": compilation.assumption_set,
-                "assumption_set_hash": compilation.assumption_set.assumption_set_hash,
-                "bound_scenario_set": scenario_set,
-                "scenario_set_hash": scenario_set.scenario_set_hash,
-                "probability_calibration_status": scenario_set.calibration_status,
-                "probability_weighting_allowed": scenario_set.numeric_weighting_allowed,
-                "scenario_binding_findings": bound.findings,
-            },
+            outputs,
         )
 
     return run
