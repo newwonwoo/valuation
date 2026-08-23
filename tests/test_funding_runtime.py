@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.funding_adapter import FundingRuntimeConfig, upstream_funding_runtime_adapter
 from valuation_engine.funding_runtime import FundingSourceUseBinding, assess_funding_sources_and_uses
@@ -47,10 +49,10 @@ def test_fully_funded_sources_and_uses_without_automatic_wacc_credit():
     result = assess_funding_sources_and_uses(target_id="T", ledger=ledger(), binding=binding())
     assert result.passed
     assert result.assessment.fully_funded
-    assert result.assessment.funding_need == 70
-    assert result.assessment.verified_funding_sources == 70
-    assert result.assessment.funding_gap == 0
-    assert result.assessment.funding_coverage_ratio == 1
+    assert result.assessment.funding_need == Decimal("70")
+    assert result.assessment.verified_funding_sources == Decimal("70")
+    assert result.assessment.funding_gap == Decimal("0")
+    assert result.assessment.funding_coverage_ratio == Decimal("1")
     assert not result.assessment.credit_improvement_candidate
 
 
@@ -61,8 +63,8 @@ def test_funding_gap_is_measured_not_hidden():
         binding=binding(),
     )
     assert result.passed
-    assert result.assessment.funding_gap == 40
-    assert result.assessment.funding_coverage_ratio == 30 / 70
+    assert result.assessment.funding_gap == Decimal("40")
+    assert result.assessment.funding_coverage_ratio == Decimal("30") / Decimal("70")
 
 
 def test_missing_metric_requests_recovery_input():
@@ -134,7 +136,7 @@ def test_control_plane_funding_adapter_passes_and_emits_typed_outputs():
     assert not result.blocked_reasons
     assert result.stage_traces[0].status is StageStatus.PASS
     assert result.data["funded_demand_assessment"] == "FULLY_FUNDED"
-    assert result.data["funding_gap"] == 0
+    assert result.data["funding_gap"] == Decimal("0")
     assert not result.data["credit_improvement_candidate"]
 
 
@@ -158,7 +160,7 @@ def test_control_plane_funding_adapter_warns_on_gap_without_blocking():
     assert not result.blocked_reasons
     assert result.stage_traces[0].status is StageStatus.WARNING
     assert result.data["funded_demand_assessment"] == "FUNDING_GAP"
-    assert result.data["funding_gap"] == 40
+    assert result.data["funding_gap"] == Decimal("40")
 
 
 def test_control_plane_funding_adapter_requests_recovery_without_binding():
