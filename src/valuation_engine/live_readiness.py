@@ -118,7 +118,10 @@ def validate_method_readiness_alignment(
             raise ValueError(
                 "DETERMINISTIC_VALUATION method coverage is complete but readiness is not runtime/live ready"
             )
-    elif stage.status is not LiveReadinessStatus.PARTIAL_LIVE:
+    elif stage.status in {
+        LiveReadinessStatus.RUNTIME_READY,
+        LiveReadinessStatus.LIVE_READY,
+    }:
         raise ValueError(
             "DETERMINISTIC_VALUATION cannot be promoted above PARTIAL_LIVE while valuation methods remain partial or unimplemented: "
             f"partial={coverage.partial_runtime}, not_implemented={coverage.not_implemented}"
