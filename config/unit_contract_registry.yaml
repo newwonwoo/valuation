@@ -303,7 +303,7 @@ units:
 
   - unit_id: DETERMINISTIC_VALUATION
     unit_type: valuation_engine
-    implementation_status: partial_live_legacy_generic_design
+    implementation_status: registry_core_with_initial_evaluator
     stages: [DETERMINISTIC_VALUATION]
     purpose: Apply exact industry/evaluator formulas to compiled assumptions only.
     inputs: [compiled_assumption_set, evaluator_key, valuation_context]
@@ -311,7 +311,7 @@ units:
     consumers: [SOTP_AGGREGATOR, AUDIT_GATE, DECISION_IMPACT]
     effect_types: [value_effect]
     final_outputs: [intrinsic_value_components]
-    canonical_refs: [src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md]
+    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md]
     forbidden_effects: [network_access, evidence_interpretation, current_price_access, unknown_model_generic_fallback]
 
   - unit_id: WARRANTED_PER_ENGINE
@@ -329,7 +329,7 @@ units:
 
   - unit_id: SOTP_AGGREGATOR
     unit_type: aggregator
-    implementation_status: design_ready_partial
+    implementation_status: implemented_core
     stages: [DETERMINISTIC_VALUATION]
     purpose: Combine segment values, ownership, parent assets/claims, and EV→Equity bridges once without overlap.
     inputs: [segment_valuations, ownership, segment_debt, parent_assets, parent_claims]
@@ -337,7 +337,7 @@ units:
     consumers: [AUDIT_GATE, DECISION_IMPACT]
     effect_types: [value_effect, guardrail_effect]
     final_outputs: [intrinsic_value]
-    canonical_refs: [docs/GENERIC_ENGINE_DESIGN.md, src/valuation_engine/engine.py]
+    canonical_refs: [src/valuation_engine/sotp.py, docs/GENERIC_ENGINE_DESIGN.md, src/valuation_engine/engine.py]
     forbidden_effects: [double_debt_deduction, duplicate_nci, duplicate_asset_id]
 
   - unit_id: DECISION_IMPACT
