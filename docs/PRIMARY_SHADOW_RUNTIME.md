@@ -1,4 +1,4 @@
-# PRISM Full PRIMARY_SHADOW Runtime v1.0
+# PRISM Full PRIMARY_SHADOW Runtime v1.1
 
 Status: executable integration contract for the complete canonical Control Plane stage registry.
 
@@ -10,7 +10,7 @@ The PRIMARY_SHADOW runtime proves that all canonical stages can be dispatched in
 
 The runtime loads `config/control_plane_stage_registry.yaml` rather than maintaining a second stage list. Every stage is required to leave one terminal trace.
 
-`Company → State → Industry Snapshot → Freshness → Segment/DNA → Module Plan → Primary Evidence → Ledger → Insight/Research/Red Team → Bridge → Compiler/Scenario → Risk/Valuation/Audit → Freeze → Street/Market → State/Report`
+`Company → State/Learning → Industry Snapshot → Freshness → Segment/DNA → Module Plan/Adaptive Loadout → Primary Evidence → Ledger → Insight/Research/Red Team → Bridge → Compiler/Scenario → Risk/Valuation/Decision Impact/Audit → Freeze → Street/Market → Learning/State/Report`
 
 ## Shadow semantics
 
@@ -21,6 +21,14 @@ The runtime loads `config/control_plane_stage_registry.yaml` rather than maintai
 - If Industry DNA requires one of those capabilities, absence is `NOT_IMPLEMENTED`, never a silent skip.
 - Audit runs Decision Impact before Freeze. Units without reproducible counterfactual adapters are explicitly `NOT_MEASURABLE`, not zero-impact.
 - Street and current price remain unavailable until a same-run Freeze Token exists.
+
+## Research-learning feedback
+
+`LOAD_COMPANY_STATE` combines ordinary company state with prior immutable module-impact history. The canonical `Module Requirement Plan` remains unchanged, while an `AdaptiveResearchLoadout` may schedule optional research as always-on, conditional, sampled or governance-review work.
+
+`SAVE_STATE` first persists the current run's module-impact learning record using the same-run Freeze Token, then stores the ordinary immutable run state and report artifacts. Mandatory scanners and gates are never removed automatically; a historical down-rank signal against a mandatory unit creates a governance-review flag only.
+
+A second run against the same state root must load the prior learning record and expose the previous research-loadout recommendations before compiling its new Module Requirement Plan.
 
 ## Extension contract
 
