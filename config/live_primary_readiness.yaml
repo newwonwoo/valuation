@@ -64,7 +64,7 @@ stages:
     reason: typed currency-consistent risk-free/ERP/country-risk/marginal-debt/target-structure loader and same-structure Beta→WACC validation are implemented; universal market/credit data providers remain caller-specific.
   DETERMINISTIC_VALUATION:
     status: PARTIAL_LIVE
-    reason: exact registry/SOTP runtime now supports normalized multiples and same-run-WACC explicit FCFF DCF registrations for driver-based methods; finite-life project/rNPV/NAV/residual-income and other archetype-specific evaluator coverage remains incomplete.
+    reason: exact registry/SOTP runtime supports normalized multiples, same-run-WACC explicit FCFF DCF, and exact finite-life project_npv/reserve_npv/cohort_npv registrations; probability-weighted rNPV, NAV/residual-income and other archetype-specific evaluator coverage remains incomplete.
   HIERARCHICAL_WARRANTED_PER:
     status: PARTIAL_LIVE
     reason: typed Compiled-Assumption/WACC/DCF-fingerprint adapter computes Core, committed-expansion and peer-residual PER layers; universal normalized-EPS and peer-residual data providers remain caller-specific.
