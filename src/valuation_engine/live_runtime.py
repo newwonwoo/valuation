@@ -174,6 +174,7 @@ class LivePrimaryRuntimeConfig:
     scenario_binding_spec: ScenarioBindingSpec
     providers: LivePrimaryProviders
     method_choices: tuple[SegmentMethodChoice, ...] = ()
+    market_currency: str | None = None
     stage_registry_path: str | Path = "config/control_plane_stage_registry.yaml"
     archetype_registry_path: str | Path = "config/archetype_module_registry.yaml"
     archetype_control_requirements_path: str | Path = "config/archetype_control_requirements.yaml"
@@ -189,6 +190,8 @@ class LivePrimaryRuntimeConfig:
         self.company_request.validate()
         self.scenario_binding_spec.validate()
         self.providers.validate()
+        if self.providers.market_loader is not None and not self.market_currency:
+            raise ValueError("LIVE_PRIMARY market_loader requires market_currency")
         prohibited = {
             "current_market_price",
             "market_price",
@@ -372,7 +375,10 @@ def build_live_primary_adapters(config: LivePrimaryRuntimeConfig) -> dict[str, S
         else _unavailable_stage("Street reference")
     )
     market_load = (
-        market_price_load_adapter(loader=providers.market_loader)
+        market_price_load_adapter(
+            loader=providers.market_loader,
+            currency=str(config.market_currency),
+        )
         if providers.market_loader is not None
         else _unavailable_stage("market price")
     )
