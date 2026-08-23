@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from hashlib import sha256
+from typing import Callable
 
 from .control_plane import StageStatus
 from .evaluator_registry import EvaluatorRegistry
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .scenario_binding import BoundScenarioSet
 from .valuation_execution import CompanyValuationPlan, execute_company_valuation
+
+
+RegistryLoader = Callable[[OrchestratorContext], EvaluatorRegistry]
 
 
 def _plan_identity(plan: CompanyValuationPlan) -> tuple[tuple[str, ...], str]:
@@ -27,9 +31,12 @@ def _plan_identity(plan: CompanyValuationPlan) -> tuple[tuple[str, ...], str]:
 
 def deterministic_valuation_adapter(
     *,
-    registry: EvaluatorRegistry,
     plan: CompanyValuationPlan,
+    registry: EvaluatorRegistry | None = None,
+    registry_loader: RegistryLoader | None = None,
 ) -> StageAdapter:
+    if (registry is None) == (registry_loader is None):
+        raise ValueError("supply exactly one of registry or registry_loader")
     selected_methods, route_hash = _plan_identity(plan)
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
@@ -41,14 +48,21 @@ def deterministic_valuation_adapter(
                 blocking=True,
             )
         try:
-            result = execute_company_valuation(scenario_set, plan=plan, registry=registry)
+            effective_registry = registry if registry is not None else registry_loader(context)
+            if not isinstance(effective_registry, EvaluatorRegistry):
+                raise TypeError("registry_loader must return EvaluatorRegistry")
+            result = execute_company_valuation(
+                scenario_set,
+                plan=plan,
+                registry=effective_registry,
+            )
         except KeyError as exc:
             return StageExecutionResult(
                 StageStatus.NOT_IMPLEMENTED,
                 f"exact evaluator or compiled assumption is unavailable: {exc}",
                 blocking=True,
             )
-        except ValueError as exc:
+        except (ValueError, TypeError, PermissionError) as exc:
             return StageExecutionResult(
                 StageStatus.BLOCKED,
                 f"deterministic valuation validation failed: {exc}",
