@@ -4,8 +4,10 @@ from dataclasses import asdict, is_dataclass
 from decimal import Decimal
 from enum import Enum
 from pathlib import Path
+import shutil
 from typing import Any
 
+from .ablation import AblationBatchResult, AblationStatus, LoadoutAction
 from .control_plane import DoctrineCoverageEntry, StageStatus
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .post_freeze import MarketComparisonBundle, StreetComparisonBundle
@@ -40,6 +42,88 @@ def _current_thesis(data: dict[str, Any]) -> str:
     intelligence = data.get("intelligence_proposal")
     rationale = getattr(intelligence, "rationale", "")
     return rationale.strip() if isinstance(rationale, str) else ""
+
+
+def _impact_batch(data: dict[str, Any]) -> AblationBatchResult | None:
+    value = data.get("decision_impact_batch")
+    return value if isinstance(value, AblationBatchResult) else None
+
+
+def _module_impact_summary(data: dict[str, Any]) -> dict[str, Any]:
+    batch = _impact_batch(data)
+    if batch is None:
+        return {
+            "available": False,
+            "measured": [],
+            "not_measurable": [],
+            "not_applicable": [],
+            "failed": [],
+            "research_effort": {
+                "source_queries": 0,
+                "documents_reviewed": 0,
+                "llm_calls": 0,
+                "elapsed_seconds": 0.0,
+            },
+            "downrank_candidates": [],
+            "recommendations": [],
+        }
+
+    buckets: dict[AblationStatus, list[str]] = {status: [] for status in AblationStatus}
+    source_queries = 0
+    documents_reviewed = 0
+    llm_calls = 0
+    elapsed_seconds = 0.0
+    materiality: dict[str, bool | None] = {}
+    for observation in batch.module_observations:
+        buckets[observation.status].append(observation.module_id)
+        source_queries += observation.effort.source_queries
+        documents_reviewed += observation.effort.documents_reviewed
+        llm_calls += observation.effort.llm_calls
+        elapsed_seconds += observation.effort.elapsed_seconds
+        materiality[observation.module_id] = (
+            observation.assessment.material if observation.assessment is not None else None
+        )
+
+    recommendations = tuple(batch.loadout_recommendations)
+    downrank = sorted(
+        item.module_id
+        for item in recommendations
+        if item.action is LoadoutAction.PROPOSE_DOWNRANK
+    )
+    return {
+        "available": True,
+        "measured": sorted(buckets[AblationStatus.MEASURED]),
+        "not_measurable": sorted(buckets[AblationStatus.NOT_MEASURABLE]),
+        "not_applicable": sorted(buckets[AblationStatus.NOT_APPLICABLE]),
+        "failed": sorted(buckets[AblationStatus.FAILED]),
+        "materiality": materiality,
+        "research_effort": {
+            "source_queries": source_queries,
+            "documents_reviewed": documents_reviewed,
+            "llm_calls": llm_calls,
+            "elapsed_seconds": elapsed_seconds,
+        },
+        "downrank_candidates": downrank,
+        "recommendations": _jsonable(recommendations),
+    }
+
+
+def _compact_list(values: list[str], *, limit: int = 8) -> str:
+    if not values:
+        return "없음"
+    head = values[:limit]
+    suffix = f" 외 {len(values) - limit}개" if len(values) > limit else ""
+    return ", ".join(head) + suffix
+
+
+def _research_effort_line(summary: dict[str, Any]) -> str:
+    effort = summary["research_effort"]
+    return (
+        f"source queries {effort['source_queries']}, "
+        f"documents {effort['documents_reviewed']}, "
+        f"LLM calls {effort['llm_calls']}, "
+        f"elapsed {float(effort['elapsed_seconds']):.1f}s"
+    )
 
 
 def thesis_delta_adapter() -> StageAdapter:
@@ -128,6 +212,19 @@ def render_generic_report(data: dict[str, Any]) -> str:
             item = market.envelope.expected_gap
             lines.append(f"- Expected 기대수익 간격: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})")
 
+    impact = _module_impact_summary(data)
+    lines.extend((
+        "",
+        "## Module Impact / Research Efficiency",
+        f"- 측정 완료: {_compact_list(impact['measured'])}",
+        f"- 미측정(NOT_MEASURABLE): {_compact_list(impact['not_measurable'])}",
+        f"- 비적용: {_compact_list(impact['not_applicable'])}",
+        f"- 실패: {_compact_list(impact['failed'])}",
+        f"- 조사비용: {_research_effort_line(impact)}",
+        f"- 하향 검토 후보: {_compact_list(impact['downrank_candidates'])}",
+        "- 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.",
+    ))
+
     non_pass = tuple(
         item for item in coverage
         if item.status not in {StageStatus.PASS, StageStatus.WARNING, StageStatus.SKIPPED_NOT_APPLICABLE}
@@ -161,13 +258,30 @@ def render_generic_report(data: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _rollback_exact_path(root: Path, target_value: object, expected_relative: Path) -> None:
+    if not isinstance(target_value, str) or not target_value:
+        return
+    resolved_root = root.resolve()
+    resolved_target = Path(target_value).resolve()
+    expected_target = (resolved_root / expected_relative).resolve()
+    if resolved_target != expected_target:
+        raise ValueError(f"rollback target mismatch: {resolved_target}")
+    if resolved_target.is_dir():
+        shutil.rmtree(resolved_target)
+    else:
+        resolved_target.unlink(missing_ok=True)
+
+
 def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
-    store = StateStore(state_root)
+    root = Path(state_root)
+    store = StateStore(root)
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
+        ticker = context.data.get("ticker")
+        company = context.data.get("company")
+        learning_path = context.data.get("research_learning_record_path")
+        run_dir: Path | None = None
         try:
-            ticker = context.data.get("ticker")
-            company = context.data.get("company")
             valuation = context.data.get("generic_valuation_result")
             audit = context.data.get("generic_audit_report")
             token = context.data.get("intrinsic_freeze_token")
@@ -183,6 +297,7 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 raise ValueError("same-run IntrinsicFreezeToken is required")
 
             report = render_generic_report(context.data)
+            impact_summary = _module_impact_summary(context.data)
             prior = context.data.get("company_state", {})
             parent_run = prior.get("last_completed_run") if isinstance(prior, dict) else None
             now = iso_now()
@@ -206,6 +321,10 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 "valuation.json": _jsonable(valuation),
                 "audit.json": _jsonable(audit),
                 "doctrine_coverage.json": _jsonable(context.data.get("doctrine_coverage", ())),
+                "module_impact.json": {
+                    "summary": impact_summary,
+                    "batch": _jsonable(_impact_batch(context.data)),
+                },
                 "street_compare.json": _jsonable(context.data.get("street_comparison")),
                 "market_compare.json": _jsonable(context.data.get("market_comparison")),
                 "thesis_delta.json": _jsonable(context.data.get("thesis_delta_result", {})),
@@ -214,7 +333,7 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
             }
             run_dir = store.save_run(manifest, artifacts)
             current_state = {
-                "schema_version": "0.6",
+                "schema_version": "0.6.10",
                 "ticker": ticker,
                 "company": company,
                 "last_completed_run": context.run_id,
@@ -223,6 +342,8 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 "assumption_set_hash": context.data.get("assumption_set_hash"),
                 "valuation_hash": context.data.get("valuation_hash"),
                 "audit_hash": context.data.get("audit_hash"),
+                "decision_impact_hash": context.data.get("decision_impact_hash"),
+                "research_learning_record_hash": context.data.get("research_learning_record_hash"),
                 "scenario_values_per_share": {
                     item.scenario_id: str(item.value_per_share) for item in valuation.scenarios
                 },
@@ -235,9 +356,24 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
             }
             store.promote_current(manifest, current_state)
         except Exception as exc:
+            rollback_errors: list[str] = []
+            if isinstance(ticker, str) and ticker:
+                try:
+                    expected_run = Path("runs") / ticker / context.run_id
+                    _rollback_exact_path(root, str(run_dir or (root / expected_run)), expected_run)
+                except Exception as rollback_exc:
+                    rollback_errors.append(f"run rollback: {rollback_exc}")
+                try:
+                    expected_learning = Path("learning") / ticker / "module-impact" / f"{context.run_id}.json"
+                    _rollback_exact_path(root, learning_path, expected_learning)
+                except Exception as rollback_exc:
+                    rollback_errors.append(f"learning rollback: {rollback_exc}")
+            detail = f"state persistence failed: {type(exc).__name__}: {exc}"
+            if rollback_errors:
+                detail += " | " + " | ".join(rollback_errors)
             return StageExecutionResult(
                 StageStatus.BLOCKED,
-                f"state persistence failed: {type(exc).__name__}: {exc}",
+                detail,
                 blocking=True,
             )
         return StageExecutionResult(
@@ -247,6 +383,7 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 "saved_run_dir": str(run_dir),
                 "saved_current_state": current_state,
                 "saved_report_markdown": report,
+                "module_impact_summary": impact_summary,
             },
         )
 
