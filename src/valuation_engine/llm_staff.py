@@ -106,12 +106,24 @@ RedTeamOfficer = Callable[[LLMStaffContext, tuple[HypothesisRecord, ...]], RedTe
 BridgeAnalyst = Callable[[LLMStaffContext, tuple[HypothesisRecord, ...], RedTeamProposal], BridgeProposalBundle]
 
 
+def merge_hypothesis_context(
+    prior: tuple[HypothesisRecord, ...],
+    proposed: tuple[HypothesisRecord, ...],
+) -> tuple[HypothesisRecord, ...]:
+    combined = prior + proposed
+    ids = tuple(item.id for item in combined)
+    if len(ids) != len(set(ids)):
+        raise ValueError("prior and proposed hypothesis IDs must be unique; revisions require a new ID")
+    return combined
+
+
 def run_intelligence_officer(context: LLMStaffContext, officer: IntelligenceOfficer) -> IntelligenceProposal:
     validate_llm_authority(LLMAction.OBSERVE)
     validate_llm_authority(LLMAction.REASON)
     validate_llm_authority(LLMAction.PROPOSE)
     proposal = officer(context)
     proposal.validate(context.ledger)
+    merge_hypothesis_context(context.prior_hypotheses, proposal.hypotheses)
     return proposal
 
 
@@ -122,7 +134,7 @@ def run_red_team(
 ) -> RedTeamProposal:
     validate_llm_authority(LLMAction.REASON)
     validate_llm_authority(LLMAction.PROPOSE)
-    # Market-comparison Evidence is never exposed to this context by construction.
+    # This is a second lock; the shared Staff context also blocks market Evidence.
     if any(item.source_layer.value == "market_comparison" for item in context.ledger.active()):
         raise PermissionError("Blind Red Team context contains market-comparison Evidence")
     proposal = officer(context, hypotheses)
