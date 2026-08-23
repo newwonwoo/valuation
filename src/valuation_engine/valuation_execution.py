@@ -8,6 +8,7 @@ from .evaluator_registry import (
     EvaluatorRegistry,
     ModelKey,
     NormalizedMultipleEvaluator,
+    ValuationRuntimeInputs,
     ValueKind,
 )
 from .scenario_binding import BoundScenarioSet
@@ -93,8 +94,10 @@ def execute_company_valuation(
     *,
     plan: CompanyValuationPlan,
     registry: EvaluatorRegistry,
+    runtime_inputs: ValuationRuntimeInputs | None = None,
 ) -> GenericValuationResult:
     plan.validate()
+    runtime = runtime_inputs or ValuationRuntimeInputs()
     scenario_company_values = []
     per_share_values: list[ScenarioPerShareValue] = []
 
@@ -102,7 +105,12 @@ def execute_company_valuation(
         aggregation_inputs: list[SegmentAggregationInput] = []
         scenario_paths: list[str] = []
         for segment_plan in plan.segments:
-            valuation = registry.evaluate(segment_plan.model_key, scenario, segment_id=segment_plan.segment_id)
+            valuation = registry.evaluate(
+                segment_plan.model_key,
+                scenario,
+                segment_id=segment_plan.segment_id,
+                runtime_inputs=runtime,
+            )
             scenario_paths.extend(valuation.economic_path_ids)
             ownership_assumption = scenario.get(segment_plan.ownership_key)
             scenario_paths.append(ownership_assumption.economic_path_id)
@@ -178,6 +186,10 @@ def execute_company_valuation(
         + [
             f"{item.scenario_id}|{item.equity_value_amount}|{item.diluted_shares}|{item.value_per_share}|{item.aggregation_hash}|{','.join(item.economic_path_ids)}"
             for item in per_share_values
+        ]
+        + [
+            "RUNTIME|" + item.key + "|" + str(item.measure.amount) + "|" + item.measure.unit + "|" + item.economic_path_id + "|" + ",".join(item.source_refs)
+            for item in runtime.inputs
         ]
         + [f"expected={expected_per_share if expected_per_share is not None else 'NA'}"]
     )
