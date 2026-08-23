@@ -1,0 +1,88 @@
+name: patch-funding-runtime
+
+on:
+  push:
+    branches: [feature/funding-runtime-core]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/funding-runtime-core
+      - name: Wire funding runtime and contracts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          p = Path('src/valuation_engine/primary_shadow_runtime.py')
+          text = p.read_text(encoding='utf-8')
+          old = 'from .generic_reporting import final_report_adapter, save_state_adapter, thesis_delta_adapter\n'
+          new = old + 'from .funding_adapter import FundingRuntimeConfig, upstream_funding_runtime_adapter\nfrom .funding_runtime import FundingSourceUseBinding\n'
+          if old not in text:
+              raise SystemExit('primary_shadow import anchor not found')
+          text = text.replace(old, new, 1)
+          old = 'from .valuation_execution import CompanyValuationPlan, EvaluatorRegistry\n'
+          new = old + 'from .wacc import CustomerAdvanceCreditEvidence\n'
+          if old not in text:
+              raise SystemExit('WACC import anchor not found')
+          text = text.replace(old, new, 1)
+          old = '    impact_config: GenericDecisionImpactConfig | None = None\n'
+          new = old + '    funding_binding: FundingSourceUseBinding | None = None\n    funding_credit_evidence: CustomerAdvanceCreditEvidence | None = None\n'
+          if old not in text:
+              raise SystemExit('runtime config anchor not found')
+          text = text.replace(old, new, 1)
+          old = '        "UPSTREAM_FUNDING_SCAN": _upstream_funding_adapter(),\n'
+          new = '        "UPSTREAM_FUNDING_SCAN": upstream_funding_runtime_adapter(\n            config=FundingRuntimeConfig(\n                binding=config.funding_binding,\n                credit_evidence=config.funding_credit_evidence,\n            )\n        ),\n'
+          if old not in text:
+              raise SystemExit('funding stage adapter anchor not found')
+          text = text.replace(old, new, 1)
+          p.write_text(text, encoding='utf-8')
+
+          p = Path('config/live_primary_readiness.yaml')
+          text = p.read_text(encoding='utf-8')
+          old = '''  UPSTREAM_FUNDING_SCAN:\n    status: CONDITIONAL_NOT_IMPLEMENTED\n    reason: funding module exists, but full runtime intentionally fails closed when a route requires funding and no dedicated adapter is supplied.\n'''
+          new = '''  UPSTREAM_FUNDING_SCAN:\n    status: PARTIAL_LIVE\n    reason: evidence-backed funding sources/uses assessment is wired into the full runtime; specialized collateral, credit-market and financing-channel source adapters remain incomplete.\n'''
+          if old not in text:
+              raise SystemExit('readiness funding pattern not found')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          p = Path('docs/LIVE_PRIMARY_READINESS.md')
+          text = p.read_text(encoding='utf-8')
+          text = text.replace('- `PARTIAL_LIVE`: **3**;', '- `PARTIAL_LIVE`: **4**;')
+          text = text.replace('- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **10**.', '- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **9**.')
+          text = text.replace('5. route-specific Upstream Funding adapter;\n6. live Economic-Twin/Beta and WACC input adapters;\n7. Warranted PER stage adapter;\n8. broader exact-evaluator coverage across the 19 Economic Archetypes;\n9. probability calibration datasets beyond the gating contract.', '5. deeper collateral/credit-market funding source adapters;\n6. live Economic-Twin/Beta and WACC input adapters;\n7. Warranted PER stage adapter;\n8. broader exact-evaluator coverage across the 19 Economic Archetypes;\n9. probability calibration datasets beyond the gating contract.')
+          p.write_text(text, encoding='utf-8')
+
+          p = Path('tests/test_live_readiness.py')
+          text = p.read_text(encoding='utf-8')
+          old = '    assert by_stage["UPSTREAM_FUNDING_SCAN"].status is LiveReadinessStatus.CONDITIONAL_NOT_IMPLEMENTED\n'
+          new = '    assert by_stage["UPSTREAM_FUNDING_SCAN"].status is LiveReadinessStatus.PARTIAL_LIVE\n'
+          if old not in text:
+              raise SystemExit('readiness test funding pattern not found')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          p = Path('config/unit_contract_registry.yaml')
+          text = p.read_text(encoding='utf-8')
+          anchor = text.index('  - unit_id: UPSTREAM_FUNDING_SCAN')
+          tail = text[anchor:]
+          old = '    canonical_refs: [src/valuation_engine/funding.py, src/valuation_engine/wacc.py, docs/V04_ROCKETSLA_EXTENSION.md]\n'
+          new = '    canonical_refs: [src/valuation_engine/funding.py, src/valuation_engine/funding_runtime.py, src/valuation_engine/funding_adapter.py, src/valuation_engine/wacc.py, docs/V04_ROCKETSLA_EXTENSION.md, docs/LIVE_PRIMARY_READINESS.md]\n'
+          if old not in tail:
+              raise SystemExit('funding Unit Contract refs not found')
+          tail = tail.replace(old, new, 1)
+          p.write_text(text[:anchor] + tail, encoding='utf-8')
+          PY
+      - name: Commit runtime integration
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add src/valuation_engine/primary_shadow_runtime.py config/live_primary_readiness.yaml docs/LIVE_PRIMARY_READINESS.md tests/test_live_readiness.py config/unit_contract_registry.yaml
+          git commit -m 'feat: integrate evidence-backed funding assessment into runtime'
+          git push origin HEAD:feature/funding-runtime-core
