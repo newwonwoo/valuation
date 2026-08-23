@@ -1,3 +1,4 @@
+from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 
@@ -441,3 +442,49 @@ def test_frozen_provider_live_primary_run_reaches_final_report(tmp_path):
     assert (state_root / "state" / "000000" / "current_state.json").exists()
     assert (state_root / "runs" / "000000" / "FULL-LIVE-1" / "final_report.md").exists()
     assert (state_root / "learning" / "000000" / "module-impact" / "FULL-LIVE-1.json").exists()
+
+
+def test_post_freeze_provider_gap_redacts_intrinsic_outputs(tmp_path):
+    config = runtime_config(tmp_path)
+    config = replace(
+        config,
+        providers=replace(config.providers, street_loader=None),
+    )
+
+    result = run_prism(config)
+
+    assert result.blocked_reasons
+    assert result.stage_traces[-1].stage == "STREET_REFERENCE_LOAD"
+    assert result.stage_traces[-1].status is StageStatus.NOT_IMPLEMENTED
+    assert result.freeze_token is None
+    for key in (
+        "generic_valuation_result",
+        "intrinsic_scenario_values",
+        "expected_value_per_share",
+        "valuation_hash",
+        "intrinsic_freeze_token",
+    ):
+        assert key not in result.data
+
+
+def test_reserved_save_state_output_blocks_before_persistence(tmp_path):
+    config = replace(
+        runtime_config(tmp_path),
+        initial_data={"saved_report_markdown": "forged report"},
+    )
+
+    result = run_prism(config)
+
+    assert result.blocked_reasons
+    assert result.stage_traces[-1].stage == "SAVE_STATE"
+    assert result.stage_traces[-1].status is StageStatus.BLOCKED
+    assert "reserved output keys" in result.stage_traces[-1].rationale
+    assert not (Path(tmp_path) / "state" / "000000" / "current_state.json").exists()
+    assert not (Path(tmp_path) / "runs" / "000000" / "FULL-LIVE-1").exists()
+    assert not (
+        Path(tmp_path)
+        / "learning"
+        / "000000"
+        / "module-impact"
+        / "FULL-LIVE-1.json"
+    ).exists()

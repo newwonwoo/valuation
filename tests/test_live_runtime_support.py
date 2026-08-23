@@ -35,8 +35,14 @@ from valuation_engine.orchestrator import (
     StageTrace,
 )
 from valuation_engine.records import CriticalIssue
-from valuation_engine.runtime_support_adapters import research_loop_recovery_adapter
+from valuation_engine.runtime_support_adapters import (
+    conditional_warranted_per_adapter,
+    dcf_consistency_fingerprint_adapter,
+    research_loop_recovery_adapter,
+)
 from valuation_engine.scenario_binding import ScenarioBindingSpec
+from valuation_engine.valuation_method_intent import ValuationMethodIntent
+from valuation_engine.valuation_plan_compiler import ValuationPlanStatus
 
 
 def identity() -> ResolvedCompanyIdentity:
@@ -299,3 +305,87 @@ def test_research_recovery_requires_explicit_resolution_of_original_blocker():
     assert result.status is StageStatus.RECOVERED
     assert not result.blocking
     assert result.outputs["recovered_red_team_issue_ids"] == ("RT-1",)
+
+
+def test_research_recovery_context_redacts_prior_value_and_comparison_data():
+    captured = {}
+
+    def recovery(context):
+        captured.update(context.data)
+        captured["freeze_token"] = context.freeze_token
+        return StageExecutionResult(
+            StageStatus.PASS,
+            "recovery completed without target-value context",
+            {
+                "recovered_red_team_proposal": RedTeamProposal(
+                    issues=(
+                        CriticalIssue(
+                            "RT-1",
+                            "material challenge resolved with targeted evidence",
+                            resolved=True,
+                        ),
+                    ),
+                    counter_thesis="challenge tested and resolved",
+                )
+            },
+        )
+
+    result = research_loop_recovery_adapter(recovery)(
+        OrchestratorContext(
+            "RUN",
+            ExecutionMode.LIVE_PRIMARY,
+            {
+                "red_team_proposal": _original_red_team_proposal(),
+                "evidence_ledger": "safe-evidence-context",
+                "company_state": {
+                    "expected_value_per_share": "123",
+                    "scenario_values_per_share": {"base": "120"},
+                },
+                "generic_valuation_result": object(),
+                "market_observation": object(),
+                "street_reference": object(),
+                "position_size": 10,
+                "valuation_plan_loader": object(),
+            },
+            freeze_token=object(),
+        )
+    )
+
+    assert result.status is StageStatus.RECOVERED
+    assert captured["evidence_ledger"] == "safe-evidence-context"
+    assert captured["red_team_proposal"] == _original_red_team_proposal()
+    assert captured["freeze_token"] is None
+    assert "company_state" not in captured
+    assert "generic_valuation_result" not in captured
+    assert "market_observation" not in captured
+    assert "street_reference" not in captured
+    assert "position_size" not in captured
+    assert "valuation_plan_loader" not in captured
+
+
+def test_missing_per_providers_do_not_repeat_preexisting_routing_scope():
+    intent = ValuationMethodIntent(
+        status=ValuationPlanStatus.READY,
+        segments=(),
+        warranted_per_segments=("core",),
+        requires_beta=True,
+        requires_wacc=True,
+    )
+    context = OrchestratorContext(
+        "RUN",
+        ExecutionMode.LIVE_PRIMARY,
+        {
+            "valuation_method_intent": intent,
+            "warranted_per_segments": ("core",),
+        },
+    )
+
+    per_gap = conditional_warranted_per_adapter(None)(context)
+    fingerprint_gap = dcf_consistency_fingerprint_adapter(None)(context)
+
+    assert per_gap.status is StageStatus.NOT_IMPLEMENTED
+    assert per_gap.blocking
+    assert per_gap.outputs == {}
+    assert fingerprint_gap.status is StageStatus.NOT_IMPLEMENTED
+    assert fingerprint_gap.blocking
+    assert fingerprint_gap.outputs == {}

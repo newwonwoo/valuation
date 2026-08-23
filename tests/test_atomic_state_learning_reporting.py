@@ -143,7 +143,7 @@ def test_state_promotion_failure_rolls_back_run_and_same_run_learning_record(tmp
 @pytest.mark.parametrize(
     ("retry_learning_save", "failure_detail"),
     (
-        (True, "research learning record is immutable"),
+        (True, "SAVE_STATE reserved output keys already exist"),
         (False, "run is immutable and already exists"),
     ),
 )
@@ -176,7 +176,10 @@ def test_duplicate_save_state_retry_preserves_prior_successful_state_and_artifac
     )(duplicate_context)
 
     assert duplicate.status is StageStatus.BLOCKED
-    assert "FileExistsError" in duplicate.rationale
+    if retry_learning_save:
+        assert "FileExistsError" not in duplicate.rationale
+    else:
+        assert "FileExistsError" in duplicate.rationale
     assert failure_detail in duplicate.rationale
     assert (run_dir / "manifest.json").read_bytes() == prior_manifest
     assert current_path.read_bytes() == prior_current

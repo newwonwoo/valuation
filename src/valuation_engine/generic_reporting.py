@@ -284,6 +284,32 @@ def save_state_adapter(
         raise ValueError("state and research-learning stores must share one root")
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
+        reserved_output_keys = {
+            "saved_run_dir",
+            "saved_current_state",
+            "saved_report_markdown",
+            "module_impact_summary",
+            "final_report",
+        }
+        if learning_store is not None:
+            reserved_output_keys.update(
+                {
+                    "research_learning_record_path",
+                    "research_learning_record_hash",
+                    "research_learning_recorded_at",
+                }
+            )
+        collisions = tuple(
+            sorted(reserved_output_keys.intersection(context.data))
+        )
+        if collisions:
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "SAVE_STATE reserved output keys already exist before persistence: "
+                + ", ".join(collisions),
+                blocking=True,
+            )
+
         ticker = context.data.get("ticker")
         company = context.data.get("company")
         learning_ref = None

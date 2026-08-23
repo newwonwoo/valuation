@@ -99,7 +99,7 @@ from .scanner_runtime import ScannerRunner, live_rocket_insight_dispatch_adapter
 from .scenario_binding import ScenarioBindingSpec
 from .shadow_adapters import load_company_state_adapter, scenario_build_adapter
 from .state_learning_adapter import load_research_learning_adapter
-from .unit_contracts import load_unit_contract_registry
+from .unit_contracts import UnitContractRegistry, load_unit_contract_registry
 from .valuation_adapter import deterministic_valuation_adapter
 from .valuation_method_intent import valuation_method_intent_adapter
 from .valuation_plan_compiler import (
@@ -111,6 +111,22 @@ from .valuation_plan_compiler import (
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 ValuationPlanInputsLoader = Callable[[OrchestratorContext], CompanyValuationPlanInputs]
+
+_BLOCKED_RESULT_INTRINSIC_KEYS = frozenset(
+    {
+        "company_state",
+        "generic_valuation_result",
+        "intrinsic_scenario_values",
+        "expected_value_per_share",
+        "valuation_hash",
+        "intrinsic_freeze_token",
+        "saved_current_state",
+        "saved_report_markdown",
+        "final_report",
+        "street_comparison",
+        "market_comparison",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -380,6 +396,8 @@ def _valuation_plan_loader(
 
 def build_live_primary_adapters(
     config: LivePrimaryRuntimeConfig,
+    *,
+    unit_contract_registry: UnitContractRegistry | None = None,
 ) -> dict[str, StageAdapter]:
     config.validate()
     providers = config.providers
@@ -388,9 +406,12 @@ def build_live_primary_adapters(
     )
     state_root = Path(config.state_root)
     learning_store = ResearchLearningStore(state_root)
-    unit_contract_registry = load_unit_contract_registry(
-        config.unit_contract_registry_path
+    effective_unit_contract_registry = (
+        unit_contract_registry
+        if unit_contract_registry is not None
+        else load_unit_contract_registry(config.unit_contract_registry_path)
     )
+    effective_unit_contract_registry.validate()
 
     state_load = chain_stage_adapters(
         load_company_state_adapter(state_root=state_root),
@@ -525,7 +546,7 @@ def build_live_primary_adapters(
         "PROBABILITY_DISTRIBUTION_ANALYSIS": probability_distribution_adapter(),
         "AUDIT_GATE": generic_audit_adapter(
             impact_config=config.impact_config,
-            unit_contract_registry=unit_contract_registry,
+            unit_contract_registry=effective_unit_contract_registry,
         ),
         "STREET_REFERENCE_LOAD": street_load,
         "STREET_GAP_ANALYZER": street_gap_analyzer_adapter(),
@@ -554,11 +575,32 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> ControlledRunResult:
     initial.setdefault("optional_research_units", ())
     initial.setdefault("research_trigger_state", {})
     initial.setdefault("research_unit_aliases", {})
-    return run_controlled_workflow(
+    unit_contract_registry = load_unit_contract_registry(
+        config.unit_contract_registry_path
+    )
+    result = run_controlled_workflow(
         run_id=config.run_id,
         execution_mode=ExecutionMode.LIVE_PRIMARY,
         stage_sequence=sequence,
-        adapters=build_live_primary_adapters(config),
+        adapters=build_live_primary_adapters(
+            config,
+            unit_contract_registry=unit_contract_registry,
+        ),
         required_stages=sequence,
         initial_data=initial,
+        unit_contract_registry=unit_contract_registry,
+    )
+    if not result.blocked_reasons:
+        return result
+    return ControlledRunResult(
+        run_id=result.run_id,
+        execution_mode=result.execution_mode,
+        stage_traces=result.stage_traces,
+        data={
+            key: value
+            for key, value in result.data.items()
+            if key not in _BLOCKED_RESULT_INTRINSIC_KEYS
+        },
+        blocked_reasons=result.blocked_reasons,
+        freeze_token=None,
     )

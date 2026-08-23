@@ -16,6 +16,78 @@ DCFConsistencyFingerprintLoader = Callable[
     [OrchestratorContext], EconomicAssumptionFingerprint
 ]
 
+_RECOVERY_CONTEXT_KEYS = frozenset(
+    {
+        "company",
+        "ticker",
+        "target_id",
+        "jurisdiction",
+        "resolved_company_identity",
+        "company_external_ids",
+        "company_resolution_source_refs",
+        "industry_knowledge_snapshot",
+        "industry_snapshot_hash",
+        "industry_snapshot_source_ids",
+        "industry_snapshot_evidence_ids",
+        "source_freshness_assessment",
+        "source_freshness_snapshot_hash",
+        "segment_descriptors",
+        "segment_ids",
+        "industry_dna_profiles",
+        "module_requirement_plan",
+        "required_evidence",
+        "required_kpis",
+        "mandatory_scanners",
+        "kill_conditions",
+        "scenario_variables",
+        "expected_module_ids",
+        "collection_plan",
+        "evidence_collection_result",
+        "evidence_ledger",
+        "source_snapshot_hash",
+        "scanner_findings",
+        "scanner_impact_traces",
+        "scanner_research_effort",
+        "rocket_insight_execution_mode",
+        "rocket_insight_warnings",
+        "funding_scan_result",
+        "funding_ladder",
+        "funded_demand_state",
+        "funding_verification_requests",
+        "funding_credit_improvement_evidence_ids",
+        "funding_impact_trace",
+        "funding_research_effort",
+        "intelligence_proposal",
+        "hypotheses",
+        "prior_hypotheses",
+        "llm_requested_evidence",
+        "scanner_reinforcements",
+        "red_team_proposal",
+        "red_team_counter_thesis",
+        "red_team_requested_evidence",
+        "optional_research_units",
+        "research_trigger_state",
+        "research_unit_aliases",
+    }
+)
+
+
+def _redacted_recovery_context(
+    context: OrchestratorContext,
+) -> OrchestratorContext:
+    data = {
+        key: value
+        for key, value in context.data.items()
+        if key in _RECOVERY_CONTEXT_KEYS
+    }
+    return OrchestratorContext(
+        context.run_id,
+        context.execution_mode,
+        data,
+        list(context.stage_traces),
+        None,
+    )
+
 
 def chain_stage_adapters(*adapters: StageAdapter) -> StageAdapter:
     if not adapters:
@@ -165,7 +237,6 @@ def conditional_warranted_per_adapter(inner: StageAdapter | None) -> StageAdapte
             return StageExecutionResult(
                 StageStatus.NOT_IMPLEMENTED,
                 "Warranted PER is routed but no LIVE_PRIMARY PERInputsLoader provider is configured",
-                {"warranted_per_segments": intent.warranted_per_segments},
                 blocking=True,
             )
         return inner(context)
@@ -219,7 +290,7 @@ def research_loop_recovery_adapter(
                 blocking=True,
             )
 
-        result = recovery_adapter(context)
+        result = recovery_adapter(_redacted_recovery_context(context))
         if result.blocking:
             return result
         recovered = result.outputs.get("recovered_red_team_proposal")
@@ -354,7 +425,6 @@ def dcf_consistency_fingerprint_adapter(
             return StageExecutionResult(
                 StageStatus.NOT_IMPLEMENTED,
                 "Warranted PER requires a driver-specific DCF EconomicAssumptionFingerprint provider",
-                {"warranted_per_segments": intent.warranted_per_segments},
                 blocking=True,
             )
         try:
