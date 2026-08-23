@@ -251,7 +251,7 @@ units:
 
   - unit_id: ASSUMPTION_COMPILER
     unit_type: compiler
-    implementation_status: design_ready_partial
+    implementation_status: implemented_core
     stages: [EVIDENCE_TO_ASSUMPTION_BRIDGE, SCENARIO_BUILD]
     purpose: Deterministically validate provenance, conflict, unit, period, scope, transforms, scenario completeness, and economic-path uniqueness before committing assumptions.
     inputs: [ledger_snapshot, bridge_proposals, routing_decision, model_specs, prior_assumptions]
@@ -259,7 +259,7 @@ units:
     consumers: [SCENARIO_ENGINE, HIERARCHICAL_BETA_ENGINE, WACC_ENGINE, DETERMINISTIC_VALUATION, WARRANTED_PER_ENGINE, AUDIT_GATE]
     effect_types: [assumption_effect, guardrail_effect]
     final_outputs: [assumption_set_hash, valuation_blocked]
-    canonical_refs: [docs/GENERIC_ENGINE_DESIGN.md]
+    canonical_refs: [src/valuation_engine/actual_units.py, src/valuation_engine/assumption_compiler.py, docs/GENERIC_ENGINE_DESIGN.md]
     forbidden_effects: [target_market_price_input, uncontrolled_transform, silent_last_good_reuse]
 
   - unit_id: SCENARIO_ENGINE
