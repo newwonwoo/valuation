@@ -26,9 +26,9 @@ def _staff_context(context: OrchestratorContext) -> LLMStaffContext:
         raise ValueError("ticker missing for LLM Staff")
     if not isinstance(ledger, EvidenceLedger):
         raise ValueError("EvidenceLedger missing for LLM Staff")
-    prior = context.data.get("hypotheses", ())
+    prior = context.data.get("prior_hypotheses", ())
     if not isinstance(prior, tuple) or not all(isinstance(item, HypothesisRecord) for item in prior):
-        raise ValueError("hypotheses must be a typed tuple")
+        raise ValueError("prior_hypotheses must be a typed tuple")
     return LLMStaffContext(
         company=company,
         ticker=ticker,
@@ -68,6 +68,8 @@ def blind_red_team_adapter(*, officer: RedTeamOfficer) -> StageAdapter:
         try:
             staff = _staff_context(context)
             hypotheses = context.data.get("hypotheses", ())
+            if not isinstance(hypotheses, tuple) or not all(isinstance(item, HypothesisRecord) for item in hypotheses):
+                raise ValueError("Researcher hypotheses missing before Blind Red Team")
             proposal = run_red_team(staff, hypotheses, officer)
         except Exception as exc:
             return StageExecutionResult(
@@ -98,6 +100,8 @@ def evidence_to_assumption_bridge_adapter(*, analyst: BridgeAnalyst) -> StageAda
         try:
             staff = _staff_context(context)
             hypotheses = context.data.get("hypotheses", ())
+            if not isinstance(hypotheses, tuple) or not all(isinstance(item, HypothesisRecord) for item in hypotheses):
+                raise ValueError("Researcher hypotheses missing before Bridge analysis")
             red_team = context.data.get("red_team_proposal")
             if red_team is None:
                 raise ValueError("Red Team proposal missing before Bridge analysis")
