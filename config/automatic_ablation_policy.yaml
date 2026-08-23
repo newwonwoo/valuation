@@ -1,0 +1,35 @@
+version: 1.0
+principle: Measure unit impact with controlled counterfactuals; never use target-market information to tune the intrinsic run.
+baseline:
+  run_once: true
+  require_same_doctrine_snapshot: true
+  require_same_source_snapshot: true
+  require_same_assumption_compiler_version: true
+single_ablation:
+  enabled: true
+  applicable_units_only: true
+  record_missing_baseline_trace: true
+pair_ablation:
+  enabled: true
+  default_scope: same_interaction_group_only
+  max_pair_runs: 20
+  interpretation: maintenance_interaction_signal_not_causal_proof
+mandatory_guardrails:
+  removal_allowed_only_in_controlled_counterfactual: true
+  production_removal_forbidden: true
+  violation_classification: guardrail_critical
+adaptive_loadout:
+  automatic_canonical_deletion: false
+  retire_candidate_requires_user_approval: true
+  retain_periodic_sampling: true
+  exclude_not_applicable_from_material_rate: true
+history:
+  append_only: true
+  persist_research_effort: true
+  persist_value_decision_timing_method_and_guardrail_effects: true
+fail_closed:
+  - duplicate_module_id
+  - non_deterministic_runner_for_same_request
+  - target_market_leakage
+  - incompatible_doctrine_or_source_snapshot
+  - invalid_ablation_shape
