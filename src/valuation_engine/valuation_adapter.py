@@ -5,12 +5,14 @@ from typing import Callable
 
 from .control_plane import StageStatus
 from .evaluator_registry import EvaluatorRegistry
+from .module_plan import ModuleRequirementPlan
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .scenario_binding import BoundScenarioSet
 from .valuation_execution import CompanyValuationPlan, execute_company_valuation
 from .valuation_plan_compiler import (
     ValuationPlanCompilation,
     ValuationPlanStatus,
+    valuation_module_plan_hash,
 )
 
 
@@ -44,9 +46,7 @@ def _plan_identity(
             for item in plan.parent_adjustments
         ]
     )
-    return selected_methods, sha256(
-        serialized.encode("utf-8")
-    ).hexdigest()
+    return selected_methods, sha256(serialized.encode("utf-8")).hexdigest()
 
 
 def deterministic_valuation_adapter(
@@ -57,9 +57,7 @@ def deterministic_valuation_adapter(
     registry_loader: RegistryLoader | None = None,
 ) -> StageAdapter:
     if (registry is None) == (registry_loader is None):
-        raise ValueError(
-            "supply exactly one of registry or registry_loader"
-        )
+        raise ValueError("supply exactly one of registry or registry_loader")
     if (plan is None) == (plan_loader is None):
         raise ValueError("supply exactly one of plan or plan_loader")
 
@@ -78,9 +76,7 @@ def deterministic_valuation_adapter(
                 registry if registry is not None else registry_loader(context)
             )
             if not isinstance(effective_registry, EvaluatorRegistry):
-                raise TypeError(
-                    "registry_loader must return EvaluatorRegistry"
-                )
+                raise TypeError("registry_loader must return EvaluatorRegistry")
         except KeyError as exc:
             return StageExecutionResult(
                 StageStatus.RECOVERY_REQUIRED,
@@ -97,6 +93,54 @@ def deterministic_valuation_adapter(
         compilation: ValuationPlanCompilation | None = None
         effective_plan = plan
         if plan_loader is not None:
+            current_module_plan = context.data.get("module_requirement_plan")
+            current_intent_module_hash = context.data.get(
+                "valuation_module_plan_hash"
+            )
+            current_capability_hash = context.data.get(
+                "valuation_capability_registry_hash"
+            )
+            if not isinstance(current_module_plan, ModuleRequirementPlan):
+                return StageExecutionResult(
+                    StageStatus.RECOVERY_REQUIRED,
+                    "current ModuleRequirementPlan is required before dynamic "
+                    "valuation-plan loading",
+                    blocking=True,
+                )
+            if (
+                not isinstance(current_intent_module_hash, str)
+                or not current_intent_module_hash
+                or not isinstance(current_capability_hash, str)
+                or not current_capability_hash
+            ):
+                return StageExecutionResult(
+                    StageStatus.RECOVERY_REQUIRED,
+                    "current pre-risk valuation method identities are required "
+                    "before dynamic valuation-plan loading",
+                    blocking=True,
+                )
+            try:
+                current_module_hash = valuation_module_plan_hash(
+                    current_module_plan
+                )
+            except (TypeError, ValueError) as exc:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    f"current valuation module-plan identity failed: {exc}",
+                    blocking=True,
+                )
+            if current_intent_module_hash != current_module_hash:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "pre-risk valuation method intent is stale relative to the "
+                    "current ModuleRequirementPlan",
+                    {
+                        "current_module_plan_hash": current_module_hash,
+                        "intent_module_plan_hash": current_intent_module_hash,
+                    },
+                    blocking=True,
+                )
+
             try:
                 compilation = plan_loader(context, effective_registry)
                 if not isinstance(compilation, ValuationPlanCompilation):
@@ -116,27 +160,40 @@ def deterministic_valuation_adapter(
                     blocking=True,
                 )
 
-            if (
-                compilation.scenario_set_hash
-                != scenario_set.scenario_set_hash
-            ):
+            identity_outputs = {
+                "valuation_plan_compilation": compilation,
+                "current_scenario_set_hash": scenario_set.scenario_set_hash,
+                "current_module_plan_hash": current_module_hash,
+                "current_capability_registry_hash": current_capability_hash,
+            }
+            if compilation.scenario_set_hash != scenario_set.scenario_set_hash:
                 return StageExecutionResult(
                     StageStatus.BLOCKED,
                     "valuation plan compilation scenario-set hash does not "
                     "match the current BoundScenarioSet",
-                    {
-                        "valuation_plan_compilation": compilation,
-                        "current_scenario_set_hash": (
-                            scenario_set.scenario_set_hash
-                        ),
-                    },
+                    identity_outputs,
+                    blocking=True,
+                )
+            if compilation.module_plan_hash != current_module_hash:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "valuation plan compilation module-plan hash does not "
+                    "match the current ModuleRequirementPlan",
+                    identity_outputs,
+                    blocking=True,
+                )
+            if compilation.capability_registry_hash != current_capability_hash:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "valuation plan compilation capability-registry hash does "
+                    "not match the current pre-risk capability contract",
+                    identity_outputs,
                     blocking=True,
                 )
             if not compilation.ready:
                 status = (
                     StageStatus.NOT_IMPLEMENTED
-                    if compilation.status
-                    is ValuationPlanStatus.CAPABILITY_GAP
+                    if compilation.status is ValuationPlanStatus.CAPABILITY_GAP
                     else StageStatus.RECOVERY_REQUIRED
                 )
                 return StageExecutionResult(
@@ -203,6 +260,12 @@ def deterministic_valuation_adapter(
             outputs["valuation_plan_compilation"] = compilation
             outputs["valuation_plan_scenario_set_hash"] = (
                 compilation.scenario_set_hash
+            )
+            outputs["valuation_plan_module_plan_hash"] = (
+                compilation.module_plan_hash
+            )
+            outputs["valuation_plan_capability_registry_hash"] = (
+                compilation.capability_registry_hash
             )
             outputs["warranted_per_segments"] = (
                 compilation.warranted_per_segments
