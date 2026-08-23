@@ -2,6 +2,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from valuation_engine.collection_plan import CollectorCapability
+from valuation_engine.live_primary_adapters import CompanyResolutionRequest
 from valuation_engine.live_runtime import LiveCollectorProvider, build_live_primary_adapters
 from valuation_engine.orchestrator import load_stage_sequence
 
@@ -47,23 +48,35 @@ class FakeRuntimeConfig:
         )
         self.capability_registry = None
         self.state_root = tmp_path / "state"
-        self.company_request = object()
+        self.company_request = CompanyResolutionRequest("000000", "KR")
         self.method_choices = ()
         self.market_currency = None
-        self.archetype_registry_path = ROOT / "config" / "archetype_module_registry.yaml"
-        self.archetype_control_requirements_path = ROOT / "config" / "archetype_control_requirements.yaml"
-        self.industry_source_registry_path = ROOT / "config" / "industry_source_registry.yaml"
-        self.unit_contract_registry_path = ROOT / "config" / "unit_contract_registry.yaml"
+        self.archetype_registry_path = (
+            ROOT / "config" / "archetype_module_registry.yaml"
+        )
+        self.archetype_control_requirements_path = (
+            ROOT / "config" / "archetype_control_requirements.yaml"
+        )
+        self.industry_source_registry_path = (
+            ROOT / "config" / "industry_source_registry.yaml"
+        )
+        self.unit_contract_registry_path = (
+            ROOT / "config" / "unit_contract_registry.yaml"
+        )
         self.impact_config = None
 
     def validate(self):
         return None
 
 
-def test_live_runtime_assembler_covers_every_canonical_stage_except_builtin_freeze(tmp_path):
+def test_live_runtime_assembler_covers_every_canonical_stage_except_builtin_freeze(
+    tmp_path,
+):
     config = FakeRuntimeConfig(tmp_path)
     adapters = build_live_primary_adapters(config)
-    sequence = load_stage_sequence(ROOT / "config" / "control_plane_stage_registry.yaml")
+    sequence = load_stage_sequence(
+        ROOT / "config" / "control_plane_stage_registry.yaml"
+    )
     assert set(adapters) == set(sequence) - {"INTRINSIC_VALUE_FREEZE"}
     assert len(sequence) == 32
     assert len(adapters) == 31
