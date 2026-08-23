@@ -68,6 +68,7 @@ class ScenarioPerShareValue:
     diluted_shares: Decimal
     value_per_share: Decimal
     aggregation_hash: str
+    economic_path_ids: tuple[str, ...]
 
 
 @dataclass(frozen=True)
@@ -99,9 +100,12 @@ def execute_company_valuation(
 
     for scenario in scenario_set.scenarios:
         aggregation_inputs: list[SegmentAggregationInput] = []
+        scenario_paths: list[str] = []
         for segment_plan in plan.segments:
             valuation = registry.evaluate(segment_plan.model_key, scenario, segment_id=segment_plan.segment_id)
+            scenario_paths.extend(valuation.economic_path_ids)
             ownership_assumption = scenario.get(segment_plan.ownership_key)
+            scenario_paths.append(ownership_assumption.economic_path_id)
             ownership = ownership_assumption.measure.convert_to("ratio").amount
             if not Decimal("0") <= ownership <= Decimal("1"):
                 raise ValueError(f"ownership assumption out of range for {segment_plan.segment_id}")
@@ -113,6 +117,7 @@ def execute_company_valuation(
                         f"segment {segment_plan.segment_id} produces enterprise value but has no EV-to-equity adjustment key"
                     )
                 adjustment_assumption = scenario.get(segment_plan.ev_to_equity_adjustment_key)
+                scenario_paths.append(adjustment_assumption.economic_path_id)
                 adjustment = adjustment_assumption.measure.convert_to(plan.reporting_unit)
 
             aggregation_inputs.append(
@@ -124,13 +129,15 @@ def execute_company_valuation(
                 )
             )
 
-        parent_adjustments = tuple(
-            ParentAdjustment(
-                item.asset_id,
-                scenario.get(item.assumption_key).measure.convert_to(plan.reporting_unit),
+        parent_adjustments_list = []
+        for item in plan.parent_adjustments:
+            assumption = scenario.get(item.assumption_key)
+            scenario_paths.append(assumption.economic_path_id)
+            parent_adjustments_list.append(
+                ParentAdjustment(item.asset_id, assumption.measure.convert_to(plan.reporting_unit))
             )
-            for item in plan.parent_adjustments
-        )
+        parent_adjustments = tuple(parent_adjustments_list)
+
         company_value = aggregate_sotp(
             tuple(aggregation_inputs),
             scenario_id=scenario.scenario_id,
@@ -140,6 +147,7 @@ def execute_company_valuation(
         scenario_company_values.append(company_value)
 
         shares_assumption = scenario.get(plan.diluted_shares_key)
+        scenario_paths.append(shares_assumption.economic_path_id)
         diluted_shares = shares_assumption.measure.convert_to("shares").amount
         if diluted_shares <= 0:
             raise ValueError(f"diluted shares must be positive for {scenario.scenario_id}")
@@ -152,6 +160,7 @@ def execute_company_valuation(
                 diluted_shares=diluted_shares,
                 value_per_share=equity_amount / diluted_shares,
                 aggregation_hash=company_value.aggregation_hash,
+                economic_path_ids=tuple(dict.fromkeys(scenario_paths)),
             )
         )
 
@@ -167,7 +176,7 @@ def execute_company_valuation(
     serialized = "\n".join(
         [scenario_set.scenario_set_hash, plan.reporting_unit]
         + [
-            f"{item.scenario_id}|{item.equity_value_amount}|{item.diluted_shares}|{item.value_per_share}|{item.aggregation_hash}"
+            f"{item.scenario_id}|{item.equity_value_amount}|{item.diluted_shares}|{item.value_per_share}|{item.aggregation_hash}|{','.join(item.economic_path_ids)}"
             for item in per_share_values
         ]
         + [f"expected={expected_per_share if expected_per_share is not None else 'NA'}"]
