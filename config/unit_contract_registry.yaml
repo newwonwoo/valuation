@@ -64,7 +64,7 @@ units:
     consumers: [INDUSTRY_DNA_ROUTER, MODULE_REQUIREMENT_PLAN, PRIMARY_EVIDENCE_COLLECTION, LLM_STAFF, AUDIT_GATE]
     effect_types: [routing_effect, method_effect, guardrail_effect]
     final_outputs: [run_status, doctrine_coverage]
-    canonical_refs: [src/valuation_engine/control_plane.py, src/valuation_engine/orchestrator.py, config/control_plane_stage_registry.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md]
+    canonical_refs: [src/valuation_engine/control_plane.py, src/valuation_engine/orchestrator.py, src/valuation_engine/live_readiness.py, config/control_plane_stage_registry.yaml, config/live_primary_readiness.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md, docs/LIVE_PRIMARY_READINESS.md]
     forbidden_effects: [perform_valuation_math, commit_assumption, bypass_audit]
 
   - unit_id: INDUSTRY_DNA_ROUTER
@@ -129,7 +129,7 @@ units:
     consumers: [EVIDENCE_LEDGER, INDUSTRY_KNOWLEDGE, SOURCE_WATCH]
     effect_types: [evidence_effect]
     final_outputs: [evidence_coverage]
-    canonical_refs: [src/valuation_engine/evidence_collection.py, src/valuation_engine/evidence_adapter.py, src/valuation_engine/live_indexers.py, src/valuation_engine/source_index.py, config/industry_source_registry.yaml, config/foundation_source_registry.yaml]
+    canonical_refs: [src/valuation_engine/evidence_collection.py, src/valuation_engine/evidence_adapter.py, src/valuation_engine/dart_facts.py, src/valuation_engine/live_indexers.py, src/valuation_engine/source_index.py, config/industry_source_registry.yaml, config/foundation_source_registry.yaml, docs/LIVE_PRIMARY_READINESS.md]
     forbidden_effects: [interpret_as_assumption, direct_value_effect]
 
   - unit_id: INDUSTRY_KNOWLEDGE
