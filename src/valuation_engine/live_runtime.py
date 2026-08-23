@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Callable, Mapping
 
 from .audit_adapter import audit_gate_adapter
-from .collection_plan import CollectorCapability, compile_company_collection_plan
+from .collection_plan import CollectorCapability, CollectionTask, CompanyCollectionPlan, compile_company_collection_plan
+from .control_plane import ExecutionMode, StageStatus
 from .dcf_evaluators import RegistryLoader
 from .evidence_adapter import (
     EvidenceCollectorSelection,
@@ -13,7 +14,7 @@ from .evidence_adapter import (
     evidence_ledger_adapter,
     primary_evidence_collection_adapter,
 )
-from .evidence_collection import EvidenceCollectionRequest, EvidenceCollectionBatch, EvidenceCollector
+from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequest, EvidenceCollector
 from .funding_adapter import FundingScanner, live_upstream_funding_adapter
 from .generic_reporting import final_report_adapter, save_state_adapter, thesis_delta_adapter
 from .live_primary_adapters import (
@@ -30,11 +31,7 @@ from .live_primary_adapters import (
     live_segment_decomposition_adapter,
     live_source_freshness_adapter,
 )
-from .llm_adapters import (
-    blind_red_team_adapter,
-    evidence_to_assumption_bridge_adapter,
-    researcher_a_adapter,
-)
+from .llm_adapters import blind_red_team_adapter, evidence_to_assumption_bridge_adapter, researcher_a_adapter
 from .llm_staff import BridgeAnalyst, IntelligenceOfficer, RedTeamOfficer
 from .method_capabilities import MethodCapabilityRegistry, load_default_method_capability_registry
 from .module_plan import ModuleRequirementPlan
@@ -84,12 +81,7 @@ from .shadow_adapters import load_company_state_adapter, scenario_build_adapter
 from .state_learning_adapter import load_research_learning_adapter
 from .valuation_adapter import deterministic_valuation_adapter
 from .valuation_method_intent import valuation_method_intent_adapter
-from .valuation_plan_compiler import (
-    CompanyValuationPlanInputs,
-    SegmentMethodChoice,
-    compile_company_valuation_plan,
-)
-from .control_plane import ExecutionMode, StageStatus
+from .valuation_plan_compiler import CompanyValuationPlanInputs, SegmentMethodChoice, compile_company_valuation_plan
 
 
 ValuationPlanInputsLoader = Callable[[OrchestratorContext], CompanyValuationPlanInputs]
@@ -213,6 +205,29 @@ class LivePrimaryRuntimeConfig:
             )
 
 
+def _task_bound_collector(
+    provider: LiveCollectorProvider,
+    *,
+    task: CollectionTask,
+    collection_plan: CompanyCollectionPlan,
+) -> EvidenceCollector:
+    base = provider.bound_collector()
+    by_id = {item.requirement_id: item for item in collection_plan.requirements}
+    try:
+        task_metrics = tuple(
+            dict.fromkeys(by_id[requirement_id].metric for requirement_id in task.requirement_ids)
+        )
+    except KeyError as exc:
+        raise ValueError(f"collection task references unknown requirement {exc.args[0]}") from exc
+    if not task_metrics:
+        raise ValueError(f"collection task {task.task_id} has no authorized metrics")
+
+    def collect(request: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
+        return base(EvidenceCollectionRequest(request.target_id, task_metrics))
+
+    return collect
+
+
 def _collection_selection_loader(config: LivePrimaryRuntimeConfig):
     providers = {item.capability.collector_id: item for item in config.providers.collectors}
     capabilities = tuple(item.capability for item in config.providers.collectors)
@@ -232,7 +247,14 @@ def _collection_selection_loader(config: LivePrimaryRuntimeConfig):
             target_is_listed=bool(identity.ticker),
         )
         selected = tuple(
-            SelectedEvidenceCollector(task.collector_id, providers[task.collector_id].bound_collector())
+            SelectedEvidenceCollector(
+                task.collector_id,
+                _task_bound_collector(
+                    providers[task.collector_id],
+                    task=task,
+                    collection_plan=collection_plan,
+                ),
+            )
             for task in collection_plan.tasks
         )
         return EvidenceCollectorSelection(collection_plan, selected)
