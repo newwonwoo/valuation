@@ -13,9 +13,21 @@ from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResul
 
 
 @dataclass(frozen=True)
+class SelectedEvidenceCollector:
+    collector_id: str
+    collector: EvidenceCollector
+
+    def validate(self) -> None:
+        if not self.collector_id:
+            raise ValueError("selected evidence collector requires collector_id")
+        if not callable(self.collector):
+            raise TypeError(f"selected evidence collector {self.collector_id} is not callable")
+
+
+@dataclass(frozen=True)
 class EvidenceCollectorSelection:
     plan: PrimaryCollectionPlan
-    collectors: tuple[EvidenceCollector, ...]
+    collectors: tuple[SelectedEvidenceCollector, ...]
 
 
 EvidenceCollectorSelectionLoader = Callable[[OrchestratorContext], EvidenceCollectorSelection]
@@ -42,6 +54,7 @@ def primary_evidence_collection_adapter(
 
         active_collectors = collectors
         collection_plan: PrimaryCollectionPlan | None = None
+        selected_collector_ids: tuple[str, ...] = ()
         if selection_loader is not None:
             try:
                 selection = selection_loader(context)
@@ -73,7 +86,35 @@ def primary_evidence_collection_adapter(
                     {"collection_plan": collection_plan},
                     blocking=True,
                 )
-            active_collectors = selection.collectors
+            try:
+                for item in selection.collectors:
+                    item.validate()
+            except Exception as exc:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    f"selected evidence collector is invalid: {type(exc).__name__}: {exc}",
+                    {"collection_plan": collection_plan},
+                    blocking=True,
+                )
+            selected_collector_ids = tuple(item.collector_id for item in selection.collectors)
+            if len(selected_collector_ids) != len(set(selected_collector_ids)):
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "collector selection contains duplicate collector IDs",
+                    {"collection_plan": collection_plan},
+                    blocking=True,
+                )
+            unauthorized = tuple(
+                sorted(set(selected_collector_ids) - set(collection_plan.runnable_collector_ids))
+            )
+            if unauthorized:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "collector selection is not authorized by Collection Plan: " + ", ".join(unauthorized),
+                    {"collection_plan": collection_plan},
+                    blocking=True,
+                )
+            active_collectors = tuple(item.collector for item in selection.collectors)
             if not active_collectors:
                 return StageExecutionResult(
                     StageStatus.NOT_IMPLEMENTED,
@@ -109,6 +150,7 @@ def primary_evidence_collection_adapter(
         }
         if collection_plan is not None:
             outputs["collection_plan"] = collection_plan
+            outputs["collection_selected_collector_ids"] = selected_collector_ids
             outputs["collection_missing_required_metrics"] = collection_plan.missing_required_metrics
             outputs["collection_no_source_required_metrics"] = collection_plan.no_source_required_metrics
         if result.missing_metrics:
