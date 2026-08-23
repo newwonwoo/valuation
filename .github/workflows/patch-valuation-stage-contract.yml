@@ -1,0 +1,45 @@
+name: patch-valuation-stage-contract
+
+on:
+  push:
+    branches: [feature/valuation-stage-adapter]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/valuation-stage-adapter
+      - name: Patch valuation stage contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('config/unit_contract_registry.yaml')
+          text = p.read_text(encoding='utf-8')
+          old = '''  - unit_id: DETERMINISTIC_VALUATION\n    unit_type: valuation_engine\n    implementation_status: registry_core_with_initial_evaluator\n'''
+          new = '''  - unit_id: DETERMINISTIC_VALUATION\n    unit_type: valuation_engine\n    implementation_status: implemented_shadow_stage_with_initial_evaluator\n'''
+          if old not in text:
+              raise SystemExit('DETERMINISTIC_VALUATION status pattern not found')
+          text = text.replace(old, new, 1)
+          anchor = text.index('  - unit_id: DETERMINISTIC_VALUATION')
+          tail = text[anchor:]
+          old_ref = '    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md]\n'
+          new_ref = '    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/valuation_execution.py, src/valuation_engine/valuation_adapter.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md]\n'
+          if old_ref not in tail:
+              raise SystemExit('DETERMINISTIC_VALUATION refs not found')
+          tail = tail.replace(old_ref, new_ref, 1)
+          p.write_text(text[:anchor] + tail, encoding='utf-8')
+          PY
+      - name: Commit contract sync
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add config/unit_contract_registry.yaml
+          git commit -m 'docs: sync valuation stage implementation status'
+          git push origin HEAD:feature/valuation-stage-adapter
