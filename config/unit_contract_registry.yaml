@@ -212,7 +212,7 @@ units:
 
   - unit_id: LLM_STAFF
     unit_type: llm_role
-    implementation_status: contract_only
+    implementation_status: implemented_typed_runtime_contract
     stages: [INDUSTRY_DNA_ROUTE, MODULE_REQUIREMENT_PLAN, ROCKET_INSIGHT_SCAN, RESEARCHER_A, BLIND_RED_TEAM_B, EVIDENCE_TO_ASSUMPTION_BRIDGE]
     purpose: Observe, reason, propose, recover, design, and ask; never commit assumptions or authorize stages.
     inputs: [evidence_snapshot, industry_dna, module_requirement_plan, prior_thesis, recovery_context]
@@ -220,7 +220,7 @@ units:
     consumers: [VALUATION_CONTROL_PLANE, BLIND_RED_TEAM_B, EVIDENCE_TO_ASSUMPTION_BRIDGE, ASSUMPTION_COMPILER]
     effect_types: [hypothesis_effect, routing_effect, evidence_effect]
     final_outputs: [research_reasoning, build_proposal_ready]
-    canonical_refs: [docs/CONTROL_PLANE_ARCHITECTURE.md, config/control_plane_stage_registry.yaml, src/valuation_engine/research.py]
+    canonical_refs: [src/valuation_engine/llm_staff.py, src/valuation_engine/llm_adapters.py, docs/CONTROL_PLANE_ARCHITECTURE.md, config/control_plane_stage_registry.yaml, src/valuation_engine/research.py]
     forbidden_effects: [commit_assumption, perform_valuation_math, authorize_stage, issue_freeze_token, mutate_canonical_without_user_approval]
 
   - unit_id: BLIND_RED_TEAM_B
@@ -238,7 +238,7 @@ units:
 
   - unit_id: EVIDENCE_TO_ASSUMPTION_BRIDGE
     unit_type: bridge
-    implementation_status: implemented_contract
+    implementation_status: implemented_typed_runtime_adapter
     stages: [EVIDENCE_TO_ASSUMPTION_BRIDGE]
     purpose: Translate validated evidence and hypotheses into explicit affected-variable proposals with economic-path IDs and kill conditions.
     inputs: [validated_evidence, approved_hypothesis, affected_variable, transform_candidate]
@@ -246,7 +246,7 @@ units:
     consumers: [ASSUMPTION_COMPILER]
     effect_types: [assumption_effect, probability_effect, timing_effect]
     final_outputs: [assumption_candidates]
-    canonical_refs: [src/valuation_engine/records.py, src/valuation_engine/ledger.py, docs/GENERIC_ENGINE_DESIGN.md]
+    canonical_refs: [src/valuation_engine/llm_staff.py, src/valuation_engine/llm_adapters.py, src/valuation_engine/records.py, src/valuation_engine/ledger.py, docs/GENERIC_ENGINE_DESIGN.md]
     forbidden_effects: [raw_llm_number_as_assumption, policy_price_as_company_asp]
 
   - unit_id: ASSUMPTION_COMPILER
