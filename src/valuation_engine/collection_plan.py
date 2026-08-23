@@ -127,6 +127,12 @@ class PrimaryCollectionPlan:
             )
         )
 
+    def authorized_metrics_for_collector(self, collector_id: str) -> tuple[str, ...]:
+        if not collector_id:
+            raise ValueError("collector_id is required")
+        return tuple(
+            item.metric for item in self.requirements if collector_id in item.collector_ids
+        )
 
 
 def load_source_descriptors(path: str | Path) -> tuple[SourceDescriptor, ...]:
