@@ -1,6 +1,8 @@
 from decimal import Decimal
 from pathlib import Path
 
+import pytest
+
 from valuation_engine.ablation import ModuleAblationSpec, run_module_ablations
 from valuation_engine.control_plane import (
     DoctrineCoverageEntry,
@@ -11,7 +13,7 @@ from valuation_engine.control_plane import (
 from valuation_engine.decision_impact import DecisionOutcome, ResearchEffort
 from valuation_engine.generic_reporting import render_generic_report, save_state_adapter
 from valuation_engine.orchestrator import OrchestratorContext
-from valuation_engine.records import AuditFinding, AuditReport
+from valuation_engine.records import AuditFinding, AuditReport, RunManifest, RunStatus
 from valuation_engine.research_learning import ResearchLearningStore
 from valuation_engine.sotp import ScenarioEquityAggregation
 from valuation_engine.state import StateStore
@@ -138,6 +140,56 @@ def test_state_promotion_failure_rolls_back_run_and_same_run_learning_record(tmp
     assert not Path(learning.path).exists()
     assert not (tmp_path / "runs" / "TEST" / "R1").exists()
     assert not (tmp_path / "state" / "TEST" / "current_state.json").exists()
+
+
+def test_duplicate_run_id_preserves_prior_successful_state_and_artifacts(tmp_path):
+    learning = ResearchLearningStore(tmp_path).save_batch(
+        ticker="TEST",
+        run_id="R1",
+        batch=_impact_batch(),
+        recorded_at="2026-08-23T00:00:00+00:00",
+    )
+    adapter = save_state_adapter(state_root=tmp_path)
+    first = adapter(_context(tmp_path, run_id="R1", learning_path=learning.path))
+    assert first.status is StageStatus.PASS
+
+    run_dir = tmp_path / "runs" / "TEST" / "R1"
+    current_path = tmp_path / "state" / "TEST" / "current_state.json"
+    prior_manifest = (run_dir / "manifest.json").read_bytes()
+    prior_current = current_path.read_bytes()
+    prior_learning = Path(learning.path).read_bytes()
+
+    duplicate_context = _context(tmp_path, run_id="R1", learning_path="")
+    duplicate_context.data["company_state"] = StateStore(tmp_path).load_current("TEST")
+    duplicate = adapter(duplicate_context)
+
+    assert duplicate.status is StageStatus.BLOCKED
+    assert "FileExistsError" in duplicate.rationale
+    assert "already exists" in duplicate.rationale
+    assert (run_dir / "manifest.json").read_bytes() == prior_manifest
+    assert current_path.read_bytes() == prior_current
+    assert Path(learning.path).read_bytes() == prior_learning
+    assert StateStore(tmp_path).load_current("TEST")["last_completed_run"] == "R1"
+
+
+def test_save_run_removes_partial_directory_created_by_failed_write(tmp_path):
+    manifest = RunManifest(
+        run_id="PARTIAL",
+        ticker="TEST",
+        company="Example",
+        started_at="2026-08-23T00:00:00+00:00",
+        finished_at="2026-08-23T00:01:00+00:00",
+        status=RunStatus.COMPLETED,
+        round_count=1,
+        audit_passed=True,
+        parent_run_id=None,
+        blocked_reasons=(),
+    )
+
+    with pytest.raises(TypeError, match="not JSON serializable"):
+        StateStore(tmp_path).save_run(manifest, {"invalid.json": object()})
+
+    assert not (tmp_path / "runs" / "TEST" / "PARTIAL").exists()
 
 
 def test_final_report_distinguishes_measured_from_not_measurable_and_shows_cost():
