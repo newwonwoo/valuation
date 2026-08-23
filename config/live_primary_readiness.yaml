@@ -55,7 +55,7 @@ stages:
     reason: typed Bridge proposals are implemented and cannot commit assumptions.
   SCENARIO_BUILD:
     status: RUNTIME_READY
-    reason: deterministic Assumption Compiler and Scenario Binding are implemented.
+    reason: deterministic Assumption Compiler and Scenario Binding are implemented; LIVE_PRIMARY calibrated probability weights additionally require a matching hash-bound CalibrationCertificate.
   HIERARCHICAL_BETA_ESTIMATION:
     status: PARTIAL_LIVE
     reason: typed L1→L4 peer-universe loader, Evidence-backed Economic-Twin selection, normalized return-convention validation and target relevering are implemented; universal live peer/return providers remain caller- and jurisdiction-specific.
@@ -76,7 +76,7 @@ stages:
     reason: economic-path and SOTP duplicate protections are implemented.
   PROBABILITY_DISTRIBUTION_ANALYSIS:
     status: PARTIAL_LIVE
-    reason: calibrated weighting gate is implemented; calibration datasets/distributions are not complete for all event families.
+    reason: append-only forecast/outcome ledger, Brier/Brier-Skill/log-loss/ECE promotion metrics and CalibrationCertificate gating are implemented; production historical cohorts, predeclared base rates and validated mapping datasets remain incomplete by forecast class/horizon.
   AUDIT_GATE:
     status: RUNTIME_READY
     reason: generic audit, doctrine coverage and Decision Impact prerequisites are integrated.

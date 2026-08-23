@@ -272,7 +272,7 @@ units:
     consumers: [DETERMINISTIC_VALUATION, DECISION_IMPACT, AUDIT_GATE]
     effect_types: [probability_effect, assumption_effect, value_effect]
     final_outputs: [value_distribution]
-    canonical_refs: [src/valuation_engine/scenario_binding.py, src/valuation_engine/shadow_adapters.py, src/valuation_engine/engine.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]
+    canonical_refs: [src/valuation_engine/probability_calibration.py, src/valuation_engine/probability_adapter.py, src/valuation_engine/scenario_binding.py, src/valuation_engine/shadow_adapters.py, config/probability_calibration_policy.yaml, src/valuation_engine/engine.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]
     forbidden_effects: [price_implied_probability, uncalibrated_precision_as_fact]
 
   - unit_id: HIERARCHICAL_BETA_ENGINE
@@ -428,7 +428,7 @@ units:
     consumers: [VALUATION_CONTROL_PLANE, DECISION_IMPACT, SOURCE_WATCH, MODULE_PROMOTION]
     effect_types: [routing_effect, reporting_effect]
     final_outputs: [future_research_priority, delta_revalidation_context]
-    canonical_refs: [src/valuation_engine/state.py, src/valuation_engine/generic_reporting.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md, docs/POST_FREEZE_RUNTIME.md]
+    canonical_refs: [src/valuation_engine/state.py, src/valuation_engine/probability_calibration.py, config/probability_calibration_policy.yaml, src/valuation_engine/generic_reporting.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md, docs/POST_FREEZE_RUNTIME.md]
     forbidden_effects: [mutate_prior_run]
 
   - unit_id: MODULE_PROMOTION

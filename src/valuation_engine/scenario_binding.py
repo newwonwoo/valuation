@@ -6,6 +6,7 @@ from enum import Enum
 from hashlib import sha256
 
 from .assumption_compiler import CompiledAssumption, CompiledAssumptionSet
+from .probability_calibration import CalibrationCertificate
 from .records import CalibrationStatus
 
 
@@ -19,6 +20,7 @@ class ScenarioBindingSpec:
     scenario_ids: tuple[str, ...]
     required_keys: tuple[str, ...]
     probability_key: str | None = None
+    calibration_cohort_key: str | None = None
 
     def validate(self) -> None:
         if not self.scenario_ids or not all(self.scenario_ids):
@@ -29,6 +31,8 @@ class ScenarioBindingSpec:
             raise ValueError("scenario binding requires required_keys")
         if len(self.required_keys) != len(set(self.required_keys)):
             raise ValueError("required_keys must be unique")
+        if self.calibration_cohort_key is not None and self.probability_key is None:
+            raise ValueError("calibration_cohort_key requires a probability_key")
 
 
 @dataclass(frozen=True)
@@ -51,6 +55,7 @@ class BoundScenarioSet:
     calibration_status: CalibrationStatus
     numeric_weighting_allowed: bool
     scenario_set_hash: str
+    calibration_snapshot_hash: str | None = None
 
     def get(self, scenario_id: str) -> BoundScenario:
         for item in self.scenarios:
@@ -80,6 +85,9 @@ class ScenarioBindingResult:
 def bind_scenarios(
     compiled: CompiledAssumptionSet,
     spec: ScenarioBindingSpec,
+    *,
+    calibration_certificate: CalibrationCertificate | None = None,
+    require_calibration_certificate: bool = False,
 ) -> ScenarioBindingResult:
     findings: list[ScenarioBindingFinding] = []
     try:
@@ -147,10 +155,69 @@ def bind_scenarios(
 
     calibration_status = CalibrationStatus.UNCALIBRATED
     numeric_weighting_allowed = False
+    calibration_snapshot_hash: str | None = None
     if spec.probability_key is not None:
         all_calibrated = all(status is CalibrationStatus.CALIBRATED for status in probability_calibration)
         total = sum(probability_candidates, Decimal("0"))
         if all_calibrated:
+            if require_calibration_certificate:
+                if calibration_certificate is None:
+                    return ScenarioBindingResult(
+                        ScenarioBindingStatus.BLOCKED,
+                        None,
+                        (
+                            ScenarioBindingFinding(
+                                "CALIBRATION_CERTIFICATE_REQUIRED",
+                                "LIVE_PRIMARY numeric probability weighting requires a calibration certificate",
+                                True,
+                            ),
+                        ),
+                    )
+                if not spec.calibration_cohort_key:
+                    return ScenarioBindingResult(
+                        ScenarioBindingStatus.BLOCKED,
+                        None,
+                        (
+                            ScenarioBindingFinding(
+                                "CALIBRATION_COHORT_REQUIRED",
+                                "LIVE_PRIMARY probability weighting requires an explicit calibration cohort key",
+                                True,
+                            ),
+                        ),
+                    )
+                try:
+                    calibration_certificate.validate_for_weighting()
+                except (PermissionError, ValueError) as exc:
+                    return ScenarioBindingResult(
+                        ScenarioBindingStatus.BLOCKED,
+                        None,
+                        (ScenarioBindingFinding("INVALID_CALIBRATION_CERTIFICATE", str(exc), True),),
+                    )
+                if calibration_certificate.cohort_key != spec.calibration_cohort_key:
+                    return ScenarioBindingResult(
+                        ScenarioBindingStatus.BLOCKED,
+                        None,
+                        (
+                            ScenarioBindingFinding(
+                                "CALIBRATION_COHORT_MISMATCH",
+                                f"certificate cohort {calibration_certificate.cohort_key} does not match {spec.calibration_cohort_key}",
+                                True,
+                            ),
+                        ),
+                    )
+                calibration_snapshot_hash = calibration_certificate.snapshot_hash
+            elif calibration_certificate is not None:
+                try:
+                    calibration_certificate.validate_for_weighting()
+                    if spec.calibration_cohort_key and calibration_certificate.cohort_key != spec.calibration_cohort_key:
+                        raise ValueError("calibration certificate cohort mismatch")
+                    calibration_snapshot_hash = calibration_certificate.snapshot_hash
+                except (PermissionError, ValueError) as exc:
+                    return ScenarioBindingResult(
+                        ScenarioBindingStatus.BLOCKED,
+                        None,
+                        (ScenarioBindingFinding("INVALID_CALIBRATION_CERTIFICATE", str(exc), True),),
+                    )
             if abs(total - Decimal("1")) > Decimal("1e-12"):
                 return ScenarioBindingResult(
                     ScenarioBindingStatus.BLOCKED,
@@ -180,7 +247,7 @@ def bind_scenarios(
             bound = [BoundScenario(item.scenario_id, item.assumptions, None) for item in bound]
 
     serialized = "\n".join(
-        [compiled.assumption_set_hash, calibration_status.value]
+        [compiled.assumption_set_hash, calibration_status.value, calibration_snapshot_hash or "NO_CERTIFICATE"]
         + [
             f"{scenario.scenario_id}|{scenario.probability if scenario.probability is not None else 'NA'}|"
             + ",".join(sorted(f"{item.key}:{item.measure.amount}:{item.measure.unit}" for item in scenario.assumptions))
@@ -193,5 +260,6 @@ def bind_scenarios(
         calibration_status=calibration_status,
         numeric_weighting_allowed=numeric_weighting_allowed,
         scenario_set_hash=sha256(serialized.encode("utf-8")).hexdigest(),
+        calibration_snapshot_hash=calibration_snapshot_hash,
     )
     return ScenarioBindingResult(ScenarioBindingStatus.BOUND, scenario_set, tuple(findings))
