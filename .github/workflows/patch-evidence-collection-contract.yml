@@ -1,0 +1,53 @@
+name: patch-evidence-collection-contract
+
+on:
+  push:
+    branches: [feature/primary-evidence-collection-core]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/primary-evidence-collection-core
+      - name: Patch collection contracts
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('config/unit_contract_registry.yaml')
+          text = p.read_text(encoding='utf-8')
+          old = '''  - unit_id: PRIMARY_EVIDENCE_COLLECTION\n    unit_type: source_adapter\n    implementation_status: partial\n'''
+          new = '''  - unit_id: PRIMARY_EVIDENCE_COLLECTION\n    unit_type: source_adapter\n    implementation_status: implemented_collection_core_partial_live_sources\n'''
+          if old not in text:
+              raise SystemExit('PRIMARY_EVIDENCE_COLLECTION status not found')
+          text = text.replace(old, new, 1)
+          anchor = text.index('  - unit_id: PRIMARY_EVIDENCE_COLLECTION')
+          tail = text[anchor:]
+          old_ref = '    canonical_refs: [src/valuation_engine/live_indexers.py, src/valuation_engine/source_index.py, config/industry_source_registry.yaml, config/foundation_source_registry.yaml]\n'
+          new_ref = '    canonical_refs: [src/valuation_engine/evidence_collection.py, src/valuation_engine/evidence_adapter.py, src/valuation_engine/live_indexers.py, src/valuation_engine/source_index.py, config/industry_source_registry.yaml, config/foundation_source_registry.yaml]\n'
+          if old_ref not in tail:
+              raise SystemExit('PRIMARY_EVIDENCE_COLLECTION refs not found')
+          tail = tail.replace(old_ref, new_ref, 1)
+          text = text[:anchor] + tail
+          anchor = text.index('  - unit_id: EVIDENCE_LEDGER')
+          tail = text[anchor:]
+          old_ref = '    canonical_refs: [src/valuation_engine/ledger.py, src/valuation_engine/records.py]\n'
+          new_ref = '    canonical_refs: [src/valuation_engine/ledger.py, src/valuation_engine/evidence_adapter.py, src/valuation_engine/records.py]\n'
+          if old_ref not in tail:
+              raise SystemExit('EVIDENCE_LEDGER refs not found')
+          tail = tail.replace(old_ref, new_ref, 1)
+          p.write_text(text[:anchor] + tail, encoding='utf-8')
+          PY
+      - name: Commit contract sync
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add config/unit_contract_registry.yaml
+          git commit -m 'docs: sync primary evidence collection implementation status'
+          git push origin HEAD:feature/primary-evidence-collection-core
