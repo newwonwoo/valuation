@@ -54,6 +54,7 @@ def primary_evidence_collection_adapter(
 
         active_collectors = collectors
         collection_plan: PrimaryCollectionPlan | None = None
+        selected_collectors: tuple[SelectedEvidenceCollector, ...] = ()
         selected_collector_ids: tuple[str, ...] = ()
         if selection_loader is not None:
             try:
@@ -96,7 +97,8 @@ def primary_evidence_collection_adapter(
                     {"collection_plan": collection_plan},
                     blocking=True,
                 )
-            selected_collector_ids = tuple(item.collector_id for item in selection.collectors)
+            selected_collectors = selection.collectors
+            selected_collector_ids = tuple(item.collector_id for item in selected_collectors)
             if len(selected_collector_ids) != len(set(selected_collector_ids)):
                 return StageExecutionResult(
                     StageStatus.BLOCKED,
@@ -114,7 +116,7 @@ def primary_evidence_collection_adapter(
                     {"collection_plan": collection_plan},
                     blocking=True,
                 )
-            active_collectors = tuple(item.collector for item in selection.collectors)
+            active_collectors = tuple(item.collector for item in selected_collectors)
             if not active_collectors:
                 return StageExecutionResult(
                     StageStatus.NOT_IMPLEMENTED,
@@ -140,6 +142,25 @@ def primary_evidence_collection_adapter(
                 {"collection_plan": collection_plan} if collection_plan is not None else {},
                 blocking=True,
             )
+
+        if collection_plan is not None:
+            for selected, batch in zip(selected_collectors, result.batches, strict=True):
+                authorized_metrics = set(
+                    collection_plan.authorized_metrics_for_collector(selected.collector_id)
+                )
+                emitted_metrics = {record.metric for record in batch.records}
+                unauthorized_metrics = tuple(sorted(emitted_metrics - authorized_metrics))
+                if unauthorized_metrics:
+                    return StageExecutionResult(
+                        StageStatus.BLOCKED,
+                        f"collector {selected.collector_id} emitted metrics outside Collection Plan: "
+                        + ", ".join(unauthorized_metrics),
+                        {
+                            "collection_plan": collection_plan,
+                            "collection_selected_collector_ids": selected_collector_ids,
+                        },
+                        blocking=True,
+                    )
 
         outputs = {
             "evidence_collection_result": result,
