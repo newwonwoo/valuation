@@ -24,11 +24,11 @@ A new workflow stage without a readiness row is a maintenance error.
 At the v1.4 registry snapshot:
 
 - canonical stages: **32 / 32 mapped**;
-- `LIVE_READY` or `RUNTIME_READY`: **26**;
+- `LIVE_READY` or `RUNTIME_READY`: **25**;
 - `PARTIAL_LIVE`: **6**;
-- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **0**.
+- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **1**.
 
-Zero explicit Stage-adapter gaps does **not** mean universal LIVE_PRIMARY coverage. It means every canonical stage now has at least a typed runtime/live path; six stages remain `PARTIAL_LIVE` because data or method breadth is incomplete.
+One explicit Stage-adapter gap remains: the repository has no entitled/public Street source adapter. Six additional stages remain `PARTIAL_LIVE` because data or method breadth is incomplete.
 
 The highest-value remaining coverage gaps are:
 
@@ -37,6 +37,7 @@ The highest-value remaining coverage gaps are:
 3. broader company-specific KPI/IR/primary-regulatory source adapters;
 4. reusable jurisdiction/source providers for live peer returns, market risk inputs and company credit observations;
 5. reusable normalized-EPS/accounting and peer-residual providers for Warranted PER.
+6. a repository-provided entitled/public Street reference adapter.
 
 ## 3. LIVE_PRIMARY front-half contract
 
@@ -163,7 +164,8 @@ Design rules:
 - standard core facts use exact XBRL account IDs only;
 - account-name fuzzy matching is forbidden;
 - company-specific facts such as contract liabilities/customer advances need an explicit `DartFactMetricSpec`;
-- interim income-statement facts use cumulative `thstrm_add_amount` when available; `thstrm_amount` is not silently treated as YTD;
+- half-year and Q3 income-statement facts require cumulative `thstrm_add_amount`; only annual/Q1 reports may fall back to `thstrm_amount` for YTD;
+- `fiscal_period_end` is required from issuer fiscal-calendar or filing-period metadata; report codes are never converted to fixed calendar dates;
 - balance-sheet facts use point-in-time `thstrm_amount`;
 - response rows may omit `fs_div` because the official endpoint receives it at request level;
 - currency mismatch fails closed;

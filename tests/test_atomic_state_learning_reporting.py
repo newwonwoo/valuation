@@ -93,82 +93,94 @@ def _impact_batch():
     )
 
 
-def _context(tmp_path: Path, *, run_id: str, learning_path: str):
+def _context(tmp_path: Path, *, run_id: str, learning_path: str | None = None):
     token = _freeze_token(run_id)
+    data = {
+        "company": "Example",
+        "ticker": "TEST",
+        "company_state": {},
+        "current_thesis": "Measured operating evidence supports the base thesis.",
+        "generic_valuation_result": _valuation(),
+        "generic_audit_report": _audit(),
+        "doctrine_coverage": _coverage(),
+        "intrinsic_freeze_token": token,
+        "decision_impact_batch": _impact_batch(),
+        "decision_impact_hash": "IMPACT",
+        "assumption_set_hash": "ASSUMPTIONS",
+        "valuation_hash": "VALUATION",
+        "audit_hash": "AUDIT",
+    }
+    if learning_path is not None:
+        data.update({
+            "research_learning_record_path": learning_path,
+            "research_learning_record_hash": "LEARNING",
+        })
     return OrchestratorContext(
         run_id=run_id,
         execution_mode=ExecutionMode.PRIMARY_SHADOW,
-        data={
-            "company": "Example",
-            "ticker": "TEST",
-            "company_state": {},
-            "current_thesis": "Measured operating evidence supports the base thesis.",
-            "generic_valuation_result": _valuation(),
-            "generic_audit_report": _audit(),
-            "doctrine_coverage": _coverage(),
-            "intrinsic_freeze_token": token,
-            "decision_impact_batch": _impact_batch(),
-            "decision_impact_hash": "IMPACT",
-            "research_learning_record_path": learning_path,
-            "research_learning_record_hash": "LEARNING",
-            "assumption_set_hash": "ASSUMPTIONS",
-            "valuation_hash": "VALUATION",
-            "audit_hash": "AUDIT",
-        },
+        data=data,
         freeze_token=token,
     )
 
 
 def test_state_promotion_failure_rolls_back_run_and_same_run_learning_record(tmp_path, monkeypatch):
-    batch = _impact_batch()
-    learning = ResearchLearningStore(tmp_path).save_batch(
-        ticker="TEST",
-        run_id="R1",
-        batch=batch,
-        recorded_at="2026-08-23T00:00:00+00:00",
-    )
-    context = _context(tmp_path, run_id="R1", learning_path=learning.path)
+    learning_store = ResearchLearningStore(tmp_path)
+    context = _context(tmp_path, run_id="R1")
 
     def fail_promotion(self, manifest, current_state):
         raise RuntimeError("simulated promotion failure")
 
     monkeypatch.setattr(StateStore, "promote_current", fail_promotion)
-    result = save_state_adapter(state_root=tmp_path)(context)
+    result = save_state_adapter(state_root=tmp_path, learning_store=learning_store)(context)
 
     assert result.status is StageStatus.BLOCKED
     assert "simulated promotion failure" in result.rationale
-    assert not Path(learning.path).exists()
+    assert not (tmp_path / "learning" / "TEST" / "module-impact" / "R1.json").exists()
     assert not (tmp_path / "runs" / "TEST" / "R1").exists()
     assert not (tmp_path / "state" / "TEST" / "current_state.json").exists()
 
 
-def test_duplicate_run_id_preserves_prior_successful_state_and_artifacts(tmp_path):
-    learning = ResearchLearningStore(tmp_path).save_batch(
-        ticker="TEST",
-        run_id="R1",
-        batch=_impact_batch(),
-        recorded_at="2026-08-23T00:00:00+00:00",
+@pytest.mark.parametrize(
+    ("retry_learning_save", "failure_detail"),
+    (
+        (True, "research learning record is immutable"),
+        (False, "run is immutable and already exists"),
+    ),
+)
+def test_duplicate_save_state_retry_preserves_prior_successful_state_and_artifacts(
+    tmp_path,
+    retry_learning_save,
+    failure_detail,
+):
+    learning_store = ResearchLearningStore(tmp_path)
+    first = save_state_adapter(
+        state_root=tmp_path,
+        learning_store=learning_store,
+    )(
+        _context(tmp_path, run_id="R1")
     )
-    adapter = save_state_adapter(state_root=tmp_path)
-    first = adapter(_context(tmp_path, run_id="R1", learning_path=learning.path))
     assert first.status is StageStatus.PASS
 
     run_dir = tmp_path / "runs" / "TEST" / "R1"
     current_path = tmp_path / "state" / "TEST" / "current_state.json"
+    learning_path = Path(first.outputs["research_learning_record_path"])
     prior_manifest = (run_dir / "manifest.json").read_bytes()
     prior_current = current_path.read_bytes()
-    prior_learning = Path(learning.path).read_bytes()
+    prior_learning = learning_path.read_bytes()
 
-    duplicate_context = _context(tmp_path, run_id="R1", learning_path="")
+    duplicate_context = _context(tmp_path, run_id="R1", learning_path=str(learning_path))
     duplicate_context.data["company_state"] = StateStore(tmp_path).load_current("TEST")
-    duplicate = adapter(duplicate_context)
+    duplicate = save_state_adapter(
+        state_root=tmp_path,
+        learning_store=learning_store if retry_learning_save else None,
+    )(duplicate_context)
 
     assert duplicate.status is StageStatus.BLOCKED
     assert "FileExistsError" in duplicate.rationale
-    assert "already exists" in duplicate.rationale
+    assert failure_detail in duplicate.rationale
     assert (run_dir / "manifest.json").read_bytes() == prior_manifest
     assert current_path.read_bytes() == prior_current
-    assert Path(learning.path).read_bytes() == prior_learning
+    assert learning_path.read_bytes() == prior_learning
     assert StateStore(tmp_path).load_current("TEST")["last_completed_run"] == "R1"
 
 

@@ -8,10 +8,11 @@ import shutil
 from typing import Any
 
 from .ablation import AblationBatchResult, AblationStatus, LoadoutAction
-from .control_plane import DoctrineCoverageEntry, StageStatus
+from .control_plane import DoctrineCoverageEntry, StageStatus, authorize_post_freeze
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .post_freeze import MarketComparisonBundle, StreetComparisonBundle
 from .records import AuditReport, RunManifest, RunStatus, iso_now
+from .research_learning import ResearchLearningStore
 from .state import StateStore, thesis_delta
 from .valuation_execution import GenericValuationResult
 
@@ -272,14 +273,20 @@ def _rollback_exact_path(root: Path, target_value: object, expected_relative: Pa
         resolved_target.unlink(missing_ok=True)
 
 
-def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
+def save_state_adapter(
+    *,
+    state_root: str | Path,
+    learning_store: ResearchLearningStore | None = None,
+) -> StageAdapter:
     root = Path(state_root)
     store = StateStore(root)
+    if learning_store is not None and learning_store.root.resolve() != root.resolve():
+        raise ValueError("state and research-learning stores must share one root")
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
         ticker = context.data.get("ticker")
         company = context.data.get("company")
-        learning_path = context.data.get("research_learning_record_path")
+        learning_ref = None
         run_dir: Path | None = None
         try:
             valuation = context.data.get("generic_valuation_result")
@@ -295,6 +302,7 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 raise ValueError("audit PASS is required")
             if token is None or getattr(token, "run_id", None) != context.run_id:
                 raise ValueError("same-run IntrinsicFreezeToken is required")
+            authorize_post_freeze(token, run_id=context.run_id)
 
             report = render_generic_report(context.data)
             impact_summary = _module_impact_summary(context.data)
@@ -331,7 +339,21 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 "freeze_token.json": _jsonable(token),
                 "final_report.md": report,
             }
+            if learning_store is not None:
+                batch = _impact_batch(context.data)
+                if batch is None:
+                    raise ValueError("Decision Impact batch is required for research-learning save")
+                learning_ref = learning_store.save_batch(
+                    ticker=ticker,
+                    run_id=context.run_id,
+                    batch=batch,
+                )
             run_dir = store.save_run(manifest, artifacts)
+            learning_hash = (
+                learning_ref.content_hash
+                if learning_ref is not None
+                else context.data.get("research_learning_record_hash")
+            )
             current_state = {
                 "schema_version": "0.6.10",
                 "ticker": ticker,
@@ -343,7 +365,7 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 "valuation_hash": context.data.get("valuation_hash"),
                 "audit_hash": context.data.get("audit_hash"),
                 "decision_impact_hash": context.data.get("decision_impact_hash"),
-                "research_learning_record_hash": context.data.get("research_learning_record_hash"),
+                "research_learning_record_hash": learning_hash,
                 "scenario_values_per_share": {
                     item.scenario_id: str(item.value_per_share) for item in valuation.scenarios
                 },
@@ -364,11 +386,12 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                         _rollback_exact_path(root, str(run_dir), expected_run)
                     except Exception as rollback_exc:
                         rollback_errors.append(f"run rollback: {rollback_exc}")
-                try:
-                    expected_learning = Path("learning") / ticker / "module-impact" / f"{context.run_id}.json"
-                    _rollback_exact_path(root, learning_path, expected_learning)
-                except Exception as rollback_exc:
-                    rollback_errors.append(f"learning rollback: {rollback_exc}")
+                if learning_ref is not None:
+                    try:
+                        expected_learning = Path("learning") / ticker / "module-impact" / f"{context.run_id}.json"
+                        _rollback_exact_path(root, learning_ref.path, expected_learning)
+                    except Exception as rollback_exc:
+                        rollback_errors.append(f"learning rollback: {rollback_exc}")
             detail = f"state persistence failed: {type(exc).__name__}: {exc}"
             if rollback_errors:
                 detail += " | " + " | ".join(rollback_errors)
@@ -377,15 +400,26 @@ def save_state_adapter(*, state_root: str | Path) -> StageAdapter:
                 detail,
                 blocking=True,
             )
+        outputs = {
+            "saved_run_dir": str(run_dir),
+            "saved_current_state": current_state,
+            "saved_report_markdown": report,
+            "module_impact_summary": impact_summary,
+        }
+        if learning_ref is not None:
+            outputs.update({
+                "research_learning_record_path": learning_ref.path,
+                "research_learning_record_hash": learning_ref.content_hash,
+                "research_learning_recorded_at": learning_ref.recorded_at,
+            })
         return StageExecutionResult(
             StageStatus.PASS,
-            "immutable run artifacts saved and audit-passed current state promoted",
-            {
-                "saved_run_dir": str(run_dir),
-                "saved_current_state": current_state,
-                "saved_report_markdown": report,
-                "module_impact_summary": impact_summary,
-            },
+            (
+                "immutable learning/run artifacts saved and audit-passed current state promoted"
+                if learning_ref is not None
+                else "immutable run artifacts saved and audit-passed current state promoted"
+            ),
+            outputs,
         )
 
     return run

@@ -42,10 +42,7 @@ from .shadow_adapters import (
     load_company_state_adapter,
     scenario_build_adapter,
 )
-from .state_learning_adapter import (
-    load_research_learning_adapter,
-    save_research_learning_adapter,
-)
+from .state_learning_adapter import load_research_learning_adapter
 from .valuation_adapter import deterministic_valuation_adapter
 from .valuation_execution import CompanyValuationPlan, EvaluatorRegistry
 
@@ -413,10 +410,9 @@ def build_primary_shadow_adapters(config: PrimaryShadowRuntimeConfig) -> dict[st
         ),
         "MARKET_COMPARE": market_compare_adapter(),
         "THESIS_DELTA": thesis_delta_adapter(),
-        "SAVE_STATE": _chain_stage_adapters(
-            "module-impact learning and immutable run state save",
-            save_research_learning_adapter(store=learning_store),
-            save_state_adapter(state_root=config.state_root),
+        "SAVE_STATE": save_state_adapter(
+            state_root=config.state_root,
+            learning_store=learning_store,
         ),
         "FINAL_REPORT": final_report_adapter(),
     }
