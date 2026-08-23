@@ -3,11 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal, InvalidOperation
+from enum import Enum
 from hashlib import sha256
 import json
-from typing import Mapping, Sequence
+from typing import Callable, Mapping, Sequence
+from urllib.parse import urlencode
 
 from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequest, EvidenceCollector
+from .live_indexers import parse_json_response, require_env_credential
 from .records import EvidenceRecord, EvidenceSourceLayer
 
 
@@ -19,6 +22,13 @@ _REPORT_END_DATES = {
 }
 
 
+class DartAmountBasis(str, Enum):
+    AUTO = "auto"
+    CURRENT_PERIOD = "current_period"
+    YEAR_TO_DATE = "year_to_date"
+    POINT_IN_TIME = "point_in_time"
+
+
 @dataclass(frozen=True)
 class DartFactMetricSpec:
     metric: str
@@ -26,6 +36,7 @@ class DartFactMetricSpec:
     statement_divisions: tuple[str, ...]
     unit: str = "KRW"
     critical: bool = False
+    amount_basis: DartAmountBasis = DartAmountBasis.AUTO
 
     def validate(self) -> None:
         if not self.metric or not self.account_ids or not self.statement_divisions or not self.unit:
@@ -40,37 +51,44 @@ DEFAULT_CORE_FACT_SPECS: tuple[DartFactMetricSpec, ...] = (
         ("ifrs-full_Revenue", "ifrs_Revenue"),
         ("IS", "CIS"),
         critical=True,
+        amount_basis=DartAmountBasis.YEAR_TO_DATE,
     ),
     DartFactMetricSpec(
         "operating_income",
         ("dart_OperatingIncomeLoss",),
         ("IS", "CIS"),
         critical=True,
+        amount_basis=DartAmountBasis.YEAR_TO_DATE,
     ),
     DartFactMetricSpec(
         "net_income",
         ("ifrs-full_ProfitLoss", "ifrs_ProfitLoss"),
         ("IS", "CIS"),
+        amount_basis=DartAmountBasis.YEAR_TO_DATE,
     ),
     DartFactMetricSpec(
         "total_assets",
         ("ifrs-full_Assets", "ifrs_Assets"),
         ("BS",),
+        amount_basis=DartAmountBasis.POINT_IN_TIME,
     ),
     DartFactMetricSpec(
         "total_liabilities",
         ("ifrs-full_Liabilities", "ifrs_Liabilities"),
         ("BS",),
+        amount_basis=DartAmountBasis.POINT_IN_TIME,
     ),
     DartFactMetricSpec(
         "total_equity",
         ("ifrs-full_Equity", "ifrs_Equity"),
         ("BS",),
+        amount_basis=DartAmountBasis.POINT_IN_TIME,
     ),
     DartFactMetricSpec(
         "cash_and_cash_equivalents",
         ("ifrs-full_CashAndCashEquivalents", "ifrs_CashAndCashEquivalents"),
         ("BS",),
+        amount_basis=DartAmountBasis.POINT_IN_TIME,
     ),
 )
 
@@ -104,6 +122,29 @@ def _effective_date(business_year: str, report_code: str) -> str:
     return date(year, month, day).isoformat()
 
 
+def _receipt_date(receipt_no: object, fallback: str) -> str:
+    text = str(receipt_no or "").strip()
+    if len(text) >= 8 and text[:8].isdigit():
+        candidate = f"{text[:4]}-{text[4:6]}-{text[6:8]}"
+        try:
+            date.fromisoformat(candidate)
+            return candidate
+        except ValueError:
+            pass
+    date.fromisoformat(fallback[:10])
+    return fallback[:10]
+
+
+def _row_matches_fs_div(row: Mapping[str, object], fs_div: str) -> bool:
+    """The official full-statement endpoint receives fs_div as a request parameter.
+
+    Some normalized fixtures retain fs_div on each row, while the documented response fields do
+    not require it. If present it must agree; if absent the request-level fs_div is authoritative.
+    """
+    row_fs_div = str(row.get("fs_div") or "").strip()
+    return not row_fs_div or row_fs_div == fs_div
+
+
 def _select_rows(
     rows: Sequence[Mapping[str, object]],
     *,
@@ -116,11 +157,29 @@ def _select_rows(
     return tuple(
         row
         for row in rows
-        if str(row.get("fs_div") or "") == fs_div
+        if _row_matches_fs_div(row, fs_div)
         and str(row.get("sj_div") or "") in accepted_statements
         and str(row.get("account_id") or "") in accepted_accounts
-        and row.get("thstrm_amount") not in (None, "", "-")
     )
+
+
+def _amount_field(spec: DartFactMetricSpec, row: Mapping[str, object]) -> tuple[str, DartAmountBasis]:
+    basis = spec.amount_basis
+    if basis is DartAmountBasis.AUTO:
+        basis = (
+            DartAmountBasis.POINT_IN_TIME
+            if str(row.get("sj_div") or "") == "BS"
+            else DartAmountBasis.YEAR_TO_DATE
+        )
+    if basis is DartAmountBasis.CURRENT_PERIOD or basis is DartAmountBasis.POINT_IN_TIME:
+        return "thstrm_amount", basis
+    if basis is DartAmountBasis.YEAR_TO_DATE:
+        # OpenDART documents thstrm_amount as the 3-month amount for interim IS/CIS rows and
+        # thstrm_add_amount as cumulative. Annual/Q1 records may not need a separate cumulative field.
+        if row.get("thstrm_add_amount") not in (None, "", "-"):
+            return "thstrm_add_amount", basis
+        return "thstrm_amount", basis
+    raise ValueError(f"unsupported amount basis: {basis}")
 
 
 def parse_opendart_financial_facts(
@@ -133,11 +192,11 @@ def parse_opendart_financial_facts(
     fs_div: str = "CFS",
     segment: str = "company",
 ) -> tuple[EvidenceRecord, ...]:
-    """Normalize OpenDART financial-statement rows into primary EvidenceRecords.
+    """Normalize OpenDART full financial-statement rows into primary EvidenceRecords.
 
-    Consolidated statements (CFS) are the default. No account-name fuzzy matching is used.
-    Company-specific metrics such as contract liabilities require an explicit MetricSpec.
-    Multiple materially different rows for one metric fail closed rather than being summed.
+    No account-name fuzzy matching is used. Company-specific metrics such as contract liabilities
+    require an explicit MetricSpec. Multiple materially different rows for one metric fail closed.
+    Interim flow metrics default to the cumulative thstrm_add_amount when available.
     """
     if not target_id or not source_ref:
         raise ValueError("target_id and source_ref are required")
@@ -155,23 +214,33 @@ def parse_opendart_financial_facts(
         if not matches:
             continue
 
-        candidates: list[tuple[Mapping[str, object], Decimal]] = []
+        candidates: list[tuple[Mapping[str, object], Decimal, str, DartAmountBasis]] = []
         for row in matches:
-            candidates.append((row, _decimal_amount(row.get("thstrm_amount"))))
-        unique_amounts = {amount for _, amount in candidates}
+            field_name, basis = _amount_field(spec, row)
+            if row.get(field_name) in (None, "", "-"):
+                continue
+            candidates.append((row, _decimal_amount(row.get(field_name)), field_name, basis))
+        if not candidates:
+            continue
+        unique_amounts = {amount for _, amount, _, _ in candidates}
         if len(unique_amounts) != 1:
-            ids = ", ".join(str(row.get("account_id")) for row, _ in candidates)
+            ids = ", ".join(str(row.get("account_id")) for row, _, _, _ in candidates)
             raise ValueError(
                 f"ambiguous DART fact for {spec.metric}: multiple current-period values across {ids}"
             )
-        row, amount = candidates[0]
+        row, amount, field_name, basis = candidates[0]
         business_year = str(row.get("bsns_year") or "")
         report_code = str(row.get("reprt_code") or "")
         effective = _effective_date(business_year, report_code)
         receipt = str(row.get("rcept_no") or "").strip()
         account_id = str(row.get("account_id") or "").strip()
+        row_currency = str(row.get("currency") or "").strip()
+        if row_currency and row_currency != spec.unit:
+            raise ValueError(
+                f"DART currency mismatch for {spec.metric}: spec={spec.unit}, row={row_currency}"
+            )
         evidence_id = "DART_" + sha256(
-            f"{target_id}|{spec.metric}|{effective}|{fs_div}|{account_id}|{receipt}".encode("utf-8")
+            f"{target_id}|{spec.metric}|{effective}|{fs_div}|{account_id}|{receipt}|{basis.value}".encode("utf-8")
         ).hexdigest()[:20]
         records.append(
             EvidenceRecord(
@@ -182,7 +251,7 @@ def parse_opendart_financial_facts(
                 unit=spec.unit,
                 source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
                 effective_date=effective,
-                observed_date=published_date[:10],
+                observed_date=_receipt_date(receipt, published_date),
                 source_name="OpenDART financial statements",
                 source_ref=(
                     f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={receipt}"
@@ -192,11 +261,96 @@ def parse_opendart_financial_facts(
                 source_grade="A",
                 confidence=1.0,
                 segment=segment,
-                notes=f"fs_div={fs_div}; sj_div={row.get('sj_div')}; account_id={account_id}",
+                notes=(
+                    f"fs_div={fs_div}; sj_div={row.get('sj_div')}; account_id={account_id}; "
+                    f"amount_field={field_name}; amount_basis={basis.value}"
+                ),
                 critical=spec.critical,
             )
         )
     return tuple(records)
+
+
+def build_opendart_full_financials_url(
+    *,
+    corp_code: str,
+    business_year: str,
+    report_code: str,
+    fs_div: str = "CFS",
+    api_key: str | None = None,
+) -> str:
+    key = api_key or require_env_credential("DART_API_KEY")
+    if len(corp_code) != 8 or not corp_code.isdigit():
+        raise ValueError("OpenDART corp_code must be 8 digits")
+    if len(business_year) != 4 or not business_year.isdigit():
+        raise ValueError("OpenDART business_year must be 4 digits")
+    if report_code not in _REPORT_END_DATES:
+        raise ValueError("unsupported OpenDART report_code")
+    if fs_div not in {"CFS", "OFS"}:
+        raise ValueError("fs_div must be CFS or OFS")
+    params = {
+        "crtfc_key": key,
+        "corp_code": corp_code,
+        "bsns_year": business_year,
+        "reprt_code": report_code,
+        "fs_div": fs_div,
+    }
+    return "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?" + urlencode(params)
+
+
+FetchText = Callable[[str], str]
+
+
+def live_opendart_fact_collector(
+    fetch_text: FetchText,
+    *,
+    source_id: str,
+    checked_at: str,
+    corp_code: str,
+    business_year: str,
+    report_code: str,
+    fs_div: str = "CFS",
+    api_key: str | None = None,
+    specs: tuple[DartFactMetricSpec, ...] = DEFAULT_CORE_FACT_SPECS,
+    segment: str = "company",
+) -> EvidenceCollector:
+    """Live-source collector using the official OpenDART full-financial-statement endpoint.
+
+    HTTP is injected through fetch_text. The function performs no market/street access and emits
+    only filing Evidence. Credential lookup occurs when the collector runs.
+    """
+    if not source_id or not checked_at:
+        raise ValueError("source_id and checked_at are required")
+
+    def collect(request: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
+        url = build_opendart_full_financials_url(
+            corp_code=corp_code,
+            business_year=business_year,
+            report_code=report_code,
+            fs_div=fs_div,
+            api_key=api_key,
+        )
+        rows = parse_json_response(fetch_text(url))
+        records = parse_opendart_financial_facts(
+            rows,
+            target_id=request.target_id,
+            published_date=checked_at,
+            source_ref=url.split("?", 1)[0],
+            specs=specs,
+            fs_div=fs_div,
+            segment=segment,
+        )
+        payload = json.dumps(rows, ensure_ascii=False, sort_keys=True, default=str, separators=(",", ":"))
+        document_ids = tuple(sorted({str(row.get("rcept_no")) for row in rows if row.get("rcept_no")}))
+        return EvidenceCollectionBatch(
+            source_id=source_id,
+            checked_at=checked_at,
+            records=records,
+            source_fingerprint=sha256(payload.encode("utf-8")).hexdigest(),
+            document_ids=document_ids,
+        )
+
+    return collect
 
 
 def opendart_fact_collector(
@@ -210,11 +364,7 @@ def opendart_fact_collector(
     fs_div: str = "CFS",
     segment: str = "company",
 ) -> EvidenceCollector:
-    """Create a typed EvidenceCollector from already-fetched OpenDART rows.
-
-    Network/credential handling stays in transport adapters. This function is deterministic and
-    testable, and it can be fed by the live OpenDART transport or fixtures.
-    """
+    """Deterministic collector from already-fetched OpenDART rows for replay/tests."""
     if not source_id or not checked_at:
         raise ValueError("source_id and checked_at are required")
 
