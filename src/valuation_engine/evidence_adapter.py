@@ -5,7 +5,7 @@ from hashlib import sha256
 import json
 from typing import Callable
 
-from .collection_plan import PrimaryCollectionPlan
+from .collection_plan import CompanyCollectionPlan
 from .control_plane import StageStatus
 from .evidence_collection import EvidenceCollector, collect_primary_evidence
 from .ledger import EvidenceLedger
@@ -26,7 +26,7 @@ class SelectedEvidenceCollector:
 
 @dataclass(frozen=True)
 class EvidenceCollectorSelection:
-    plan: PrimaryCollectionPlan
+    plan: CompanyCollectionPlan
     collectors: tuple[SelectedEvidenceCollector, ...]
 
 
@@ -53,7 +53,7 @@ def primary_evidence_collection_adapter(
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "required_evidence missing from Module Requirement Plan", blocking=True)
 
         active_collectors = collectors
-        collection_plan: PrimaryCollectionPlan | None = None
+        collection_plan: CompanyCollectionPlan | None = None
         selected_collectors: tuple[SelectedEvidenceCollector, ...] = ()
         selected_collector_ids: tuple[str, ...] = ()
         if selection_loader is not None:
@@ -66,21 +66,27 @@ def primary_evidence_collection_adapter(
                     blocking=True,
                 )
             if not isinstance(selection, EvidenceCollectorSelection):
+                return StageExecutionResult(StageStatus.BLOCKED, "selection_loader must return EvidenceCollectorSelection", blocking=True)
+            collection_plan = selection.plan
+            try:
+                collection_plan.validate()
+            except Exception as exc:
                 return StageExecutionResult(
                     StageStatus.BLOCKED,
-                    "selection_loader must return EvidenceCollectorSelection",
+                    f"CompanyCollectionPlan is invalid: {type(exc).__name__}: {exc}",
                     blocking=True,
                 )
-            collection_plan = selection.plan
-            if collection_plan.target_id != target_id:
+            if collection_plan.company.target_id != target_id:
                 return StageExecutionResult(
                     StageStatus.BLOCKED,
                     "collection plan target_id does not match orchestration target",
                     {"collection_plan": collection_plan},
                     blocking=True,
                 )
-            planned_required = tuple(item.metric for item in collection_plan.required_evidence)
-            if planned_required != required:
+            planned_required = tuple(
+                dict.fromkeys(item.metric for item in collection_plan.required_evidence)
+            )
+            if set(planned_required) != set(required):
                 return StageExecutionResult(
                     StageStatus.BLOCKED,
                     "collection plan required metrics do not match Module Requirement Plan",
@@ -106,9 +112,7 @@ def primary_evidence_collection_adapter(
                     {"collection_plan": collection_plan},
                     blocking=True,
                 )
-            unauthorized = tuple(
-                sorted(set(selected_collector_ids) - set(collection_plan.runnable_collector_ids))
-            )
+            unauthorized = tuple(sorted(set(selected_collector_ids) - set(collection_plan.runnable_collector_ids)))
             if unauthorized:
                 return StageExecutionResult(
                     StageStatus.BLOCKED,
@@ -120,9 +124,10 @@ def primary_evidence_collection_adapter(
             if not active_collectors:
                 return StageExecutionResult(
                     StageStatus.NOT_IMPLEMENTED,
-                    "no runnable collector is available for the compiled primary-evidence plan",
+                    "no runnable collector is available for the compiled CompanyCollectionPlan",
                     {
                         "collection_plan": collection_plan,
+                        "collection_missing_required_requirements": collection_plan.missing_required_requirements,
                         "collection_missing_required_metrics": collection_plan.missing_required_metrics,
                         "collection_no_source_required_metrics": collection_plan.no_source_required_metrics,
                     },
@@ -143,24 +148,29 @@ def primary_evidence_collection_adapter(
                 blocking=True,
             )
 
+        segment_missing: tuple[str, ...] = ()
         if collection_plan is not None:
             for selected, batch in zip(selected_collectors, result.batches, strict=True):
-                authorized_metrics = set(
-                    collection_plan.authorized_metrics_for_collector(selected.collector_id)
-                )
-                emitted_metrics = {record.metric for record in batch.records}
-                unauthorized_metrics = tuple(sorted(emitted_metrics - authorized_metrics))
-                if unauthorized_metrics:
+                authorized = set(collection_plan.authorized_segment_metrics_for_collector(selected.collector_id))
+                emitted = {(record.segment, record.metric) for record in batch.records}
+                unauthorized_pairs = tuple(sorted(emitted - authorized))
+                if unauthorized_pairs:
+                    rendered = ", ".join(f"{segment}/{metric}" for segment, metric in unauthorized_pairs)
                     return StageExecutionResult(
                         StageStatus.BLOCKED,
-                        f"collector {selected.collector_id} emitted metrics outside Collection Plan: "
-                        + ", ".join(unauthorized_metrics),
+                        f"collector {selected.collector_id} emitted segment/metrics outside Collection Plan: {rendered}",
                         {
                             "collection_plan": collection_plan,
                             "collection_selected_collector_ids": selected_collector_ids,
                         },
                         blocking=True,
                     )
+            active_pairs = {(record.segment, record.metric) for record in result.ledger.active()}
+            segment_missing = tuple(
+                item.requirement_id
+                for item in collection_plan.required_evidence
+                if (item.segment_id, item.metric) not in active_pairs
+            )
 
         outputs = {
             "evidence_collection_result": result,
@@ -172,18 +182,25 @@ def primary_evidence_collection_adapter(
         if collection_plan is not None:
             outputs["collection_plan"] = collection_plan
             outputs["collection_selected_collector_ids"] = selected_collector_ids
+            outputs["collection_missing_required_requirements"] = segment_missing
             outputs["collection_missing_required_metrics"] = collection_plan.missing_required_metrics
             outputs["collection_no_source_required_metrics"] = collection_plan.no_source_required_metrics
-        if result.missing_metrics:
+
+        if result.missing_metrics or segment_missing:
+            parts = []
+            if result.missing_metrics:
+                parts.append("metrics=" + ", ".join(result.missing_metrics))
+            if segment_missing:
+                parts.append("segment requirements=" + ", ".join(segment_missing))
             return StageExecutionResult(
                 StageStatus.RECOVERY_REQUIRED if strict_required_coverage else StageStatus.WARNING,
-                "required primary evidence missing: " + ", ".join(result.missing_metrics),
+                "required primary evidence missing: " + "; ".join(parts),
                 outputs,
                 blocking=strict_required_coverage,
             )
         return StageExecutionResult(
             StageStatus.PASS,
-            "primary evidence collected with complete required-metric coverage",
+            "primary evidence collected with complete required segment/metric coverage",
             outputs,
         )
 
@@ -205,10 +222,7 @@ def evidence_ledger_adapter() -> StageAdapter:
         return StageExecutionResult(
             StageStatus.PASS,
             "append-only EvidenceLedger validated and snapshot hash frozen",
-            {
-                "ledger_snapshot_hash": ledger_hash,
-                "active_evidence_ids": tuple(item.id for item in active),
-            },
+            {"ledger_snapshot_hash": ledger_hash, "active_evidence_ids": tuple(item.id for item in active)},
         )
 
     return run
