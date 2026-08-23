@@ -15,8 +15,15 @@ dev = ["pytest>=8.0"]
 [project.scripts]
 valuation-engine = "valuation_engine.cli:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
+[tool.setuptools]
+packages = ["valuation_engine", "valuation_engine._registry_data"]
+package-dir = {valuation_engine = "src/valuation_engine", "valuation_engine._registry_data" = "config"}
+
+[tool.setuptools.package-data]
+"valuation_engine._registry_data" = [
+  "archetype_module_registry.yaml",
+  "valuation_method_capability_registry.yaml",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

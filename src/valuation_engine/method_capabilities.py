@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from importlib import resources
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,7 @@ _DEFAULT_METHOD_CAPABILITY_PATH = (
 _DEFAULT_ARCHETYPE_REGISTRY_PATH = (
     _REPO_ROOT / "config" / "archetype_module_registry.yaml"
 )
+_REGISTRY_RESOURCE_PACKAGE = "valuation_engine._registry_data"
 
 
 class _UniqueKeyLoader(yaml.SafeLoader):
@@ -42,14 +44,35 @@ _UniqueKeyLoader.add_constructor(
 )
 
 
-def _load_yaml_unique(path: str | Path) -> dict[str, Any]:
+def _read_registry_text(path: Any) -> str:
+    if isinstance(path, (str, Path)):
+        return Path(path).read_text(encoding="utf-8")
+    return path.read_text(encoding="utf-8")
+
+
+def _load_yaml_unique(path: Any) -> dict[str, Any]:
     value = yaml.load(
-        Path(path).read_text(encoding="utf-8"),
+        _read_registry_text(path),
         Loader=_UniqueKeyLoader,
     )
     if not isinstance(value, dict):
         raise ValueError(f"YAML root must be a mapping: {path}")
     return value
+
+
+def _default_registry_source(filename: str) -> Any:
+    repository_path = _REPO_ROOT / "config" / filename
+    if repository_path.is_file():
+        return repository_path
+    return resources.files(_REGISTRY_RESOURCE_PACKAGE).joinpath(filename)
+
+
+def _default_repository_root() -> Path | None:
+    required = (
+        _DEFAULT_METHOD_CAPABILITY_PATH,
+        _DEFAULT_ARCHETYPE_REGISTRY_PATH,
+    )
+    return _REPO_ROOT if all(path.is_file() for path in required) else None
 
 
 class MethodKind(str, Enum):
@@ -401,11 +424,13 @@ def load_method_capability_registry(
 
 def load_default_method_capability_registry() -> MethodCapabilityRegistry:
     registry = load_method_capability_registry(
-        _DEFAULT_METHOD_CAPABILITY_PATH
+        _default_registry_source("valuation_method_capability_registry.yaml")
     )
     registry.validate(
-        archetype_registry_path=_DEFAULT_ARCHETYPE_REGISTRY_PATH,
-        repo_root=_REPO_ROOT,
+        archetype_registry_path=_default_registry_source(
+            "archetype_module_registry.yaml"
+        ),
+        repo_root=_default_repository_root(),
     )
     return registry
 
@@ -425,8 +450,10 @@ def _validate_injected_registry(
             "injected capability_registry must be MethodCapabilityRegistry"
         )
     registry.validate(
-        archetype_registry_path=_DEFAULT_ARCHETYPE_REGISTRY_PATH,
-        repo_root=_REPO_ROOT,
+        archetype_registry_path=_default_registry_source(
+            "archetype_module_registry.yaml"
+        ),
+        repo_root=_default_repository_root(),
     )
     canonical = load_default_method_capability_registry()
     if registry != canonical:
