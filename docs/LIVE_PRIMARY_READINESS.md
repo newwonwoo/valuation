@@ -1,10 +1,10 @@
-# PRISM LIVE_PRIMARY Readiness Map v1.0
+# PRISM LIVE_PRIMARY Readiness Map v1.1
 
 Status: canonical maintenance record for distinguishing full PRIMARY_SHADOW integration from real-source LIVE_PRIMARY readiness.
 
 ## 1. Why this exists
 
-A 32-stage Control Plane run can be fully integrated while some stages still depend on caller-supplied profiles, shadow assertions, incomplete source coverage, or a narrow evaluator set. `PRIMARY_SHADOW PASS` therefore must never be reported as `LIVE_PRIMARY complete`.
+A 32-stage Control Plane run can be fully integrated while some stages still depend on incomplete source coverage or narrow evaluator/calibration sets. `PRIMARY_SHADOW PASS` therefore must never be reported as `LIVE_PRIMARY complete`.
 
 `config/live_primary_readiness.yaml` is the machine-readable readiness source. It must contain exactly one row for every stage in `config/control_plane_stage_registry.yaml`.
 
@@ -21,28 +21,59 @@ A new workflow stage without a readiness row is a maintenance error.
 
 ## 2. Current snapshot
 
-At the v1.0 registry snapshot:
+At the v1.1 registry snapshot:
 
 - canonical stages: **32 / 32 mapped**;
-- `LIVE_READY` or `RUNTIME_READY`: **19**;
+- `LIVE_READY` or `RUNTIME_READY`: **24**;
 - `PARTIAL_LIVE`: **3**;
-- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **10**.
+- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **5**.
 
 These counts are not a percentage-complete score. A single unresolved stage can still block a company if its Industry DNA makes that capability material.
 
-The highest-value remaining live gaps are currently:
+The remaining highest-value live gaps are:
 
-1. company/entity resolution from live identifiers;
-2. live Industry Knowledge snapshot/freshness orchestration;
-3. evidence-backed segment decomposition and Industry DNA route construction;
-4. actual Rocket Insight scanner dispatch rather than plan-only inspection;
-5. route-specific Upstream Funding adapter;
-6. live Economic-Twin/Beta and WACC input adapters;
-7. Warranted PER stage adapter;
-8. broader exact-evaluator coverage across the 19 Economic Archetypes;
-9. probability calibration datasets beyond the gating contract.
+1. actual Rocket Insight scanner dispatch rather than plan-only inspection;
+2. route-specific Upstream Funding adapter;
+3. live Economic-Twin/Beta and WACC input adapters;
+4. Warranted PER stage adapter;
+5. broader exact-evaluator coverage across the 19 Economic Archetypes;
+6. probability calibration datasets beyond the gating contract.
 
-## 3. OpenDART company-fact vertical
+## 3. LIVE_PRIMARY front-half contract
+
+`src/valuation_engine/live_primary_adapters.py` is the canonical front-half adapter layer for:
+
+- `COMPANY_RESOLUTION`;
+- `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`;
+- `SOURCE_FRESHNESS_PRECHECK`;
+- `SEGMENT_DECOMPOSITION`;
+- `INDUSTRY_DNA_ROUTE`.
+
+The architecture uses typed loader/resolver contracts instead of embedding one country's source logic into the Control Plane. A jurisdiction-specific implementation plugs into the same stage contract.
+
+### Company resolution
+
+`ResolvedCompanyIdentity` must carry legal name, ticker when applicable, jurisdiction, stable target ID, external IDs and source references. Resolution failure or ambiguity enters Recovery; the runtime does not guess among candidates.
+
+OpenDART `corpCode.xml` is the first official resolver implementation. The archive is parsed as ZIP/XML, and Korean entities may be resolved by exact stock code, exact DART corp code, or normalized exact legal name. Other jurisdictions should add resolvers behind the same `CompanyResolver` contract.
+
+### Industry Knowledge snapshot
+
+`IndustryKnowledgeSnapshot` binds an as-of date, source IDs, document IDs, Evidence IDs and content hashes into one deterministic `snapshot_hash`. A supplied hash that does not reproduce from its components is rejected.
+
+### Source freshness
+
+`LiveFreshnessAssessment` carries Source Watch findings and the source-snapshot hash. Source failure, definition/schema revision, unreviewed material update, new release requiring revalidation, or another revalidation-required state blocks downstream valuation until incorporated/reviewed. A missed expected release may remain a warning when the source is otherwise healthy.
+
+### Segment decomposition
+
+Every `SegmentDescriptor` must explicitly state revenue recognition, price formation, asset ownership, capital intensity, regulation, customer structure, reinvestment model, cash-flow duration and Evidence IDs. A segment without evidence cannot be routed.
+
+### Industry DNA routing
+
+The live router must cover every decomposed segment exactly once with an `IndustryDNAProfile`. Every `evidence_key` in the route must already exist in either the loaded Industry Knowledge snapshot or that run's segment evidence. Invented/unresolved Evidence IDs fail closed.
+
+## 4. OpenDART company-fact vertical
 
 `src/valuation_engine/dart_facts.py` is the first reusable LIVE_PRIMARY company-fact adapter.
 
@@ -68,13 +99,15 @@ Design rules:
 
 The live collector uses an injected `fetch_text` transport. Network/credential handling therefore stays outside deterministic valuation code, while fixtures and historical replays use the same fact parser.
 
-## 4. What this adapter does not solve
+## 5. What the live front half does not solve
 
-OpenDART standard financial facts do **not** provide every Industry DNA requirement. Backlog quality, effective capacity, customer advances, qualification, project COD, clinical evidence, customer concentration, and many segment KPIs still need company-specific filing-note, IR, primary-regulatory, or calibrated alternative-data adapters.
+A `LIVE_READY` stage means its typed source/loader contract, traceability and fail-closed behavior are complete. It does **not** claim every jurisdiction, every source family or every company-specific KPI is built in.
 
-Absence of a standard XBRL account ID is not permission to guess from a similar Korean account name. The Control Plane should record the missing metric and enter Recovery/Capability handling.
+OpenDART standard financial facts do not provide every Industry DNA requirement. Backlog quality, effective capacity, customer advances, qualification, project COD, clinical evidence, customer concentration and many segment KPIs still need company-specific filing-note, IR, primary-regulatory or calibrated alternative-data adapters.
 
-## 5. Promotion rule
+Absence of a standard XBRL account ID is not permission to guess from a similar account name. The Control Plane should record the missing metric and enter Recovery/Capability handling.
+
+## 6. Promotion rule
 
 A stage moves toward `LIVE_READY` only when:
 
@@ -84,6 +117,6 @@ A stage moves toward `LIVE_READY` only when:
 4. failure is fail-closed;
 5. current-price/Street isolation remains intact;
 6. fixtures and regression tests exist;
-7. the Unit Contract identifies its downstream consumers and effects.
+7. the Unit Contract or its canonical maintenance references identify downstream consumers and effects.
 
 Changing a readiness label does not alter valuation formulas or bypass ordinary module-promotion governance.
