@@ -26,6 +26,37 @@ class ModelKey:
 
 
 @dataclass(frozen=True)
+class RuntimeValuationInput:
+    key: str
+    measure: Measure
+    economic_path_id: str
+    source_refs: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not self.key or not self.economic_path_id or not self.source_refs:
+            raise ValueError("runtime valuation input requires key, economic path and source refs")
+
+
+@dataclass(frozen=True)
+class ValuationRuntimeInputs:
+    inputs: tuple[RuntimeValuationInput, ...] = ()
+
+    def __post_init__(self) -> None:
+        keys = tuple(item.key for item in self.inputs)
+        if len(keys) != len(set(keys)):
+            raise ValueError("runtime valuation input keys must be unique")
+
+    def get(self, key: str) -> RuntimeValuationInput:
+        for item in self.inputs:
+            if item.key == key:
+                return item
+        raise KeyError(key)
+
+    def has(self, key: str) -> bool:
+        return any(item.key == key for item in self.inputs)
+
+
+@dataclass(frozen=True)
 class SegmentValuation:
     contribution_id: str
     segment_id: str
@@ -47,8 +78,15 @@ class DeterministicEvaluator(Protocol):
     key: ModelKey
     evaluator_id: str
     required_assumption_keys: tuple[str, ...]
+    required_runtime_input_keys: tuple[str, ...]
 
-    def evaluate(self, scenario: BoundScenario, *, segment_id: str) -> SegmentValuation: ...
+    def evaluate(
+        self,
+        scenario: BoundScenario,
+        *,
+        segment_id: str,
+        runtime_inputs: ValuationRuntimeInputs,
+    ) -> SegmentValuation: ...
 
 
 class EvaluatorRegistry:
@@ -60,6 +98,9 @@ class EvaluatorRegistry:
             raise ValueError(f"duplicate evaluator registration: {evaluator.key}")
         if not evaluator.required_assumption_keys:
             raise ValueError("evaluator must declare required assumptions")
+        runtime_keys = tuple(getattr(evaluator, "required_runtime_input_keys", ()))
+        if len(runtime_keys) != len(set(runtime_keys)):
+            raise ValueError("evaluator runtime-input requirements must be unique")
         self._evaluators[evaluator.key] = evaluator
 
     def get(self, key: ModelKey) -> DeterministicEvaluator:
@@ -68,17 +109,52 @@ class EvaluatorRegistry:
         except KeyError as exc:
             raise KeyError(f"no exact evaluator registered for {key}") from exc
 
-    def evaluate(self, key: ModelKey, scenario: BoundScenario, *, segment_id: str) -> SegmentValuation:
+    def evaluate(
+        self,
+        key: ModelKey,
+        scenario: BoundScenario,
+        *,
+        segment_id: str,
+        runtime_inputs: ValuationRuntimeInputs | None = None,
+    ) -> SegmentValuation:
         evaluator = self.get(key)
-        missing = tuple(key for key in evaluator.required_assumption_keys if not _has_assumption(scenario, key))
+        missing = tuple(item for item in evaluator.required_assumption_keys if not _has_assumption(scenario, item))
         if missing:
             raise ValueError(
                 f"evaluator {evaluator.evaluator_id} missing assumptions for {scenario.scenario_id}: {', '.join(missing)}"
             )
-        return evaluator.evaluate(scenario, segment_id=segment_id)
+        runtime = runtime_inputs or ValuationRuntimeInputs()
+        required_runtime = tuple(getattr(evaluator, "required_runtime_input_keys", ()))
+        missing_runtime = tuple(item for item in required_runtime if not runtime.has(item))
+        if missing_runtime:
+            raise ValueError(
+                f"evaluator {evaluator.evaluator_id} missing runtime inputs for {scenario.scenario_id}: {', '.join(missing_runtime)}"
+            )
+        valuation = evaluator.evaluate(
+            scenario,
+            segment_id=segment_id,
+            runtime_inputs=runtime,
+        )
+        # A declared runtime input is only considered consumed if the evaluator carries its
+        # economic path into the valuation trace. This prevents Beta/WACC engines from becoming
+        # decorative computations that never reach the conclusion.
+        missing_paths = tuple(
+            runtime.get(item).economic_path_id
+            for item in required_runtime
+            if runtime.get(item).economic_path_id not in valuation.economic_path_ids
+        )
+        if missing_paths:
+            raise ValueError(
+                f"evaluator {evaluator.evaluator_id} declared runtime inputs but omitted their economic paths: {', '.join(missing_paths)}"
+            )
+        return valuation
 
     def keys(self) -> tuple[ModelKey, ...]:
         return tuple(sorted(self._evaluators, key=lambda item: (item.archetype, item.method, item.version)))
+
+    def required_runtime_inputs_for(self, key: ModelKey) -> tuple[str, ...]:
+        evaluator = self.get(key)
+        return tuple(getattr(evaluator, "required_runtime_input_keys", ()))
 
 
 def _has_assumption(scenario: BoundScenario, key: str) -> bool:
@@ -108,7 +184,18 @@ class NormalizedMultipleEvaluator:
     def required_assumption_keys(self) -> tuple[str, ...]:
         return (self.ebitda_key, self.multiple_key)
 
-    def evaluate(self, scenario: BoundScenario, *, segment_id: str) -> SegmentValuation:
+    @property
+    def required_runtime_input_keys(self) -> tuple[str, ...]:
+        return ()
+
+    def evaluate(
+        self,
+        scenario: BoundScenario,
+        *,
+        segment_id: str,
+        runtime_inputs: ValuationRuntimeInputs,
+    ) -> SegmentValuation:
+        del runtime_inputs
         ebitda = scenario.get(self.ebitda_key)
         multiple = scenario.get(self.multiple_key)
         if ebitda.measure.dimension.value != "money":
