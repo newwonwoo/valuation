@@ -35,3 +35,15 @@ A second run against the same state root must load the prior learning record and
 `PrimaryShadowRuntimeConfig.stage_overrides` is the controlled replacement point for progressively adding live funding/risk/evaluator/signal adapters. An override must return the ordinary typed StageExecutionResult and remains subject to doctrine coverage, audit, decision-impact and freeze rules.
 
 PRIMARY_SHADOW completion is integration evidence, not a claim that the same company has been fully analyzed with fresh live sources. Promotion to `LIVE_PRIMARY` requires live source coverage and exact evaluators for the selected Industry DNA.
+
+## Validation
+
+The full runtime contract is exercised by `tests/test_full_primary_shadow_runtime.py`:
+
+- all 32 canonical stages complete for a normalized-multiple fixture;
+- no Expected Value is fabricated while scenario probabilities remain uncalibrated;
+- a same-run Freeze Token precedes Street/market access and state persistence;
+- the first run writes immutable module-impact learning and the second run loads it;
+- a project-finance Industry DNA route blocks specifically at `UPSTREAM_FUNDING_SCAN` when no funding adapter exists.
+
+Repository CI must also pass the Unit Contract Registry validator, the complete pytest suite and the unchanged OCI legacy regression output.
