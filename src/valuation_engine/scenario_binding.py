@@ -150,7 +150,19 @@ def bind_scenarios(
     if spec.probability_key is not None:
         all_calibrated = all(status is CalibrationStatus.CALIBRATED for status in probability_calibration)
         total = sum(probability_candidates, Decimal("0"))
-        if all_calibrated and abs(total - Decimal("1")) <= Decimal("1e-12"):
+        if all_calibrated:
+            if abs(total - Decimal("1")) > Decimal("1e-12"):
+                return ScenarioBindingResult(
+                    ScenarioBindingStatus.BLOCKED,
+                    None,
+                    (
+                        ScenarioBindingFinding(
+                            "CALIBRATED_PROBABILITY_SUM_INVALID",
+                            f"calibrated scenario probabilities sum to {total}, not one",
+                            True,
+                        ),
+                    ),
+                )
             calibration_status = CalibrationStatus.CALIBRATED
             numeric_weighting_allowed = True
         else:
@@ -161,7 +173,7 @@ def bind_scenarios(
             findings.append(
                 ScenarioBindingFinding(
                     "PROBABILITY_WEIGHTING_WITHHELD",
-                    "scenario probabilities remain descriptive until all weights are CALIBRATED and sum to one",
+                    "scenario probabilities remain descriptive until all weights are CALIBRATED",
                     False,
                 )
             )
