@@ -66,8 +66,8 @@ stages:
     status: PARTIAL_LIVE
     reason: exact evaluator registry and SOTP runtime are implemented, but evaluator coverage across all 19 archetypes is incomplete.
   HIERARCHICAL_WARRANTED_PER:
-    status: ADAPTER_REQUIRED
-    reason: warranted-PER component exists; full route-specific adapter is not universally wired.
+    status: PARTIAL_LIVE
+    reason: typed Compiled-Assumption/WACC/DCF-fingerprint adapter computes Core, committed-expansion and peer-residual PER layers; universal normalized-EPS and peer-residual data providers remain caller-specific.
   DCF_PER_ASSUMPTION_CONSISTENCY_GATE:
     status: RUNTIME_READY
     reason: may be explicitly not applicable when the selected exact method does not use both DCF and PER.
