@@ -100,20 +100,24 @@ Required: independent-source corroboration + leading indicator + valuation link 
 ## 10. Does a module actually affect the conclusion?
 Read/use:
 - `docs/DECISION_IMPACT_SENSITIVITY.md`
+- `docs/AUTOMATIC_ABLATION_ORCHESTRATOR.md`
 - `config/decision_impact_policy.yaml`
+- `config/automatic_ablation_policy.yaml`
 - `src/valuation_engine/decision_impact.py`
+- `src/valuation_engine/impact_orchestrator.py`
 
-Every active module/scanner/gate must declare an impact path to assumptions, decisions, economic paths, final outputs, or guardrail protection. Use leave-one-module-out counterfactuals and evidence-backed numeric perturbations to measure value/decision/timing/guardrail impact. Repeated costly zero-impact research becomes a down-rank or retire candidate; mandatory guardrails are retained even when ordinary value delta is zero.
+Every active module/scanner/gate must declare an impact path to assumptions, decisions, economic paths, final outputs, or guardrail protection. Use leave-one-module-out counterfactuals and evidence-backed numeric perturbations to measure value/decision/timing/guardrail impact. The automatic Orchestrator runs one baseline, bounded single/pair ablations, records research effort and produces the next Control Plane loadout. Repeated costly zero-impact research becomes a user-reviewed down-rank or retire candidate; mandatory guardrails are retained even when ordinary value delta is zero.
 
-## 11. What does each unit consume, emit and affect?
+## 10.1 How is the static maintenance map queried?
 Read/use:
-- `config/unit_contract_registry.yaml` — canonical machine-readable Unit Contract & Impact Registry
-- `docs/UNIT_CONTRACT_AND_IMPACT_MAP.md` — maintenance guide
-- `src/valuation_engine/unit_contracts.py` — forward/reverse dependency lookup and expected-vs-actual effect audit
+- `config/unit_contract_registry.yaml`
+- `docs/UNIT_CONTRACT_AND_IMPACT_MAP.md`
+- `src/valuation_engine/unit_contracts.py`
+- `scripts/validate_unit_contract_registry.py`
 
-Use this layer before editing a scanner/gate/engine. It records inputs, outputs, downstream consumers, allowed effect classes, final-output reach, forbidden effects and canonical implementation references. `ModuleImpactTrace` remains run-specific actual truth; the Unit Contract Registry is static expected design truth.
+The registry is static design truth (`inputs → outputs → consumers → effects`). `ModuleImpactTrace` is run-specific actual truth. Their difference is an audit signal. New units without a valid contract are incomplete.
 
-## 12. Validation
+## 11. Validation
 Run:
 ```bash
 PYTHONPATH=src python scripts/validate_industry_seed.py
