@@ -1,0 +1,144 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from hashlib import sha256
+import json
+from typing import Protocol
+
+from .ledger import EvidenceLedger
+from .records import EvidenceRecord, EvidenceSourceLayer
+
+
+@dataclass(frozen=True)
+class EvidenceCollectionRequest:
+    target_id: str
+    required_metrics: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not self.target_id:
+            raise ValueError("evidence collection request requires target_id")
+        if len(self.required_metrics) != len(set(self.required_metrics)):
+            raise ValueError("required_metrics must be unique")
+
+
+@dataclass(frozen=True)
+class EvidenceCollectionBatch:
+    source_id: str
+    checked_at: str
+    records: tuple[EvidenceRecord, ...]
+    source_fingerprint: str
+    document_ids: tuple[str, ...] = ()
+
+    def validate(self) -> None:
+        if not self.source_id or not self.checked_at or not self.source_fingerprint:
+            raise ValueError("evidence batch requires source_id, checked_at and source_fingerprint")
+        ids = tuple(item.id for item in self.records)
+        if len(ids) != len(set(ids)):
+            raise ValueError(f"duplicate evidence IDs inside source batch {self.source_id}")
+        for item in self.records:
+            if item.target == "":
+                raise ValueError("evidence target cannot be blank")
+            if item.source_layer not in {
+                EvidenceSourceLayer.REALIZED_OR_FILING,
+                EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
+                EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+            }:
+                raise ValueError(
+                    f"source batch {self.source_id} contains non-primary intrinsic layer: {item.source_layer.value}"
+                )
+
+
+class EvidenceCollector(Protocol):
+    def __call__(self, request: EvidenceCollectionRequest) -> EvidenceCollectionBatch: ...
+
+
+@dataclass(frozen=True)
+class PrimaryEvidenceCollectionResult:
+    ledger: EvidenceLedger
+    batches: tuple[EvidenceCollectionBatch, ...]
+    required_metrics: tuple[str, ...]
+    covered_metrics: tuple[str, ...]
+    missing_metrics: tuple[str, ...]
+    source_snapshot_hash: str
+
+    @property
+    def coverage_complete(self) -> bool:
+        return not self.missing_metrics
+
+
+def collect_primary_evidence(
+    *,
+    target_id: str,
+    required_metrics: tuple[str, ...],
+    collectors: tuple[EvidenceCollector, ...],
+) -> PrimaryEvidenceCollectionResult:
+    request = EvidenceCollectionRequest(target_id, required_metrics)
+    if not collectors:
+        raise ValueError("at least one primary evidence collector is required")
+
+    ledger = EvidenceLedger()
+    batches: list[EvidenceCollectionBatch] = []
+    source_ids: set[str] = set()
+    for collector in collectors:
+        batch = collector(request)
+        batch.validate()
+        if batch.source_id in source_ids:
+            raise ValueError(f"duplicate source batch in one collection run: {batch.source_id}")
+        source_ids.add(batch.source_id)
+        for record in batch.records:
+            if record.target != target_id:
+                raise ValueError(
+                    f"evidence target mismatch for {record.id}: expected {target_id}, got {record.target}"
+                )
+            ledger.append(record)
+        batches.append(batch)
+
+    active_metrics = {item.metric for item in ledger.active()}
+    covered = tuple(metric for metric in required_metrics if metric in active_metrics)
+    missing = tuple(metric for metric in required_metrics if metric not in active_metrics)
+    snapshot_payload = {
+        "target_id": target_id,
+        "batches": [
+            {
+                "source_id": batch.source_id,
+                "checked_at": batch.checked_at,
+                "source_fingerprint": batch.source_fingerprint,
+                "document_ids": sorted(batch.document_ids),
+            }
+            for batch in sorted(batches, key=lambda item: item.source_id)
+        ],
+        "evidence": ledger.to_list(),
+    }
+    snapshot_hash = sha256(
+        json.dumps(snapshot_payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    return PrimaryEvidenceCollectionResult(
+        ledger=ledger,
+        batches=tuple(batches),
+        required_metrics=required_metrics,
+        covered_metrics=covered,
+        missing_metrics=missing,
+        source_snapshot_hash=snapshot_hash,
+    )
+
+
+def static_evidence_collector(
+    *,
+    source_id: str,
+    checked_at: str,
+    records: tuple[EvidenceRecord, ...],
+    source_fingerprint: str,
+    document_ids: tuple[str, ...] = (),
+) -> EvidenceCollector:
+    """Fixture/manual adapter that obeys the same Collector contract as live transports."""
+
+    def collect(_: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
+        return EvidenceCollectionBatch(
+            source_id=source_id,
+            checked_at=checked_at,
+            records=records,
+            source_fingerprint=source_fingerprint,
+            document_ids=document_ids,
+        )
+
+    return collect
