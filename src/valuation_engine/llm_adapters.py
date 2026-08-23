@@ -42,6 +42,7 @@ def _staff_context(context: OrchestratorContext) -> LLMStaffContext:
         prior_hypotheses=prior,
         module_requirement_plan=context.data.get("module_requirement_plan"),
         scanner_findings=scanner_findings,
+        funding_scan_result=context.data.get("funding_scan_result"),
     )
 
 
