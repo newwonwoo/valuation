@@ -91,3 +91,48 @@ def test_false_live_ready_promotion_is_rejected_while_methods_are_incomplete():
     )
     with pytest.raises(ValueError, match="cannot be promoted above PARTIAL_LIVE"):
         validate_method_readiness_alignment(promoted, value)
+
+
+def test_incomplete_method_coverage_allows_honest_stage_downgrades():
+    value = registry()
+    report = load_live_primary_readiness(
+        readiness_path=READINESS_REGISTRY,
+        stage_registry_path=STAGE_REGISTRY,
+    )
+    for status in (
+        LiveReadinessStatus.ADAPTER_REQUIRED,
+        LiveReadinessStatus.SHADOW_ONLY,
+        LiveReadinessStatus.CONDITIONAL_NOT_IMPLEMENTED,
+    ):
+        downgraded = LivePrimaryReadinessReport(
+            tuple(
+                replace(item, status=status)
+                if item.stage == "DETERMINISTIC_VALUATION"
+                else item
+                for item in report.stages
+            )
+        )
+        coverage = validate_method_readiness_alignment(downgraded, value)
+        assert not coverage.complete
+
+
+def test_method_capability_yaml_rejects_duplicate_binding_keys(tmp_path):
+    path = tmp_path / "duplicate.yaml"
+    path.write_text(
+        """version: 1.1
+execution_families:
+  missing:
+    kind: segment_evaluator
+    runtime_status: NOT_IMPLEMENTED
+    requires_beta: false
+    requires_wacc: false
+    canonical_refs: [config/archetype_module_registry.yaml]
+bindings:
+  capacity_manufacturing:
+    driver_dcf: {execution_family: missing, output_kind: unresolved}
+    driver_dcf: {execution_family: missing, output_kind: unresolved}
+""",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="duplicate YAML key: 'driver_dcf'"):
+        load_method_capability_registry(path)
