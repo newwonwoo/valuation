@@ -16,20 +16,27 @@ from valuation_engine.evidence_collection import (
     EvidenceCollectionBatch,
     EvidenceCollectionRequest,
 )
-from valuation_engine.live_primary_adapters import ResolvedCompanyIdentity
+from valuation_engine.live_primary_adapters import (
+    CompanyResolutionRequest,
+    ResolvedCompanyIdentity,
+)
 from valuation_engine.live_runtime import (
     LiveCollectorProvider,
+    LivePrimaryProviders,
+    LivePrimaryRuntimeConfig,
     _task_bound_collector,
     run_prism,
 )
 from valuation_engine.llm_staff import RedTeamProposal
 from valuation_engine.orchestrator import (
+    ControlledRunResult,
     OrchestratorContext,
     StageExecutionResult,
     StageTrace,
 )
 from valuation_engine.records import CriticalIssue
 from valuation_engine.runtime_support_adapters import research_loop_recovery_adapter
+from valuation_engine.scenario_binding import ScenarioBindingSpec
 
 
 def identity() -> ResolvedCompanyIdentity:
@@ -90,6 +97,60 @@ def collection_plan() -> CompanyCollectionPlan:
 
 def test_run_prism_entrypoint_is_importable():
     assert callable(run_prism)
+
+
+def test_run_prism_executes_from_non_repository_working_directory(
+    tmp_path,
+    monkeypatch,
+):
+    def unavailable_resolver(_):
+        raise RuntimeError("fixture intentionally stops after runtime entry")
+
+    noop = lambda *args, **kwargs: None
+    providers = LivePrimaryProviders(
+        company_resolver=unavailable_resolver,
+        industry_snapshot_loader=noop,
+        freshness_loader=noop,
+        segment_decomposer=noop,
+        industry_dna_router=noop,
+        collectors=(
+            LiveCollectorProvider(
+                CollectorCapability(
+                    collector_id="fixture",
+                    source_id="KR_OPENDART",
+                    supported_metrics=("financials",),
+                    jurisdictions=("KR",),
+                    implementation_ref="tests.fixture",
+                ),
+                noop,
+            ),
+        ),
+        scanner_runners={},
+        intelligence_officer=noop,
+        red_team_officer=noop,
+        bridge_analyst=noop,
+        evaluator_registry_loader=noop,
+        valuation_plan_inputs_loader=noop,
+    )
+    config = LivePrimaryRuntimeConfig(
+        run_id="LIVE-ENTRY-1",
+        state_root=tmp_path / "state",
+        company_request=CompanyResolutionRequest("000000", "KR"),
+        scenario_binding_spec=ScenarioBindingSpec(
+            scenario_ids=("base",),
+            required_keys=("revenue",),
+        ),
+        providers=providers,
+    )
+
+    monkeypatch.chdir(tmp_path)
+    result = run_prism(config)
+
+    assert isinstance(result, ControlledRunResult)
+    assert result.execution_mode is ExecutionMode.LIVE_PRIMARY
+    assert result.stage_traces[0].stage == "COMPANY_RESOLUTION"
+    assert result.stage_traces[0].status is StageStatus.RECOVERY_REQUIRED
+    assert result.blocked_reasons
 
 
 def test_live_collector_provider_rejects_source_lineage_mismatch():
