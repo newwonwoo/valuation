@@ -4,8 +4,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Mapping
 
-from .audit_adapter import audit_gate_adapter
-from .collection_plan import CollectorCapability, CollectionTask, CompanyCollectionPlan, compile_company_collection_plan
+from .audit_adapter import generic_audit_adapter
+from .collection_plan import (
+    CollectorCapability,
+    CollectionTask,
+    CompanyCollectionPlan,
+    compile_company_collection_plan,
+)
 from .control_plane import ExecutionMode, StageStatus
 from .dcf_evaluators import RegistryLoader
 from .evidence_adapter import (
@@ -14,9 +19,14 @@ from .evidence_adapter import (
     evidence_ledger_adapter,
     primary_evidence_collection_adapter,
 )
-from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequest, EvidenceCollector
+from .evidence_collection import (
+    EvidenceCollectionBatch,
+    EvidenceCollectionRequest,
+    EvidenceCollector,
+)
 from .funding_adapter import FundingScanner, live_upstream_funding_adapter
 from .generic_reporting import final_report_adapter, save_state_adapter, thesis_delta_adapter
+from .impact_adapter import GenericDecisionImpactConfig
 from .live_primary_adapters import (
     CompanyResolutionRequest,
     CompanyResolver,
@@ -31,14 +41,21 @@ from .live_primary_adapters import (
     live_segment_decomposition_adapter,
     live_source_freshness_adapter,
 )
-from .llm_adapters import blind_red_team_adapter, evidence_to_assumption_bridge_adapter, researcher_a_adapter
+from .llm_adapters import (
+    blind_red_team_adapter,
+    evidence_to_assumption_bridge_adapter,
+    researcher_a_adapter,
+)
 from .llm_staff import BridgeAnalyst, IntelligenceOfficer, RedTeamOfficer
-from .method_capabilities import MethodCapabilityRegistry, load_default_method_capability_registry
+from .method_capabilities import (
+    MethodCapabilityRegistry,
+    load_default_method_capability_registry,
+)
 from .module_plan import ModuleRequirementPlan
 from .module_plan_adapter import module_requirement_plan_adapter
 from .orchestrator import (
+    ControlledRunResult,
     OrchestratorContext,
-    OrchestratorResult,
     StageAdapter,
     StageExecutionResult,
     load_stage_sequence,
@@ -53,7 +70,10 @@ from .post_freeze_adapters import (
     street_gap_analyzer_adapter,
     street_reference_load_adapter,
 )
-from .probability_adapter import CalibrationSnapshotLoader, probability_calibration_load_adapter
+from .probability_adapter import (
+    CalibrationSnapshotLoader,
+    probability_calibration_load_adapter,
+)
 from .research_learning import ResearchLearningStore
 from .risk_adapters import (
     BetaUniverseLoader,
@@ -79,9 +99,14 @@ from .scanner_runtime import ScannerRunner, live_rocket_insight_dispatch_adapter
 from .scenario_binding import ScenarioBindingSpec
 from .shadow_adapters import load_company_state_adapter, scenario_build_adapter
 from .state_learning_adapter import load_research_learning_adapter
+from .unit_contracts import load_unit_contract_registry
 from .valuation_adapter import deterministic_valuation_adapter
 from .valuation_method_intent import valuation_method_intent_adapter
-from .valuation_plan_compiler import CompanyValuationPlanInputs, SegmentMethodChoice, compile_company_valuation_plan
+from .valuation_plan_compiler import (
+    CompanyValuationPlanInputs,
+    SegmentMethodChoice,
+    compile_company_valuation_plan,
+)
 
 
 ValuationPlanInputsLoader = Callable[[OrchestratorContext], CompanyValuationPlanInputs]
@@ -95,7 +120,9 @@ class LiveCollectorProvider:
     def validate(self) -> None:
         self.capability.validate()
         if not callable(self.collector):
-            raise TypeError(f"collector provider {self.capability.collector_id} is not callable")
+            raise TypeError(
+                f"collector provider {self.capability.collector_id} is not callable"
+            )
 
     def bound_collector(self) -> EvidenceCollector:
         capability = self.capability
@@ -104,7 +131,9 @@ class LiveCollectorProvider:
         def collect(request: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
             batch = collector(request)
             if not isinstance(batch, EvidenceCollectionBatch):
-                raise TypeError(f"collector {capability.collector_id} must return EvidenceCollectionBatch")
+                raise TypeError(
+                    f"collector {capability.collector_id} must return EvidenceCollectionBatch"
+                )
             if batch.source_id != capability.source_id:
                 raise ValueError(
                     f"collector {capability.collector_id} source mismatch: "
@@ -155,12 +184,14 @@ class LivePrimaryProviders:
         if not all(callable(item) for item in required_callables):
             raise TypeError("LIVE_PRIMARY required providers must be callable")
         if not self.collectors:
-            raise ValueError("LIVE_PRIMARY requires at least one primary evidence collector provider")
-        ids: list[str] = []
+            raise ValueError(
+                "LIVE_PRIMARY requires at least one primary evidence collector provider"
+            )
+        collector_ids: list[str] = []
         for provider in self.collectors:
             provider.validate()
-            ids.append(provider.capability.collector_id)
-        if len(ids) != len(set(ids)):
+            collector_ids.append(provider.capability.collector_id)
+        if len(collector_ids) != len(set(collector_ids)):
             raise ValueError("LIVE_PRIMARY collector provider IDs must be unique")
         if not isinstance(self.scanner_runners, Mapping):
             raise TypeError("scanner_runners must be a mapping")
@@ -177,11 +208,13 @@ class LivePrimaryRuntimeConfig:
     market_currency: str | None = None
     stage_registry_path: str | Path = "config/control_plane_stage_registry.yaml"
     archetype_registry_path: str | Path = "config/archetype_module_registry.yaml"
-    archetype_control_requirements_path: str | Path = "config/archetype_control_requirements.yaml"
+    archetype_control_requirements_path: str | Path = (
+        "config/archetype_control_requirements.yaml"
+    )
     industry_source_registry_path: str | Path = "config/industry_source_registry.yaml"
     unit_contract_registry_path: str | Path = "config/unit_contract_registry.yaml"
-    decision_impact_policy_path: str | Path = "config/decision_impact_policy.yaml"
     capability_registry: MethodCapabilityRegistry | None = None
+    impact_config: GenericDecisionImpactConfig | None = None
     initial_data: Mapping[str, object] = field(default_factory=dict)
 
     def validate(self) -> None:
@@ -218,10 +251,15 @@ def _task_bound_collector(
     by_id = {item.requirement_id: item for item in collection_plan.requirements}
     try:
         task_metrics = tuple(
-            dict.fromkeys(by_id[requirement_id].metric for requirement_id in task.requirement_ids)
+            dict.fromkeys(
+                by_id[requirement_id].metric
+                for requirement_id in task.requirement_ids
+            )
         )
     except KeyError as exc:
-        raise ValueError(f"collection task references unknown requirement {exc.args[0]}") from exc
+        raise ValueError(
+            f"collection task references unknown requirement {exc.args[0]}"
+        ) from exc
     if not task_metrics:
         raise ValueError(f"collection task {task.task_id} has no authorized metrics")
 
@@ -232,14 +270,18 @@ def _task_bound_collector(
 
 
 def _collection_selection_loader(config: LivePrimaryRuntimeConfig):
-    providers = {item.capability.collector_id: item for item in config.providers.collectors}
+    providers = {
+        item.capability.collector_id: item for item in config.providers.collectors
+    }
     capabilities = tuple(item.capability for item in config.providers.collectors)
 
     def load(context: OrchestratorContext) -> EvidenceCollectorSelection:
         identity = context.data.get("resolved_company_identity")
         plan = context.data.get("module_requirement_plan")
         if not isinstance(identity, ResolvedCompanyIdentity):
-            raise ValueError("resolved company identity missing before collection planning")
+            raise ValueError(
+                "resolved company identity missing before collection planning"
+            )
         if not isinstance(plan, ModuleRequirementPlan):
             raise ValueError("ModuleRequirementPlan missing before collection planning")
         collection_plan = compile_company_collection_plan(
@@ -276,7 +318,10 @@ def _unavailable_stage(label: str) -> StageAdapter:
     return run
 
 
-def _valuation_plan_loader(config: LivePrimaryRuntimeConfig, capability_registry: MethodCapabilityRegistry):
+def _valuation_plan_loader(
+    config: LivePrimaryRuntimeConfig,
+    capability_registry: MethodCapabilityRegistry,
+):
     def load(context: OrchestratorContext, evaluator_registry):
         module_plan = context.data.get("module_requirement_plan")
         scenario_set = context.data.get("bound_scenario_set")
@@ -289,7 +334,9 @@ def _valuation_plan_loader(config: LivePrimaryRuntimeConfig, capability_registry
             raise KeyError("valuation_method_intent")
         inputs = config.providers.valuation_plan_inputs_loader(context)
         if not isinstance(inputs, CompanyValuationPlanInputs):
-            raise TypeError("valuation_plan_inputs_loader must return CompanyValuationPlanInputs")
+            raise TypeError(
+                "valuation_plan_inputs_loader must return CompanyValuationPlanInputs"
+            )
         return compile_company_valuation_plan(
             module_plan,
             scenario_set,
@@ -302,12 +349,19 @@ def _valuation_plan_loader(config: LivePrimaryRuntimeConfig, capability_registry
     return load
 
 
-def build_live_primary_adapters(config: LivePrimaryRuntimeConfig) -> dict[str, StageAdapter]:
+def build_live_primary_adapters(
+    config: LivePrimaryRuntimeConfig,
+) -> dict[str, StageAdapter]:
     config.validate()
     providers = config.providers
-    capability_registry = config.capability_registry or load_default_method_capability_registry()
+    capability_registry = (
+        config.capability_registry or load_default_method_capability_registry()
+    )
     state_root = Path(config.state_root)
     learning_store = ResearchLearningStore(state_root)
+    unit_contract_registry = load_unit_contract_registry(
+        config.unit_contract_registry_path
+    )
 
     state_load = chain_stage_adapters(
         load_company_state_adapter(state_root=state_root),
@@ -338,7 +392,9 @@ def build_live_primary_adapters(config: LivePrimaryRuntimeConfig) -> dict[str, S
     if providers.calibration_loader is not None:
         cohort = config.scenario_binding_spec.calibration_cohort_key
         if not cohort:
-            raise ValueError("calibration_loader requires scenario_binding_spec.calibration_cohort_key")
+            raise ValueError(
+                "calibration_loader requires scenario_binding_spec.calibration_cohort_key"
+            )
         scenario_chain.append(
             probability_calibration_load_adapter(
                 loader=providers.calibration_loader,
@@ -420,7 +476,9 @@ def build_live_primary_adapters(config: LivePrimaryRuntimeConfig) -> dict[str, S
             runners=providers.scanner_runners
         ),
         "UPSTREAM_FUNDING_SCAN": funding,
-        "RESEARCHER_A": researcher_a_adapter(officer=providers.intelligence_officer),
+        "RESEARCHER_A": researcher_a_adapter(
+            officer=providers.intelligence_officer
+        ),
         "BLIND_RED_TEAM_B": red_team,
         "RESEARCH_LOOP": research_loop_recovery_adapter(
             providers.research_recovery_adapter
@@ -431,12 +489,14 @@ def build_live_primary_adapters(config: LivePrimaryRuntimeConfig) -> dict[str, S
         "WACC_VALIDATION": wacc,
         "DETERMINISTIC_VALUATION": valuation,
         "HIERARCHICAL_WARRANTED_PER": per,
-        "DCF_PER_ASSUMPTION_CONSISTENCY_GATE": dcf_per_consistency_gate_adapter(),
+        "DCF_PER_ASSUMPTION_CONSISTENCY_GATE": (
+            dcf_per_consistency_gate_adapter()
+        ),
         "CROSS_METHOD_DOUBLE_COUNT_AUDIT": cross_method_double_count_adapter(),
         "PROBABILITY_DISTRIBUTION_ANALYSIS": probability_distribution_adapter(),
-        "AUDIT_GATE": audit_gate_adapter(
-            unit_contract_registry_path=config.unit_contract_registry_path,
-            decision_impact_policy_path=config.decision_impact_policy_path,
+        "AUDIT_GATE": generic_audit_adapter(
+            impact_config=config.impact_config,
+            unit_contract_registry=unit_contract_registry,
         ),
         "STREET_REFERENCE_LOAD": street_load,
         "STREET_GAP_ANALYZER": street_gap_analyzer_adapter(),
@@ -451,8 +511,12 @@ def build_live_primary_adapters(config: LivePrimaryRuntimeConfig) -> dict[str, S
     }
 
 
-def run_prism(config: LivePrimaryRuntimeConfig) -> OrchestratorResult:
-    """Run the canonical PRISM Control Plane in LIVE_PRIMARY mode with no shadow fallback."""
+def run_prism(config: LivePrimaryRuntimeConfig) -> ControlledRunResult:
+    """Run the canonical PRISM Control Plane in LIVE_PRIMARY mode.
+
+    LIVE_PRIMARY never falls back to PRIMARY_SHADOW or the legacy OCI workflow. Missing
+    route-specific providers remain explicit stage-level capability gaps.
+    """
     config.validate()
     sequence = load_stage_sequence(config.stage_registry_path)
     initial = dict(config.initial_data)
