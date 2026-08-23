@@ -269,7 +269,7 @@ def _jurisdiction_matches(source_id: str, jurisdiction: str) -> bool:
     prefix = source_id.split("_", 1)[0].upper()
     if prefix in {"GLOBAL", "INTL", "OECD", "IEA"}:
         return True
-    if prefix in {"KR", "US"}:
+    if len(prefix) == 2 and prefix.isalpha():
         return prefix == target
     return True
 
