@@ -12,7 +12,10 @@ from .valuation_plan_compiler import ValuationPlanCompilation, ValuationPlanStat
 
 
 RegistryLoader = Callable[[OrchestratorContext], EvaluatorRegistry]
-ValuationPlanLoader = Callable[[OrchestratorContext, EvaluatorRegistry], ValuationPlanCompilation]
+ValuationPlanLoader = Callable[
+    [OrchestratorContext, EvaluatorRegistry],
+    ValuationPlanCompilation,
+]
 
 
 def _plan_identity(plan: CompanyValuationPlan) -> tuple[tuple[str, ...], str]:
@@ -23,10 +26,17 @@ def _plan_identity(plan: CompanyValuationPlan) -> tuple[tuple[str, ...], str]:
     serialized = "\n".join(
         [plan.reporting_unit, plan.diluted_shares_key]
         + [
-            f"{item.asset_id}|{item.segment_id}|{item.model_key.archetype}|{item.model_key.method}|{item.model_key.version}|{item.ownership_key}|{item.ev_to_equity_adjustment_key or ''}"
+            (
+                f"{item.asset_id}|{item.segment_id}|{item.model_key.archetype}|"
+                f"{item.model_key.method}|{item.model_key.version}|{item.ownership_key}|"
+                f"{item.ev_to_equity_adjustment_key or ''}"
+            )
             for item in plan.segments
         ]
-        + [f"PARENT|{item.asset_id}|{item.assumption_key}" for item in plan.parent_adjustments]
+        + [
+            f"PARENT|{item.asset_id}|{item.assumption_key}"
+            for item in plan.parent_adjustments
+        ]
     )
     return selected_methods, sha256(serialized.encode("utf-8")).hexdigest()
 
@@ -53,7 +63,9 @@ def deterministic_valuation_adapter(
             )
 
         try:
-            effective_registry = registry if registry is not None else registry_loader(context)
+            effective_registry = (
+                registry if registry is not None else registry_loader(context)
+            )
             if not isinstance(effective_registry, EvaluatorRegistry):
                 raise TypeError("registry_loader must return EvaluatorRegistry")
         except KeyError as exc:
@@ -96,17 +108,53 @@ def deterministic_valuation_adapter(
                 )
                 return StageExecutionResult(
                     status,
-                    f"valuation plan compilation did not resolve: {compilation.status.value}",
+                    (
+                        "valuation plan compilation did not resolve: "
+                        f"{compilation.status.value}"
+                    ),
                     {"valuation_plan_compilation": compilation},
                     blocking=True,
                 )
+
+            pre_risk_per_segments = context.data.get("warranted_per_segments")
+            if pre_risk_per_segments is not None:
+                if not isinstance(pre_risk_per_segments, tuple) or not all(
+                    isinstance(item, str) and item
+                    for item in pre_risk_per_segments
+                ):
+                    return StageExecutionResult(
+                        StageStatus.BLOCKED,
+                        "pre-risk warranted_per_segments must be a tuple of non-empty strings",
+                        {"valuation_plan_compilation": compilation},
+                        blocking=True,
+                    )
+                if pre_risk_per_segments != compilation.warranted_per_segments:
+                    return StageExecutionResult(
+                        StageStatus.BLOCKED,
+                        (
+                            "pre-risk Warranted PER routing drifted from the compiled "
+                            "valuation plan"
+                        ),
+                        {
+                            "valuation_plan_compilation": compilation,
+                            "pre_risk_warranted_per_segments": pre_risk_per_segments,
+                            "valuation_plan_warranted_per_segments": (
+                                compilation.warranted_per_segments
+                            ),
+                        },
+                        blocking=True,
+                    )
             effective_plan = compilation.plan
 
         if not isinstance(effective_plan, CompanyValuationPlan):
             return StageExecutionResult(
                 StageStatus.BLOCKED,
                 "resolved valuation plan must be CompanyValuationPlan",
-                {"valuation_plan_compilation": compilation} if compilation is not None else {},
+                (
+                    {"valuation_plan_compilation": compilation}
+                    if compilation is not None
+                    else {}
+                ),
                 blocking=True,
             )
 
@@ -121,14 +169,22 @@ def deterministic_valuation_adapter(
             return StageExecutionResult(
                 StageStatus.NOT_IMPLEMENTED,
                 f"exact evaluator is unavailable during valuation execution: {exc}",
-                {"valuation_plan_compilation": compilation} if compilation is not None else {},
+                (
+                    {"valuation_plan_compilation": compilation}
+                    if compilation is not None
+                    else {}
+                ),
                 blocking=True,
             )
         except (ValueError, TypeError, PermissionError) as exc:
             return StageExecutionResult(
                 StageStatus.BLOCKED,
                 f"deterministic valuation validation failed: {exc}",
-                {"valuation_plan_compilation": compilation} if compilation is not None else {},
+                (
+                    {"valuation_plan_compilation": compilation}
+                    if compilation is not None
+                    else {}
+                ),
                 blocking=True,
             )
 
@@ -142,8 +198,14 @@ def deterministic_valuation_adapter(
         }
         if compilation is not None:
             outputs["valuation_plan_compilation"] = compilation
-            outputs["warranted_per_segments"] = compilation.warranted_per_segments
-            outputs["valuation_aggregator_bindings"] = compilation.aggregator_bindings
+            outputs["valuation_plan_warranted_per_segments"] = (
+                compilation.warranted_per_segments
+            )
+            if "warranted_per_segments" not in context.data:
+                outputs["warranted_per_segments"] = compilation.warranted_per_segments
+            outputs["valuation_aggregator_bindings"] = (
+                compilation.aggregator_bindings
+            )
         return StageExecutionResult(
             StageStatus.PASS,
             "registered deterministic evaluators and SOTP aggregation completed",
