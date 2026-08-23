@@ -32,12 +32,17 @@ def _staff_context(context: OrchestratorContext) -> LLMStaffContext:
     prior = context.data.get("prior_hypotheses", ())
     if not isinstance(prior, tuple) or not all(isinstance(item, HypothesisRecord) for item in prior):
         raise ValueError("prior_hypotheses must be a typed tuple")
+    scanner_findings = context.data.get("scanner_findings", ())
+    if not isinstance(scanner_findings, tuple):
+        raise ValueError("scanner_findings must be a tuple")
     return LLMStaffContext(
         company=company,
         ticker=ticker,
         ledger=ledger,
         prior_hypotheses=prior,
         module_requirement_plan=context.data.get("module_requirement_plan"),
+        scanner_findings=scanner_findings,
+        funding_scan_result=context.data.get("funding_scan_result"),
     )
 
 

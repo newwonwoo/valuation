@@ -1,4 +1,4 @@
-# PRISM LIVE_PRIMARY Readiness Map v1.1
+# PRISM LIVE_PRIMARY Readiness Map v1.2
 
 Status: canonical maintenance record for distinguishing full PRIMARY_SHADOW integration from real-source LIVE_PRIMARY readiness.
 
@@ -21,23 +21,22 @@ A new workflow stage without a readiness row is a maintenance error.
 
 ## 2. Current snapshot
 
-At the v1.1 registry snapshot:
+At the v1.2 registry snapshot:
 
 - canonical stages: **32 / 32 mapped**;
-- `LIVE_READY` or `RUNTIME_READY`: **24**;
+- `LIVE_READY` or `RUNTIME_READY`: **26**;
 - `PARTIAL_LIVE`: **3**;
-- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **5**.
+- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **3**.
 
 These counts are not a percentage-complete score. A single unresolved stage can still block a company if its Industry DNA makes that capability material.
 
 The remaining highest-value live gaps are:
 
-1. actual Rocket Insight scanner dispatch rather than plan-only inspection;
-2. route-specific Upstream Funding adapter;
-3. live Economic-Twin/Beta and WACC input adapters;
-4. Warranted PER stage adapter;
-5. broader exact-evaluator coverage across the 19 Economic Archetypes;
-6. probability calibration datasets beyond the gating contract.
+1. live Economic-Twin/Beta adapter;
+2. live WACC market/credit/capital-structure input adapter;
+3. Warranted PER stage adapter;
+4. broader exact-evaluator coverage across the 19 Economic Archetypes;
+5. probability calibration datasets beyond the gating contract.
 
 ## 3. LIVE_PRIMARY front-half contract
 
@@ -73,7 +72,38 @@ Every `SegmentDescriptor` must explicitly state revenue recognition, price forma
 
 The live router must cover every decomposed segment exactly once with an `IndustryDNAProfile`. Every `evidence_key` in the route must already exist in either the loaded Industry Knowledge snapshot or that run's segment evidence. Invented/unresolved Evidence IDs fail closed.
 
-## 4. OpenDART company-fact vertical
+## 4. Live Rocket Insight scanner dispatch
+
+`src/valuation_engine/scanner_runtime.py` executes the mandatory/adaptive scanner loadout through typed `ScannerRunner` contracts.
+
+Rules:
+
+- every mandatory scanner needs a registered runner or the stage is `NOT_IMPLEMENTED` and blocking;
+- scanner Evidence IDs must already exist in the pre-freeze `EvidenceLedger`;
+- target-market Evidence is forbidden;
+- an active scanner must connect to a hypothesis candidate, verification request, economic path, final-output reference, or explicitly declare `context_only`;
+- `context_only` is not treated as hidden usefulness — it is recorded as a research-only path so repeated cost/low impact can be down-ranked;
+- each live finding records `ResearchEffort` and a `ModuleImpactTrace`-compatible path;
+- typed scanner findings are included in `LLMStaffContext`, so Researcher A can use them instead of receiving only a scanner-name plan.
+
+The dispatcher does not commit assumptions. It produces structured research input for LLM Staff and later Decision Impact / ablation.
+
+## 5. Live Upstream Funding scan
+
+`src/valuation_engine/funding_adapter.py` executes route-required funding analysis through a typed `FundingScanner` contract.
+
+The result must include a validated contiguous `FundingLadder`, Evidence IDs, funded-demand state and any financing constraints/verification requests. A credit-improvement candidate must be backed by confirmed or first-order funding evidence.
+
+Crucially:
+
+- customer advances/funding evidence may support FCFF, funded-demand or credit-mechanism reasoning;
+- the funding stage does **not** directly lower WACC;
+- only Evidence IDs are exposed as a credit-improvement candidate to the independent WACC stage;
+- target-equity market Evidence is forbidden pre-freeze.
+
+Funding results are also exposed to `LLMStaffContext` so the Researcher/Bridge stages can reason from the verified financing chain without bypassing the Assumption Compiler.
+
+## 6. OpenDART company-fact vertical
 
 `src/valuation_engine/dart_facts.py` is the first reusable LIVE_PRIMARY company-fact adapter.
 
@@ -99,20 +129,20 @@ Design rules:
 
 The live collector uses an injected `fetch_text` transport. Network/credential handling therefore stays outside deterministic valuation code, while fixtures and historical replays use the same fact parser.
 
-## 5. What the live front half does not solve
+## 7. What LIVE_READY does not mean
 
-A `LIVE_READY` stage means its typed source/loader contract, traceability and fail-closed behavior are complete. It does **not** claim every jurisdiction, every source family or every company-specific KPI is built in.
+A `LIVE_READY` stage means its typed source/loader/runner contract, traceability and fail-closed behavior are complete. It does **not** claim every jurisdiction, every source family, every scanner implementation or every company-specific KPI is built in.
 
 OpenDART standard financial facts do not provide every Industry DNA requirement. Backlog quality, effective capacity, customer advances, qualification, project COD, clinical evidence, customer concentration and many segment KPIs still need company-specific filing-note, IR, primary-regulatory or calibrated alternative-data adapters.
 
 Absence of a standard XBRL account ID is not permission to guess from a similar account name. The Control Plane should record the missing metric and enter Recovery/Capability handling.
 
-## 6. Promotion rule
+## 8. Promotion rule
 
 A stage moves toward `LIVE_READY` only when:
 
-1. the source/loader contract is explicit;
-2. freshness/revision behavior is auditable;
+1. the source/loader/runner contract is explicit;
+2. freshness/revision behavior is auditable where relevant;
 3. output is typed and traceable;
 4. failure is fail-closed;
 5. current-price/Street isolation remains intact;

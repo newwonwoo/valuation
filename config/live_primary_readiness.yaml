@@ -36,11 +36,11 @@ stages:
     status: RUNTIME_READY
     reason: append-only ledger, supersession and snapshot hashing are implemented.
   ROCKET_INSIGHT_SCAN:
-    status: SHADOW_ONLY
-    reason: mandatory scanner loadout is recorded, but scanners are not yet dispatched as a complete live evidence acquisition layer.
+    status: LIVE_READY
+    reason: canonical scanner dispatcher executes the active/mandatory loadout through typed live runners, validates Evidence lineage, exposes findings to LLM Staff, and records explicit impact paths and research effort.
   UPSTREAM_FUNDING_SCAN:
-    status: CONDITIONAL_NOT_IMPLEMENTED
-    reason: funding module exists, but full runtime intentionally fails closed when a route requires funding and no dedicated adapter is supplied.
+    status: LIVE_READY
+    reason: route-required funding scans execute through a typed live FundingScanner contract; funding evidence and credit-improvement candidates are exposed downstream without directly mutating WACC or intrinsic value.
   RESEARCHER_A:
     status: RUNTIME_READY
     reason: typed LLM callback contract is implemented; model/provider remains injectable.
