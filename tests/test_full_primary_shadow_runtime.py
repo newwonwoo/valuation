@@ -1,3 +1,4 @@
+from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 
@@ -64,6 +65,16 @@ REQUIRED_OPERATING = (
     "utilization",
 )
 
+PROJECT_REQUIRED = (
+    "contracted_cashflow",
+    "capex",
+    "financing_close",
+    "dscr",
+    "tenor",
+    "cod",
+    "utilization",
+)
+
 
 def evidence_records():
     records = []
@@ -104,6 +115,32 @@ def evidence_records():
                     segment="core",
                 )
             )
+    return tuple(records)
+
+
+def project_evidence_records():
+    records = list(evidence_records())
+    covered = {item.metric for item in records}
+    for index, metric in enumerate(PROJECT_REQUIRED, start=1):
+        if metric in covered:
+            continue
+        records.append(
+            EvidenceRecord(
+                id=f"E:PROJECT:{metric}",
+                target="T",
+                metric=metric,
+                value=index,
+                unit="count",
+                source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
+                effective_date="2026-06-30",
+                observed_date="2026-07-01",
+                source_name="project filing",
+                source_ref=f"filing#project/{metric}",
+                source_grade="A",
+                confidence=1.0,
+                segment="project",
+            )
+        )
     return tuple(records)
 
 
@@ -259,7 +296,7 @@ def runtime_config(tmp_path):
     )
 
 
-def test_full_canonical_primary_shadow_sequence_reaches_final_report(tmp_path):
+def test_full_canonical_primary_shadow_sequence_reaches_final_report_and_persists_learning(tmp_path):
     result = run_primary_shadow(runtime_config(tmp_path))
 
     assert result.blocked_reasons == ()
@@ -282,6 +319,14 @@ def test_full_canonical_primary_shadow_sequence_reaches_final_report(tmp_path):
     assert "Expected Value: 미산출" in result.data["final_report"]
     assert (Path(tmp_path) / "state" / "EXM" / "current_state.json").exists()
     assert (Path(tmp_path) / "runs" / "EXM" / "FULL-SHADOW-1" / "final_report.md").exists()
+    assert (Path(tmp_path) / "learning" / "EXM" / "module-impact" / "FULL-SHADOW-1.json").exists()
+    assert result.data["research_learning_record_hash"]
+
+    second = run_primary_shadow(replace(runtime_config(tmp_path), run_id="FULL-SHADOW-2"))
+    assert second.blocked_reasons == ()
+    assert second.data["research_learning_record_count"] == 1
+    assert second.data["prior_research_loadout_recommendations"]
+    assert (Path(tmp_path) / "learning" / "EXM" / "module-impact" / "FULL-SHADOW-2.json").exists()
 
 
 def test_required_funding_scan_fails_closed_without_adapter(tmp_path):
@@ -300,7 +345,19 @@ def test_required_funding_scan_fails_closed_without_adapter(tmp_path):
         cashflow_duration="long",
         evidence_keys=("ROUTE:EVIDENCE:2",),
     )
-    config = PrimaryShadowRuntimeConfig(**{**config.__dict__, "profiles": (profile,), "run_id": "FUNDING-BLOCK"})
+    collector = static_evidence_collector(
+        source_id="STATIC_PROJECT_PRIMARY",
+        checked_at="2026-08-23",
+        records=project_evidence_records(),
+        source_fingerprint="STATIC_PROJECT_SOURCE_HASH",
+        document_ids=("DOC-PROJECT",),
+    )
+    config = replace(
+        config,
+        profiles=(profile,),
+        collectors=(collector,),
+        run_id="FUNDING-BLOCK",
+    )
     result = run_primary_shadow(config)
     assert result.blocked_reasons
     funding_trace = next(trace for trace in result.stage_traces if trace.stage == "UPSTREAM_FUNDING_SCAN")
