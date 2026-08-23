@@ -5,10 +5,16 @@ from hashlib import sha256
 import json
 from typing import Callable
 
-from .collection_plan import CompanyCollectionPlan
+from .collection_plan import (
+    CompanyCollectionPlan,
+    module_plan_routing_hash,
+    normalize_jurisdiction,
+)
 from .control_plane import StageStatus
 from .evidence_collection import EvidenceCollector, collect_primary_evidence
 from .ledger import EvidenceLedger
+from .live_primary_adapters import ResolvedCompanyIdentity
+from .module_plan import ModuleRequirementPlan
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 
 
@@ -57,6 +63,27 @@ def primary_evidence_collection_adapter(
         selected_collectors: tuple[SelectedEvidenceCollector, ...] = ()
         selected_collector_ids: tuple[str, ...] = ()
         if selection_loader is not None:
+            identity = context.data.get("resolved_company_identity")
+            current_module_plan = context.data.get("module_requirement_plan")
+            current_jurisdiction = context.data.get("jurisdiction")
+            if not isinstance(identity, ResolvedCompanyIdentity):
+                return StageExecutionResult(
+                    StageStatus.RECOVERY_REQUIRED,
+                    "resolved company identity is required before dynamic primary collection",
+                    blocking=True,
+                )
+            if not isinstance(current_module_plan, ModuleRequirementPlan):
+                return StageExecutionResult(
+                    StageStatus.RECOVERY_REQUIRED,
+                    "current ModuleRequirementPlan is required before dynamic primary collection",
+                    blocking=True,
+                )
+            if not isinstance(current_jurisdiction, str) or not current_jurisdiction:
+                return StageExecutionResult(
+                    StageStatus.RECOVERY_REQUIRED,
+                    "jurisdiction is required before dynamic primary collection",
+                    blocking=True,
+                )
             try:
                 selection = selection_loader(context)
             except Exception as exc:
@@ -76,6 +103,31 @@ def primary_evidence_collection_adapter(
                     f"CompanyCollectionPlan is invalid: {type(exc).__name__}: {exc}",
                     blocking=True,
                 )
+            if collection_plan.company != identity:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "collection plan company identity does not match the current resolved company identity",
+                    {"collection_plan": collection_plan},
+                    blocking=True,
+                )
+            if normalize_jurisdiction(collection_plan.company.jurisdiction) != normalize_jurisdiction(current_jurisdiction):
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "collection plan jurisdiction does not match the current resolved jurisdiction",
+                    {"collection_plan": collection_plan},
+                    blocking=True,
+                )
+            current_routing_hash = module_plan_routing_hash(current_module_plan)
+            if collection_plan.routing_hash != current_routing_hash:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "collection plan routing hash does not match the current Module Requirement Plan",
+                    {
+                        "collection_plan": collection_plan,
+                        "current_module_plan_routing_hash": current_routing_hash,
+                    },
+                    blocking=True,
+                )
             if collection_plan.company.target_id != target_id:
                 return StageExecutionResult(
                     StageStatus.BLOCKED,
@@ -83,9 +135,7 @@ def primary_evidence_collection_adapter(
                     {"collection_plan": collection_plan},
                     blocking=True,
                 )
-            planned_required = tuple(
-                dict.fromkeys(item.metric for item in collection_plan.required_evidence)
-            )
+            planned_required = tuple(dict.fromkeys(item.metric for item in collection_plan.required_evidence))
             if set(planned_required) != set(required):
                 return StageExecutionResult(
                     StageStatus.BLOCKED,
@@ -216,9 +266,7 @@ def evidence_ledger_adapter() -> StageAdapter:
         if not active:
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "EvidenceLedger has no active evidence", blocking=True)
         payload = ledger.to_list()
-        ledger_hash = sha256(
-            json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
-        ).hexdigest()
+        ledger_hash = sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
         return StageExecutionResult(
             StageStatus.PASS,
             "append-only EvidenceLedger validated and snapshot hash frozen",
