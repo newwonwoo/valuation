@@ -14,38 +14,42 @@ class MethodKind(str, Enum):
     AGGREGATOR = "aggregator"
 
 
-class ExecutionFamily(str, Enum):
-    NORMALIZED_MULTIPLE = "normalized_multiple"
-    EXPLICIT_FCFF_DCF = "explicit_fcff_dcf"
-    FINITE_LIFE_NPV = "finite_life_npv"
-    CALIBRATED_SINGLE_EVENT_RNPV = "calibrated_single_event_rnpv"
-    WARRANTED_PER = "warranted_per"
-    SOTP = "sotp"
-    NOT_IMPLEMENTED = "not_implemented"
-
-
 class MethodRuntimeStatus(str, Enum):
     RUNTIME_READY = "RUNTIME_READY"
     PARTIAL_RUNTIME = "PARTIAL_RUNTIME"
     NOT_IMPLEMENTED = "NOT_IMPLEMENTED"
 
 
-_FAMILY_STATUS = {
-    ExecutionFamily.NORMALIZED_MULTIPLE: MethodRuntimeStatus.RUNTIME_READY,
-    ExecutionFamily.EXPLICIT_FCFF_DCF: MethodRuntimeStatus.PARTIAL_RUNTIME,
-    ExecutionFamily.FINITE_LIFE_NPV: MethodRuntimeStatus.RUNTIME_READY,
-    ExecutionFamily.CALIBRATED_SINGLE_EVENT_RNPV: MethodRuntimeStatus.PARTIAL_RUNTIME,
-    ExecutionFamily.WARRANTED_PER: MethodRuntimeStatus.RUNTIME_READY,
-    ExecutionFamily.SOTP: MethodRuntimeStatus.RUNTIME_READY,
-    ExecutionFamily.NOT_IMPLEMENTED: MethodRuntimeStatus.NOT_IMPLEMENTED,
-}
+@dataclass(frozen=True)
+class ExecutionFamilySpec:
+    family: str
+    kind: MethodKind
+    runtime_status: MethodRuntimeStatus
+    requires_beta: bool
+    requires_wacc: bool
+    canonical_refs: tuple[str, ...]
+    stage: str | None = None
+
+    def validate(self) -> None:
+        if not self.family or not self.canonical_refs:
+            raise ValueError("execution family requires name and canonical refs")
+        if self.kind in {MethodKind.CROSS_METHOD_ENGINE, MethodKind.AGGREGATOR} and not self.stage:
+            raise ValueError(f"execution family {self.family} requires a workflow stage")
+        if self.kind is MethodKind.CROSS_METHOD_ENGINE and self.stage != "HIERARCHICAL_WARRANTED_PER":
+            raise ValueError(f"cross-method family {self.family} has invalid workflow stage")
+        if self.requires_wacc and not self.requires_beta:
+            raise ValueError(
+                f"execution family {self.family} cannot require WACC while declaring Beta unnecessary under the current industrial risk contract"
+            )
 
 
 @dataclass(frozen=True)
 class MethodCapability:
+    archetype: str
     method: str
+    execution_family: str
     kind: MethodKind
-    execution_family: ExecutionFamily
+    runtime_status: MethodRuntimeStatus
     output_kind: str
     requires_beta: bool
     requires_wacc: bool
@@ -53,28 +57,23 @@ class MethodCapability:
     stage: str | None = None
 
     @property
-    def runtime_status(self) -> MethodRuntimeStatus:
-        return _FAMILY_STATUS[self.execution_family]
+    def identity(self) -> tuple[str, str]:
+        return (self.archetype, self.method)
 
     def validate(self) -> None:
-        if not self.method or not self.output_kind or not self.canonical_refs:
-            raise ValueError(f"method capability {self.method!r} is incomplete")
-        if self.kind is MethodKind.CROSS_METHOD_ENGINE:
-            if self.stage != "HIERARCHICAL_WARRANTED_PER":
-                raise ValueError(f"cross-method capability {self.method} must declare its workflow stage")
-            if self.execution_family is not ExecutionFamily.WARRANTED_PER:
-                raise ValueError(f"cross-method capability {self.method} has invalid execution family")
+        if not self.archetype or not self.method or not self.execution_family:
+            raise ValueError("method capability requires archetype, method and execution family")
+        if not self.output_kind or not self.canonical_refs:
+            raise ValueError(f"method capability {self.identity!r} is incomplete")
+        if self.runtime_status is not MethodRuntimeStatus.NOT_IMPLEMENTED and self.kind is MethodKind.SEGMENT_EVALUATOR:
+            if self.output_kind not in {"enterprise_value", "equity_value"}:
+                raise ValueError(
+                    f"implemented segment evaluator {self.identity!r} has invalid output_kind={self.output_kind}"
+                )
+        if self.kind is MethodKind.CROSS_METHOD_ENGINE and self.stage != "HIERARCHICAL_WARRANTED_PER":
+            raise ValueError(f"cross-method capability {self.identity!r} has invalid workflow stage")
         if self.kind is MethodKind.AGGREGATOR and not self.stage:
-            raise ValueError(f"aggregator capability {self.method} requires a workflow stage")
-        if self.kind is MethodKind.SEGMENT_EVALUATOR and self.output_kind not in {
-            "enterprise_value",
-            "equity_value",
-        }:
-            raise ValueError(f"segment evaluator {self.method} has invalid output_kind={self.output_kind}")
-        if self.requires_wacc and not self.requires_beta:
-            raise ValueError(
-                f"method {self.method} cannot require WACC while declaring Beta unnecessary under the current industrial risk contract"
-            )
+            raise ValueError(f"aggregator capability {self.identity!r} requires a workflow stage")
 
 
 @dataclass(frozen=True)
@@ -91,6 +90,7 @@ class MethodCoverageSummary:
 
 @dataclass(frozen=True)
 class MethodCapabilityRegistry:
+    families: tuple[ExecutionFamilySpec, ...]
     capabilities: tuple[MethodCapability, ...]
 
     def validate(
@@ -99,11 +99,17 @@ class MethodCapabilityRegistry:
         archetype_registry_path: str | Path,
         repo_root: str | Path | None = None,
     ) -> None:
-        if not self.capabilities:
+        if not self.families or not self.capabilities:
             raise ValueError("valuation method capability registry cannot be empty")
-        methods = tuple(item.method for item in self.capabilities)
-        if len(methods) != len(set(methods)):
-            raise ValueError("valuation method capability registry contains duplicate methods")
+        family_names = tuple(item.family for item in self.families)
+        if len(family_names) != len(set(family_names)):
+            raise ValueError("valuation method capability registry contains duplicate execution families")
+        for item in self.families:
+            item.validate()
+
+        identities = tuple(item.identity for item in self.capabilities)
+        if len(identities) != len(set(identities)):
+            raise ValueError("valuation method capability registry contains duplicate archetype/method bindings")
         for item in self.capabilities:
             item.validate()
 
@@ -111,15 +117,15 @@ class MethodCapabilityRegistry:
         modules = archetype_payload.get("modules")
         if not isinstance(modules, dict) or not modules:
             raise ValueError("archetype module registry requires non-empty modules")
-        exposed_methods = {
-            method
-            for spec in modules.values()
+        exposed_pairs = {
+            (archetype, method)
+            for archetype, spec in modules.items()
             if isinstance(spec, dict)
             for method in spec.get("allowed_valuation_methods", [])
         }
-        configured_methods = set(methods)
-        missing = tuple(sorted(exposed_methods - configured_methods))
-        extra = tuple(sorted(configured_methods - exposed_methods))
+        configured_pairs = set(identities)
+        missing = tuple(sorted(exposed_pairs - configured_pairs))
+        extra = tuple(sorted(configured_pairs - exposed_pairs))
         if missing or extra:
             raise ValueError(
                 f"valuation method capability drift: missing={missing}, extra={extra}"
@@ -131,8 +137,8 @@ class MethodCapabilityRegistry:
                 sorted(
                     {
                         ref
-                        for item in self.capabilities
-                        for ref in item.canonical_refs
+                        for family in self.families
+                        for ref in family.canonical_refs
                         if not (root / ref).exists()
                     }
                 )
@@ -143,82 +149,126 @@ class MethodCapabilityRegistry:
                     + ", ".join(missing_refs)
                 )
 
-        warranted = self.get("warranted_per")
-        if warranted.kind is not MethodKind.CROSS_METHOD_ENGINE:
-            raise ValueError("warranted_per must never be compiled as a segment ModelKey")
-        sotp = self.get("sotp")
-        if sotp.kind is not MethodKind.AGGREGATOR:
-            raise ValueError("sotp must never be compiled as a segment ModelKey")
+        for capability in self.capabilities:
+            family = self.family(capability.execution_family)
+            if (
+                capability.kind is not family.kind
+                or capability.runtime_status is not family.runtime_status
+                or capability.requires_beta != family.requires_beta
+                or capability.requires_wacc != family.requires_wacc
+                or capability.stage != family.stage
+                or capability.canonical_refs != family.canonical_refs
+            ):
+                raise ValueError(
+                    f"method capability {capability.identity!r} drifted from execution family {family.family}"
+                )
 
-    def get(self, method: str) -> MethodCapability:
-        for item in self.capabilities:
-            if item.method == method:
+        for capability in self.capabilities:
+            if capability.method == "warranted_per" and capability.kind is not MethodKind.CROSS_METHOD_ENGINE:
+                raise ValueError("warranted_per must never be compiled as a segment ModelKey")
+            if capability.method == "sotp" and capability.kind is not MethodKind.AGGREGATOR:
+                raise ValueError("sotp must never be compiled as a segment ModelKey")
+
+    def family(self, family: str) -> ExecutionFamilySpec:
+        for item in self.families:
+            if item.family == family:
                 return item
-        raise KeyError(method)
+        raise KeyError(family)
+
+    def get(self, archetype: str, method: str) -> MethodCapability:
+        for item in self.capabilities:
+            if item.archetype == archetype and item.method == method:
+                return item
+        raise KeyError((archetype, method))
 
     def coverage_summary(self) -> MethodCoverageSummary:
-        ready = tuple(
-            sorted(
-                item.method
-                for item in self.capabilities
-                if item.runtime_status is MethodRuntimeStatus.RUNTIME_READY
-            )
-        )
-        partial = tuple(
-            sorted(
-                item.method
-                for item in self.capabilities
-                if item.runtime_status is MethodRuntimeStatus.PARTIAL_RUNTIME
-            )
-        )
-        missing = tuple(
-            sorted(
-                item.method
-                for item in self.capabilities
-                if item.runtime_status is MethodRuntimeStatus.NOT_IMPLEMENTED
-            )
-        )
-        return MethodCoverageSummary(len(self.capabilities), ready, partial, missing)
+        return _coverage_summary(self.capabilities)
+
+
+def _coverage_summary(capabilities: tuple[MethodCapability, ...]) -> MethodCoverageSummary:
+    def label(item: MethodCapability) -> str:
+        return f"{item.archetype}/{item.method}"
+
+    ready = tuple(
+        sorted(label(item) for item in capabilities if item.runtime_status is MethodRuntimeStatus.RUNTIME_READY)
+    )
+    partial = tuple(
+        sorted(label(item) for item in capabilities if item.runtime_status is MethodRuntimeStatus.PARTIAL_RUNTIME)
+    )
+    missing = tuple(
+        sorted(label(item) for item in capabilities if item.runtime_status is MethodRuntimeStatus.NOT_IMPLEMENTED)
+    )
+    return MethodCoverageSummary(len(capabilities), ready, partial, missing)
 
 
 def _bool_field(spec: dict[str, Any], key: str) -> bool:
     value = spec.get(key)
     if not isinstance(value, bool):
-        raise ValueError(f"method capability field {key} must be boolean")
+        raise ValueError(f"execution family field {key} must be boolean")
     return value
 
 
 def load_method_capability_registry(path: str | Path) -> MethodCapabilityRegistry:
     payload = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    raw_methods = payload.get("methods")
-    if not isinstance(raw_methods, dict) or not raw_methods:
-        raise ValueError("valuation method capability registry requires non-empty methods")
+    raw_families = payload.get("execution_families")
+    raw_bindings = payload.get("bindings")
+    if not isinstance(raw_families, dict) or not raw_families:
+        raise ValueError("valuation method capability registry requires execution_families")
+    if not isinstance(raw_bindings, dict) or not raw_bindings:
+        raise ValueError("valuation method capability registry requires bindings")
 
-    capabilities: list[MethodCapability] = []
-    for method, spec in raw_methods.items():
-        if not isinstance(method, str) or not method or not isinstance(spec, dict):
-            raise ValueError("valuation method capability rows must be named mappings")
+    families: list[ExecutionFamilySpec] = []
+    for family, spec in raw_families.items():
+        if not isinstance(family, str) or not family or not isinstance(spec, dict):
+            raise ValueError("execution family rows must be named mappings")
         refs = spec.get("canonical_refs")
         if not isinstance(refs, list) or not refs or not all(isinstance(ref, str) and ref for ref in refs):
-            raise ValueError(f"method capability {method} requires canonical_refs")
+            raise ValueError(f"execution family {family} requires canonical_refs")
         try:
             kind = MethodKind(str(spec["kind"]))
-            family = ExecutionFamily(str(spec["execution_family"]))
+            status = MethodRuntimeStatus(str(spec["runtime_status"]))
         except (KeyError, ValueError) as exc:
-            raise ValueError(f"invalid method capability type for {method}") from exc
-        output_kind = str(spec.get("output_kind") or "").strip()
+            raise ValueError(f"invalid execution family type for {family}") from exc
         stage_raw = spec.get("stage")
-        stage = None if stage_raw in (None, "") else str(stage_raw)
-        capabilities.append(
-            MethodCapability(
-                method=method,
+        families.append(
+            ExecutionFamilySpec(
+                family=family,
                 kind=kind,
-                execution_family=family,
-                output_kind=output_kind,
+                runtime_status=status,
                 requires_beta=_bool_field(spec, "requires_beta"),
                 requires_wacc=_bool_field(spec, "requires_wacc"),
                 canonical_refs=tuple(refs),
-                stage=stage,
+                stage=None if stage_raw in (None, "") else str(stage_raw),
             )
         )
-    return MethodCapabilityRegistry(tuple(capabilities))
+
+    family_by_name = {item.family: item for item in families}
+    capabilities: list[MethodCapability] = []
+    for archetype, method_rows in raw_bindings.items():
+        if not isinstance(archetype, str) or not archetype or not isinstance(method_rows, dict):
+            raise ValueError("method bindings must be archetype mappings")
+        for method, binding in method_rows.items():
+            if not isinstance(method, str) or not method or not isinstance(binding, dict):
+                raise ValueError(f"invalid method binding in {archetype}")
+            family_name = str(binding.get("execution_family") or "")
+            family = family_by_name.get(family_name)
+            if family is None:
+                raise ValueError(
+                    f"method binding {archetype}/{method} references unknown execution family {family_name!r}"
+                )
+            output_kind = str(binding.get("output_kind") or "").strip()
+            capabilities.append(
+                MethodCapability(
+                    archetype=archetype,
+                    method=method,
+                    execution_family=family.family,
+                    kind=family.kind,
+                    runtime_status=family.runtime_status,
+                    output_kind=output_kind,
+                    requires_beta=family.requires_beta,
+                    requires_wacc=family.requires_wacc,
+                    canonical_refs=family.canonical_refs,
+                    stage=family.stage,
+                )
+            )
+    return MethodCapabilityRegistry(tuple(families), tuple(capabilities))
