@@ -1,0 +1,43 @@
+# PRISM Post-Freeze Runtime v1.0
+
+Status: canonical runtime contract for Street, market, state persistence and final reporting after Intrinsic Freeze.
+
+## 1. Hard boundary
+
+`STREET_REFERENCE_LOAD`, `STREET_GAP_ANALYZER`, `MARKET_PRICE_LOAD`, `MARKET_COMPARE`, `THESIS_DELTA`, `SAVE_STATE` and `FINAL_REPORT` require a valid same-run `IntrinsicFreezeToken`.
+
+No post-freeze observation may mutate the frozen assumption set, scenario set, valuation result, audit result or freeze token. A newly discovered factual claim creates a verification request and a new run.
+
+## 2. Scenario envelope before forced point estimates
+
+When scenario probabilities are not `CALIBRATED`, the runtime does not invent an Expected Value. Street target prices and current price are compared separately against each frozen scenario.
+
+When numeric weighting is calibrated and authorized by Scenario Binding, the runtime additionally reports the Expected Value gap.
+
+This preserves the distinction:
+
+`descriptive scenario range != calibrated probability-weighted intrinsic value`.
+
+## 3. Street comparison
+
+Street reports are loaded only after freeze. The runtime records report lineage, currency, date, valuation method and target price. The mean/median/range are comparison references, not intrinsic inputs.
+
+Street Gap explains differences through explicit drivers where available. Unexplained gap remains visible. No target price, consensus EPS or target multiple is allowed to flow backward into the frozen run.
+
+## 4. Market comparison
+
+Current price is a post-freeze reference. It produces scenario and, when allowed, Expected Value gaps. It never selects scenario weights or changes assumptions.
+
+## 5. Immutable state and report
+
+`SAVE_STATE` writes one immutable run directory containing the Control Plane trace, compiled assumptions, bound scenarios, valuation, audit, doctrine coverage, Street/market comparison, thesis delta, freeze token and the exact report Markdown.
+
+Only an audit-passed completed run may update `current_state.json`. `FINAL_REPORT` emits the same report payload that was saved, so the user-visible result and immutable artifact cannot silently diverge.
+
+## 6. Failure policy
+
+- missing or invalid Freeze Token: `BLOCKED`;
+- currency mismatch: `BLOCKED`;
+- missing Street/market data in a required stage: `BLOCKED`;
+- uncalibrated scenario weights: scenario envelope continues, Expected Value stays absent;
+- state persistence failure: `BLOCKED`, prior current state remains unchanged.
