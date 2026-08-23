@@ -1,0 +1,46 @@
+name: patch-assumption-compiler-contract
+
+on:
+  push:
+    branches: [feature/assumption-compiler-core]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/assumption-compiler-core
+      - name: Patch Assumption Compiler contract
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('config/unit_contract_registry.yaml')
+          text = p.read_text(encoding='utf-8')
+          old = '''  - unit_id: ASSUMPTION_COMPILER\n    unit_type: compiler\n    implementation_status: design_ready_partial\n'''
+          new = '''  - unit_id: ASSUMPTION_COMPILER\n    unit_type: compiler\n    implementation_status: implemented_core\n'''
+          if old not in text:
+              raise SystemExit('ASSUMPTION_COMPILER status pattern not found')
+          text = text.replace(old, new, 1)
+          old_ref = '    canonical_refs: [docs/GENERIC_ENGINE_DESIGN.md]\n'
+          new_ref = '    canonical_refs: [src/valuation_engine/actual_units.py, src/valuation_engine/assumption_compiler.py, docs/GENERIC_ENGINE_DESIGN.md]\n'
+          anchor = text.index('  - unit_id: ASSUMPTION_COMPILER')
+          tail = text[anchor:]
+          if old_ref not in tail:
+              raise SystemExit('ASSUMPTION_COMPILER canonical ref pattern not found')
+          tail = tail.replace(old_ref, new_ref, 1)
+          text = text[:anchor] + tail
+          p.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit contract sync
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add config/unit_contract_registry.yaml
+          git commit -m 'docs: sync assumption compiler implementation status'
+          git push origin HEAD:feature/assumption-compiler-core
