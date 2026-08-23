@@ -403,7 +403,6 @@ def run_primary_shadow(config: PrimaryShadowRuntimeConfig) -> ControlledRunResul
             "target_id": config.target_id,
             "prior_hypotheses": (),
             "scenario_binding_spec": config.scenario_binding_spec,
-            "selected_methods": config.selected_methods,
             "optional_research_units": config.optional_research_units,
             "research_trigger_state": dict(config.research_trigger_state),
             "research_unit_aliases": dict(config.research_unit_aliases),

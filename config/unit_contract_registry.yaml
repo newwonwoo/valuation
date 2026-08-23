@@ -64,7 +64,7 @@ units:
     consumers: [INDUSTRY_DNA_ROUTER, MODULE_REQUIREMENT_PLAN, PRIMARY_EVIDENCE_COLLECTION, LLM_STAFF, AUDIT_GATE]
     effect_types: [routing_effect, method_effect, guardrail_effect]
     final_outputs: [run_status, doctrine_coverage]
-    canonical_refs: [src/valuation_engine/control_plane.py, src/valuation_engine/orchestrator.py, config/control_plane_stage_registry.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md]
+    canonical_refs: [src/valuation_engine/control_plane.py, src/valuation_engine/orchestrator.py, src/valuation_engine/primary_shadow_runtime.py, config/control_plane_stage_registry.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md, docs/PRIMARY_SHADOW_RUNTIME.md]
     forbidden_effects: [perform_valuation_math, commit_assumption, bypass_audit]
 
   - unit_id: INDUSTRY_DNA_ROUTER
