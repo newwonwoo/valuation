@@ -9,6 +9,8 @@ from .doctrine_runtime import load_default_unit_contract_registry
 from .generic_audit import audit_generic_intrinsic
 from .impact_adapter import GenericDecisionImpactConfig, run_generic_decision_impact
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
+from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
+from .risk_impact import build_risk_impact_traces
 from .scenario_binding import BoundScenarioSet
 from .unit_contracts import UnitContractRegistry
 from .valuation_execution import GenericValuationResult
@@ -30,8 +32,6 @@ def _effective_impact_config(
         ):
             raise ValueError("module_impact_prior_history contains invalid entries")
         normalized[module_id] = entries
-    # Explicit call-site history overrides persisted history for the same module to avoid
-    # accidentally counting an externally supplied cohort twice.
     normalized.update(base.prior_history)
     return replace(base, prior_history=normalized)
 
@@ -61,6 +61,14 @@ def generic_audit_adapter(
         if not isinstance(expected_modules, tuple) or not expected_modules or not all(isinstance(item, str) and item for item in expected_modules):
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "generated pre-audit expected unit IDs missing", blocking=True)
 
+        selected_methods = context.data.get("selected_methods", ())
+        if not isinstance(selected_methods, tuple) or not all(isinstance(item, str) for item in selected_methods):
+            return StageExecutionResult(StageStatus.BLOCKED, "selected_methods must be a string tuple", blocking=True)
+        beta_raw = context.data.get("live_beta_result")
+        wacc_raw = context.data.get("live_wacc_result")
+        beta_result = beta_raw if isinstance(beta_raw, LiveBetaStageResult) else None
+        wacc_result = wacc_raw if isinstance(wacc_raw, LiveWACCStageResult) else None
+
         try:
             effective_config = _effective_impact_config(
                 impact_config,
@@ -70,6 +78,12 @@ def generic_audit_adapter(
                 context,
                 registry=registry,
                 config=effective_config,
+            )
+            risk_traces = build_risk_impact_traces(
+                beta_result=beta_result,
+                wacc_result=wacc_result,
+                valuation=valuation,
+                selected_methods=selected_methods,
             )
         except Exception as exc:
             return StageExecutionResult(
@@ -86,6 +100,9 @@ def generic_audit_adapter(
             expected_module_ids=expected_modules,
             run_context_keys=tuple(context.data),
             decision_impact=impact.batch,
+            selected_methods=selected_methods,
+            beta_result=beta_result,
+            wacc_result=wacc_result,
         )
         common_outputs = {
             "decision_impact_result": impact,
@@ -98,6 +115,7 @@ def generic_audit_adapter(
                 for item in impact.batch.module_observations
                 if item.assessment is not None
             ),
+            "observed_risk_impact_traces": risk_traces,
             "research_loadout_recommendations": impact.batch.loadout_recommendations,
             "retirement_review_candidates": impact.retirement_review_candidates,
         }
