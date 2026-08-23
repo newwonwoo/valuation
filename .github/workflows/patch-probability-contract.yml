@@ -1,0 +1,42 @@
+name: patch-probability-contract
+
+on:
+  push:
+    branches: [feature/probability-calibration-ledger]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/probability-calibration-ledger
+      - name: Patch probability calibration refs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('config/unit_contract_registry.yaml')
+          text = p.read_text(encoding='utf-8')
+          old = '    canonical_refs: [src/valuation_engine/scenario_binding.py, src/valuation_engine/shadow_adapters.py, src/valuation_engine/engine.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]\n'
+          new = '    canonical_refs: [src/valuation_engine/probability_calibration.py, src/valuation_engine/probability_adapter.py, src/valuation_engine/scenario_binding.py, src/valuation_engine/shadow_adapters.py, config/probability_calibration_policy.yaml, src/valuation_engine/engine.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]\n'
+          if old not in text:
+              raise SystemExit('SCENARIO_ENGINE probability refs pattern not found')
+          text = text.replace(old, new, 1)
+          old = '    canonical_refs: [src/valuation_engine/state.py, src/valuation_engine/generic_reporting.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md, docs/POST_FREEZE_RUNTIME.md]\n'
+          new = '    canonical_refs: [src/valuation_engine/state.py, src/valuation_engine/probability_calibration.py, config/probability_calibration_policy.yaml, src/valuation_engine/generic_reporting.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md, docs/POST_FREEZE_RUNTIME.md]\n'
+          if old not in text:
+              raise SystemExit('STATE_LEARNING probability refs pattern not found')
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Commit contract refs
+        run: |
+          if git diff --quiet; then exit 0; fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add config/unit_contract_registry.yaml
+          git commit -m 'docs: map probability calibration into scenario and state contracts'
+          git push origin HEAD:feature/probability-calibration-ledger
