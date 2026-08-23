@@ -5,6 +5,7 @@ from valuation_engine.collection_plan import (
     CollectorCapability,
     SourceMatchKind,
     compile_primary_collection_plan,
+    load_source_descriptors,
 )
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.evidence_adapter import (
@@ -16,6 +17,9 @@ from valuation_engine.evidence_collection import static_evidence_collector
 from valuation_engine.module_plan import ModuleRequirementPlan, SegmentModuleRequirementPlan
 from valuation_engine.orchestrator import OrchestratorContext
 from valuation_engine.records import EvidenceRecord, EvidenceSourceLayer
+
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 def module_plan() -> ModuleRequirementPlan:
@@ -97,6 +101,14 @@ def evidence(metric: str) -> EvidenceRecord:
         confidence=1.0,
         segment="core",
     )
+
+
+def test_repo_industry_source_registry_is_compatible_with_collection_planner():
+    sources = load_source_descriptors(ROOT / "config" / "industry_source_registry.yaml")
+    by_id = {item.source_id: item for item in sources}
+    assert "KR_OPENDART" in by_id
+    assert "company_primary" in by_id["KR_OPENDART"].roles
+    assert any("utilization" in item.metrics for item in sources)
 
 
 def test_collection_plan_distinguishes_source_candidate_from_runnable_collector(tmp_path):
