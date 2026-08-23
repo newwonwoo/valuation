@@ -13,6 +13,7 @@ from .evaluator_registry import (
     SegmentValuation,
     ValueKind,
 )
+from .method_capabilities import MethodCapabilityRegistry, require_execution_family
 from .orchestrator import OrchestratorContext
 from .risk_adapters import LiveWACCStageResult
 from .scenario_binding import BoundScenario
@@ -134,6 +135,7 @@ def live_finite_npv_registry_loader(
     registrations: tuple[FiniteLifeNPVRegistration, ...],
     base_loader: RegistryLoader | None = None,
     include_default_normalized_multiples: bool = True,
+    capability_registry: MethodCapabilityRegistry | None = None,
 ) -> RegistryLoader:
     """Build exact finite-life evaluators from the same-run live WACC.
 
@@ -144,6 +146,12 @@ def live_finite_npv_registry_loader(
         raise ValueError("finite-life NPV registry loader requires registrations")
     for registration in registrations:
         registration.validate()
+        require_execution_family(
+            archetype=registration.archetype,
+            method=registration.method,
+            expected_family="finite_life_npv",
+            registry=capability_registry,
+        )
     keys = tuple(ModelKey(item.archetype, item.method, item.version) for item in registrations)
     if len(keys) != len(set(keys)):
         raise ValueError("duplicate finite-life NPV ModelKey registration")
