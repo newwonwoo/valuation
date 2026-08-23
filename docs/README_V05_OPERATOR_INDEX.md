@@ -125,7 +125,17 @@ Read/use:
 
 The Control Plane builds pre-audit Doctrine Coverage from Unit Contracts and actual stage traces. `AUDIT_GATE` first records module counterfactual/guardrail impact, then runs Generic Audit. After Audit passes, the Control Plane rebuilds final coverage and atomically issues the Intrinsic Freeze Token. Callers do not need to inject hand-written coverage tuples.
 
-## 13. Validation
+## 13. How does measured impact change the next run's research deployment?
+Read/use:
+- `docs/RESEARCH_LEARNING_FEEDBACK.md`
+- `src/valuation_engine/research_learning.py`
+- `src/valuation_engine/state_learning_adapter.py`
+- `src/valuation_engine/adaptive_loadout.py`
+- `src/valuation_engine/module_plan_adapter.py`
+
+Each successful run may persist an immutable module-impact record after Freeze. The next run loads measured prior history before Decision Impact and overlays scheduling recommendations on the canonical Module Requirement Plan. Mandatory common-core modules and scanners remain active; down-ranking is only a governance proposal, never an automatic deletion.
+
+## 14. Validation
 Run:
 ```bash
 PYTHONPATH=src python scripts/validate_industry_seed.py

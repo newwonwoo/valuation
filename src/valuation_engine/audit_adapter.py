@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from dataclasses import replace
+
 from .assumption_compiler import CompiledAssumptionSet
 from .control_plane import DoctrineCoverageEntry, StageStatus
+from .decision_impact import ModuleHistoryEntry
 from .doctrine_runtime import load_default_unit_contract_registry
 from .generic_audit import audit_generic_intrinsic
 from .impact_adapter import GenericDecisionImpactConfig, run_generic_decision_impact
@@ -9,6 +12,28 @@ from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResul
 from .scenario_binding import BoundScenarioSet
 from .unit_contracts import UnitContractRegistry
 from .valuation_execution import GenericValuationResult
+
+
+def _effective_impact_config(
+    configured: GenericDecisionImpactConfig | None,
+    loaded_history,
+) -> GenericDecisionImpactConfig:
+    base = configured or GenericDecisionImpactConfig()
+    if loaded_history in (None, {}):
+        return base
+    if not isinstance(loaded_history, dict):
+        raise ValueError("module_impact_prior_history must be a mapping")
+    normalized: dict[str, tuple[ModuleHistoryEntry, ...]] = {}
+    for module_id, entries in loaded_history.items():
+        if not isinstance(module_id, str) or not isinstance(entries, tuple) or not all(
+            isinstance(item, ModuleHistoryEntry) for item in entries
+        ):
+            raise ValueError("module_impact_prior_history contains invalid entries")
+        normalized[module_id] = entries
+    # Explicit call-site history overrides persisted history for the same module to avoid
+    # accidentally counting an externally supplied cohort twice.
+    normalized.update(base.prior_history)
+    return replace(base, prior_history=normalized)
 
 
 def generic_audit_adapter(
@@ -37,10 +62,14 @@ def generic_audit_adapter(
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "generated pre-audit expected unit IDs missing", blocking=True)
 
         try:
+            effective_config = _effective_impact_config(
+                impact_config,
+                context.data.get("module_impact_prior_history"),
+            )
             impact = run_generic_decision_impact(
                 context,
                 registry=registry,
-                config=impact_config,
+                config=effective_config,
             )
         except Exception as exc:
             return StageExecutionResult(
