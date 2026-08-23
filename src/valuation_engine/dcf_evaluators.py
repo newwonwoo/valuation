@@ -127,7 +127,7 @@ class ExplicitFCFFDCFEvaluator:
                     *(item.economic_path_id for item in fcff_assumptions),
                     terminal_growth_assumption.economic_path_id,
                     terminal_roic_assumption.economic_path_id,
-                    self.discount_rate_path_id,
+                    f"{self.discount_rate_path_id}:{segment_id}",
                 )
             )
         )
