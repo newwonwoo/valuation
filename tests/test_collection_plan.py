@@ -24,21 +24,29 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def identity(jurisdiction: str = "KR") -> ResolvedCompanyIdentity:
+    external_key = "corp_code" if jurisdiction == "KR" else "cik"
     return ResolvedCompanyIdentity(
         target_id="T",
         legal_name="Target Co",
         ticker="000000",
         jurisdiction=jurisdiction,
-        external_ids=(("corp_code", "00000000"),),
-        source_refs=("fixture://identity",),
+        external_ids=((external_key, "00000000"),),
+        source_refs=(f"fixture://identity/{jurisdiction}",),
     )
 
 
-def segment_plan(segment_id: str, *, required=("utilization", "backlog")) -> SegmentModuleRequirementPlan:
+def segment_plan(
+    segment_id: str,
+    *,
+    required=("utilization", "backlog"),
+    sector_adapter="power.transformer_switchgear",
+    archetypes=("capacity_manufacturing",),
+    methods=("driver_dcf",),
+) -> SegmentModuleRequirementPlan:
     segment = SegmentModuleRequirementPlan(
         segment_id=segment_id,
-        sector_adapter="power.transformers",
-        archetypes=("capacity_manufacturing",),
+        sector_adapter=sector_adapter,
+        archetypes=archetypes,
         required_evidence=required,
         required_kpis=(*required, "lead_time"),
         mandatory_scanners=("CAPACITY_UTILIZATION",),
@@ -50,8 +58,8 @@ def segment_plan(segment_id: str, *, required=("utilization", "backlog")) -> Seg
         funding_scans=(),
         terminal_policies=("normalize utilization",),
         double_count_traps=("growth_without_capex",),
-        forbidden_methods=("peak_margin_perpetuity",),
-        allowed_valuation_methods=("driver_dcf",),
+        forbidden_methods=(),
+        allowed_valuation_methods=methods,
     )
     segment.validate()
     return segment
@@ -74,8 +82,31 @@ def module_plan(*segments: SegmentModuleRequirementPlan) -> ModuleRequirementPla
     return plan
 
 
-def source_registry(tmp_path: Path) -> Path:
+def dynamic_context(plan: ModuleRequirementPlan, company: ResolvedCompanyIdentity | None = None) -> OrchestratorContext:
+    company = company or identity()
+    return OrchestratorContext(
+        "RUN",
+        ExecutionMode.LIVE_PRIMARY,
+        {
+            "target_id": company.target_id,
+            "jurisdiction": company.jurisdiction,
+            "resolved_company_identity": company,
+            "module_requirement_plan": plan,
+            "required_evidence": plan.required_evidence,
+        },
+    )
+
+
+def source_registry(tmp_path: Path, *, include_automotive=False) -> Path:
     path = tmp_path / "sources.yaml"
+    automotive = """
+- id: KR_KAMA
+  authority: industry_association
+  roles: [observed_state]
+  access: public_file
+  industries: [automotive]
+  metrics: [production]
+""" if include_automotive else ""
     path.write_text(
         """sources:
 - id: KR_KOSIS_API
@@ -83,7 +114,7 @@ def source_registry(tmp_path: Path) -> Path:
   roles: [observed_state]
   access: api
   industries: [cross_industry]
-  metrics: [utilization]
+  metrics: [utilization, production]
 - id: KR_OPENDART
   authority: regulator_primary
   roles: [observed_state, company_primary]
@@ -96,7 +127,7 @@ def source_registry(tmp_path: Path) -> Path:
   access: api
   industries: [listed_companies]
   metrics: [financials]
-""",
+""" + automotive,
         encoding="utf-8",
     )
     return path
@@ -129,21 +160,11 @@ def test_repo_industry_source_registry_is_compatible_with_collection_planner():
 
 
 def test_company_collection_plan_distinguishes_source_candidate_from_runnable_collector(tmp_path):
-    capability = CollectorCapability(
-        collector_id="dart-backlog",
-        source_id="KR_OPENDART",
-        supported_metrics=("backlog",),
-        jurisdictions=("KR",),
-        implementation_ref="tests.fixture",
-    )
+    capability = CollectorCapability("dart-backlog", "KR_OPENDART", ("backlog",), ("KR",), "tests.fixture")
     result = compile_company_collection_plan(
-        module_plan(),
-        company=identity(),
-        source_registry_path=source_registry(tmp_path),
-        collector_capabilities=(capability,),
+        module_plan(), company=identity(), source_registry_path=source_registry(tmp_path), collector_capabilities=(capability,)
     )
     by_metric = {item.metric: item for item in result.requirements if item.segment_id == "core"}
-
     assert result.version == "0.5.2"
     assert result.plan_id.startswith("COLLECTION_")
     assert result.routing_hash
@@ -159,56 +180,46 @@ def test_company_collection_plan_distinguishes_source_candidate_from_runnable_co
     assert result.authorized_segment_metrics_for_collector("dart-backlog") == (("core", "backlog"),)
 
 
-def test_company_collection_plan_does_not_mix_kr_sources_into_us_target(tmp_path):
+def test_industry_specific_source_is_not_routed_to_unrelated_segment(tmp_path):
+    power_plan = module_plan(segment_plan("core", required=("production",)))
     result = compile_company_collection_plan(
-        module_plan(),
-        company=identity("US"),
-        source_registry_path=source_registry(tmp_path),
+        power_plan,
+        company=identity(),
+        source_registry_path=source_registry(tmp_path, include_automotive=True),
+        collector_capabilities=(
+            CollectorCapability("kama-production", "KR_KAMA", ("production",), ("KR",), "tests.fixture"),
+        ),
     )
+    requirement = result.required_evidence[0]
+    assert "KR_KAMA" not in {item.source_id for item in requirement.source_candidates}
+    assert "kama-production" not in requirement.collector_ids
+    assert "KR_KOSIS_API" in {item.source_id for item in requirement.source_candidates}
+
+
+def test_company_collection_plan_does_not_mix_kr_sources_into_us_target(tmp_path):
+    result = compile_company_collection_plan(module_plan(), company=identity("US"), source_registry_path=source_registry(tmp_path))
     by_metric = {item.metric: item for item in result.requirements if item.segment_id == "core"}
     assert tuple(item.source_id for item in by_metric["utilization"].source_candidates) == ("US_SEC",)
     assert by_metric["utilization"].source_candidates[0].match_kind is SourceMatchKind.COMPANY_PRIMARY_FALLBACK
-    assert all(
-        not candidate.source_id.startswith("KR_")
-        for item in result.requirements
-        for candidate in item.source_candidates
-    )
+    assert all(not candidate.source_id.startswith("KR_") for item in result.requirements for candidate in item.source_candidates)
 
 
 def test_primary_evidence_stage_accepts_runtime_company_collection_plan(tmp_path):
+    current_plan = module_plan()
     plan = compile_company_collection_plan(
-        module_plan(),
+        current_plan,
         company=identity(),
         source_registry_path=source_registry(tmp_path),
-        collector_capabilities=(
-            CollectorCapability(
-                "c-combined",
-                "KR_OPENDART",
-                ("utilization", "backlog"),
-                ("KR",),
-                "tests.fixture",
-            ),
-        ),
+        collector_capabilities=(CollectorCapability("c-combined", "KR_OPENDART", ("utilization", "backlog"), ("KR",), "tests.fixture"),),
     )
     collector = static_evidence_collector(
-        source_id="fixture-primary",
-        checked_at="2026-08-01",
-        records=(evidence("utilization"), evidence("backlog")),
-        source_fingerprint="fixture-hash",
+        source_id="fixture-primary", checked_at="2026-08-01",
+        records=(evidence("utilization"), evidence("backlog")), source_fingerprint="fixture-hash",
     )
     adapter = primary_evidence_collection_adapter(
-        selection_loader=lambda _: EvidenceCollectorSelection(
-            plan,
-            (SelectedEvidenceCollector("c-combined", collector),),
-        )
+        selection_loader=lambda _: EvidenceCollectorSelection(plan, (SelectedEvidenceCollector("c-combined", collector),))
     )
-    result = adapter(
-        OrchestratorContext(
-            "RUN",
-            ExecutionMode.LIVE_PRIMARY,
-            {"target_id": "T", "required_evidence": ("utilization", "backlog")},
-        )
-    )
+    result = adapter(dynamic_context(current_plan))
     assert result.status is StageStatus.PASS
     assert result.outputs["collection_plan"] == plan
     assert result.outputs["collection_selected_collector_ids"] == ("c-combined",)
@@ -216,99 +227,90 @@ def test_primary_evidence_stage_accepts_runtime_company_collection_plan(tmp_path
 
 
 def test_segment_level_coverage_cannot_be_satisfied_by_other_segment(tmp_path):
+    current_plan = module_plan(segment_plan("A", required=("backlog",)), segment_plan("B", required=("backlog",)))
     plan = compile_company_collection_plan(
-        module_plan(segment_plan("A", required=("backlog",)), segment_plan("B", required=("backlog",))),
-        company=identity(),
-        source_registry_path=source_registry(tmp_path),
-        collector_capabilities=(
-            CollectorCapability("c-backlog", "KR_OPENDART", ("backlog",), ("KR",), "tests.fixture"),
-        ),
+        current_plan, company=identity(), source_registry_path=source_registry(tmp_path),
+        collector_capabilities=(CollectorCapability("c-backlog", "KR_OPENDART", ("backlog",), ("KR",), "tests.fixture"),),
     )
     collector = static_evidence_collector(
-        source_id="fixture-primary",
-        checked_at="2026-08-01",
-        records=(evidence("backlog", segment="A"),),
-        source_fingerprint="fixture-hash",
+        source_id="fixture-primary", checked_at="2026-08-01",
+        records=(evidence("backlog", segment="A"),), source_fingerprint="fixture-hash",
     )
     adapter = primary_evidence_collection_adapter(
-        selection_loader=lambda _: EvidenceCollectorSelection(
-            plan,
-            (SelectedEvidenceCollector("c-backlog", collector),),
-        )
+        selection_loader=lambda _: EvidenceCollectorSelection(plan, (SelectedEvidenceCollector("c-backlog", collector),))
     )
-    result = adapter(
-        OrchestratorContext(
-            "RUN",
-            ExecutionMode.LIVE_PRIMARY,
-            {"target_id": "T", "required_evidence": ("backlog",)},
-        )
-    )
+    result = adapter(dynamic_context(current_plan))
     assert result.status is StageStatus.RECOVERY_REQUIRED
     assert result.blocking
     assert result.outputs["collection_missing_required_requirements"] == ("B:required_evidence:backlog",)
 
 
+def test_dynamic_collection_rejects_plan_from_different_resolved_identity_or_jurisdiction(tmp_path):
+    current_plan = module_plan()
+    us_plan = compile_company_collection_plan(current_plan, company=identity("US"), source_registry_path=source_registry(tmp_path))
+    adapter = primary_evidence_collection_adapter(selection_loader=lambda _: EvidenceCollectorSelection(us_plan, ()))
+    result = adapter(dynamic_context(current_plan, identity("KR")))
+    assert result.status is StageStatus.BLOCKED
+    assert "identity does not match" in result.rationale
+
+
+def test_dynamic_collection_rejects_stale_segment_route_even_when_metric_names_match(tmp_path):
+    old_module_plan = module_plan(segment_plan("core", required=("backlog",)))
+    stale_plan = compile_company_collection_plan(old_module_plan, company=identity(), source_registry_path=source_registry(tmp_path))
+    current_module_plan = module_plan(segment_plan(
+        "core",
+        required=("backlog",),
+        sector_adapter="software.saas",
+        archetypes=("recurring_subscription",),
+        methods=("arr_fcf_dcf",),
+    ))
+    adapter = primary_evidence_collection_adapter(selection_loader=lambda _: EvidenceCollectorSelection(stale_plan, ()))
+    result = adapter(dynamic_context(current_module_plan))
+    assert result.status is StageStatus.BLOCKED
+    assert "routing hash" in result.rationale
+
+
 def test_primary_evidence_stage_rejects_collector_not_authorized_by_plan(tmp_path):
+    current_plan = module_plan()
     plan = compile_company_collection_plan(
-        module_plan(),
-        company=identity(),
-        source_registry_path=source_registry(tmp_path),
-        collector_capabilities=(
-            CollectorCapability("c-backlog", "KR_OPENDART", ("backlog",), ("KR",), "tests.fixture"),
-        ),
+        current_plan, company=identity(), source_registry_path=source_registry(tmp_path),
+        collector_capabilities=(CollectorCapability("c-backlog", "KR_OPENDART", ("backlog",), ("KR",), "tests.fixture"),),
     )
     collector = static_evidence_collector(
-        source_id="fixture-primary",
-        checked_at="2026-08-01",
-        records=(evidence("backlog"),),
-        source_fingerprint="fixture-hash",
+        source_id="fixture-primary", checked_at="2026-08-01", records=(evidence("backlog"),), source_fingerprint="fixture-hash",
     )
     adapter = primary_evidence_collection_adapter(
         selection_loader=lambda _: EvidenceCollectorSelection(plan, (SelectedEvidenceCollector("unplanned", collector),))
     )
-    result = adapter(
-        OrchestratorContext("RUN", ExecutionMode.LIVE_PRIMARY, {"target_id": "T", "required_evidence": ("utilization", "backlog")})
-    )
+    result = adapter(dynamic_context(current_plan))
     assert result.status is StageStatus.BLOCKED
     assert "not authorized" in result.rationale
 
 
 def test_primary_evidence_stage_rejects_segment_metric_outside_collector_scope(tmp_path):
+    current_plan = module_plan()
     plan = compile_company_collection_plan(
-        module_plan(),
-        company=identity(),
-        source_registry_path=source_registry(tmp_path),
-        collector_capabilities=(
-            CollectorCapability("c-backlog", "KR_OPENDART", ("backlog",), ("KR",), "tests.fixture"),
-        ),
+        current_plan, company=identity(), source_registry_path=source_registry(tmp_path),
+        collector_capabilities=(CollectorCapability("c-backlog", "KR_OPENDART", ("backlog",), ("KR",), "tests.fixture"),),
     )
     collector = static_evidence_collector(
-        source_id="fixture-primary",
-        checked_at="2026-08-01",
-        records=(evidence("utilization"), evidence("backlog")),
-        source_fingerprint="fixture-hash",
+        source_id="fixture-primary", checked_at="2026-08-01",
+        records=(evidence("utilization"), evidence("backlog")), source_fingerprint="fixture-hash",
     )
     adapter = primary_evidence_collection_adapter(
         selection_loader=lambda _: EvidenceCollectorSelection(plan, (SelectedEvidenceCollector("c-backlog", collector),))
     )
-    result = adapter(
-        OrchestratorContext("RUN", ExecutionMode.LIVE_PRIMARY, {"target_id": "T", "required_evidence": ("utilization", "backlog")})
-    )
+    result = adapter(dynamic_context(current_plan))
     assert result.status is StageStatus.BLOCKED
     assert "outside Collection Plan" in result.rationale
     assert "core/utilization" in result.rationale
 
 
 def test_primary_evidence_stage_fails_closed_when_plan_has_no_runnable_collector(tmp_path):
-    plan = compile_company_collection_plan(
-        module_plan(),
-        company=identity(),
-        source_registry_path=source_registry(tmp_path),
-    )
+    current_plan = module_plan()
+    plan = compile_company_collection_plan(current_plan, company=identity(), source_registry_path=source_registry(tmp_path))
     adapter = primary_evidence_collection_adapter(selection_loader=lambda _: EvidenceCollectorSelection(plan, ()))
-    result = adapter(
-        OrchestratorContext("RUN", ExecutionMode.LIVE_PRIMARY, {"target_id": "T", "required_evidence": ("utilization", "backlog")})
-    )
+    result = adapter(dynamic_context(current_plan))
     assert result.status is StageStatus.NOT_IMPLEMENTED
     assert result.blocking
     assert result.outputs["collection_missing_required_requirements"] == (
