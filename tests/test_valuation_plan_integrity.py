@@ -1,3 +1,4 @@
+from dataclasses import replace
 from decimal import Decimal
 
 import pytest
@@ -8,6 +9,7 @@ from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.dcf_evaluators import ExplicitFCFFDCFEvaluator
 from valuation_engine.evaluator_registry import (
     EvaluatorRegistry,
+    ModelKey,
     NormalizedMultipleEvaluator,
 )
 from valuation_engine.method_capabilities import (
@@ -28,13 +30,14 @@ from valuation_engine.valuation_execution import (
     default_evaluator_registry,
     execute_company_valuation,
 )
-from valuation_engine.evaluator_registry import ModelKey
 from valuation_engine.valuation_plan_compiler import (
     CompanyValuationPlanInputs,
     SegmentMethodChoice,
     SegmentValueBinding,
     ValuationPlanStatus,
     compile_company_valuation_plan,
+    valuation_capability_registry_hash,
+    valuation_module_plan_hash,
 )
 
 
@@ -74,10 +77,12 @@ def segment(
     segment_id: str,
     archetypes: tuple[str, ...],
     methods: tuple[str, ...],
+    *,
+    sector_adapter: str | None = None,
 ) -> SegmentModuleRequirementPlan:
     value = SegmentModuleRequirementPlan(
         segment_id=segment_id,
-        sector_adapter=f"test.{segment_id}",
+        sector_adapter=sector_adapter or f"test.{segment_id}",
         archetypes=archetypes,
         required_evidence=("revenue",),
         required_kpis=("revenue",),
@@ -194,16 +199,51 @@ def dcf_assumptions(
 ) -> tuple[CompiledAssumption, ...]:
     items = [
         assumption("fcff_year_1", "10", "KRW_billion", "fcff-1"),
-        assumption("terminal_growth", "0.02", "ratio", "terminal-growth"),
+        assumption(
+            "terminal_growth",
+            "0.02",
+            "ratio",
+            "terminal-growth",
+        ),
         assumption("ownership", "1", "ratio", "ownership"),
         assumption("net_debt", "0", "KRW_billion", "net-debt"),
         assumption("shares", "10", "shares", "shares"),
     ]
     if include_terminal_roic:
         items.append(
-            assumption("terminal_roic", "0.10", "ratio", "terminal-roic")
+            assumption(
+                "terminal_roic",
+                "0.10",
+                "ratio",
+                "terminal-roic",
+            )
         )
     return tuple(items)
+
+
+def dynamic_context(
+    module: ModuleRequirementPlan,
+    current_scenarios: BoundScenarioSet,
+    capability_registry,
+    *,
+    intent_module_hash: str | None = None,
+    capability_hash: str | None = None,
+) -> OrchestratorContext:
+    return OrchestratorContext(
+        "RUN",
+        ExecutionMode.LIVE_PRIMARY,
+        {
+            "bound_scenario_set": current_scenarios,
+            "module_requirement_plan": module,
+            "valuation_module_plan_hash": (
+                intent_module_hash or valuation_module_plan_hash(module)
+            ),
+            "valuation_capability_registry_hash": (
+                capability_hash
+                or valuation_capability_registry_hash(capability_registry)
+            ),
+        },
+    )
 
 
 def test_compilation_diagnostics_include_evaluator_assumption_gaps():
@@ -305,21 +345,62 @@ def test_capability_gap_dominates_recoverable_method_choice():
         module_plan(commodity, financial),
         scenarios(
             assumption("fcff_year_1", "10", "KRW_billion", "fcff-1"),
-            assumption("terminal_growth", "0.02", "ratio", "terminal-growth"),
-            assumption("terminal_roic", "0.10", "ratio", "terminal-roic"),
-            assumption("normalized_ebitda", "12", "KRW_billion", "ebitda"),
-            assumption("normalized_multiple", "7", "multiple", "multiple"),
-            assumption("ownership_commodity", "1", "ratio", "own-c"),
-            assumption("ownership_financial", "1", "ratio", "own-f"),
-            assumption("debt_commodity", "0", "KRW_billion", "debt-c"),
+            assumption(
+                "terminal_growth",
+                "0.02",
+                "ratio",
+                "terminal-growth",
+            ),
+            assumption(
+                "terminal_roic",
+                "0.10",
+                "ratio",
+                "terminal-roic",
+            ),
+            assumption(
+                "normalized_ebitda",
+                "12",
+                "KRW_billion",
+                "ebitda",
+            ),
+            assumption(
+                "normalized_multiple",
+                "7",
+                "multiple",
+                "multiple",
+            ),
+            assumption(
+                "ownership_commodity",
+                "1",
+                "ratio",
+                "own-c",
+            ),
+            assumption(
+                "ownership_financial",
+                "1",
+                "ratio",
+                "own-f",
+            ),
+            assumption(
+                "debt_commodity",
+                "0",
+                "KRW_billion",
+                "debt-c",
+            ),
             assumption("shares", "10", "shares", "shares"),
         ),
         evaluator_registry=registry,
         capability_registry=load_default_method_capability_registry(),
         inputs=inputs,
     )
-    assert result.segment_resolutions[0].status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
-    assert result.segment_resolutions[1].status is ValuationPlanStatus.CAPABILITY_GAP
+    assert (
+        result.segment_resolutions[0].status
+        is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+    )
+    assert (
+        result.segment_resolutions[1].status
+        is ValuationPlanStatus.CAPABILITY_GAP
+    )
     assert result.status is ValuationPlanStatus.CAPABILITY_GAP
 
 
@@ -328,8 +409,18 @@ def test_plan_inputs_reject_reused_adjustment_assumption_keys():
         reporting_unit="KRW_billion",
         diluted_shares_key="shares",
         segment_bindings=(
-            SegmentValueBinding("A", "asset-a", "ownership_a", "shared_debt"),
-            SegmentValueBinding("B", "asset-b", "ownership_b", "shared_debt"),
+            SegmentValueBinding(
+                "A",
+                "asset-a",
+                "ownership_a",
+                "shared_debt",
+            ),
+            SegmentValueBinding(
+                "B",
+                "asset-b",
+                "ownership_b",
+                "shared_debt",
+            ),
         ),
     )
     with pytest.raises(ValueError, match="reuse EV-to-equity"):
@@ -341,7 +432,12 @@ def test_plan_inputs_reject_segment_parent_adjustment_key_overlap():
         reporting_unit="KRW_billion",
         diluted_shares_key="shares",
         segment_bindings=(
-            SegmentValueBinding("A", "asset-a", "ownership_a", "shared_debt"),
+            SegmentValueBinding(
+                "A",
+                "asset-a",
+                "ownership_a",
+                "shared_debt",
+            ),
         ),
         parent_adjustments=(
             ParentAdjustmentPlan("parent-adjustment", "shared_debt"),
@@ -361,11 +457,12 @@ def test_loaded_compilation_must_match_current_scenario_set_hash():
     )
     registry = EvaluatorRegistry()
     registry.register(dcf_evaluator(version="v1", forecast_years=1))
+    capability_registry = load_default_method_capability_registry()
     cached = compile_company_valuation_plan(
         module,
         scenarios(*dcf_assumptions(), scenario_hash="SCENARIO-OLD"),
         evaluator_registry=registry,
-        capability_registry=load_default_method_capability_registry(),
+        capability_registry=capability_registry,
         inputs=dcf_inputs(),
     )
     current = scenarios(
@@ -376,17 +473,102 @@ def test_loaded_compilation_must_match_current_scenario_set_hash():
         plan_loader=lambda context, effective_registry: cached,
         registry=registry,
     )
-    result = adapter(
-        OrchestratorContext(
-            "RUN",
-            ExecutionMode.LIVE_PRIMARY,
-            {"bound_scenario_set": current},
-        )
-    )
+    result = adapter(dynamic_context(module, current, capability_registry))
     assert result.status is StageStatus.BLOCKED
     assert result.blocking
     assert "scenario-set hash" in result.rationale
     assert result.outputs["current_scenario_set_hash"] == "SCENARIO-CURRENT"
+
+
+def test_loaded_compilation_must_match_current_module_plan_hash():
+    old_module = module_plan(
+        segment(
+            "core",
+            ("capacity_manufacturing",),
+            ("driver_dcf",),
+            sector_adapter="test.old",
+        )
+    )
+    current_module = module_plan(
+        segment(
+            "core",
+            ("capacity_manufacturing",),
+            ("driver_dcf",),
+            sector_adapter="test.current",
+        )
+    )
+    registry = EvaluatorRegistry()
+    registry.register(dcf_evaluator(version="v1", forecast_years=1))
+    capability_registry = load_default_method_capability_registry()
+    current_scenarios = scenarios(*dcf_assumptions())
+    cached = compile_company_valuation_plan(
+        old_module,
+        current_scenarios,
+        evaluator_registry=registry,
+        capability_registry=capability_registry,
+        inputs=dcf_inputs(),
+    )
+    adapter = deterministic_valuation_adapter(
+        plan_loader=lambda context, effective_registry: cached,
+        registry=registry,
+    )
+    result = adapter(
+        dynamic_context(
+            current_module,
+            current_scenarios,
+            capability_registry,
+        )
+    )
+    assert result.status is StageStatus.BLOCKED
+    assert result.blocking
+    assert "module-plan hash" in result.rationale
+
+
+def test_loaded_compilation_must_match_current_capability_registry_hash():
+    module = module_plan(
+        segment(
+            "core",
+            ("capacity_manufacturing",),
+            ("driver_dcf",),
+        )
+    )
+    registry = EvaluatorRegistry()
+    registry.register(dcf_evaluator(version="v1", forecast_years=1))
+    canonical_capabilities = load_default_method_capability_registry()
+    current_scenarios = scenarios(*dcf_assumptions())
+    cached = compile_company_valuation_plan(
+        module,
+        current_scenarios,
+        evaluator_registry=registry,
+        capability_registry=canonical_capabilities,
+        inputs=dcf_inputs(),
+    )
+    altered_capabilities = replace(
+        canonical_capabilities,
+        capabilities=tuple(
+            replace(item, output_kind="equity_value")
+            if item.identity == ("capacity_manufacturing", "driver_dcf")
+            else item
+            for item in canonical_capabilities.capabilities
+        ),
+    )
+    adapter = deterministic_valuation_adapter(
+        plan_loader=lambda context, effective_registry: cached,
+        registry=registry,
+    )
+    result = adapter(
+        dynamic_context(
+            module,
+            current_scenarios,
+            canonical_capabilities,
+            capability_hash=valuation_capability_registry_hash(
+                altered_capabilities
+            ),
+        )
+    )
+    assert result.status is StageStatus.BLOCKED
+    assert result.blocking
+    assert "capability-registry hash" in result.rationale
 
 
 def test_execution_rejects_distinct_adjustment_keys_with_same_economic_path():
@@ -411,14 +593,37 @@ def test_execution_rejects_distinct_adjustment_keys_with_same_economic_path():
         ),
     )
     current = scenarios(
-        assumption("normalized_ebitda", "100", "KRW_billion", "ebitda"),
-        assumption("normalized_multiple", "8", "multiple", "multiple"),
+        assumption(
+            "normalized_ebitda",
+            "100",
+            "KRW_billion",
+            "ebitda",
+        ),
+        assumption(
+            "normalized_multiple",
+            "8",
+            "multiple",
+            "multiple",
+        ),
         assumption("ownership", "1", "ratio", "ownership"),
-        assumption("segment_debt", "-50", "KRW_billion", "shared-adjustment"),
-        assumption("parent_debt", "-20", "KRW_billion", "shared-adjustment"),
+        assumption(
+            "segment_debt",
+            "-50",
+            "KRW_billion",
+            "shared-adjustment",
+        ),
+        assumption(
+            "parent_debt",
+            "-20",
+            "KRW_billion",
+            "shared-adjustment",
+        ),
         assumption("shares", "10", "shares", "shares"),
     )
-    with pytest.raises(ValueError, match="reuses valuation adjustment economic paths"):
+    with pytest.raises(
+        ValueError,
+        match="reuses valuation adjustment economic paths",
+    ):
         execute_company_valuation(
             current,
             plan=plan,
