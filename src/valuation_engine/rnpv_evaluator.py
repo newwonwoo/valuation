@@ -7,6 +7,7 @@ from typing import Callable
 
 from .actual_units import Measure
 from .evaluator_registry import EvaluatorRegistry, ModelKey, SegmentValuation, ValueKind
+from .method_capabilities import MethodCapabilityRegistry, require_execution_family
 from .orchestrator import OrchestratorContext
 from .probability_calibration import CalibrationCertificate
 from .records import CalibrationStatus
@@ -198,11 +199,18 @@ def live_rnpv_registry_loader(
     *,
     registrations: tuple[LiveRNPVRegistration, ...],
     base_loader: RegistryLoader | None = None,
+    capability_registry: MethodCapabilityRegistry | None = None,
 ) -> RegistryLoader:
     if not registrations:
         raise ValueError("live rNPV registry loader requires registrations")
     for registration in registrations:
         registration.validate()
+        require_execution_family(
+            archetype=registration.archetype,
+            method=registration.method,
+            expected_family="calibrated_single_event_rnpv",
+            registry=capability_registry,
+        )
     keys = tuple(ModelKey(item.archetype, item.method, item.version) for item in registrations)
     if len(keys) != len(set(keys)):
         raise ValueError("duplicate rNPV ModelKey registration")

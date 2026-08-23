@@ -13,6 +13,7 @@ from .evaluator_registry import (
     SegmentValuation,
     ValueKind,
 )
+from .method_capabilities import MethodCapabilityRegistry, require_execution_family
 from .orchestrator import OrchestratorContext
 from .risk_adapters import LiveWACCStageResult
 from .scenario_binding import BoundScenario
@@ -158,11 +159,18 @@ def live_fcff_dcf_registry_loader(
     *,
     registrations: tuple[LiveDCFRegistration, ...],
     include_default_normalized_multiples: bool = True,
+    capability_registry: MethodCapabilityRegistry | None = None,
 ) -> RegistryLoader:
     if not registrations:
         raise ValueError("live FCFF DCF registry loader requires registrations")
     for registration in registrations:
         registration.validate()
+        require_execution_family(
+            archetype=registration.archetype,
+            method=registration.method,
+            expected_family="explicit_fcff_dcf",
+            registry=capability_registry,
+        )
     keys = tuple(
         ModelKey(item.archetype, item.method, item.version) for item in registrations
     )

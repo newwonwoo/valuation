@@ -6,6 +6,13 @@ from pathlib import Path
 
 import yaml
 
+from .method_capabilities import (
+    MethodCapabilityRegistry,
+    MethodCoverageSummary,
+    MethodKind,
+    MethodRuntimeStatus,
+    load_method_capability_registry,
+)
 from .orchestrator import load_stage_sequence
 
 
@@ -28,6 +35,7 @@ class StageReadiness:
 @dataclass(frozen=True)
 class LivePrimaryReadinessReport:
     stages: tuple[StageReadiness, ...]
+    deterministic_method_coverage: MethodCoverageSummary | None = None
 
     @property
     def canonical_live_ready_count(self) -> int:
@@ -56,10 +64,78 @@ class LivePrimaryReadinessReport:
         return tuple(item for item in self.stages if item.status is LiveReadinessStatus.PARTIAL_LIVE)
 
 
+def _deterministic_method_coverage(
+    registry: MethodCapabilityRegistry,
+) -> MethodCoverageSummary:
+    relevant = tuple(
+        item
+        for item in registry.capabilities
+        if item.kind is not MethodKind.CROSS_METHOD_ENGINE
+    )
+
+    def label(item) -> str:
+        return f"{item.archetype}/{item.method}"
+
+    ready = tuple(
+        sorted(
+            label(item)
+            for item in relevant
+            if item.runtime_status is MethodRuntimeStatus.RUNTIME_READY
+        )
+    )
+    partial = tuple(
+        sorted(
+            label(item)
+            for item in relevant
+            if item.runtime_status is MethodRuntimeStatus.PARTIAL_RUNTIME
+        )
+    )
+    missing = tuple(
+        sorted(
+            label(item)
+            for item in relevant
+            if item.runtime_status is MethodRuntimeStatus.NOT_IMPLEMENTED
+        )
+    )
+    return MethodCoverageSummary(len(relevant), ready, partial, missing)
+
+
+def validate_method_readiness_alignment(
+    report: LivePrimaryReadinessReport,
+    registry: MethodCapabilityRegistry,
+) -> MethodCoverageSummary:
+    coverage = _deterministic_method_coverage(registry)
+    by_stage = {item.stage: item for item in report.stages}
+    stage = by_stage.get("DETERMINISTIC_VALUATION")
+    if stage is None:
+        raise ValueError("DETERMINISTIC_VALUATION readiness row is required")
+
+    if coverage.complete:
+        if stage.status not in {
+            LiveReadinessStatus.RUNTIME_READY,
+            LiveReadinessStatus.LIVE_READY,
+        }:
+            raise ValueError(
+                "DETERMINISTIC_VALUATION method coverage is complete but readiness is not runtime/live ready"
+            )
+    elif stage.status in {
+        LiveReadinessStatus.RUNTIME_READY,
+        LiveReadinessStatus.LIVE_READY,
+    }:
+        raise ValueError(
+            "DETERMINISTIC_VALUATION cannot be promoted above PARTIAL_LIVE while valuation methods remain partial or unimplemented: "
+            f"partial={coverage.partial_runtime}, not_implemented={coverage.not_implemented}"
+        )
+    return coverage
+
+
 def load_live_primary_readiness(
     *,
     readiness_path: str | Path,
     stage_registry_path: str | Path,
+    method_capability_path: str | Path | None = None,
+    archetype_registry_path: str | Path | None = None,
+    repo_root: str | Path | None = None,
 ) -> LivePrimaryReadinessReport:
     payload = yaml.safe_load(Path(readiness_path).read_text(encoding="utf-8"))
     raw_stages = payload.get("stages")
@@ -86,4 +162,17 @@ def load_live_primary_readiness(
         if not reason:
             raise ValueError(f"readiness reason is required for {stage}")
         result.append(StageReadiness(stage, status, reason))
-    return LivePrimaryReadinessReport(tuple(result))
+
+    report = LivePrimaryReadinessReport(tuple(result))
+    if method_capability_path is None:
+        return report
+    if archetype_registry_path is None:
+        raise ValueError("archetype_registry_path is required with method_capability_path")
+
+    registry = load_method_capability_registry(method_capability_path)
+    registry.validate(
+        archetype_registry_path=archetype_registry_path,
+        repo_root=repo_root,
+    )
+    coverage = validate_method_readiness_alignment(report, registry)
+    return LivePrimaryReadinessReport(report.stages, coverage)
