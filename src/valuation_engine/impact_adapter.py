@@ -112,6 +112,33 @@ def build_generic_decision_outcome(context: OrchestratorContext) -> DecisionOutc
     )
 
 
+def _without_deterministic_valuation(context: OrchestratorContext) -> DecisionOutcome:
+    """Built-in reproducible counterfactual shared by every Generic Run.
+
+    Removing the registered deterministic valuation unit cannot produce an alternative fair
+    value; it produces an explicit VALUATION_BLOCKED decision while preserving the upstream
+    assumption/route/method identity. This measures decision criticality without inventing a
+    zero value or changing the canonical baseline run.
+    """
+    compiled = context.data.get("compiled_assumption_set")
+    if not isinstance(compiled, CompiledAssumptionSet):
+        raise ValueError("deterministic-valuation counterfactual requires CompiledAssumptionSet")
+    selected_methods = context.data.get("selected_methods", ())
+    if not isinstance(selected_methods, tuple) or not all(isinstance(item, str) for item in selected_methods):
+        raise ValueError("selected_methods must be a string tuple")
+    route_hash = context.data.get("route_hash")
+    if route_hash is None:
+        route_hash = _stable_hash({"selected_methods": selected_methods, "target_id": compiled.target_id})
+    return DecisionOutcome(
+        status="VALUATION_BLOCKED",
+        assumption_hash=compiled.assumption_set_hash,
+        route_hash=str(route_hash),
+        selected_methods=selected_methods,
+        conclusion_tags=("deterministic_valuation_removed",),
+        blocked_reasons=("registered deterministic valuation unit removed",),
+    )
+
+
 def run_generic_decision_impact(
     context: OrchestratorContext,
     *,
@@ -122,7 +149,8 @@ def run_generic_decision_impact(
 
     Units with no reproducible counterfactual adapter are explicitly NOT_MEASURABLE rather
     than being misclassified as zero-impact. Guardrail probes may establish criticality even
-    when the numerical counterfactual is intentionally identical to baseline.
+    when the numerical counterfactual is intentionally identical to baseline. The exact
+    deterministic valuation unit always has a built-in removal counterfactual.
     """
     config = config or GenericDecisionImpactConfig()
     baseline = build_generic_decision_outcome(context)
@@ -132,6 +160,8 @@ def run_generic_decision_impact(
     coverage_by_id = {item.module_id: item for item in coverage}
     include = set(config.include_unit_ids)
     mandatory = set(config.mandatory_guardrail_ids)
+    counterfactual_runners = dict(config.counterfactual_runners)
+    counterfactual_runners.setdefault("DETERMINISTIC_VALUATION", _without_deterministic_valuation)
 
     specs: list[ModuleAblationSpec] = []
     for contract in registry.units:
@@ -143,7 +173,7 @@ def run_generic_decision_impact(
         applicable = entry.status in {StageStatus.PASS, StageStatus.WARNING, StageStatus.RECOVERED}
         mandatory_guardrail = contract.unit_type == "gate" or contract.unit_id in mandatory
         supported = (
-            contract.unit_id in config.counterfactual_runners
+            contract.unit_id in counterfactual_runners
             or contract.unit_id in config.guardrail_probes
         )
         specs.append(
@@ -158,7 +188,7 @@ def run_generic_decision_impact(
         )
 
     def run_without_module(module_id: str) -> DecisionOutcome:
-        runner = config.counterfactual_runners.get(module_id)
+        runner = counterfactual_runners.get(module_id)
         return runner(context) if runner is not None else baseline
 
     def guardrail_probe(module_id: str) -> bool:
