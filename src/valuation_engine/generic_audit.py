@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from hashlib import sha256
-from typing import Any
 
+from .ablation import AblationBatchResult, AblationStatus
 from .assumption_compiler import CompiledAssumptionSet
 from .control_plane import DoctrineCoverageEntry, validate_doctrine_coverage
 from .records import AuditFinding, AuditReport, CalibrationStatus
@@ -40,6 +40,7 @@ def audit_generic_intrinsic(
     doctrine_coverage: tuple[DoctrineCoverageEntry, ...],
     expected_module_ids: tuple[str, ...],
     run_context_keys: tuple[str, ...] = (),
+    decision_impact: AblationBatchResult | None = None,
 ) -> GenericAuditResult:
     findings: list[AuditFinding] = []
 
@@ -118,11 +119,40 @@ def audit_generic_intrinsic(
         validate_doctrine_coverage(doctrine_coverage, expected_module_ids=expected_module_ids)
         blockers = tuple(item.module_id for item in doctrine_coverage if item.unresolved_blocker)
         doctrine_ok = not blockers
-        doctrine_detail = "doctrine coverage complete" if doctrine_ok else f"unresolved blockers: {', '.join(blockers)}"
+        doctrine_detail = "pre-audit doctrine coverage complete" if doctrine_ok else f"unresolved blockers: {', '.join(blockers)}"
     except ValueError as exc:
         doctrine_ok = False
         doctrine_detail = str(exc)
     findings.append(AuditFinding("doctrine_coverage", doctrine_ok, True, doctrine_detail))
+
+    if decision_impact is None:
+        impact_ok = False
+        impact_detail = "decision-impact artifact missing"
+    else:
+        failed = tuple(
+            item.module_id
+            for item in decision_impact.module_observations
+            if item.status is AblationStatus.FAILED
+        )
+        not_measurable = tuple(
+            item.module_id
+            for item in decision_impact.module_observations
+            if item.status is AblationStatus.NOT_MEASURABLE
+        )
+        impact_ok = not failed
+        impact_detail = (
+            "decision-impact measurement completed"
+            + (f"; explicit NOT_MEASURABLE: {', '.join(not_measurable)}" if not_measurable else "")
+            + (f"; failed: {', '.join(failed)}" if failed else "")
+        )
+    findings.append(
+        AuditFinding(
+            "decision_impact_trace",
+            impact_ok,
+            False,
+            impact_detail,
+        )
+    )
 
     report = AuditReport(tuple(findings))
     payload = "\n".join(

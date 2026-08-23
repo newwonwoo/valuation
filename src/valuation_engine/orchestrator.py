@@ -14,6 +14,12 @@ from .control_plane import (
     authorize_post_freeze,
     issue_freeze_token,
 )
+from .doctrine_runtime import (
+    DoctrineCoverageSnapshot,
+    build_doctrine_coverage,
+    load_default_unit_contract_registry,
+)
+from .unit_contracts import UnitContractRegistry
 
 
 @dataclass(frozen=True)
@@ -88,40 +94,42 @@ def load_stage_sequence(path: str | Path) -> tuple[str, ...]:
     return sequence
 
 
-def _coverage_from_context(context: OrchestratorContext) -> tuple[DoctrineCoverageEntry, ...]:
-    raw = context.data.get("doctrine_coverage")
-    if not isinstance(raw, tuple) or not all(isinstance(x, DoctrineCoverageEntry) for x in raw):
-        raise ValueError("intrinsic freeze requires doctrine_coverage tuple")
-    return raw
-
-
-def _freeze_from_context(context: OrchestratorContext) -> IntrinsicFreezeToken:
+def _freeze_from_context(
+    context: OrchestratorContext,
+    coverage: DoctrineCoverageSnapshot,
+) -> IntrinsicFreezeToken:
     required = (
         "audit_passed",
+        "decision_impact_completed",
         "assumption_set_hash",
         "valuation_hash",
         "audit_hash",
         "industry_snapshot_hash",
         "source_snapshot_hash",
-        "expected_module_ids",
     )
     missing = tuple(key for key in required if key not in context.data)
     if missing:
         raise ValueError("intrinsic freeze missing: " + ", ".join(missing))
-    expected = context.data["expected_module_ids"]
-    if not isinstance(expected, tuple) or not all(isinstance(x, str) and x for x in expected):
-        raise ValueError("expected_module_ids must be a non-empty string tuple")
+    if not bool(context.data["decision_impact_completed"]):
+        raise ValueError("decision-impact measurement must complete before intrinsic freeze")
     return issue_freeze_token(
         run_id=context.run_id,
         audit_passed=bool(context.data["audit_passed"]),
-        coverage_entries=_coverage_from_context(context),
-        expected_module_ids=expected,
+        coverage_entries=coverage.entries,
+        expected_module_ids=coverage.expected_unit_ids,
         assumption_set_hash=str(context.data["assumption_set_hash"]),
         valuation_hash=str(context.data["valuation_hash"]),
         audit_hash=str(context.data["audit_hash"]),
         industry_snapshot_hash=str(context.data["industry_snapshot_hash"]),
         source_snapshot_hash=str(context.data["source_snapshot_hash"]),
     )
+
+
+def _put_runtime_value(context: OrchestratorContext, key: str, value: Any) -> None:
+    existing = context.data.get(key)
+    if key in context.data and existing != value:
+        raise ValueError(f"Control Plane runtime key mismatch for {key}")
+    context.data[key] = value
 
 
 def run_controlled_workflow(
@@ -132,13 +140,14 @@ def run_controlled_workflow(
     adapters: dict[str, StageAdapter],
     required_stages: tuple[str, ...],
     initial_data: dict[str, Any] | None = None,
+    unit_contract_registry: UnitContractRegistry | None = None,
 ) -> ControlledRunResult:
     """Execute the canonical stage order for PRIMARY_SHADOW/LIVE_PRIMARY.
 
-    This is an orchestration shell, not a source collector or valuation model. Each live
-    capability is supplied as a stage adapter. Missing required adapters fail closed and are
-    visible as NOT_IMPLEMENTED; optional non-applicable stages must return an explicit
-    SKIPPED_NOT_APPLICABLE result. LEGACY_REGRESSION remains in workflow.py.
+    The Control Plane now generates Doctrine Coverage from Unit Contracts and actual stage
+    traces. Audit receives a pre-audit snapshot; Freeze receives a rebuilt final snapshot
+    that includes the passed Audit stage and atomically authorizes the Freeze unit. Callers
+    no longer need to inject ad-hoc coverage tuples.
     """
     if execution_mode is ExecutionMode.LEGACY_REGRESSION:
         raise ValueError("LEGACY_REGRESSION must use the legacy workflow, not this orchestrator")
@@ -150,11 +159,13 @@ def run_controlled_workflow(
     if unknown_required:
         raise ValueError("required stages not in sequence: " + ", ".join(unknown_required))
 
+    registry = unit_contract_registry or load_default_unit_contract_registry()
+    registry.validate()
     context = OrchestratorContext(run_id, execution_mode, dict(initial_data or {}))
     blockers: list[str] = []
     required = set(required_stages)
 
-    for stage in stage_sequence:
+    for stage_index, stage in enumerate(stage_sequence):
         if stage in _POST_FREEZE_STAGES:
             if context.freeze_token is None:
                 reason = f"{stage} requires IntrinsicFreezeToken"
@@ -165,12 +176,52 @@ def run_controlled_workflow(
                 break
             authorize_post_freeze(context.freeze_token, run_id=run_id)
 
+        if stage == "AUDIT_GATE":
+            try:
+                pre_audit = build_doctrine_coverage(
+                    registry,
+                    relevant_stages=stage_sequence[:stage_index],
+                    stage_traces=context.stage_traces,
+                    required_stages=required_stages,
+                )
+                _put_runtime_value(context, "pre_audit_doctrine_coverage", pre_audit.entries)
+                _put_runtime_value(context, "pre_audit_expected_unit_ids", pre_audit.expected_unit_ids)
+            except Exception as exc:
+                reason = f"pre-audit doctrine coverage failed: {type(exc).__name__}: {exc}"
+                context.stage_traces.append(StageTrace(stage, StageStatus.BLOCKED, reason, True))
+                blockers.append(reason)
+                break
+
         if stage == "INTRINSIC_VALUE_FREEZE":
             try:
-                context.freeze_token = _freeze_from_context(context)
-                context.data["intrinsic_freeze_token"] = context.freeze_token
+                final_coverage = build_doctrine_coverage(
+                    registry,
+                    relevant_stages=stage_sequence[: stage_index + 1],
+                    stage_traces=context.stage_traces,
+                    required_stages=required_stages,
+                    prospective_pass_stages=("INTRINSIC_VALUE_FREEZE",),
+                )
+                token = _freeze_from_context(context, final_coverage)
+                context.freeze_token = token
+                _put_runtime_value(context, "runtime_doctrine_coverage", final_coverage.entries)
+                _put_runtime_value(context, "runtime_expected_unit_ids", final_coverage.expected_unit_ids)
+                if "doctrine_coverage" not in context.data:
+                    context.data["doctrine_coverage"] = final_coverage.entries
+                if "doctrine_expected_unit_ids" not in context.data:
+                    context.data["doctrine_expected_unit_ids"] = final_coverage.expected_unit_ids
+                context.data["intrinsic_freeze_token"] = token
                 context.stage_traces.append(
-                    StageTrace(stage, StageStatus.PASS, "audit and doctrine coverage authorized intrinsic freeze", False, ("intrinsic_freeze_token",))
+                    StageTrace(
+                        stage,
+                        StageStatus.PASS,
+                        "audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze",
+                        False,
+                        (
+                            "intrinsic_freeze_token",
+                            "runtime_doctrine_coverage",
+                            "runtime_expected_unit_ids",
+                        ),
+                    )
                 )
             except Exception as exc:
                 reason = f"intrinsic freeze blocked: {type(exc).__name__}: {exc}"

@@ -2,8 +2,10 @@ from decimal import Decimal
 
 from valuation_engine.assumption_compiler import AssumptionSpec
 from valuation_engine.audit_adapter import generic_audit_adapter
-from valuation_engine.control_plane import DoctrineCoverageEntry, ExecutionMode, StageStatus
+from valuation_engine.control_plane import ExecutionMode, StageStatus
+from valuation_engine.decision_impact import DecisionOutcome, ImpactClassification
 from valuation_engine.evaluator_registry import ModelKey
+from valuation_engine.impact_adapter import GenericDecisionImpactConfig
 from valuation_engine.ledger import EvidenceLedger
 from valuation_engine.orchestrator import run_controlled_workflow
 from valuation_engine.records import (
@@ -130,6 +132,25 @@ def valuation_plan():
     )
 
 
+def impact_config():
+    def without_deterministic_valuation(context):
+        compiled = context.data["compiled_assumption_set"]
+        return DecisionOutcome(
+            status="VALUATION_BLOCKED",
+            assumption_hash=compiled.assumption_set_hash,
+            route_hash=context.data["route_hash"],
+            selected_methods=context.data["selected_methods"],
+            blocked_reasons=("deterministic valuation removed",),
+        )
+
+    return GenericDecisionImpactConfig(
+        counterfactual_runners={
+            "DETERMINISTIC_VALUATION": without_deterministic_valuation,
+        },
+        include_unit_ids=("DETERMINISTIC_VALUATION",),
+    )
+
+
 def run_path(*, leak_market_price: bool = False):
     ledger, hypotheses, bridges, specs = build_inputs()
     initial_data = {
@@ -142,10 +163,6 @@ def run_path(*, leak_market_price: bool = False):
         "scenario_binding_spec": ScenarioBindingSpec(
             ("Bear", "Base", "Bull"),
             ("normalized_ebitda", "normalized_multiple", "ownership", "ev_adjustment", "diluted_shares"),
-        ),
-        "expected_module_ids": ("commodity_price_taker",),
-        "doctrine_coverage": (
-            DoctrineCoverageEntry("commodity_price_taker", StageStatus.PASS, "tested archetype completed"),
         ),
         "industry_snapshot_hash": "INDUSTRY_HASH",
         "source_snapshot_hash": "SOURCE_HASH",
@@ -169,7 +186,7 @@ def run_path(*, leak_market_price: bool = False):
                 registry=default_evaluator_registry(),
                 plan=valuation_plan(),
             ),
-            "AUDIT_GATE": generic_audit_adapter(),
+            "AUDIT_GATE": generic_audit_adapter(impact_config=impact_config()),
         },
         required_stages=sequence,
         initial_data=initial_data,
@@ -192,6 +209,15 @@ def test_evidence_to_freeze_token_generic_path_passes_without_market_data():
     assert result.freeze_token.assumption_set_hash == result.data["assumption_set_hash"]
     assert result.freeze_token.valuation_hash == result.data["valuation_hash"]
     assert result.freeze_token.audit_hash == result.data["audit_hash"]
+    observation = next(
+        item
+        for item in result.data["decision_impact_batch"].module_observations
+        if item.module_id == "DETERMINISTIC_VALUATION"
+    )
+    assert observation.assessment is not None
+    assert observation.assessment.classification is ImpactClassification.DECISION_MATERIAL
+    covered = {item.module_id for item in result.data["runtime_doctrine_coverage"]}
+    assert {"ASSUMPTION_COMPILER", "SCENARIO_ENGINE", "DETERMINISTIC_VALUATION", "SOTP_AGGREGATOR", "DECISION_IMPACT", "AUDIT_GATE", "INTRINSIC_FREEZE"}.issubset(covered)
 
 
 def test_market_price_leak_blocks_before_intrinsic_freeze():

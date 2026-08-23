@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from valuation_engine.control_plane import DoctrineCoverageEntry, ExecutionMode, StageStatus
+from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.orchestrator import (
     StageExecutionResult,
     load_stage_sequence,
@@ -61,17 +61,15 @@ def test_market_stage_never_runs_without_freeze_token():
         "COMPANY_RESOLUTION": lambda _: StageExecutionResult(
             StageStatus.PASS,
             "resolved",
-            {
-                "doctrine_coverage": (
-                    DoctrineCoverageEntry("M1", StageStatus.PASS, "done"),
-                ),
-                "expected_module_ids": ("M1",),
-            },
         ),
         "AUDIT_GATE": lambda _: StageExecutionResult(
             StageStatus.PASS,
             "audit passed but valuation hashes absent",
-            {"audit_passed": True, "audit_hash": "audit"},
+            {
+                "audit_passed": True,
+                "audit_hash": "audit",
+                "decision_impact_completed": True,
+            },
         ),
         "MARKET_PRICE_LOAD": lambda _: calls.append("market") or StageExecutionResult(
             StageStatus.PASS,
@@ -94,7 +92,7 @@ def test_market_stage_never_runs_without_freeze_token():
     assert result.stage_traces[-1].status is StageStatus.BLOCKED
 
 
-def test_successful_shadow_run_issues_token_before_market_access():
+def test_successful_shadow_run_generates_coverage_and_issues_token_before_market_access():
     calls: list[str] = []
     sequence = (
         "COMPANY_RESOLUTION",
@@ -111,10 +109,6 @@ def test_successful_shadow_run_issues_token_before_market_access():
             "resolved",
             {
                 "company": "Example",
-                "doctrine_coverage": (
-                    DoctrineCoverageEntry("M1", StageStatus.PASS, "module complete"),
-                ),
-                "expected_module_ids": ("M1",),
                 "industry_snapshot_hash": "industry",
                 "source_snapshot_hash": "source",
             },
@@ -127,11 +121,17 @@ def test_successful_shadow_run_issues_token_before_market_access():
             {"assumption_set_hash": "assumptions", "valuation_hash": "value"},
         )
 
-    def audit(_):
+    def audit(context):
+        assert context.data["pre_audit_doctrine_coverage"]
+        assert context.data["pre_audit_expected_unit_ids"]
         return StageExecutionResult(
             StageStatus.PASS,
-            "audit passed",
-            {"audit_passed": True, "audit_hash": "audit"},
+            "decision impact recorded and audit passed",
+            {
+                "audit_passed": True,
+                "audit_hash": "audit",
+                "decision_impact_completed": True,
+            },
         )
 
     def market(context):
@@ -162,6 +162,10 @@ def test_successful_shadow_run_issues_token_before_market_access():
     assert result.freeze_token is not None
     assert calls == ["market"]
     assert [trace.stage for trace in result.stage_traces] == list(sequence)
+    covered = {item.module_id for item in result.data["runtime_doctrine_coverage"]}
+    assert {"DOCTRINE_CONSTITUTION", "VALUATION_CONTROL_PLANE"}.issubset(covered)
+    assert {"DETERMINISTIC_VALUATION", "SOTP_AGGREGATOR", "AUDIT_GATE", "DECISION_IMPACT", "INTRINSIC_FREEZE"}.issubset(covered)
+    assert tuple(item.module_id for item in result.data["runtime_doctrine_coverage"]) == result.data["runtime_expected_unit_ids"]
 
 
 def test_stage_context_is_append_only_to_prevent_silent_rewrites():

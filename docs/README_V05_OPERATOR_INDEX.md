@@ -8,6 +8,7 @@ Read/use:
 - `docs/CONTROL_PLANE_ARCHITECTURE.md`
 - `config/control_plane_stage_registry.yaml`
 - `src/valuation_engine/control_plane.py`
+- `src/valuation_engine/orchestrator.py`
 
 Canonical authority:
 - Doctrine defines rules.
@@ -102,8 +103,9 @@ Read/use:
 - `docs/DECISION_IMPACT_SENSITIVITY.md`
 - `config/decision_impact_policy.yaml`
 - `src/valuation_engine/decision_impact.py`
+- `src/valuation_engine/ablation.py`
 
-Every active module/scanner/gate must declare an impact path to assumptions, decisions, economic paths, final outputs, or guardrail protection. Use leave-one-module-out counterfactuals and evidence-backed numeric perturbations to measure value/decision/timing/guardrail impact. Repeated costly zero-impact research becomes a down-rank or retire candidate; mandatory guardrails are retained even when ordinary value delta is zero.
+Every active module/scanner/gate must declare an impact path to assumptions, decisions, economic paths, final outputs, or guardrail protection. Use leave-one-module-out counterfactuals and evidence-backed numeric perturbations to measure value/decision/timing/guardrail impact. Repeated costly zero-impact research becomes a down-rank or retire candidate; mandatory guardrails are retained even when ordinary value delta is zero. Missing counterfactual support is `NOT_MEASURABLE`, never zero impact.
 
 ## 11. What does each unit consume, emit and affect?
 Read/use:
@@ -113,7 +115,17 @@ Read/use:
 
 Use this layer before editing a scanner/gate/engine. It records inputs, outputs, downstream consumers, allowed effect classes, final-output reach, forbidden effects and canonical implementation references. `ModuleImpactTrace` remains run-specific actual truth; the Unit Contract Registry is static expected design truth.
 
-## 12. Validation
+## 12. How does a generic run build Coverage, Impact, Audit and Freeze automatically?
+Read/use:
+- `docs/GENERIC_RUNTIME_GOVERNANCE.md`
+- `src/valuation_engine/doctrine_runtime.py`
+- `src/valuation_engine/impact_adapter.py`
+- `src/valuation_engine/audit_adapter.py`
+- `src/valuation_engine/orchestrator.py`
+
+The Control Plane builds pre-audit Doctrine Coverage from Unit Contracts and actual stage traces. `AUDIT_GATE` first records module counterfactual/guardrail impact, then runs Generic Audit. After Audit passes, the Control Plane rebuilds final coverage and atomically issues the Intrinsic Freeze Token. Callers do not need to inject hand-written coverage tuples.
+
+## 13. Validation
 Run:
 ```bash
 PYTHONPATH=src python scripts/validate_industry_seed.py
