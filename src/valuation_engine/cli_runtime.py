@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from importlib import import_module
 import os
@@ -8,9 +8,15 @@ from pathlib import Path
 from typing import Callable, Mapping
 
 from .collection_plan import normalize_jurisdiction
-from .control_plane import ExecutionMode
-from .live_runtime import LivePrimaryRuntimeConfig, run_prism
+from .control_plane import ExecutionMode, StageStatus
+from .live_primary_adapters import ResolvedCompanyIdentity
+from .live_runtime import (
+    LivePrimaryProviders,
+    LivePrimaryRuntimeConfig,
+    run_prism,
+)
 from .orchestrator import ControlledRunResult
+from .runtime_resources import runtime_registry_path
 
 
 _PROVIDER_FACTORY_ENV = "VALUATION_LIVE_PROVIDER_FACTORY"
@@ -24,6 +30,23 @@ _BLOCKED_FORBIDDEN_DATA_KEYS = frozenset(
         "street_comparison",
         "market_comparison",
         "final_report",
+    }
+)
+_RUNTIME_REGISTRY_FIELDS = {
+    "stage_registry_path": "control_plane_stage_registry.yaml",
+    "archetype_registry_path": "archetype_module_registry.yaml",
+    "archetype_control_requirements_path": (
+        "archetype_control_requirements.yaml"
+    ),
+    "industry_source_registry_path": "industry_source_registry.yaml",
+    "unit_contract_registry_path": "unit_contract_registry.yaml",
+}
+_BLOCKING_STATUSES = frozenset(
+    {
+        StageStatus.BLOCKED,
+        StageStatus.NOT_IMPLEMENTED,
+        StageStatus.RECOVERY_REQUIRED,
+        StageStatus.AWAITING_USER_DECISION,
     }
 )
 
@@ -63,7 +86,10 @@ def parse_analysis_command(command: str) -> str:
     text = command.strip()
     prefix = "분석시작"
     if text == prefix:
-        raise LiveCLIError("COMPANY_REQUIRED", "'분석시작' 뒤에 기업명을 입력해야 합니다")
+        raise LiveCLIError(
+            "COMPANY_REQUIRED",
+            "'분석시작' 뒤에 기업명을 입력해야 합니다",
+        )
     if not text.startswith(prefix + " "):
         raise LiveCLIError(
             "INVALID_ANALYSIS_COMMAND",
@@ -71,7 +97,10 @@ def parse_analysis_command(command: str) -> str:
         )
     company = text[len(prefix) :].strip()
     if not company:
-        raise LiveCLIError("COMPANY_REQUIRED", "분석 대상 기업명이 비어 있습니다")
+        raise LiveCLIError(
+            "COMPANY_REQUIRED",
+            "분석 대상 기업명이 비어 있습니다",
+        )
     return company
 
 
@@ -85,7 +114,9 @@ def resolve_provider_factory_spec(
     environ: Mapping[str, str] | None = None,
 ) -> str:
     environment = os.environ if environ is None else environ
-    spec = (explicit_spec or environment.get(_PROVIDER_FACTORY_ENV, "")).strip()
+    spec = (
+        explicit_spec or environment.get(_PROVIDER_FACTORY_ENV, "")
+    ).strip()
     if not spec:
         raise LiveCLIError(
             "LIVE_PROVIDER_FACTORY_REQUIRED",
@@ -109,10 +140,11 @@ def load_live_runtime_config_factory(spec: str) -> LiveRuntimeConfigFactory:
             if not attribute:
                 raise AttributeError("blank attribute component")
             value = getattr(value, attribute)
-    except (ImportError, AttributeError) as exc:
+    except Exception as exc:
         raise LiveCLIError(
             "PROVIDER_FACTORY_LOAD_FAILED",
-            f"provider factory {spec!r}를 불러오지 못했습니다: {exc}",
+            f"provider factory {spec!r}를 불러오지 못했습니다 "
+            f"({type(exc).__name__}); 상세 예외는 터미널에 출력하지 않습니다",
         ) from exc
     if not callable(value):
         raise LiveCLIError(
@@ -128,6 +160,57 @@ def _normalized_jurisdiction(value: str | None) -> str | None:
     return normalize_jurisdiction(value)
 
 
+def _bind_packaged_runtime_registries(
+    config: LivePrimaryRuntimeConfig,
+) -> LivePrimaryRuntimeConfig:
+    updates: dict[str, Path] = {}
+    dataclass_fields = LivePrimaryRuntimeConfig.__dataclass_fields__
+    for field_name, filename in _RUNTIME_REGISTRY_FIELDS.items():
+        configured = Path(getattr(config, field_name))
+        if configured.is_file():
+            continue
+        default_value = dataclass_fields[field_name].default
+        default_path = Path(default_value)
+        if configured != default_path:
+            raise LiveCLIError(
+                "INVALID_LIVE_RUNTIME_CONFIG",
+                f"명시된 runtime registry가 존재하지 않습니다: {field_name}",
+            )
+        try:
+            updates[field_name] = runtime_registry_path(filename)
+        except Exception as exc:
+            raise LiveCLIError(
+                "LIVE_RUNTIME_REGISTRY_UNAVAILABLE",
+                f"packaged runtime registry를 불러오지 못했습니다: "
+                f"{field_name} ({type(exc).__name__})",
+            ) from exc
+    return replace(config, **updates) if updates else config
+
+
+def _lock_resolved_jurisdiction(
+    providers: LivePrimaryProviders,
+    *,
+    locked_jurisdiction: str | None,
+) -> LivePrimaryProviders:
+    if locked_jurisdiction is None:
+        return providers
+    expected = normalize_jurisdiction(locked_jurisdiction)
+    resolver = providers.company_resolver
+
+    def resolve(request):
+        identity = resolver(request)
+        if not isinstance(identity, ResolvedCompanyIdentity):
+            return identity
+        actual = normalize_jurisdiction(identity.jurisdiction)
+        if actual != expected:
+            raise ValueError(
+                "resolved company jurisdiction does not match the locked request"
+            )
+        return identity
+
+    return replace(providers, company_resolver=resolve)
+
+
 def build_live_runtime_config(
     request: LiveAnalysisRequest,
     factory: LiveRuntimeConfigFactory,
@@ -138,22 +221,14 @@ def build_live_runtime_config(
     except Exception as exc:
         raise LiveCLIError(
             "PROVIDER_FACTORY_FAILED",
-            f"LIVE_PRIMARY provider factory 실행에 실패했습니다: "
-            f"{type(exc).__name__}: {exc}",
+            "LIVE_PRIMARY provider factory 실행에 실패했습니다 "
+            f"({type(exc).__name__}); 상세 예외는 터미널에 출력하지 않습니다",
         ) from exc
     if not isinstance(config, LivePrimaryRuntimeConfig):
         raise LiveCLIError(
             "INVALID_LIVE_RUNTIME_CONFIG",
             "provider factory는 LivePrimaryRuntimeConfig를 반환해야 합니다",
         )
-    try:
-        config.validate()
-    except Exception as exc:
-        raise LiveCLIError(
-            "INVALID_LIVE_RUNTIME_CONFIG",
-            f"LIVE_PRIMARY runtime config 검증에 실패했습니다: "
-            f"{type(exc).__name__}: {exc}",
-        ) from exc
 
     if config.run_id != request.run_id:
         raise LiveCLIError(
@@ -184,6 +259,28 @@ def build_live_runtime_config(
             "LIVE_RUNTIME_JURISDICTION_MISMATCH",
             "provider factory의 jurisdiction이 CLI 요청과 다릅니다",
         )
+
+    config = _bind_packaged_runtime_registries(config)
+    locked_jurisdiction = (
+        request.jurisdiction
+        if request.jurisdiction is not None
+        else config.company_request.jurisdiction
+    )
+    config = replace(
+        config,
+        providers=_lock_resolved_jurisdiction(
+            config.providers,
+            locked_jurisdiction=locked_jurisdiction,
+        ),
+    )
+    try:
+        config.validate()
+    except Exception as exc:
+        raise LiveCLIError(
+            "INVALID_LIVE_RUNTIME_CONFIG",
+            "LIVE_PRIMARY runtime config 검증에 실패했습니다 "
+            f"({type(exc).__name__}); 상세 예외는 터미널에 출력하지 않습니다",
+        ) from exc
     return config
 
 
@@ -210,7 +307,8 @@ def execute_live_analysis(
     except Exception as exc:
         raise LiveCLIError(
             "LIVE_PRIMARY_EXECUTION_FAILED",
-            f"LIVE_PRIMARY 실행에 실패했습니다: {type(exc).__name__}: {exc}",
+            "LIVE_PRIMARY 실행에 실패했습니다 "
+            f"({type(exc).__name__}); 상세 예외는 터미널에 출력하지 않습니다",
         ) from exc
     if not isinstance(result, ControlledRunResult):
         raise LiveCLIError(
@@ -233,7 +331,9 @@ def execute_live_analysis(
             "차단 사유가 없는 LIVE_PRIMARY 결과에는 stage trace가 필요합니다",
         )
     if result.blocked_reasons:
-        leaked = tuple(sorted(_BLOCKED_FORBIDDEN_DATA_KEYS.intersection(result.data)))
+        leaked = tuple(
+            sorted(_BLOCKED_FORBIDDEN_DATA_KEYS.intersection(result.data))
+        )
         if result.freeze_token is not None or leaked:
             detail = []
             if result.freeze_token is not None:
@@ -247,20 +347,31 @@ def execute_live_analysis(
     return result
 
 
+def _blocked_codes(result: ControlledRunResult) -> tuple[str, ...]:
+    codes = tuple(
+        dict.fromkeys(
+            f"{trace.stage}:{trace.status.value}"
+            for trace in result.stage_traces
+            if trace.blocking or trace.status in _BLOCKING_STATUSES
+        )
+    )
+    return codes or ("LIVE_PRIMARY:BLOCKED",)
+
+
 def render_controlled_run(result: ControlledRunResult) -> str:
     total = len(result.stage_traces)
     lines = [
-        f"[{index:02d}/{total:02d}] {trace.stage}: {trace.status.value} — "
-        f"{trace.rationale}"
+        f"[{index:02d}/{total:02d}] {trace.stage}: {trace.status.value}"
         for index, trace in enumerate(result.stage_traces, start=1)
     ]
     if result.blocked_reasons:
-        lines.extend(("", "# VALUATION BLOCKED", "", "## 원인"))
-        lines.extend(f"- {reason}" for reason in result.blocked_reasons)
+        lines.extend(("", "# VALUATION BLOCKED", "", "## 차단 코드"))
+        lines.extend(f"- {code}" for code in _blocked_codes(result))
         lines.extend(
             (
                 "",
-                "Intrinsic Value·Street·현재가 결과는 차단된 실행에서 출력하지 않습니다.",
+                "Provider 예외 상세와 Intrinsic Value·Street·현재가 결과는 "
+                "차단된 실행의 터미널 출력에서 제외합니다.",
             )
         )
         return "\n".join(lines) + "\n"
