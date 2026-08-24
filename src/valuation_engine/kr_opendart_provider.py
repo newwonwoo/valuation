@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
+from io import BytesIO
 from pathlib import Path
 from typing import Callable, Mapping
+from zipfile import BadZipFile, ZipFile
 
 from .cli_runtime import LiveAnalysisRequest
 from .collection_plan import CollectorCapability, normalize_jurisdiction
@@ -53,6 +55,9 @@ from .valuation_plan_compiler import SegmentMethodChoice
 _KR_JURISDICTION = "KR"
 _OPENDART_SOURCE_ID = "KR_OPENDART"
 _OPENDART_TARGET_PREFIX = "KR:DART:"
+_DEFAULT_MAX_CORP_ARCHIVE_MEMBERS = 8
+_DEFAULT_MAX_CORP_ARCHIVE_UNCOMPRESSED_BYTES = 32_000_000
+_ARCHIVE_READ_CHUNK_BYTES = 64 * 1024
 
 FetchText = Callable[[str], str]
 FetchBytes = Callable[[str], bytes]
@@ -67,11 +72,86 @@ __all__ = [
 ]
 
 
+def _validated_corp_archive_payload(
+    payload: bytes,
+    *,
+    max_members: int,
+    max_uncompressed_bytes: int,
+) -> bytes:
+    """Validate a corp-code ZIP before the canonical resolver decompresses it.
+
+    The HTTP transport bounds only the compressed response body. A highly compressed ZIP
+    member can otherwise expand far beyond that limit inside ``ZipFile.read``. The payload is
+    immutable, so validating member count, declared total size and a streamed XML read before
+    passing the same bytes to the resolver closes that gap without changing resolver identity
+    semantics.
+    """
+    if not isinstance(payload, bytes) or not payload:
+        raise ValueError("OpenDART corp-code archive must be non-empty bytes")
+    if max_members <= 0 or max_uncompressed_bytes <= 0:
+        raise ValueError("OpenDART corp archive limits must be positive")
+    try:
+        with ZipFile(BytesIO(payload)) as archive:
+            members = archive.infolist()
+            if not members:
+                raise ValueError("OpenDART corp-code archive contains no members")
+            if len(members) > max_members:
+                raise ValueError(
+                    "OpenDART corp-code archive exceeds the configured member limit"
+                )
+            declared_total = sum(max(0, member.file_size) for member in members)
+            if declared_total > max_uncompressed_bytes:
+                raise ValueError(
+                    "OpenDART corp-code archive exceeds the configured uncompressed-size limit"
+                )
+            xml_members = tuple(
+                member
+                for member in members
+                if member.filename.lower().endswith(".xml")
+            )
+            if len(xml_members) != 1:
+                raise ValueError(
+                    "OpenDART corp-code archive must contain exactly one XML member"
+                )
+            xml_member = xml_members[0]
+            if xml_member.flag_bits & 0x1:
+                raise ValueError(
+                    "OpenDART corp-code XML member must not be encrypted"
+                )
+            streamed_bytes = 0
+            with archive.open(xml_member, "r") as source:
+                while True:
+                    remaining = max_uncompressed_bytes - streamed_bytes
+                    chunk = source.read(
+                        min(_ARCHIVE_READ_CHUNK_BYTES, remaining + 1)
+                    )
+                    if not chunk:
+                        break
+                    streamed_bytes += len(chunk)
+                    if streamed_bytes > max_uncompressed_bytes:
+                        raise ValueError(
+                            "OpenDART corp-code XML exceeds the configured uncompressed-size limit"
+                        )
+    except BadZipFile as exc:
+        raise ValueError(
+            "OpenDART corp-code response is not a valid ZIP archive"
+        ) from exc
+    except RuntimeError as exc:
+        raise ValueError(
+            "OpenDART corp-code archive cannot be opened safely"
+        ) from exc
+    return payload
+
+
 @dataclass(frozen=True)
 class OpenDartNetwork:
     fetch_text: FetchText
     fetch_bytes: FetchBytes
     api_key: str | None = field(default=None, repr=False)
+    max_corp_archive_members: int = _DEFAULT_MAX_CORP_ARCHIVE_MEMBERS
+    max_corp_archive_uncompressed_bytes: int = (
+        _DEFAULT_MAX_CORP_ARCHIVE_UNCOMPRESSED_BYTES
+    )
 
     def validate(self) -> None:
         if not callable(self.fetch_text) or not callable(self.fetch_bytes):
@@ -81,6 +161,22 @@ class OpenDartNetwork:
         if self.api_key is not None:
             if not isinstance(self.api_key, str) or not self.api_key.strip():
                 raise ValueError("OpenDART api_key must be a non-blank string")
+        if self.max_corp_archive_members <= 0:
+            raise ValueError("max_corp_archive_members must be positive")
+        if self.max_corp_archive_uncompressed_bytes <= 0:
+            raise ValueError(
+                "max_corp_archive_uncompressed_bytes must be positive"
+            )
+
+    def fetch_validated_corp_archive(self, url: str) -> bytes:
+        self.validate()
+        return _validated_corp_archive_payload(
+            self.fetch_bytes(url),
+            max_members=self.max_corp_archive_members,
+            max_uncompressed_bytes=(
+                self.max_corp_archive_uncompressed_bytes
+            ),
+        )
 
     @classmethod
     def from_http_transport(
@@ -88,6 +184,10 @@ class OpenDartNetwork:
         transport: HttpTransport,
         *,
         api_key: str | None = None,
+        max_corp_archive_members: int = _DEFAULT_MAX_CORP_ARCHIVE_MEMBERS,
+        max_corp_archive_uncompressed_bytes: int = (
+            _DEFAULT_MAX_CORP_ARCHIVE_UNCOMPRESSED_BYTES
+        ),
     ) -> "OpenDartNetwork":
         if not isinstance(transport, HttpTransport):
             raise TypeError("transport must be HttpTransport")
@@ -95,6 +195,10 @@ class OpenDartNetwork:
             fetch_text=lambda url: transport.get_text(url).text,
             fetch_bytes=lambda url: transport.get_bytes(url).content,
             api_key=api_key,
+            max_corp_archive_members=max_corp_archive_members,
+            max_corp_archive_uncompressed_bytes=(
+                max_corp_archive_uncompressed_bytes
+            ),
         )
 
 
@@ -258,7 +362,7 @@ class KRLiveRuntimeFactory:
             )
 
         resolver = live_opendart_company_resolver(
-            self.network.fetch_bytes,
+            self.network.fetch_validated_corp_archive,
             api_key=self.network.api_key,
         )
         collector = LiveCollectorProvider(
