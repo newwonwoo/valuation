@@ -4,6 +4,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import sys
 from typing import Mapping, Sequence
 
 from .audit import audit_model, gate_report
@@ -176,7 +177,7 @@ def main(
             return _run_live_analysis(args, environ=environment)
         return _run_yaml_valuation(args)
     except LiveCLIError as exc:
-        print(f"ERROR [{exc.code}] {exc}", file=os.sys.stderr)
+        print(f"ERROR [{exc.code}] {exc}", file=sys.stderr)
         return 2
 
 
