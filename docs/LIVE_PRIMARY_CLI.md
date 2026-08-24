@@ -58,6 +58,8 @@ and must return `LivePrimaryRuntimeConfig`.
 
 The factory may assemble live transports, credentials, source clients, LLM Staff callbacks, scanner runners, risk providers, evaluator registries and post-freeze loaders. Secrets, paid reports and private position/state data remain outside the public repository.
 
+Ordinary import-time and provider-factory exceptions are converted into stable CLI error codes. Their exception type may be reported, but the original exception message is not printed because it may contain credential-bearing URLs, authorization headers or private response bodies. `KeyboardInterrupt` and `SystemExit` remain process-control signals rather than being swallowed as provider errors.
+
 ## 3. Identity locks
 
 The factory cannot change:
@@ -69,9 +71,31 @@ The factory cannot change:
 
 These checks happen before Control Plane execution or state persistence.
 
+The company resolver is additionally wrapped at the first Control Plane stage. When a jurisdiction is locked, the returned `ResolvedCompanyIdentity.jurisdiction` must match after canonical alias normalization. A factory cannot copy `KR` into the request but return a US identity and proceed to downstream collection.
+
 The factory is not allowed to reinterpret `분석시작 삼성전자` as another target, redirect state to another directory, reuse an unrelated run ID, or silently choose a different jurisdiction.
 
-## 4. No fallback
+## 4. Installed registry resources
+
+The console entrypoint must work from an installed wheel outside a repository checkout. All YAML runtime registries are packaged under:
+
+```text
+valuation_engine._registry_data
+```
+
+`build_live_runtime_config()` preserves valid explicitly supplied registry paths. When a config still carries the class defaults and those checkout paths do not exist, it binds the installed package resources for:
+
+- Control Plane stage registry;
+- archetype module registry;
+- archetype control requirements;
+- industry source registry;
+- Unit Contract registry.
+
+A missing explicit custom registry path is not replaced silently. It fails as `INVALID_LIVE_RUNTIME_CONFIG`. A missing packaged default fails as `LIVE_RUNTIME_REGISTRY_UNAVAILABLE`.
+
+Wheel regression tests build and install the package in an isolated directory, run outside the checkout, construct the documented factory skeleton and load the 33-stage and Unit Contract registries.
+
+## 5. No fallback
 
 Without a provider factory, the command returns:
 
@@ -95,7 +119,7 @@ The following combinations are invalid:
 - live analysis plus `--config`;
 - YAML fixture mode plus LIVE/legacy command options.
 
-## 5. Result validation
+## 6. Result validation
 
 The runner must return `ControlledRunResult` with:
 
@@ -107,25 +131,37 @@ The runner must return `ControlledRunResult` with:
 
 A result from PRIMARY_SHADOW or LEGACY_REGRESSION is rejected even if its numerical output appears valid.
 
-## 6. Blocked-run rendering
+A blocked result must not retain a Freeze Token or intrinsic-owned outputs such as valuation objects, scenario values, Street/market comparison or final report. Any such result is rejected as `BLOCKED_LIVE_RESULT_LEAKAGE` rather than rendered.
 
-When any stage blocks, CLI output contains only:
+## 7. Secret-safe blocked-run rendering
 
-- stage/status/rationale progress;
+Terminal progress renders only:
+
+```text
+[index/total] STAGE: status
+```
+
+It does not print stage rationales because provider exceptions may be embedded in those strings.
+
+When a stage blocks, CLI output contains only:
+
+- stage/status progress;
 - `VALUATION BLOCKED`;
-- explicit blocking reasons.
+- stable uppercase `STAGE:STATUS` codes.
 
-The renderer does not read or display:
+The renderer does not print:
 
+- provider exception messages;
+- raw blocking-reason strings;
 - scenario intrinsic values;
 - expected value;
 - valuation hash or Freeze Token;
 - Street or market comparison;
 - a stale or injected final report.
 
-`run_prism()` also redacts intrinsic-owned keys from blocked results. CLI rendering is a second protection rather than the sole guard.
+`run_prism()` also redacts intrinsic-owned keys from blocked results. CLI result validation and rendering are additional protections rather than the sole guard.
 
-## 7. Example factory skeleton
+## 8. Example factory skeleton
 
 ```python
 from valuation_engine.cli_runtime import LiveAnalysisRequest
@@ -151,7 +187,7 @@ def build_config(request: LiveAnalysisRequest) -> LivePrimaryRuntimeConfig:
 
 `build_private_provider_bundle` must still obey every normal PRISM source-layer, Evidence, market-isolation, exact-evaluator and Audit contract. The CLI factory boundary does not authorize assumptions or valuation math.
 
-## 8. Operational errors
+## 9. Operational errors
 
 Errors are classified before returning exit code `2`:
 
@@ -161,6 +197,7 @@ Errors are classified before returning exit code `2`:
 - `PROVIDER_FACTORY_NOT_CALLABLE`
 - `PROVIDER_FACTORY_FAILED`
 - `INVALID_LIVE_RUNTIME_CONFIG`
+- `LIVE_RUNTIME_REGISTRY_UNAVAILABLE`
 - `LIVE_RUNTIME_IDENTITY_MISMATCH`
 - `LIVE_RUNTIME_STATE_ROOT_MISMATCH`
 - `LIVE_RUNTIME_COMPANY_MISMATCH`
@@ -169,6 +206,7 @@ Errors are classified before returning exit code `2`:
 - `INVALID_LIVE_RUNTIME_RESULT`
 - `LIVE_RUNTIME_RESULT_ID_MISMATCH`
 - `LIVE_RUNTIME_MODE_MISMATCH`
+- `BLOCKED_LIVE_RESULT_LEAKAGE`
 - `LIVE_REPORT_MISSING`
 
-These errors are operational/capability failures. They must not be converted into an intrinsic estimate.
+These errors are operational/capability failures. They must not be converted into an intrinsic estimate. Sensitive provider exception messages are retained only in a separately protected operator diagnostic channel if one is configured outside this public terminal contract.
