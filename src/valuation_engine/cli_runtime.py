@@ -167,23 +167,22 @@ def _bind_packaged_runtime_registries(
     dataclass_fields = LivePrimaryRuntimeConfig.__dataclass_fields__
     for field_name, filename in _RUNTIME_REGISTRY_FIELDS.items():
         configured = Path(getattr(config, field_name))
-        if configured.is_file():
+        default_path = Path(dataclass_fields[field_name].default)
+        if configured == default_path:
+            try:
+                updates[field_name] = runtime_registry_path(filename)
+            except Exception as exc:
+                raise LiveCLIError(
+                    "LIVE_RUNTIME_REGISTRY_UNAVAILABLE",
+                    f"packaged runtime registry를 불러오지 못했습니다: "
+                    f"{field_name} ({type(exc).__name__})",
+                ) from exc
             continue
-        default_value = dataclass_fields[field_name].default
-        default_path = Path(default_value)
-        if configured != default_path:
+        if not configured.is_file():
             raise LiveCLIError(
                 "INVALID_LIVE_RUNTIME_CONFIG",
                 f"명시된 runtime registry가 존재하지 않습니다: {field_name}",
             )
-        try:
-            updates[field_name] = runtime_registry_path(filename)
-        except Exception as exc:
-            raise LiveCLIError(
-                "LIVE_RUNTIME_REGISTRY_UNAVAILABLE",
-                f"packaged runtime registry를 불러오지 못했습니다: "
-                f"{field_name} ({type(exc).__name__})",
-            ) from exc
     return replace(config, **updates) if updates else config
 
 
