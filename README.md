@@ -4,7 +4,7 @@
 
 ## 현재 구현 수준
 
-실행 CLI의 범용 live engine은 아직 v0.3-alpha OCI홀딩스 수직 슬라이스를 보존합니다. 방법론/순수 계산 계약과 산업 지식·신호 계층은 **RocketSLA v0.5.2**까지 확장되었습니다. 구현되지 않은 live adapter를 실행된 것처럼 표시하면 안 됩니다.
+범용 33-stage `LIVE_PRIMARY` Control Plane과 `run_prism()` 진입점은 구현되어 있습니다. CLI의 `분석시작 <기업>`은 LIVE_PRIMARY를 기본으로 선택하며, 실제 실행에는 jurisdiction/source별 production runtime factory가 필요합니다. Provider가 없을 때 OCI fixture나 PRIMARY_SHADOW로 자동 후퇴하지 않습니다. 기존 OCI v1.1 경로는 명시적 `legacy-regression` 모드로 보존합니다.
 
 ### v0.3 legacy/live-workflow baseline
 - Evidence → Hypothesis → Bridge → Assumption 추적성
@@ -49,13 +49,24 @@ OCI legacy deterministic core:
 .venv/bin/valuation-engine examples/oci/company.yaml
 ```
 
-Research OS vertical slice:
+OCI Research OS regression slice:
 
 ```bash
 .venv/bin/valuation-engine "분석시작 OCI홀딩스" \
+  --mode legacy-regression \
   --config examples/oci/company.yaml \
   --state-root ../valuation-vault-local
 ```
+
+LIVE_PRIMARY analysis command:
+
+```bash
+.venv/bin/valuation-engine "분석시작 <기업>" \
+  --runtime-factory your_package.runtime:build_runtime \
+  --state-root ../valuation-vault-local
+```
+
+동일 factory는 `PRISM_RUNTIME_FACTORY=your_package.runtime:build_runtime` 환경변수로도 지정할 수 있습니다. Production runtime factory가 없으면 LIVE_PRIMARY는 명시적 configuration error로 종료하며 legacy/shadow로 자동 fallback하지 않습니다.
 
 실제 Thesis/Evidence/Position/API key/유료 증권사 원문은 public repo에 커밋하지 않습니다.
 
@@ -79,7 +90,7 @@ src/valuation_engine/
   per.py        # Hierarchical Warranted PER + DCF-PER consistency
   funding.py    # Upstream funding ladder contracts
   street.py     # Street consensus/gap arithmetic
-  ...           # existing v0.3 engine/workflow modules
+  ...           # generic Control Plane, adapters and legacy regression modules
 
 tests/
   test_v04_contracts.py
@@ -102,14 +113,14 @@ tests/
 12. Audit 실패/critical unresolved issue는 valuation과 market comparison을 차단합니다.
 13. 기존 OCI 회귀값은 의도적 모델 변경이 없는 한 ±1원 이내로 유지합니다.
 
-13. Industry route는 segment-first multi-label evidence route이며 keyword match가 최종 route를 확정하지 않습니다.
-14. Broker/alternative data는 intrinsic assumption으로 직접 compile하지 않고 discovery/corroboration/verification request 역할만 가집니다.
-15. `SOURCE_FAILURE` 또는 `NOT_OBSERVED`를 부정적 산업 Evidence로 해석하지 않습니다.
-16. 같은 economic event의 `event_time/effective_as_of/published_at/first_seen_at/revised_at`을 분리해 look-ahead를 차단합니다.
-17. Unsupported archetype/missing critical module input/method conflict는 generic DCF fallback이 아니라 `VALUATION BLOCKED`입니다.
+14. Industry route는 segment-first multi-label evidence route이며 keyword match가 최종 route를 확정하지 않습니다.
+15. Broker/alternative data는 intrinsic assumption으로 직접 compile하지 않고 discovery/corroboration/verification request 역할만 가집니다.
+16. `SOURCE_FAILURE` 또는 `NOT_OBSERVED`를 부정적 산업 Evidence로 해석하지 않습니다.
+17. 같은 economic event의 `event_time/effective_as_of/published_at/first_seen_at/revised_at`을 분리해 look-ahead를 차단합니다.
+18. Unsupported archetype/missing critical module input/method conflict는 generic DCF fallback이 아니라 `VALUATION BLOCKED`입니다.
 
 ## 방법론의 위치
 
-v0.4 금융 calibration 계층은 **academically grounded engineering synthesis**로 정의합니다. v0.5.2는 여기에 evidence-governed Industry Knowledge, Broker Research, Source Freshness 및 Signal Intelligence orchestration을 추가하며, 각 source의 authority와 허용 workflow stage를 분리합니다. Blume/Vasicek, non-synchronous beta correction, unlever/relever, standard WACC consistency, forward/fundamental multiple literature 등 기존 기반과 RocketSLA 고유의 L1→L4 Economic-Twin taxonomy, customer-advance WACC transmission, three-layer Warranted PER, residual pooling 및 fail-closed audit orchestration을 구분합니다.
+v0.4 금융 calibration 계층은 **academically grounded engineering synthesis**로 정의합니다. v0.5.2는 여기에 evidence-governed Industry Knowledge, Broker Research, Source Freshness 및 Signal Intelligence orchestration을 추가하며, 각 source의 authority와 허용 workflow stage를 분리합니다. Blume/Vasicek, non-synchronous beta correction, unlever/relever, standard WACC consistency, forward/fundamental multiple literature 등 기존 기반과 RocketSLA 고유의 L1→L4 Economic-Twin taxonomy, customer-advance WACC transmission, three-layer Hierarchical Warranted PER, residual pooling 및 fail-closed audit orchestration을 구분합니다.
 
 상세 근거·실무적 가치·한계는 [docs/V04_ROCKETSLA_EXTENSION.md](docs/V04_ROCKETSLA_EXTENSION.md)를 기준으로 합니다.
