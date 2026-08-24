@@ -118,6 +118,7 @@ class DartOriginalFilingDocument:
             member.validate()
         if not self.text_members:
             raise DartDocumentError("DART original filing contains no supported text member")
+        _validate_members_against_retained_archive(self)
 
     @property
     def text_members(self) -> tuple[DartDocumentMember, ...]:
@@ -363,7 +364,11 @@ def fetch_indexed_opendart_original_document(
         raise DartDocumentError(
             "OpenDART index record document_id does not match its receipt number"
         )
-    if record.published_at is not None and record.published_at > checked_at:
+    if record.published_at is None:
+        raise DartDocumentError(
+            "OpenDART index record requires published_at before original-document fetch"
+        )
+    if record.published_at > checked_at:
         raise DartDocumentError(
             "OpenDART index record publication date is later than checked_at"
         )
@@ -412,6 +417,77 @@ def _index_record_hash(record: DocumentIndexRecord) -> str:
             "content_fingerprint": record.content_fingerprint,
         }
     )
+
+
+def _validate_members_against_retained_archive(
+    document: DartOriginalFilingDocument,
+) -> None:
+    expected = {member.path: member for member in document.members}
+    seen: set[str] = set()
+    try:
+        archive = ZipFile(BytesIO(document.archive_bytes))
+    except BadZipFile as exc:
+        raise DartDocumentError(
+            "DART retained archive is not a valid ZIP"
+        ) from exc
+    with archive:
+        for info in (item for item in archive.infolist() if not item.is_dir()):
+            try:
+                path = _safe_member_path(info.filename)
+            except DartDocumentFetchError as exc:
+                raise DartDocumentError(
+                    f"DART retained archive contains unsafe member: {info.filename!r}"
+                ) from exc
+            if path in seen:
+                raise DartDocumentError(
+                    f"DART retained archive contains duplicate member path: {path}"
+                )
+            seen.add(path)
+            member = expected.get(path)
+            if member is None:
+                raise DartDocumentError(
+                    f"DART retained archive contains unmanifested member: {path}"
+                )
+            raw = archive.read(info)
+            if member.size_bytes != info.file_size:
+                raise DartDocumentError(
+                    f"DART retained member size mismatch: {path}"
+                )
+            if member.compressed_size_bytes != info.compress_size:
+                raise DartDocumentError(
+                    f"DART retained member compressed-size mismatch: {path}"
+                )
+            if member.content_hash != sha256(raw).hexdigest():
+                raise DartDocumentError(
+                    f"DART retained member content hash mismatch: {path}"
+                )
+            extension = PurePosixPath(path).suffix.lower()
+            if member.media_type != _media_type(extension):
+                raise DartDocumentError(
+                    f"DART retained member media-type mismatch: {path}"
+                )
+            if extension in _TEXT_EXTENSIONS:
+                try:
+                    encoding = _detect_text_encoding(raw)
+                    text = raw.decode(encoding, errors="strict")
+                except (DartDocumentFetchError, UnicodeDecodeError, LookupError) as exc:
+                    raise DartDocumentError(
+                        f"DART retained text member cannot be reproduced: {path}"
+                    ) from exc
+                if member.text_encoding != encoding or member.text != text:
+                    raise DartDocumentError(
+                        f"DART retained decoded text mismatch: {path}"
+                    )
+            elif member.text is not None or member.text_encoding is not None:
+                raise DartDocumentError(
+                    f"DART retained binary member has unexpected decoded text: {path}"
+                )
+    missing = set(expected) - seen
+    if missing:
+        raise DartDocumentError(
+            "DART retained archive is missing manifested members: "
+            + ", ".join(sorted(missing))
+        )
 
 
 def _sanitize_source_ref(source_ref: str, *, expected_rcept_no: str) -> str:
