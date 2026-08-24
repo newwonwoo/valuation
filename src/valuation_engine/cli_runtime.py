@@ -229,51 +229,55 @@ def build_live_runtime_config(
             "provider factory는 LivePrimaryRuntimeConfig를 반환해야 합니다",
         )
 
-    if config.run_id != request.run_id:
-        raise LiveCLIError(
-            "LIVE_RUNTIME_IDENTITY_MISMATCH",
-            "provider factory가 CLI run_id를 변경했습니다",
-        )
-    requested_root = request.state_root.expanduser().resolve()
-    configured_root = Path(config.state_root).expanduser().resolve()
-    if configured_root != requested_root:
-        raise LiveCLIError(
-            "LIVE_RUNTIME_STATE_ROOT_MISMATCH",
-            "provider factory가 CLI state_root를 변경했습니다",
-        )
-    if config.company_request.query.strip() != request.company_query:
-        raise LiveCLIError(
-            "LIVE_RUNTIME_COMPANY_MISMATCH",
-            "provider factory의 CompanyResolutionRequest가 CLI 기업명과 다릅니다",
-        )
-    requested_jurisdiction = _normalized_jurisdiction(request.jurisdiction)
-    configured_jurisdiction = _normalized_jurisdiction(
-        config.company_request.jurisdiction
-    )
-    if (
-        requested_jurisdiction is not None
-        and configured_jurisdiction != requested_jurisdiction
-    ):
-        raise LiveCLIError(
-            "LIVE_RUNTIME_JURISDICTION_MISMATCH",
-            "provider factory의 jurisdiction이 CLI 요청과 다릅니다",
-        )
-
-    config = _bind_packaged_runtime_registries(config)
-    locked_jurisdiction = (
-        request.jurisdiction
-        if request.jurisdiction is not None
-        else config.company_request.jurisdiction
-    )
-    config = replace(
-        config,
-        providers=_lock_resolved_jurisdiction(
-            config.providers,
-            locked_jurisdiction=locked_jurisdiction,
-        ),
-    )
     try:
+        if config.run_id != request.run_id:
+            raise LiveCLIError(
+                "LIVE_RUNTIME_IDENTITY_MISMATCH",
+                "provider factory가 CLI run_id를 변경했습니다",
+            )
+        requested_root = request.state_root.expanduser().resolve()
+        configured_root = Path(config.state_root).expanduser().resolve()
+        if configured_root != requested_root:
+            raise LiveCLIError(
+                "LIVE_RUNTIME_STATE_ROOT_MISMATCH",
+                "provider factory가 CLI state_root를 변경했습니다",
+            )
+        if config.company_request.query.strip() != request.company_query:
+            raise LiveCLIError(
+                "LIVE_RUNTIME_COMPANY_MISMATCH",
+                "provider factory의 CompanyResolutionRequest가 CLI 기업명과 다릅니다",
+            )
+        requested_jurisdiction = _normalized_jurisdiction(
+            request.jurisdiction
+        )
+        configured_jurisdiction = _normalized_jurisdiction(
+            config.company_request.jurisdiction
+        )
+        if (
+            requested_jurisdiction is not None
+            and configured_jurisdiction != requested_jurisdiction
+        ):
+            raise LiveCLIError(
+                "LIVE_RUNTIME_JURISDICTION_MISMATCH",
+                "provider factory의 jurisdiction이 CLI 요청과 다릅니다",
+            )
+
+        config = _bind_packaged_runtime_registries(config)
+        locked_jurisdiction = (
+            request.jurisdiction
+            if request.jurisdiction is not None
+            else config.company_request.jurisdiction
+        )
+        config = replace(
+            config,
+            providers=_lock_resolved_jurisdiction(
+                config.providers,
+                locked_jurisdiction=locked_jurisdiction,
+            ),
+        )
         config.validate()
+    except LiveCLIError:
+        raise
     except Exception as exc:
         raise LiveCLIError(
             "INVALID_LIVE_RUNTIME_CONFIG",
