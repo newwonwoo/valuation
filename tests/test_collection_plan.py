@@ -336,9 +336,14 @@ def test_unlisted_target_excludes_listed_company_exact_sources(tmp_path):
     )
     path.write_text(payload, encoding="utf-8")
 
+    unlisted = replace(
+        identity(),
+        ticker="",
+        external_ids=(("krx_stock_code", "UNLISTED"),),
+    )
     plan = compile_company_collection_plan(
         module_plan(segment_plan("core", required=("backlog",))),
-        company=identity(),
+        company=unlisted,
         source_registry_path=path,
         collector_capabilities=(
             CollectorCapability(
@@ -349,13 +354,77 @@ def test_unlisted_target_excludes_listed_company_exact_sources(tmp_path):
                 "tests.fixture",
             ),
         ),
-        target_is_listed=False,
     )
 
+    assert plan.target_is_listed is False
     requirement = plan.required_evidence[0]
     assert requirement.source_candidates == ()
     assert requirement.collector_ids == ()
     assert requirement.readiness is CollectionReadiness.NO_SOURCE_CANDIDATE
+
+    with pytest.raises(ValueError, match="cannot authorize listed-company"):
+        compile_company_collection_plan(
+            module_plan(segment_plan("core", required=("backlog",))),
+            company=unlisted,
+            source_registry_path=path,
+            target_is_listed=True,
+        )
+
+
+def test_generic_equipment_token_cannot_cross_route_grid_source_to_semiconductor(
+    tmp_path,
+):
+    path = tmp_path / "specific-sources.yaml"
+    path.write_text(
+        """sources:
+- id: US_DOE_GRID
+  authority: regulator_primary
+  roles: [observed_state]
+  access: api
+  industries: [grid_equipment]
+  metrics: [lead_time]
+- id: US_SEMICONDUCTOR_SOURCE
+  authority: regulator_primary
+  roles: [observed_state]
+  access: api
+  industries: [semiconductor]
+  metrics: [lead_time]
+""",
+        encoding="utf-8",
+    )
+    plan = compile_company_collection_plan(
+        module_plan(
+            segment_plan(
+                "core",
+                required=("lead_time",),
+                sector_adapter="semiconductor.equipment",
+            )
+        ),
+        company=identity("US"),
+        source_registry_path=path,
+        collector_capabilities=(
+            CollectorCapability(
+                "grid-lead-time",
+                "US_DOE_GRID",
+                ("lead_time",),
+                ("US",),
+                "tests.fixture.grid",
+            ),
+            CollectorCapability(
+                "semi-lead-time",
+                "US_SEMICONDUCTOR_SOURCE",
+                ("lead_time",),
+                ("US",),
+                "tests.fixture.semiconductor",
+            ),
+        ),
+    )
+
+    requirement = plan.required_evidence[0]
+    assert tuple(
+        item.source_id for item in requirement.source_candidates
+    ) == ("US_SEMICONDUCTOR_SOURCE",)
+    assert requirement.collector_ids == ("semi-lead-time",)
 
 
 def test_industry_specific_source_is_not_routed_to_unrelated_segment(
