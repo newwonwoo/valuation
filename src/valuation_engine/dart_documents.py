@@ -278,7 +278,12 @@ def parse_opendart_original_document_archive(
                 raise DartDocumentFetchError(
                     f"OpenDART ZIP member compression ratio is suspicious: {path}"
                 )
-            raw = archive.read(info)
+            try:
+                raw = archive.read(info)
+            except (BadZipFile, NotImplementedError, RuntimeError) as exc:
+                raise DartDocumentFetchError(
+                    f"OpenDART ZIP member cannot be read: {path}"
+                ) from exc
             if len(raw) != info.file_size:
                 raise DartDocumentFetchError(
                     f"OpenDART ZIP member size mismatch: {path}"
@@ -448,7 +453,12 @@ def _validate_members_against_retained_archive(
                 raise DartDocumentError(
                     f"DART retained archive contains unmanifested member: {path}"
                 )
-            raw = archive.read(info)
+            try:
+                raw = archive.read(info)
+            except (BadZipFile, NotImplementedError, RuntimeError) as exc:
+                raise DartDocumentError(
+                    f"DART retained archive member cannot be read: {path}"
+                ) from exc
             if member.size_bytes != info.file_size:
                 raise DartDocumentError(
                     f"DART retained member size mismatch: {path}"
