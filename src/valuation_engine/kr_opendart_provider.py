@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Mapping
+from typing import Callable, Mapping
 
 from .cli_runtime import LiveAnalysisRequest
 from .collection_plan import CollectorCapability, normalize_jurisdiction
@@ -24,6 +24,7 @@ from .impact_adapter import GenericDecisionImpactConfig
 from .live_indexers import HttpTransport
 from .live_primary_adapters import (
     CompanyResolutionRequest,
+    CompanyResolver,
     FreshnessLoader,
     IndustryDNARouter,
     IndustrySnapshotLoader,
@@ -53,11 +54,23 @@ _KR_JURISDICTION = "KR"
 _OPENDART_SOURCE_ID = "KR_OPENDART"
 _OPENDART_TARGET_PREFIX = "KR:DART:"
 
+FetchText = Callable[[str], str]
+FetchBytes = Callable[[str], bytes]
+
+__all__ = [
+    "OpenDartNetwork",
+    "OpenDartFilingSelection",
+    "KRLiveProviderExtensions",
+    "KRLiveRuntimeFactory",
+    "opendart_corp_code_from_target_id",
+    "request_scoped_opendart_fact_collector",
+]
+
 
 @dataclass(frozen=True)
 class OpenDartNetwork:
-    fetch_text: callable
-    fetch_bytes: callable
+    fetch_text: FetchText
+    fetch_bytes: FetchBytes
     api_key: str | None = field(default=None, repr=False)
 
     def validate(self) -> None:
@@ -65,8 +78,9 @@ class OpenDartNetwork:
             raise TypeError(
                 "OpenDartNetwork requires callable text and binary transports"
             )
-        if self.api_key is not None and not self.api_key.strip():
-            raise ValueError("OpenDART api_key cannot be blank")
+        if self.api_key is not None:
+            if not isinstance(self.api_key, str) or not self.api_key.strip():
+                raise ValueError("OpenDART api_key must be a non-blank string")
 
     @classmethod
     def from_http_transport(
@@ -101,9 +115,13 @@ class OpenDartFilingSelection:
         period_end = date.fromisoformat(self.fiscal_period_end)
         if period_end > checked:
             raise ValueError("fiscal_period_end cannot be after checked_at")
-        if not self.segment_id or not self.source_id or not self.collector_id:
+        if not self.segment_id or not self.collector_id:
             raise ValueError(
-                "OpenDART filing selection requires segment, source and collector IDs"
+                "OpenDART filing selection requires segment and collector IDs"
+            )
+        if self.source_id != _OPENDART_SOURCE_ID:
+            raise ValueError(
+                "KR OpenDART provider must use canonical source_id KR_OPENDART"
             )
         if not self.specs:
             raise ValueError("OpenDART filing selection requires at least one metric spec")
@@ -126,7 +144,10 @@ class OpenDartFilingSelection:
     def supported_metrics(self) -> tuple[str, ...]:
         return tuple(spec.metric for spec in self.specs)
 
-    def specs_for(self, metrics: tuple[str, ...]) -> tuple[DartFactMetricSpec, ...]:
+    def specs_for(
+        self,
+        metrics: tuple[str, ...],
+    ) -> tuple[DartFactMetricSpec, ...]:
         requested = set(metrics)
         supported = set(self.supported_metrics)
         unsupported = tuple(sorted(requested - supported))
@@ -135,7 +156,9 @@ class OpenDartFilingSelection:
                 "OpenDART collector received metrics outside its declared capability: "
                 + ", ".join(unsupported)
             )
-        selected = tuple(spec for spec in self.specs if spec.metric in requested)
+        selected = tuple(
+            spec for spec in self.specs if spec.metric in requested
+        )
         if not selected:
             raise ValueError("OpenDART collector task contains no supported metric")
         return selected
@@ -167,7 +190,7 @@ class KRLiveProviderExtensions:
     def build_providers(
         self,
         *,
-        company_resolver,
+        company_resolver: CompanyResolver,
         core_collector: LiveCollectorProvider,
     ) -> LivePrimaryProviders:
         providers = LivePrimaryProviders(
@@ -226,7 +249,9 @@ class KRLiveRuntimeFactory:
             raise TypeError("KRLiveRuntimeFactory requires LiveAnalysisRequest")
         request.validate()
         self.validate()
-        jurisdiction = normalize_jurisdiction(request.jurisdiction or _KR_JURISDICTION)
+        jurisdiction = normalize_jurisdiction(
+            request.jurisdiction or _KR_JURISDICTION
+        )
         if jurisdiction != _KR_JURISDICTION:
             raise ValueError(
                 "KR OpenDART provider factory supports Korean companies only"
@@ -282,7 +307,9 @@ def opendart_corp_code_from_target_id(target_id: str) -> str:
         raise ValueError("target_id is not a KR OpenDART identity")
     corp_code = target_id[len(_OPENDART_TARGET_PREFIX) :]
     if len(corp_code) != 8 or not corp_code.isdigit():
-        raise ValueError("KR OpenDART target_id must end with an 8-digit corp_code")
+        raise ValueError(
+            "KR OpenDART target_id must end with an 8-digit corp_code"
+        )
     return corp_code
 
 
