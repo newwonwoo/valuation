@@ -49,6 +49,7 @@ class HttpBytesResponse:
     status: int
     content: bytes
     content_type: str | None
+    charset: str | None
 
 
 def _safe_endpoint(url: str) -> str:
@@ -58,9 +59,10 @@ def _safe_endpoint(url: str) -> str:
 class HttpTransport:
     """Small index-first HTTP transport.
 
-    Requests have bounded time, retries and response bytes. Error messages deliberately omit
-    query strings because credentials commonly appear in official API URLs. Production callers
-    must still respect source-specific robots, licences, terms and cadence limits.
+    Requests have bounded time, retries and response bytes. Error messages and exception
+    chaining deliberately omit query strings because credentials commonly appear in official
+    API URLs. Production callers must still respect source-specific robots, licences, terms
+    and cadence limits.
     """
 
     def __init__(
@@ -100,11 +102,14 @@ class HttpTransport:
                         raise SourceFetchError(
                             f"response exceeds max_bytes={self.max_bytes}"
                         )
+                    content_type = response.headers.get("Content-Type")
+                    charset = response.headers.get_content_charset()
                     return HttpBytesResponse(
                         url=url,
                         status=getattr(response, "status", 200),
                         content=raw,
-                        content_type=response.headers.get("Content-Type"),
+                        content_type=content_type,
+                        charset=charset,
                     )
             except (URLError, HTTPError, TimeoutError, SourceFetchError) as exc:
                 last = exc
@@ -113,22 +118,20 @@ class HttpTransport:
         failure_type = type(last).__name__ if last is not None else "UnknownError"
         raise SourceFetchError(
             f"fetch failed for {_safe_endpoint(url)} ({failure_type})"
-        ) from last
+        ) from None
 
     def get_bytes(self, url: str) -> HttpBytesResponse:
         return self._get_bytes(url)
 
     def get_text(self, url: str) -> HttpResponse:
         response = self._get_bytes(url)
-        charset = "utf-8"
-        content_type = response.content_type
-        if content_type and "charset=" in content_type.lower():
-            declared = content_type.lower().split("charset=", 1)[1]
-            charset = declared.split(";", 1)[0].strip() or "utf-8"
         return HttpResponse(
             url=response.url,
             status=response.status,
-            text=response.content.decode(charset, errors="replace"),
+            text=response.content.decode(
+                response.charset or "utf-8",
+                errors="replace",
+            ),
             content_type=response.content_type,
         )
 
