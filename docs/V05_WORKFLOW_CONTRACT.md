@@ -21,20 +21,21 @@ Status: canonical runtime contract, merged into repository `SKILL.md` as v0.5.2.
 14 targeted RESEARCH_LOOP
 15 EVIDENCE_TO_ASSUMPTION_BRIDGE
 16 SCENARIO_BUILD
-17 HIERARCHICAL_BETA_ESTIMATION when applicable
-18 WACC_VALIDATION
-19 DETERMINISTIC_VALUATION
-20 HIERARCHICAL_WARRANTED_PER when allowed
-21 DCF_PER_ASSUMPTION_CONSISTENCY_GATE
-22 CROSS_METHOD_DOUBLE_COUNT_AUDIT
-23 PROBABILITY_DISTRIBUTION_ANALYSIS when calibrated
-24 AUDIT_GATE
-25 INTRINSIC_VALUE_FREEZE
-26 STREET_REFERENCE_LOAD
-27 STREET_GAP_ANALYZER
-28 MARKET_PRICE_LOAD
-29 MARKET_COMPARE
-30 THESIS_DELTA / SAVE_STATE / FINAL_REPORT
+17 VALUATION_METHOD_INTENT
+18 HIERARCHICAL_BETA_ESTIMATION when applicable
+19 WACC_VALIDATION
+20 DETERMINISTIC_VALUATION
+21 HIERARCHICAL_WARRANTED_PER when allowed
+22 DCF_PER_ASSUMPTION_CONSISTENCY_GATE
+23 CROSS_METHOD_DOUBLE_COUNT_AUDIT
+24 PROBABILITY_DISTRIBUTION_ANALYSIS when calibrated
+25 AUDIT_GATE
+26 INTRINSIC_VALUE_FREEZE
+27 STREET_REFERENCE_LOAD
+28 STREET_GAP_ANALYZER
+29 MARKET_PRICE_LOAD
+30 MARKET_COMPARE
+31 THESIS_DELTA / SAVE_STATE / FINAL_REPORT
 ```
 
 The Control Plane groups these stages into operational phases but may not reorder or bypass them. `None`, a failed method, or missing data enters the canonical recovery ladder before `VALUATION BLOCKED`, unless a non-recoverable audit/safety invariant is violated.
@@ -55,6 +56,9 @@ Assign one or more Economic Archetypes using explicit routing evidence. Sector a
 
 ### MODULE_REQUIREMENT_PLAN
 Compile required evidence, normalization, Beta/PER Economic-Twin features, scenario variables, funding checks, forbidden methods, terminal policy, double-count traps and kill conditions from the selected archetype/sector contracts before data collection. This prevents the analyst from collecting only evidence that supports a preferred model.
+
+### VALUATION_METHOD_INTENT
+Resolve and hash the exact segment method/version choices before Beta/WACC. Risk-stage applicability and the stage-20 valuation compilation must consume that same intent; a stale module, capability, evaluator, or method-choice identity blocks execution.
 
 ## Fail-closed behavior
 

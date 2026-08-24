@@ -16,6 +16,7 @@ from .module_plan import ModuleRequirementPlan, SegmentModuleRequirementPlan
 
 _PRIMARY_SOURCE_ROLES = frozenset({"observed_state", "company_primary"})
 _BROAD_SOURCE_INDUSTRIES = frozenset({"cross_industry", "listed_companies"})
+_GENERIC_ROUTE_TOKENS = frozenset({"equipment"})
 _PLAN_VERSION = "0.5.2"
 
 
@@ -202,11 +203,21 @@ class CompanyCollectionPlan:
     version: str
     company: ResolvedCompanyIdentity
     routing_hash: str
+    target_is_listed: bool
     requirements: tuple[CollectionRequirement, ...]
     tasks: tuple[CollectionTask, ...]
 
     def validate(self) -> None:
         self.company.validate()
+        if not isinstance(self.target_is_listed, bool):
+            raise TypeError("CompanyCollectionPlan target_is_listed must be boolean")
+        if self.target_is_listed and not _resolved_company_is_listed(
+            self.company
+        ):
+            raise ValueError(
+                "CompanyCollectionPlan cannot mark an unresolved or unlisted "
+                "company identity as listed"
+            )
         if (
             not self.plan_id
             or not self.version
@@ -316,6 +327,7 @@ class CompanyCollectionPlan:
             version=self.version,
             company=self.company,
             routing_hash=self.routing_hash,
+            target_is_listed=self.target_is_listed,
             requirements=self.requirements,
             tasks=self.tasks,
         )
@@ -482,6 +494,7 @@ def _company_collection_plan_id(
     version: str,
     company: ResolvedCompanyIdentity,
     routing_hash: str,
+    target_is_listed: bool,
     requirements: tuple[CollectionRequirement, ...],
     tasks: tuple[CollectionTask, ...],
 ) -> str:
@@ -496,6 +509,7 @@ def _company_collection_plan_id(
             "source_refs": company.source_refs,
         },
         "routing_hash": routing_hash,
+        "target_is_listed": target_is_listed,
         "requirements": [
             {
                 "id": item.requirement_id,
@@ -571,10 +585,22 @@ def compile_company_collection_plan(
     company: ResolvedCompanyIdentity,
     source_registry_path: str | Path,
     collector_capabilities: tuple[CollectorCapability, ...] = (),
-    target_is_listed: bool = True,
+    target_is_listed: bool | None = None,
 ) -> CompanyCollectionPlan:
     plan.validate()
     company.validate()
+    inferred_listing = _resolved_company_is_listed(company)
+    if target_is_listed is None:
+        effective_listing = inferred_listing
+    elif not isinstance(target_is_listed, bool):
+        raise TypeError("target_is_listed must be boolean or None")
+    elif target_is_listed and not inferred_listing:
+        raise ValueError(
+            "cannot authorize listed-company sources for an identity without "
+            "a listed ticker or stock-code identifier"
+        )
+    else:
+        effective_listing = target_is_listed
     for capability in collector_capabilities:
         capability.validate()
     collector_ids = tuple(
@@ -596,7 +622,7 @@ def compile_company_collection_plan(
             sources=sources,
             jurisdiction=company.jurisdiction,
             segment=segment,
-            target_is_listed=target_is_listed,
+            target_is_listed=effective_listing,
         )
         candidate_ids = {item.source_id for item in candidates}
         runnable = tuple(
@@ -653,12 +679,14 @@ def compile_company_collection_plan(
             version=_PLAN_VERSION,
             company=company,
             routing_hash=routing_hash,
+            target_is_listed=effective_listing,
             requirements=requirement_tuple,
             tasks=task_tuple,
         ),
         version=_PLAN_VERSION,
         company=company,
         routing_hash=routing_hash,
+        target_is_listed=effective_listing,
         requirements=requirement_tuple,
         tasks=task_tuple,
     )
@@ -739,7 +767,28 @@ def _source_matches_route(
     route_tokens = _industry_tokens(
         (segment.sector_adapter, *segment.archetypes)
     )
-    return bool(source_tokens.intersection(route_tokens))
+    specific_matches = source_tokens.intersection(route_tokens).difference(
+        _GENERIC_ROUTE_TOKENS
+    )
+    return bool(specific_matches)
+
+
+def _resolved_company_is_listed(
+    company: ResolvedCompanyIdentity,
+) -> bool:
+    unlisted_markers = {"", "NONE", "N/A", "NA", "UNLISTED"}
+    if company.ticker.strip().upper() not in unlisted_markers:
+        return True
+    stock_code_keys = {
+        "krx_stock_code",
+        "stock_code",
+        "ticker",
+    }
+    return any(
+        key.strip().lower() in stock_code_keys
+        and value.strip().upper() not in unlisted_markers
+        for key, value in company.external_ids
+    )
 
 
 def _industry_tokens(values: tuple[str, ...]) -> set[str]:

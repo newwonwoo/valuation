@@ -10,8 +10,11 @@ from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResul
 from .scenario_binding import BoundScenarioSet
 from .valuation_execution import CompanyValuationPlan, execute_company_valuation
 from .valuation_plan_compiler import (
+    SegmentMethodChoice,
     ValuationPlanCompilation,
     ValuationPlanStatus,
+    valuation_evaluator_registry_hash,
+    valuation_method_choices_hash,
     valuation_module_plan_hash,
 )
 
@@ -77,6 +80,9 @@ def deterministic_valuation_adapter(
             )
             if not isinstance(effective_registry, EvaluatorRegistry):
                 raise TypeError("registry_loader must return EvaluatorRegistry")
+            current_evaluator_registry_hash = (
+                valuation_evaluator_registry_hash(effective_registry)
+            )
         except KeyError as exc:
             return StageExecutionResult(
                 StageStatus.RECOVERY_REQUIRED,
@@ -100,6 +106,12 @@ def deterministic_valuation_adapter(
             current_capability_hash = context.data.get(
                 "valuation_capability_registry_hash"
             )
+            current_method_choices = context.data.get(
+                "planned_method_choices"
+            )
+            current_intent_method_choices_hash = context.data.get(
+                "valuation_method_choices_hash"
+            )
             if not isinstance(current_module_plan, ModuleRequirementPlan):
                 return StageExecutionResult(
                     StageStatus.RECOVERY_REQUIRED,
@@ -112,6 +124,13 @@ def deterministic_valuation_adapter(
                 or not current_intent_module_hash
                 or not isinstance(current_capability_hash, str)
                 or not current_capability_hash
+                or not isinstance(current_method_choices, tuple)
+                or not all(
+                    isinstance(item, SegmentMethodChoice)
+                    for item in current_method_choices
+                )
+                or not isinstance(current_intent_method_choices_hash, str)
+                or not current_intent_method_choices_hash
             ):
                 return StageExecutionResult(
                     StageStatus.RECOVERY_REQUIRED,
@@ -122,6 +141,9 @@ def deterministic_valuation_adapter(
             try:
                 current_module_hash = valuation_module_plan_hash(
                     current_module_plan
+                )
+                current_method_choices_hash = valuation_method_choices_hash(
+                    current_method_choices
                 )
             except (TypeError, ValueError) as exc:
                 return StageExecutionResult(
@@ -137,6 +159,24 @@ def deterministic_valuation_adapter(
                     {
                         "current_module_plan_hash": current_module_hash,
                         "intent_module_plan_hash": current_intent_module_hash,
+                    },
+                    blocking=True,
+                )
+            if (
+                current_intent_method_choices_hash
+                != current_method_choices_hash
+            ):
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "pre-risk valuation method-choice identity is stale "
+                    "relative to the current planned choices",
+                    {
+                        "current_method_choices_hash": (
+                            current_method_choices_hash
+                        ),
+                        "intent_method_choices_hash": (
+                            current_intent_method_choices_hash
+                        ),
                     },
                     blocking=True,
                 )
@@ -165,6 +205,10 @@ def deterministic_valuation_adapter(
                 "current_scenario_set_hash": scenario_set.scenario_set_hash,
                 "current_module_plan_hash": current_module_hash,
                 "current_capability_registry_hash": current_capability_hash,
+                "current_evaluator_registry_hash": (
+                    current_evaluator_registry_hash
+                ),
+                "current_method_choices_hash": current_method_choices_hash,
             }
             if compilation.scenario_set_hash != scenario_set.scenario_set_hash:
                 return StageExecutionResult(
@@ -190,6 +234,58 @@ def deterministic_valuation_adapter(
                     identity_outputs,
                     blocking=True,
                 )
+            if (
+                compilation.evaluator_registry_hash
+                != current_evaluator_registry_hash
+            ):
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "valuation plan compilation evaluator-registry hash does "
+                    "not match the current exact evaluator contract",
+                    identity_outputs,
+                    blocking=True,
+                )
+            if compilation.method_choices_hash != current_method_choices_hash:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "valuation plan compilation method-choice hash does not "
+                    "match the current pre-risk method intent",
+                    identity_outputs,
+                    blocking=True,
+                )
+            current_warranted_per_segments = context.data.get(
+                "warranted_per_segments"
+            )
+            if current_warranted_per_segments is not None:
+                if not isinstance(current_warranted_per_segments, tuple) or not all(
+                    isinstance(item, str) and item
+                    for item in current_warranted_per_segments
+                ):
+                    return StageExecutionResult(
+                        StageStatus.BLOCKED,
+                        "pre-risk warranted-PER segment intent is invalid",
+                        identity_outputs,
+                        blocking=True,
+                    )
+                if (
+                    compilation.warranted_per_segments
+                    != current_warranted_per_segments
+                ):
+                    return StageExecutionResult(
+                        StageStatus.BLOCKED,
+                        "pre-risk Warranted PER routing drifted from the "
+                        "compiled valuation plan",
+                        {
+                            **identity_outputs,
+                            "pre_risk_warranted_per_segments": (
+                                current_warranted_per_segments
+                            ),
+                            "valuation_plan_warranted_per_segments": (
+                                compilation.warranted_per_segments
+                            ),
+                        },
+                        blocking=True,
+                    )
             if not compilation.ready:
                 status = (
                     StageStatus.NOT_IMPLEMENTED
@@ -203,6 +299,7 @@ def deterministic_valuation_adapter(
                     {"valuation_plan_compilation": compilation},
                     blocking=True,
                 )
+
             effective_plan = compilation.plan
 
         if not isinstance(effective_plan, CompanyValuationPlan):
@@ -267,9 +364,19 @@ def deterministic_valuation_adapter(
             outputs["valuation_plan_capability_registry_hash"] = (
                 compilation.capability_registry_hash
             )
-            outputs["warranted_per_segments"] = (
+            outputs["valuation_plan_warranted_per_segments"] = (
                 compilation.warranted_per_segments
             )
+            outputs["valuation_plan_evaluator_registry_hash"] = (
+                compilation.evaluator_registry_hash
+            )
+            outputs["valuation_plan_method_choices_hash"] = (
+                compilation.method_choices_hash
+            )
+            if "warranted_per_segments" not in context.data:
+                outputs["warranted_per_segments"] = (
+                    compilation.warranted_per_segments
+                )
             outputs["valuation_aggregator_bindings"] = (
                 compilation.aggregator_bindings
             )

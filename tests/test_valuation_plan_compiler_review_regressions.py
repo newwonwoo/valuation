@@ -23,6 +23,7 @@ from valuation_engine.valuation_plan_compiler import (
     ValuationPlanStatus,
     compile_company_valuation_plan,
     valuation_capability_registry_hash,
+    valuation_method_choices_hash,
     valuation_module_plan_hash,
 )
 
@@ -160,6 +161,10 @@ def test_plan_loader_keyerror_is_recovery_not_evaluator_not_implemented():
                 ),
                 "valuation_capability_registry_hash": (
                     valuation_capability_registry_hash(capability_registry)
+                ),
+                "planned_method_choices": (),
+                "valuation_method_choices_hash": (
+                    valuation_method_choices_hash(())
                 ),
             },
         )

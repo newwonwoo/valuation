@@ -27,6 +27,7 @@ from valuation_engine.valuation_plan_compiler import (
     ValuationPlanStatus,
     compile_company_valuation_plan,
     valuation_capability_registry_hash,
+    valuation_method_choices_hash,
     valuation_module_plan_hash,
 )
 
@@ -162,6 +163,7 @@ def dynamic_context(
     module: ModuleRequirementPlan,
     scenarios: BoundScenarioSet,
     capability_registry,
+    method_choices: tuple[SegmentMethodChoice, ...] = (),
 ) -> OrchestratorContext:
     return OrchestratorContext(
         "RUN",
@@ -172,6 +174,10 @@ def dynamic_context(
             "valuation_module_plan_hash": valuation_module_plan_hash(module),
             "valuation_capability_registry_hash": (
                 valuation_capability_registry_hash(capability_registry)
+            ),
+            "planned_method_choices": method_choices,
+            "valuation_method_choices_hash": (
+                valuation_method_choices_hash(method_choices)
             ),
         },
     )
@@ -402,6 +408,60 @@ def test_deterministic_stage_can_compile_plan_after_registry_load():
     assert result.outputs["valuation_plan_module_plan_hash"] == (
         valuation_module_plan_hash(module)
     )
+
+
+def test_deterministic_stage_reuses_matching_pre_risk_warranted_per_scope():
+    module = plan_for(segment(("capacity_manufacturing",), ("driver_dcf", "warranted_per")))
+    scenarios = scenario_set(*common_assumptions())
+    registry = dcf_registry("capacity_manufacturing", "driver_dcf")
+    capability_registry = load_default_method_capability_registry()
+
+    adapter = deterministic_valuation_adapter(
+        registry=registry,
+        plan_loader=lambda context, effective_registry: compile_company_valuation_plan(
+            module,
+            context.data["bound_scenario_set"],
+            evaluator_registry=effective_registry,
+            capability_registry=capability_registry,
+            inputs=inputs(),
+        ),
+    )
+    context = dynamic_context(module, scenarios, capability_registry)
+    context.data["warranted_per_segments"] = ("core",)
+    result = adapter(
+        context
+    )
+
+    assert result.status is StageStatus.PASS
+    assert "warranted_per_segments" not in result.outputs
+    assert result.outputs["valuation_plan_warranted_per_segments"] == ("core",)
+
+
+def test_deterministic_stage_blocks_pre_risk_warranted_per_scope_mismatch():
+    module = plan_for(segment(("capacity_manufacturing",), ("driver_dcf", "warranted_per")))
+    scenarios = scenario_set(*common_assumptions())
+    registry = dcf_registry("capacity_manufacturing", "driver_dcf")
+    capability_registry = load_default_method_capability_registry()
+
+    adapter = deterministic_valuation_adapter(
+        registry=registry,
+        plan_loader=lambda context, effective_registry: compile_company_valuation_plan(
+            module,
+            context.data["bound_scenario_set"],
+            evaluator_registry=effective_registry,
+            capability_registry=capability_registry,
+            inputs=inputs(),
+        ),
+    )
+    context = dynamic_context(module, scenarios, capability_registry)
+    context.data["warranted_per_segments"] = ()
+    result = adapter(
+        context
+    )
+
+    assert result.status is StageStatus.BLOCKED
+    assert result.blocking
+    assert "routing drifted from the compiled valuation plan" in result.rationale
 
 
 def test_deterministic_stage_returns_recovery_for_ambiguous_method_selection():

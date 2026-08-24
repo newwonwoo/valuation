@@ -25,7 +25,7 @@ def test_live_readiness_registry_covers_every_canonical_stage_once():
     report = load_report()
     canonical = load_stage_sequence(STAGES)
     assert tuple(item.stage for item in report.stages) == canonical
-    assert len(report.stages) == 32
+    assert len(report.stages) == 33
     assert report.deterministic_method_coverage is not None
 
 
@@ -37,13 +37,14 @@ def test_live_readiness_tracks_current_gaps_without_freezing_old_shadow_labels()
     assert by_stage["UPSTREAM_FUNDING_SCAN"].status is LiveReadinessStatus.LIVE_READY
     assert by_stage["HIERARCHICAL_BETA_ESTIMATION"].status is LiveReadinessStatus.PARTIAL_LIVE
     assert by_stage["WACC_VALIDATION"].status is LiveReadinessStatus.PARTIAL_LIVE
+    assert by_stage["VALUATION_METHOD_INTENT"].status is LiveReadinessStatus.RUNTIME_READY
     assert by_stage["HIERARCHICAL_WARRANTED_PER"].status is LiveReadinessStatus.PARTIAL_LIVE
     assert by_stage["INTRINSIC_VALUE_FREEZE"].status is LiveReadinessStatus.RUNTIME_READY
     assert {item.stage for item in report.unresolved_live_stages} == {
         "STREET_REFERENCE_LOAD",
     }
     assert by_stage["STREET_REFERENCE_LOAD"].status is LiveReadinessStatus.ADAPTER_REQUIRED
-    assert report.canonical_live_ready_count == 25
+    assert report.canonical_live_ready_count == 26
     assert len(report.partial_live_stages) == 6
 
     coverage = report.deterministic_method_coverage

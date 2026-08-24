@@ -60,14 +60,45 @@ def _aggregate_status(rows: tuple[tuple[str, StageStatus, str, bool], ...]) -> t
         raise ValueError("cannot aggregate empty stage coverage")
     if all(status is StageStatus.SKIPPED_NOT_APPLICABLE for _, status, _, _ in rows):
         return StageStatus.SKIPPED_NOT_APPLICABLE, False
-    status = max((row[1] for row in rows), key=lambda item: _STATUS_PRIORITY[item])
+
+    # A later explicit RECOVERED trace may resolve an earlier recoverable request in the
+    # same Unit Contract (e.g. BLIND_RED_TEAM_B → RESEARCH_LOOP). It may never erase a
+    # hard BLOCKED / NOT_IMPLEMENTED / AWAITING_USER_DECISION state, and it cannot erase a
+    # RECOVERY_REQUIRED emitted after the recovery trace.
+    last_recovered = max(
+        (index for index, row in enumerate(rows) if row[1] is StageStatus.RECOVERED),
+        default=-1,
+    )
+    effective_rows = rows
+    if last_recovered >= 0:
+        hard_unresolved = {
+            StageStatus.BLOCKED,
+            StageStatus.NOT_IMPLEMENTED,
+            StageStatus.AWAITING_USER_DECISION,
+        }
+        if not any(row[1] in hard_unresolved for row in rows):
+            later_recovery_required = any(
+                row[1] is StageStatus.RECOVERY_REQUIRED
+                for row in rows[last_recovered + 1 :]
+            )
+            if not later_recovery_required:
+                effective_rows = tuple(
+                    row
+                    for index, row in enumerate(rows)
+                    if not (
+                        index < last_recovered
+                        and row[1] is StageStatus.RECOVERY_REQUIRED
+                    )
+                )
+
+    status = max((row[1] for row in effective_rows), key=lambda item: _STATUS_PRIORITY[item])
     unresolved = {
         StageStatus.BLOCKED,
         StageStatus.NOT_IMPLEMENTED,
         StageStatus.RECOVERY_REQUIRED,
         StageStatus.AWAITING_USER_DECISION,
     }
-    blocking = any(row[3] and row[1] in unresolved for row in rows)
+    blocking = any(row[3] and row[1] in unresolved for row in effective_rows)
     return status, blocking
 
 

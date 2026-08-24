@@ -15,6 +15,7 @@ from valuation_engine.valuation_plan_compiler import (
     SegmentMethodChoice,
     ValuationPlanStatus,
     valuation_capability_registry_hash,
+    valuation_method_choices_hash,
     valuation_module_plan_hash,
 )
 
@@ -165,6 +166,8 @@ def test_multiple_primary_economic_methods_stop_before_beta_wacc():
     assert result.outputs["valuation_capability_registry_hash"] == (
         valuation_capability_registry_hash(capability_registry)
     )
+    assert "planned_method_choices" not in result.outputs
+    assert "valuation_method_choices_hash" not in result.outputs
     assert set(intent.segments[0].candidate_bindings) == {
         "commodity_price_taker/midcycle_price_volume_dcf",
         "commodity_price_taker/normalized_multiple",
@@ -178,8 +181,7 @@ def test_explicit_normalized_multiple_choice_can_skip_beta_and_wacc():
             ("midcycle_price_volume_dcf", "normalized_multiple"),
         )
     )
-    result = resolve_valuation_method_intent(
-        module_plan,
+    adapter = valuation_method_intent_adapter(
         capability_registry=load_default_method_capability_registry(),
         method_choices=(
             SegmentMethodChoice(
@@ -190,10 +192,24 @@ def test_explicit_normalized_multiple_choice_can_skip_beta_and_wacc():
             ),
         ),
     )
-    assert result.ready
-    assert not result.requires_beta
-    assert not result.requires_wacc
-    assert result.method_choices()[0].version == "1"
+    result = adapter(
+        OrchestratorContext(
+            "RUN",
+            ExecutionMode.LIVE_PRIMARY,
+            {"module_requirement_plan": module_plan},
+        )
+    )
+    assert result.status is StageStatus.PASS
+    intent = result.outputs["valuation_method_intent"]
+    assert intent.ready
+    assert not intent.requires_beta
+    assert not intent.requires_wacc
+    assert result.outputs["planned_method_choices"][0].version == "1"
+    assert result.outputs["valuation_method_choices_hash"] == (
+        valuation_method_choices_hash(
+            result.outputs["planned_method_choices"]
+        )
+    )
 
 
 def test_unimplemented_financial_methods_fail_before_risk_provider_loading():

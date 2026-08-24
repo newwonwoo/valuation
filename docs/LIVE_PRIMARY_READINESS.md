@@ -4,7 +4,7 @@ Status: canonical maintenance record for distinguishing full PRIMARY_SHADOW inte
 
 ## 1. Why this exists
 
-A 32-stage Control Plane run can be fully integrated while some stages still depend on incomplete source coverage or narrow evaluator/calibration sets. `PRIMARY_SHADOW PASS` therefore must never be reported as `LIVE_PRIMARY complete`.
+A 33-stage Control Plane run can be fully integrated while some stages still depend on incomplete source coverage or narrow evaluator/calibration sets. `PRIMARY_SHADOW PASS` therefore must never be reported as `LIVE_PRIMARY complete`.
 
 `config/live_primary_readiness.yaml` is the machine-readable readiness source. It must contain exactly one row for every stage in `config/control_plane_stage_registry.yaml`.
 
@@ -23,8 +23,8 @@ A new workflow stage without a readiness row is a maintenance error.
 
 At the v1.4 registry snapshot:
 
-- canonical stages: **32 / 32 mapped**;
-- `LIVE_READY` or `RUNTIME_READY`: **25**;
+- canonical stages: **33 / 33 mapped**;
+- `LIVE_READY` or `RUNTIME_READY`: **26**;
 - `PARTIAL_LIVE`: **6**;
 - explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **1**.
 
