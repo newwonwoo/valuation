@@ -47,6 +47,11 @@ def _analysis_company(command: str) -> str:
     return company
 
 
+def _analysis_mode(mode: str | None) -> str:
+    """Resolve the analysis-command mode without applying it to direct YAML runs."""
+    return mode or "live-primary"
+
+
 def load_runtime_factory(spec: str) -> LiveRuntimeFactory:
     value = spec.strip()
     if ":" not in value:
@@ -86,7 +91,9 @@ def run_live_analysis_command(
     run_id: str | None = None,
     runner: LiveRuntimeRunner = run_prism,
 ) -> ControlledRunResult:
-    factory_spec = (runtime_factory_spec or os.getenv(_RUNTIME_FACTORY_ENV, "")).strip()
+    factory_spec = (
+        runtime_factory_spec or os.getenv(_RUNTIME_FACTORY_ENV, "")
+    ).strip()
     if not factory_spec:
         raise LiveRuntimeConfigurationError(
             "LIVE_PRIMARY is the default for '분석시작', but no production runtime "
@@ -161,10 +168,10 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--mode",
         choices=("live-primary", "legacy-regression"),
-        default="live-primary",
+        default=None,
         help=(
-            "analysis-command execution mode; LIVE_PRIMARY is default and never "
-            "falls back to the OCI regression workflow"
+            "analysis-command execution mode; omitted means LIVE_PRIMARY for "
+            "'분석시작'. Direct YAML execution does not accept --mode."
         ),
     )
     parser.add_argument(
@@ -197,7 +204,8 @@ def main() -> None:
     parser = _build_parser()
     args = parser.parse_args()
     if args.input.strip().startswith("분석시작"):
-        if args.mode == "legacy-regression":
+        mode = _analysis_mode(args.mode)
+        if mode == "legacy-regression":
             outcome = run_analysis_command(
                 args.input,
                 config_path=args.config,
@@ -219,10 +227,10 @@ def main() -> None:
         print(render_controlled_run(result))
         return
 
-    if args.mode == "legacy-regression" or args.runtime_factory or args.run_id:
+    if args.mode is not None or args.runtime_factory or args.run_id:
         parser.error(
             "--mode/--runtime-factory/--run-id are analysis-command options; "
-            "direct YAML execution remains the explicit legacy deterministic core"
+            "direct YAML execution is the explicit legacy deterministic core"
         )
 
     config = Path(args.input)
