@@ -9,7 +9,12 @@ from valuation_engine.live_readiness import (
     load_live_primary_readiness,
     validate_method_readiness_alignment,
 )
-from valuation_engine.method_capabilities import MethodKind, MethodRuntimeStatus, load_method_capability_registry
+from valuation_engine.method_capabilities import (
+    MethodKind,
+    MethodRuntimeStatus,
+    load_method_capability_registry,
+    require_execution_family,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 METHOD_REGISTRY = ROOT / "config" / "valuation_method_capability_registry.yaml"
@@ -20,7 +25,10 @@ STAGE_REGISTRY = ROOT / "config" / "control_plane_stage_registry.yaml"
 
 def registry():
     value = load_method_capability_registry(METHOD_REGISTRY)
-    value.validate(archetype_registry_path=ARCHETYPE_REGISTRY, repo_root=ROOT)
+    value.validate(
+        archetype_registry_path=ARCHETYPE_REGISTRY,
+        repo_root=ROOT,
+    )
     return value
 
 
@@ -89,7 +97,10 @@ def test_false_live_ready_promotion_is_rejected_while_methods_are_incomplete():
             for item in report.stages
         )
     )
-    with pytest.raises(ValueError, match="cannot be promoted above PARTIAL_LIVE"):
+    with pytest.raises(
+        ValueError,
+        match="cannot be promoted above PARTIAL_LIVE",
+    ):
         validate_method_readiness_alignment(promoted, value)
 
 
@@ -136,3 +147,44 @@ bindings:
     )
     with pytest.raises(ValueError, match="duplicate YAML key: 'driver_dcf'"):
         load_method_capability_registry(path)
+
+
+def test_runtime_rejects_forged_injected_capability_registry():
+    value = registry()
+    explicit_family = value.family("explicit_fcff_dcf")
+    forged_capabilities = tuple(
+        replace(
+            item,
+            execution_family=explicit_family.family,
+            kind=explicit_family.kind,
+            runtime_status=explicit_family.runtime_status,
+            output_kind="enterprise_value",
+            requires_beta=explicit_family.requires_beta,
+            requires_wacc=explicit_family.requires_wacc,
+            canonical_refs=explicit_family.canonical_refs,
+            stage=explicit_family.stage,
+        )
+        if item.identity == ("capacity_manufacturing", "warranted_per")
+        else item
+        for item in value.capabilities
+    )
+    forged = replace(value, capabilities=forged_capabilities)
+
+    with pytest.raises(ValueError, match="warranted_per"):
+        require_execution_family(
+            archetype="capacity_manufacturing",
+            method="warranted_per",
+            expected_family="explicit_fcff_dcf",
+            registry=forged,
+        )
+
+
+def test_runtime_accepts_an_equivalent_validated_registry_copy():
+    value = registry()
+    capability = require_execution_family(
+        archetype="capacity_manufacturing",
+        method="driver_dcf",
+        expected_family="explicit_fcff_dcf",
+        registry=replace(value),
+    )
+    assert capability.execution_family == "explicit_fcff_dcf"

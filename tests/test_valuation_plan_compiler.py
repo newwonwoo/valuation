@@ -4,9 +4,18 @@ from valuation_engine.actual_units import Measure
 from valuation_engine.assumption_compiler import CompiledAssumption
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.dcf_evaluators import ExplicitFCFFDCFEvaluator
-from valuation_engine.evaluator_registry import EvaluatorRegistry, ModelKey, NormalizedMultipleEvaluator
-from valuation_engine.method_capabilities import load_default_method_capability_registry
-from valuation_engine.module_plan import ModuleRequirementPlan, SegmentModuleRequirementPlan
+from valuation_engine.evaluator_registry import (
+    EvaluatorRegistry,
+    ModelKey,
+    NormalizedMultipleEvaluator,
+)
+from valuation_engine.method_capabilities import (
+    load_default_method_capability_registry,
+)
+from valuation_engine.module_plan import (
+    ModuleRequirementPlan,
+    SegmentModuleRequirementPlan,
+)
 from valuation_engine.orchestrator import OrchestratorContext
 from valuation_engine.records import CalibrationStatus
 from valuation_engine.scenario_binding import BoundScenario, BoundScenarioSet
@@ -17,10 +26,17 @@ from valuation_engine.valuation_plan_compiler import (
     SegmentValueBinding,
     ValuationPlanStatus,
     compile_company_valuation_plan,
+    valuation_capability_registry_hash,
+    valuation_module_plan_hash,
 )
 
 
-def assumption(key: str, value: str, unit: str, path: str) -> CompiledAssumption:
+def assumption(
+    key: str,
+    value: str,
+    unit: str,
+    path: str,
+) -> CompiledAssumption:
     return CompiledAssumption(
         key=key,
         scenario_id="BASE",
@@ -47,7 +63,12 @@ def scenario_set(*items: CompiledAssumption) -> BoundScenarioSet:
 def common_assumptions():
     return (
         assumption("fcff_year_1", "10", "KRW_billion", "fcff1"),
-        assumption("terminal_growth", "0.02", "ratio", "terminal-growth"),
+        assumption(
+            "terminal_growth",
+            "0.02",
+            "ratio",
+            "terminal-growth",
+        ),
         assumption("terminal_roic", "0.10", "ratio", "terminal-roic"),
         assumption("ownership", "1", "ratio", "ownership"),
         assumption("net_debt", "0", "KRW_billion", "net-debt"),
@@ -83,7 +104,9 @@ def segment(
     return value
 
 
-def plan_for(segment_plan: SegmentModuleRequirementPlan) -> ModuleRequirementPlan:
+def plan_for(
+    segment_plan: SegmentModuleRequirementPlan,
+) -> ModuleRequirementPlan:
     result = ModuleRequirementPlan(
         segments=(segment_plan,),
         common_core_modules=("evidence_gate",),
@@ -104,12 +127,22 @@ def inputs() -> CompanyValuationPlanInputs:
         reporting_unit="KRW_billion",
         diluted_shares_key="shares",
         segment_bindings=(
-            SegmentValueBinding("core", "core-asset", "ownership", "net_debt"),
+            SegmentValueBinding(
+                "core",
+                "core-asset",
+                "ownership",
+                "net_debt",
+            ),
         ),
     )
 
 
-def dcf_registry(archetype: str, method: str, *, version: str = "v1") -> EvaluatorRegistry:
+def dcf_registry(
+    archetype: str,
+    method: str,
+    *,
+    version: str = "v1",
+) -> EvaluatorRegistry:
     registry = EvaluatorRegistry()
     registry.register(
         ExplicitFCFFDCFEvaluator(
@@ -125,6 +158,25 @@ def dcf_registry(archetype: str, method: str, *, version: str = "v1") -> Evaluat
     return registry
 
 
+def dynamic_context(
+    module: ModuleRequirementPlan,
+    scenarios: BoundScenarioSet,
+    capability_registry,
+) -> OrchestratorContext:
+    return OrchestratorContext(
+        "RUN",
+        ExecutionMode.LIVE_PRIMARY,
+        {
+            "bound_scenario_set": scenarios,
+            "module_requirement_plan": module,
+            "valuation_module_plan_hash": valuation_module_plan_hash(module),
+            "valuation_capability_registry_hash": (
+                valuation_capability_registry_hash(capability_registry)
+            ),
+        },
+    )
+
+
 def test_single_executable_segment_evaluator_is_selected_and_per_stays_cross_method():
     module = plan_for(
         segment(
@@ -135,15 +187,25 @@ def test_single_executable_segment_evaluator_is_selected_and_per_stays_cross_met
     result = compile_company_valuation_plan(
         module,
         scenario_set(*common_assumptions()),
-        evaluator_registry=dcf_registry("capacity_manufacturing", "driver_dcf"),
+        evaluator_registry=dcf_registry(
+            "capacity_manufacturing",
+            "driver_dcf",
+        ),
         capability_registry=load_default_method_capability_registry(),
         inputs=inputs(),
     )
     assert result.status is ValuationPlanStatus.READY
     assert result.plan is not None
-    assert result.plan.segments[0].model_key == ModelKey("capacity_manufacturing", "driver_dcf", "v1")
+    assert result.plan.segments[0].model_key == ModelKey(
+        "capacity_manufacturing",
+        "driver_dcf",
+        "v1",
+    )
     assert result.warranted_per_segments == ("core",)
-    assert all(candidate.method != "warranted_per" for candidate in result.segment_resolutions[0].candidates)
+    assert all(
+        candidate.method != "warranted_per"
+        for candidate in result.segment_resolutions[0].candidates
+    )
 
 
 def test_multiple_executable_methods_require_explicit_economic_choice():
@@ -153,12 +215,26 @@ def test_multiple_executable_methods_require_explicit_economic_choice():
             ("midcycle_price_volume_dcf", "normalized_multiple"),
         )
     )
-    registry = dcf_registry("commodity_price_taker", "midcycle_price_volume_dcf", version="dcf-v1")
+    registry = dcf_registry(
+        "commodity_price_taker",
+        "midcycle_price_volume_dcf",
+        version="dcf-v1",
+    )
     registry.register(NormalizedMultipleEvaluator("commodity_price_taker"))
     scenarios = scenario_set(
         *common_assumptions(),
-        assumption("normalized_ebitda", "12", "KRW_billion", "normalized-ebitda"),
-        assumption("normalized_multiple", "7", "multiple", "normalized-multiple"),
+        assumption(
+            "normalized_ebitda",
+            "12",
+            "KRW_billion",
+            "normalized-ebitda",
+        ),
+        assumption(
+            "normalized_multiple",
+            "7",
+            "multiple",
+            "normalized-multiple",
+        ),
     )
     unresolved = compile_company_valuation_plan(
         module,
@@ -178,19 +254,38 @@ def test_multiple_executable_methods_require_explicit_economic_choice():
         capability_registry=load_default_method_capability_registry(),
         inputs=inputs(),
         method_choices=(
-            SegmentMethodChoice("core", "commodity_price_taker", "normalized_multiple", "1"),
+            SegmentMethodChoice(
+                "core",
+                "commodity_price_taker",
+                "normalized_multiple",
+                "1",
+            ),
         ),
     )
     assert selected.status is ValuationPlanStatus.READY
     assert selected.plan is not None
-    assert selected.plan.segments[0].model_key == ModelKey("commodity_price_taker", "normalized_multiple", "1")
+    assert selected.plan.segments[0].model_key == ModelKey(
+        "commodity_price_taker",
+        "normalized_multiple",
+        "1",
+    )
 
 
 def test_registered_evaluator_with_missing_compiled_inputs_is_assumption_gap():
-    module = plan_for(segment(("capacity_manufacturing",), ("driver_dcf", "warranted_per")))
+    module = plan_for(
+        segment(
+            ("capacity_manufacturing",),
+            ("driver_dcf", "warranted_per"),
+        )
+    )
     incomplete = scenario_set(
         assumption("fcff_year_1", "10", "KRW_billion", "fcff1"),
-        assumption("terminal_growth", "0.02", "ratio", "terminal-growth"),
+        assumption(
+            "terminal_growth",
+            "0.02",
+            "ratio",
+            "terminal-growth",
+        ),
         assumption("ownership", "1", "ratio", "ownership"),
         assumption("net_debt", "0", "KRW_billion", "net-debt"),
         assumption("shares", "10", "shares", "shares"),
@@ -198,7 +293,10 @@ def test_registered_evaluator_with_missing_compiled_inputs_is_assumption_gap():
     result = compile_company_valuation_plan(
         module,
         incomplete,
-        evaluator_registry=dcf_registry("capacity_manufacturing", "driver_dcf"),
+        evaluator_registry=dcf_registry(
+            "capacity_manufacturing",
+            "driver_dcf",
+        ),
         capability_registry=load_default_method_capability_registry(),
         inputs=inputs(),
     )
@@ -225,7 +323,9 @@ def test_unimplemented_financial_methods_are_capability_gap_not_generic_dcf():
 
 
 def test_sotp_aggregator_is_visible_but_never_compiled_as_segment_model_key():
-    module = plan_for(segment(("project_finance",), ("project_npv", "sotp")))
+    module = plan_for(
+        segment(("project_finance",), ("project_npv", "sotp"))
+    )
     registry = EvaluatorRegistry()
     from valuation_engine.finite_life_evaluators import FiniteLifeNPVEvaluator
 
@@ -242,7 +342,12 @@ def test_sotp_aggregator_is_visible_but_never_compiled_as_segment_model_key():
     )
     scenarios = scenario_set(
         assumption("cashflow_year_0", "-10", "KRW_billion", "capex"),
-        assumption("cashflow_year_1", "20", "KRW_billion", "cashflow1"),
+        assumption(
+            "cashflow_year_1",
+            "20",
+            "KRW_billion",
+            "cashflow1",
+        ),
         assumption("ownership", "1", "ratio", "ownership"),
         assumption("net_debt", "0", "KRW_billion", "net-debt"),
         assumption("shares", "10", "shares", "shares"),
@@ -261,9 +366,15 @@ def test_sotp_aggregator_is_visible_but_never_compiled_as_segment_model_key():
 
 
 def test_deterministic_stage_can_compile_plan_after_registry_load():
-    module = plan_for(segment(("capacity_manufacturing",), ("driver_dcf", "warranted_per")))
+    module = plan_for(
+        segment(
+            ("capacity_manufacturing",),
+            ("driver_dcf", "warranted_per"),
+        )
+    )
     scenarios = scenario_set(*common_assumptions())
     registry = dcf_registry("capacity_manufacturing", "driver_dcf")
+    capability_registry = load_default_method_capability_registry()
 
     def loader(context, effective_registry):
         assert context.data["module_requirement_plan"] is module
@@ -271,21 +382,26 @@ def test_deterministic_stage_can_compile_plan_after_registry_load():
             module,
             context.data["bound_scenario_set"],
             evaluator_registry=effective_registry,
-            capability_registry=load_default_method_capability_registry(),
+            capability_registry=capability_registry,
             inputs=inputs(),
         )
 
-    adapter = deterministic_valuation_adapter(plan_loader=loader, registry=registry)
+    adapter = deterministic_valuation_adapter(
+        plan_loader=loader,
+        registry=registry,
+    )
     result = adapter(
-        OrchestratorContext(
-            "RUN",
-            ExecutionMode.LIVE_PRIMARY,
-            {"bound_scenario_set": scenarios, "module_requirement_plan": module},
-        )
+        dynamic_context(module, scenarios, capability_registry)
     )
     assert result.status is StageStatus.PASS
-    assert result.outputs["valuation_plan_compilation"].status is ValuationPlanStatus.READY
+    assert (
+        result.outputs["valuation_plan_compilation"].status
+        is ValuationPlanStatus.READY
+    )
     assert result.outputs["warranted_per_segments"] == ("core",)
+    assert result.outputs["valuation_plan_module_plan_hash"] == (
+        valuation_module_plan_hash(module)
+    )
 
 
 def test_deterministic_stage_reuses_matching_pre_risk_warranted_per_scope():
@@ -357,27 +473,47 @@ def test_deterministic_stage_returns_recovery_for_ambiguous_method_selection():
             ("midcycle_price_volume_dcf", "normalized_multiple"),
         )
     )
-    registry = dcf_registry("commodity_price_taker", "midcycle_price_volume_dcf", version="dcf-v1")
+    registry = dcf_registry(
+        "commodity_price_taker",
+        "midcycle_price_volume_dcf",
+        version="dcf-v1",
+    )
     registry.register(NormalizedMultipleEvaluator("commodity_price_taker"))
     scenarios = scenario_set(
         *common_assumptions(),
-        assumption("normalized_ebitda", "12", "KRW_billion", "normalized-ebitda"),
-        assumption("normalized_multiple", "7", "multiple", "normalized-multiple"),
+        assumption(
+            "normalized_ebitda",
+            "12",
+            "KRW_billion",
+            "normalized-ebitda",
+        ),
+        assumption(
+            "normalized_multiple",
+            "7",
+            "multiple",
+            "normalized-multiple",
+        ),
     )
+    capability_registry = load_default_method_capability_registry()
 
     adapter = deterministic_valuation_adapter(
         registry=registry,
-        plan_loader=lambda context, effective_registry: compile_company_valuation_plan(
-            module,
-            context.data["bound_scenario_set"],
-            evaluator_registry=effective_registry,
-            capability_registry=load_default_method_capability_registry(),
-            inputs=inputs(),
+        plan_loader=lambda context, effective_registry: (
+            compile_company_valuation_plan(
+                module,
+                context.data["bound_scenario_set"],
+                evaluator_registry=effective_registry,
+                capability_registry=capability_registry,
+                inputs=inputs(),
+            )
         ),
     )
     result = adapter(
-        OrchestratorContext("RUN", ExecutionMode.LIVE_PRIMARY, {"bound_scenario_set": scenarios})
+        dynamic_context(module, scenarios, capability_registry)
     )
     assert result.status is StageStatus.RECOVERY_REQUIRED
     assert result.blocking
-    assert result.outputs["valuation_plan_compilation"].status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+    assert (
+        result.outputs["valuation_plan_compilation"].status
+        is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+    )

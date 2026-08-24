@@ -1,7 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import Enum
+from hashlib import sha256
+import json
 
 from .evaluator_registry import EvaluatorRegistry, ModelKey
 from .method_capabilities import (
@@ -24,6 +26,77 @@ class ValuationPlanStatus(str, Enum):
     METHOD_CHOICE_REQUIRED = "METHOD_CHOICE_REQUIRED"
     ASSUMPTION_GAP = "ASSUMPTION_GAP"
     CAPABILITY_GAP = "CAPABILITY_GAP"
+
+
+def valuation_module_plan_hash(plan: ModuleRequirementPlan) -> str:
+    """Hash the complete canonical Module Requirement Plan consumed by valuation."""
+    if not isinstance(plan, ModuleRequirementPlan):
+        raise TypeError("valuation module-plan identity requires ModuleRequirementPlan")
+    plan.validate()
+    return _stable_contract_hash(
+        {
+            "contract": "valuation_module_plan/v1",
+            "plan": asdict(plan),
+        }
+    )
+
+
+def valuation_capability_registry_hash(
+    registry: MethodCapabilityRegistry,
+) -> str:
+    """Hash exact method roles/statuses used by intent and final plan compilation."""
+    if not isinstance(registry, MethodCapabilityRegistry):
+        raise TypeError(
+            "valuation capability identity requires MethodCapabilityRegistry"
+        )
+    if not registry.families or not registry.capabilities:
+        raise ValueError("valuation capability registry cannot be empty")
+
+    family_names = tuple(item.family for item in registry.families)
+    if len(family_names) != len(set(family_names)):
+        raise ValueError("valuation capability registry has duplicate families")
+    identity_pairs = tuple(item.identity for item in registry.capabilities)
+    if len(identity_pairs) != len(set(identity_pairs)):
+        raise ValueError(
+            "valuation capability registry has duplicate archetype/method bindings"
+        )
+    for family in registry.families:
+        family.validate()
+    for capability in registry.capabilities:
+        capability.validate()
+        family = registry.family(capability.execution_family)
+        if (
+            capability.kind is not family.kind
+            or capability.runtime_status is not family.runtime_status
+            or capability.requires_beta != family.requires_beta
+            or capability.requires_wacc != family.requires_wacc
+            or capability.stage != family.stage
+            or capability.canonical_refs != family.canonical_refs
+        ):
+            raise ValueError(
+                f"method capability {capability.identity!r} drifted from "
+                f"execution family {family.family}"
+            )
+
+    return _stable_contract_hash(
+        {
+            "contract": "valuation_method_capabilities/v1",
+            "families": [
+                asdict(item)
+                for item in sorted(
+                    registry.families,
+                    key=lambda item: item.family,
+                )
+            ],
+            "capabilities": [
+                asdict(item)
+                for item in sorted(
+                    registry.capabilities,
+                    key=lambda item: item.identity,
+                )
+            ],
+        }
+    )
 
 
 @dataclass(frozen=True)
@@ -84,9 +157,7 @@ class CompanyValuationPlanInputs:
             item.ev_to_equity_adjustment_key
             for item in self.segment_bindings
             if item.ev_to_equity_adjustment_key is not None
-        ) + tuple(
-            item.assumption_key for item in self.parent_adjustments
-        )
+        ) + tuple(item.assumption_key for item in self.parent_adjustments)
         duplicate_adjustments = _duplicates(adjustment_keys)
         if duplicate_adjustments:
             raise ValueError(
@@ -115,9 +186,7 @@ class SegmentMethodChoice:
                 "segment method choice requires segment, archetype and method"
             )
         if self.version is not None and not self.version:
-            raise ValueError(
-                "segment method choice version cannot be blank"
-            )
+            raise ValueError("segment method choice version cannot be blank")
 
 
 @dataclass(frozen=True)
@@ -160,6 +229,8 @@ class ValuationPlanCompilation:
     status: ValuationPlanStatus
     plan: CompanyValuationPlan | None
     scenario_set_hash: str
+    module_plan_hash: str
+    capability_registry_hash: str
     segment_resolutions: tuple[SegmentPlanResolution, ...]
     warranted_per_segments: tuple[str, ...]
     aggregator_bindings: tuple[str, ...]
@@ -167,10 +238,7 @@ class ValuationPlanCompilation:
 
     @property
     def ready(self) -> bool:
-        return (
-            self.status is ValuationPlanStatus.READY
-            and self.plan is not None
-        )
+        return self.status is ValuationPlanStatus.READY and self.plan is not None
 
 
 def compile_company_valuation_plan(
@@ -187,6 +255,8 @@ def compile_company_valuation_plan(
         raise ValueError(
             "valuation plan compilation requires a non-empty hashed scenario set"
         )
+    module_hash = valuation_module_plan_hash(module_plan)
+    capability_hash = valuation_capability_registry_hash(capability_registry)
     expected_segment_ids = tuple(
         item.segment_id for item in module_plan.segments
     )
@@ -199,15 +269,11 @@ def compile_company_valuation_plan(
     compiled_segments: list[SegmentValuationPlan] = []
 
     for segment in module_plan.segments:
-        capabilities = _segment_capabilities(
-            segment,
-            capability_registry,
-        )
+        capabilities = _segment_capabilities(segment, capability_registry)
         if any(
             item.kind is MethodKind.CROSS_METHOD_ENGINE
             and item.method == "warranted_per"
-            and item.runtime_status
-            is not MethodRuntimeStatus.NOT_IMPLEMENTED
+            and item.runtime_status is not MethodRuntimeStatus.NOT_IMPLEMENTED
             for item in capabilities
         ):
             warranted_per_segments.append(segment.segment_id)
@@ -227,11 +293,7 @@ def compile_company_valuation_plan(
             if capability.kind is MethodKind.SEGMENT_EVALUATOR
         )
         choice = choices.get(segment.segment_id)
-        resolution = _resolve_segment(
-            segment,
-            candidates,
-            choice,
-        )
+        resolution = _resolve_segment(segment, candidates, choice)
         resolutions.append(resolution)
         if (
             resolution.status is not ValuationPlanStatus.READY
@@ -245,10 +307,7 @@ def compile_company_valuation_plan(
             resolution.selected_model_key.method,
         )
         ev_adjustment = binding.ev_to_equity_adjustment_key
-        if (
-            capability.output_kind == "enterprise_value"
-            and not ev_adjustment
-        ):
+        if capability.output_kind == "enterprise_value" and not ev_adjustment:
             missing = (
                 f"PLAN/{segment.segment_id}/ev_to_equity_adjustment_key",
             )
@@ -264,10 +323,7 @@ def compile_company_valuation_plan(
                 missing_assumptions=missing,
             )
             continue
-        if (
-            capability.output_kind == "equity_value"
-            and ev_adjustment is not None
-        ):
+        if capability.output_kind == "equity_value" and ev_adjustment is not None:
             missing = (
                 f"PLAN/{segment.segment_id}/remove_ev_to_equity_adjustment_key",
             )
@@ -303,13 +359,8 @@ def compile_company_valuation_plan(
         for resolution in resolutions
         for value in resolution.missing_assumptions
     )
-    missing_all = tuple(
-        dict.fromkeys((*missing_global, *resolution_missing))
-    )
-    overall = _overall_status(
-        tuple(resolutions),
-        missing_global,
-    )
+    missing_all = tuple(dict.fromkeys((*missing_global, *resolution_missing)))
+    overall = _overall_status(tuple(resolutions), missing_global)
     plan: CompanyValuationPlan | None = None
     if overall is ValuationPlanStatus.READY:
         plan = CompanyValuationPlan(
@@ -324,13 +375,11 @@ def compile_company_valuation_plan(
         status=overall,
         plan=plan,
         scenario_set_hash=scenario_set.scenario_set_hash,
+        module_plan_hash=module_hash,
+        capability_registry_hash=capability_hash,
         segment_resolutions=tuple(resolutions),
-        warranted_per_segments=tuple(
-            dict.fromkeys(warranted_per_segments)
-        ),
-        aggregator_bindings=tuple(
-            dict.fromkeys(aggregator_bindings)
-        ),
+        warranted_per_segments=tuple(dict.fromkeys(warranted_per_segments)),
+        aggregator_bindings=tuple(dict.fromkeys(aggregator_bindings)),
         missing_assumptions=missing_all,
     )
 
@@ -362,11 +411,7 @@ def _candidate_for(
                 if key.archetype == capability.archetype
                 and key.method == capability.method
             ),
-            key=lambda key: (
-                key.archetype,
-                key.method,
-                key.version,
-            ),
+            key=lambda key: (key.archetype, key.method, key.version),
         )
     )
     ready: list[ModelKey] = []
@@ -442,10 +487,7 @@ def _resolve_segment(
                 ),
             )
         candidate = matches[0]
-        if (
-            candidate.runtime_status
-            is MethodRuntimeStatus.NOT_IMPLEMENTED
-        ):
+        if candidate.runtime_status is MethodRuntimeStatus.NOT_IMPLEMENTED:
             return _resolution(
                 segment=segment,
                 status=ValuationPlanStatus.CAPABILITY_GAP,
@@ -519,9 +561,7 @@ def _resolve_segment(
                 status=ValuationPlanStatus.CAPABILITY_GAP,
                 candidates=candidates,
                 selected_model_key=None,
-                rationale=(
-                    "requested method has no exact evaluator registration"
-                ),
+                rationale="requested method has no exact evaluator registration",
             )
         if not eligible and candidate.missing_assumptions:
             return _resolution(
@@ -549,8 +589,7 @@ def _resolve_segment(
     implemented = tuple(
         candidate
         for candidate in candidates
-        if candidate.runtime_status
-        is not MethodRuntimeStatus.NOT_IMPLEMENTED
+        if candidate.runtime_status is not MethodRuntimeStatus.NOT_IMPLEMENTED
     )
     eligible = tuple(
         key
@@ -642,15 +681,11 @@ def _missing_plan_assumptions(
     selected_segments: tuple[SegmentValuationPlan, ...],
 ) -> tuple[str, ...]:
     required: list[str] = [inputs.diluted_shares_key]
-    required.extend(
-        item.ownership_key for item in inputs.segment_bindings
-    )
+    required.extend(item.ownership_key for item in inputs.segment_bindings)
     for segment in selected_segments:
         if segment.ev_to_equity_adjustment_key:
             required.append(segment.ev_to_equity_adjustment_key)
-    required.extend(
-        item.assumption_key for item in inputs.parent_adjustments
-    )
+    required.extend(item.assumption_key for item in inputs.parent_adjustments)
     missing: list[str] = []
     for scenario in scenario_set.scenarios:
         for key in dict.fromkeys(required):
@@ -663,8 +698,6 @@ def _overall_status(
     resolutions: tuple[SegmentPlanResolution, ...],
     missing_global: tuple[str, ...],
 ) -> ValuationPlanStatus:
-    # An unrecoverable capability gap dominates choices or missing assumptions in
-    # other segments: resolving the recoverable work cannot make the company plan run.
     if any(
         item.status is ValuationPlanStatus.CAPABILITY_GAP
         for item in resolutions
@@ -701,3 +734,17 @@ def _duplicates(values: tuple[str, ...]) -> tuple[str, ...]:
     for value in values:
         counts[value] = counts.get(value, 0) + 1
     return tuple(sorted(value for value, count in counts.items() if count > 1))
+
+
+def _stable_contract_hash(value: object) -> str:
+    return sha256(
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            default=lambda item: (
+                item.value if isinstance(item, Enum) else str(item)
+            ),
+        ).encode("utf-8")
+    ).hexdigest()

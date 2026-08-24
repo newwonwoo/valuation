@@ -5,8 +5,13 @@ from valuation_engine.assumption_compiler import CompiledAssumption
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.dcf_evaluators import ExplicitFCFFDCFEvaluator
 from valuation_engine.evaluator_registry import EvaluatorRegistry
-from valuation_engine.method_capabilities import load_default_method_capability_registry
-from valuation_engine.module_plan import ModuleRequirementPlan, SegmentModuleRequirementPlan
+from valuation_engine.method_capabilities import (
+    load_default_method_capability_registry,
+)
+from valuation_engine.module_plan import (
+    ModuleRequirementPlan,
+    SegmentModuleRequirementPlan,
+)
 from valuation_engine.orchestrator import OrchestratorContext
 from valuation_engine.records import CalibrationStatus
 from valuation_engine.scenario_binding import BoundScenario, BoundScenarioSet
@@ -17,6 +22,8 @@ from valuation_engine.valuation_plan_compiler import (
     SegmentValueBinding,
     ValuationPlanStatus,
     compile_company_valuation_plan,
+    valuation_capability_registry_hash,
+    valuation_module_plan_hash,
 )
 
 
@@ -88,7 +95,14 @@ def _inputs() -> CompanyValuationPlanInputs:
     return CompanyValuationPlanInputs(
         reporting_unit="KRW_billion",
         diluted_shares_key="shares",
-        segment_bindings=(SegmentValueBinding("core", "asset", "ownership", "net_debt"),),
+        segment_bindings=(
+            SegmentValueBinding(
+                "core",
+                "asset",
+                "ownership",
+                "net_debt",
+            ),
+        ),
     )
 
 
@@ -111,7 +125,14 @@ def test_explicit_unregistered_version_is_capability_gap():
         evaluator_registry=registry,
         capability_registry=load_default_method_capability_registry(),
         inputs=_inputs(),
-        method_choices=(SegmentMethodChoice("core", "capacity_manufacturing", "driver_dcf", "v9"),),
+        method_choices=(
+            SegmentMethodChoice(
+                "core",
+                "capacity_manufacturing",
+                "driver_dcf",
+                "v9",
+            ),
+        ),
     )
     assert result.status is ValuationPlanStatus.CAPABILITY_GAP
     assert "v9" in result.segment_resolutions[0].rationale
@@ -119,15 +140,28 @@ def test_explicit_unregistered_version_is_capability_gap():
 
 
 def test_plan_loader_keyerror_is_recovery_not_evaluator_not_implemented():
+    module = _module_plan()
+    capability_registry = load_default_method_capability_registry()
     adapter = deterministic_valuation_adapter(
         registry=EvaluatorRegistry(),
-        plan_loader=lambda context, registry: context.data["missing_upstream_plan_input"],
+        plan_loader=lambda context, registry: context.data[
+            "missing_upstream_plan_input"
+        ],
     )
     result = adapter(
         OrchestratorContext(
             "RUN",
             ExecutionMode.LIVE_PRIMARY,
-            {"bound_scenario_set": _scenario_set()},
+            {
+                "bound_scenario_set": _scenario_set(),
+                "module_requirement_plan": module,
+                "valuation_module_plan_hash": valuation_module_plan_hash(
+                    module
+                ),
+                "valuation_capability_registry_hash": (
+                    valuation_capability_registry_hash(capability_registry)
+                ),
+            },
         )
     )
     assert result.status is StageStatus.RECOVERY_REQUIRED
