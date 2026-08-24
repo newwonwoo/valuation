@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
 from io import BytesIO
 from pathlib import Path
+from struct import error as StructError, unpack_from
 from typing import Callable, Mapping
 from zipfile import BadZipFile, ZipFile
 
@@ -31,6 +32,7 @@ from .live_primary_adapters import (
     IndustryDNARouter,
     IndustrySnapshotLoader,
     SegmentDecomposer,
+    SegmentDescriptor,
     live_opendart_company_resolver,
 )
 from .live_runtime import (
@@ -58,6 +60,13 @@ _OPENDART_TARGET_PREFIX = "KR:DART:"
 _DEFAULT_MAX_CORP_ARCHIVE_MEMBERS = 8
 _DEFAULT_MAX_CORP_ARCHIVE_UNCOMPRESSED_BYTES = 32_000_000
 _ARCHIVE_READ_CHUNK_BYTES = 64 * 1024
+_EOCD_SIGNATURE = b"PK\x05\x06"
+_CENTRAL_DIRECTORY_SIGNATURE = b"PK\x01\x02"
+_EOCD_FIXED_SIZE = 22
+_MAX_ZIP_COMMENT_BYTES = 65_535
+_CENTRAL_DIRECTORY_FIXED_SIZE = 46
+_ZIP16_SENTINEL = 0xFFFF
+_ZIP32_SENTINEL = 0xFFFFFFFF
 
 FetchText = Callable[[str], str]
 FetchBytes = Callable[[str], bytes]
@@ -72,6 +81,166 @@ __all__ = [
 ]
 
 
+def _locate_eocd(
+    payload: bytes,
+) -> tuple[int, int, int, int]:
+    if len(payload) < _EOCD_FIXED_SIZE:
+        raise ValueError("OpenDART corp-code archive is shorter than a ZIP EOCD")
+    search_start = max(
+        0,
+        len(payload) - (_EOCD_FIXED_SIZE + _MAX_ZIP_COMMENT_BYTES),
+    )
+    search_end = len(payload)
+    while search_end > search_start:
+        offset = payload.rfind(
+            _EOCD_SIGNATURE,
+            search_start,
+            search_end,
+        )
+        if offset < 0:
+            break
+        if offset + _EOCD_FIXED_SIZE <= len(payload):
+            try:
+                (
+                    signature,
+                    disk_number,
+                    central_directory_disk,
+                    entries_on_disk,
+                    total_entries,
+                    central_directory_size,
+                    central_directory_offset,
+                    comment_length,
+                ) = unpack_from("<4s4H2LH", payload, offset)
+            except StructError:
+                pass
+            else:
+                expected_end = offset + _EOCD_FIXED_SIZE + comment_length
+                if signature == _EOCD_SIGNATURE and expected_end == len(payload):
+                    if disk_number != 0 or central_directory_disk != 0:
+                        raise ValueError(
+                            "OpenDART corp-code archive must not span multiple disks"
+                        )
+                    if entries_on_disk != total_entries:
+                        raise ValueError(
+                            "OpenDART corp-code archive has inconsistent entry counts"
+                        )
+                    if (
+                        total_entries == _ZIP16_SENTINEL
+                        or central_directory_size == _ZIP32_SENTINEL
+                        or central_directory_offset == _ZIP32_SENTINEL
+                    ):
+                        raise ValueError(
+                            "OpenDART corp-code archive must not use ZIP64 metadata"
+                        )
+                    if total_entries <= 0:
+                        raise ValueError(
+                            "OpenDART corp-code archive contains no members"
+                        )
+                    return (
+                        offset,
+                        total_entries,
+                        central_directory_offset,
+                        central_directory_size,
+                    )
+        search_end = offset
+    raise ValueError("OpenDART corp-code archive has no valid ZIP EOCD")
+
+
+def _preflight_central_directory(
+    payload: bytes,
+    *,
+    max_members: int,
+) -> int:
+    (
+        eocd_offset,
+        total_entries,
+        central_directory_offset,
+        central_directory_size,
+    ) = _locate_eocd(payload)
+    if total_entries > max_members:
+        raise ValueError(
+            "OpenDART corp-code archive exceeds the configured member limit"
+        )
+    central_directory_end = (
+        central_directory_offset + central_directory_size
+    )
+    if (
+        central_directory_offset < 0
+        or central_directory_size < 0
+        or central_directory_end != eocd_offset
+        or central_directory_end > len(payload)
+    ):
+        raise ValueError(
+            "OpenDART corp-code archive has invalid central-directory bounds"
+        )
+
+    cursor = central_directory_offset
+    parsed_entries = 0
+    while cursor < central_directory_end:
+        if (
+            central_directory_end - cursor
+            < _CENTRAL_DIRECTORY_FIXED_SIZE
+        ):
+            raise ValueError(
+                "OpenDART corp-code central directory is truncated"
+            )
+        if (
+            payload[cursor : cursor + 4]
+            != _CENTRAL_DIRECTORY_SIGNATURE
+        ):
+            raise ValueError(
+                "OpenDART corp-code central directory has an invalid entry signature"
+            )
+        try:
+            compressed_size = unpack_from("<L", payload, cursor + 20)[0]
+            uncompressed_size = unpack_from("<L", payload, cursor + 24)[0]
+            (
+                filename_length,
+                extra_length,
+                comment_length,
+            ) = unpack_from("<HHH", payload, cursor + 28)
+            disk_start = unpack_from("<H", payload, cursor + 34)[0]
+            local_header_offset = unpack_from("<L", payload, cursor + 42)[0]
+        except StructError as exc:
+            raise ValueError(
+                "OpenDART corp-code central directory is malformed"
+            ) from exc
+        if disk_start != 0:
+            raise ValueError(
+                "OpenDART corp-code archive must not span multiple disks"
+            )
+        if (
+            compressed_size == _ZIP32_SENTINEL
+            or uncompressed_size == _ZIP32_SENTINEL
+            or local_header_offset == _ZIP32_SENTINEL
+        ):
+            raise ValueError(
+                "OpenDART corp-code archive must not use ZIP64 entries"
+            )
+        entry_size = (
+            _CENTRAL_DIRECTORY_FIXED_SIZE
+            + filename_length
+            + extra_length
+            + comment_length
+        )
+        if entry_size > central_directory_end - cursor:
+            raise ValueError(
+                "OpenDART corp-code central-directory entry exceeds its bounds"
+            )
+        parsed_entries += 1
+        if parsed_entries > max_members:
+            raise ValueError(
+                "OpenDART corp-code archive exceeds the configured member limit"
+            )
+        cursor += entry_size
+
+    if cursor != central_directory_end or parsed_entries != total_entries:
+        raise ValueError(
+            "OpenDART corp-code central-directory count does not match its EOCD"
+        )
+    return parsed_entries
+
+
 def _validated_corp_archive_payload(
     payload: bytes,
     *,
@@ -80,26 +249,33 @@ def _validated_corp_archive_payload(
 ) -> bytes:
     """Validate a corp-code ZIP before the canonical resolver decompresses it.
 
-    The HTTP transport bounds only the compressed response body. A highly compressed ZIP
-    member can otherwise expand far beyond that limit inside ``ZipFile.read``. The payload is
-    immutable, so validating member count, declared total size and a streamed XML read before
-    passing the same bytes to the resolver closes that gap without changing resolver identity
-    semantics.
+    The HTTP transport bounds only the compressed response body. EOCD and central-directory
+    metadata are therefore preflighted directly from immutable bytes before Python constructs
+    any ``ZipInfo`` objects. The archive is then checked again for declared and streamed
+    uncompressed size before the same payload is passed to the canonical resolver.
     """
     if not isinstance(payload, bytes) or not payload:
         raise ValueError("OpenDART corp-code archive must be non-empty bytes")
     if max_members <= 0 or max_uncompressed_bytes <= 0:
         raise ValueError("OpenDART corp archive limits must be positive")
+    _preflight_central_directory(
+        payload,
+        max_members=max_members,
+    )
     try:
         with ZipFile(BytesIO(payload)) as archive:
             members = archive.infolist()
             if not members:
-                raise ValueError("OpenDART corp-code archive contains no members")
+                raise ValueError(
+                    "OpenDART corp-code archive contains no members"
+                )
             if len(members) > max_members:
                 raise ValueError(
                     "OpenDART corp-code archive exceeds the configured member limit"
                 )
-            declared_total = sum(max(0, member.file_size) for member in members)
+            declared_total = sum(
+                max(0, member.file_size) for member in members
+            )
             if declared_total > max_uncompressed_bytes:
                 raise ValueError(
                     "OpenDART corp-code archive exceeds the configured uncompressed-size limit"
@@ -121,9 +297,14 @@ def _validated_corp_archive_payload(
             streamed_bytes = 0
             with archive.open(xml_member, "r") as source:
                 while True:
-                    remaining = max_uncompressed_bytes - streamed_bytes
+                    remaining = (
+                        max_uncompressed_bytes - streamed_bytes
+                    )
                     chunk = source.read(
-                        min(_ARCHIVE_READ_CHUNK_BYTES, remaining + 1)
+                        min(
+                            _ARCHIVE_READ_CHUNK_BYTES,
+                            remaining + 1,
+                        )
                     )
                     if not chunk:
                         break
@@ -143,6 +324,43 @@ def _validated_corp_archive_payload(
     return payload
 
 
+def _single_segment_decomposer(
+    decomposer: SegmentDecomposer,
+    *,
+    expected_segment_id: str,
+) -> SegmentDecomposer:
+    if not callable(decomposer):
+        raise TypeError("segment_decomposer must be callable")
+    if not expected_segment_id:
+        raise ValueError("expected_segment_id is required")
+
+    def decompose(identity, snapshot) -> tuple[SegmentDescriptor, ...]:
+        try:
+            segments = tuple(decomposer(identity, snapshot))
+        except TypeError as exc:
+            raise TypeError(
+                "KR OpenDART segment_decomposer must return an iterable of SegmentDescriptor"
+            ) from exc
+        if len(segments) != 1:
+            raise ValueError(
+                "KR OpenDART provider foundation supports exactly one segment; "
+                "multi-segment companies require note-scoped collectors"
+            )
+        segment = segments[0]
+        if not isinstance(segment, SegmentDescriptor):
+            raise TypeError(
+                "KR OpenDART segment_decomposer must return SegmentDescriptor"
+            )
+        if segment.segment_id != expected_segment_id:
+            raise ValueError(
+                "KR OpenDART segment ID does not match the filing collector scope: "
+                f"expected {expected_segment_id}, got {segment.segment_id}"
+            )
+        return segments
+
+    return decompose
+
+
 @dataclass(frozen=True)
 class OpenDartNetwork:
     fetch_text: FetchText
@@ -160,9 +378,13 @@ class OpenDartNetwork:
             )
         if self.api_key is not None:
             if not isinstance(self.api_key, str) or not self.api_key.strip():
-                raise ValueError("OpenDART api_key must be a non-blank string")
+                raise ValueError(
+                    "OpenDART api_key must be a non-blank string"
+                )
         if self.max_corp_archive_members <= 0:
-            raise ValueError("max_corp_archive_members must be positive")
+            raise ValueError(
+                "max_corp_archive_members must be positive"
+            )
         if self.max_corp_archive_uncompressed_bytes <= 0:
             raise ValueError(
                 "max_corp_archive_uncompressed_bytes must be positive"
@@ -184,7 +406,9 @@ class OpenDartNetwork:
         transport: HttpTransport,
         *,
         api_key: str | None = None,
-        max_corp_archive_members: int = _DEFAULT_MAX_CORP_ARCHIVE_MEMBERS,
+        max_corp_archive_members: int = (
+            _DEFAULT_MAX_CORP_ARCHIVE_MEMBERS
+        ),
         max_corp_archive_uncompressed_bytes: int = (
             _DEFAULT_MAX_CORP_ARCHIVE_UNCOMPRESSED_BYTES
         ),
@@ -218,7 +442,9 @@ class OpenDartFilingSelection:
         checked = date.fromisoformat(self.checked_at[:10])
         period_end = date.fromisoformat(self.fiscal_period_end)
         if period_end > checked:
-            raise ValueError("fiscal_period_end cannot be after checked_at")
+            raise ValueError(
+                "fiscal_period_end cannot be after checked_at"
+            )
         if not self.segment_id or not self.collector_id:
             raise ValueError(
                 "OpenDART filing selection requires segment and collector IDs"
@@ -228,14 +454,17 @@ class OpenDartFilingSelection:
                 "KR OpenDART provider must use canonical source_id KR_OPENDART"
             )
         if not self.specs:
-            raise ValueError("OpenDART filing selection requires at least one metric spec")
+            raise ValueError(
+                "OpenDART filing selection requires at least one metric spec"
+            )
         metrics: list[str] = []
         for spec in self.specs:
             spec.validate()
             metrics.append(spec.metric)
         if len(metrics) != len(set(metrics)):
-            raise ValueError("OpenDART filing selection has duplicate metric specs")
-        # Reuse the endpoint contract as the canonical validation for year/report/fs_div.
+            raise ValueError(
+                "OpenDART filing selection has duplicate metric specs"
+            )
         build_opendart_full_financials_url(
             corp_code="00000000",
             business_year=self.business_year,
@@ -264,7 +493,9 @@ class OpenDartFilingSelection:
             spec for spec in self.specs if spec.metric in requested
         )
         if not selected:
-            raise ValueError("OpenDART collector task contains no supported metric")
+            raise ValueError(
+                "OpenDART collector task contains no supported metric"
+            )
         return selected
 
 
@@ -342,15 +573,22 @@ class KRLiveRuntimeFactory:
         self.scenario_binding_spec.validate()
         for choice in self.method_choices:
             choice.validate()
-        if self.extensions.market_loader is not None and not self.market_currency:
-            raise ValueError("market_currency is required with a market loader")
+        if (
+            self.extensions.market_loader is not None
+            and not self.market_currency
+        ):
+            raise ValueError(
+                "market_currency is required with a market loader"
+            )
 
     def __call__(
         self,
         request: LiveAnalysisRequest,
     ) -> LivePrimaryRuntimeConfig:
         if not isinstance(request, LiveAnalysisRequest):
-            raise TypeError("KRLiveRuntimeFactory requires LiveAnalysisRequest")
+            raise TypeError(
+                "KRLiveRuntimeFactory requires LiveAnalysisRequest"
+            )
         request.validate()
         self.validate()
         jurisdiction = normalize_jurisdiction(
@@ -381,7 +619,14 @@ class KRLiveRuntimeFactory:
                 self.filing,
             ),
         )
-        providers = self.extensions.build_providers(
+        scoped_extensions = replace(
+            self.extensions,
+            segment_decomposer=_single_segment_decomposer(
+                self.extensions.segment_decomposer,
+                expected_segment_id=self.filing.segment_id,
+            ),
+        )
+        providers = scoped_extensions.build_providers(
             company_resolver=resolver,
             core_collector=collector,
         )
@@ -408,7 +653,9 @@ def opendart_corp_code_from_target_id(target_id: str) -> str:
     if not isinstance(target_id, str) or not target_id.startswith(
         _OPENDART_TARGET_PREFIX
     ):
-        raise ValueError("target_id is not a KR OpenDART identity")
+        raise ValueError(
+            "target_id is not a KR OpenDART identity"
+        )
     corp_code = target_id[len(_OPENDART_TARGET_PREFIX) :]
     if len(corp_code) != 8 or not corp_code.isdigit():
         raise ValueError(
@@ -427,7 +674,9 @@ def request_scoped_opendart_fact_collector(
     def collect(
         request: EvidenceCollectionRequest,
     ) -> EvidenceCollectionBatch:
-        corp_code = opendart_corp_code_from_target_id(request.target_id)
+        corp_code = opendart_corp_code_from_target_id(
+            request.target_id
+        )
         selected_specs = filing.specs_for(request.required_metrics)
         collector = live_opendart_fact_collector(
             network.fetch_text,
@@ -443,9 +692,13 @@ def request_scoped_opendart_fact_collector(
             segment=filing.segment_id,
         )
         batch = collector(request)
-        emitted_metrics = {record.metric for record in batch.records}
+        emitted_metrics = {
+            record.metric for record in batch.records
+        }
         unauthorized = tuple(
-            sorted(emitted_metrics - set(request.required_metrics))
+            sorted(
+                emitted_metrics - set(request.required_metrics)
+            )
         )
         if unauthorized:
             raise ValueError(
