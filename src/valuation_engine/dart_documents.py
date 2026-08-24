@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+import codecs
+from dataclasses import dataclass, field
 from datetime import date
 from hashlib import sha256
 from io import BytesIO
@@ -8,21 +9,25 @@ import json
 from pathlib import PurePosixPath
 import re
 from typing import Callable
-from urllib.parse import urlencode
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 import xml.etree.ElementTree as ET
 from zipfile import BadZipFile, ZipFile
 
 from .live_indexers import require_env_credential
-from .source_index import DocumentIndexRecord
+from .source_index import DocumentIndexRecord, stable_hash
 
 
 FetchBytes = Callable[[str], bytes]
 
 _TEXT_EXTENSIONS = frozenset({".xml", ".html", ".htm", ".xhtml", ".txt"})
 _DEFAULT_MAX_FILES = 256
+_DEFAULT_MAX_ARCHIVE_BYTES = 24_000_000
 _DEFAULT_MAX_MEMBER_BYTES = 12_000_000
 _DEFAULT_MAX_TOTAL_UNCOMPRESSED_BYTES = 80_000_000
 _DEFAULT_MAX_COMPRESSION_RATIO = 200.0
+_SENSITIVE_QUERY_KEYS = frozenset(
+    {"crtfc_key", "api_key", "apikey", "access_token", "token", "authorization"}
+)
 
 
 class DartDocumentError(ValueError):
@@ -76,6 +81,9 @@ class DartOriginalFilingDocument:
     archive_hash: str
     archive_size_bytes: int
     members: tuple[DartDocumentMember, ...]
+    published_at: date | None = None
+    index_record_hash: str | None = None
+    archive_bytes: bytes = field(default=b"", repr=False)
 
     def validate(self) -> None:
         _validate_rcept_no(self.rcept_no)
@@ -85,6 +93,22 @@ class DartOriginalFilingDocument:
             )
         if not re.fullmatch(r"[0-9a-f]{64}", self.archive_hash):
             raise DartDocumentError("DART original filing archive_hash is invalid")
+        if len(self.archive_bytes) != self.archive_size_bytes:
+            raise DartDocumentError(
+                "DART original filing retained archive size does not match manifest"
+            )
+        if sha256(self.archive_bytes).hexdigest() != self.archive_hash:
+            raise DartDocumentError(
+                "DART original filing retained archive hash does not match manifest"
+            )
+        if self.published_at is not None and self.published_at > self.checked_at:
+            raise DartDocumentError(
+                "DART filing cannot be retrieved before its indexed publication date"
+            )
+        if self.index_record_hash is not None and not re.fullmatch(
+            r"[0-9a-f]{64}", self.index_record_hash
+        ):
+            raise DartDocumentError("DART index_record_hash is invalid")
         if not self.members:
             raise DartDocumentError("DART original filing contains no members")
         paths = tuple(member.path for member in self.members)
@@ -104,9 +128,11 @@ class DartOriginalFilingDocument:
         payload = {
             "rcept_no": self.rcept_no,
             "checked_at": self.checked_at.isoformat(),
+            "published_at": self.published_at.isoformat() if self.published_at else None,
             "source_ref": self.source_ref,
             "archive_hash": self.archive_hash,
             "archive_size_bytes": self.archive_size_bytes,
+            "index_record_hash": self.index_record_hash,
             "members": [
                 {
                     "path": member.path,
@@ -132,6 +158,7 @@ class DartOriginalFilingDocument:
 @dataclass(frozen=True)
 class DartDocumentFetchPolicy:
     max_files: int = _DEFAULT_MAX_FILES
+    max_archive_bytes: int = _DEFAULT_MAX_ARCHIVE_BYTES
     max_member_bytes: int = _DEFAULT_MAX_MEMBER_BYTES
     max_total_uncompressed_bytes: int = _DEFAULT_MAX_TOTAL_UNCOMPRESSED_BYTES
     max_compression_ratio: float = _DEFAULT_MAX_COMPRESSION_RATIO
@@ -139,7 +166,11 @@ class DartDocumentFetchPolicy:
     def validate(self) -> None:
         if self.max_files <= 0:
             raise DartDocumentError("max_files must be positive")
-        if self.max_member_bytes <= 0 or self.max_total_uncompressed_bytes <= 0:
+        if (
+            self.max_archive_bytes <= 0
+            or self.max_member_bytes <= 0
+            or self.max_total_uncompressed_bytes <= 0
+        ):
             raise DartDocumentError("DART document byte limits must be positive")
         if self.max_total_uncompressed_bytes < self.max_member_bytes:
             raise DartDocumentError(
@@ -175,12 +206,24 @@ def parse_opendart_original_document_archive(
     rcept_no: str,
     checked_at: date,
     source_ref: str | None = None,
+    published_at: date | None = None,
+    index_record_hash: str | None = None,
     policy: DartDocumentFetchPolicy = DartDocumentFetchPolicy(),
 ) -> DartOriginalFilingDocument:
     _validate_rcept_no(rcept_no)
     policy.validate()
+    if not isinstance(payload, bytes):
+        raise DartDocumentFetchError("OpenDART document payload must be bytes")
     if not payload:
         raise DartDocumentFetchError("OpenDART document response is empty")
+    if len(payload) > policy.max_archive_bytes:
+        raise DartDocumentFetchError(
+            f"OpenDART document ZIP exceeds max_archive_bytes={policy.max_archive_bytes}"
+        )
+    if published_at is not None and published_at > checked_at:
+        raise DartDocumentFetchError(
+            "OpenDART indexed filing publication date is later than checked_at"
+        )
     archive_hash = sha256(payload).hexdigest()
 
     try:
@@ -246,7 +289,7 @@ def parse_opendart_original_document_archive(
                 encoding = _detect_text_encoding(raw)
                 try:
                     text = raw.decode(encoding, errors="strict")
-                except UnicodeDecodeError as exc:
+                except (UnicodeDecodeError, LookupError) as exc:
                     raise DartDocumentFetchError(
                         f"OpenDART text member cannot be decoded as {encoding}: {path}"
                     ) from exc
@@ -265,10 +308,16 @@ def parse_opendart_original_document_archive(
     result = DartOriginalFilingDocument(
         rcept_no=rcept_no,
         checked_at=checked_at,
-        source_ref=source_ref or opendart_document_source_ref(rcept_no),
+        published_at=published_at,
+        source_ref=_sanitize_source_ref(
+            source_ref or opendart_document_source_ref(rcept_no),
+            expected_rcept_no=rcept_no,
+        ),
         archive_hash=archive_hash,
         archive_size_bytes=len(payload),
+        index_record_hash=index_record_hash,
         members=tuple(sorted(members, key=lambda item: item.path)),
+        archive_bytes=payload,
     )
     result.validate()
     return result
@@ -314,11 +363,22 @@ def fetch_indexed_opendart_original_document(
         raise DartDocumentError(
             "OpenDART index record document_id does not match its receipt number"
         )
-    return fetch_opendart_original_document(
-        fetch_bytes,
+    if record.published_at is not None and record.published_at > checked_at:
+        raise DartDocumentError(
+            "OpenDART index record publication date is later than checked_at"
+        )
+    index_hash = _index_record_hash(record)
+    url = build_opendart_document_url(rcept_no=rcept_no, api_key=api_key)
+    payload = fetch_bytes(url)
+    if not isinstance(payload, bytes):
+        raise DartDocumentFetchError("OpenDART binary transport must return bytes")
+    return parse_opendart_original_document_archive(
+        payload,
         rcept_no=rcept_no,
         checked_at=checked_at,
-        api_key=api_key,
+        published_at=record.published_at,
+        index_record_hash=index_hash,
+        source_ref=opendart_document_source_ref(rcept_no),
         policy=policy,
     )
 
@@ -334,6 +394,47 @@ def _receipt_number_from_index_record(record: DocumentIndexRecord) -> str:
             "OpenDART index record requires a 14-digit receipt number locator"
         )
     return match.group(1)
+
+
+def _index_record_hash(record: DocumentIndexRecord) -> str:
+    return stable_hash(
+        {
+            "source_id": record.source_id,
+            "document_id": record.document_id,
+            "title": record.title,
+            "published_at": (
+                record.published_at.isoformat() if record.published_at else None
+            ),
+            "url": record.url,
+            "document_class": record.document_class,
+            "period": record.period,
+            "locator": record.locator,
+            "content_fingerprint": record.content_fingerprint,
+        }
+    )
+
+
+def _sanitize_source_ref(source_ref: str, *, expected_rcept_no: str) -> str:
+    if not source_ref:
+        raise DartDocumentError("DART original filing source_ref is required")
+    parts = urlsplit(source_ref)
+    query = parse_qsl(parts.query, keep_blank_values=True)
+    cleaned: list[tuple[str, str]] = []
+    receipt_values: list[str] = []
+    for key, value in query:
+        lower = key.lower()
+        if lower in _SENSITIVE_QUERY_KEYS:
+            continue
+        if lower == "rcept_no":
+            receipt_values.append(value)
+        cleaned.append((key, value))
+    if receipt_values and any(value != expected_rcept_no for value in receipt_values):
+        raise DartDocumentError(
+            "DART source_ref receipt number does not match requested filing"
+        )
+    return urlunsplit(
+        (parts.scheme, parts.netloc, parts.path, urlencode(cleaned), parts.fragment)
+    )
 
 
 def _validate_rcept_no(rcept_no: str) -> None:
@@ -377,7 +478,14 @@ def _detect_text_encoding(raw: bytes) -> str:
             "utf8": "utf-8",
             "utf-16": "utf-16",
         }
-        return aliases.get(encoding, encoding)
+        resolved = aliases.get(encoding, encoding)
+        try:
+            codecs.lookup(resolved)
+        except LookupError as exc:
+            raise DartDocumentFetchError(
+                f"OpenDART text member declares unsupported encoding: {encoding}"
+            ) from exc
+        return resolved
     try:
         raw.decode("utf-8", errors="strict")
         return "utf-8"
