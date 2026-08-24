@@ -71,6 +71,8 @@ The factory cannot change:
 
 These checks happen before Control Plane execution or state persistence.
 
+A blank jurisdiction is rejected as `INVALID_LIVE_ANALYSIS_REQUEST` before the provider factory runs. Jurisdiction aliases such as `KR` and `KOR` are normalized by the canonical jurisdiction helper.
+
 The company resolver is additionally wrapped at the first Control Plane stage. When a jurisdiction is locked, the returned `ResolvedCompanyIdentity.jurisdiction` must match after canonical alias normalization. A factory cannot copy `KR` into the request but return a US identity and proceed to downstream collection.
 
 The factory is not allowed to reinterpret `분석시작 삼성전자` as another target, redirect state to another directory, reuse an unrelated run ID, or silently choose a different jurisdiction.
@@ -83,7 +85,11 @@ The console entrypoint must work from an installed wheel outside a repository ch
 valuation_engine._registry_data
 ```
 
-`build_live_runtime_config()` preserves valid explicitly supplied registry paths. When a config still carries the class defaults and those checkout paths do not exist, it binds the installed package resources for:
+For class-default registry fields, `build_live_runtime_config()` binds the canonical package resources. Valid explicit custom registry paths remain supported and are not replaced.
+
+An importable installed registry package is authoritative. If the package exists but one requested YAML member is missing, the runtime fails closed as `LIVE_RUNTIME_REGISTRY_UNAVAILABLE`; it never consults an unrelated parent-level `config/` directory. Repository fallback is permitted only when the installed resource package is unavailable and independent project, source and canonical-config markers positively identify a real source checkout.
+
+The package-backed fields are:
 
 - Control Plane stage registry;
 - archetype module registry;
@@ -91,9 +97,15 @@ valuation_engine._registry_data
 - industry source registry;
 - Unit Contract registry.
 
-A missing explicit custom registry path is not replaced silently. It fails as `INVALID_LIVE_RUNTIME_CONFIG`. A missing packaged default fails as `LIVE_RUNTIME_REGISTRY_UNAVAILABLE`.
+The method-capability and archetype registries use the same package-first authority. A missing explicit custom registry path fails as `INVALID_LIVE_RUNTIME_CONFIG`.
 
-Wheel regression tests build and install the package in an isolated directory, run outside the checkout, construct the documented factory skeleton and load the 33-stage and Unit Contract registries.
+Wheel regression tests:
+
+1. build with the active test interpreter and its declared `setuptools>=70` dev dependency;
+2. install the wheel into an isolated directory;
+3. run outside the checkout with an adversarial parent-level `config/` directory;
+4. construct the documented factory skeleton and load the 33-stage and Unit Contract registries;
+5. delete one installed registry member and verify that lookup fails rather than falling back to the adversarial directory.
 
 ## 5. No fallback
 
@@ -119,7 +131,19 @@ The following combinations are invalid:
 - live analysis plus `--config`;
 - YAML fixture mode plus LIVE/legacy command options.
 
-## 6. Result validation
+## 6. Factory-config validation boundary
+
+After the factory returns, the following operations are executed inside one secret-safe validation boundary:
+
+- nested-field access;
+- run, state-root, company and jurisdiction identity checks;
+- package/custom registry resolution;
+- resolved-jurisdiction provider wrapping;
+- `LivePrimaryRuntimeConfig.validate()`.
+
+Existing specific `LiveCLIError` classifications are re-raised unchanged. Any other ordinary exception becomes `INVALID_LIVE_RUNTIME_CONFIG` with only its exception type exposed. Process-control exceptions still propagate.
+
+## 7. Result validation
 
 The runner must return `ControlledRunResult` with:
 
@@ -133,7 +157,7 @@ A result from PRIMARY_SHADOW or LEGACY_REGRESSION is rejected even if its numeri
 
 A blocked result must not retain a Freeze Token or intrinsic-owned outputs such as valuation objects, scenario values, Street/market comparison or final report. Any such result is rejected as `BLOCKED_LIVE_RESULT_LEAKAGE` rather than rendered.
 
-## 7. Secret-safe blocked-run rendering
+## 8. Secret-safe blocked-run rendering
 
 Terminal progress renders only:
 
@@ -161,7 +185,7 @@ The renderer does not print:
 
 `run_prism()` also redacts intrinsic-owned keys from blocked results. CLI result validation and rendering are additional protections rather than the sole guard.
 
-## 8. Example factory skeleton
+## 9. Example factory skeleton
 
 ```python
 from valuation_engine.cli_runtime import LiveAnalysisRequest
@@ -187,10 +211,13 @@ def build_config(request: LiveAnalysisRequest) -> LivePrimaryRuntimeConfig:
 
 `build_private_provider_bundle` must still obey every normal PRISM source-layer, Evidence, market-isolation, exact-evaluator and Audit contract. The CLI factory boundary does not authorize assumptions or valuation math.
 
-## 9. Operational errors
+## 10. Operational errors
 
 Errors are classified before returning exit code `2`:
 
+- `COMPANY_REQUIRED`
+- `INVALID_ANALYSIS_COMMAND`
+- `INVALID_LIVE_ANALYSIS_REQUEST`
 - `LIVE_PROVIDER_FACTORY_REQUIRED`
 - `INVALID_PROVIDER_FACTORY`
 - `PROVIDER_FACTORY_LOAD_FAILED`
