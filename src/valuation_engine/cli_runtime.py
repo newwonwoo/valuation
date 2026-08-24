@@ -7,12 +7,25 @@ import os
 from pathlib import Path
 from typing import Callable, Mapping
 
+from .collection_plan import normalize_jurisdiction
 from .control_plane import ExecutionMode
 from .live_runtime import LivePrimaryRuntimeConfig, run_prism
 from .orchestrator import ControlledRunResult
 
 
 _PROVIDER_FACTORY_ENV = "VALUATION_LIVE_PROVIDER_FACTORY"
+_BLOCKED_FORBIDDEN_DATA_KEYS = frozenset(
+    {
+        "generic_valuation_result",
+        "intrinsic_scenario_values",
+        "expected_value_per_share",
+        "valuation_hash",
+        "intrinsic_freeze_token",
+        "street_comparison",
+        "market_comparison",
+        "final_report",
+    }
+)
 
 
 class LiveCLIError(RuntimeError):
@@ -112,7 +125,7 @@ def load_live_runtime_config_factory(spec: str) -> LiveRuntimeConfigFactory:
 def _normalized_jurisdiction(value: str | None) -> str | None:
     if value is None:
         return None
-    return value.strip().upper().replace(" ", "_")
+    return normalize_jurisdiction(value)
 
 
 def build_live_runtime_config(
@@ -214,6 +227,23 @@ def execute_live_analysis(
             "LIVE_RUNTIME_MODE_MISMATCH",
             "분석시작 명령이 LIVE_PRIMARY 이외의 실행모드로 완료됐습니다",
         )
+    if not result.blocked_reasons and not result.completed:
+        raise LiveCLIError(
+            "INVALID_LIVE_RUNTIME_RESULT",
+            "차단 사유가 없는 LIVE_PRIMARY 결과에는 stage trace가 필요합니다",
+        )
+    if result.blocked_reasons:
+        leaked = tuple(sorted(_BLOCKED_FORBIDDEN_DATA_KEYS.intersection(result.data)))
+        if result.freeze_token is not None or leaked:
+            detail = []
+            if result.freeze_token is not None:
+                detail.append("freeze_token")
+            detail.extend(leaked)
+            raise LiveCLIError(
+                "BLOCKED_LIVE_RESULT_LEAKAGE",
+                "차단된 LIVE_PRIMARY 결과에 intrinsic-owned 출력이 남아 있습니다: "
+                + ", ".join(detail),
+            )
     return result
 
 
