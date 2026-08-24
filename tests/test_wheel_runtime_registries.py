@@ -19,7 +19,7 @@ def test_installed_wheel_constructs_live_registry_loaders_outside_checkout(tmp_p
     shutil.copy2(ROOT / "pyproject.toml", source_dir / "pyproject.toml")
     shutil.copytree(ROOT / "src", source_dir / "src")
     shutil.copytree(ROOT / "config", source_dir / "config")
-    build_python = sys._base_executable
+    build_python = sys.executable
 
     subprocess.run(
         [
