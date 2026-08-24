@@ -69,13 +69,20 @@ class LiveAnalysisRequest:
 
     def validate(self) -> None:
         if not self.command or not self.company_query or not self.run_id:
-            raise ValueError(
-                "live analysis request requires command, company query and run_id"
+            raise LiveCLIError(
+                "INVALID_LIVE_ANALYSIS_REQUEST",
+                "live analysis request requires command, company query and run_id",
             )
         if not self.state_root:
-            raise ValueError("live analysis request requires state_root")
+            raise LiveCLIError(
+                "INVALID_LIVE_ANALYSIS_REQUEST",
+                "live analysis request requires state_root",
+            )
         if self.jurisdiction is not None and not self.jurisdiction.strip():
-            raise ValueError("jurisdiction cannot be blank")
+            raise LiveCLIError(
+                "INVALID_LIVE_ANALYSIS_REQUEST",
+                "jurisdiction cannot be blank",
+            )
 
 
 LiveRuntimeConfigFactory = Callable[[LiveAnalysisRequest], LivePrimaryRuntimeConfig]
