@@ -1,0 +1,174 @@
+# LIVE_PRIMARY CLI Contract
+
+## 1. Purpose
+
+The CLI command:
+
+```text
+분석시작 <기업>
+```
+
+is a user-facing entrypoint into the canonical PRISM `LIVE_PRIMARY` Control Plane. It must not select the OCI regression fixture, PRIMARY_SHADOW data, a generic evaluator, or market-implied assumptions merely because a production provider is unavailable.
+
+The runtime boundary is:
+
+```text
+CLI command
+→ LiveAnalysisRequest
+→ operator-supplied LiveRuntimeConfigFactory
+→ validated LivePrimaryRuntimeConfig
+→ run_prism()
+→ ControlledRunResult
+→ stage progress + final report or VALUATION BLOCKED
+```
+
+## 2. Provider factory
+
+Supply a Python import specification:
+
+```text
+python.module:callable
+```
+
+through either:
+
+```bash
+--provider-factory my_runtime.providers:build_config
+```
+
+or:
+
+```bash
+VALUATION_LIVE_PROVIDER_FACTORY=my_runtime.providers:build_config
+```
+
+The callable receives:
+
+```python
+@dataclass(frozen=True)
+class LiveAnalysisRequest:
+    command: str
+    company_query: str
+    state_root: Path
+    run_id: str
+    jurisdiction: str | None
+```
+
+and must return `LivePrimaryRuntimeConfig`.
+
+The factory may assemble live transports, credentials, source clients, LLM Staff callbacks, scanner runners, risk providers, evaluator registries and post-freeze loaders. Secrets, paid reports and private position/state data remain outside the public repository.
+
+## 3. Identity locks
+
+The factory cannot change:
+
+- CLI-generated or explicitly supplied `run_id`;
+- requested `state_root`;
+- company query in `CompanyResolutionRequest`;
+- explicit jurisdiction constraint.
+
+These checks happen before Control Plane execution or state persistence.
+
+The factory is not allowed to reinterpret `분석시작 삼성전자` as another target, redirect state to another directory, reuse an unrelated run ID, or silently choose a different jurisdiction.
+
+## 4. No fallback
+
+Without a provider factory, the command returns:
+
+```text
+LIVE_PROVIDER_FACTORY_REQUIRED
+```
+
+It does not use `examples/oci/company.yaml` automatically.
+
+OCI remains available only through the explicit regression command:
+
+```bash
+valuation-engine "분석시작 OCI홀딩스" \
+  --legacy-oci \
+  --config examples/oci/company.yaml
+```
+
+The following combinations are invalid:
+
+- `--legacy-oci` plus `--provider-factory`;
+- live analysis plus `--config`;
+- YAML fixture mode plus LIVE/legacy command options.
+
+## 5. Result validation
+
+The runner must return `ControlledRunResult` with:
+
+- the same `run_id`;
+- `ExecutionMode.LIVE_PRIMARY`;
+- typed stage traces;
+- no blocking reasons for a completed run;
+- a non-empty `final_report` for a completed run.
+
+A result from PRIMARY_SHADOW or LEGACY_REGRESSION is rejected even if its numerical output appears valid.
+
+## 6. Blocked-run rendering
+
+When any stage blocks, CLI output contains only:
+
+- stage/status/rationale progress;
+- `VALUATION BLOCKED`;
+- explicit blocking reasons.
+
+The renderer does not read or display:
+
+- scenario intrinsic values;
+- expected value;
+- valuation hash or Freeze Token;
+- Street or market comparison;
+- a stale or injected final report.
+
+`run_prism()` also redacts intrinsic-owned keys from blocked results. CLI rendering is a second protection rather than the sole guard.
+
+## 7. Example factory skeleton
+
+```python
+from valuation_engine.cli_runtime import LiveAnalysisRequest
+from valuation_engine.live_primary_adapters import CompanyResolutionRequest
+from valuation_engine.live_runtime import LivePrimaryRuntimeConfig
+
+
+def build_config(request: LiveAnalysisRequest) -> LivePrimaryRuntimeConfig:
+    providers = build_private_provider_bundle(request)
+    return LivePrimaryRuntimeConfig(
+        run_id=request.run_id,
+        state_root=request.state_root,
+        company_request=CompanyResolutionRequest(
+            request.company_query,
+            request.jurisdiction,
+        ),
+        scenario_binding_spec=build_scenario_binding_spec(request),
+        providers=providers,
+        method_choices=build_method_choices(request),
+        market_currency=resolve_market_currency(request),
+    )
+```
+
+`build_private_provider_bundle` must still obey every normal PRISM source-layer, Evidence, market-isolation, exact-evaluator and Audit contract. The CLI factory boundary does not authorize assumptions or valuation math.
+
+## 8. Operational errors
+
+Errors are classified before returning exit code `2`:
+
+- `LIVE_PROVIDER_FACTORY_REQUIRED`
+- `INVALID_PROVIDER_FACTORY`
+- `PROVIDER_FACTORY_LOAD_FAILED`
+- `PROVIDER_FACTORY_NOT_CALLABLE`
+- `PROVIDER_FACTORY_FAILED`
+- `INVALID_LIVE_RUNTIME_CONFIG`
+- `LIVE_RUNTIME_IDENTITY_MISMATCH`
+- `LIVE_RUNTIME_STATE_ROOT_MISMATCH`
+- `LIVE_RUNTIME_COMPANY_MISMATCH`
+- `LIVE_RUNTIME_JURISDICTION_MISMATCH`
+- `LIVE_PRIMARY_EXECUTION_FAILED`
+- `INVALID_LIVE_RUNTIME_RESULT`
+- `LIVE_RUNTIME_RESULT_ID_MISMATCH`
+- `LIVE_RUNTIME_MODE_MISMATCH`
+- `LIVE_REPORT_MISSING`
+
+These errors are operational/capability failures. They must not be converted into an intrinsic estimate.
