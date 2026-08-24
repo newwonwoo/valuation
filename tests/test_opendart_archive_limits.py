@@ -6,6 +6,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytest
 
+import valuation_engine.kr_opendart_provider as provider_module
 from valuation_engine.cli_runtime import LiveAnalysisRequest
 from valuation_engine.kr_opendart_provider import (
     KRLiveProviderExtensions,
@@ -92,6 +93,28 @@ def test_corp_archive_member_count_is_bounded_before_resolver_read(tmp_path):
     )(_request(tmp_path))
     with pytest.raises(ValueError, match="member limit"):
         config.providers.company_resolver(config.company_request)
+
+
+def test_member_count_preflight_runs_before_zipfile_construction(
+    monkeypatch,
+):
+    payload = _archive(extra_members=3)
+    network = _factory(payload, max_members=2).network
+
+    def must_not_construct_zipfile(*args, **kwargs):
+        raise AssertionError(
+            "ZipFile must not be constructed before the EOCD member bound passes"
+        )
+
+    monkeypatch.setattr(
+        provider_module,
+        "ZipFile",
+        must_not_construct_zipfile,
+    )
+    with pytest.raises(ValueError, match="member limit"):
+        network.fetch_validated_corp_archive(
+            "https://opendart.fss.or.kr/api/corpCode.xml"
+        )
 
 
 def test_corp_archive_uncompressed_size_is_bounded_before_resolver_read(
