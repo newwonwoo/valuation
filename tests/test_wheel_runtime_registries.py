@@ -55,10 +55,19 @@ def test_installed_wheel_constructs_live_registry_loaders_outside_checkout(tmp_p
     )
 
     script = """
+from pathlib import Path
+
+from valuation_engine.cli_runtime import LiveAnalysisRequest, build_live_runtime_config
+from valuation_engine.collection_plan import CollectorCapability
 from valuation_engine.dcf_evaluators import LiveDCFRegistration, live_fcff_dcf_registry_loader
 from valuation_engine.finite_life_evaluators import FiniteLifeNPVRegistration, live_finite_npv_registry_loader
+from valuation_engine.live_primary_adapters import CompanyResolutionRequest
+from valuation_engine.live_runtime import LiveCollectorProvider, LivePrimaryProviders, LivePrimaryRuntimeConfig
 from valuation_engine.method_capabilities import load_default_method_capability_registry
+from valuation_engine.orchestrator import load_stage_sequence
 from valuation_engine.rnpv_evaluator import LiveRNPVRegistration, live_rnpv_registry_loader
+from valuation_engine.scenario_binding import ScenarioBindingSpec
+from valuation_engine.unit_contracts import load_unit_contract_registry
 
 registry = load_default_method_capability_registry()
 assert registry.get("contracted_backlog", "normalized_dcf").execution_family == "explicit_fcff_dcf"
@@ -71,6 +80,62 @@ live_finite_npv_registry_loader(
 live_rnpv_registry_loader(
     registrations=(LiveRNPVRegistration("probabilistic_pipeline", "rnpv", "1", 5, "phase3"),)
 )
+
+
+def build_config(request):
+    noop = lambda *args, **kwargs: None
+    collector = LiveCollectorProvider(
+        CollectorCapability(
+            "fixture",
+            "FIXTURE_PRIMARY",
+            ("x",),
+            ("GLOBAL",),
+            "wheel.fixture",
+        ),
+        noop,
+    )
+    providers = LivePrimaryProviders(
+        company_resolver=noop,
+        industry_snapshot_loader=noop,
+        freshness_loader=noop,
+        segment_decomposer=noop,
+        industry_dna_router=noop,
+        collectors=(collector,),
+        scanner_runners={},
+        intelligence_officer=noop,
+        red_team_officer=noop,
+        bridge_analyst=noop,
+        evaluator_registry_loader=noop,
+        valuation_plan_inputs_loader=noop,
+    )
+    return LivePrimaryRuntimeConfig(
+        run_id=request.run_id,
+        state_root=request.state_root,
+        company_request=CompanyResolutionRequest(request.company_query),
+        scenario_binding_spec=ScenarioBindingSpec(("Base",), ("x",)),
+        providers=providers,
+    )
+
+
+request = LiveAnalysisRequest(
+    command="분석시작 Wheel Target",
+    company_query="Wheel Target",
+    state_root=Path.cwd() / "state",
+    run_id="WHEEL-LIVE-1",
+)
+config = build_live_runtime_config(request, build_config)
+registry_fields = (
+    "stage_registry_path",
+    "archetype_registry_path",
+    "archetype_control_requirements_path",
+    "industry_source_registry_path",
+    "unit_contract_registry_path",
+)
+for field in registry_fields:
+    path = Path(getattr(config, field))
+    assert path.is_file(), (field, path)
+assert len(load_stage_sequence(config.stage_registry_path)) == 33
+assert load_unit_contract_registry(config.unit_contract_registry_path).units
 """
     env = os.environ.copy()
     env["PYTHONPATH"] = str(install_dir)
