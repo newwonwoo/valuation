@@ -1,228 +1,136 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import dataclass
-import importlib
 import json
 import os
 from pathlib import Path
-from typing import Callable
+import sys
+from typing import Mapping, Sequence
 
 from .audit import audit_model, gate_report
+from .cli_runtime import (
+    LiveCLIError,
+    execute_live_analysis,
+    load_live_runtime_config_factory,
+    render_controlled_run,
+    resolve_provider_factory_spec,
+)
 from .config import load_intrinsic_company_config, load_market_comparison
-from .control_plane import ExecutionMode
 from .engine import compare_to_market, run_valuation
-from .live_runtime import LivePrimaryRuntimeConfig, run_prism
-from .orchestrator import ControlledRunResult
 from .provenance import build_oci_legacy_trace
 from .workflow import run_analysis_command
 
 
-_RUNTIME_FACTORY_ENV = "PRISM_RUNTIME_FACTORY"
-
-
-@dataclass(frozen=True)
-class LiveRuntimeRequest:
-    command: str
-    company_query: str
-    state_root: Path
-    run_id: str | None = None
-
-
-LiveRuntimeFactory = Callable[[LiveRuntimeRequest], LivePrimaryRuntimeConfig]
-LiveRuntimeRunner = Callable[[LivePrimaryRuntimeConfig], ControlledRunResult]
-
-
-class LiveRuntimeConfigurationError(RuntimeError):
-    pass
-
-
-def _analysis_company(command: str) -> str:
-    text = command.strip()
-    if not text.startswith("분석시작"):
-        raise ValueError("command must start with '분석시작'")
-    company = text.removeprefix("분석시작").strip()
-    if not company:
-        raise ValueError("company is required")
-    return company
-
-
-def load_runtime_factory(spec: str) -> LiveRuntimeFactory:
-    value = spec.strip()
-    if ":" not in value:
-        raise LiveRuntimeConfigurationError(
-            "runtime factory must use 'module:function' syntax"
-        )
-    module_name, attribute = value.rsplit(":", 1)
-    if not module_name or not attribute:
-        raise LiveRuntimeConfigurationError(
-            "runtime factory must use 'module:function' syntax"
-        )
-    try:
-        module = importlib.import_module(module_name)
-    except Exception as exc:
-        raise LiveRuntimeConfigurationError(
-            f"failed to import runtime factory module {module_name!r}: "
-            f"{type(exc).__name__}: {exc}"
-        ) from exc
-    try:
-        factory = getattr(module, attribute)
-    except AttributeError as exc:
-        raise LiveRuntimeConfigurationError(
-            f"runtime factory attribute {attribute!r} is missing from {module_name!r}"
-        ) from exc
-    if not callable(factory):
-        raise LiveRuntimeConfigurationError(
-            f"runtime factory {value!r} is not callable"
-        )
-    return factory
-
-
-def run_live_analysis_command(
-    command: str,
-    *,
-    state_root: str | Path,
-    runtime_factory_spec: str | None,
-    run_id: str | None = None,
-    runner: LiveRuntimeRunner = run_prism,
-) -> ControlledRunResult:
-    factory_spec = (runtime_factory_spec or os.getenv(_RUNTIME_FACTORY_ENV, "")).strip()
-    if not factory_spec:
-        raise LiveRuntimeConfigurationError(
-            "LIVE_PRIMARY is the default for '분석시작', but no production runtime "
-            f"factory is configured. Supply --runtime-factory module:function or "
-            f"set {_RUNTIME_FACTORY_ENV}. Use --mode legacy-regression only for the "
-            "explicit OCI regression workflow."
-        )
-    request = LiveRuntimeRequest(
-        command=command,
-        company_query=_analysis_company(command),
-        state_root=Path(state_root),
-        run_id=run_id,
-    )
-    factory = load_runtime_factory(factory_spec)
-    try:
-        config = factory(request)
-    except Exception as exc:
-        raise LiveRuntimeConfigurationError(
-            "LIVE_PRIMARY runtime factory failed: "
-            f"{type(exc).__name__}: {exc}"
-        ) from exc
-    if not isinstance(config, LivePrimaryRuntimeConfig):
-        raise LiveRuntimeConfigurationError(
-            "runtime factory must return LivePrimaryRuntimeConfig"
-        )
-    if request.run_id is not None and config.run_id != request.run_id:
-        raise LiveRuntimeConfigurationError(
-            "runtime factory returned a run_id different from the explicit CLI --run-id"
-        )
-    if Path(config.state_root) != request.state_root:
-        raise LiveRuntimeConfigurationError(
-            "runtime factory must preserve the CLI state_root"
-        )
-    if config.company_request.query.strip() != request.company_query:
-        raise LiveRuntimeConfigurationError(
-            "runtime factory must preserve the requested company query"
-        )
-    return runner(config)
-
-
-def render_controlled_run(result: ControlledRunResult) -> str:
-    lines = [
-        f"[{trace.status.value}] {trace.stage}: {trace.rationale}"
-        for trace in result.stage_traces
-    ]
-    if result.blocked_reasons:
-        lines.extend(
-            (
-                "",
-                "# VALUATION BLOCKED",
-                *(f"- {reason}" for reason in result.blocked_reasons),
-            )
-        )
-        return "\n".join(lines)
-    report = result.data.get("final_report")
-    if not isinstance(report, str) or not report.strip():
-        raise RuntimeError(
-            "completed LIVE_PRIMARY run is missing final_report"
-        )
-    lines.extend(("", report))
-    return "\n".join(lines)
+_DEFAULT_LEGACY_CONFIG = "examples/oci/company.yaml"
 
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Evidence-first PRISM valuation engine"
+        description="Evidence-first valuation engine"
     )
     parser.add_argument(
         "input",
         help="company YAML config or '분석시작 <회사>'",
     )
     parser.add_argument(
-        "--mode",
-        choices=("live-primary", "legacy-regression"),
-        default="live-primary",
-        help=(
-            "analysis-command execution mode; LIVE_PRIMARY is default and never "
-            "falls back to the OCI regression workflow"
-        ),
-    )
-    parser.add_argument(
-        "--runtime-factory",
-        default=None,
-        help=(
-            "LIVE_PRIMARY provider/config factory in module:function form; may also "
-            f"be supplied through {_RUNTIME_FACTORY_ENV}"
-        ),
-    )
-    parser.add_argument(
-        "--run-id",
-        default=None,
-        help="optional explicit LIVE_PRIMARY run ID",
-    )
-    parser.add_argument(
-        "--config",
-        default="examples/oci/company.yaml",
-        help="OCI fixture config used only by legacy-regression analysis mode",
-    )
-    parser.add_argument(
         "--state-root",
         default=".valuation_state",
         help="private/local state root",
     )
+    parser.add_argument(
+        "--provider-factory",
+        help=(
+            "LIVE_PRIMARY config factory in 'python.module:callable' form; "
+            "alternatively set VALUATION_LIVE_PROVIDER_FACTORY"
+        ),
+    )
+    parser.add_argument(
+        "--run-id",
+        help="optional explicit LIVE_PRIMARY or legacy run ID",
+    )
+    parser.add_argument(
+        "--jurisdiction",
+        help="optional jurisdiction constraint passed to the LIVE provider factory",
+    )
+    parser.add_argument(
+        "--legacy-oci",
+        action="store_true",
+        help="explicitly use the OCI v0.3 regression workflow",
+    )
+    parser.add_argument(
+        "--config",
+        help=(
+            "legacy OCI fixture config; valid only together with --legacy-oci"
+        ),
+    )
     return parser
 
 
-def main() -> None:
-    parser = _build_parser()
-    args = parser.parse_args()
-    if args.input.strip().startswith("분석시작"):
-        if args.mode == "legacy-regression":
-            outcome = run_analysis_command(
-                args.input,
-                config_path=args.config,
-                state_root=args.state_root,
-                run_id=args.run_id,
-            )
-            print("\n".join(outcome.progress))
-            print(outcome.report)
-            return
-        try:
-            result = run_live_analysis_command(
-                args.input,
-                state_root=args.state_root,
-                runtime_factory_spec=args.runtime_factory,
-                run_id=args.run_id,
-            )
-        except LiveRuntimeConfigurationError as exc:
-            parser.exit(2, f"LIVE_PRIMARY CONFIGURATION ERROR: {exc}\n")
-        print(render_controlled_run(result))
-        return
+def _run_legacy_analysis(args: argparse.Namespace) -> int:
+    if args.provider_factory:
+        raise LiveCLIError(
+            "LEGACY_LIVE_OPTION_CONFLICT",
+            "--legacy-oci와 --provider-factory를 함께 사용할 수 없습니다",
+        )
+    if args.jurisdiction:
+        raise LiveCLIError(
+            "LEGACY_LIVE_OPTION_CONFLICT",
+            "--jurisdiction은 LIVE_PRIMARY 전용입니다",
+        )
+    outcome = run_analysis_command(
+        args.input,
+        config_path=args.config or _DEFAULT_LEGACY_CONFIG,
+        state_root=args.state_root,
+        run_id=args.run_id,
+    )
+    print("\n".join(outcome.progress))
+    print(outcome.report)
+    return 2 if outcome.blocked_reasons else 0
 
-    if args.mode == "legacy-regression" or args.runtime_factory or args.run_id:
-        parser.error(
-            "--mode/--runtime-factory/--run-id are analysis-command options; "
-            "direct YAML execution remains the explicit legacy deterministic core"
+
+def _run_live_analysis(
+    args: argparse.Namespace,
+    *,
+    environ: Mapping[str, str],
+) -> int:
+    if args.config:
+        raise LiveCLIError(
+            "LEGACY_CONFIG_REQUIRES_FLAG",
+            "--config는 --legacy-oci와 함께 사용하는 회귀 전용 옵션입니다",
+        )
+    spec = resolve_provider_factory_spec(
+        args.provider_factory,
+        environ=environ,
+    )
+    factory = load_live_runtime_config_factory(spec)
+    result = execute_live_analysis(
+        args.input,
+        state_root=args.state_root,
+        provider_factory=factory,
+        run_id=args.run_id,
+        jurisdiction=args.jurisdiction,
+    )
+    print(render_controlled_run(result), end="")
+    return 2 if result.blocked_reasons else 0
+
+
+def _run_yaml_valuation(args: argparse.Namespace) -> int:
+    incompatible = []
+    if args.legacy_oci:
+        incompatible.append("--legacy-oci")
+    if args.provider_factory:
+        incompatible.append("--provider-factory")
+    if args.run_id:
+        incompatible.append("--run-id")
+    if args.jurisdiction:
+        incompatible.append("--jurisdiction")
+    if args.config:
+        incompatible.append("--config")
+    if incompatible:
+        raise LiveCLIError(
+            "YAML_MODE_OPTION_CONFLICT",
+            "YAML valuation mode에서 사용할 수 없는 옵션: "
+            + ", ".join(incompatible),
         )
 
     config = Path(args.input)
@@ -239,12 +147,12 @@ def main() -> None:
                 indent=2,
             )
         )
-        return
+        return 2
     market = load_market_comparison(config)
     market_price = float(market["price"])
     market_gap = compare_to_market(result, market_price)
     payload = {
-        "scenarios": [v.__dict__ for v in result.scenarios],
+        "scenarios": [value.__dict__ for value in result.scenarios],
         "expected_equity_trn": result.expected_equity_trn,
         "expected_value_per_share": result.expected_value_per_share,
         "market_price": market_price,
@@ -252,7 +160,26 @@ def main() -> None:
         "audit": audit,
     }
     print(json.dumps(payload, ensure_ascii=False, indent=2))
+    return 0
+
+
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    environ: Mapping[str, str] | None = None,
+) -> int:
+    args = _build_parser().parse_args(argv)
+    environment = os.environ if environ is None else environ
+    try:
+        if args.input.strip().startswith("분석시작"):
+            if args.legacy_oci:
+                return _run_legacy_analysis(args)
+            return _run_live_analysis(args, environ=environment)
+        return _run_yaml_valuation(args)
+    except LiveCLIError as exc:
+        print(f"ERROR [{exc.code}] {exc}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

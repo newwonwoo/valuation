@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 dependencies = ["PyYAML>=6.0"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "setuptools>=70"]
 
 [project.scripts]
 valuation-engine = "valuation_engine.cli:main"
@@ -20,10 +20,7 @@ packages = ["valuation_engine", "valuation_engine._registry_data"]
 package-dir = {valuation_engine = "src/valuation_engine", "valuation_engine._registry_data" = "config"}
 
 [tool.setuptools.package-data]
-"valuation_engine._registry_data" = [
-  "archetype_module_registry.yaml",
-  "valuation_method_capability_registry.yaml",
-]
+"valuation_engine._registry_data" = ["*.yaml"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

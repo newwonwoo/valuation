@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from importlib import resources
 from pathlib import Path
 from typing import Any
 
 import yaml
 from yaml.resolver import BaseResolver
+
+from .runtime_resources import runtime_registry_path
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -17,7 +18,6 @@ _DEFAULT_METHOD_CAPABILITY_PATH = (
 _DEFAULT_ARCHETYPE_REGISTRY_PATH = (
     _REPO_ROOT / "config" / "archetype_module_registry.yaml"
 )
-_REGISTRY_RESOURCE_PACKAGE = "valuation_engine._registry_data"
 
 
 class _UniqueKeyLoader(yaml.SafeLoader):
@@ -60,15 +60,14 @@ def _load_yaml_unique(path: Any) -> dict[str, Any]:
     return value
 
 
-def _default_registry_source(filename: str) -> Any:
-    repository_path = _REPO_ROOT / "config" / filename
-    if repository_path.is_file():
-        return repository_path
-    return resources.files(_REGISTRY_RESOURCE_PACKAGE).joinpath(filename)
+def _default_registry_source(filename: str) -> Path:
+    return runtime_registry_path(filename)
 
 
 def _default_repository_root() -> Path | None:
     required = (
+        _REPO_ROOT / "pyproject.toml",
+        _REPO_ROOT / "src" / "valuation_engine" / "method_capabilities.py",
         _DEFAULT_METHOD_CAPABILITY_PATH,
         _DEFAULT_ARCHETYPE_REGISTRY_PATH,
     )
