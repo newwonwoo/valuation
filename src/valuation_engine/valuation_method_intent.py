@@ -15,6 +15,7 @@ from .valuation_plan_compiler import (
     SegmentMethodChoice,
     ValuationPlanStatus,
     valuation_capability_registry_hash,
+    valuation_method_choices_hash,
     valuation_module_plan_hash,
 )
 
@@ -265,13 +266,17 @@ def valuation_method_intent_adapter(
                 common_outputs,
                 blocking=True,
             )
+        planned_choices = intent.method_choices()
         return StageExecutionResult(
             StageStatus.PASS,
             "economic valuation-method intent resolved before Beta/WACC; "
             "exact evaluator construction remains downstream",
             {
                 **common_outputs,
-                "planned_method_choices": intent.method_choices(),
+                "planned_method_choices": planned_choices,
+                "valuation_method_choices_hash": (
+                    valuation_method_choices_hash(planned_choices)
+                ),
                 "warranted_per_segments": intent.warranted_per_segments,
                 "risk_chain_requires_beta": intent.requires_beta,
                 "risk_chain_requires_wacc": intent.requires_wacc,

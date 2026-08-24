@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Mapping
+from typing import Callable, Mapping
 
 from .audit_adapter import generic_audit_adapter
 from .control_plane import ExecutionMode, StageStatus
@@ -17,6 +17,7 @@ from .llm_adapters import (
     researcher_a_adapter,
 )
 from .llm_staff import BridgeAnalyst, IntelligenceOfficer, RedTeamOfficer
+from .method_capabilities import load_method_capability_registry
 from .module_plan_adapter import module_requirement_plan_adapter
 from .orchestrator import (
     ControlledRunResult,
@@ -45,6 +46,13 @@ from .shadow_adapters import (
 from .state_learning_adapter import load_research_learning_adapter
 from .valuation_adapter import deterministic_valuation_adapter
 from .valuation_execution import CompanyValuationPlan, EvaluatorRegistry
+from .valuation_method_intent import valuation_method_intent_adapter
+from .valuation_plan_compiler import (
+    CompanyValuationPlanInputs,
+    SegmentMethodChoice,
+    SegmentValueBinding,
+    compile_company_valuation_plan,
+)
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -79,6 +87,7 @@ class PrimaryShadowRuntimeConfig:
     stage_registry_path: str | Path = _REPO_ROOT / "config" / "control_plane_stage_registry.yaml"
     archetype_registry_path: str | Path = _REPO_ROOT / "config" / "archetype_module_registry.yaml"
     control_requirements_path: str | Path = _REPO_ROOT / "config" / "archetype_control_requirements.yaml"
+    method_capability_registry_path: str | Path = _REPO_ROOT / "config" / "valuation_method_capability_registry.yaml"
     stage_overrides: Mapping[str, StageAdapter] = field(default_factory=dict)
 
     def validate(self) -> None:
@@ -100,6 +109,13 @@ class PrimaryShadowRuntimeConfig:
             profile.validate()
         self.scenario_binding_spec.validate()
         self.valuation_plan.validate()
+        capability_registry = load_method_capability_registry(
+            self.method_capability_registry_path
+        )
+        capability_registry.validate(
+            archetype_registry_path=self.archetype_registry_path,
+            repo_root=_REPO_ROOT,
+        )
         if not all(isinstance(item, str) and item for item in self.optional_research_units):
             raise ValueError("optional_research_units must contain non-empty strings")
         if not all(isinstance(key, str) and isinstance(value, bool) for key, value in self.research_trigger_state.items()):
@@ -261,25 +277,129 @@ def _research_loop_adapter() -> StageAdapter:
     )
 
 
-def _method_stage_adapter(
+MethodStageApplicability = Callable[
+    [OrchestratorContext, tuple[SegmentMethodChoice, ...]],
+    bool,
+]
+
+
+def _intent_method_stage_adapter(
     *,
     stage_name: str,
-    selected_methods: tuple[str, ...],
-    applicable: bool,
+    applicability: MethodStageApplicability,
     not_applicable_reason: str,
 ) -> StageAdapter:
-    if not applicable:
-        return _static_adapter(
-            StageStatus.SKIPPED_NOT_APPLICABLE,
-            not_applicable_reason,
-            {f"{stage_name.lower()}_state": "NOT_APPLICABLE"},
+    def run(context: OrchestratorContext) -> StageExecutionResult:
+        choices = context.data.get("planned_method_choices")
+        if not isinstance(choices, tuple) or not all(
+            isinstance(item, SegmentMethodChoice) for item in choices
+        ):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                f"{stage_name} requires resolved pre-risk method intent",
+                blocking=True,
+            )
+        try:
+            applicable = applicability(context, choices)
+        except (KeyError, TypeError, ValueError) as exc:
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                f"{stage_name} method-intent applicability failed: {exc}",
+                blocking=True,
+            )
+        if not isinstance(applicable, bool):
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                f"{stage_name} applicability must be boolean",
+                blocking=True,
+            )
+        if not applicable:
+            return StageExecutionResult(
+                StageStatus.SKIPPED_NOT_APPLICABLE,
+                not_applicable_reason,
+                {f"{stage_name.lower()}_state": "NOT_APPLICABLE"},
+            )
+        selected_methods = tuple(
+            f"{item.archetype}/{item.method}"
+            + (f"/{item.version}" if item.version is not None else "")
+            for item in choices
         )
-    return _static_adapter(
-        StageStatus.NOT_IMPLEMENTED,
-        f"{stage_name} is required by selected methods but no runtime adapter was supplied: "
-        + ", ".join(selected_methods),
-        {f"{stage_name.lower()}_state": "NOT_IMPLEMENTED"},
-        blocking=True,
+        return StageExecutionResult(
+            StageStatus.NOT_IMPLEMENTED,
+            f"{stage_name} is required by resolved method intent but no "
+            "runtime adapter was supplied: " + ", ".join(selected_methods),
+            {f"{stage_name.lower()}_state": "NOT_IMPLEMENTED"},
+            blocking=True,
+        )
+
+    return run
+
+
+def _intent_bool(
+    context: OrchestratorContext,
+    key: str,
+) -> bool:
+    value = context.data[key]
+    if not isinstance(value, bool):
+        raise TypeError(f"{key} must be boolean")
+    return value
+
+
+def _warranted_per_applicable(
+    context: OrchestratorContext,
+    _: tuple[SegmentMethodChoice, ...],
+) -> bool:
+    segments = context.data["warranted_per_segments"]
+    if not isinstance(segments, tuple) or not all(
+        isinstance(item, str) and item for item in segments
+    ):
+        raise TypeError("warranted_per_segments must be a string tuple")
+    return bool(segments)
+
+
+def _dcf_per_consistency_applicable(
+    context: OrchestratorContext,
+    choices: tuple[SegmentMethodChoice, ...],
+) -> bool:
+    return _warranted_per_applicable(context, choices) and any(
+        token in choice.method
+        for choice in choices
+        for token in _DCF_LIKE_TOKENS
+    )
+
+
+def _configured_method_choices(
+    plan: CompanyValuationPlan,
+) -> tuple[SegmentMethodChoice, ...]:
+    return tuple(
+        SegmentMethodChoice(
+            segment_id=item.segment_id,
+            archetype=item.model_key.archetype,
+            method=item.model_key.method,
+            version=item.model_key.version,
+        )
+        for item in plan.segments
+    )
+
+
+def _valuation_plan_inputs(
+    plan: CompanyValuationPlan,
+) -> CompanyValuationPlanInputs:
+    return CompanyValuationPlanInputs(
+        reporting_unit=plan.reporting_unit,
+        diluted_shares_key=plan.diluted_shares_key,
+        segment_bindings=tuple(
+            SegmentValueBinding(
+                segment_id=item.segment_id,
+                asset_id=item.asset_id,
+                ownership_key=item.ownership_key,
+                ev_to_equity_adjustment_key=(
+                    item.ev_to_equity_adjustment_key
+                ),
+            )
+            for item in plan.segments
+        ),
+        parent_adjustments=plan.parent_adjustments,
     )
 
 
@@ -339,10 +459,22 @@ def _probability_distribution_adapter() -> StageAdapter:
 
 def build_primary_shadow_adapters(config: PrimaryShadowRuntimeConfig) -> dict[str, StageAdapter]:
     config.validate()
-    selected = tuple(config.selected_methods)
-    uses_dcf_like = any(token in method for method in selected for token in _DCF_LIKE_TOKENS)
-    uses_warranted_per = any("warranted_per" in method for method in selected)
+    capability_registry = load_method_capability_registry(
+        config.method_capability_registry_path
+    )
+    configured_choices = _configured_method_choices(config.valuation_plan)
+    plan_inputs = _valuation_plan_inputs(config.valuation_plan)
     learning_store = ResearchLearningStore(config.state_root)
+
+    def valuation_plan_loader(context, evaluator_registry):
+        return compile_company_valuation_plan(
+            context.data["module_requirement_plan"],
+            context.data["bound_scenario_set"],
+            evaluator_registry=evaluator_registry,
+            capability_registry=capability_registry,
+            inputs=plan_inputs,
+            method_choices=context.data["planned_method_choices"],
+        )
 
     adapters: dict[str, StageAdapter] = {
         "COMPANY_RESOLUTION": company_resolution_adapter(company=config.company, ticker=config.ticker),
@@ -371,32 +503,38 @@ def build_primary_shadow_adapters(config: PrimaryShadowRuntimeConfig) -> dict[st
         "RESEARCH_LOOP": _research_loop_adapter(),
         "EVIDENCE_TO_ASSUMPTION_BRIDGE": evidence_to_assumption_bridge_adapter(analyst=config.bridge_analyst),
         "SCENARIO_BUILD": scenario_build_adapter(),
-        "HIERARCHICAL_BETA_ESTIMATION": _method_stage_adapter(
+        "VALUATION_METHOD_INTENT": valuation_method_intent_adapter(
+            capability_registry=capability_registry,
+            method_choices=configured_choices,
+        ),
+        "HIERARCHICAL_BETA_ESTIMATION": _intent_method_stage_adapter(
             stage_name="HIERARCHICAL_BETA_ESTIMATION",
-            selected_methods=selected,
-            applicable=uses_dcf_like or uses_warranted_per,
+            applicability=lambda context, choices: _intent_bool(
+                context,
+                "risk_chain_requires_beta",
+            ),
             not_applicable_reason="selected exact normalized-multiple evaluator does not consume Beta",
         ),
-        "WACC_VALIDATION": _method_stage_adapter(
+        "WACC_VALIDATION": _intent_method_stage_adapter(
             stage_name="WACC_VALIDATION",
-            selected_methods=selected,
-            applicable=uses_dcf_like,
+            applicability=lambda context, choices: _intent_bool(
+                context,
+                "risk_chain_requires_wacc",
+            ),
             not_applicable_reason="selected exact normalized-multiple evaluator does not consume WACC",
         ),
         "DETERMINISTIC_VALUATION": deterministic_valuation_adapter(
             registry=config.evaluator_registry,
-            plan=config.valuation_plan,
+            plan_loader=valuation_plan_loader,
         ),
-        "HIERARCHICAL_WARRANTED_PER": _method_stage_adapter(
+        "HIERARCHICAL_WARRANTED_PER": _intent_method_stage_adapter(
             stage_name="HIERARCHICAL_WARRANTED_PER",
-            selected_methods=selected,
-            applicable=uses_warranted_per,
+            applicability=_warranted_per_applicable,
             not_applicable_reason="Warranted PER is not one of the selected valuation methods",
         ),
-        "DCF_PER_ASSUMPTION_CONSISTENCY_GATE": _method_stage_adapter(
+        "DCF_PER_ASSUMPTION_CONSISTENCY_GATE": _intent_method_stage_adapter(
             stage_name="DCF_PER_ASSUMPTION_CONSISTENCY_GATE",
-            selected_methods=selected,
-            applicable=uses_dcf_like and uses_warranted_per,
+            applicability=_dcf_per_consistency_applicable,
             not_applicable_reason="both DCF-like and Warranted PER outputs are not present in this run",
         ),
         "CROSS_METHOD_DOUBLE_COUNT_AUDIT": _cross_method_double_count_adapter(),

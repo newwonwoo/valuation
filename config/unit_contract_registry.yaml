@@ -83,14 +83,14 @@ units:
   - unit_id: MODULE_REQUIREMENT_PLAN
     unit_type: controller
     implementation_status: implemented
-    stages: [MODULE_REQUIREMENT_PLAN]
+    stages: [MODULE_REQUIREMENT_PLAN, VALUATION_METHOD_INTENT]
     purpose: Convert Industry DNA into mandatory evidence, KPIs, scanners, risk checks, methods, and kill conditions.
     inputs: [segment_routes, economic_archetypes, metric_standards, archetype_module_registry]
     outputs: [required_evidence, required_kpis, mandatory_scanners, permitted_methods, kill_conditions, forbidden_methods]
     consumers: [PRIMARY_EVIDENCE_COLLECTION, ROCKET_INSIGHT_SCAN, UPSTREAM_FUNDING_SCAN, ASSUMPTION_COMPILER, AUDIT_GATE]
     effect_types: [evidence_effect, routing_effect, method_effect, guardrail_effect]
     final_outputs: [research_scope, doctrine_coverage]
-    canonical_refs: [src/valuation_engine/module_plan.py, src/valuation_engine/shadow_adapters.py, config/archetype_module_registry.yaml, config/archetype_control_requirements.yaml, docs/INDUSTRY_DNA_ROUTER_V1.md]
+    canonical_refs: [src/valuation_engine/module_plan.py, src/valuation_engine/valuation_method_intent.py, src/valuation_engine/shadow_adapters.py, config/archetype_module_registry.yaml, config/archetype_control_requirements.yaml, docs/INDUSTRY_DNA_ROUTER_V1.md]
     forbidden_effects: [direct_assumption_value]
 
   - unit_id: KNOWLEDGE_PLACEMENT_GATE

@@ -302,10 +302,27 @@ def test_full_canonical_primary_shadow_sequence_reaches_final_report_and_persist
     assert result.blocked_reasons == ()
     assert result.completed
     assert result.freeze_token is not None
-    assert len(result.stage_traces) == 32
+    assert len(result.stage_traces) == 33
     assert result.stage_traces[0].stage == "COMPANY_RESOLUTION"
     assert result.stage_traces[-1].stage == "FINAL_REPORT"
     assert all(trace.status not in {StageStatus.NOT_IMPLEMENTED, StageStatus.BLOCKED, StageStatus.RECOVERY_REQUIRED} for trace in result.stage_traces)
+
+    intent_trace = next(
+        trace
+        for trace in result.stage_traces
+        if trace.stage == "VALUATION_METHOD_INTENT"
+    )
+    assert intent_trace.status is StageStatus.PASS
+    assert result.data["planned_method_choices"][0].method == (
+        "normalized_multiple"
+    )
+    compilation = result.data["valuation_plan_compilation"]
+    assert compilation.method_choices_hash == result.data[
+        "valuation_method_choices_hash"
+    ]
+    assert compilation.evaluator_registry_hash == result.data[
+        "valuation_plan_evaluator_registry_hash"
+    ]
 
     valuation = result.data["generic_valuation_result"]
     assert valuation.expected_value_per_share is None

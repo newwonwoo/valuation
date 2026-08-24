@@ -56,6 +56,9 @@ stages:
   SCENARIO_BUILD:
     status: RUNTIME_READY
     reason: deterministic Assumption Compiler and Scenario Binding are implemented; LIVE_PRIMARY calibrated probability weights additionally require a matching hash-bound CalibrationCertificate.
+  VALUATION_METHOD_INTENT:
+    status: RUNTIME_READY
+    reason: exact Industry-DNA method intent resolves and hashes segment method/version choices before Beta/WACC, and stage 19 verifies the same module, capability, evaluator and method-choice contracts.
   HIERARCHICAL_BETA_ESTIMATION:
     status: PARTIAL_LIVE
     reason: typed L1→L4 peer-universe loader, Evidence-backed Economic-Twin selection, normalized return-convention validation and target relevering are implemented; universal live peer/return providers remain caller- and jurisdiction-specific.

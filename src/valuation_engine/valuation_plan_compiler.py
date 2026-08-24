@@ -99,6 +99,44 @@ def valuation_capability_registry_hash(
     )
 
 
+def valuation_evaluator_registry_hash(
+    registry: EvaluatorRegistry,
+) -> str:
+    """Hash exact evaluator keys and declared assumption-input contracts."""
+    if not isinstance(registry, EvaluatorRegistry):
+        raise TypeError(
+            "valuation evaluator identity requires EvaluatorRegistry"
+        )
+    rows: list[dict[str, object]] = []
+    for key in registry.keys():
+        evaluator = registry.get(key)
+        required = tuple(evaluator.required_assumption_keys)
+        if not required or not all(
+            isinstance(item, str) and item for item in required
+        ):
+            raise ValueError(
+                f"evaluator {key!r} has an invalid required-assumption contract"
+            )
+        if len(required) != len(set(required)):
+            raise ValueError(
+                f"evaluator {key!r} declares duplicate required assumptions"
+            )
+        rows.append(
+            {
+                "archetype": key.archetype,
+                "method": key.method,
+                "version": key.version,
+                "required_assumption_keys": required,
+            }
+        )
+    return _stable_contract_hash(
+        {
+            "contract": "valuation_evaluator_registry/v1",
+            "evaluators": rows,
+        }
+    )
+
+
 @dataclass(frozen=True)
 class SegmentValueBinding:
     segment_id: str
@@ -189,6 +227,35 @@ class SegmentMethodChoice:
             raise ValueError("segment method choice version cannot be blank")
 
 
+def valuation_method_choices_hash(
+    choices: tuple[SegmentMethodChoice, ...],
+) -> str:
+    """Hash the exact pre-risk segment method/version decisions."""
+    if not isinstance(choices, tuple) or not all(
+        isinstance(item, SegmentMethodChoice) for item in choices
+    ):
+        raise TypeError(
+            "valuation method-choice identity requires a SegmentMethodChoice tuple"
+        )
+    for item in choices:
+        item.validate()
+    segment_ids = tuple(item.segment_id for item in choices)
+    if len(segment_ids) != len(set(segment_ids)):
+        raise ValueError("valuation method choices contain duplicate segments")
+    return _stable_contract_hash(
+        {
+            "contract": "valuation_method_choices/v1",
+            "choices": [
+                asdict(item)
+                for item in sorted(
+                    choices,
+                    key=lambda item: item.segment_id,
+                )
+            ],
+        }
+    )
+
+
 @dataclass(frozen=True)
 class SegmentMethodCandidate:
     archetype: str
@@ -231,6 +298,8 @@ class ValuationPlanCompilation:
     scenario_set_hash: str
     module_plan_hash: str
     capability_registry_hash: str
+    evaluator_registry_hash: str
+    method_choices_hash: str
     segment_resolutions: tuple[SegmentPlanResolution, ...]
     warranted_per_segments: tuple[str, ...]
     aggregator_bindings: tuple[str, ...]
@@ -257,11 +326,13 @@ def compile_company_valuation_plan(
         )
     module_hash = valuation_module_plan_hash(module_plan)
     capability_hash = valuation_capability_registry_hash(capability_registry)
+    evaluator_hash = valuation_evaluator_registry_hash(evaluator_registry)
     expected_segment_ids = tuple(
         item.segment_id for item in module_plan.segments
     )
     inputs.validate(expected_segment_ids=expected_segment_ids)
     choices = _validate_choices(method_choices, expected_segment_ids)
+    method_choice_hash = valuation_method_choices_hash(method_choices)
 
     warranted_per_segments: list[str] = []
     aggregator_bindings: list[str] = []
@@ -377,6 +448,8 @@ def compile_company_valuation_plan(
         scenario_set_hash=scenario_set.scenario_set_hash,
         module_plan_hash=module_hash,
         capability_registry_hash=capability_hash,
+        evaluator_registry_hash=evaluator_hash,
+        method_choices_hash=method_choice_hash,
         segment_resolutions=tuple(resolutions),
         warranted_per_segments=tuple(dict.fromkeys(warranted_per_segments)),
         aggregator_bindings=tuple(dict.fromkeys(aggregator_bindings)),

@@ -27,6 +27,7 @@ from valuation_engine.valuation_plan_compiler import (
     ValuationPlanStatus,
     compile_company_valuation_plan,
     valuation_capability_registry_hash,
+    valuation_method_choices_hash,
     valuation_module_plan_hash,
 )
 
@@ -162,6 +163,7 @@ def dynamic_context(
     module: ModuleRequirementPlan,
     scenarios: BoundScenarioSet,
     capability_registry,
+    method_choices: tuple[SegmentMethodChoice, ...] = (),
 ) -> OrchestratorContext:
     return OrchestratorContext(
         "RUN",
@@ -172,6 +174,10 @@ def dynamic_context(
             "valuation_module_plan_hash": valuation_module_plan_hash(module),
             "valuation_capability_registry_hash": (
                 valuation_capability_registry_hash(capability_registry)
+            ),
+            "planned_method_choices": method_choices,
+            "valuation_method_choices_hash": (
+                valuation_method_choices_hash(method_choices)
             ),
         },
     )
@@ -408,6 +414,7 @@ def test_deterministic_stage_reuses_matching_pre_risk_warranted_per_scope():
     module = plan_for(segment(("capacity_manufacturing",), ("driver_dcf", "warranted_per")))
     scenarios = scenario_set(*common_assumptions())
     registry = dcf_registry("capacity_manufacturing", "driver_dcf")
+    capability_registry = load_default_method_capability_registry()
 
     adapter = deterministic_valuation_adapter(
         registry=registry,
@@ -415,19 +422,14 @@ def test_deterministic_stage_reuses_matching_pre_risk_warranted_per_scope():
             module,
             context.data["bound_scenario_set"],
             evaluator_registry=effective_registry,
-            capability_registry=load_default_method_capability_registry(),
+            capability_registry=capability_registry,
             inputs=inputs(),
         ),
     )
+    context = dynamic_context(module, scenarios, capability_registry)
+    context.data["warranted_per_segments"] = ("core",)
     result = adapter(
-        OrchestratorContext(
-            "RUN",
-            ExecutionMode.LIVE_PRIMARY,
-            {
-                "bound_scenario_set": scenarios,
-                "warranted_per_segments": ("core",),
-            },
-        )
+        context
     )
 
     assert result.status is StageStatus.PASS
@@ -439,6 +441,7 @@ def test_deterministic_stage_blocks_pre_risk_warranted_per_scope_mismatch():
     module = plan_for(segment(("capacity_manufacturing",), ("driver_dcf", "warranted_per")))
     scenarios = scenario_set(*common_assumptions())
     registry = dcf_registry("capacity_manufacturing", "driver_dcf")
+    capability_registry = load_default_method_capability_registry()
 
     adapter = deterministic_valuation_adapter(
         registry=registry,
@@ -446,19 +449,14 @@ def test_deterministic_stage_blocks_pre_risk_warranted_per_scope_mismatch():
             module,
             context.data["bound_scenario_set"],
             evaluator_registry=effective_registry,
-            capability_registry=load_default_method_capability_registry(),
+            capability_registry=capability_registry,
             inputs=inputs(),
         ),
     )
+    context = dynamic_context(module, scenarios, capability_registry)
+    context.data["warranted_per_segments"] = ()
     result = adapter(
-        OrchestratorContext(
-            "RUN",
-            ExecutionMode.LIVE_PRIMARY,
-            {
-                "bound_scenario_set": scenarios,
-                "warranted_per_segments": (),
-            },
-        )
+        context
     )
 
     assert result.status is StageStatus.BLOCKED

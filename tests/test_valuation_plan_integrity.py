@@ -37,6 +37,7 @@ from valuation_engine.valuation_plan_compiler import (
     ValuationPlanStatus,
     compile_company_valuation_plan,
     valuation_capability_registry_hash,
+    valuation_method_choices_hash,
     valuation_module_plan_hash,
 )
 
@@ -228,6 +229,8 @@ def dynamic_context(
     *,
     intent_module_hash: str | None = None,
     capability_hash: str | None = None,
+    method_choices: tuple[SegmentMethodChoice, ...] = (),
+    method_choices_hash: str | None = None,
 ) -> OrchestratorContext:
     return OrchestratorContext(
         "RUN",
@@ -241,6 +244,11 @@ def dynamic_context(
             "valuation_capability_registry_hash": (
                 capability_hash
                 or valuation_capability_registry_hash(capability_registry)
+            ),
+            "planned_method_choices": method_choices,
+            "valuation_method_choices_hash": (
+                method_choices_hash
+                or valuation_method_choices_hash(method_choices)
             ),
         },
     )
@@ -569,6 +577,108 @@ def test_loaded_compilation_must_match_current_capability_registry_hash():
     assert result.status is StageStatus.BLOCKED
     assert result.blocking
     assert "capability-registry hash" in result.rationale
+
+
+def test_loaded_compilation_must_match_pre_risk_method_choice_identity():
+    module = module_plan(
+        segment(
+            "core",
+            ("capacity_manufacturing",),
+            ("driver_dcf",),
+        )
+    )
+    registry = EvaluatorRegistry()
+    registry.register(dcf_evaluator(version="v1", forecast_years=1))
+    registry.register(dcf_evaluator(version="v2", forecast_years=1))
+    capability_registry = load_default_method_capability_registry()
+    current_scenarios = scenarios(*dcf_assumptions())
+    compiled_choices = (
+        SegmentMethodChoice(
+            "core",
+            "capacity_manufacturing",
+            "driver_dcf",
+            "v1",
+        ),
+    )
+    current_choices = (
+        SegmentMethodChoice(
+            "core",
+            "capacity_manufacturing",
+            "driver_dcf",
+            "v2",
+        ),
+    )
+    cached = compile_company_valuation_plan(
+        module,
+        current_scenarios,
+        evaluator_registry=registry,
+        capability_registry=capability_registry,
+        inputs=dcf_inputs(),
+        method_choices=compiled_choices,
+    )
+    adapter = deterministic_valuation_adapter(
+        plan_loader=lambda context, effective_registry: cached,
+        registry=registry,
+    )
+
+    result = adapter(
+        dynamic_context(
+            module,
+            current_scenarios,
+            capability_registry,
+            method_choices=current_choices,
+        )
+    )
+
+    assert result.status is StageStatus.BLOCKED
+    assert result.blocking
+    assert "method-choice hash" in result.rationale
+
+
+def test_loaded_compilation_must_match_current_evaluator_registry_contract():
+    module = module_plan(
+        segment(
+            "core",
+            ("capacity_manufacturing",),
+            ("driver_dcf",),
+        )
+    )
+    cached_registry = EvaluatorRegistry()
+    cached_registry.register(
+        dcf_evaluator(version="v1", forecast_years=1)
+    )
+    current_registry = EvaluatorRegistry()
+    current_registry.register(
+        dcf_evaluator(version="v1", forecast_years=1)
+    )
+    current_registry.register(
+        dcf_evaluator(version="v2", forecast_years=1)
+    )
+    capability_registry = load_default_method_capability_registry()
+    current_scenarios = scenarios(*dcf_assumptions())
+    cached = compile_company_valuation_plan(
+        module,
+        current_scenarios,
+        evaluator_registry=cached_registry,
+        capability_registry=capability_registry,
+        inputs=dcf_inputs(),
+    )
+    adapter = deterministic_valuation_adapter(
+        plan_loader=lambda context, effective_registry: cached,
+        registry=current_registry,
+    )
+
+    result = adapter(
+        dynamic_context(
+            module,
+            current_scenarios,
+            capability_registry,
+        )
+    )
+
+    assert result.status is StageStatus.BLOCKED
+    assert result.blocking
+    assert "evaluator-registry hash" in result.rationale
 
 
 def test_execution_rejects_distinct_adjustment_keys_with_same_economic_path():
