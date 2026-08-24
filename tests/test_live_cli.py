@@ -1,3 +1,4 @@
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -16,7 +17,10 @@ from valuation_engine.cli_runtime import (
 )
 from valuation_engine.collection_plan import CollectorCapability
 from valuation_engine.control_plane import ExecutionMode, StageStatus
-from valuation_engine.live_primary_adapters import CompanyResolutionRequest
+from valuation_engine.live_primary_adapters import (
+    CompanyResolutionRequest,
+    ResolvedCompanyIdentity,
+)
 from valuation_engine.live_runtime import (
     LiveCollectorProvider,
     LivePrimaryProviders,
@@ -87,6 +91,7 @@ def _blocked_result(
     run_id: str,
     *,
     data=None,
+    rationale: str = "provider missing",
 ) -> ControlledRunResult:
     return ControlledRunResult(
         run_id=run_id,
@@ -95,12 +100,12 @@ def _blocked_result(
             StageTrace(
                 "WACC_VALIDATION",
                 StageStatus.NOT_IMPLEMENTED,
-                "provider missing",
+                rationale,
                 True,
             ),
         ),
         data={} if data is None else data,
-        blocked_reasons=("WACC_VALIDATION: provider missing",),
+        blocked_reasons=(f"WACC_VALIDATION: {rationale}",),
         freeze_token=None,
     )
 
@@ -135,6 +140,41 @@ def test_provider_factory_loader_uses_module_colon_callable(tmp_path, monkeypatc
         load_live_runtime_config_factory("fixture_provider:__name__")
 
 
+def test_provider_import_failure_is_classified_without_secret_text(
+    tmp_path,
+    monkeypatch,
+):
+    module = tmp_path / "broken_provider.py"
+    module.write_text(
+        "raise RuntimeError('https://source.invalid?api_key=TOP-SECRET')\n",
+        encoding="utf-8",
+    )
+    monkeypatch.syspath_prepend(str(tmp_path))
+    with pytest.raises(LiveCLIError) as caught:
+        load_live_runtime_config_factory("broken_provider:build")
+    assert caught.value.code == "PROVIDER_FACTORY_LOAD_FAILED"
+    assert "RuntimeError" in str(caught.value)
+    assert "TOP-SECRET" not in str(caught.value)
+
+
+def test_factory_failure_is_classified_without_secret_text(tmp_path):
+    request = LiveAnalysisRequest(
+        command="분석시작 Target",
+        company_query="Target",
+        state_root=tmp_path,
+        run_id="RUN-SECRET",
+    )
+
+    def broken_factory(_):
+        raise RuntimeError("Authorization: Bearer TOP-SECRET")
+
+    with pytest.raises(LiveCLIError) as caught:
+        build_live_runtime_config(request, broken_factory)
+    assert caught.value.code == "PROVIDER_FACTORY_FAILED"
+    assert "RuntimeError" in str(caught.value)
+    assert "TOP-SECRET" not in str(caught.value)
+
+
 def test_factory_cannot_change_run_identity_or_state_root(tmp_path):
     request = LiveAnalysisRequest(
         command="분석시작 Target",
@@ -147,18 +187,15 @@ def test_factory_cannot_change_run_identity_or_state_root(tmp_path):
     assert valid.run_id == "RUN-1"
 
     def wrong_run_id(current):
-        config = _minimal_config(current)
-        return LivePrimaryRuntimeConfig(
-            **{**config.__dict__, "run_id": "OTHER"}
-        )
+        return replace(_minimal_config(current), run_id="OTHER")
 
     with pytest.raises(LiveCLIError, match="run_id"):
         build_live_runtime_config(request, wrong_run_id)
 
     def wrong_state_root(current):
-        config = _minimal_config(current)
-        return LivePrimaryRuntimeConfig(
-            **{**config.__dict__, "state_root": tmp_path / "other"}
+        return replace(
+            _minimal_config(current),
+            state_root=tmp_path / "other",
         )
 
     with pytest.raises(LiveCLIError, match="state_root"):
@@ -175,19 +212,51 @@ def test_factory_jurisdiction_alias_is_normalized(tmp_path):
     )
 
     def alias_factory(current):
-        config = _minimal_config(current)
-        return LivePrimaryRuntimeConfig(
-            **{
-                **config.__dict__,
-                "company_request": CompanyResolutionRequest(
-                    current.company_query,
-                    "KOR",
-                ),
-            }
+        return replace(
+            _minimal_config(current),
+            company_request=CompanyResolutionRequest(
+                current.company_query,
+                "KOR",
+            ),
         )
 
     config = build_live_runtime_config(request, alias_factory)
     assert config.company_request.jurisdiction == "KOR"
+
+
+def test_resolved_identity_must_match_locked_jurisdiction(tmp_path):
+    request = LiveAnalysisRequest(
+        command="분석시작 Target",
+        company_query="Target",
+        state_root=tmp_path / "state",
+        run_id="RUN-JURISDICTION",
+        jurisdiction="KR",
+    )
+
+    def factory(current):
+        config = _minimal_config(current)
+
+        def wrong_resolver(_):
+            return ResolvedCompanyIdentity(
+                target_id="US:TEST:1",
+                legal_name="Wrong Jurisdiction Co",
+                ticker="WRONG",
+                jurisdiction="US",
+                external_ids=(("cik", "1"),),
+                source_refs=("fixture://wrong-jurisdiction",),
+            )
+
+        return replace(
+            config,
+            providers=replace(
+                config.providers,
+                company_resolver=wrong_resolver,
+            ),
+        )
+
+    config = build_live_runtime_config(request, factory)
+    with pytest.raises(ValueError, match="locked request"):
+        config.providers.company_resolver(config.company_request)
 
 
 def test_execute_live_analysis_requires_live_mode_and_matching_result_id(tmp_path):
@@ -234,6 +303,23 @@ def test_execute_live_analysis_requires_live_mode_and_matching_result_id(tmp_pat
             run_id="RUN-3",
             runner=wrong_run_id,
         )
+
+
+def test_execute_failure_redacts_provider_exception_text(tmp_path):
+    def runner(_):
+        raise RuntimeError("https://source.invalid?token=TOP-SECRET")
+
+    with pytest.raises(LiveCLIError) as caught:
+        execute_live_analysis(
+            "분석시작 Target",
+            state_root=tmp_path,
+            provider_factory=_minimal_config,
+            run_id="RUN-EXECUTION-SECRET",
+            runner=runner,
+        )
+    assert caught.value.code == "LIVE_PRIMARY_EXECUTION_FAILED"
+    assert "RuntimeError" in str(caught.value)
+    assert "TOP-SECRET" not in str(caught.value)
 
 
 def test_execute_rejects_nonblocked_result_without_stage_trace(tmp_path):
@@ -285,18 +371,23 @@ def test_execute_accepts_clean_blocked_result(tmp_path):
     assert result.blocked_reasons
 
 
-def test_blocked_render_never_emits_intrinsic_values():
+def test_blocked_render_never_emits_intrinsic_or_provider_details():
+    secret = "https://source.invalid?api_key=TOP-SECRET"
     result = _blocked_result(
         "BLOCKED",
         data={
             "expected_value_per_share": 999999,
             "final_report": "must not render",
         },
+        rationale=secret,
     )
     rendered = render_controlled_run(result)
     assert "VALUATION BLOCKED" in rendered
+    assert "WACC_VALIDATION:NOT_IMPLEMENTED" in rendered
     assert "999999" not in rendered
     assert "must not render" not in rendered
+    assert "TOP-SECRET" not in rendered
+    assert secret not in rendered
 
 
 def test_cli_analysis_requires_provider_factory_and_never_falls_back_to_oci(capsys):
