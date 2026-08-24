@@ -350,7 +350,7 @@ def execute_live_analysis(
 def _blocked_codes(result: ControlledRunResult) -> tuple[str, ...]:
     codes = tuple(
         dict.fromkeys(
-            f"{trace.stage}:{trace.status.value}"
+            f"{trace.stage}:{trace.status.name}"
             for trace in result.stage_traces
             if trace.blocking or trace.status in _BLOCKING_STATUSES
         )
