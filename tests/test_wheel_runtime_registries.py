@@ -54,6 +54,24 @@ def test_installed_wheel_constructs_live_registry_loaders_outside_checkout(tmp_p
         text=True,
     )
 
+    # In this layout ``Path(live_runtime.__file__).parents[2]`` is tmp_path. These files
+    # simulate an unrelated parent-level config directory and must never impersonate the
+    # registries packaged in the wheel.
+    incidental_config = tmp_path / "config"
+    incidental_config.mkdir()
+    runtime_registry_names = (
+        "control_plane_stage_registry.yaml",
+        "archetype_module_registry.yaml",
+        "archetype_control_requirements.yaml",
+        "industry_source_registry.yaml",
+        "unit_contract_registry.yaml",
+    )
+    for name in runtime_registry_names:
+        (incidental_config / name).write_text(
+            "unrelated_parent_config: true\n",
+            encoding="utf-8",
+        )
+
     script = """
 from pathlib import Path
 
@@ -131,9 +149,11 @@ registry_fields = (
     "industry_source_registry_path",
     "unit_contract_registry_path",
 )
+incidental = Path.cwd() / "config"
 for field in registry_fields:
     path = Path(getattr(config, field))
     assert path.is_file(), (field, path)
+    assert path.parent != incidental, (field, path)
 assert len(load_stage_sequence(config.stage_registry_path)) == 33
 assert load_unit_contract_registry(config.unit_contract_registry_path).units
 """
