@@ -167,3 +167,32 @@ assert load_unit_contract_registry(config.unit_contract_registry_path).units
         capture_output=True,
         text=True,
     )
+
+    # An importable installed registry package is authoritative. Removing one packaged
+    # member must fail closed even though an incidental parent-level config contains a file
+    # with the same name.
+    packaged_member = (
+        install_dir
+        / "valuation_engine"
+        / "_registry_data"
+        / "unit_contract_registry.yaml"
+    )
+    packaged_member.unlink()
+    missing_member_script = """
+from valuation_engine.runtime_resources import runtime_registry_path
+
+try:
+    runtime_registry_path("unit_contract_registry.yaml")
+except FileNotFoundError as exc:
+    assert "packaged runtime registry member" in str(exc)
+else:
+    raise AssertionError("missing installed registry member must not fall back")
+"""
+    subprocess.run(
+        [sys.executable, "-c", missing_member_script],
+        cwd=tmp_path,
+        env=env,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
