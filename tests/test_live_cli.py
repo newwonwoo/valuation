@@ -83,6 +83,28 @@ def _completed_result(run_id: str = "RUN-1") -> ControlledRunResult:
     )
 
 
+def _blocked_result(
+    run_id: str,
+    *,
+    data=None,
+) -> ControlledRunResult:
+    return ControlledRunResult(
+        run_id=run_id,
+        execution_mode=ExecutionMode.LIVE_PRIMARY,
+        stage_traces=(
+            StageTrace(
+                "WACC_VALIDATION",
+                StageStatus.NOT_IMPLEMENTED,
+                "provider missing",
+                True,
+            ),
+        ),
+        data={} if data is None else data,
+        blocked_reasons=("WACC_VALIDATION: provider missing",),
+        freeze_token=None,
+    )
+
+
 def test_public_package_exports_live_primary_entrypoint():
     assert callable(valuation_engine.run_prism)
     assert valuation_engine.LivePrimaryRuntimeConfig is LivePrimaryRuntimeConfig
@@ -143,6 +165,31 @@ def test_factory_cannot_change_run_identity_or_state_root(tmp_path):
         build_live_runtime_config(request, wrong_state_root)
 
 
+def test_factory_jurisdiction_alias_is_normalized(tmp_path):
+    request = LiveAnalysisRequest(
+        command="분석시작 Target",
+        company_query="Target",
+        state_root=tmp_path / "state",
+        run_id="RUN-ALIAS",
+        jurisdiction="KR",
+    )
+
+    def alias_factory(current):
+        config = _minimal_config(current)
+        return LivePrimaryRuntimeConfig(
+            **{
+                **config.__dict__,
+                "company_request": CompanyResolutionRequest(
+                    current.company_query,
+                    "KOR",
+                ),
+            }
+        )
+
+    config = build_live_runtime_config(request, alias_factory)
+    assert config.company_request.jurisdiction == "KOR"
+
+
 def test_execute_live_analysis_requires_live_mode_and_matching_result_id(tmp_path):
     def runner(config):
         return _completed_result(config.run_id)
@@ -176,25 +223,75 @@ def test_execute_live_analysis_requires_live_mode_and_matching_result_id(tmp_pat
             runner=wrong_mode,
         )
 
+    def wrong_run_id(config):
+        return _completed_result("OTHER-RUN")
+
+    with pytest.raises(LiveCLIError, match="run_id"):
+        execute_live_analysis(
+            "분석시작 Target",
+            state_root=tmp_path,
+            provider_factory=_minimal_config,
+            run_id="RUN-3",
+            runner=wrong_run_id,
+        )
+
+
+def test_execute_rejects_nonblocked_result_without_stage_trace(tmp_path):
+    def runner(config):
+        return ControlledRunResult(
+            run_id=config.run_id,
+            execution_mode=ExecutionMode.LIVE_PRIMARY,
+            stage_traces=(),
+            data={"final_report": "# impossible"},
+            blocked_reasons=(),
+            freeze_token=None,
+        )
+
+    with pytest.raises(LiveCLIError, match="stage trace"):
+        execute_live_analysis(
+            "분석시작 Target",
+            state_root=tmp_path,
+            provider_factory=_minimal_config,
+            run_id="RUN-EMPTY",
+            runner=runner,
+        )
+
+
+def test_execute_rejects_blocked_result_with_intrinsic_leak(tmp_path):
+    def runner(config):
+        return _blocked_result(
+            config.run_id,
+            data={"expected_value_per_share": 999999},
+        )
+
+    with pytest.raises(LiveCLIError, match="intrinsic-owned"):
+        execute_live_analysis(
+            "분석시작 Target",
+            state_root=tmp_path,
+            provider_factory=_minimal_config,
+            run_id="RUN-LEAK",
+            runner=runner,
+        )
+
+
+def test_execute_accepts_clean_blocked_result(tmp_path):
+    result = execute_live_analysis(
+        "분석시작 Target",
+        state_root=tmp_path,
+        provider_factory=_minimal_config,
+        run_id="RUN-BLOCKED",
+        runner=lambda config: _blocked_result(config.run_id),
+    )
+    assert result.blocked_reasons
+
 
 def test_blocked_render_never_emits_intrinsic_values():
-    result = ControlledRunResult(
-        run_id="BLOCKED",
-        execution_mode=ExecutionMode.LIVE_PRIMARY,
-        stage_traces=(
-            StageTrace(
-                "WACC_VALIDATION",
-                StageStatus.NOT_IMPLEMENTED,
-                "provider missing",
-                True,
-            ),
-        ),
+    result = _blocked_result(
+        "BLOCKED",
         data={
             "expected_value_per_share": 999999,
             "final_report": "must not render",
         },
-        blocked_reasons=("WACC_VALIDATION: provider missing",),
-        freeze_token=None,
     )
     rendered = render_controlled_run(result)
     assert "VALUATION BLOCKED" in rendered
