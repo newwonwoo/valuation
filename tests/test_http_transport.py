@@ -78,6 +78,7 @@ def test_http_transport_error_does_not_expose_query_credentials(monkeypatch):
     assert message == "fetch failed for https://example.test/data (TimeoutError)"
     assert "TOP-SECRET" not in message
     assert "token=" not in message
+    assert caught.value.__cause__ is None
 
 
 def test_http_transport_validates_bounds():
