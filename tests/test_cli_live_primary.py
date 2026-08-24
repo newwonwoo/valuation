@@ -4,8 +4,10 @@ from types import ModuleType, SimpleNamespace
 
 import pytest
 
+from valuation_engine import cli
 from valuation_engine.cli import (
     LiveRuntimeConfigurationError,
+    _analysis_mode,
     _build_parser,
     load_runtime_factory,
     render_controlled_run,
@@ -51,9 +53,21 @@ def completed_result() -> ControlledRunResult:
     )
 
 
-def test_analysis_command_defaults_to_live_primary():
+def test_analysis_command_defaults_to_live_primary_without_marking_yaml_live():
     args = _build_parser().parse_args(["분석시작 Example Co"])
-    assert args.mode == "live-primary"
+    assert args.mode is None
+    assert _analysis_mode(args.mode) == "live-primary"
+
+
+def test_direct_yaml_rejects_explicit_live_primary_mode(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["valuation-engine", "company.yaml", "--mode", "live-primary"],
+    )
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+    assert exc.value.code == 2
 
 
 def test_live_analysis_never_falls_back_without_runtime_factory(monkeypatch, tmp_path):
