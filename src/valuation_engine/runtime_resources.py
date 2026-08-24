@@ -13,15 +13,26 @@ _RESOURCE_CONTEXTS = ExitStack()
 atexit.register(_RESOURCE_CONTEXTS.close)
 
 
+def _source_checkout_root() -> Path | None:
+    required = (
+        _REPO_ROOT / "pyproject.toml",
+        _REPO_ROOT / "src" / "valuation_engine" / "runtime_resources.py",
+        _REPO_ROOT / "config" / "__init__.py",
+        _REPO_ROOT / "config" / "control_plane_stage_registry.yaml",
+    )
+    return _REPO_ROOT if all(path.is_file() for path in required) else None
+
+
 @lru_cache(maxsize=None)
 def runtime_registry_path(filename: str) -> Path:
-    """Return a stable filesystem path for a packaged runtime registry.
+    """Return a stable filesystem path for a canonical runtime registry.
 
-    Installed and editable distributions prefer ``valuation_engine._registry_data`` so an
-    unrelated ``config`` directory above ``site-packages`` cannot impersonate the canonical
-    registry set. A source-only checkout without an installed package mapping falls back to
-    the repository ``config`` directory. ``resources.as_file`` is retained for the process
-    lifetime so non-filesystem importers remain supported.
+    An importable installed registry package is authoritative. If that package is present but
+    one YAML member is missing, execution fails closed instead of consulting an unrelated
+    parent-level ``config`` directory. Repository fallback is allowed only after positively
+    identifying a source checkout through independent project/source/config markers.
+    ``resources.as_file`` is retained for the process lifetime so non-filesystem importers
+    remain supported.
     """
     if not isinstance(filename, str) or not filename:
         raise ValueError("runtime registry filename is required")
@@ -32,12 +43,16 @@ def runtime_registry_path(filename: str) -> Path:
         )
 
     try:
-        resource = resources.files(_REGISTRY_RESOURCE_PACKAGE).joinpath(
-            filename
-        )
-    except (ModuleNotFoundError, TypeError):
-        resource = None
-    if resource is not None and resource.is_file():
+        package_root = resources.files(_REGISTRY_RESOURCE_PACKAGE)
+    except ModuleNotFoundError:
+        package_root = None
+
+    if package_root is not None:
+        resource = package_root.joinpath(filename)
+        if not resource.is_file():
+            raise FileNotFoundError(
+                f"packaged runtime registry member is unavailable: {filename}"
+            )
         materialized = Path(
             _RESOURCE_CONTEXTS.enter_context(resources.as_file(resource))
         )
@@ -47,9 +62,14 @@ def runtime_registry_path(filename: str) -> Path:
             )
         return materialized
 
-    repository_path = _REPO_ROOT / "config" / filename
-    if repository_path.is_file():
-        return repository_path
-    raise FileNotFoundError(
-        f"runtime registry is unavailable from package and checkout: {filename}"
-    )
+    checkout_root = _source_checkout_root()
+    if checkout_root is None:
+        raise FileNotFoundError(
+            f"runtime registry package is unavailable outside a verified checkout: {filename}"
+        )
+    repository_path = checkout_root / "config" / filename
+    if not repository_path.is_file():
+        raise FileNotFoundError(
+            f"runtime registry is missing from verified checkout: {filename}"
+        )
+    return repository_path
