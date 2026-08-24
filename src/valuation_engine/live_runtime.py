@@ -314,7 +314,6 @@ def _collection_selection_loader(config: LivePrimaryRuntimeConfig):
             company=identity,
             source_registry_path=config.industry_source_registry_path,
             collector_capabilities=capabilities,
-            target_is_listed=bool(identity.ticker),
         )
         selected = tuple(
             SelectedEvidenceCollector(
@@ -451,14 +450,10 @@ def build_live_primary_adapters(
                 expected_cohort_key=cohort,
             )
         )
-    scenario_chain.extend(
-        (
-            scenario_build_adapter(),
-            valuation_method_intent_adapter(
-                capability_registry=capability_registry,
-                method_choices=config.method_choices,
-            ),
-        )
+    scenario_chain.append(scenario_build_adapter())
+    method_intent = valuation_method_intent_adapter(
+        capability_registry=capability_registry,
+        method_choices=config.method_choices,
     )
 
     valuation = chain_stage_adapters(
@@ -535,6 +530,7 @@ def build_live_primary_adapters(
         ),
         "EVIDENCE_TO_ASSUMPTION_BRIDGE": bridge,
         "SCENARIO_BUILD": chain_stage_adapters(*scenario_chain),
+        "VALUATION_METHOD_INTENT": method_intent,
         "HIERARCHICAL_BETA_ESTIMATION": beta,
         "WACC_VALIDATION": wacc,
         "DETERMINISTIC_VALUATION": valuation,

@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 from valuation_engine.collection_plan import (
     CollectionRequirement,
     CollectionRequirementKind,
@@ -84,19 +86,22 @@ def collection_plan() -> CompanyCollectionPlan:
         ),
     )
     task = CollectionTask(
-        "TASK-1",
+        "",
         "dart",
         "KR_OPENDART",
         tuple(item.requirement_id for item in requirements),
     )
+    task = replace(task, task_id=task.expected_task_id)
     plan = CompanyCollectionPlan(
-        plan_id="COLLECTION-1",
+        plan_id="",
         version="0.5.2",
         company=identity(),
         routing_hash="ROUTE-HASH",
+        target_is_listed=True,
         requirements=requirements,
         tasks=(task,),
     )
+    plan = replace(plan, plan_id=plan.expected_plan_id)
     plan.validate()
     return plan
 
@@ -370,6 +375,8 @@ def test_missing_per_providers_do_not_repeat_preexisting_routing_scope():
         warranted_per_segments=("core",),
         requires_beta=True,
         requires_wacc=True,
+        module_plan_hash="MODULE-HASH",
+        capability_registry_hash="CAPABILITY-HASH",
     )
     context = OrchestratorContext(
         "RUN",

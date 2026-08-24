@@ -416,7 +416,7 @@ def test_frozen_provider_live_primary_run_reaches_final_report(tmp_path):
     assert result.blocked_reasons == ()
     assert result.completed
     assert result.freeze_token is not None
-    assert len(result.stage_traces) == 32
+    assert len(result.stage_traces) == 33
     assert result.stage_traces[0].stage == "COMPANY_RESOLUTION"
     assert result.stage_traces[-1].stage == "FINAL_REPORT"
     assert all(
@@ -428,6 +428,15 @@ def test_frozen_provider_live_primary_run_reaches_final_report(tmp_path):
             StageStatus.AWAITING_USER_DECISION,
         }
         for trace in result.stage_traces
+    )
+    intent_trace = next(
+        trace
+        for trace in result.stage_traces
+        if trace.stage == "VALUATION_METHOD_INTENT"
+    )
+    assert intent_trace.status is StageStatus.PASS
+    assert result.data["valuation_plan_method_choices_hash"] == (
+        result.data["valuation_method_choices_hash"]
     )
 
     valuation = result.data["generic_valuation_result"]

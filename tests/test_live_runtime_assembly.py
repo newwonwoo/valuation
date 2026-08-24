@@ -100,8 +100,8 @@ def test_live_runtime_assembler_covers_every_canonical_stage_except_builtin_free
         ROOT / "config" / "control_plane_stage_registry.yaml"
     )
     assert set(adapters) == set(sequence) - {"INTRINSIC_VALUE_FREEZE"}
-    assert len(sequence) == 32
-    assert len(adapters) == 31
+    assert len(sequence) == 33
+    assert len(adapters) == 32
 
 
 def test_live_runtime_default_registry_paths_are_repo_anchored():
