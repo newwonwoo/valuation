@@ -111,6 +111,7 @@ def test_successful_shadow_run_generates_coverage_and_issues_token_before_market
                 "company": "Example",
                 "industry_snapshot_hash": "industry",
                 "source_snapshot_hash": "source",
+                "ledger_snapshot_hash": "ledger",
             },
         )
 
@@ -160,6 +161,7 @@ def test_successful_shadow_run_generates_coverage_and_issues_token_before_market
 
     assert result.blocked_reasons == ()
     assert result.freeze_token is not None
+    assert result.freeze_token.ledger_snapshot_hash == "ledger"
     assert calls == ["market"]
     assert [trace.stage for trace in result.stage_traces] == list(sequence)
     covered = {item.module_id for item in result.data["runtime_doctrine_coverage"]}
