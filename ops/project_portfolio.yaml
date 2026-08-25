@@ -1,0 +1,206 @@
+version: 2
+blueprint: v0.5.2 canonical workflow + LIVE_PRIMARY readiness
+updated: '2026-08-25'
+recovery_note: >-
+  Reconstructed from the archived PROJECT_STATUS.md dated 2026-08-25. The archived
+  departmental design totals and accepted baseline points are preserved exactly; unknown
+  historical milestone labels are not invented. New acceptance after recovery is recorded
+  only with exact-SHA validation evidence.
+scoring:
+  rule: conservative_verified_only
+  active_credit: 0
+  ready_credit: 0
+  blocked_credit: 0
+  acceptance_requires:
+    - exact_sha
+    - verified_validation_evidence
+    - pm_integrator_close
+  adr_waiver_allowed: true
+
+validation_baseline:
+  accepted_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
+  evidence:
+    - kind: github_actions
+      workflow: valuation-tests
+      run_number: 302
+      run_id: 32827574688
+      conclusion: success
+      event: push
+      head_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
+
+departments:
+  - id: pm-integrator
+    name: Architecture & Program Office
+    design_points: 5
+    baseline_accepted_points: 5
+    current_work: MAINTENANCE — no open delivery item
+    accepted_milestones: []
+
+  - id: evidence-industry-agent
+    name: Evidence & Industry Intelligence
+    design_points: 13
+    baseline_accepted_points: 7
+    current_work: ACTIVE EVI-SEGMENT-LINEAGE-001 — Bind segment decomposition evidence to authoritative source lineage
+    accepted_milestones:
+      - id: EVI-VERTICAL-001
+        title: Complete the first official OpenDART vertical provider pack through raw filing and deterministic KPI extraction
+        points: 1
+        status: VERIFIED
+        accepted_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
+        validation_evidence:
+          - GHA valuation-tests #302 PASS at exact main SHA
+        implementation_refs:
+          - PR #53 KR OpenDART LIVE_PRIMARY provider foundation
+          - PR #55 safe OpenDART original filing provider
+          - PR #56 deterministic OpenDART KPI extraction contract
+
+  - id: runtime-safety-agent
+    name: Runtime Safety & Control Plane
+    design_points: 10
+    baseline_accepted_points: 5
+    current_work: BACKLOG RUN-HASH-001 — Close the evidence, assumption, Audit, and Freeze hash chain
+    accepted_milestones: []
+
+  - id: valuation-engine-agent
+    name: Deterministic Valuation Engines
+    design_points: 8
+    baseline_accepted_points: 6
+    current_work: BACKLOG VAL-PARTIAL-001 — Implement PARTIAL_INTRINSIC and UNVALUED_NOT_ZERO end to end
+    accepted_milestones: []
+
+  - id: calibration-risk-agent
+    name: Risk, PER & Probability Calibration
+    design_points: 10
+    baseline_accepted_points: 5
+    current_work: ACTIVE CAL-ASOF-001 — Add a first-seen boundary to historical forecast revisions
+    accepted_milestones: []
+
+  - id: post-freeze-agent
+    name: Post-Freeze Market & State
+    design_points: 6
+    baseline_accepted_points: 5
+    current_work: MAINTENANCE — lawful post-freeze Street export adapter accepted; broader vendor automation is optional expansion
+    accepted_milestones:
+      - id: PST-STREET-001
+        title: Add automatic post-freeze Street loading only through a lawful source contract
+        points: 1
+        status: VERIFIED
+        accepted_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
+        validation_evidence:
+          - GHA valuation-tests #302 PASS at exact main SHA
+        implementation_refs:
+          - PR #57 authorized licensed_export / explicit_permission Street loader
+
+  - id: performance-platform-agent
+    name: Platform, Packaging & Performance
+    design_points: 9
+    baseline_accepted_points: 5
+    current_work: READY PLT-PERF-BUDGET-001 — Convert recorded runtime baselines into stable CI performance budgets
+    accepted_milestones: []
+
+  - id: qa-release-agent
+    name: Quality, Security & Release
+    design_points: 8
+    baseline_accepted_points: 5
+    current_work: BACKLOG — PR #51 publication blocker is closed; 2 recovered design points remain without original milestone labels
+    accepted_milestones:
+      - id: QA-PR51-001
+        title: Publish the accepted canonical LIVE_PRIMARY runtime and verify valuation-tests
+        points: 1
+        status: VERIFIED
+        accepted_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
+        validation_evidence:
+          - PR #51 merged
+          - GHA valuation-tests #302 PASS at exact main SHA
+
+work_items:
+  - priority: P1
+    status: ACTIVE
+    id: CAL-ASOF-001
+    title: Add a first-seen boundary to historical forecast revisions
+    owner: calibration-risk-agent
+    current_step: Add and validate first_seen_at at ingestion, snapshot cutoff, serialization restore, and deterministic replay boundaries.
+    dependencies: []
+  - priority: P1
+    status: ACTIVE
+    id: EVI-SEGMENT-LINEAGE-001
+    title: Bind segment decomposition evidence to authoritative source lineage
+    owner: evidence-industry-agent
+    current_step: Reconcile decomposer Evidence IDs against target, source, date, content hash, and the active authoritative ledger before Industry DNA routing.
+    dependencies: [EVI-ACTIVE-001]
+  - priority: P1
+    status: READY
+    id: RISK-PROVIDERS-001
+    title: Build reusable Beta, WACC, and Cost-of-Equity source providers
+    owner: calibration-risk-agent
+    current_step: Compose the approved KRX, ECOS, Damodaran and OpenDART collectors into typed Beta/WACC loaders; add marginal debt-cost and target-capital-structure sourcing.
+    dependencies: []
+  - priority: P1
+    status: READY
+    id: PLT-PERF-BUDGET-001
+    title: Convert recorded runtime baselines into stable CI performance budgets
+    owner: performance-platform-agent
+    current_step: Define low-noise time, allocation, and copy-count thresholds from accepted baselines.
+    dependencies: [PLT-CTX-COW-001]
+  - priority: P2
+    status: READY
+    id: EVI-SCAN-001
+    title: Separate optional scanner IDs from mixed active research units
+    owner: evidence-industry-agent
+    current_step: Define the typed registry field and compatibility behavior for existing plans.
+    dependencies: []
+  - priority: P2
+    status: READY
+    id: PLT-LEDGER-001
+    title: Remove duplicate ledger serialization without weakening mutation detection
+    owner: performance-platform-agent
+    current_step: Benchmark immutable canonical snapshot alternatives against the accepted RUN-CTX transaction boundary.
+    dependencies: [RUN-CTX-001]
+  - priority: P3
+    status: READY
+    id: PLT-UNIT-GRAPH-001
+    title: Index Unit Contract forward and reverse dependency traversal
+    owner: performance-platform-agent
+    current_step: Capture exact ordering, error, and cycle semantics before replacing repeated validation and linear scans.
+    dependencies: []
+  - priority: P1
+    status: BLOCKED
+    id: PER-PROVIDERS-001
+    title: Build normalized EPS and peer-residual provider packs
+    owner: calibration-risk-agent
+    current_step: Filing EPS exists, but normalized forward EPS and peer-residual source packs still depend on the completed risk-provider path and approved accounting/peer conventions.
+    dependencies: [RISK-PROVIDERS-001]
+  - priority: P1
+    status: BACKLOG
+    id: RUN-HASH-001
+    title: Close the evidence, assumption, Audit, and Freeze hash chain
+    owner: runtime-safety-agent
+    current_step: Define the remaining cross-stage hash binding and replay checks.
+    dependencies: []
+  - priority: P1
+    status: BACKLOG
+    id: VAL-PARTIAL-001
+    title: Implement PARTIAL_INTRINSIC and UNVALUED_NOT_ZERO end to end
+    owner: valuation-engine-agent
+    current_step: Preserve valued and explicitly unvalued segments without silently treating missing value as zero.
+    dependencies: []
+
+accepted_handoffs:
+  - id: H-RECOVERY-EVI-VERTICAL-20260825
+    to: pm-integrator + evidence-industry-agent
+    head: 76b13159c8955ed6e337f4342a741fdceaa00fbe
+    validation_evidence: [GHA-VALUATION-TESTS-302]
+    closes: [EVI-VERTICAL-001]
+    residual_work: [EVI-SEGMENT-LINEAGE-001, EVI-SCAN-001]
+  - id: H-RECOVERY-PST-STREET-20260825
+    to: pm-integrator + post-freeze-agent
+    head: 76b13159c8955ed6e337f4342a741fdceaa00fbe
+    validation_evidence: [GHA-VALUATION-TESTS-302]
+    closes: [PST-STREET-001]
+    residual_work: []
+  - id: H-RECOVERY-QA-PR51-20260825
+    to: pm-integrator + qa-release-agent
+    head: 76b13159c8955ed6e337f4342a741fdceaa00fbe
+    validation_evidence: [GHA-VALUATION-TESTS-302]
+    closes: [QA-PR51-001]
+    residual_work: []
