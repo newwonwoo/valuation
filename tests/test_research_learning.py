@@ -60,6 +60,7 @@ def freeze_token(run_id: str):
         audit_passed=True,
         coverage_entries=coverage,
         expected_module_ids=("STATE_LEARNING",),
+        ledger_snapshot_hash="ledger",
         assumption_set_hash="assumptions",
         valuation_hash="valuation",
         audit_hash="audit",

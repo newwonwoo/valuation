@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from enum import Enum
 from hashlib import sha256
+import json
 from typing import Callable
 
 from .actual_units import Measure, measure_from_raw, to_decimal
@@ -157,6 +158,53 @@ TRANSFORMS: dict[str, Transform] = {
 }
 
 
+def compiled_assumption_set_digest(
+    target_id: str,
+    assumptions: tuple[CompiledAssumption, ...],
+) -> str:
+    """Hash every immutable assumption identity/provenance field used downstream."""
+    if not target_id:
+        raise ValueError("compiled assumption hash requires target_id")
+    payload = {
+        "contract": "compiled_assumption_set/v2",
+        "target_id": target_id,
+        "assumptions": [
+            {
+                "key": item.key,
+                "scenario_id": item.scenario_id,
+                "measure": {
+                    "amount": str(item.measure.amount),
+                    "unit": item.measure.unit,
+                    "as_of": item.measure.as_of,
+                },
+                "bridge_id": item.bridge_id,
+                "evidence_ids": list(item.evidence_ids),
+                "hypothesis_id": item.hypothesis_id,
+                "economic_path_id": item.economic_path_id,
+                "transform_id": item.transform_id,
+                "input_evidence_hash": item.input_evidence_hash,
+                "calibration_status": (
+                    item.calibration_status.value
+                    if item.calibration_status is not None
+                    else None
+                ),
+            }
+            for item in sorted(
+                assumptions,
+                key=lambda row: (row.scenario_id, row.key, row.bridge_id),
+            )
+        ],
+    }
+    return sha256(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+
+
 def compile_assumptions(
     *,
     target_id: str,
@@ -287,16 +335,11 @@ def compile_assumptions(
             None,
             (CompilationFinding("EMPTY_COMPILED_SET", "no assumptions compiled"),),
         )
-    serialized = "\n".join(
-        sorted(
-            f"{item.key}|{item.scenario_id}|{item.measure.amount}|{item.measure.unit}|{item.bridge_id}|{item.input_evidence_hash}"
-            for item in compiled
-        )
-    )
+    compiled_tuple = tuple(compiled)
     assumption_set = CompiledAssumptionSet(
         target_id=target_id,
-        assumptions=tuple(compiled),
-        assumption_set_hash=sha256(serialized.encode("utf-8")).hexdigest(),
+        assumptions=compiled_tuple,
+        assumption_set_hash=compiled_assumption_set_digest(target_id, compiled_tuple),
     )
     return CompilationResult(CompilationStatus.COMPILED, assumption_set, ())
 

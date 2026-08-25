@@ -98,6 +98,7 @@ def run_post_freeze(tmp_path, *, expected=None):
             "audit_passed": True,
             "decision_impact_completed": True,
             "generic_audit_report": AuditReport(()),
+            "ledger_snapshot_hash": "LEDGER_HASH",
             "assumption_set_hash": "ASSUMPTION_HASH",
             "valuation_hash": "VALUATION_HASH",
             "audit_hash": "AUDIT_HASH",
@@ -111,6 +112,7 @@ def test_post_freeze_scenario_envelope_state_and_report(tmp_path):
     result = run_post_freeze(tmp_path)
     assert result.blocked_reasons == ()
     assert result.freeze_token is not None
+    assert result.freeze_token.ledger_snapshot_hash == "LEDGER_HASH"
     street = result.data["street_comparison"]
     market = result.data["market_comparison"]
     assert street.envelope.expected_gap is None
