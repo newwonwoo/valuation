@@ -18,22 +18,22 @@ scoring:
   adr_waiver_allowed: true
 
 validation_baseline:
-  accepted_sha: 04b38ecc4c800e7f24799e8a70e6a4497e1bc6a7
+  accepted_sha: 1e4f8ac80cc52e26a142bef8bc000e0be50321e6
   evidence:
     - kind: github_actions
       workflow: valuation-tests
-      run_number: 347
-      run_id: 32856614308
+      run_number: 361
+      run_id: 32859936189
       conclusion: success
       event: push
-      head_sha: 04b38ecc4c800e7f24799e8a70e6a4497e1bc6a7
+      head_sha: 1e4f8ac80cc52e26a142bef8bc000e0be50321e6
 
 departments:
   - id: pm-integrator
     name: Architecture & Program Office
     design_points: 5
     baseline_accepted_points: 5
-    current_work: ACTIVE PM-RESIDUAL-DECOMPOSE-002 — Reconcile the 13 remaining recovered design points to source-backed deliverables
+    current_work: ACTIVE PM-RESIDUAL-DECOMPOSE-002 — Reconcile the 12 remaining recovered design points to source-backed deliverables
     accepted_milestones: []
 
   - id: evidence-industry-agent
@@ -92,7 +92,7 @@ departments:
     name: Deterministic Valuation Engines
     design_points: 8
     baseline_accepted_points: 6
-    current_work: MAINTENANCE — accepted queue complete; 1 residual design point awaits PM decomposition
+    current_work: MAINTENANCE — accepted design complete
     accepted_milestones:
       - id: VAL-PARTIAL-001
         title: Preserve PARTIAL_INTRINSIC and UNVALUED_NOT_ZERO end to end
@@ -103,6 +103,16 @@ departments:
           - GHA valuation-tests run 347 PASS at exact integrated main SHA
         implementation_refs:
           - PR 65 Preserve partial intrinsic value without zero-filling unvalued segments
+      - id: VAL-EXACT-METHOD-COVERAGE-001
+        title: Complete the source-backed exact evaluator method coverage residual
+        points: 1
+        status: VERIFIED
+        accepted_sha: 1e4f8ac80cc52e26a142bef8bc000e0be50321e6
+        validation_evidence:
+          - GHA valuation-tests run 361 PASS at exact integrated main SHA
+        implementation_refs:
+          - PR 74 Implement remaining equity and NAV valuation method families
+          - exact method bindings 41/41 executable with zero NOT_IMPLEMENTED
 
   - id: calibration-risk-agent
     name: Risk, PER & Probability Calibration
@@ -209,7 +219,7 @@ work_items:
     id: PM-RESIDUAL-DECOMPOSE-002
     title: Reconcile remaining recovered design points to source-backed deliverables
     owner: pm-integrator
-    current_step: Trace the remaining 13 design points back to repository design contracts and objective readiness gaps; do not invent historical milestone labels or award completion credit until each residual deliverable is explicit.
+    current_step: Trace the remaining 12 design points back to repository design contracts and objective readiness gaps; do not invent historical milestone labels or award completion credit until each residual deliverable is explicit.
     dependencies: []
 
 accepted_handoffs:
@@ -260,4 +270,10 @@ accepted_handoffs:
     head: 04b38ecc4c800e7f24799e8a70e6a4497e1bc6a7
     validation_evidence: [GHA-VALUATION-TESTS-347]
     closes: [PLT-PERF-BUDGET-001, PLT-LEDGER-001, PLT-UNIT-GRAPH-001]
+    residual_work: []
+  - id: H-VALUATION-EXACT-COVERAGE-20260825
+    to: pm-integrator + valuation-engine-agent
+    head: 1e4f8ac80cc52e26a142bef8bc000e0be50321e6
+    validation_evidence: [GHA-VALUATION-TESTS-361]
+    closes: [VAL-EXACT-METHOD-COVERAGE-001]
     residual_work: []
