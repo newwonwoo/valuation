@@ -1,0 +1,15 @@
+version: 1
+fixture:
+  workflow_samples: 40
+  freeze_samples: 200
+  warmup_runs: 5
+budgets:
+  max_freeze_p95_ms: 2.0
+  max_workflow_p95_ms: 12.0
+  max_workflow_peak_kib: 2048.0
+  max_context_copy_calls: 2
+policy:
+  - Benchmark the canonical Control Plane stage sequence with the production Unit Contract registry preloaded.
+  - Keep timing budgets deliberately wider than the captured baseline to avoid runner-noise flakes.
+  - Treat top-level context full-copy count as a deterministic structural budget; stage-local output merges are not copies.
+  - A breach must fail CI and identify the observed metric and limit.
