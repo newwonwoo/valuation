@@ -25,6 +25,11 @@ jobs:
         run: PYTHONPATH=src python scripts/validate_live_primary_readiness.py
       - name: Probability calibration policy
         run: PYTHONPATH=src python scripts/validate_probability_calibration_policy.py
+      - name: PM project portfolio integrity
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: PYTHONPATH=src python scripts/validate_project_portfolio.py --github
       - name: PM project status sync
         run: PYTHONPATH=src python scripts/render_project_status.py --check
       - name: Tests
