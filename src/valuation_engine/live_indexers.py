@@ -6,8 +6,8 @@ import json
 import os
 import time
 from typing import Callable
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
 
 from .source_index import (
     DocumentIndexRecord,
@@ -20,7 +20,11 @@ from .source_index import (
     schema_hash_from_records,
     stable_hash,
 )
-from .source_watch import EndpointObservation, EndpointRole, reconcile_endpoint_observations
+from .source_watch import (
+    EndpointObservation,
+    EndpointRole,
+    reconcile_endpoint_observations,
+)
 
 
 class SourceFetchError(RuntimeError):
@@ -40,18 +44,30 @@ class HttpResponse:
 
 
 @dataclass(frozen=True)
-class BinaryHttpResponse:
+class HttpBytesResponse:
     url: str
     status: int
-    body: bytes
+    content: bytes
     content_type: str | None
+    charset: str | None
+
+    @property
+    def body(self) -> bytes:
+        """Compatibility alias for callers that use the original binary-response contract."""
+        return self.content
+
+
+def _safe_endpoint(url: str) -> str:
+    return url.split("?", 1)[0]
 
 
 class HttpTransport:
     """Small index-first HTTP transport.
 
-    It has bounded request time/bytes and no background behavior. Production callers
-    should still respect source-specific robots/licence/terms and cadence limits.
+    Requests have bounded time, retries and response bytes. Error messages and exception
+    chaining deliberately omit query strings because credentials commonly appear in official
+    API URLs. Production callers must still respect source-specific robots, licences, terms
+    and cadence limits.
     """
 
     def __init__(
@@ -61,75 +77,90 @@ class HttpTransport:
         max_bytes: int = 8_000_000,
         retries: int = 1,
     ):
-        if timeout_seconds <= 0 or max_bytes <= 0 or retries < 0:
-            raise ValueError("HTTP transport limits must be positive and retries non-negative")
+        if timeout_seconds <= 0:
+            raise ValueError("timeout_seconds must be positive")
+        if max_bytes <= 0:
+            raise ValueError("max_bytes must be positive")
+        if retries < 0:
+            raise ValueError("retries cannot be negative")
         self.timeout_seconds = timeout_seconds
         self.max_bytes = max_bytes
         self.retries = retries
 
-    def get_bytes(self, url: str) -> BinaryHttpResponse:
+    def _get_bytes(self, url: str) -> HttpBytesResponse:
+        if not isinstance(url, str) or not url:
+            raise ValueError("HTTP URL is required")
         last: Exception | None = None
         for attempt in range(self.retries + 1):
             try:
-                req = Request(
+                request = Request(
                     url,
                     headers={
-                        "User-Agent": "RocketSLA-IndustryIndexer/0.5 (+metadata-first)"
+                        "User-Agent": (
+                            "RocketSLA-IndustryIndexer/0.5 (+metadata-first)"
+                        )
                     },
                 )
-                with urlopen(req, timeout=self.timeout_seconds) as resp:
-                    raw = resp.read(self.max_bytes + 1)
+                with urlopen(request, timeout=self.timeout_seconds) as response:
+                    raw = response.read(self.max_bytes + 1)
                     if len(raw) > self.max_bytes:
                         raise SourceFetchError(
                             f"response exceeds max_bytes={self.max_bytes}"
                         )
-                    return BinaryHttpResponse(
+                    content_type = response.headers.get("Content-Type")
+                    charset = response.headers.get_content_charset()
+                    return HttpBytesResponse(
                         url=url,
-                        status=getattr(resp, "status", 200),
-                        body=raw,
-                        content_type=resp.headers.get("Content-Type"),
+                        status=getattr(response, "status", 200),
+                        content=raw,
+                        content_type=content_type,
+                        charset=charset,
                     )
-            except (URLError, HTTPError, TimeoutError, SourceFetchError) as exc:
+            except Exception as exc:
+                # Transport/library failures are normalized through one sanitized retry path.
+                # KeyboardInterrupt/SystemExit are BaseException subclasses and still propagate.
                 last = exc
                 if attempt < self.retries:
                     time.sleep(0.25 * (attempt + 1))
-        raise SourceFetchError(f"fetch failed for {url}: {last}")
+        failure_type = type(last).__name__ if last is not None else "UnknownError"
+        raise SourceFetchError(
+            f"fetch failed for {_safe_endpoint(url)} ({failure_type})"
+        ) from None
+
+    def get_bytes(self, url: str) -> HttpBytesResponse:
+        return self._get_bytes(url)
 
     def get_text(self, url: str) -> HttpResponse:
-        response = self.get_bytes(url)
-        charset = _content_type_charset(response.content_type) or "utf-8"
+        response = self._get_bytes(url)
         return HttpResponse(
-            response.url,
-            response.status,
-            response.body.decode(charset, errors="replace"),
-            response.content_type,
+            url=response.url,
+            status=response.status,
+            text=response.content.decode(
+                response.charset or "utf-8",
+                errors="replace",
+            ),
+            content_type=response.content_type,
         )
 
 
 FetchText = Callable[[str], str]
 
 
-def _content_type_charset(content_type: str | None) -> str | None:
-    if not content_type:
-        return None
-    for part in content_type.split(";")[1:]:
-        key, sep, value = part.strip().partition("=")
-        if sep and key.lower() == "charset" and value.strip():
-            return value.strip().strip("\"'")
-    return None
-
-
-def index_kiet_psi(fetch_text: FetchText, *, checked_at: date) -> SourceIndexBatch:
+def index_kiet_psi(
+    fetch_text: FetchText,
+    *,
+    checked_at: date,
+) -> SourceIndexBatch:
     url = "https://www.kiet.re.kr/communicate/medataList"
     text = fetch_text(url)
     records = parse_kiet_release_listing(text)
     rows = [
         {
-            "document_id": r.document_id,
-            "title": r.title,
-            "published_at": r.published_at,
+            "document_id": record.document_id,
+            "title": record.title,
+            "published_at": record.published_at,
         }
-        for r in records
+        for record in records
     ]
     return SourceIndexBatch(
         "KR_KIET_PSI",
@@ -167,7 +198,7 @@ def index_iea_monthly_electricity(
 
     product_latest = product.latest_file_updated or product.last_updated
     tool_latest = tool.latest_file_updated or tool.last_updated
-    obs = (
+    observations = (
         EndpointObservation(
             "iea_mes_product",
             EndpointRole.PRIMARY_INDEX,
@@ -183,8 +214,8 @@ def index_iea_monthly_electricity(
             "IEA_MES_TOOL",
         ),
     )
-    recon = reconcile_endpoint_observations(obs)
-    resolved = recon.resolved_latest_published_at
+    reconciliation = reconcile_endpoint_observations(observations)
+    resolved = reconciliation.resolved_latest_published_at
     records: tuple[DocumentIndexRecord, ...] = ()
     if resolved is not None:
         record = DocumentIndexRecord(
@@ -216,18 +247,21 @@ def index_iea_monthly_electricity(
         records,
         schema_hash_from_records(schema_payload),
         "multi_endpoint",
-        warning=recon.warning,
+        warning=reconciliation.warning,
+    )
+    next_release = (
+        max(
+            value
+            for value in (product.next_release, tool.next_release)
+            if value is not None
+        )
+        if any((product.next_release, tool.next_release))
+        else None
     )
     return IEAMonthlyElectricityIndexResult(
         batch=batch,
-        endpoint_warning=recon.warning,
-        next_release=max(
-            x
-            for x in (product.next_release, tool.next_release)
-            if x is not None
-        )
-        if any((product.next_release, tool.next_release))
-        else None,
+        endpoint_warning=reconciliation.warning,
+        next_release=next_release,
         resolved_latest_published_at=resolved,
         schema_transition_note=(
             product.schema_transition_note or tool.schema_transition_note
@@ -247,15 +281,16 @@ def require_env_credential(env_name: str) -> str:
 def parse_json_response(text: str) -> list[dict]:
     payload = json.loads(text)
     if isinstance(payload, list):
-        return [dict(x) for x in payload]
+        return [dict(item) for item in payload]
     if isinstance(payload, dict):
+        # OpenDART style failures should fail closed rather than hash an error as data.
         if payload.get("status") not in (None, "000"):
             raise SourceFetchError(
                 f"API returned status={payload.get('status')} "
                 f"message={payload.get('message')}"
             )
         if isinstance(payload.get("list"), list):
-            return [dict(x) for x in payload["list"]]
+            return [dict(item) for item in payload["list"]]
         return [payload]
     raise SourceFetchError("JSON root must be list or object")
 
