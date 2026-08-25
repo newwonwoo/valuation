@@ -35,9 +35,9 @@ def registry():
 def test_method_capability_registry_covers_every_exact_binding_once():
     summary = registry().coverage_summary()
     assert summary.total == 41
-    assert len(summary.runtime_ready) == 16
+    assert len(summary.runtime_ready) == 27
     assert len(summary.partial_runtime) == 14
-    assert len(summary.not_implemented) == 11
+    assert summary.not_implemented == ()
 
 
 def test_execution_roles_are_separate_from_segment_model_keys():
@@ -62,7 +62,7 @@ def test_same_method_name_remains_distinct_across_archetypes():
     reserve_nav = value.get("reserve_depletion", "nav")
     assert reit_nav.identity != reserve_nav.identity
     assert reit_nav.output_kind == "equity_value"
-    assert reserve_nav.output_kind == "unresolved"
+    assert reserve_nav.output_kind == "equity_value"
 
 
 def test_deterministic_readiness_uses_exact_method_coverage():
@@ -76,14 +76,14 @@ def test_deterministic_readiness_uses_exact_method_coverage():
     coverage = report.deterministic_method_coverage
     assert coverage is not None
     assert coverage.total == 31
-    assert len(coverage.runtime_ready) == 6
+    assert len(coverage.runtime_ready) == 17
     assert len(coverage.partial_runtime) == 14
-    assert len(coverage.not_implemented) == 11
-    assert "asset_yield_nav/nav" in coverage.not_implemented
-    assert "reserve_depletion/nav" in coverage.not_implemented
+    assert coverage.not_implemented == ()
+    assert "asset_yield_nav/nav" in coverage.runtime_ready
+    assert "reserve_depletion/nav" in coverage.runtime_ready
 
 
-def test_false_live_ready_promotion_is_rejected_while_methods_are_incomplete():
+def test_false_live_ready_promotion_is_rejected_while_methods_are_partial():
     value = registry()
     report = load_live_primary_readiness(
         readiness_path=READINESS_REGISTRY,
@@ -104,7 +104,7 @@ def test_false_live_ready_promotion_is_rejected_while_methods_are_incomplete():
         validate_method_readiness_alignment(promoted, value)
 
 
-def test_incomplete_method_coverage_allows_honest_stage_downgrades():
+def test_partial_method_coverage_allows_honest_stage_downgrades():
     value = registry()
     report = load_live_primary_readiness(
         readiness_path=READINESS_REGISTRY,
@@ -130,7 +130,7 @@ def test_incomplete_method_coverage_allows_honest_stage_downgrades():
 def test_method_capability_yaml_rejects_duplicate_binding_keys(tmp_path):
     path = tmp_path / "duplicate.yaml"
     path.write_text(
-        """version: 1.1
+        """version: 1.2
 execution_families:
   missing:
     kind: segment_evaluator

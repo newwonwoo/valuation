@@ -7,7 +7,14 @@ from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
 from .valuation_execution import GenericValuationResult
 
 
-_DCF_LIKE_TOKENS = ("dcf", "npv", "ddm", "residual_income", "rate_base_roe")
+_DCF_LIKE_TOKENS = (
+    "dcf",
+    "npv",
+    "ddm",
+    "pb_roe",
+    "residual_income",
+    "rate_base_roe",
+)
 
 
 @dataclass(frozen=True)

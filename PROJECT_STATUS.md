@@ -59,7 +59,7 @@ flowchart TB
 - `LIVE_READY` or `RUNTIME_READY`: **29/33**
 - `PARTIAL_LIVE`: **4/33**
 - Explicit runtime gaps: **0**
-- Executable method bindings: **30/41** (11 explicit `NOT_IMPLEMENTED`)
+- Executable method bindings: **41/41** (0 explicit `NOT_IMPLEMENTED`)
 
 These registry metrics measure typed runtime readiness, not full live source/provider coverage. The design-progress score above includes product, acceptance, source and release gaps.
 

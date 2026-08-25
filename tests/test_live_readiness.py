@@ -47,5 +47,5 @@ def test_live_readiness_tracks_current_gaps_without_freezing_old_shadow_labels()
 
     coverage = report.deterministic_method_coverage
     assert coverage is not None
-    assert not coverage.complete
-    assert coverage.not_implemented
+    assert not coverage.complete  # DCF/rNPV families still declare PARTIAL_RUNTIME breadth.
+    assert coverage.not_implemented == ()

@@ -212,7 +212,7 @@ def test_explicit_normalized_multiple_choice_can_skip_beta_and_wacc():
     )
 
 
-def test_unimplemented_financial_methods_fail_before_risk_provider_loading():
+def test_implemented_financial_methods_require_explicit_method_choice_before_risk_loading():
     module_plan = plan(
         segment(
             "financial_balance_sheet",
@@ -229,15 +229,19 @@ def test_unimplemented_financial_methods_fail_before_risk_provider_loading():
             {"module_requirement_plan": module_plan},
         )
     )
-    assert result.status is StageStatus.NOT_IMPLEMENTED
+    assert result.status is StageStatus.AWAITING_USER_DECISION
     assert result.blocking
-    assert (
-        result.outputs["valuation_method_intent"].status
-        is ValuationPlanStatus.CAPABILITY_GAP
-    )
+    intent = result.outputs["valuation_method_intent"]
+    assert intent.status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+    assert intent.segments[0].status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+    assert set(intent.segments[0].candidate_bindings) == {
+        "financial_balance_sheet/ddm",
+        "financial_balance_sheet/pb_roe",
+        "financial_balance_sheet/residual_income",
+    }
 
 
-def test_capability_gap_dominates_ambiguous_method_intent():
+def test_multiple_segments_with_implemented_ambiguity_require_user_decision():
     module_plan = plan(
         segment(
             "commodity_price_taker",
@@ -262,7 +266,7 @@ def test_capability_gap_dominates_ambiguous_method_intent():
     )
     intent = result.outputs["valuation_method_intent"]
     assert intent.segments[0].status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
-    assert intent.segments[1].status is ValuationPlanStatus.CAPABILITY_GAP
-    assert intent.status is ValuationPlanStatus.CAPABILITY_GAP
-    assert result.status is StageStatus.NOT_IMPLEMENTED
+    assert intent.segments[1].status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+    assert intent.status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+    assert result.status is StageStatus.AWAITING_USER_DECISION
     assert result.blocking
