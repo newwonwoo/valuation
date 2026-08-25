@@ -10,7 +10,16 @@ from .valuation_execution import GenericValuationResult
 
 
 def evidence_ledger_snapshot_hash(ledger: EvidenceLedger) -> str:
-    """Recompute the canonical EvidenceLedger snapshot hash used by EVIDENCE_LEDGER."""
+    """Return the canonical Ledger hash without serializing the same frozen state twice."""
+    snapshot = ledger.runtime_snapshot
+    if snapshot is not None:
+        if snapshot.is_current(ledger):
+            return snapshot.content_hash
+        return (
+            "MUTATED_LEDGER:"
+            f"{snapshot.mutation_version}->{ledger.mutation_version}:"
+            f"{len(snapshot.records)}->{len(ledger.records())}"
+        )
     payload = ledger.to_list()
     return sha256(
         json.dumps(
