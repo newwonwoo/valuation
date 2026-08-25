@@ -61,6 +61,7 @@ from .orchestrator import (
     load_stage_sequence,
     run_controlled_workflow,
 )
+from .partial_valuation import promote_partial_valuation_plan
 from .per_adapters import PERInputsLoader, live_hierarchical_warranted_per_adapter
 from .post_freeze_adapters import (
     MarketLoader,
@@ -119,6 +120,9 @@ _BLOCKED_RESULT_INTRINSIC_KEYS = frozenset(
         "intrinsic_scenario_values",
         "expected_value_per_share",
         "valuation_hash",
+        "valuation_scope",
+        "unvalued_segments",
+        "full_company_intrinsic_available",
         "intrinsic_freeze_token",
         "saved_current_state",
         "saved_report_markdown",
@@ -381,13 +385,18 @@ def _valuation_plan_loader(
             raise TypeError(
                 "valuation_plan_inputs_loader must return CompanyValuationPlanInputs"
             )
-        return compile_company_valuation_plan(
+        compilation = compile_company_valuation_plan(
             module_plan,
             scenario_set,
             evaluator_registry=evaluator_registry,
             capability_registry=capability_registry,
             inputs=inputs,
             method_choices=intent.method_choices(),
+        )
+        return promote_partial_valuation_plan(
+            compilation,
+            inputs=inputs,
+            scenario_set=scenario_set,
         )
 
     return load
