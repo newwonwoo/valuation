@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from datetime import date
 from typing import Iterable
 
@@ -15,13 +15,37 @@ from .records import (
 )
 
 
+@dataclass(frozen=True)
+class EvidenceLedgerSnapshot:
+    content_hash: str
+    mutation_version: int
+    records: tuple[EvidenceRecord, ...]
+
+    def __post_init__(self) -> None:
+        if not self.content_hash:
+            raise ValueError("ledger snapshot requires content_hash")
+        if self.mutation_version < 0:
+            raise ValueError("ledger snapshot mutation_version cannot be negative")
+
+    def is_current(self, ledger: "EvidenceLedger") -> bool:
+        return (
+            ledger.mutation_version == self.mutation_version
+            and ledger.records() == self.records
+        )
+
+
 class EvidenceLedger:
     """Append-only evidence collection with explicit supersession."""
 
     def __init__(self, records: Iterable[EvidenceRecord] = ()) -> None:
         self._records: dict[str, EvidenceRecord] = {}
+        self._mutation_version = 0
         for record in records:
             self.append(record)
+
+    @property
+    def mutation_version(self) -> int:
+        return self._mutation_version
 
     def append(self, record: EvidenceRecord) -> None:
         if record.id in self._records:
@@ -33,12 +57,16 @@ class EvidenceLedger:
             if (prior.target, prior.metric, prior.segment) != (record.target, record.metric, record.segment):
                 raise ValueError("superseding evidence must retain target, metric and segment")
         self._records[record.id] = record
+        self._mutation_version += 1
 
     def get(self, evidence_id: str) -> EvidenceRecord:
         try:
             return self._records[evidence_id]
         except KeyError as exc:
             raise ValueError(f"unknown evidence id: {evidence_id}") from exc
+
+    def records(self) -> tuple[EvidenceRecord, ...]:
+        return tuple(sorted(self._records.values(), key=lambda item: item.id))
 
     def active(self) -> tuple[EvidenceRecord, ...]:
         superseded = {r.supersedes_id for r in self._records.values() if r.supersedes_id}
@@ -47,8 +75,15 @@ class EvidenceLedger:
             if r.id not in superseded and r.status is EvidenceStatus.ACTIVE
         )
 
+    def snapshot(self, *, content_hash: str) -> EvidenceLedgerSnapshot:
+        return EvidenceLedgerSnapshot(
+            content_hash=content_hash,
+            mutation_version=self._mutation_version,
+            records=self.records(),
+        )
+
     def to_list(self) -> list[dict]:
-        return [_enum_values(asdict(r)) for r in sorted(self._records.values(), key=lambda item: item.id)]
+        return [_enum_values(asdict(r)) for r in self.records()]
 
 
 def validate_traceability(
