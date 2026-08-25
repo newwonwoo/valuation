@@ -4,13 +4,20 @@
 
 - Blueprint: **v0.5.2 canonical workflow + LIVE_PRIMARY readiness**
 - Design progress: **81% (56/69 accepted milestone points)**
-- Current delivery: **1 ACTIVE / 0 READY / 0 BLOCKED / 0 BACKLOG**
+- Current delivery: **1 ACTIVE / 0 READY / 0 BLOCKED / 0 BACKLOG / 0 MERGED PENDING ACCEPTANCE**
 - Accepted validation baseline: `04b38ecc4c800e7f24799e8a70e6a4497e1bc6a7`
 - Updated: **2026-08-25**
 
-Progress is conservative: ACTIVE/READY/BLOCKED work receives zero credit until every required acceptance check is VERIFIED or explicitly ADR-waived.
+Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE work receives zero credit until every required acceptance check is VERIFIED or explicitly ADR-waived.
 
 > Recovery note: Reconstructed from the archived PROJECT_STATUS.md dated 2026-08-25. The archived departmental design totals and accepted baseline points are preserved exactly; unknown historical milestone labels are not invented. New acceptance after recovery is recorded only with exact-SHA validation evidence.
+
+## Execution horizon
+
+- Now: `PM-RESIDUAL-DECOMPOSE-002`
+- Next: —
+- Later: —
+- Pending acceptance: —
 
 ## Organization
 
@@ -73,6 +80,7 @@ These registry metrics measure typed runtime readiness, not full live source/pro
 
 1. Change delivery state only in `ops/project_portfolio.yaml`.
 2. Keep one ACTIVE work item per owner and no overlapping ACTIVE write scopes.
-3. Record acceptance as VERIFIED only with exact-SHA validation evidence; use an ADR for any waiver.
-4. Add the complete handoff before REVIEW/DONE; only the PM/Integrator closes a milestone.
-5. Regenerate with `PYTHONPATH=src python scripts/render_project_status.py --write` and verify with `--check`.
+3. When a delivery PR is opened, record its number as `github_pr`; a merged linked PR may not remain ACTIVE/READY/BLOCKED/BACKLOG.
+4. Record acceptance as VERIFIED only with exact-SHA validation evidence; use an ADR for any waiver.
+5. Add the complete handoff before REVIEW/DONE; only the PM/Integrator closes a milestone.
+6. Validate with `PYTHONPATH=src python scripts/validate_project_portfolio.py`, regenerate with `render_project_status.py --write`, then verify with `--check`.
