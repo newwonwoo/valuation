@@ -51,6 +51,11 @@ class HttpBytesResponse:
     content_type: str | None
     charset: str | None
 
+    @property
+    def body(self) -> bytes:
+        """Compatibility alias for callers that use the original binary-response contract."""
+        return self.content
+
 
 def _safe_endpoint(url: str) -> str:
     return url.split("?", 1)[0]
@@ -111,7 +116,9 @@ class HttpTransport:
                         content_type=content_type,
                         charset=charset,
                     )
-            except (URLError, HTTPError, TimeoutError, SourceFetchError) as exc:
+            except Exception as exc:
+                # Transport/library failures are normalized through one sanitized retry path.
+                # KeyboardInterrupt/SystemExit are BaseException subclasses and still propagate.
                 last = exc
                 if attempt < self.retries:
                     time.sleep(0.25 * (attempt + 1))
