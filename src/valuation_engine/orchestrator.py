@@ -20,6 +20,7 @@ from .doctrine_runtime import (
     load_default_unit_contract_registry,
 )
 from .runtime_safety import (
+    evidence_ledgers,
     mutable_guard_snapshot,
     mutated_guard_keys,
     read_only_data_view,
@@ -198,9 +199,9 @@ def run_controlled_workflow(
 ) -> ControlledRunResult:
     """Execute the canonical stage order for PRIMARY_SHADOW/LIVE_PRIMARY.
 
-    Stage adapters receive a read-only top-level context view. Existing mutable upstream
-    values are guarded against in-place changes, while stage-control fields live only on a
-    disposable adapter view. Adapter failures are sanitized before they enter traces/logs.
+    Stage adapters receive an isolated, read-only top-level view. Mutable builtin values are
+    stage-local copies, EvidenceLedger is sealed while a downstream adapter runs, and stage
+    control fields are disposable. All adapter failure text is sanitized before persistence.
     """
     if execution_mode is ExecutionMode.LEGACY_REGRESSION:
         raise ValueError("LEGACY_REGRESSION must use the legacy workflow, not this orchestrator")
@@ -308,25 +309,27 @@ def run_controlled_workflow(
                 break
             continue
 
-        guard_before = mutable_guard_snapshot(context.data)
         adapter_view, data_view = _adapter_context(context)
+        guard_before = mutable_guard_snapshot(adapter_view.data)
+        sealed_ledgers = evidence_ledgers(context.data)
+        for ledger in sealed_ledgers:
+            ledger._enter_runtime_readonly()
+        adapter_error: Exception | None = None
+        result: object | None = None
         try:
             result = adapter(adapter_view)
         except Exception as exc:
-            _blocked_trace(
-                context,
-                blockers,
-                stage=stage,
-                reason=f"stage adapter failed: {type(exc).__name__}: {exc}",
-            )
-            break
+            adapter_error = exc
+        finally:
+            for ledger in reversed(sealed_ledgers):
+                ledger._exit_runtime_readonly()
 
         control_mutations = _adapter_control_mutations(
             canonical=context,
             adapter_view=adapter_view,
             original_data_view=data_view,
         )
-        data_mutations = mutated_guard_keys(guard_before, context.data)
+        data_mutations = mutated_guard_keys(guard_before, adapter_view.data)
         if control_mutations or data_mutations:
             details = []
             if control_mutations:
@@ -340,6 +343,18 @@ def run_controlled_workflow(
                 reason=(
                     "stage adapter attempted out-of-band context mutation: "
                     + "; ".join(details)
+                ),
+            )
+            break
+
+        if adapter_error is not None:
+            _blocked_trace(
+                context,
+                blockers,
+                stage=stage,
+                reason=(
+                    "stage adapter failed: "
+                    f"{type(adapter_error).__name__}: {adapter_error}"
                 ),
             )
             break
@@ -360,16 +375,9 @@ def run_controlled_workflow(
         if result.outputs:
             overlap = set(result.outputs).intersection(context.data)
             if overlap:
-                _blocked_trace(
-                    context,
-                    blockers,
-                    stage=stage,
-                    reason=(
-                        "stage attempted silent overwrite of context keys: "
-                        + ", ".join(sorted(overlap))
-                    ),
+                raise ValueError(
+                    f"stage {stage} attempted silent overwrite of context keys: {sorted(overlap)}"
                 )
-                break
             context.data.update(result.outputs)
 
         context.stage_traces.append(
