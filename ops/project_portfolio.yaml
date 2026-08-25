@@ -48,11 +48,11 @@ departments:
         status: VERIFIED
         accepted_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
         validation_evidence:
-          - GHA valuation-tests #302 PASS at exact main SHA
+          - GHA valuation-tests run 302 PASS at exact main SHA
         implementation_refs:
-          - PR #53 KR OpenDART LIVE_PRIMARY provider foundation
-          - PR #55 safe OpenDART original filing provider
-          - PR #56 deterministic OpenDART KPI extraction contract
+          - PR 53 KR OpenDART LIVE_PRIMARY provider foundation
+          - PR 55 safe OpenDART original filing provider
+          - PR 56 deterministic OpenDART KPI extraction contract
 
   - id: runtime-safety-agent
     name: Runtime Safety & Control Plane
@@ -87,9 +87,9 @@ departments:
         status: VERIFIED
         accepted_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
         validation_evidence:
-          - GHA valuation-tests #302 PASS at exact main SHA
+          - GHA valuation-tests run 302 PASS at exact main SHA
         implementation_refs:
-          - PR #57 authorized licensed_export / explicit_permission Street loader
+          - PR 57 authorized licensed_export / explicit_permission Street loader
 
   - id: performance-platform-agent
     name: Platform, Packaging & Performance
@@ -102,7 +102,7 @@ departments:
     name: Quality, Security & Release
     design_points: 8
     baseline_accepted_points: 5
-    current_work: BACKLOG — PR #51 publication blocker is closed; 2 recovered design points remain without original milestone labels
+    current_work: BACKLOG — PR 51 publication blocker is closed; 2 recovered design points remain without original milestone labels
     accepted_milestones:
       - id: QA-PR51-001
         title: Publish the accepted canonical LIVE_PRIMARY runtime and verify valuation-tests
@@ -110,8 +110,8 @@ departments:
         status: VERIFIED
         accepted_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
         validation_evidence:
-          - PR #51 merged
-          - GHA valuation-tests #302 PASS at exact main SHA
+          - PR 51 merged
+          - GHA valuation-tests run 302 PASS at exact main SHA
 
 work_items:
   - priority: P1
