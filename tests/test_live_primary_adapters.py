@@ -6,6 +6,7 @@ import pytest
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.industry_dna import EconomicArchetype, IndustryDNAProfile
 from valuation_engine.live_primary_adapters import (
+    AuthoritativeEvidenceLineage,
     CompanyResolutionRequest,
     IndustryKnowledgeSnapshot,
     LiveFreshnessAssessment,
@@ -39,8 +40,12 @@ def _corp_zip() -> bytes:
 def test_opendart_corp_archive_and_identity_resolution():
     records = parse_opendart_corp_code_archive(_corp_zip())
     assert len(records) == 2
-    by_ticker = resolve_opendart_identity(records, CompanyResolutionRequest("005930", "KR"))
-    by_name = resolve_opendart_identity(records, CompanyResolutionRequest("삼성전자"))
+    by_ticker = resolve_opendart_identity(
+        records, CompanyResolutionRequest("005930", "KR")
+    )
+    by_name = resolve_opendart_identity(
+        records, CompanyResolutionRequest("삼성전자")
+    )
     assert by_ticker == by_name
     assert by_ticker.target_id == "KR:DART:00126380"
     assert by_ticker.ticker == "005930"
@@ -60,9 +65,13 @@ def test_live_opendart_resolver_fetches_official_archive_with_injected_transport
 
 
 def test_opendart_resolution_fails_closed_for_wrong_jurisdiction():
-    records = (OpenDartCorpRecord("00126380", "삼성전자", "005930", "20260101"),)
+    records = (
+        OpenDartCorpRecord("00126380", "삼성전자", "005930", "20260101"),
+    )
     with pytest.raises(ValueError, match="Korean"):
-        resolve_opendart_identity(records, CompanyResolutionRequest("005930", "US"))
+        resolve_opendart_identity(
+            records, CompanyResolutionRequest("005930", "US")
+        )
 
 
 def test_industry_snapshot_hash_is_self_verifying():
@@ -88,7 +97,25 @@ def test_industry_snapshot_hash_is_self_verifying():
 
 def _identity_resolver(_):
     records = parse_opendart_corp_code_archive(_corp_zip())
-    return resolve_opendart_identity(records, CompanyResolutionRequest("005930"))
+    return resolve_opendart_identity(
+        records, CompanyResolutionRequest("005930")
+    )
+
+
+def _lineage(evidence_id: str, content_hash: str) -> AuthoritativeEvidenceLineage:
+    return AuthoritativeEvidenceLineage(
+        evidence_id=evidence_id,
+        target_id="KR:DART:00126380",
+        source_id="KR_OPENDART",
+        observed_date="2026-08-20",
+        content_hash=content_hash,
+        event_date="2026-06-30",
+        effective_date="2026-06-30",
+        published_at="2026-08-20T09:00:00+09:00",
+        first_seen_at="2026-08-20T09:05:00+09:00",
+        revision_id="original",
+        revision_at="2026-08-20T09:00:00+09:00",
+    )
 
 
 def _snapshot_loader(_):
@@ -96,15 +123,27 @@ def _snapshot_loader(_):
         as_of="2026-08-23",
         source_ids=("KR_OPENDART",),
         document_ids=("D1",),
-        evidence_ids=("E_INDUSTRY",),
-        content_hashes=("facts-v1",),
+        evidence_ids=("E_INDUSTRY", "E_SEGMENT"),
+        content_hashes=("facts-v1", "segment-v1"),
+        evidence_lineage=(
+            _lineage("E_INDUSTRY", "facts-v1"),
+            _lineage("E_SEGMENT", "segment-v1"),
+        ),
     )
 
 
 def _clean_freshness(_, snapshot):
     return LiveFreshnessAssessment(
         checked_at="2026-08-23",
-        findings=(WatchFinding(WatchStatus.CLEAN, "KR_OPENDART", "current snapshot reviewed", (), False),),
+        findings=(
+            WatchFinding(
+                WatchStatus.CLEAN,
+                "KR_OPENDART",
+                "current snapshot reviewed",
+                (),
+                False,
+            ),
+        ),
         source_snapshot_hash=snapshot.snapshot_hash,
     )
 
@@ -133,7 +172,10 @@ def _dna(_, segments, __):
         IndustryDNAProfile(
             segment_id=segment.segment_id,
             sector_adapter="semiconductor.memory",
-            archetypes=(EconomicArchetype.CAPACITY_MANUFACTURING, EconomicArchetype.COMMODITY_PRICE_TAKER),
+            archetypes=(
+                EconomicArchetype.CAPACITY_MANUFACTURING,
+                EconomicArchetype.COMMODITY_PRICE_TAKER,
+            ),
             revenue_recognition=segment.revenue_recognition,
             price_formation=segment.price_formation,
             asset_ownership=segment.asset_ownership,
@@ -160,9 +202,15 @@ def test_live_primary_front_half_runs_with_typed_live_contracts():
             resolver=_identity_resolver,
             request=CompanyResolutionRequest("005930", "KR"),
         ),
-        "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT": live_industry_snapshot_adapter(loader=_snapshot_loader),
-        "SOURCE_FRESHNESS_PRECHECK": live_source_freshness_adapter(loader=_clean_freshness),
-        "SEGMENT_DECOMPOSITION": live_segment_decomposition_adapter(decomposer=_segments),
+        "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT": live_industry_snapshot_adapter(
+            loader=_snapshot_loader
+        ),
+        "SOURCE_FRESHNESS_PRECHECK": live_source_freshness_adapter(
+            loader=_clean_freshness
+        ),
+        "SEGMENT_DECOMPOSITION": live_segment_decomposition_adapter(
+            decomposer=_segments
+        ),
         "INDUSTRY_DNA_ROUTE": live_industry_dna_route_adapter(router=_dna),
     }
     result = run_controlled_workflow(
@@ -173,9 +221,15 @@ def test_live_primary_front_half_runs_with_typed_live_contracts():
         required_stages=sequence,
     )
     assert result.blocked_reasons == ()
-    assert all(trace.status is StageStatus.PASS for trace in result.stage_traces)
+    assert all(
+        trace.status is StageStatus.PASS for trace in result.stage_traces
+    )
     assert result.data["ticker"] == "005930"
-    assert result.data["industry_dna_profiles"][0].sector_adapter == "semiconductor.memory"
+    assert result.data["segment_evidence_lineage_hash"]
+    assert (
+        result.data["industry_dna_profiles"][0].sector_adapter
+        == "semiconductor.memory"
+    )
 
 
 def test_freshness_revalidation_blocks_live_run_before_downstream_analysis():
@@ -194,7 +248,11 @@ def test_freshness_revalidation_blocks_live_run_before_downstream_analysis():
             source_snapshot_hash=snapshot.snapshot_hash,
         )
 
-    sequence = ("COMPANY_RESOLUTION", "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT", "SOURCE_FRESHNESS_PRECHECK")
+    sequence = (
+        "COMPANY_RESOLUTION",
+        "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT",
+        "SOURCE_FRESHNESS_PRECHECK",
+    )
     result = run_controlled_workflow(
         run_id="LIVE_FRONT_2",
         execution_mode=ExecutionMode.LIVE_PRIMARY,
@@ -204,8 +262,12 @@ def test_freshness_revalidation_blocks_live_run_before_downstream_analysis():
                 resolver=_identity_resolver,
                 request=CompanyResolutionRequest("005930"),
             ),
-            "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT": live_industry_snapshot_adapter(loader=_snapshot_loader),
-            "SOURCE_FRESHNESS_PRECHECK": live_source_freshness_adapter(loader=stale),
+            "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT": live_industry_snapshot_adapter(
+                loader=_snapshot_loader
+            ),
+            "SOURCE_FRESHNESS_PRECHECK": live_source_freshness_adapter(
+                loader=stale
+            ),
         },
         required_stages=sequence,
     )
@@ -216,7 +278,14 @@ def test_freshness_revalidation_blocks_live_run_before_downstream_analysis():
 def test_industry_dna_router_cannot_invent_evidence_ids():
     def bad_dna(identity, segments, snapshot):
         good = _dna(identity, segments, snapshot)[0]
-        return (IndustryDNAProfile(**{**good.__dict__, "evidence_keys": ("FAKE_EVIDENCE",)}),)
+        return (
+            IndustryDNAProfile(
+                **{
+                    **good.__dict__,
+                    "evidence_keys": ("FAKE_EVIDENCE",),
+                }
+            ),
+        )
 
     sequence = (
         "COMPANY_RESOLUTION",
@@ -233,9 +302,15 @@ def test_industry_dna_router_cannot_invent_evidence_ids():
                 resolver=_identity_resolver,
                 request=CompanyResolutionRequest("005930"),
             ),
-            "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT": live_industry_snapshot_adapter(loader=_snapshot_loader),
-            "SEGMENT_DECOMPOSITION": live_segment_decomposition_adapter(decomposer=_segments),
-            "INDUSTRY_DNA_ROUTE": live_industry_dna_route_adapter(router=bad_dna),
+            "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT": live_industry_snapshot_adapter(
+                loader=_snapshot_loader
+            ),
+            "SEGMENT_DECOMPOSITION": live_segment_decomposition_adapter(
+                decomposer=_segments
+            ),
+            "INDUSTRY_DNA_ROUTE": live_industry_dna_route_adapter(
+                router=bad_dna
+            ),
         },
         required_stages=sequence,
     )

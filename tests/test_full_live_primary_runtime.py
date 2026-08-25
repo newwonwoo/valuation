@@ -10,6 +10,7 @@ from valuation_engine.evidence_collection import (
 )
 from valuation_engine.industry_dna import EconomicArchetype, IndustryDNAProfile
 from valuation_engine.live_primary_adapters import (
+    AuthoritativeEvidenceLineage,
     CompanyResolutionRequest,
     IndustryKnowledgeSnapshot,
     LiveFreshnessAssessment,
@@ -126,13 +127,33 @@ def company_resolver(_: CompanyResolutionRequest) -> ResolvedCompanyIdentity:
     return identity()
 
 
+def _lineage(evidence_id: str, content_hash: str) -> AuthoritativeEvidenceLineage:
+    return AuthoritativeEvidenceLineage(
+        evidence_id=evidence_id,
+        target_id=TARGET_ID,
+        source_id=SOURCE_ID,
+        observed_date=AS_OF,
+        content_hash=content_hash,
+        event_date="2026-06-30",
+        effective_date="2026-06-30",
+        published_at="2026-08-23T08:30:00+09:00",
+        first_seen_at="2026-08-23T08:35:00+09:00",
+        revision_id="original",
+        revision_at="2026-08-23T08:30:00+09:00",
+    )
+
+
 def industry_snapshot_loader(_: ResolvedCompanyIdentity) -> IndustryKnowledgeSnapshot:
     return IndustryKnowledgeSnapshot.build(
         as_of=AS_OF,
         source_ids=(SOURCE_ID,),
         document_ids=("DOC:INDUSTRY",),
-        evidence_ids=("E:INDUSTRY",),
-        content_hashes=("FROZEN-INDUSTRY-CONTENT",),
+        evidence_ids=("E:INDUSTRY", "E:SEGMENT"),
+        content_hashes=("FROZEN-INDUSTRY-CONTENT", "FROZEN-SEGMENT-CONTENT"),
+        evidence_lineage=(
+            _lineage("E:INDUSTRY", "FROZEN-INDUSTRY-CONTENT"),
+            _lineage("E:SEGMENT", "FROZEN-SEGMENT-CONTENT"),
+        ),
     )
 
 
