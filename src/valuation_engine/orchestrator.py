@@ -19,6 +19,12 @@ from .doctrine_runtime import (
     build_doctrine_coverage,
     load_default_unit_contract_registry,
 )
+from .runtime_safety import (
+    mutable_guard_snapshot,
+    mutated_guard_keys,
+    read_only_data_view,
+    sanitize_runtime_text,
+)
 from .unit_contracts import UnitContractRegistry
 
 
@@ -34,6 +40,8 @@ class StageExecutionResult:
             raise ValueError("stage result requires rationale")
         if self.status in {StageStatus.PENDING, StageStatus.READY, StageStatus.RUNNING}:
             raise ValueError("stage adapter must return a terminal or recovery status")
+        if not isinstance(self.outputs, dict):
+            raise TypeError("stage result outputs must be a dict")
 
 
 @dataclass(frozen=True)
@@ -134,6 +142,50 @@ def _put_runtime_value(context: OrchestratorContext, key: str, value: Any) -> No
     context.data[key] = value
 
 
+def _blocked_trace(
+    context: OrchestratorContext,
+    blockers: list[str],
+    *,
+    stage: str,
+    reason: str,
+) -> None:
+    safe = sanitize_runtime_text(reason)
+    context.stage_traces.append(StageTrace(stage, StageStatus.BLOCKED, safe, True))
+    blockers.append(f"{stage}: {safe}")
+
+
+def _adapter_context(context: OrchestratorContext) -> tuple[OrchestratorContext, object]:
+    data_view = read_only_data_view(context.data)
+    view = OrchestratorContext(
+        context.run_id,
+        context.execution_mode,
+        data_view,  # type: ignore[arg-type]
+        list(context.stage_traces),
+        context.freeze_token,
+    )
+    return view, data_view
+
+
+def _adapter_control_mutations(
+    *,
+    canonical: OrchestratorContext,
+    adapter_view: OrchestratorContext,
+    original_data_view: object,
+) -> tuple[str, ...]:
+    changed: list[str] = []
+    if adapter_view.run_id != canonical.run_id:
+        changed.append("run_id")
+    if adapter_view.execution_mode is not canonical.execution_mode:
+        changed.append("execution_mode")
+    if adapter_view.data is not original_data_view:
+        changed.append("data_binding")
+    if adapter_view.stage_traces != canonical.stage_traces:
+        changed.append("stage_traces")
+    if adapter_view.freeze_token != canonical.freeze_token:
+        changed.append("freeze_token")
+    return tuple(changed)
+
+
 def run_controlled_workflow(
     *,
     run_id: str,
@@ -146,10 +198,9 @@ def run_controlled_workflow(
 ) -> ControlledRunResult:
     """Execute the canonical stage order for PRIMARY_SHADOW/LIVE_PRIMARY.
 
-    The Control Plane now generates Doctrine Coverage from Unit Contracts and actual stage
-    traces. Audit receives a pre-audit snapshot; Freeze receives a rebuilt final snapshot
-    that includes the passed Audit stage and atomically authorizes the Freeze unit. Callers
-    no longer need to inject ad-hoc coverage tuples.
+    Stage adapters receive a read-only top-level context view. Existing mutable upstream
+    values are guarded against in-place changes, while stage-control fields live only on a
+    disposable adapter view. Adapter failures are sanitized before they enter traces/logs.
     """
     if execution_mode is ExecutionMode.LEGACY_REGRESSION:
         raise ValueError("LEGACY_REGRESSION must use the legacy workflow, not this orchestrator")
@@ -170,11 +221,12 @@ def run_controlled_workflow(
     for stage_index, stage in enumerate(stage_sequence):
         if stage in _POST_FREEZE_STAGES:
             if context.freeze_token is None:
-                reason = f"{stage} requires IntrinsicFreezeToken"
-                context.stage_traces.append(
-                    StageTrace(stage, StageStatus.BLOCKED, reason, True)
+                _blocked_trace(
+                    context,
+                    blockers,
+                    stage=stage,
+                    reason=f"{stage} requires IntrinsicFreezeToken",
                 )
-                blockers.append(reason)
                 break
             authorize_post_freeze(context.freeze_token, run_id=run_id)
 
@@ -189,9 +241,15 @@ def run_controlled_workflow(
                 _put_runtime_value(context, "pre_audit_doctrine_coverage", pre_audit.entries)
                 _put_runtime_value(context, "pre_audit_expected_unit_ids", pre_audit.expected_unit_ids)
             except Exception as exc:
-                reason = f"pre-audit doctrine coverage failed: {type(exc).__name__}: {exc}"
-                context.stage_traces.append(StageTrace(stage, StageStatus.BLOCKED, reason, True))
-                blockers.append(reason)
+                _blocked_trace(
+                    context,
+                    blockers,
+                    stage=stage,
+                    reason=(
+                        "pre-audit doctrine coverage failed: "
+                        f"{type(exc).__name__}: {exc}"
+                    ),
+                )
                 break
 
         if stage == "INTRINSIC_VALUE_FREEZE":
@@ -226,11 +284,12 @@ def run_controlled_workflow(
                     )
                 )
             except Exception as exc:
-                reason = f"intrinsic freeze blocked: {type(exc).__name__}: {exc}"
-                context.stage_traces.append(
-                    StageTrace(stage, StageStatus.BLOCKED, reason, True)
+                _blocked_trace(
+                    context,
+                    blockers,
+                    stage=stage,
+                    reason=f"intrinsic freeze blocked: {type(exc).__name__}: {exc}",
                 )
-                blockers.append(reason)
                 break
             continue
 
@@ -238,34 +297,86 @@ def run_controlled_workflow(
         if adapter is None:
             status = StageStatus.NOT_IMPLEMENTED
             is_blocking = stage in required
-            reason = "required stage adapter is not implemented" if is_blocking else "optional stage adapter is not implemented"
+            reason = (
+                "required stage adapter is not implemented"
+                if is_blocking
+                else "optional stage adapter is not implemented"
+            )
             context.stage_traces.append(StageTrace(stage, status, reason, is_blocking))
             if is_blocking:
                 blockers.append(f"{stage}: {reason}")
                 break
             continue
 
+        guard_before = mutable_guard_snapshot(context.data)
+        adapter_view, data_view = _adapter_context(context)
         try:
-            result = adapter(context)
+            result = adapter(adapter_view)
         except Exception as exc:
-            reason = f"stage adapter failed: {type(exc).__name__}: {exc}"
-            context.stage_traces.append(StageTrace(stage, StageStatus.BLOCKED, reason, True))
-            blockers.append(f"{stage}: {reason}")
+            _blocked_trace(
+                context,
+                blockers,
+                stage=stage,
+                reason=f"stage adapter failed: {type(exc).__name__}: {exc}",
+            )
             break
 
+        control_mutations = _adapter_control_mutations(
+            canonical=context,
+            adapter_view=adapter_view,
+            original_data_view=data_view,
+        )
+        data_mutations = mutated_guard_keys(guard_before, context.data)
+        if control_mutations or data_mutations:
+            details = []
+            if control_mutations:
+                details.append("control=" + ",".join(control_mutations))
+            if data_mutations:
+                details.append("upstream_data=" + ",".join(data_mutations))
+            _blocked_trace(
+                context,
+                blockers,
+                stage=stage,
+                reason=(
+                    "stage adapter attempted out-of-band context mutation: "
+                    + "; ".join(details)
+                ),
+            )
+            break
+
+        if not isinstance(result, StageExecutionResult):
+            _blocked_trace(
+                context,
+                blockers,
+                stage=stage,
+                reason=(
+                    "stage adapter contract violation: expected StageExecutionResult, got "
+                    + type(result).__name__
+                ),
+            )
+            break
+
+        safe_rationale = sanitize_runtime_text(result.rationale)
         if result.outputs:
             overlap = set(result.outputs).intersection(context.data)
             if overlap:
-                raise ValueError(
-                    f"stage {stage} attempted silent overwrite of context keys: {sorted(overlap)}"
+                _blocked_trace(
+                    context,
+                    blockers,
+                    stage=stage,
+                    reason=(
+                        "stage attempted silent overwrite of context keys: "
+                        + ", ".join(sorted(overlap))
+                    ),
                 )
+                break
             context.data.update(result.outputs)
 
         context.stage_traces.append(
             StageTrace(
                 stage,
                 result.status,
-                result.rationale,
+                safe_rationale,
                 result.blocking,
                 tuple(sorted(result.outputs)),
             )
@@ -278,7 +389,7 @@ def run_controlled_workflow(
             StageStatus.AWAITING_USER_DECISION,
         }
         if unresolved:
-            blockers.append(f"{stage}: {result.rationale}")
+            blockers.append(f"{stage}: {safe_rationale}")
             break
 
     return ControlledRunResult(
