@@ -31,7 +31,7 @@ stages:
     reason: Industry DNA compiles to evidence, KPI, scanner, kill-condition and method requirements.
   PRIMARY_EVIDENCE_COLLECTION:
     status: PARTIAL_LIVE
-    reason: typed collector core is implemented and OpenDART standard financial facts are supported; company-specific KPI/IR/source coverage remains incomplete.
+    reason: typed collector core is implemented and OpenDART standard financial facts plus deterministic original-filing KPI extraction are supported; company-specific spec/IR/source breadth remains incomplete.
   EVIDENCE_LEDGER:
     status: RUNTIME_READY
     reason: append-only ledger, supersession and snapshot hashing are implemented.
@@ -61,16 +61,16 @@ stages:
     reason: exact Industry-DNA method intent resolves and hashes segment method/version choices before Beta/WACC, and stage 19 verifies the same module, capability, evaluator and method-choice contracts.
   HIERARCHICAL_BETA_ESTIMATION:
     status: PARTIAL_LIVE
-    reason: typed L1→L4 peer-universe loader, Evidence-backed Economic-Twin selection, normalized return-convention validation and target relevering are implemented; universal live peer/return providers remain caller- and jurisdiction-specific.
+    reason: typed L1→L4 peer-universe loader, Evidence-backed Economic-Twin selection, normalized return-convention validation and target relevering are implemented; KRX regression-Beta collection exists for Korean equities but full reusable peer selection/capital-structure provider packs remain incomplete.
   WACC_VALIDATION:
     status: PARTIAL_LIVE
-    reason: typed currency-consistent risk-free/ERP/country-risk/marginal-debt/target-structure loader and same-structure Beta→WACC validation are implemented; universal market/credit data providers remain caller-specific.
+    reason: typed currency-consistent risk-free/ERP/country-risk/marginal-debt/target-structure loader and same-structure Beta→WACC validation are implemented; ECOS and Damodaran collection paths exist, while marginal debt-cost and target-structure provider breadth remains incomplete.
   DETERMINISTIC_VALUATION:
     status: PARTIAL_LIVE
     reason: exact registry/SOTP runtime supports normalized multiples, explicit FCFF DCF, finite-life project_npv/reserve_npv/cohort_npv, and certificate-bound single-event rNPV; multi-stage event trees, NAV/residual-income and other archetype-specific evaluator coverage remain incomplete.
   HIERARCHICAL_WARRANTED_PER:
     status: PARTIAL_LIVE
-    reason: typed Compiled-Assumption/WACC/DCF-fingerprint adapter computes Core, committed-expansion and peer-residual PER layers; universal normalized-EPS and peer-residual data providers remain caller-specific.
+    reason: typed Compiled-Assumption/WACC/DCF-fingerprint adapter computes Core, committed-expansion and peer-residual PER layers; filing EPS collection exists but normalized forward-EPS and peer-residual provider packs remain incomplete.
   DCF_PER_ASSUMPTION_CONSISTENCY_GATE:
     status: RUNTIME_READY
     reason: may be explicitly not applicable when the selected exact method does not use both DCF and PER.
@@ -87,8 +87,8 @@ stages:
     status: RUNTIME_READY
     reason: same-run hash-bound Freeze Token is implemented.
   STREET_REFERENCE_LOAD:
-    status: ADAPTER_REQUIRED
-    reason: post-freeze callback contract is implemented, but no repository-provided entitled/public Street source adapter exists.
+    status: PARTIAL_LIVE
+    reason: repository-provided post-freeze loader accepts only caller-authorized licensed_export or explicit_permission Street JSON and preserves the Freeze boundary; universal vendor/public automatic retrieval remains entitlement-specific.
   STREET_GAP_ANALYZER:
     status: RUNTIME_READY
     reason: scenario-envelope and calibrated Expected gap analysis are implemented.
