@@ -49,8 +49,8 @@ flowchart TB
 ## Objective readiness (derived, not manually scored)
 
 - Canonical stages mapped: **33/33**
-- `LIVE_READY` or `RUNTIME_READY`: **26/33**
-- `PARTIAL_LIVE`: **7/33**
+- `LIVE_READY` or `RUNTIME_READY`: **29/33**
+- `PARTIAL_LIVE`: **4/33**
 - Explicit runtime gaps: **0**
 - Executable method bindings: **30/41** (11 explicit `NOT_IMPLEMENTED`)
 
