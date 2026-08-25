@@ -3,7 +3,7 @@ from __future__ import annotations
 from hashlib import sha256
 import json
 
-from .assumption_compiler import CompiledAssumption, CompiledAssumptionSet
+from .assumption_compiler import CompiledAssumptionSet
 from .ledger import EvidenceLedger
 from .scenario_binding import BoundScenarioSet
 from .valuation_execution import GenericValuationResult
@@ -40,15 +40,45 @@ def compiled_input_evidence_hash(
 
 
 def compiled_assumption_set_hash(compiled: CompiledAssumptionSet) -> str:
-    """Replay the exact CompiledAssumptionSet hash contract."""
-    serialized = "\n".join(
-        sorted(
-            f"{item.key}|{item.scenario_id}|{item.measure.amount}|{item.measure.unit}|"
-            f"{item.bridge_id}|{item.input_evidence_hash}"
-            for item in compiled.assumptions
-        )
-    )
-    return sha256(serialized.encode("utf-8")).hexdigest()
+    """Replay the v2 CompiledAssumptionSet identity/provenance hash contract."""
+    payload = {
+        "contract": "compiled_assumption_set/v2",
+        "target_id": compiled.target_id,
+        "assumptions": [
+            {
+                "key": item.key,
+                "scenario_id": item.scenario_id,
+                "measure": {
+                    "amount": str(item.measure.amount),
+                    "unit": item.measure.unit,
+                    "as_of": item.measure.as_of,
+                },
+                "bridge_id": item.bridge_id,
+                "evidence_ids": list(item.evidence_ids),
+                "hypothesis_id": item.hypothesis_id,
+                "economic_path_id": item.economic_path_id,
+                "transform_id": item.transform_id,
+                "input_evidence_hash": item.input_evidence_hash,
+                "calibration_status": (
+                    item.calibration_status.value
+                    if item.calibration_status is not None
+                    else None
+                ),
+            }
+            for item in sorted(
+                compiled.assumptions,
+                key=lambda row: (row.scenario_id, row.key, row.bridge_id),
+            )
+        ],
+    }
+    return sha256(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
 
 
 def bound_scenario_set_hash(
