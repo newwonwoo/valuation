@@ -71,6 +71,13 @@ def promote_partial_valuation_plan(
         )
         for item in ready_resolutions
     )
+    unresolved_missing = tuple(
+        dict.fromkeys(
+            value
+            for item in unresolved
+            for value in item.missing_assumptions
+        )
+    )
     missing_common = _missing_common_assumptions(
         scenario_set,
         inputs=inputs,
@@ -80,7 +87,7 @@ def promote_partial_valuation_plan(
         return replace(
             compilation,
             missing_assumptions=tuple(
-                dict.fromkeys((*compilation.missing_assumptions, *missing_common))
+                dict.fromkeys((*unresolved_missing, *missing_common))
             ),
         )
 
@@ -102,7 +109,11 @@ def promote_partial_valuation_plan(
         unvalued_segments=unvalued_segments,
     )
     plan.validate()
-    return replace(compilation, plan=plan)
+    return replace(
+        compilation,
+        plan=plan,
+        missing_assumptions=unresolved_missing,
+    )
 
 
 def partial_plan_executable(compilation: ValuationPlanCompilation) -> bool:
