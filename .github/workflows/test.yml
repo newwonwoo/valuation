@@ -26,7 +26,10 @@ jobs:
       - name: Probability calibration policy
         run: PYTHONPATH=src python scripts/validate_probability_calibration_policy.py
       - name: PM project status sync
-        run: PYTHONPATH=src python scripts/render_project_status.py --check
+        run: |
+          cp PROJECT_STATUS.md /tmp/PROJECT_STATUS.committed.md
+          PYTHONPATH=src python scripts/render_project_status.py --write
+          diff -u /tmp/PROJECT_STATUS.committed.md PROJECT_STATUS.md
       - name: Tests
         run: pytest -q
       - name: OCI regression output
