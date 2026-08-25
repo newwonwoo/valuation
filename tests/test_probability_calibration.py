@@ -30,6 +30,7 @@ def forecast(
     probability: Decimal,
     band: str,
     supersedes_id: str | None = None,
+    first_seen_at: datetime | None = None,
 ) -> ProbabilityForecast:
     return ProbabilityForecast(
         forecast_id=forecast_id,
@@ -40,7 +41,11 @@ def forecast(
         horizon="90d",
         event_definition="binding project gate is achieved within 90 days",
         issued_at=issued_at,
-        evaluation_deadline=date(issued_at.year + (1 if issued_at.month > 9 else 0), ((issued_at.month + 2) % 12) + 1, 28),
+        evaluation_deadline=date(
+            issued_at.year + (1 if issued_at.month > 9 else 0),
+            ((issued_at.month + 2) % 12) + 1,
+            28,
+        ),
         probability=probability,
         displayed_band=band,
         evidence_snapshot_hash=f"SNAP-{event_key}-{forecast_id}",
@@ -48,14 +53,23 @@ def forecast(
         resolution_rule="primary source confirms gate by deadline",
         resolution_source_policy="primary evidence only",
         supersedes_id=supersedes_id,
+        first_seen_at=(first_seen_at or issued_at) if supersedes_id else first_seen_at,
     )
 
 
-def resolved(forecast_id: str, occurred: bool, observed_at: datetime) -> ForecastOutcome:
+def resolved(
+    forecast_id: str,
+    occurred: bool,
+    observed_at: datetime,
+) -> ForecastOutcome:
     return ForecastOutcome(
         forecast_id=forecast_id,
         observed_at=observed_at,
-        outcome=ForecastOutcomeState.OCCURRED if occurred else ForecastOutcomeState.NOT_OCCURRED,
+        outcome=(
+            ForecastOutcomeState.OCCURRED
+            if occurred
+            else ForecastOutcomeState.NOT_OCCURRED
+        ),
         outcome_evidence_ids=(f"OUTCOME-{forecast_id}",),
         resolver_id="PRIMARY_RESOLVER",
         rationale="resolved from primary evidence",
@@ -76,8 +90,14 @@ def build_promotable_ledger() -> ProbabilityCalibrationLedger:
         (Decimal("0.90"), "P90", 36),
     )
     quarter_dates = (
-        (2024, 1), (2024, 4), (2024, 7), (2024, 10),
-        (2025, 1), (2025, 4), (2025, 7), (2025, 10),
+        (2024, 1),
+        (2024, 4),
+        (2024, 7),
+        (2024, 10),
+        (2025, 1),
+        (2025, 4),
+        (2025, 7),
+        (2025, 10),
     )
     index = 0
     for probability, band, successes in bands:
@@ -98,7 +118,13 @@ def build_promotable_ledger() -> ProbabilityCalibrationLedger:
                 resolved(
                     forecast_id,
                     local < successes,
-                    datetime(year, min(month + 2, 12), 20, 9, tzinfo=timezone.utc),
+                    datetime(
+                        year,
+                        min(month + 2, 12),
+                        20,
+                        9,
+                        tzinfo=timezone.utc,
+                    ),
                 )
             )
             index += 1
@@ -157,29 +183,45 @@ def test_production_promotion_gate_issues_certificate():
 def test_revisions_do_not_inflate_effective_sample_count():
     ledger = ProbabilityCalibrationLedger()
     first = forecast(
-        "F1", event_key="EVENT-1", company_id="C1",
+        "F1",
+        event_key="EVENT-1",
+        company_id="C1",
         issued_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
-        probability=Decimal("0.4"), band="P40",
+        probability=Decimal("0.4"),
+        band="P40",
     )
     second = forecast(
-        "F2", event_key="EVENT-1", company_id="C1",
+        "F2",
+        event_key="EVENT-1",
+        company_id="C1",
         issued_at=datetime(2025, 1, 15, tzinfo=timezone.utc),
-        probability=Decimal("0.6"), band="P60", supersedes_id="F1",
+        probability=Decimal("0.6"),
+        band="P60",
+        supersedes_id="F1",
     )
     ledger.append_forecast(first)
     ledger.append_forecast(second)
     with pytest.raises(ValueError, match="terminal forecast revision"):
-        ledger.append_outcome(resolved("F1", True, datetime(2025, 2, 1, tzinfo=timezone.utc)))
-    ledger.append_outcome(resolved("F2", True, datetime(2025, 2, 1, tzinfo=timezone.utc)))
+        ledger.append_outcome(
+            resolved("F1", True, datetime(2025, 2, 1, tzinfo=timezone.utc))
+        )
+    ledger.append_outcome(
+        resolved("F2", True, datetime(2025, 2, 1, tzinfo=timezone.utc))
+    )
     snapshot = build_calibration_snapshot(
         ledger,
         forecast_class="project_realization",
         horizon="90d",
         cutoff=datetime(2025, 3, 1, tzinfo=timezone.utc),
         policy=CalibrationPolicy(
-            version="test", base_rate=Decimal("0.5"), min_resolved_events=1,
-            min_companies=1, min_quarters=1, min_per_displayed_band=1,
-            min_oos_windows=1, max_ece=Decimal("1"),
+            version="test",
+            base_rate=Decimal("0.5"),
+            min_resolved_events=1,
+            min_companies=1,
+            min_quarters=1,
+            min_per_displayed_band=1,
+            min_oos_windows=1,
+            max_ece=Decimal("1"),
         ),
         mapping_version="test-map",
         oos_brier_skill_windows=(Decimal("0.01"),),
@@ -191,12 +233,17 @@ def test_revisions_do_not_inflate_effective_sample_count():
 def test_insufficient_history_cannot_issue_certificate():
     ledger = ProbabilityCalibrationLedger()
     item = forecast(
-        "F1", event_key="EVENT-1", company_id="C1",
+        "F1",
+        event_key="EVENT-1",
+        company_id="C1",
         issued_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
-        probability=Decimal("0.6"), band="P60",
+        probability=Decimal("0.6"),
+        band="P60",
     )
     ledger.append_forecast(item)
-    ledger.append_outcome(resolved("F1", True, datetime(2025, 2, 1, tzinfo=timezone.utc)))
+    ledger.append_outcome(
+        resolved("F1", True, datetime(2025, 2, 1, tzinfo=timezone.utc))
+    )
     snapshot = build_calibration_snapshot(
         ledger,
         forecast_class="project_realization",
@@ -225,11 +272,17 @@ def test_live_weighting_requires_matching_certificate():
     assert without.findings[0].code == "CALIBRATION_CERTIFICATE_REQUIRED"
 
     certificate = CalibrationCertificate(
-        "project_realization|90d", "project_realization", "90d", "1.0", "map-v1",
-        "CALIBRATION-SNAPSHOT", CalibrationStatus.CALIBRATED,
+        "project_realization|90d",
+        "project_realization",
+        "90d",
+        "1.0",
+        "map-v1",
+        "CALIBRATION-SNAPSHOT",
+        CalibrationStatus.CALIBRATED,
     )
     with_cert = bind_scenarios(
-        compiled_probabilities(), spec,
+        compiled_probabilities(),
+        spec,
         calibration_certificate=certificate,
         require_calibration_certificate=True,
     )
@@ -238,10 +291,17 @@ def test_live_weighting_requires_matching_certificate():
     assert with_cert.scenario_set.calibration_snapshot_hash == "CALIBRATION-SNAPSHOT"
 
     wrong = CalibrationCertificate(
-        "clinical|90d", "clinical", "90d", "1.0", "map-v1", "OTHER", CalibrationStatus.CALIBRATED,
+        "clinical|90d",
+        "clinical",
+        "90d",
+        "1.0",
+        "map-v1",
+        "OTHER",
+        CalibrationStatus.CALIBRATED,
     )
     mismatch = bind_scenarios(
-        compiled_probabilities(), spec,
+        compiled_probabilities(),
+        spec,
         calibration_certificate=wrong,
         require_calibration_certificate=True,
     )
@@ -275,6 +335,8 @@ def test_calibration_loader_emits_certificate_only_after_promotion():
         loader=lambda _: calibrated,
         expected_cohort_key="project_realization|90d",
     )
-    result = adapter(OrchestratorContext("RUN", ExecutionMode.LIVE_PRIMARY, {}))
+    result = adapter(
+        OrchestratorContext("RUN", ExecutionMode.LIVE_PRIMARY, {})
+    )
     assert result.status is StageStatus.PASS
     assert "probability_calibration_certificate" in result.outputs
