@@ -70,6 +70,23 @@ def test_evidence_ledger_is_sealed_during_downstream_stage():
     assert not ledger.runtime_readonly
 
 
+def test_nested_evidence_ledger_is_recursively_sealed_without_corrupting_caller_state():
+    ledger = EvidenceLedger((_evidence(),))
+
+    def adapter(context):
+        context.data["bundle"]["items"][0]["ledger"].append(_evidence("E2"))
+        return StageExecutionResult(StageStatus.PASS, "mutated")
+
+    result = _run(
+        adapter,
+        initial_data={"bundle": {"items": [{"ledger": ledger}]}},
+    )
+    assert result.stage_traces[-1].status is StageStatus.BLOCKED
+    assert "read-only during downstream stage execution" in result.stage_traces[-1].rationale
+    assert tuple(item.id for item in ledger.records()) == ("E1",)
+    assert not ledger.runtime_readonly
+
+
 def test_stage_control_field_mutation_is_discarded_and_blocked():
     def adapter(context):
         context.stage_traces.append("tampered")
@@ -96,6 +113,22 @@ def test_adapter_exception_secrets_are_redacted_from_trace_and_blocker():
     assert "abc.def" not in rendered
     assert "hunter2" not in rendered
     assert "[REDACTED]" in rendered
+
+
+def test_basic_authorization_and_quoted_mapping_credentials_are_fully_redacted():
+    def adapter(_):
+        raise RuntimeError(
+            "Authorization: Basic dXNlcjpwYXNz {'api_key': 'SUPERSECRET', 'secret': 'SECOND'}"
+        )
+
+    result = _run(adapter)
+    rendered = " | ".join(
+        [*result.blocked_reasons, *(trace.rationale for trace in result.stage_traces)]
+    )
+    assert "dXNlcjpwYXNz" not in rendered
+    assert "SUPERSECRET" not in rendered
+    assert "SECOND" not in rendered
+    assert rendered.count("[REDACTED]") >= 3
 
 
 def test_wrong_adapter_return_type_blocks_cleanly():
