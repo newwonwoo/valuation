@@ -41,17 +41,16 @@ def _snapshot(
     evidence_ids: tuple[str, ...] = ("E_SEG",),
     source_ids: tuple[str, ...] = ("KR_OPENDART",),
     content_hashes: tuple[str, ...] = ("HASH-1",),
+    as_of: str = "2026-08-25",
 ) -> IndustryKnowledgeSnapshot:
-    snapshot = IndustryKnowledgeSnapshot.build(
-        as_of="2026-08-25",
+    return IndustryKnowledgeSnapshot.build(
+        as_of=as_of,
         source_ids=source_ids,
         document_ids=("D1",),
         evidence_ids=evidence_ids,
         content_hashes=content_hashes,
         evidence_lineage=(() if lineage is None else (lineage,)),
     )
-    snapshot.validate()
-    return snapshot
 
 
 def _lineage(**overrides) -> AuthoritativeEvidenceLineage:
@@ -61,6 +60,12 @@ def _lineage(**overrides) -> AuthoritativeEvidenceLineage:
         "source_id": "KR_OPENDART",
         "observed_date": "2026-08-24",
         "content_hash": "HASH-1",
+        "event_date": "2026-06-30",
+        "effective_date": "2026-06-30",
+        "published_at": "2026-08-24T09:00:00+09:00",
+        "first_seen_at": "2026-08-24T09:05:00+09:00",
+        "revision_id": "original",
+        "revision_at": "2026-08-24T09:00:00+09:00",
         "active": True,
     }
     values.update(overrides)
@@ -97,7 +102,7 @@ def test_segment_evidence_target_must_match_resolved_company():
     assert "target mismatch" in result.stage_traces[-1].rationale
 
 
-def test_snapshot_rejects_lineage_source_hash_and_future_date_mismatch():
+def test_snapshot_rejects_unknown_hash_and_late_first_seen_backfill():
     declared_other_source = _snapshot(
         _lineage(source_id="KR_KIET_PSI"),
         source_ids=("KR_OPENDART", "KR_KIET_PSI"),
@@ -111,12 +116,34 @@ def test_snapshot_rejects_lineage_source_hash_and_future_date_mismatch():
     else:
         raise AssertionError("unknown content hash must fail snapshot validation")
 
+    late_backfill = _lineage(
+        event_date="2026-06-30",
+        effective_date="2026-06-30",
+        published_at="2026-08-26T09:00:00+09:00",
+        first_seen_at="2026-08-26T09:05:00+09:00",
+        revision_at="2026-08-26T09:00:00+09:00",
+    )
     try:
-        _snapshot(_lineage(observed_date="2026-08-26"))
+        _snapshot(late_backfill, as_of="2026-08-25")
     except ValueError as exc:
-        assert "after snapshot" in str(exc)
+        assert "first seen after snapshot" in str(exc)
     else:
-        raise AssertionError("future-dated lineage must fail snapshot validation")
+        raise AssertionError("late-discovered backfill must fail snapshot cutoff")
+
+
+def test_revision_and_first_seen_chronology_is_validated():
+    try:
+        _snapshot(
+            _lineage(
+                revision_id="rev-2",
+                revision_at="2026-08-24T10:00:00+09:00",
+                first_seen_at="2026-08-24T09:05:00+09:00",
+            )
+        )
+    except ValueError as exc:
+        assert "cannot precede revision_at" in str(exc)
+    else:
+        raise AssertionError("revision after first-seen must fail")
 
 
 def test_inactive_segment_evidence_blocks_before_industry_dna():
