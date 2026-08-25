@@ -111,9 +111,21 @@ def generic_valuation_hash(
     scenario_set: BoundScenarioSet,
     valuation: GenericValuationResult,
 ) -> str:
-    """Replay the exact GenericValuationResult hash contract against its scenario parent."""
+    """Replay valuation value, scope and explicit UNVALUED_NOT_ZERO contract."""
     serialized = "\n".join(
-        [scenario_set.scenario_set_hash, valuation.reporting_unit]
+        [
+            scenario_set.scenario_set_hash,
+            valuation.reporting_unit,
+            f"scope={valuation.scope.value}",
+        ]
+        + [
+            (
+                f"unvalued={item.asset_id}|{item.segment_id}|{item.status.value}|"
+                f"{item.resolution_status}|{item.rationale}|"
+                f"{','.join(item.missing_assumptions)}"
+            )
+            for item in valuation.unvalued_segments
+        ]
         + [
             (
                 f"{item.scenario_id}|{item.equity_value_amount}|"
