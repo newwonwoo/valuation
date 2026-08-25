@@ -6,9 +6,17 @@ from hashlib import sha256
 from .ablation import AblationBatchResult, AblationStatus
 from .assumption_compiler import CompiledAssumptionSet
 from .control_plane import DoctrineCoverageEntry, validate_doctrine_coverage
+from .ledger import EvidenceLedger
 from .records import AuditFinding, AuditReport, CalibrationStatus
 from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
 from .risk_impact import audit_risk_consumption
+from .run_hash import (
+    bound_scenario_set_hash,
+    compiled_assumption_set_hash,
+    compiled_evidence_hash_mismatches,
+    evidence_ledger_snapshot_hash,
+    generic_valuation_hash,
+)
 from .scenario_binding import BoundScenarioSet
 from .valuation_execution import GenericValuationResult
 
@@ -36,6 +44,9 @@ class GenericAuditResult:
 
 def audit_generic_intrinsic(
     *,
+    run_id: str,
+    ledger: EvidenceLedger,
+    ledger_snapshot_hash: str,
     compiled: CompiledAssumptionSet,
     scenario_set: BoundScenarioSet,
     valuation: GenericValuationResult,
@@ -49,6 +60,15 @@ def audit_generic_intrinsic(
 ) -> GenericAuditResult:
     findings: list[AuditFinding] = []
 
+    findings.append(
+        AuditFinding(
+            "run_identity_binding",
+            bool(run_id),
+            True,
+            "audit hash must be bound to a non-empty run_id",
+        )
+    )
+
     leaked = tuple(sorted(set(run_context_keys).intersection(_PROHIBITED_PRE_FREEZE_KEYS)))
     findings.append(
         AuditFinding(
@@ -56,6 +76,19 @@ def audit_generic_intrinsic(
             not leaked,
             True,
             "no target Street/current-price key may exist before freeze" if not leaked else f"leaked keys: {', '.join(leaked)}",
+        )
+    )
+
+    current_ledger_hash = evidence_ledger_snapshot_hash(ledger)
+    ledger_hash_ok = bool(ledger_snapshot_hash) and current_ledger_hash == ledger_snapshot_hash
+    findings.append(
+        AuditFinding(
+            "ledger_snapshot_integrity",
+            ledger_hash_ok,
+            True,
+            "EvidenceLedger replay matches the hash frozen at EVIDENCE_LEDGER"
+            if ledger_hash_ok
+            else "EvidenceLedger content no longer matches ledger_snapshot_hash",
         )
     )
 
@@ -77,6 +110,32 @@ def audit_generic_intrinsic(
         )
     )
 
+    evidence_binding_mismatches = compiled_evidence_hash_mismatches(compiled, ledger)
+    evidence_binding_ok = not evidence_binding_mismatches
+    findings.append(
+        AuditFinding(
+            "evidence_assumption_hash_binding",
+            evidence_binding_ok,
+            True,
+            "compiled Evidence input hashes replay against the frozen EvidenceLedger"
+            if evidence_binding_ok
+            else "compiled Evidence input hash mismatch: " + ", ".join(evidence_binding_mismatches),
+        )
+    )
+
+    assumption_hash_ok = (
+        bool(compiled.assumption_set_hash)
+        and compiled.assumption_set_hash == compiled_assumption_set_hash(compiled)
+    )
+    findings.append(
+        AuditFinding(
+            "assumption_hash_integrity",
+            assumption_hash_ok,
+            True,
+            "CompiledAssumptionSet hash replays from immutable assumption contents",
+        )
+    )
+
     target_match = compiled.target_id == scenario_set.target_id
     findings.append(AuditFinding("target_identity_consistency", target_match, True, "compiled/scenario target IDs must match"))
 
@@ -89,6 +148,19 @@ def audit_generic_intrinsic(
             scenario_coverage_ok,
             True,
             "valuation must cover each bound scenario exactly once",
+        )
+    )
+
+    scenario_hash_ok = (
+        bool(scenario_set.scenario_set_hash)
+        and scenario_set.scenario_set_hash == bound_scenario_set_hash(compiled, scenario_set)
+    )
+    findings.append(
+        AuditFinding(
+            "scenario_hash_integrity",
+            scenario_hash_ok,
+            True,
+            "BoundScenarioSet hash replays from the compiled assumption parent and scenario contents",
         )
     )
 
@@ -117,6 +189,19 @@ def audit_generic_intrinsic(
         )
     )
 
+    valuation_hash_ok = (
+        bool(valuation.valuation_hash)
+        and valuation.valuation_hash == generic_valuation_hash(scenario_set, valuation)
+    )
+    findings.append(
+        AuditFinding(
+            "valuation_hash_integrity",
+            valuation_hash_ok,
+            True,
+            "GenericValuationResult hash replays from the bound scenario parent and valuation contents",
+        )
+    )
+
     risk_consumption = audit_risk_consumption(
         valuation=valuation,
         selected_methods=selected_methods,
@@ -142,8 +227,23 @@ def audit_generic_intrinsic(
         )
     )
 
-    hashes_ok = bool(compiled.assumption_set_hash and scenario_set.scenario_set_hash and valuation.valuation_hash)
-    findings.append(AuditFinding("immutable_hash_chain", hashes_ok, True, "compiled/scenario/valuation hashes are required"))
+    hash_chain_ok = all(
+        (
+            ledger_hash_ok,
+            evidence_binding_ok,
+            assumption_hash_ok,
+            scenario_hash_ok,
+            valuation_hash_ok,
+        )
+    )
+    findings.append(
+        AuditFinding(
+            "immutable_hash_chain",
+            hash_chain_ok,
+            True,
+            "EvidenceLedger→Assumption→Scenario→Valuation hashes replay as one immutable chain",
+        )
+    )
 
     try:
         validate_doctrine_coverage(doctrine_coverage, expected_module_ids=expected_module_ids)
@@ -186,7 +286,13 @@ def audit_generic_intrinsic(
 
     report = AuditReport(tuple(findings))
     payload = "\n".join(
-        [compiled.assumption_set_hash, scenario_set.scenario_set_hash, valuation.valuation_hash]
+        [
+            run_id,
+            ledger_snapshot_hash,
+            compiled.assumption_set_hash,
+            scenario_set.scenario_set_hash,
+            valuation.valuation_hash,
+        ]
         + [f"{item.check}|{item.passed}|{item.blocking}|{item.detail}" for item in report.findings]
     )
     return GenericAuditResult(report, sha256(payload.encode("utf-8")).hexdigest())
