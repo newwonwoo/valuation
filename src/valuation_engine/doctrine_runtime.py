@@ -59,6 +59,10 @@ def _aggregate_status(rows: tuple[tuple[str, StageStatus, str, bool], ...]) -> t
     if all(status is StageStatus.SKIPPED_NOT_APPLICABLE for _, status, _, _ in rows):
         return StageStatus.SKIPPED_NOT_APPLICABLE, False
 
+    # A later explicit RECOVERED trace may resolve an earlier recoverable request in the
+    # same Unit Contract (e.g. BLIND_RED_TEAM_B → RESEARCH_LOOP). It may never erase a
+    # hard BLOCKED / NOT_IMPLEMENTED / AWAITING_USER_DECISION state, and it cannot erase a
+    # RECOVERY_REQUIRED emitted after the recovery trace.
     last_recovered = max(
         (index for index, row in enumerate(rows) if row[1] is StageStatus.RECOVERED),
         default=-1,
@@ -152,15 +156,20 @@ def build_doctrine_coverage(
                 continue
             trace = trace_map.get(stage)
             if trace is None:
-                if stage in required:
-                    rows.append((stage, StageStatus.BLOCKED, f"{stage}: required stage has no runtime trace", True))
-                else:
-                    rows.append((stage, StageStatus.SKIPPED_NOT_APPLICABLE, f"{stage}: no runtime trace and not required", False))
-                continue
-            rows.append(trace)
-
-        status, blocking = _aggregate_status(tuple(rows))
-        rationale = " | ".join(f"{stage}: {state.value} — {reason}" for stage, state, reason, _ in rows)
-        entries.append(DoctrineCoverageEntry(contract.unit_id, status, rationale, blocking))
+                rows.append(
+                    (
+                        stage,
+                        StageStatus.NOT_IMPLEMENTED,
+                        "runtime stage left no trace",
+                        stage in required,
+                    )
+                )
+            else:
+                rows.append(trace)
+        aggregated, blocking = _aggregate_status(tuple(rows))
+        rationale = " | ".join(
+            f"{stage}={status.value}: {detail}" for stage, status, detail, _ in rows
+        )
+        entries.append(DoctrineCoverageEntry(contract.unit_id, aggregated, rationale, blocking))
 
     return DoctrineCoverageSnapshot(tuple(entries), tuple(expected), stages)
