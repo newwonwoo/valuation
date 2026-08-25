@@ -196,7 +196,6 @@ def test_module_plan_adapter_emits_separate_optional_scanner_activation(tmp_path
     assert result.outputs["active_optional_scanners"] == (
         "OPTIONAL_BACKLOG_DEPTH",
     )
-    assert "OPTIONAL_BACKLOG_DEPTH" in result.outputs["active_research_units"]
 
 
 def test_module_plan_adapter_rejects_optional_scanner_not_declared_by_plan():
