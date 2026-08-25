@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from functools import cached_property
 from pathlib import Path
 from typing import Iterable
 
@@ -100,7 +101,8 @@ class UnitContractRegistry:
     version: str
     units: tuple[UnitContract, ...]
 
-    def validate(self) -> None:
+    @cached_property
+    def _validation_complete(self) -> bool:
         if not self.version:
             raise ValueError("registry version is required")
         seen: set[str] = set()
@@ -115,56 +117,124 @@ class UnitContractRegistry:
                 if consumer in _VIRTUAL_CONSUMERS:
                     continue
                 if consumer.isupper() and consumer not in seen:
-                    raise ValueError(f"unknown consumer {consumer} referenced by {unit.unit_id}")
+                    raise ValueError(
+                        f"unknown consumer {consumer} referenced by {unit.unit_id}"
+                    )
+        return True
+
+    @cached_property
+    def _by_id(self) -> dict[str, UnitContract]:
+        self.validate()
+        return {unit.unit_id: unit for unit in self.units}
+
+    @cached_property
+    def _forward_known_index(self) -> dict[str, tuple[str, ...]]:
+        self.validate()
+        known = set(self._by_id)
+        return {
+            unit.unit_id: tuple(
+                consumer for consumer in unit.consumers if consumer in known
+            )
+            for unit in self.units
+        }
+
+    @cached_property
+    def _reverse_index(self) -> dict[str, tuple[str, ...]]:
+        self.validate()
+        reverse: dict[str, list[str]] = {unit.unit_id: [] for unit in self.units}
+        for unit in self.units:
+            for consumer in self._forward_known_index[unit.unit_id]:
+                reverse[consumer].append(unit.unit_id)
+        return {
+            unit_id: tuple(sorted(producers))
+            for unit_id, producers in reverse.items()
+        }
+
+    def validate(self) -> None:
+        # Validation is immutable for a frozen registry, so run it once and cache it.
+        _ = self._validation_complete
 
     def get(self, unit_id: str) -> UnitContract:
-        for unit in self.units:
-            if unit.unit_id == unit_id:
-                return unit
-        raise KeyError(unit_id)
+        self.validate()
+        try:
+            return self._by_id[unit_id]
+        except KeyError as exc:
+            raise KeyError(unit_id) from exc
 
-    def forward_dependencies(self, unit_id: str, *, transitive: bool = False) -> tuple[str, ...]:
+    def forward_dependencies(
+        self,
+        unit_id: str,
+        *,
+        transitive: bool = False,
+    ) -> tuple[str, ...]:
         self.validate()
         direct = tuple(self.get(unit_id).consumers)
         if not transitive:
             return direct
-        known = {unit.unit_id for unit in self.units}
-        visited: set[str] = set()
-        queue = [item for item in direct if item in known]
-        while queue:
-            current = queue.pop(0)
-            if current in visited:
-                continue
-            visited.add(current)
-            queue.extend(item for item in self.get(current).consumers if item in known and item not in visited)
-        return tuple(sorted(visited))
+        return self._walk_index(
+            unit_id,
+            self._forward_known_index,
+        )
 
-    def reverse_dependencies(self, unit_id: str, *, transitive: bool = False) -> tuple[str, ...]:
+    def reverse_dependencies(
+        self,
+        unit_id: str,
+        *,
+        transitive: bool = False,
+    ) -> tuple[str, ...]:
         self.validate()
-        direct = tuple(sorted(unit.unit_id for unit in self.units if unit_id in unit.consumers))
+        self.get(unit_id)
+        direct = self._reverse_index[unit_id]
         if not transitive:
             return direct
-        visited: set[str] = set()
-        queue = list(direct)
-        while queue:
-            current = queue.pop(0)
+        return self._walk_index(unit_id, self._reverse_index)
+
+    @staticmethod
+    def _walk_index(
+        root: str,
+        index: dict[str, tuple[str, ...]],
+    ) -> tuple[str, ...]:
+        """Traverse a possibly cyclic dependency graph without returning the root.
+
+        Unit Contract consumers describe influence/feedback relationships, not a strict
+        execution DAG, so cycles are allowed. Traversal is deterministic, finite, and each
+        reachable maintenance unit is returned exactly once.
+        """
+        visited = {root}
+        reached: set[str] = set()
+        queue = list(index[root])
+        cursor = 0
+        while cursor < len(queue):
+            current = queue[cursor]
+            cursor += 1
             if current in visited:
                 continue
             visited.add(current)
-            queue.extend(parent for parent in self.reverse_dependencies(current, transitive=False) if parent not in visited)
-        return tuple(sorted(visited))
+            reached.add(current)
+            queue.extend(index[current])
+        return tuple(sorted(reached))
 
     def units_affecting(self, effect_type: str) -> tuple[str, ...]:
         if effect_type not in _ALLOWED_EFFECT_TYPES:
             raise ValueError(f"unknown effect_type: {effect_type}")
-        return tuple(sorted(unit.unit_id for unit in self.units if effect_type in unit.effect_types))
+        return tuple(
+            sorted(
+                unit.unit_id
+                for unit in self.units
+                if effect_type in unit.effect_types
+            )
+        )
 
     def producers_of_output(self, output_id: str) -> tuple[str, ...]:
-        return tuple(sorted(unit.unit_id for unit in self.units if output_id in unit.outputs))
+        return tuple(
+            sorted(unit.unit_id for unit in self.units if output_id in unit.outputs)
+        )
 
     def consumers_of_output(self, output_id: str) -> tuple[str, ...]:
         producers = tuple(unit for unit in self.units if output_id in unit.outputs)
-        return tuple(sorted({consumer for unit in producers for consumer in unit.consumers}))
+        return tuple(
+            sorted({consumer for unit in producers for consumer in unit.consumers})
+        )
 
 
 def load_unit_contract_registry(path: str | Path) -> UnitContractRegistry:
@@ -182,7 +252,9 @@ def load_unit_contract_registry(path: str | Path) -> UnitContractRegistry:
             effect_types=tuple(str(x) for x in row["effect_types"]),
             final_outputs=tuple(str(x) for x in row["final_outputs"]),
             canonical_refs=tuple(str(x) for x in row["canonical_refs"]),
-            forbidden_effects=tuple(str(x) for x in row.get("forbidden_effects", ())),
+            forbidden_effects=tuple(
+                str(x) for x in row.get("forbidden_effects", ())
+            ),
         )
         for row in payload["units"]
     )
