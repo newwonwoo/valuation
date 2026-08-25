@@ -40,12 +40,10 @@ def test_live_readiness_tracks_current_gaps_without_freezing_old_shadow_labels()
     assert by_stage["VALUATION_METHOD_INTENT"].status is LiveReadinessStatus.RUNTIME_READY
     assert by_stage["HIERARCHICAL_WARRANTED_PER"].status is LiveReadinessStatus.PARTIAL_LIVE
     assert by_stage["INTRINSIC_VALUE_FREEZE"].status is LiveReadinessStatus.RUNTIME_READY
-    assert {item.stage for item in report.unresolved_live_stages} == {
-        "STREET_REFERENCE_LOAD",
-    }
-    assert by_stage["STREET_REFERENCE_LOAD"].status is LiveReadinessStatus.ADAPTER_REQUIRED
+    assert by_stage["STREET_REFERENCE_LOAD"].status is LiveReadinessStatus.PARTIAL_LIVE
+    assert not report.unresolved_live_stages
     assert report.canonical_live_ready_count == 26
-    assert len(report.partial_live_stages) == 6
+    assert len(report.partial_live_stages) == 7
 
     coverage = report.deterministic_method_coverage
     assert coverage is not None
