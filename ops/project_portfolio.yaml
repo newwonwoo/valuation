@@ -125,7 +125,7 @@ work_items:
     title: Add a first-seen boundary to historical forecast revisions
     owner: calibration-risk-agent
     github_pr: 59
-    current_step: PR #59 merged; awaiting exact-SHA validation evidence and PM acceptance.
+    current_step: "PR #59 merged; awaiting exact-SHA validation evidence and PM acceptance."
     dependencies: []
   - priority: P1
     status: MERGED_PENDING_ACCEPTANCE
@@ -133,7 +133,7 @@ work_items:
     title: Bind segment decomposition evidence to authoritative source lineage
     owner: evidence-industry-agent
     github_pr: 60
-    current_step: PR #60 merged; awaiting exact-SHA validation evidence and PM acceptance.
+    current_step: "PR #60 merged; awaiting exact-SHA validation evidence and PM acceptance."
     dependencies: [EVI-ACTIVE-001]
   - priority: P1
     status: MERGED_PENDING_ACCEPTANCE
@@ -141,7 +141,7 @@ work_items:
     title: Build reusable Beta, WACC, and Cost-of-Equity source providers
     owner: calibration-risk-agent
     github_pr: 61
-    current_step: PR #61 merged; awaiting exact-SHA validation evidence and PM acceptance.
+    current_step: "PR #61 merged; awaiting exact-SHA validation evidence and PM acceptance."
     dependencies: []
   - priority: P1
     status: READY
@@ -156,7 +156,7 @@ work_items:
     title: Separate optional scanner IDs from mixed active research units
     owner: evidence-industry-agent
     github_pr: 63
-    current_step: PR #63 is open; validate typed optional-scanner routing and fail-closed behavior.
+    current_step: "PR #63 is open; validate typed optional-scanner routing and fail-closed behavior."
     dependencies: []
   - priority: P2
     status: READY
@@ -178,7 +178,7 @@ work_items:
     title: Build normalized EPS and peer-residual provider packs
     owner: calibration-risk-agent
     github_pr: 62
-    current_step: PR #62 merged; awaiting exact-SHA validation evidence and PM acceptance.
+    current_step: "PR #62 merged; awaiting exact-SHA validation evidence and PM acceptance."
     dependencies: [RISK-PROVIDERS-001]
   - priority: P1
     status: BACKLOG
