@@ -17,7 +17,7 @@ from .control_plane import DoctrineCoverageEntry, StageStatus
 from .decision_impact import DecisionOutcome, ModuleHistoryEntry, ResearchEffort
 from .orchestrator import OrchestratorContext
 from .unit_contracts import UnitContractRegistry
-from .valuation_execution import GenericValuationResult
+from .valuation_execution import GenericValuationResult, IntrinsicValuationScope
 
 
 CounterfactualFactory = Callable[[OrchestratorContext], DecisionOutcome]
@@ -95,13 +95,24 @@ def build_generic_decision_outcome(context: OrchestratorContext) -> DecisionOutc
     if not isinstance(conclusion_tags, tuple) or not all(isinstance(item, str) for item in conclusion_tags):
         raise ValueError("conclusion_tags must be a string tuple")
     timing_days = context.data.get("timing_days")
+    partial = valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
     intrinsic = (
-        float(valuation.expected_value_per_share)
-        if valuation.expected_value_per_share is not None
-        else None
+        None
+        if partial
+        else (
+            float(valuation.expected_value_per_share)
+            if valuation.expected_value_per_share is not None
+            else None
+        )
     )
+    if partial and "partial_intrinsic" not in conclusion_tags:
+        conclusion_tags = (*conclusion_tags, "partial_intrinsic")
     return DecisionOutcome(
-        status=str(context.data.get("decision_status", "COMPLETED")),
+        status=(
+            "PARTIAL_INTRINSIC"
+            if partial
+            else str(context.data.get("decision_status", "COMPLETED"))
+        ),
         intrinsic_value_per_share=intrinsic,
         assumption_hash=compiled.assumption_set_hash,
         route_hash=str(route_hash),

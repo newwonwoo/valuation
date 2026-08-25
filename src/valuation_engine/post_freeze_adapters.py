@@ -8,7 +8,7 @@ from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResul
 from .post_freeze import compare_generic_to_market, compare_generic_to_street
 from .records import MarketObservation
 from .street import StreetGapDriver, StreetResearchReport
-from .valuation_execution import GenericValuationResult
+from .valuation_execution import GenericValuationResult, IntrinsicValuationScope
 
 
 StreetLoader = Callable[[], tuple[StreetResearchReport, ...]]
@@ -64,6 +64,18 @@ def street_gap_analyzer_adapter(*, drivers: tuple[StreetGapDriver, ...] = ()) ->
                 raise ValueError("GenericValuationResult is missing")
             if not isinstance(reports, tuple) or not reports:
                 raise ValueError("Street reports are missing")
+            if valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC:
+                reason = (
+                    "PARTIAL_INTRINSIC is a valued-segment subtotal; whole-company Street target-price gap is withheld"
+                )
+                return StageExecutionResult(
+                    StageStatus.SKIPPED_NOT_APPLICABLE,
+                    reason,
+                    {
+                        "street_comparison_withheld_reason": reason,
+                        "street_comparison_scope": valuation.scope.value,
+                    },
+                )
             bundle = compare_generic_to_street(valuation, reports, drivers=drivers)
         except Exception as exc:
             return StageExecutionResult(
@@ -128,6 +140,18 @@ def market_compare_adapter() -> StageAdapter:
                 raise ValueError("MarketObservation is missing")
             if not isinstance(currency, str) or not currency:
                 raise ValueError("market currency is missing")
+            if valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC:
+                reason = (
+                    "PARTIAL_INTRINSIC is a valued-segment subtotal; whole-company current-price gap is withheld"
+                )
+                return StageExecutionResult(
+                    StageStatus.SKIPPED_NOT_APPLICABLE,
+                    reason,
+                    {
+                        "market_comparison_withheld_reason": reason,
+                        "market_comparison_scope": valuation.scope.value,
+                    },
+                )
             bundle = compare_generic_to_market(valuation, observation, currency=currency)
         except Exception as exc:
             return StageExecutionResult(

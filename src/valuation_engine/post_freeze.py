@@ -13,7 +13,10 @@ from .street import (
     analyze_street_gap,
     summarize_street_reports,
 )
-from .valuation_execution import GenericValuationResult
+from .valuation_execution import (
+    GenericValuationResult,
+    IntrinsicValuationScope,
+)
 
 
 @dataclass(frozen=True)
@@ -69,6 +72,13 @@ def _gap_point(scenario_id: str, intrinsic: Decimal, reference: Decimal) -> Scen
     )
 
 
+def _require_full_company_intrinsic(valuation: GenericValuationResult) -> None:
+    if valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC:
+        raise ValueError(
+            "PARTIAL_INTRINSIC valued-segment subtotal cannot be compared with a whole-company market or Street reference"
+        )
+
+
 def _envelope(
     valuation: GenericValuationResult,
     *,
@@ -77,6 +87,7 @@ def _envelope(
     reference_value: Decimal,
     currency: str,
 ) -> ReferenceGapEnvelope:
+    _require_full_company_intrinsic(valuation)
     if currency != valuation.reporting_unit:
         raise ValueError(
             f"reference currency {currency} does not match intrinsic reporting unit {valuation.reporting_unit}"
@@ -118,6 +129,7 @@ def compare_generic_to_street(
     *,
     drivers: tuple[StreetGapDriver, ...] = (),
 ) -> StreetComparisonBundle:
+    _require_full_company_intrinsic(valuation)
     consensus = summarize_street_reports(reports)
     envelope = _envelope(
         valuation,
@@ -140,6 +152,7 @@ def compare_generic_to_market(
     *,
     currency: str,
 ) -> MarketComparisonBundle:
+    _require_full_company_intrinsic(valuation)
     envelope = _envelope(
         valuation,
         reference_name="Current market price",
