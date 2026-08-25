@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, time, timezone
 from hashlib import sha256
 from io import BytesIO
 from typing import Callable
@@ -54,15 +54,48 @@ class ResolvedCompanyIdentity:
 CompanyResolver = Callable[[CompanyResolutionRequest], ResolvedCompanyIdentity]
 
 
+def _parse_lineage_datetime(value: str, *, label: str) -> datetime:
+    text = str(value or "").strip().replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise ValueError(f"{label} must be an ISO timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError(f"{label} must be timezone-aware")
+    return parsed
+
+
+def _snapshot_cutoff(value: str) -> datetime:
+    text = str(value or "").strip().replace("Z", "+00:00")
+    if len(text) == 10:
+        try:
+            day = date.fromisoformat(text)
+        except ValueError as exc:
+            raise ValueError("industry snapshot as_of must be ISO date/timestamp") from exc
+        return datetime.combine(day, time.max, tzinfo=timezone.utc)
+    return _parse_lineage_datetime(text, label="industry snapshot as_of")
+
+
 @dataclass(frozen=True)
 class AuthoritativeEvidenceLineage:
-    """Frozen identity for Evidence that may justify segment decomposition."""
+    """Frozen Evidence identity and chronology used by segment decomposition.
+
+    Economic/event dates are kept separate from knowledge-time fields so a backfilled
+    filing or revision cannot enter a historical snapshot merely because its economic
+    date precedes that snapshot.
+    """
 
     evidence_id: str
     target_id: str
     source_id: str
     observed_date: str
     content_hash: str
+    event_date: str
+    effective_date: str
+    published_at: str
+    first_seen_at: str
+    revision_id: str
+    revision_at: str
     active: bool = True
 
     def validate(self) -> None:
@@ -73,10 +106,38 @@ class AuthoritativeEvidenceLineage:
                 self.source_id,
                 self.observed_date,
                 self.content_hash,
+                self.event_date,
+                self.effective_date,
+                self.published_at,
+                self.first_seen_at,
+                self.revision_id,
+                self.revision_at,
             )
         ):
             raise ValueError("authoritative Evidence lineage is incomplete")
         date.fromisoformat(self.observed_date[:10])
+        date.fromisoformat(self.event_date[:10])
+        date.fromisoformat(self.effective_date[:10])
+        published = _parse_lineage_datetime(
+            self.published_at, label="Evidence published_at"
+        )
+        first_seen = _parse_lineage_datetime(
+            self.first_seen_at, label="Evidence first_seen_at"
+        )
+        revision = _parse_lineage_datetime(
+            self.revision_at, label="Evidence revision_at"
+        )
+        if published > first_seen:
+            raise ValueError("Evidence first_seen_at cannot precede published_at")
+        if revision > first_seen:
+            raise ValueError("Evidence first_seen_at cannot precede revision_at")
+
+    @property
+    def knowledge_time(self) -> datetime:
+        self.validate()
+        return _parse_lineage_datetime(
+            self.first_seen_at, label="Evidence first_seen_at"
+        )
 
     @property
     def fingerprint(self) -> str:
@@ -87,6 +148,12 @@ class AuthoritativeEvidenceLineage:
                 self.source_id,
                 self.observed_date,
                 self.content_hash,
+                self.event_date,
+                self.effective_date,
+                self.published_at,
+                self.first_seen_at,
+                self.revision_id,
+                self.revision_at,
                 "active" if self.active else "inactive",
             )
         )
@@ -110,16 +177,19 @@ class IndustryKnowledgeSnapshot:
                 *sorted(self.document_ids),
                 *sorted(self.evidence_ids),
                 *sorted(self.content_hashes),
-                *(item.fingerprint for item in sorted(
-                    self.evidence_lineage,
-                    key=lambda value: value.evidence_id,
-                )),
+                *(
+                    item.fingerprint
+                    for item in sorted(
+                        self.evidence_lineage,
+                        key=lambda value: value.evidence_id,
+                    )
+                ),
             )
         )
         return sha256(payload.encode("utf-8")).hexdigest()
 
     def validate(self) -> None:
-        snapshot_date = date.fromisoformat(self.as_of[:10])
+        cutoff = _snapshot_cutoff(self.as_of)
         if not self.source_ids or not self.content_hashes:
             raise ValueError(
                 "industry snapshot requires source IDs and content hashes"
@@ -140,9 +210,9 @@ class IndustryKnowledgeSnapshot:
                 raise ValueError(
                     f"lineage content hash is outside snapshot hash set: {lineage.evidence_id}"
                 )
-            if date.fromisoformat(lineage.observed_date[:10]) > snapshot_date:
+            if lineage.knowledge_time > cutoff:
                 raise ValueError(
-                    f"lineage Evidence is dated after snapshot as_of: {lineage.evidence_id}"
+                    f"lineage Evidence was first seen after snapshot as_of: {lineage.evidence_id}"
                 )
         if len(ids) != len(set(ids)):
             raise ValueError("industry snapshot has duplicate Evidence lineage IDs")
@@ -173,7 +243,7 @@ class IndustryKnowledgeSnapshot:
             "",
             evidence_lineage,
         )
-        return cls(
+        completed = cls(
             as_of,
             source_ids,
             document_ids,
@@ -182,6 +252,8 @@ class IndustryKnowledgeSnapshot:
             provisional.expected_hash(),
             evidence_lineage,
         )
+        completed.validate()
+        return completed
 
 
 IndustrySnapshotLoader = Callable[
@@ -289,6 +361,7 @@ def _validate_segment_evidence_lineage(
 ) -> str:
     lineage_by_id = snapshot.lineage_by_id
     used: dict[str, AuthoritativeEvidenceLineage] = {}
+    cutoff = _snapshot_cutoff(snapshot.as_of)
     for segment in segments:
         for evidence_id in segment.evidence_ids:
             if evidence_id not in snapshot.evidence_ids:
@@ -312,11 +385,9 @@ def _validate_segment_evidence_lineage(
                 raise ValueError(
                     f"segment {segment.segment_id} Evidence content hash mismatch: {evidence_id}"
                 )
-            if date.fromisoformat(lineage.observed_date[:10]) > date.fromisoformat(
-                snapshot.as_of[:10]
-            ):
+            if lineage.knowledge_time > cutoff:
                 raise ValueError(
-                    f"segment {segment.segment_id} Evidence is future-dated: {evidence_id}"
+                    f"segment {segment.segment_id} Evidence was not knowable at snapshot cutoff: {evidence_id}"
                 )
             if not lineage.active:
                 raise ValueError(
