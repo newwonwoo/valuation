@@ -1,4 +1,4 @@
-# PRISM Valuation Control Plane — Canonical Architecture v1.1
+# PRISM Valuation Control Plane — Canonical Architecture v1.2
 
 Status: canonical control-plane contract.
 
@@ -30,7 +30,7 @@ The Compiler is the border between reasoning and numbers. It validates provenanc
 Evaluators, Beta, WACC, Warranted PER, SOTP/rNPV/NAV and calibrated probability engines calculate from compiled inputs only. They do not interpret news or fetch market price.
 
 ### Audit / Freeze
-Audit is independent from the Control Plane. The Control Plane cannot waive a blocking audit. Only an audit-passed run with complete doctrine coverage can receive an Intrinsic Freeze Token. Street/target/current-price loaders require that token.
+Audit is independent from the Control Plane. The Control Plane cannot waive a blocking audit. Only an audit-passed run with complete doctrine coverage and a replay-valid Evidence→Assumption→Scenario→Valuation hash chain can receive an Intrinsic Freeze Token. Street/target/current-price loaders require that token.
 
 ## 2. No-silent-skip doctrine coverage
 
@@ -91,10 +91,11 @@ If the user declines, the system records the unresolved capability and continues
 
 If a material segment cannot be valued but other segments can be independently valued, the report may emit `PARTIAL_INTRINSIC`:
 
-- quantified segment value;
+- quantified segment subtotal only;
 - coverage by revenue/EBITDA/other relevant denominator where known;
 - unvalued segments as `UNVALUED_NOT_ZERO`;
-- no claim that the quantified subtotal is the full fair value.
+- no claim that the quantified subtotal is the full fair value;
+- no whole-company Street/current-price gap comparison against that partial subtotal.
 
 A blocking dependency shared by all segments still blocks the entire valuation.
 
@@ -103,11 +104,14 @@ A blocking dependency shared by all segments still blocks the entire valuation.
 The token binds:
 
 - run ID;
+- frozen Evidence Ledger snapshot hash;
 - compiled-assumption-set hash;
 - valuation-output hash;
 - audit hash;
 - industry-knowledge snapshot hash;
 - source-watch snapshot hash.
+
+Before Freeze, Audit independently replays the Evidence Ledger snapshot, every compiled Evidence-input hash, the Compiled Assumption Set hash, Bound Scenario Set hash and valuation hash. A same-run Ledger or semantic-assumption mutation therefore blocks Freeze rather than being hidden behind a previously computed digest.
 
 Street and target-equity market access must not be available without a valid token for the same run.
 
@@ -117,6 +121,7 @@ A Street-discovered fact may create a verification request, but cannot mutate th
 
 - Knowledge authority and Signal Class remain separate.
 - Mandatory scanners come from deterministic Industry DNA/module contracts.
+- Optional scanner activation is a typed Module Plan field and is not inferred from generic active research-unit IDs.
 - The LLM may propose reinforcement scanners for unknown-unknowns.
 - Scanner proposals cannot bypass source-placement or Evidence→Bridge requirements.
 - Control Plane cannot calculate.
@@ -127,7 +132,7 @@ A Street-discovered fact may create a verification request, but cannot mutate th
 
 ## 8. Executable orchestration boundary
 
-`src/valuation_engine/orchestrator.py` is the generic execution shell for `PRIMARY_SHADOW` and future `LIVE_PRIMARY` runs. It is intentionally thin: it does not collect evidence, perform LLM reasoning, compile assumptions, or calculate value. Those capabilities enter as stage adapters with explicit outputs.
+`src/valuation_engine/orchestrator.py` is the generic execution shell for `PRIMARY_SHADOW` and `LIVE_PRIMARY`. `src/valuation_engine/live_runtime.py::run_prism()` is the canonical `LIVE_PRIMARY` assembly over that same 33-stage Control Plane; there is no second live orchestrator and no automatic fallback to shadow or legacy execution.
 
 The orchestrator:
 
@@ -139,6 +144,6 @@ The orchestrator:
 - issues the Intrinsic Freeze Token only from audit-passed, doctrine-covered and hash-bound data;
 - refuses all post-freeze stages until that token exists and validates for the same run.
 
-`LEGACY_REGRESSION` remains isolated in `workflow.py`; it is not routed through the new generic orchestrator. `PRIMARY_SHADOW` is the migration path: newly connected source/reasoning/compiler/evaluator adapters can execute the canonical sequence without replacing the proven OCI regression path. `LIVE_PRIMARY` may use the same shell only when its required adapters are implemented and validated.
+`LEGACY_REGRESSION` remains isolated in `workflow.py`; it is not routed through the canonical Control Plane. `PRIMARY_SHADOW` remains a regression/integration mode. `LIVE_PRIMARY` uses the same shell with typed source/provider contracts and fails closed for any required provider or exact evaluator that is unavailable for the selected route.
 
-A missing live adapter is a visible capability state, not permission to fall back to the old keyword router, a generic DCF, fabricated evidence, or a market-anchored estimate.
+A missing live adapter or source is a visible capability state, not permission to fall back to the old keyword router, a generic DCF, fabricated evidence, or a market-anchored estimate.
