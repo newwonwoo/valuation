@@ -27,12 +27,28 @@ def sanitize_runtime_text(value: object) -> str:
 
 
 def read_only_data_view(data: dict[str, Any]) -> Mapping[str, Any]:
-    """Expose the canonical top-level context as read-only to one stage adapter."""
-    return MappingProxyType(data)
+    """Return a top-level read-only view with mutable built-ins isolated per stage.
+
+    Custom typed runtime objects stay shared so adapters keep their exact contracts. Mutable
+    builtin containers are recursively copied, preventing an adapter from modifying canonical
+    upstream state through an alias hidden inside the read-only top-level mapping.
+    """
+    isolated = {key: _isolate_builtin(value) for key, value in data.items()}
+    return MappingProxyType(isolated)
+
+
+def evidence_ledgers(data: Mapping[str, Any]) -> tuple[EvidenceLedger, ...]:
+    seen: set[int] = set()
+    ledgers: list[EvidenceLedger] = []
+    for value in data.values():
+        if isinstance(value, EvidenceLedger) and id(value) not in seen:
+            seen.add(id(value))
+            ledgers.append(value)
+    return tuple(ledgers)
 
 
 def mutable_guard_snapshot(data: Mapping[str, Any]) -> dict[str, object]:
-    """Capture only values whose in-place mutation could bypass append-only output checks."""
+    """Capture values whose in-place mutation could bypass append-only output checks."""
     result: dict[str, object] = {}
     for key, value in data.items():
         if _needs_guard(value):
@@ -52,6 +68,22 @@ def mutated_guard_keys(
         if _guard_component(data[key]) != token:
             changed.append(key)
     return tuple(sorted(changed))
+
+
+def _isolate_builtin(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {key: _isolate_builtin(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_isolate_builtin(item) for item in value]
+    if isinstance(value, set):
+        return {_isolate_builtin(item) for item in value}
+    if isinstance(value, bytearray):
+        return bytearray(value)
+    if isinstance(value, tuple):
+        return tuple(_isolate_builtin(item) for item in value)
+    if isinstance(value, frozenset):
+        return frozenset(_isolate_builtin(item) for item in value)
+    return value
 
 
 def _needs_guard(value: Any) -> bool:
