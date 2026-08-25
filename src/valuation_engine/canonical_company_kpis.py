@@ -139,6 +139,7 @@ def compile_exact_document_observation(
         ),
         evidence_role=spec.evidence_role,
         source_ref=candidate.source_ref,
+        target_id=f"SEC:CIK{profile.sec_cik}" if profile.sec_cik is not None else "",
     )
 
 
