@@ -85,6 +85,11 @@ def _mermaid_label(value: object) -> str:
     return str(value).replace('"', "'").replace("\n", " ")
 
 
+def _ids_for_statuses(work_items: list[dict], statuses: set[str]) -> str:
+    ids = [f"`{item['id']}`" for item in work_items if str(item.get("status")) in statuses]
+    return ", ".join(ids) or "—"
+
+
 def render(portfolio: dict) -> str:
     departments = portfolio.get("departments") or []
     work_items = portfolio.get("work_items") or []
@@ -118,7 +123,8 @@ def render(portfolio: dict) -> str:
     lines.append(
         "- Current delivery: **"
         f"{delivery['ACTIVE']} ACTIVE / {delivery['READY']} READY / "
-        f"{delivery['BLOCKED']} BLOCKED / {delivery['BACKLOG']} BACKLOG**"
+        f"{delivery['BLOCKED']} BLOCKED / {delivery['BACKLOG']} BACKLOG / "
+        f"{delivery['MERGED_PENDING_ACCEPTANCE']} MERGED PENDING ACCEPTANCE**"
     )
     baseline = portfolio.get("validation_baseline") or {}
     if baseline.get("accepted_sha"):
@@ -126,12 +132,20 @@ def render(portfolio: dict) -> str:
     lines.append(f"- Updated: **{portfolio.get('updated', 'unknown')}**")
     lines.append("")
     lines.append(
-        "Progress is conservative: ACTIVE/READY/BLOCKED work receives zero credit until every "
-        "required acceptance check is VERIFIED or explicitly ADR-waived."
+        "Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE work "
+        "receives zero credit until every required acceptance check is VERIFIED or explicitly ADR-waived."
     )
     if portfolio.get("recovery_note"):
         lines.append("")
         lines.append(f"> Recovery note: {portfolio['recovery_note']}")
+
+    lines.extend(["", "## Execution horizon", ""])
+    lines.append(f"- Now: {_ids_for_statuses(work_items, {'ACTIVE'})}")
+    lines.append(f"- Next: {_ids_for_statuses(work_items, {'READY'})}")
+    lines.append(f"- Later: {_ids_for_statuses(work_items, {'BLOCKED', 'BACKLOG'})}")
+    lines.append(
+        f"- Pending acceptance: {_ids_for_statuses(work_items, {'MERGED_PENDING_ACCEPTANCE'})}"
+    )
 
     lines.extend(["", "## Organization", "", "```mermaid", "flowchart TB"])
     lines.append(
@@ -162,7 +176,13 @@ def render(portfolio: dict) -> str:
         ]
     )
     priority_order = {"P0": 0, "P1": 1, "P2": 2, "P3": 3}
-    status_order = {"ACTIVE": 0, "READY": 1, "BLOCKED": 2, "BACKLOG": 3}
+    status_order = {
+        "ACTIVE": 0,
+        "MERGED_PENDING_ACCEPTANCE": 1,
+        "READY": 2,
+        "BLOCKED": 3,
+        "BACKLOG": 4,
+    }
     for item in sorted(
         work_items,
         key=lambda row: (
@@ -209,9 +229,10 @@ def render(portfolio: dict) -> str:
             "",
             "1. Change delivery state only in `ops/project_portfolio.yaml`.",
             "2. Keep one ACTIVE work item per owner and no overlapping ACTIVE write scopes.",
-            "3. Record acceptance as VERIFIED only with exact-SHA validation evidence; use an ADR for any waiver.",
-            "4. Add the complete handoff before REVIEW/DONE; only the PM/Integrator closes a milestone.",
-            "5. Regenerate with `PYTHONPATH=src python scripts/render_project_status.py --write` and verify with `--check`.",
+            "3. Link implementation PRs with `github_pr`; merged PRs remain `MERGED_PENDING_ACCEPTANCE` until PM acceptance.",
+            "4. Record acceptance as VERIFIED only with exact-SHA validation evidence; use an ADR for any waiver.",
+            "5. Add the complete handoff before REVIEW/DONE; only the PM/Integrator closes a milestone.",
+            "6. Validate with `PYTHONPATH=src python scripts/validate_project_portfolio.py`, regenerate with `render_project_status.py --write`, then verify with `--check`.",
             "",
         ]
     )
