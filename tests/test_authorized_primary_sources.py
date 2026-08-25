@@ -1,9 +1,11 @@
+from decimal import Decimal
 from hashlib import sha256
 
 import pytest
 
 from valuation_engine.authorized_primary_sources import (
     AuthorizedPrimaryDocument,
+    PrimaryEvidenceRecord,
     PrimaryMetricObservation,
     PrimarySourceKind,
     authorized_primary_source_collector,
@@ -75,6 +77,28 @@ def test_filing_ir_and_regulator_sources_map_to_distinct_primary_layers():
     assert by_metric["regulated_tariff"].source_layer is EvidenceSourceLayer.POLICY_PRIMARY_SOURCE
 
 
+def test_primary_source_preserves_publication_first_seen_and_revision_identity():
+    document = _document(PrimarySourceKind.REGULATORY_FILING)
+    result = collect_primary_evidence(
+        target_id="T",
+        required_metrics=("realized_revenue",),
+        collectors=(
+            authorized_primary_source_collector(
+                document=document,
+                observations=(_observation("realized_revenue", 100),),
+                allowed_metrics=("realized_revenue",),
+                allowed_segments=("core",),
+            ),
+        ),
+    )
+    record = result.ledger.active()[0]
+    assert isinstance(record, PrimaryEvidenceRecord)
+    assert record.published_at == document.published_at
+    assert record.first_seen_at == document.checked_at
+    assert record.observed_date == "2026-08-25"
+    assert record.source_revision == document.document_hash
+
+
 def test_primary_source_fingerprint_and_evidence_id_are_deterministic():
     document = _document(PrimarySourceKind.REGULATORY_FILING)
     observations = (_observation("realized_revenue", 100),)
@@ -96,6 +120,22 @@ def test_primary_source_fingerprint_and_evidence_id_are_deterministic():
     )
     assert first.source_snapshot_hash == second.source_snapshot_hash
     assert first.ledger.active()[0].id == second.ledger.active()[0].id
+
+
+def test_decimal_value_is_canonicalized_before_ledger_hashing():
+    collector = authorized_primary_source_collector(
+        document=_document(PrimarySourceKind.REGULATORY_FILING),
+        observations=(_observation("realized_revenue", Decimal("123.4500")),),
+        allowed_metrics=("realized_revenue",),
+        allowed_segments=("core",),
+    )
+    result = collect_primary_evidence(
+        target_id="T",
+        required_metrics=("realized_revenue",),
+        collectors=(collector,),
+    )
+    assert result.ledger.active()[0].value == "123.4500"
+    assert result.source_snapshot_hash
 
 
 def test_collector_rejects_undeclared_metric_segment_and_target():
@@ -127,6 +167,27 @@ def test_collector_rejects_undeclared_metric_segment_and_target():
             required_metrics=("realized_revenue",),
             collectors=(collector,),
         )
+
+
+def test_market_and_street_metric_names_are_rejected_even_with_innocent_source_url():
+    document = _document(PrimarySourceKind.COMPANY_IR)
+    for metric in (
+        "market_price",
+        "current_market_price",
+        "target_price",
+        "consensus_target",
+        "consensus_eps",
+        "target_market_cap",
+        "target_multiple",
+        "street_consensus_eps",
+    ):
+        with pytest.raises(ValueError, match="market/Street metric"):
+            authorized_primary_source_collector(
+                document=document,
+                observations=(_observation(metric, 100),),
+                allowed_metrics=(metric,),
+                allowed_segments=("core",),
+            )
 
 
 def test_filing_cannot_claim_future_realized_metric_but_ir_and_policy_can():
