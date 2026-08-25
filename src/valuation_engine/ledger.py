@@ -40,12 +40,17 @@ class EvidenceLedger:
     def __init__(self, records: Iterable[EvidenceRecord] = ()) -> None:
         self._records: dict[str, EvidenceRecord] = {}
         self._mutation_version = 0
+        self._runtime_snapshot: EvidenceLedgerSnapshot | None = None
         for record in records:
             self.append(record)
 
     @property
     def mutation_version(self) -> int:
         return self._mutation_version
+
+    @property
+    def runtime_snapshot(self) -> EvidenceLedgerSnapshot | None:
+        return self._runtime_snapshot
 
     def append(self, record: EvidenceRecord) -> None:
         if record.id in self._records:
@@ -76,11 +81,13 @@ class EvidenceLedger:
         )
 
     def snapshot(self, *, content_hash: str) -> EvidenceLedgerSnapshot:
-        return EvidenceLedgerSnapshot(
+        snapshot = EvidenceLedgerSnapshot(
             content_hash=content_hash,
             mutation_version=self._mutation_version,
             records=self.records(),
         )
+        self._runtime_snapshot = snapshot
+        return snapshot
 
     def to_list(self) -> list[dict]:
         return [_enum_values(asdict(r)) for r in self.records()]
