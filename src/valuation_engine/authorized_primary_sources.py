@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
+from decimal import Decimal
 from enum import Enum
 from hashlib import sha256
 import json
+from math import isfinite
 import re
 from typing import Any
 
@@ -18,6 +20,17 @@ from .records import EvidenceRecord, EvidenceSourceLayer
 
 _HASH64 = re.compile(r"^[0-9a-fA-F]{64}$")
 _ALLOWED_ACCESS = {"public", "licensed", "explicit_permission"}
+_FORBIDDEN_INTRINSIC_METRIC_TOKENS = (
+    "current_market_price",
+    "market_price",
+    "target_price",
+    "consensus_target",
+    "consensus_eps",
+    "target_market_cap",
+    "target_multiple",
+    "street_reference",
+    "street_consensus",
+)
 
 
 class PrimarySourceKind(str, Enum):
@@ -70,7 +83,7 @@ class AuthorizedPrimaryDocument:
         if published > checked:
             raise ValueError("primary source cannot be checked before publication")
         lowered = self.source_ref.casefold()
-        if any(token in lowered for token in ("target_price", "consensus_target", "market_price")):
+        if any(token in lowered for token in _FORBIDDEN_INTRINSIC_METRIC_TOKENS):
             raise ValueError("target-market references cannot enter a primary intrinsic source pack")
 
 
@@ -88,6 +101,8 @@ class PrimaryMetricObservation:
     def validate(self, *, document: AuthorizedPrimaryDocument) -> None:
         if not all((self.metric, self.segment, self.unit, self.effective_date, self.locator)):
             raise ValueError("primary metric observation is incomplete")
+        _reject_forbidden_metric(self.metric)
+        _canonical_scalar(self.value)
         effective = date.fromisoformat(self.effective_date[:10])
         published = _parse_aware(document.published_at, "published_at").date()
         if (
@@ -97,7 +112,28 @@ class PrimaryMetricObservation:
             raise ValueError(
                 "realized regulatory filing metric cannot have an effective date after publication"
             )
-        json.dumps(self.value, ensure_ascii=False, sort_keys=True, default=str)
+
+
+@dataclass(frozen=True)
+class PrimaryEvidenceRecord(EvidenceRecord):
+    published_at: str = ""
+    first_seen_at: str = ""
+    source_revision: str = ""
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        if not all((self.published_at, self.first_seen_at, self.source_revision)):
+            raise ValueError(
+                "primary Evidence requires publication, first-seen and revision identity"
+            )
+        published = _parse_aware(self.published_at, "Evidence published_at")
+        first_seen = _parse_aware(self.first_seen_at, "Evidence first_seen_at")
+        if published > first_seen:
+            raise ValueError("Evidence publication cannot follow first-seen time")
+        if self.observed_date[:10] != first_seen.date().isoformat():
+            raise ValueError("primary Evidence observed_date must equal first-seen date")
+        if not _HASH64.fullmatch(self.source_revision):
+            raise ValueError("primary Evidence source_revision must be exact document SHA-256")
 
 
 def authorized_primary_source_collector(
@@ -114,6 +150,8 @@ def authorized_primary_source_collector(
         raise ValueError("allowed_metrics must be non-empty and unique")
     if not allowed_segments or len(allowed_segments) != len(set(allowed_segments)):
         raise ValueError("allowed_segments must be non-empty and unique")
+    for metric in allowed_metrics:
+        _reject_forbidden_metric(metric)
 
     metric_set = set(allowed_metrics)
     segment_set = set(allowed_segments)
@@ -156,16 +194,19 @@ def authorized_primary_source_collector(
 def _evidence_record(
     document: AuthorizedPrimaryDocument,
     observation: PrimaryMetricObservation,
-) -> EvidenceRecord:
+) -> PrimaryEvidenceRecord:
+    value = _canonical_scalar(observation.value)
     payload = {
         "document_hash": document.document_hash.lower(),
         "target": document.target_id,
         "metric": observation.metric,
         "segment": observation.segment,
-        "value": observation.value,
+        "value": value,
         "unit": observation.unit,
         "effective_date": observation.effective_date[:10],
         "locator": observation.locator,
+        "published_at": document.published_at,
+        "first_seen_at": document.checked_at,
     }
     evidence_id = "E:PRIMARY:" + sha256(
         json.dumps(
@@ -173,18 +214,17 @@ def _evidence_record(
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
-            default=str,
         ).encode("utf-8")
     ).hexdigest()[:24]
-    return EvidenceRecord(
+    return PrimaryEvidenceRecord(
         id=evidence_id,
         target=document.target_id,
         metric=observation.metric,
-        value=observation.value,
+        value=value,
         unit=observation.unit,
         source_layer=document.kind.evidence_layer,
         effective_date=observation.effective_date[:10],
-        observed_date=_parse_aware(document.published_at, "published_at").date().isoformat(),
+        observed_date=_parse_aware(document.checked_at, "checked_at").date().isoformat(),
         source_name=document.source_id,
         source_ref=f"{document.source_ref}#{observation.locator}",
         source_grade="A_PRIMARY",
@@ -192,6 +232,9 @@ def _evidence_record(
         segment=observation.segment,
         notes=observation.notes,
         critical=observation.critical,
+        published_at=document.published_at,
+        first_seen_at=document.checked_at,
+        source_revision=document.document_hash.lower(),
     )
 
 
@@ -200,7 +243,7 @@ def _source_fingerprint(
     observations: tuple[PrimaryMetricObservation, ...],
 ) -> str:
     payload = {
-        "contract": "authorized_primary_source/v1",
+        "contract": "authorized_primary_source/v2",
         "source_id": document.source_id,
         "target_id": document.target_id,
         "kind": document.kind.value,
@@ -214,7 +257,7 @@ def _source_fingerprint(
             {
                 "metric": item.metric,
                 "segment": item.segment,
-                "value": item.value,
+                "value": _canonical_scalar(item.value),
                 "unit": item.unit,
                 "effective_date": item.effective_date,
                 "locator": item.locator,
@@ -230,9 +273,36 @@ def _source_fingerprint(
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
-            default=str,
         ).encode("utf-8")
     ).hexdigest()
+
+
+def _reject_forbidden_metric(metric: str) -> None:
+    normalized = metric.strip().casefold().replace("-", "_").replace(" ", "_")
+    if any(token in normalized for token in _FORBIDDEN_INTRINSIC_METRIC_TOKENS):
+        raise ValueError(
+            f"target-market/Street metric cannot enter primary intrinsic Evidence: {metric}"
+        )
+
+
+def _canonical_scalar(value: Any) -> str | int | float:
+    if isinstance(value, bool) or value is None:
+        raise ValueError("primary metric value must be a scalar string or finite number")
+    if isinstance(value, Decimal):
+        if not value.is_finite():
+            raise ValueError("primary metric Decimal value must be finite")
+        return str(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        if not isfinite(value):
+            raise ValueError("primary metric float value must be finite")
+        return value
+    if isinstance(value, str):
+        return value
+    raise TypeError(
+        "primary metric value must be JSON-stable scalar; normalize custom values before collection"
+    )
 
 
 def _parse_aware(value: str, label: str) -> datetime:
