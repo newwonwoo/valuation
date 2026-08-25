@@ -127,6 +127,22 @@ def company_resolver(_: CompanyResolutionRequest) -> ResolvedCompanyIdentity:
     return identity()
 
 
+def _lineage(evidence_id: str, content_hash: str) -> AuthoritativeEvidenceLineage:
+    return AuthoritativeEvidenceLineage(
+        evidence_id=evidence_id,
+        target_id=TARGET_ID,
+        source_id=SOURCE_ID,
+        observed_date=AS_OF,
+        content_hash=content_hash,
+        event_date="2026-06-30",
+        effective_date="2026-06-30",
+        published_at="2026-08-23T08:30:00+09:00",
+        first_seen_at="2026-08-23T08:35:00+09:00",
+        revision_id="original",
+        revision_at="2026-08-23T08:30:00+09:00",
+    )
+
+
 def industry_snapshot_loader(_: ResolvedCompanyIdentity) -> IndustryKnowledgeSnapshot:
     return IndustryKnowledgeSnapshot.build(
         as_of=AS_OF,
@@ -135,20 +151,8 @@ def industry_snapshot_loader(_: ResolvedCompanyIdentity) -> IndustryKnowledgeSna
         evidence_ids=("E:INDUSTRY", "E:SEGMENT"),
         content_hashes=("FROZEN-INDUSTRY-CONTENT", "FROZEN-SEGMENT-CONTENT"),
         evidence_lineage=(
-            AuthoritativeEvidenceLineage(
-                evidence_id="E:INDUSTRY",
-                target_id=TARGET_ID,
-                source_id=SOURCE_ID,
-                observed_date=AS_OF,
-                content_hash="FROZEN-INDUSTRY-CONTENT",
-            ),
-            AuthoritativeEvidenceLineage(
-                evidence_id="E:SEGMENT",
-                target_id=TARGET_ID,
-                source_id=SOURCE_ID,
-                observed_date=AS_OF,
-                content_hash="FROZEN-SEGMENT-CONTENT",
-            ),
+            _lineage("E:INDUSTRY", "FROZEN-INDUSTRY-CONTENT"),
+            _lineage("E:SEGMENT", "FROZEN-SEGMENT-CONTENT"),
         ),
     )
 
