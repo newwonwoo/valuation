@@ -1,10 +1,10 @@
-# PRISM LIVE_PRIMARY Readiness Map v1.4
+# PRISM LIVE_PRIMARY Readiness Map v1.5
 
-Status: canonical maintenance record for distinguishing full PRIMARY_SHADOW integration from real-source LIVE_PRIMARY readiness.
+Status: canonical maintenance record for distinguishing typed runtime integration from real-source LIVE_PRIMARY readiness.
 
 ## 1. Why this exists
 
-A 33-stage Control Plane run can be fully integrated while some stages still depend on incomplete source coverage or narrow evaluator/calibration sets. `PRIMARY_SHADOW PASS` therefore must never be reported as `LIVE_PRIMARY complete`.
+A 33-stage Control Plane run can be fully integrated while some stages still depend on incomplete source breadth, historical datasets or evaluator families. Runtime completion therefore must never be reported as universal live-source/method completion.
 
 `config/live_primary_readiness.yaml` is the machine-readable readiness source. It must contain exactly one row for every stage in `config/control_plane_stage_registry.yaml`.
 
@@ -21,23 +21,21 @@ A new workflow stage without a readiness row is a maintenance error.
 
 ## 2. Current snapshot
 
-At the v1.4 registry snapshot:
+At the v1.5 registry snapshot:
 
 - canonical stages: **33 / 33 mapped**;
-- `LIVE_READY` or `RUNTIME_READY`: **26**;
-- `PARTIAL_LIVE`: **6**;
-- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **1**.
+- `LIVE_READY` or `RUNTIME_READY`: **29**;
+- `PARTIAL_LIVE`: **4**;
+- explicit live gaps (`ADAPTER_REQUIRED`, `SHADOW_ONLY`, `CONDITIONAL_NOT_IMPLEMENTED`): **0**.
 
-One explicit Stage-adapter gap remains: the repository has no entitled/public Street source adapter. Six additional stages remain `PARTIAL_LIVE` because data or method breadth is incomplete.
+The four remaining `PARTIAL_LIVE` stages are:
 
-The highest-value remaining coverage gaps are:
+1. `PRIMARY_EVIDENCE_COLLECTION` — company-specific filing-note, IR, regulatory and non-standard KPI source breadth remains incomplete;
+2. `DETERMINISTIC_VALUATION` — several exact archetype/method bindings remain `NOT_IMPLEMENTED`, including NAV, residual-income/DDM/PB-ROE and pipeline-option families;
+3. `PROBABILITY_DISTRIBUTION_ANALYSIS` — production historical cohorts, predeclared base rates and validated forecast-class/horizon mapping datasets remain incomplete;
+4. `STREET_REFERENCE_LOAD` — lawful authorized export loading is implemented, while universal automatic retrieval remains entitlement/vendor specific.
 
-1. broader exact-evaluator coverage across the 19 Economic Archetypes;
-2. probability calibration datasets beyond the gating contract;
-3. broader company-specific KPI/IR/primary-regulatory source adapters;
-4. reusable jurisdiction/source providers for live peer returns, market risk inputs and company credit observations;
-5. reusable normalized-EPS/accounting and peer-residual providers for Warranted PER.
-6. a repository-provided entitled/public Street reference adapter.
+`LIVE_READY` is contract-scoped, not a claim that every jurisdiction or vendor is bundled into the repository.
 
 ## 3. LIVE_PRIMARY front-half contract
 
@@ -55,135 +53,120 @@ The architecture uses typed loader/resolver contracts instead of embedding one c
 
 `ResolvedCompanyIdentity` must carry legal name, ticker when applicable, jurisdiction, stable target ID, external IDs and source references. Resolution failure or ambiguity enters Recovery; the runtime does not guess among candidates.
 
-OpenDART `corpCode.xml` is the first official resolver implementation. The archive is parsed as ZIP/XML, and Korean entities may be resolved by exact stock code, exact DART corp code, or normalized exact legal name. Other jurisdictions should add resolvers behind the same `CompanyResolver` contract.
+OpenDART `corpCode.xml` is the first official resolver implementation. Korean entities may be resolved by exact stock code, exact DART corp code, or normalized exact legal name. Other jurisdictions use the same `CompanyResolver` contract.
 
-### Industry Knowledge snapshot
+### Industry Knowledge snapshot and segment lineage
 
-`IndustryKnowledgeSnapshot` binds an as-of date, source IDs, document IDs, Evidence IDs and content hashes into one deterministic `snapshot_hash`. A supplied hash that does not reproduce from its components is rejected.
+`IndustryKnowledgeSnapshot` binds an as-of date, source IDs, document IDs, Evidence lineage and content hashes into one deterministic `snapshot_hash`. Segment Evidence must be authoritative for the resolved target and preserve effective/event, published, first-seen and revision chronology. Evidence that was not knowable by the snapshot cutoff is rejected rather than backfilled into historical routing.
 
 ### Source freshness
 
-`LiveFreshnessAssessment` carries Source Watch findings and the source-snapshot hash. Source failure, definition/schema revision, unreviewed material update, new release requiring revalidation, or another revalidation-required state blocks downstream valuation until incorporated/reviewed. A missed expected release may remain a warning when the source is otherwise healthy.
+`LiveFreshnessAssessment` carries Source Watch findings and the source-snapshot hash. Source failure, definition/schema revision, unreviewed material update, new release requiring revalidation, or another revalidation-required state blocks downstream valuation until incorporated/reviewed.
 
-### Segment decomposition
+### Segment decomposition and Industry DNA routing
 
-Every `SegmentDescriptor` must explicitly state revenue recognition, price formation, asset ownership, capital intensity, regulation, customer structure, reinvestment model, cash-flow duration and Evidence IDs. A segment without evidence cannot be routed.
-
-### Industry DNA routing
-
-The live router must cover every decomposed segment exactly once with an `IndustryDNAProfile`. Every `evidence_key` in the route must already exist in either the loaded Industry Knowledge snapshot or that run's segment evidence. Invented/unresolved Evidence IDs fail closed.
+Every `SegmentDescriptor` must explicitly state revenue recognition, price formation, asset ownership, capital intensity, regulation, customer structure, reinvestment model, cash-flow duration and Evidence IDs. The live router must cover every decomposed segment exactly once, and every routing Evidence ID must already belong to the authoritative snapshot/segment lineage.
 
 ## 4. Live Rocket Insight scanner dispatch
 
-`src/valuation_engine/scanner_runtime.py` executes the mandatory/adaptive scanner loadout through typed `ScannerRunner` contracts.
+`src/valuation_engine/scanner_runtime.py` executes the mandatory and explicitly activated optional scanner loadout through typed `ScannerRunner` contracts.
 
 Rules:
 
 - every mandatory scanner needs a registered runner or the stage is `NOT_IMPLEMENTED` and blocking;
+- optional scanners are declared separately in the Module Requirement Plan and are never inferred from generic active research-unit IDs;
 - scanner Evidence IDs must already exist in the pre-freeze `EvidenceLedger`;
 - target-market Evidence is forbidden;
 - an active scanner must connect to a hypothesis candidate, verification request, economic path, final-output reference, or explicitly declare `context_only`;
-- `context_only` is recorded as a research-only path so repeated cost/low impact can be down-ranked;
-- each live finding records `ResearchEffort` and a `ModuleImpactTrace`-compatible path;
-- typed scanner findings are included in `LLMStaffContext`.
+- each live finding records `ResearchEffort` and a `ModuleImpactTrace`-compatible path.
 
-The dispatcher does not commit assumptions. It produces structured research input for LLM Staff and later Decision Impact / ablation.
+The dispatcher produces structured research input and never commits assumptions.
 
 ## 5. Live Upstream Funding scan
 
 `src/valuation_engine/funding_adapter.py` executes route-required funding analysis through a typed `FundingScanner` contract.
 
-The result must include a validated contiguous `FundingLadder`, Evidence IDs, funded-demand state and any financing constraints/verification requests. A credit-improvement candidate must be backed by confirmed or first-order funding evidence.
-
-Crucially:
-
-- customer advances/funding evidence may support FCFF, funded-demand or credit-mechanism reasoning;
-- the funding stage does **not** directly lower WACC;
-- only Evidence IDs are exposed as a credit-improvement candidate to the independent WACC stage;
-- target-equity market Evidence is forbidden pre-freeze.
-
-Funding results are also exposed to `LLMStaffContext` so the Researcher/Bridge stages can reason from the verified financing chain without bypassing the Assumption Compiler.
+A credit-improvement candidate must be backed by confirmed or first-order funding Evidence. The funding stage does not directly lower WACC; it exposes Evidence-backed credit candidates to the independent risk/assumption path. Target-equity market Evidence is forbidden pre-freeze.
 
 ## 6. Live Hierarchical Beta and WACC
 
-`src/valuation_engine/risk_adapters.py` is the typed live adapter layer for `HIERARCHICAL_BETA_ESTIMATION` and `WACC_VALIDATION`.
+`src/valuation_engine/risk_adapters.py` owns the strict typed live contracts. `src/valuation_engine/authorized_risk_providers.py` supplies the repository's authorized Korean provider pack.
 
-### Hierarchical Beta
+### Hierarchical Beta — `LIVE_READY`
 
-The live universe must be exactly:
+The live universe is exactly:
 
 `L1 Broad Sector → L2 Industry → L3 Risk-Driver Subindustry → L4 Economic Twins`.
 
-Each level requires an explicit selection rationale and active Evidence IDs. Peer observations carry Beta, unlevering capital structure, tax rate, benchmark, frequency, estimation window, as-of date, source and optional standard error. One run must use a normalized benchmark/frequency/window convention; a peer cannot be counted in multiple levels.
+`AuthorizedKRRiskProviderPack` composes authorized KRX regression Beta observations with Evidence-backed peer capital observations, validates normalized benchmark/frequency/window conventions, and builds the canonical `LiveBetaUniverse`. The deterministic partial-pooling engine fixes asset Beta first and relevers once using the typed target capital structure.
 
-The existing deterministic partial-pooling engine fixes asset Beta first, then the adapter relevers once using a typed target capital structure. Target current market capitalization is not a permitted pre-freeze source for choosing that structure.
+### WACC — `LIVE_READY`
 
-### WACC
+The authorized Korean pack composes:
 
-WACC consumes the `LiveBetaStageResult`; its loader cannot override Beta. It loads typed currency-consistent risk-free, ERP, country-risk, marginal debt cost and target-capital-structure observations.
+- Bank of Korea ECOS risk-free/borrowing series;
+- Damodaran mature-market ERP separated from country-risk premium;
+- an explicitly rating/maturity-matched marginal debt benchmark;
+- peer-normalized target capital structure that does not use target current market capitalization.
 
-The same equity/debt weights, tax rate and target-structure method must be used for Beta relevering and WACC weighting. A mismatch fails closed.
+The same target structure must be used for Beta relevering and WACC weighting. Target current price, target market capitalization, target price and target-company Street references remain forbidden pre-freeze. Other currencies/jurisdictions remain injectable behind the same contract; that breadth is not required for the KR provider path to be `LIVE_READY`.
 
-Positive additional risk premia require an explicit evidenced basis and active Evidence IDs. Generic small-cap plugs are not accepted.
+## 7. Live Hierarchical Warranted PER — `LIVE_READY`
 
-Customer-advance/funding Evidence may be recorded as a credit-improvement candidate, but does not mechanically lower WACC. Actual WACC changes must appear through separately observed/rebuilt Beta, marginal Cost of Debt, target structure or another evidenced input.
+`src/valuation_engine/per_adapters.py` is the canonical stage adapter and `src/valuation_engine/authorized_per_providers.py` supplies the authorized provider pack.
 
-Both stages reject target-company current price, target market capitalization, target price, consensus targets/multiples and target-company Street references before Intrinsic Freeze.
+The provider pack:
 
-The stages are `PARTIAL_LIVE`: deterministic contracts and fail-closed calculation are complete, while universal jurisdiction/source providers for live peer-return, sovereign-curve, ERP and company-credit data remain outside the repository. See `docs/LIVE_BETA_WACC_ADAPTERS.md`.
+- builds normalized forward EPS from annual OpenDART filing EPS, explicit Evidence-backed normalization adjustments and an explicit non-Street forward-growth input;
+- rejects interim filing EPS as a normalized annual base;
+- verifies the compiled normalized EPS assumption and Evidence IDs before Warranted PER consumes it;
+- supplies exact L1→L4 peer residual observations using peer-only market references;
+- forbids target-company self-inclusion, duplicate peers and mixed residual as-of dates.
 
-## 7. Live Hierarchical Warranted PER
+Core Fundamental PER remains tied to the compiled assumptions and `LiveWACCStageResult`; DCF consistency checks, expansion-adjusted PER and peer residual hierarchy retain their existing fail-closed contracts.
 
-`src/valuation_engine/per_adapters.py` is the typed live adapter for `HIERARCHICAL_WARRANTED_PER`.
+## 8. OpenDART company-fact vertical — `PARTIAL_LIVE` evidence breadth
 
-Core Fundamental PER reads normalized EPS, growth, FCFE conversion, terminal, margin and reinvestment inputs only from the `CompiledAssumptionSet`; Cost of Equity comes from `LiveWACCStageResult`.
+`src/valuation_engine/dart_facts.py` and the OpenDART provider bundle support official company resolution, standard financial facts, original filing documents and deterministic KPI extraction.
 
-When Core DCF is used, the stage requires an `EconomicAssumptionFingerprint` and fails closed on any growth, margin, reinvestment or duration mismatch.
+Design rules include exact XBRL account IDs for standard facts, correct Q2/Q3 cumulative semantics, explicit fiscal-period identity, point-in-time balance-sheet semantics, exact integer precision for large KRW values and fail-closed ambiguity/currency handling.
 
-Expansion-Adjusted PER requires separate compiled assumptions plus active committed/pre-invested Evidence IDs. It remains a separate output and is not averaged with Core.
+This does not cover every company-specific KPI. Backlog, effective capacity, customer advances, qualification, project COD, clinical evidence, customer concentration and many segment metrics may still require filing-note, IR, primary-regulatory or other authorized adapters.
 
-Market-Realization PER pools peer residual premiums rather than raw PER. The residual hierarchy must be L1→L4, target-company self-inclusion and duplicate peers are forbidden, and peer observations require one normalized as-of date.
+## 9. Deterministic valuation — `PARTIAL_LIVE`
 
-Target-company consensus EPS, target multiple, target price and current market references are rejected pre-freeze. An inapplicable PER stage terminates explicitly as `SKIPPED_NOT_APPLICABLE` rather than inventing an EPS denominator.
+The exact registry/SOTP runtime currently supports:
 
-The stage is `PARTIAL_LIVE`: typed compilation/WACC/DCF/expansion/residual contracts are implemented, while universal EPS-normalization and peer-residual source providers remain caller-specific. See `docs/LIVE_WARRANTED_PER_ADAPTER.md`.
+- normalized multiples;
+- explicit FCFF DCF families;
+- finite-life `project_npv`, `reserve_npv` and `cohort_npv`;
+- calibration-certified single-event rNPV;
+- SOTP aggregation where registered;
+- `PARTIAL_INTRINSIC` with explicit `UNVALUED_NOT_ZERO` preservation.
 
-## 8. OpenDART company-fact vertical
+A partial subtotal is never presented as full-company fair value and whole-company Street/current-price gap comparison is withheld for partial runs.
 
-`src/valuation_engine/dart_facts.py` is the first reusable LIVE_PRIMARY company-fact adapter.
+`config/valuation_method_capability_registry.yaml` remains the machine-readable source for exact method gaps. Current `NOT_IMPLEMENTED` bindings include contracted-backlog normalized EBITDA, hit-driven pipeline option SOTP, regulated/asset-yield DDM-related methods, asset NAV/FFO multiple, financial PB-ROE/residual income, and reserve NAV.
 
-The transport contract follows the official OpenDART **single-company full financial statements** API:
+## 10. Probability calibration — `PARTIAL_LIVE`
 
-`GET https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json`
+The probability layer has append-only forecast/outcome revision chains, `first_seen_at` knowledge-time boundaries, deterministic historical replay, Brier/Brier-Skill/log-loss/ECE metrics and hash-bound `CalibrationCertificate` gating.
 
-with `crtfc_key`, `corp_code`, `bsns_year`, `reprt_code`, and `fs_div`.
+What remains is production evidence, not missing arithmetic: historical cohorts, predeclared base rates and validated mapping datasets by forecast class/horizon must be populated before broad numeric probability weighting can be promoted.
 
-Design rules:
+## 11. Audit, Freeze and post-freeze references
 
-- default to consolidated `CFS`; `OFS` requires an explicit request;
-- standard core facts use exact XBRL account IDs only;
-- account-name fuzzy matching is forbidden;
-- company-specific facts such as contract liabilities/customer advances need an explicit `DartFactMetricSpec`;
-- half-year and Q3 income-statement facts require cumulative `thstrm_add_amount`; only annual/Q1 reports may fall back to `thstrm_amount` for YTD;
-- `fiscal_period_end` is required from issuer fiscal-calendar or filing-period metadata; report codes are never converted to fixed calendar dates;
-- balance-sheet facts use point-in-time `thstrm_amount`;
-- response rows may omit `fs_div` because the official endpoint receives it at request level;
-- currency mismatch fails closed;
-- large KRW amounts preserve exact integer precision rather than passing through float;
-- multiple different values matching one metric fail closed rather than being averaged or summed;
-- DART facts enter only as `REALIZED_OR_FILING` Evidence. They do not become assumptions without the ordinary LLM Bridge → deterministic Assumption Compiler path.
+Audit replays the frozen Evidence Ledger hash, compiled Evidence-input hashes, Compiled Assumption Set hash, Bound Scenario Set hash and valuation hash. The Intrinsic Freeze Token binds the same run to the frozen Ledger, assumptions, valuation, Audit, Industry Knowledge and source snapshot identities.
 
-The live collector uses an injected `fetch_text` transport. Network/credential handling therefore stays outside deterministic valuation code, while fixtures and historical replays use the same fact parser.
+Post-freeze Street loading accepts only caller-authorized `licensed_export` or `explicit_permission` inputs in the repository-provided loader. Universal automatic retrieval remains entitlement-specific. Market/Street comparisons cannot mutate the frozen intrinsic run.
 
-## 9. What LIVE_READY does not mean
+## 12. What LIVE_READY does not mean
 
-A `LIVE_READY` stage means its typed source/loader/runner contract, traceability and fail-closed behavior are complete. It does **not** claim every jurisdiction, every source family, every scanner implementation, every risk-data provider, every peer-residual provider or every company-specific KPI is built in.
+A `LIVE_READY` stage means its typed source/loader/runner contract, traceability, current implementation path and fail-closed behavior are complete for its declared scope. It does not claim every jurisdiction, every vendor, every scanner source or every company KPI is bundled.
 
-OpenDART standard financial facts do not provide every Industry DNA requirement. Backlog quality, effective capacity, customer advances, qualification, project COD, clinical evidence, customer concentration and many segment KPIs still need company-specific filing-note, IR, primary-regulatory or calibrated alternative-data adapters.
+Absence of a standard source field is not permission to guess. The Control Plane records the missing requirement and enters Recovery, partial valuation or capability handling according to doctrine.
 
-Absence of a standard XBRL account ID is not permission to guess from a similar account name. The Control Plane should record the missing metric and enter Recovery/Capability handling.
-
-## 10. Promotion rule
+## 13. Promotion rule
 
 A stage moves toward `LIVE_READY` only when:
 
