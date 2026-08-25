@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping as MappingABC
 from types import MappingProxyType
 import re
 from typing import Any, Mapping
@@ -7,23 +8,27 @@ from typing import Any, Mapping
 from .ledger import EvidenceLedger
 
 
-_SENSITIVE_ASSIGNMENT = re.compile(
-    r"(?i)(api[_-]?key|crtfc[_-]?key|access[_-]?token|refresh[_-]?token|"
-    r"authorization|bearer|password|passwd|secret)\s*([:=]\s*|\s+)([^\s,;]+)"
+_AUTHORIZATION = re.compile(
+    r"(?i)\bAuthorization\b\s*[:=]\s*['\"]?(?:(?:Basic|Bearer|Token|Digest|ApiKey)\s+)?[^\s,'\";}]+['\"]?"
 )
-_BEARER = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+\-/=]+")
+_FREE_BEARER = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+\-/=]+")
+_SENSITIVE_KV = re.compile(
+    r"(?i)(['\"]?(?:api[_-]?key|crtfc[_-]?key|access[_-]?token|refresh[_-]?token|"
+    r"password|passwd|secret)['\"]?\s*[:=]\s*)(['\"]?)([^'\",\s;}]+)(['\"]?)"
+)
 
 
 def sanitize_runtime_text(value: object) -> str:
     text = str(value)
-    text = _BEARER.sub("Bearer [REDACTED]", text)
+    text = _AUTHORIZATION.sub("Authorization: [REDACTED]", text)
+    text = _FREE_BEARER.sub("Bearer [REDACTED]", text)
 
     def replace(match: re.Match[str]) -> str:
-        label = match.group(1)
-        separator = match.group(2)
-        return f"{label}{separator}[REDACTED]"
+        prefix = match.group(1)
+        quote = match.group(2) or match.group(4)
+        return f"{prefix}{quote}[REDACTED]{quote}"
 
-    return _SENSITIVE_ASSIGNMENT.sub(replace, text)
+    return _SENSITIVE_KV.sub(replace, text)
 
 
 def read_only_data_view(data: dict[str, Any]) -> Mapping[str, Any]:
@@ -38,12 +43,29 @@ def read_only_data_view(data: dict[str, Any]) -> Mapping[str, Any]:
 
 
 def evidence_ledgers(data: Mapping[str, Any]) -> tuple[EvidenceLedger, ...]:
-    seen: set[int] = set()
+    seen_objects: set[int] = set()
+    seen_ledgers: set[int] = set()
     ledgers: list[EvidenceLedger] = []
-    for value in data.values():
-        if isinstance(value, EvidenceLedger) and id(value) not in seen:
-            seen.add(id(value))
-            ledgers.append(value)
+
+    def visit(value: Any) -> None:
+        identity = id(value)
+        if identity in seen_objects:
+            return
+        seen_objects.add(identity)
+        if isinstance(value, EvidenceLedger):
+            if identity not in seen_ledgers:
+                seen_ledgers.add(identity)
+                ledgers.append(value)
+            return
+        if isinstance(value, MappingABC):
+            for item in value.values():
+                visit(item)
+            return
+        if isinstance(value, (list, tuple, set, frozenset)):
+            for item in value:
+                visit(item)
+
+    visit(data)
     return tuple(ledgers)
 
 
