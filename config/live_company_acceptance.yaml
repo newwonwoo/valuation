@@ -1,0 +1,30 @@
+version: 1
+purpose: Source-backed LIVE_PRIMARY acceptance tracking. BLOCKED entries are explicit gaps and never count as accepted company fixtures.
+required_contract:
+  full_live_primary_33_stage: true
+  primary_evidence_lineage: true
+  target_market_isolation_pre_freeze: true
+  audit_and_intrinsic_freeze: true
+  post_freeze_market_compare: true
+  synthetic_placeholder_forbidden: true
+companies:
+  OCI_HOLDINGS:
+    display_name: OCI Holdings
+    status: BLOCKED_SOURCE_FIXTURE
+    fixture_path: tests/fixtures/live_companies/oci_holdings.json
+    blocker: Source-backed company-specific LIVE_PRIMARY fixture has not been committed and independently validated.
+  ORACLE:
+    display_name: Oracle
+    status: BLOCKED_SOURCE_FIXTURE
+    fixture_path: tests/fixtures/live_companies/oracle.json
+    blocker: Source-backed company-specific LIVE_PRIMARY fixture has not been committed and independently validated.
+  BLOOM_ENERGY:
+    display_name: Bloom Energy
+    status: BLOCKED_SOURCE_FIXTURE
+    fixture_path: tests/fixtures/live_companies/bloom_energy.json
+    blocker: Source-backed company-specific LIVE_PRIMARY fixture has not been committed and independently validated.
+  GE_VERNOVA:
+    display_name: GE Vernova
+    status: BLOCKED_SOURCE_FIXTURE
+    fixture_path: tests/fixtures/live_companies/ge_vernova.json
+    blocker: Source-backed company-specific LIVE_PRIMARY fixture has not been committed and independently validated.
