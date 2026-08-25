@@ -20,6 +20,7 @@ from .records import EvidenceRecord, EvidenceSourceLayer
 
 _HASH64 = re.compile(r"^[0-9a-fA-F]{64}$")
 _ALLOWED_ACCESS = {"public", "licensed", "explicit_permission"}
+_ALLOWED_EVIDENCE_ROLES = {"realized", "company_plan", "policy"}
 _FORBIDDEN_INTRINSIC_METRIC_TOKENS = (
     "current_market_price",
     "market_price",
@@ -44,6 +45,14 @@ class PrimarySourceKind(str, Enum):
             PrimarySourceKind.REGULATORY_FILING: EvidenceSourceLayer.REALIZED_OR_FILING,
             PrimarySourceKind.COMPANY_IR: EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
             PrimarySourceKind.PRIMARY_REGULATOR: EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+        }[self]
+
+    @property
+    def default_evidence_role(self) -> str:
+        return {
+            PrimarySourceKind.REGULATORY_FILING: "realized",
+            PrimarySourceKind.COMPANY_IR: "company_plan",
+            PrimarySourceKind.PRIMARY_REGULATOR: "policy",
         }[self]
 
 
@@ -97,16 +106,22 @@ class PrimaryMetricObservation:
     locator: str
     critical: bool = False
     notes: str = ""
+    evidence_role: str = ""
+    source_ref: str = ""
 
     def validate(self, *, document: AuthorizedPrimaryDocument) -> None:
         if not all((self.metric, self.segment, self.unit, self.effective_date, self.locator)):
             raise ValueError("primary metric observation is incomplete")
         _reject_forbidden_metric(self.metric)
         _canonical_scalar(self.value)
+        role = _resolve_evidence_role(document, self)
+        if self.source_ref and self.source_ref != document.source_ref:
+            raise ValueError("primary metric observation source_ref must match authorized document")
         effective = date.fromisoformat(self.effective_date[:10])
         published = _parse_aware(document.published_at, "published_at").date()
         if (
             document.kind is PrimarySourceKind.REGULATORY_FILING
+            and role == "realized"
             and effective > published
         ):
             raise ValueError(
@@ -119,13 +134,16 @@ class PrimaryEvidenceRecord(EvidenceRecord):
     published_at: str = ""
     first_seen_at: str = ""
     source_revision: str = ""
+    evidence_role: str = ""
 
     def __post_init__(self) -> None:
         super().__post_init__()
-        if not all((self.published_at, self.first_seen_at, self.source_revision)):
+        if not all((self.published_at, self.first_seen_at, self.source_revision, self.evidence_role)):
             raise ValueError(
-                "primary Evidence requires publication, first-seen and revision identity"
+                "primary Evidence requires publication, first-seen, revision identity and evidence_role"
             )
+        if self.evidence_role not in _ALLOWED_EVIDENCE_ROLES:
+            raise ValueError(f"unsupported primary Evidence role: {self.evidence_role}")
         published = _parse_aware(self.published_at, "Evidence published_at")
         first_seen = _parse_aware(self.first_seen_at, "Evidence first_seen_at")
         if published > first_seen:
@@ -196,6 +214,7 @@ def _evidence_record(
     observation: PrimaryMetricObservation,
 ) -> PrimaryEvidenceRecord:
     value = _canonical_scalar(observation.value)
+    evidence_role = _resolve_evidence_role(document, observation)
     payload = {
         "document_hash": document.document_hash.lower(),
         "target": document.target_id,
@@ -207,6 +226,7 @@ def _evidence_record(
         "locator": observation.locator,
         "published_at": document.published_at,
         "first_seen_at": document.checked_at,
+        "evidence_role": evidence_role,
     }
     evidence_id = "E:PRIMARY:" + sha256(
         json.dumps(
@@ -222,7 +242,7 @@ def _evidence_record(
         metric=observation.metric,
         value=value,
         unit=observation.unit,
-        source_layer=document.kind.evidence_layer,
+        source_layer=_evidence_layer_for_role(evidence_role),
         effective_date=observation.effective_date[:10],
         observed_date=_parse_aware(document.checked_at, "checked_at").date().isoformat(),
         source_name=document.source_id,
@@ -235,6 +255,7 @@ def _evidence_record(
         published_at=document.published_at,
         first_seen_at=document.checked_at,
         source_revision=document.document_hash.lower(),
+        evidence_role=evidence_role,
     )
 
 
@@ -243,7 +264,7 @@ def _source_fingerprint(
     observations: tuple[PrimaryMetricObservation, ...],
 ) -> str:
     payload = {
-        "contract": "authorized_primary_source/v2",
+        "contract": "authorized_primary_source/v3",
         "source_id": document.source_id,
         "target_id": document.target_id,
         "kind": document.kind.value,
@@ -263,6 +284,8 @@ def _source_fingerprint(
                 "locator": item.locator,
                 "critical": item.critical,
                 "notes": item.notes,
+                "evidence_role": _resolve_evidence_role(document, item),
+                "source_ref": item.source_ref,
             }
             for item in observations
         ],
@@ -275,6 +298,24 @@ def _source_fingerprint(
             separators=(",", ":"),
         ).encode("utf-8")
     ).hexdigest()
+
+
+def _resolve_evidence_role(
+    document: AuthorizedPrimaryDocument,
+    observation: PrimaryMetricObservation,
+) -> str:
+    role = observation.evidence_role or document.kind.default_evidence_role
+    if role not in _ALLOWED_EVIDENCE_ROLES:
+        raise ValueError(f"unsupported primary metric evidence_role: {role}")
+    return role
+
+
+def _evidence_layer_for_role(role: str) -> EvidenceSourceLayer:
+    return {
+        "realized": EvidenceSourceLayer.REALIZED_OR_FILING,
+        "company_plan": EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
+        "policy": EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+    }[role]
 
 
 def _reject_forbidden_metric(metric: str) -> None:
