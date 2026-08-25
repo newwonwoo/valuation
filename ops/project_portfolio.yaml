@@ -28,19 +28,24 @@ validation_baseline:
       event: push
       head_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
 
+legacy_dependency_refs:
+  - EVI-ACTIVE-001
+  - PLT-CTX-COW-001
+  - RUN-CTX-001
+
 departments:
   - id: pm-integrator
     name: Architecture & Program Office
     design_points: 5
     baseline_accepted_points: 5
-    current_work: MAINTENANCE — no open delivery item
+    current_work: REALITY SYNC — reconcile merged delivery with conservative PM acceptance
     accepted_milestones: []
 
   - id: evidence-industry-agent
     name: Evidence & Industry Intelligence
     design_points: 13
     baseline_accepted_points: 7
-    current_work: ACTIVE EVI-SEGMENT-LINEAGE-001 — Bind segment decomposition evidence to authoritative source lineage
+    current_work: ACTIVE EVI-SCAN-001 — Separate optional scanner IDs from mixed active research units
     accepted_milestones:
       - id: EVI-VERTICAL-001
         title: Complete the first official OpenDART vertical provider pack through raw filing and deterministic KPI extraction
@@ -72,7 +77,7 @@ departments:
     name: Risk, PER & Probability Calibration
     design_points: 10
     baseline_accepted_points: 5
-    current_work: ACTIVE CAL-ASOF-001 — Add a first-seen boundary to historical forecast revisions
+    current_work: MERGED PENDING ACCEPTANCE — CAL-ASOF, Risk providers and PER providers
     accepted_milestones: []
 
   - id: post-freeze-agent
@@ -115,25 +120,28 @@ departments:
 
 work_items:
   - priority: P1
-    status: ACTIVE
+    status: MERGED_PENDING_ACCEPTANCE
     id: CAL-ASOF-001
     title: Add a first-seen boundary to historical forecast revisions
     owner: calibration-risk-agent
-    current_step: Add and validate first_seen_at at ingestion, snapshot cutoff, serialization restore, and deterministic replay boundaries.
+    github_pr: 59
+    current_step: PR #59 merged; awaiting exact-SHA validation evidence and PM acceptance.
     dependencies: []
   - priority: P1
-    status: ACTIVE
+    status: MERGED_PENDING_ACCEPTANCE
     id: EVI-SEGMENT-LINEAGE-001
     title: Bind segment decomposition evidence to authoritative source lineage
     owner: evidence-industry-agent
-    current_step: Reconcile decomposer Evidence IDs against target, source, date, content hash, and the active authoritative ledger before Industry DNA routing.
+    github_pr: 60
+    current_step: PR #60 merged; awaiting exact-SHA validation evidence and PM acceptance.
     dependencies: [EVI-ACTIVE-001]
   - priority: P1
-    status: READY
+    status: MERGED_PENDING_ACCEPTANCE
     id: RISK-PROVIDERS-001
     title: Build reusable Beta, WACC, and Cost-of-Equity source providers
     owner: calibration-risk-agent
-    current_step: Compose the approved KRX, ECOS, Damodaran and OpenDART collectors into typed Beta/WACC loaders; add marginal debt-cost and target-capital-structure sourcing.
+    github_pr: 61
+    current_step: PR #61 merged; awaiting exact-SHA validation evidence and PM acceptance.
     dependencies: []
   - priority: P1
     status: READY
@@ -143,11 +151,12 @@ work_items:
     current_step: Define low-noise time, allocation, and copy-count thresholds from accepted baselines.
     dependencies: [PLT-CTX-COW-001]
   - priority: P2
-    status: READY
+    status: ACTIVE
     id: EVI-SCAN-001
     title: Separate optional scanner IDs from mixed active research units
     owner: evidence-industry-agent
-    current_step: Define the typed registry field and compatibility behavior for existing plans.
+    github_pr: 63
+    current_step: PR #63 is open; validate typed optional-scanner routing and fail-closed behavior.
     dependencies: []
   - priority: P2
     status: READY
@@ -164,11 +173,12 @@ work_items:
     current_step: Capture exact ordering, error, and cycle semantics before replacing repeated validation and linear scans.
     dependencies: []
   - priority: P1
-    status: BLOCKED
+    status: MERGED_PENDING_ACCEPTANCE
     id: PER-PROVIDERS-001
     title: Build normalized EPS and peer-residual provider packs
     owner: calibration-risk-agent
-    current_step: Filing EPS exists, but normalized forward EPS and peer-residual source packs still depend on the completed risk-provider path and approved accounting/peer conventions.
+    github_pr: 62
+    current_step: PR #62 merged; awaiting exact-SHA validation evidence and PM acceptance.
     dependencies: [RISK-PROVIDERS-001]
   - priority: P1
     status: BACKLOG
