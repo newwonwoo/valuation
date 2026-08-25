@@ -27,6 +27,7 @@ class SegmentModuleRequirementPlan:
     double_count_traps: tuple[str, ...]
     forbidden_methods: tuple[str, ...]
     allowed_valuation_methods: tuple[str, ...]
+    optional_scanners: tuple[str, ...] = ()
 
     def validate(self) -> None:
         if not self.segment_id or not self.sector_adapter or not self.archetypes:
@@ -41,6 +42,11 @@ class SegmentModuleRequirementPlan:
             raise ValueError(f"segment {self.segment_id} has no kill conditions")
         if not self.allowed_valuation_methods:
             raise ValueError(f"segment {self.segment_id} has no allowed valuation methods")
+        scanner_overlap = set(self.mandatory_scanners).intersection(self.optional_scanners)
+        if scanner_overlap:
+            raise ValueError(
+                f"segment {self.segment_id} scanner is both mandatory and optional: {sorted(scanner_overlap)}"
+            )
         overlap = set(self.allowed_valuation_methods).intersection(self.forbidden_methods)
         if overlap:
             raise ValueError(
@@ -59,6 +65,7 @@ class ModuleRequirementPlan:
     scenario_variables: tuple[str, ...]
     double_count_traps: tuple[str, ...]
     forbidden_methods: tuple[str, ...]
+    optional_scanners: tuple[str, ...] = ()
 
     def validate(self) -> None:
         if not self.segments:
@@ -68,6 +75,11 @@ class ModuleRequirementPlan:
             raise ValueError("module requirement plan contains duplicate segment IDs")
         if not self.common_core_modules:
             raise ValueError("module requirement plan requires common core modules")
+        overlap = set(self.mandatory_scanners).intersection(self.optional_scanners)
+        if overlap:
+            raise ValueError(
+                f"module requirement plan scanner is both mandatory and optional: {sorted(overlap)}"
+            )
         for segment in self.segments:
             segment.validate()
 
@@ -140,8 +152,8 @@ def build_module_requirement_plan(
 
     `archetype_module_registry` owns operating economics and valuation-method requirements.
     `archetype_control_requirements` owns only Control Plane deployment fields: required KPIs,
-    mandatory scanners and generic kill-condition templates. Neither file duplicates the
-    other's responsibility.
+    mandatory/optional scanners and generic kill-condition templates. Neither file duplicates the
+    other's responsibility. Missing ``optional_scanners`` is backward-compatible and means none.
     """
     if not profiles:
         raise ValueError("Industry DNA profiles are required")
@@ -154,6 +166,7 @@ def build_module_requirement_plan(
         required_evidence: list[str] = []
         required_kpis: list[str] = []
         mandatory_scanners: list[str] = []
+        optional_scanners: list[str] = []
         kill_conditions: list[str] = []
         normalization: list[str] = []
         beta_features: list[str] = []
@@ -176,6 +189,7 @@ def build_module_requirement_plan(
             required_evidence.extend(_list_field(raw, "required_evidence"))
             required_kpis.extend(_list_field(control, "required_kpis"))
             mandatory_scanners.extend(_list_field(control, "mandatory_scanners"))
+            optional_scanners.extend(_list_field(control, "optional_scanners"))
             kill_conditions.extend(_list_field(control, "kill_conditions"))
             normalization.extend(_list_field(raw, "normalization"))
             beta_features.extend(_list_field(raw, "beta_peer_features"))
@@ -204,6 +218,7 @@ def build_module_requirement_plan(
             double_count_traps=_ordered_unique(double_count_traps),
             forbidden_methods=_ordered_unique(forbidden_methods),
             allowed_valuation_methods=_ordered_unique(allowed_methods),
+            optional_scanners=_ordered_unique(optional_scanners),
         )
         segment_plan.validate()
         segment_plans.append(segment_plan)
@@ -218,6 +233,7 @@ def build_module_requirement_plan(
         scenario_variables=_ordered_unique([item for segment in segment_plans for item in segment.scenario_variables]),
         double_count_traps=_ordered_unique([item for segment in segment_plans for item in segment.double_count_traps]),
         forbidden_methods=_ordered_unique([item for segment in segment_plans for item in segment.forbidden_methods]),
+        optional_scanners=_ordered_unique([item for segment in segment_plans for item in segment.optional_scanners]),
     )
     plan.validate()
     return plan
