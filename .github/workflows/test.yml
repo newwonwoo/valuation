@@ -38,3 +38,11 @@ jobs:
         run: pytest -q
       - name: OCI regression output
         run: valuation-engine examples/oci/company.yaml
+      - name: Installed wheel runtime resources
+        run: |
+          rm -rf /tmp/valuation-wheelhouse /tmp/valuation-wheel-venv
+          python -m pip wheel . --no-deps -w /tmp/valuation-wheelhouse
+          python -m venv /tmp/valuation-wheel-venv
+          /tmp/valuation-wheel-venv/bin/python -m pip install /tmp/valuation-wheelhouse/*.whl
+          (cd /tmp && /tmp/valuation-wheel-venv/bin/python "$GITHUB_WORKSPACE/scripts/validate_installed_wheel.py")
+          (cd /tmp && /tmp/valuation-wheel-venv/bin/valuation-engine --help >/dev/null)

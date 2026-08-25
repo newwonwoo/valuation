@@ -2,14 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import lru_cache
-from pathlib import Path
 from typing import Iterable
 
 from .control_plane import DoctrineCoverageEntry, StageStatus
+from .runtime_resources import runtime_registry_path
 from .unit_contracts import UnitContractRegistry, load_unit_contract_registry
 
-
-_DEFAULT_REGISTRY_PATH = Path(__file__).resolve().parents[2] / "config" / "unit_contract_registry.yaml"
 
 _STATUS_PRIORITY = {
     StageStatus.SKIPPED_NOT_APPLICABLE: 10,
@@ -38,7 +36,7 @@ class DoctrineCoverageSnapshot:
 
 @lru_cache(maxsize=1)
 def load_default_unit_contract_registry() -> UnitContractRegistry:
-    return load_unit_contract_registry(_DEFAULT_REGISTRY_PATH)
+    return load_unit_contract_registry(runtime_registry_path("unit_contract_registry.yaml"))
 
 
 def _trace_fields(trace) -> tuple[str, StageStatus, str, bool]:
