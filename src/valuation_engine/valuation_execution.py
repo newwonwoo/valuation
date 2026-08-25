@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
+from enum import Enum
 from hashlib import sha256
 
 from .evaluator_registry import (
@@ -18,6 +19,33 @@ from .sotp import (
     aggregate_scenario_equity_values,
     aggregate_sotp,
 )
+
+
+class IntrinsicValuationScope(str, Enum):
+    FULL_INTRINSIC = "FULL_INTRINSIC"
+    PARTIAL_INTRINSIC = "PARTIAL_INTRINSIC"
+
+
+class UnvaluedSegmentStatus(str, Enum):
+    UNVALUED_NOT_ZERO = "UNVALUED_NOT_ZERO"
+
+
+@dataclass(frozen=True)
+class UnvaluedSegment:
+    asset_id: str
+    segment_id: str
+    resolution_status: str
+    rationale: str
+    missing_assumptions: tuple[str, ...] = ()
+    status: UnvaluedSegmentStatus = UnvaluedSegmentStatus.UNVALUED_NOT_ZERO
+
+    def __post_init__(self) -> None:
+        if not all((self.asset_id, self.segment_id, self.resolution_status, self.rationale)):
+            raise ValueError(
+                "unvalued segment requires asset, segment, resolution status and rationale"
+            )
+        if self.status is not UnvaluedSegmentStatus.UNVALUED_NOT_ZERO:
+            raise ValueError("unvalued segment status must remain UNVALUED_NOT_ZERO")
 
 
 @dataclass(frozen=True)
@@ -54,17 +82,41 @@ class CompanyValuationPlan:
     reporting_unit: str
     diluted_shares_key: str
     parent_adjustments: tuple[ParentAdjustmentPlan, ...] = ()
+    unvalued_segments: tuple[UnvaluedSegment, ...] = ()
+
+    @property
+    def scope(self) -> IntrinsicValuationScope:
+        return (
+            IntrinsicValuationScope.PARTIAL_INTRINSIC
+            if self.unvalued_segments
+            else IntrinsicValuationScope.FULL_INTRINSIC
+        )
 
     def validate(self) -> None:
         if not self.segments:
-            raise ValueError("company valuation plan requires segments")
+            raise ValueError(
+                "company valuation plan requires at least one valued segment; "
+                "an all-unvalued company cannot emit PARTIAL_INTRINSIC"
+            )
         if not self.reporting_unit or not self.diluted_shares_key:
             raise ValueError(
                 "company valuation plan requires reporting unit and "
                 "diluted-shares key"
             )
-        asset_ids = tuple(item.asset_id for item in self.segments) + tuple(
-            item.asset_id for item in self.parent_adjustments
+        for item in self.unvalued_segments:
+            item.__post_init__()
+        valued_segment_ids = tuple(item.segment_id for item in self.segments)
+        unvalued_segment_ids = tuple(item.segment_id for item in self.unvalued_segments)
+        duplicate_segments = _duplicates((*valued_segment_ids, *unvalued_segment_ids))
+        if duplicate_segments:
+            raise ValueError(
+                "company valuation plan has duplicate valued/unvalued segment IDs: "
+                + ", ".join(duplicate_segments)
+            )
+        asset_ids = (
+            tuple(item.asset_id for item in self.segments)
+            + tuple(item.asset_id for item in self.unvalued_segments)
+            + tuple(item.asset_id for item in self.parent_adjustments)
         )
         duplicate_assets = _duplicates(asset_ids)
         if duplicate_assets:
@@ -106,6 +158,22 @@ class GenericValuationResult:
     expected_value_per_share: Decimal | None
     reporting_unit: str
     valuation_hash: str
+    scope: IntrinsicValuationScope = IntrinsicValuationScope.FULL_INTRINSIC
+    unvalued_segments: tuple[UnvaluedSegment, ...] = ()
+
+    def __post_init__(self) -> None:
+        if not self.scenarios or not self.reporting_unit or not self.valuation_hash:
+            raise ValueError("generic valuation result requires scenarios, unit and hash")
+        if self.scope is IntrinsicValuationScope.FULL_INTRINSIC and self.unvalued_segments:
+            raise ValueError("FULL_INTRINSIC cannot contain unvalued segments")
+        if self.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC and not self.unvalued_segments:
+            raise ValueError("PARTIAL_INTRINSIC requires UNVALUED_NOT_ZERO segments")
+        for item in self.unvalued_segments:
+            item.__post_init__()
+
+    @property
+    def full_company_intrinsic_available(self) -> bool:
+        return self.scope is IntrinsicValuationScope.FULL_INTRINSIC
 
 
 def default_evaluator_registry() -> EvaluatorRegistry:
@@ -252,7 +320,19 @@ def execute_company_valuation(
         )
 
     serialized = "\n".join(
-        [scenario_set.scenario_set_hash, plan.reporting_unit]
+        [
+            scenario_set.scenario_set_hash,
+            plan.reporting_unit,
+            f"scope={plan.scope.value}",
+        ]
+        + [
+            (
+                f"unvalued={item.asset_id}|{item.segment_id}|{item.status.value}|"
+                f"{item.resolution_status}|{item.rationale}|"
+                f"{','.join(item.missing_assumptions)}"
+            )
+            for item in plan.unvalued_segments
+        ]
         + [
             (
                 f"{item.scenario_id}|{item.equity_value_amount}|"
@@ -277,6 +357,8 @@ def execute_company_valuation(
         expected_value_per_share=expected_per_share,
         reporting_unit=plan.reporting_unit,
         valuation_hash=sha256(serialized.encode("utf-8")).hexdigest(),
+        scope=plan.scope,
+        unvalued_segments=plan.unvalued_segments,
     )
 
 
