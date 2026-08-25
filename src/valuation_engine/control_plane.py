@@ -131,6 +131,7 @@ class BuildProposal:
 @dataclass(frozen=True)
 class IntrinsicFreezeToken:
     run_id: str
+    ledger_snapshot_hash: str
     assumption_set_hash: str
     valuation_hash: str
     audit_hash: str
@@ -212,6 +213,7 @@ def issue_freeze_token(
     audit_passed: bool,
     coverage_entries: tuple[DoctrineCoverageEntry, ...],
     expected_module_ids: tuple[str, ...],
+    ledger_snapshot_hash: str,
     assumption_set_hash: str,
     valuation_hash: str,
     audit_hash: str,
@@ -226,6 +228,7 @@ def issue_freeze_token(
         raise ValueError("unresolved blocking coverage prevents freeze: " + ", ".join(blockers))
     fields = (
         run_id,
+        ledger_snapshot_hash,
         assumption_set_hash,
         valuation_hash,
         audit_hash,
@@ -243,6 +246,7 @@ def authorize_post_freeze(token: IntrinsicFreezeToken, *, run_id: str) -> None:
         raise PermissionError("freeze token run mismatch")
     fields = (
         token.run_id,
+        token.ledger_snapshot_hash,
         token.assumption_set_hash,
         token.valuation_hash,
         token.audit_hash,
