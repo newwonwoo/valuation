@@ -1,0 +1,172 @@
+from datetime import date, datetime, timezone
+from decimal import Decimal
+
+import pytest
+
+from valuation_engine.calibration_dataset import (
+    CalibrationCohortDeclaration,
+    load_declared_calibration_dataset,
+)
+from valuation_engine.probability_calibration import (
+    ForecastOutcome,
+    ForecastOutcomeState,
+    ProbabilityCalibrationLedger,
+    ProbabilityForecast,
+)
+
+
+def _declaration():
+    return CalibrationCohortDeclaration(
+        forecast_class="project_realization",
+        horizon="90d",
+        base_rate=Decimal("0.40"),
+        mapping_version="project-realization-v1",
+        dataset_version="2026Q3-v1",
+        source_ref="internal://resolved-forecast-history/2026Q3",
+    )
+
+
+def _ledger(*, second_seen_at=None):
+    ledger = ProbabilityCalibrationLedger()
+    first_seen = datetime(2025, 1, 1, 10, tzinfo=timezone.utc)
+    forecast = ProbabilityForecast(
+        forecast_id="F1",
+        event_key="EV1",
+        hypothesis_id="H1",
+        company_id="C1",
+        forecast_class="project_realization",
+        horizon="90d",
+        event_definition="project gate within 90 days",
+        issued_at=datetime(2025, 1, 1, 9, tzinfo=timezone.utc),
+        evaluation_deadline=date(2025, 4, 1),
+        probability=Decimal("0.6"),
+        displayed_band="P60",
+        evidence_snapshot_hash="SNAP1",
+        model_version="m1",
+        resolution_rule="primary evidence by deadline",
+        resolution_source_policy="primary only",
+        first_seen_at=first_seen,
+    )
+    ledger.append_forecast(forecast)
+    ledger.append_outcome(
+        ForecastOutcome(
+            forecast_id="F1",
+            observed_at=datetime(2025, 2, 1, 9, tzinfo=timezone.utc),
+            outcome=ForecastOutcomeState.OCCURRED,
+            outcome_evidence_ids=("E-OUT-1",),
+            resolver_id="R1",
+            rationale="primary source confirmed",
+            first_seen_at=datetime(2025, 2, 1, 10, tzinfo=timezone.utc),
+        )
+    )
+    if second_seen_at is not None:
+        ledger.append_forecast(
+            ProbabilityForecast(
+                forecast_id="F2",
+                event_key="EV2",
+                hypothesis_id="H2",
+                company_id="C2",
+                forecast_class="project_realization",
+                horizon="90d",
+                event_definition="project gate within 90 days",
+                issued_at=datetime(2025, 3, 1, 9, tzinfo=timezone.utc),
+                evaluation_deadline=date(2025, 6, 1),
+                probability=Decimal("0.3"),
+                displayed_band="P30",
+                evidence_snapshot_hash="SNAP2",
+                model_version="m1",
+                resolution_rule="primary evidence by deadline",
+                resolution_source_policy="primary only",
+                first_seen_at=second_seen_at,
+            )
+        )
+    return ledger
+
+
+def _payload(ledger):
+    declaration = _declaration()
+    return {
+        "cohort_key": declaration.cohort_key,
+        "mapping_version": declaration.mapping_version,
+        "dataset_version": declaration.dataset_version,
+        "source_ref": declaration.source_ref,
+        "ledger": ledger.to_payload(),
+    }
+
+
+def test_declared_dataset_hash_is_deterministic_and_replay_preserves_full_hash():
+    payload = _payload(
+        _ledger(second_seen_at=datetime(2025, 7, 1, 10, tzinfo=timezone.utc))
+    )
+    full = load_declared_calibration_dataset(payload, declaration=_declaration())
+    replay = load_declared_calibration_dataset(
+        payload,
+        declaration=_declaration(),
+        replay_cutoff=datetime(2025, 4, 1, tzinfo=timezone.utc),
+    )
+    assert full.dataset_hash == replay.dataset_hash
+    assert tuple(item.forecast_id for item in full.ledger.forecasts) == ("F1", "F2")
+    assert tuple(item.forecast_id for item in replay.ledger.forecasts) == ("F1",)
+
+
+def test_dataset_rejects_post_hoc_cohort_mapping_or_source_changes():
+    payload = _payload(_ledger())
+    payload["mapping_version"] = "changed-after-results"
+    with pytest.raises(ValueError, match="mapping_version"):
+        load_declared_calibration_dataset(payload, declaration=_declaration())
+
+    payload = _payload(_ledger())
+    payload["source_ref"] = "other-source"
+    with pytest.raises(ValueError, match="source_ref"):
+        load_declared_calibration_dataset(payload, declaration=_declaration())
+
+
+def test_dataset_rejects_forecasts_from_another_cohort():
+    ledger = _ledger()
+    payload = _payload(ledger)
+    payload["ledger"]["forecasts"][0]["forecast_class"] = "clinical_event"
+    with pytest.raises(ValueError, match="unexpected cohort"):
+        load_declared_calibration_dataset(payload, declaration=_declaration())
+
+
+def test_dataset_requires_explicit_first_seen_boundaries():
+    payload = _payload(_ledger())
+    payload["ledger"]["forecasts"][0]["first_seen_at"] = None
+    with pytest.raises(ValueError, match="explicit first_seen_at"):
+        load_declared_calibration_dataset(payload, declaration=_declaration())
+
+    payload = _payload(_ledger())
+    payload["ledger"]["outcomes"][0]["first_seen_at"] = None
+    with pytest.raises(ValueError, match="explicit first_seen_at"):
+        load_declared_calibration_dataset(payload, declaration=_declaration())
+
+
+def test_dataset_uses_predeclared_base_rate_not_observed_outcome_rate(tmp_path):
+    policy = tmp_path / "policy.yaml"
+    policy.write_text(
+        """version: test-v1
+defaults:
+  min_resolved_events: 1
+  min_companies: 1
+  min_quarters: 1
+  min_per_displayed_band: 1
+  min_oos_windows: 1
+  max_ece: 1
+  max_ambiguous_censored_rate: 1
+  fixed_bin_edges: [0, 0.5, 1]
+cohorts: {}
+""",
+        encoding="utf-8",
+    )
+    dataset = load_declared_calibration_dataset(
+        _payload(_ledger()), declaration=_declaration()
+    )
+    snapshot = dataset.build_snapshot(
+        cutoff=datetime(2025, 4, 1, tzinfo=timezone.utc),
+        policy_path=policy,
+        oos_brier_skill_windows=(Decimal("0.01"),),
+    )
+    # One realized success has an observed rate of 100%; the predeclared base rate is 40%.
+    assert snapshot.brier_skill_score is not None
+    assert snapshot.mapping_version == "project-realization-v1"
+    assert snapshot.policy_version == "test-v1"
