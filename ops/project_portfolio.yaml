@@ -1,6 +1,6 @@
 version: 2
 blueprint: v0.5.2 canonical workflow + LIVE_PRIMARY readiness
-updated: '2026-08-25'
+updated: '2026-08-26'
 recovery_note: >-
   Reconstructed from the archived PROJECT_STATUS.md dated 2026-08-25. The archived
   departmental design totals and accepted baseline points are preserved exactly; unknown
@@ -18,29 +18,29 @@ scoring:
   adr_waiver_allowed: true
 
 validation_baseline:
-  accepted_sha: 1e4f8ac80cc52e26a142bef8bc000e0be50321e6
+  accepted_sha: 3b6346ee1b1178068f112505f608d772bbb85ef3
   evidence:
     - kind: github_actions
       workflow: valuation-tests
-      run_number: 361
-      run_id: 32859936189
+      run_number: 385
+      run_id: 32872999876
       conclusion: success
       event: push
-      head_sha: 1e4f8ac80cc52e26a142bef8bc000e0be50321e6
+      head_sha: 3b6346ee1b1178068f112505f608d772bbb85ef3
 
 departments:
   - id: pm-integrator
     name: Architecture & Program Office
     design_points: 5
     baseline_accepted_points: 5
-    current_work: ACTIVE PM-RESIDUAL-DECOMPOSE-002 — Reconcile the 12 remaining recovered design points to source-backed deliverables
+    current_work: MAINTENANCE — parallel residual wave accepted; 4 source-backed design points remain explicitly queued
     accepted_milestones: []
 
   - id: evidence-industry-agent
     name: Evidence & Industry Intelligence
     design_points: 13
     baseline_accepted_points: 7
-    current_work: MAINTENANCE — accepted queue complete; 3 residual design points await PM decomposition
+    current_work: ACTIVE EVI-SEC-PRIMARY-003 — Add official SEC EDGAR primary-source transport/provider coverage
     accepted_milestones:
       - id: EVI-VERTICAL-001
         title: Complete the first official OpenDART vertical provider pack through raw filing and deterministic KPI extraction
@@ -71,12 +71,21 @@ departments:
           - GHA valuation-tests run 347 PASS at exact integrated main SHA
         implementation_refs:
           - PR 63 Separate optional scanners from generic research units
+      - id: EVI-AUTHORIZED-PRIMARY-SOURCES-002
+        title: Add authorized filing IR and primary-regulator source packs with knowledge-time lineage
+        points: 1
+        status: VERIFIED
+        accepted_sha: 3b6346ee1b1178068f112505f608d772bbb85ef3
+        validation_evidence:
+          - GHA valuation-tests run 385 PASS at exact integrated main SHA
+        implementation_refs:
+          - PR 79 Add authorized filing IR and regulator primary-source packs
 
   - id: runtime-safety-agent
     name: Runtime Safety & Control Plane
     design_points: 10
     baseline_accepted_points: 5
-    current_work: MAINTENANCE — accepted queue complete; 4 residual design points await PM decomposition
+    current_work: MAINTENANCE — accepted design complete
     accepted_milestones:
       - id: RUN-HASH-001
         title: Close the Evidence-to-Assumption-to-Audit-to-Freeze hash chain
@@ -87,6 +96,42 @@ departments:
           - GHA valuation-tests run 347 PASS at exact integrated main SHA
         implementation_refs:
           - PR 64 Close the Evidence-to-Freeze run hash chain
+      - id: RUN-CONTEXT-ISOLATION-002
+        title: Make stage context top-level read-only and isolate nested mutable built-ins
+        points: 1
+        status: VERIFIED
+        accepted_sha: 3b6346ee1b1178068f112505f608d772bbb85ef3
+        validation_evidence:
+          - GHA valuation-tests run 385 PASS at exact integrated main SHA
+        implementation_refs:
+          - PR 76 Harden runtime stage context boundaries
+      - id: RUN-LEDGER-SEAL-002
+        title: Seal top-level and nested EvidenceLedger objects during downstream stage execution
+        points: 1
+        status: VERIFIED
+        accepted_sha: 3b6346ee1b1178068f112505f608d772bbb85ef3
+        validation_evidence:
+          - GHA valuation-tests run 385 PASS at exact integrated main SHA
+        implementation_refs:
+          - PR 76 Harden runtime stage context boundaries
+      - id: RUN-STAGE-CONTRACT-002
+        title: Enforce stage-control ownership and StageExecutionResult return contracts
+        points: 1
+        status: VERIFIED
+        accepted_sha: 3b6346ee1b1178068f112505f608d772bbb85ef3
+        validation_evidence:
+          - GHA valuation-tests run 385 PASS at exact integrated main SHA
+        implementation_refs:
+          - PR 76 Harden runtime stage context boundaries
+      - id: RUN-SECRET-REDACTION-002
+        title: Redact API keys tokens Authorization credentials and passwords from persisted runtime failures
+        points: 1
+        status: VERIFIED
+        accepted_sha: 3b6346ee1b1178068f112505f608d772bbb85ef3
+        validation_evidence:
+          - GHA valuation-tests run 385 PASS at exact integrated main SHA
+        implementation_refs:
+          - PR 76 Harden runtime stage context boundaries
 
   - id: valuation-engine-agent
     name: Deterministic Valuation Engines
@@ -118,7 +163,7 @@ departments:
     name: Risk, PER & Probability Calibration
     design_points: 10
     baseline_accepted_points: 5
-    current_work: MAINTENANCE — accepted queue complete; 2 residual design points await PM decomposition
+    current_work: BLOCKED CAL-PRODUCTION-COHORT-003 — Requires sufficient real resolved historical forecasts across production cohorts
     accepted_milestones:
       - id: CAL-ASOF-001
         title: Add a first-seen boundary to historical forecast revisions and replay
@@ -147,6 +192,15 @@ departments:
           - GHA valuation-tests run 347 PASS at exact integrated main SHA
         implementation_refs:
           - PR 62 Add authorized normalized EPS and PER residual provider pack
+      - id: CAL-DATASET-CONTRACT-002
+        title: Bind calibration cohorts to predeclared base rates mapping versions source identity and first-seen history
+        points: 1
+        status: VERIFIED
+        accepted_sha: 3b6346ee1b1178068f112505f608d772bbb85ef3
+        validation_evidence:
+          - GHA valuation-tests run 385 PASS at exact integrated main SHA
+        implementation_refs:
+          - PR 78 Add declared probability calibration dataset contract
 
   - id: post-freeze-agent
     name: Post-Freeze Market & State
@@ -168,7 +222,7 @@ departments:
     name: Platform, Packaging & Performance
     design_points: 9
     baseline_accepted_points: 5
-    current_work: MAINTENANCE — accepted queue complete; 1 residual design point awaits PM decomposition
+    current_work: MAINTENANCE — accepted design complete
     accepted_milestones:
       - id: PLT-PERF-BUDGET-001
         title: Convert canonical runtime baselines into stable CI performance budgets
@@ -197,12 +251,21 @@ departments:
           - GHA valuation-tests run 347 PASS at exact integrated main SHA
         implementation_refs:
           - PR 68 Index Unit Contract dependency traversal
+      - id: PLT-WHEEL-RUNTIME-002
+        title: Verify packaged runtime registries and production default loaders from an isolated installed wheel
+        points: 1
+        status: VERIFIED
+        accepted_sha: 3b6346ee1b1178068f112505f608d772bbb85ef3
+        validation_evidence:
+          - GHA valuation-tests run 385 PASS including Installed wheel runtime resources
+        implementation_refs:
+          - PR 77 Verify installed-wheel runtime resources in CI
 
   - id: qa-release-agent
     name: Quality, Security & Release
     design_points: 8
     baseline_accepted_points: 5
-    current_work: MAINTENANCE — 2 recovered design points remain without original milestone labels
+    current_work: BLOCKED QA-LIVE-COMPANY-FIXTURES-003 — Requires source-backed success and adversarial LIVE_PRIMARY artifacts for all four canonical real companies
     accepted_milestones:
       - id: QA-PR51-001
         title: Publish the accepted canonical LIVE_PRIMARY runtime and verify valuation-tests
@@ -212,15 +275,45 @@ departments:
         validation_evidence:
           - PR 51 merged
           - GHA valuation-tests run 302 PASS at exact main SHA
+      - id: QA-LIVE-COMPANY-GATE-002
+        title: Enforce real-company success hash-chain and adversarial blocked fixture acceptance contracts
+        points: 1
+        status: VERIFIED
+        accepted_sha: 3b6346ee1b1178068f112505f608d772bbb85ef3
+        validation_evidence:
+          - GHA valuation-tests run 385 PASS at exact integrated main SHA
+        implementation_refs:
+          - PR 80 Add explicit real-company LIVE acceptance gate
 
 work_items:
   - priority: P1
     status: ACTIVE
-    id: PM-RESIDUAL-DECOMPOSE-002
-    title: Reconcile remaining recovered design points to source-backed deliverables
-    owner: pm-integrator
-    current_step: Trace the remaining 12 design points back to repository design contracts and objective readiness gaps; do not invent historical milestone labels or award completion credit until each residual deliverable is explicit.
+    id: EVI-SEC-PRIMARY-003
+    title: Add official SEC EDGAR primary-source transport and provider coverage
+    owner: evidence-industry-agent
+    current_step: Implement fail-closed SEC issuer identity, filing metadata and primary filing/fact loaders for Oracle, Bloom Energy and GE Vernova behind the authorized Evidence contracts.
     dependencies: []
+  - priority: P1
+    status: READY
+    id: EVI-COMPANY-KPI-BREADTH-004
+    title: Add source-backed company-specific KPI and filing-note extraction breadth
+    owner: evidence-industry-agent
+    current_step: Add explicit metric specs and lineage for the canonical real-company acceptance pack without fuzzy account or target-market fallback.
+    dependencies: [EVI-SEC-PRIMARY-003]
+  - priority: P1
+    status: BLOCKED
+    id: CAL-PRODUCTION-COHORT-003
+    title: Populate production probability calibration cohorts with real resolved history
+    owner: calibration-risk-agent
+    current_step: Accumulate real append-only resolved forecasts until declared cohort thresholds can be evaluated; synthetic or post-hoc history is forbidden.
+    dependencies: []
+  - priority: P1
+    status: BLOCKED
+    id: QA-LIVE-COMPANY-FIXTURES-003
+    title: Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy and GE Vernova
+    owner: qa-release-agent
+    current_step: Generate and independently validate real non-synthetic serialized runs after company-specific Evidence breadth is available.
+    dependencies: [EVI-COMPANY-KPI-BREADTH-004]
 
 accepted_handoffs:
   - id: H-RECOVERY-EVI-VERTICAL-20260825
@@ -277,3 +370,9 @@ accepted_handoffs:
     validation_evidence: [GHA-VALUATION-TESTS-361]
     closes: [VAL-EXACT-METHOD-COVERAGE-001]
     residual_work: []
+  - id: H-PARALLEL-RESIDUAL-WAVE-20260826
+    to: pm-integrator + evidence-industry-agent + runtime-safety-agent + calibration-risk-agent + performance-platform-agent + qa-release-agent
+    head: 3b6346ee1b1178068f112505f608d772bbb85ef3
+    validation_evidence: [GHA-VALUATION-TESTS-385]
+    closes: [EVI-AUTHORIZED-PRIMARY-SOURCES-002, RUN-CONTEXT-ISOLATION-002, RUN-LEDGER-SEAL-002, RUN-STAGE-CONTRACT-002, RUN-SECRET-REDACTION-002, CAL-DATASET-CONTRACT-002, PLT-WHEEL-RUNTIME-002, QA-LIVE-COMPANY-GATE-002]
+    residual_work: [EVI-SEC-PRIMARY-003, EVI-COMPANY-KPI-BREADTH-004, CAL-PRODUCTION-COHORT-003, QA-LIVE-COMPANY-FIXTURES-003]
