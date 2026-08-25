@@ -24,7 +24,7 @@ flowchart TB
   PM --> CALIBRATION["Risk, PER & Probability Calibration<br/>Design 50% (5/10)<br/>Now: ACTIVE CAL-ASOF-001 — Add a first-seen boundary to historical forecast revisions"]
   PM --> POST_FREEZE["Post-Freeze Market & State<br/>Design 100% (6/6)<br/>Now: MAINTENANCE — lawful post-freeze Street export adapter accepted; broader vendor automation is optional expansion"]
   PM --> PLATFORM["Platform, Packaging & Performance<br/>Design 56% (5/9)<br/>Now: READY PLT-PERF-BUDGET-001 — Convert recorded runtime baselines into stable CI performance budgets"]
-  PM --> QA_RELEASE["Quality, Security & Release<br/>Design 75% (6/8)<br/>Now: BACKLOG — PR #51 publication blocker is closed; 2 recovered design points remain without original milestone labels"]
+  PM --> QA_RELEASE["Quality, Security & Release<br/>Design 75% (6/8)<br/>Now: BACKLOG — PR 51 publication blocker is closed; 2 recovered design points remain without original milestone labels"]
 ```
 
 ## Department status
@@ -38,7 +38,7 @@ flowchart TB
 | Risk, PER & Probability Calibration (`calibration-risk-agent`) | **50% (5/10)** | ACTIVE CAL-ASOF-001 — Add a first-seen boundary to historical forecast revisions |
 | Post-Freeze Market & State (`post-freeze-agent`) | **100% (6/6)** | MAINTENANCE — lawful post-freeze Street export adapter accepted; broader vendor automation is optional expansion |
 | Platform, Packaging & Performance (`performance-platform-agent`) | **56% (5/9)** | READY PLT-PERF-BUDGET-001 — Convert recorded runtime baselines into stable CI performance budgets |
-| Quality, Security & Release (`qa-release-agent`) | **75% (6/8)** | BACKLOG — PR #51 publication blocker is closed; 2 recovered design points remain without original milestone labels |
+| Quality, Security & Release (`qa-release-agent`) | **75% (6/8)** | BACKLOG — PR 51 publication blocker is closed; 2 recovered design points remain without original milestone labels |
 
 ## Current execution queue
 
