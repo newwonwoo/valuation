@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from email.message import Message
+import ssl
 
 import pytest
 
@@ -50,6 +51,7 @@ def test_http_transport_fetches_bounded_binary_and_text(monkeypatch):
     binary = transport.get_bytes("https://example.test/archive?api_key=SECRET")
     text = transport.get_text("https://example.test/text")
     assert binary.content == b"PK\x03\x04binary"
+    assert binary.body == binary.content
     assert text.text == "한글"
 
 
@@ -79,6 +81,47 @@ def test_http_transport_error_does_not_expose_query_credentials(monkeypatch):
     assert "TOP-SECRET" not in message
     assert "token=" not in message
     assert caught.value.__cause__ is None
+
+
+@pytest.mark.parametrize(
+    "failure",
+    [
+        ConnectionResetError("signed-url=TOP-SECRET"),
+        ssl.SSLError("Authorization: Bearer TOP-SECRET"),
+    ],
+)
+def test_http_transport_retries_and_sanitizes_generic_transport_failures(
+    monkeypatch,
+    failure,
+):
+    calls = 0
+
+    def fail(request, timeout):
+        nonlocal calls
+        calls += 1
+        raise failure
+
+    monkeypatch.setattr(live_indexers, "urlopen", fail)
+    transport = HttpTransport(retries=1)
+    with pytest.raises(SourceFetchError) as caught:
+        transport.get_bytes(
+            "https://example.test/archive?crtfc_key=TOP-SECRET"
+        )
+
+    assert calls == 2
+    assert "TOP-SECRET" not in str(caught.value)
+    assert caught.value.__cause__ is None
+
+
+@pytest.mark.parametrize("failure", [KeyboardInterrupt(), SystemExit(7)])
+def test_http_transport_does_not_swallow_process_control(monkeypatch, failure):
+    def fail(request, timeout):
+        raise failure
+
+    monkeypatch.setattr(live_indexers, "urlopen", fail)
+    transport = HttpTransport(retries=2)
+    with pytest.raises(type(failure)):
+        transport.get_bytes("https://example.test/archive")
 
 
 def test_http_transport_validates_bounds():
