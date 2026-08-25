@@ -101,6 +101,7 @@ def _freeze_from_context(
     required = (
         "audit_passed",
         "decision_impact_completed",
+        "ledger_snapshot_hash",
         "assumption_set_hash",
         "valuation_hash",
         "audit_hash",
@@ -117,6 +118,7 @@ def _freeze_from_context(
         audit_passed=bool(context.data["audit_passed"]),
         coverage_entries=coverage.entries,
         expected_module_ids=coverage.expected_unit_ids,
+        ledger_snapshot_hash=str(context.data["ledger_snapshot_hash"]),
         assumption_set_hash=str(context.data["assumption_set_hash"]),
         valuation_hash=str(context.data["valuation_hash"]),
         audit_hash=str(context.data["audit_hash"]),
