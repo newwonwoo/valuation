@@ -30,6 +30,8 @@ from valuation_engine.performance_budget import (
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_POLICY = ROOT / "config" / "runtime_performance_budget.yaml"
+_RUNTIME_ROOT_NAMES = {"context", "initial_data"}
+_COPY_CALL_NAMES = {"copy", "deepcopy"}
 
 
 def _percentile_ms(samples_ns: list[int], percentile: float) -> float:
@@ -38,6 +40,32 @@ def _percentile_ms(samples_ns: list[int], percentile: float) -> float:
     ordered = sorted(samples_ns)
     index = max(0, min(len(ordered) - 1, ceil(percentile * len(ordered)) - 1))
     return ordered[index] / 1_000_000
+
+
+def _references_runtime_context(node: ast.AST) -> bool:
+    return any(
+        isinstance(child, ast.Name) and child.id in _RUNTIME_ROOT_NAMES
+        for child in ast.walk(node)
+    )
+
+
+def _is_runtime_copy_call(node: ast.Call) -> bool:
+    if isinstance(node.func, ast.Name):
+        if node.func.id == "dict":
+            return bool(node.args) and _references_runtime_context(node.args[0])
+        if node.func.id in _COPY_CALL_NAMES:
+            return bool(node.args) and _references_runtime_context(node.args[0])
+        return False
+
+    if not isinstance(node.func, ast.Attribute):
+        return False
+
+    if node.func.attr in _COPY_CALL_NAMES:
+        # Covers both context.data.copy() and copy.deepcopy(context.data).
+        if _references_runtime_context(node.func.value):
+            return True
+        return bool(node.args) and _references_runtime_context(node.args[0])
+    return False
 
 
 def _context_copy_calls() -> int:
@@ -51,19 +79,11 @@ def _context_copy_calls() -> int:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
         and node.name == "run_controlled_workflow"
     )
-    count = 0
-    for node in ast.walk(function):
-        if not isinstance(node, ast.Call):
-            continue
-        if isinstance(node.func, ast.Name) and node.func.id == "dict" and node.args:
-            rendered = ast.dump(node.args[0], include_attributes=False)
-            if "initial_data" in rendered or "context" in rendered:
-                count += 1
-        elif isinstance(node.func, ast.Attribute) and node.func.attr in {"copy", "deepcopy"}:
-            rendered = ast.dump(node.func.value, include_attributes=False)
-            if "context" in rendered or "initial_data" in rendered:
-                count += 1
-    return count
+    return sum(
+        1
+        for node in ast.walk(function)
+        if isinstance(node, ast.Call) and _is_runtime_copy_call(node)
+    )
 
 
 def _freeze_once():
@@ -160,13 +180,18 @@ def measure(policy_path: Path = DEFAULT_POLICY) -> tuple[RuntimePerformanceMetri
         _freeze_once()
         freeze_ns.append(perf_counter_ns() - started)
 
+    # Latency is measured with tracing disabled so the budget represents production work.
     workflow_ns: list[int] = []
+    for _ in range(workflow_samples):
+        started = perf_counter_ns()
+        _canonical_workflow_once(stage_sequence, registry)
+        workflow_ns.append(perf_counter_ns() - started)
+
+    # Peak memory is measured in a separate pass because tracemalloc materially changes timing.
     tracemalloc.start()
     try:
         for _ in range(workflow_samples):
-            started = perf_counter_ns()
             _canonical_workflow_once(stage_sequence, registry)
-            workflow_ns.append(perf_counter_ns() - started)
         _, peak_bytes = tracemalloc.get_traced_memory()
     finally:
         tracemalloc.stop()
