@@ -42,7 +42,7 @@ def _snapshot(
     source_ids: tuple[str, ...] = ("KR_OPENDART",),
     content_hashes: tuple[str, ...] = ("HASH-1",),
 ) -> IndustryKnowledgeSnapshot:
-    return IndustryKnowledgeSnapshot.build(
+    snapshot = IndustryKnowledgeSnapshot.build(
         as_of="2026-08-25",
         source_ids=source_ids,
         document_ids=("D1",),
@@ -50,6 +50,8 @@ def _snapshot(
         content_hashes=content_hashes,
         evidence_lineage=(() if lineage is None else (lineage,)),
     )
+    snapshot.validate()
+    return snapshot
 
 
 def _lineage(**overrides) -> AuthoritativeEvidenceLineage:
@@ -96,12 +98,11 @@ def test_segment_evidence_target_must_match_resolved_company():
 
 
 def test_snapshot_rejects_lineage_source_hash_and_future_date_mismatch():
-    bad_source = _snapshot(
+    declared_other_source = _snapshot(
         _lineage(source_id="KR_KIET_PSI"),
         source_ids=("KR_OPENDART", "KR_KIET_PSI"),
     )
-    # Source is declared, so segment lineage accepts it; the frozen source set is authoritative.
-    assert not _run(bad_source).blocked_reasons
+    assert not _run(declared_other_source).blocked_reasons
 
     try:
         _snapshot(_lineage(content_hash="OTHER"))
