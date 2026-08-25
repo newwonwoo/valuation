@@ -5,6 +5,7 @@ from valuation_engine.audit_adapter import generic_audit_adapter
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.decision_impact import DecisionOutcome, ImpactClassification
 from valuation_engine.evaluator_registry import ModelKey
+from valuation_engine.evidence_adapter import evidence_ledger_adapter
 from valuation_engine.impact_adapter import GenericDecisionImpactConfig
 from valuation_engine.ledger import EvidenceLedger
 from valuation_engine.orchestrator import run_controlled_workflow
@@ -151,7 +152,7 @@ def impact_config():
     )
 
 
-def run_path(*, leak_market_price: bool = False):
+def run_path(*, leak_market_price: bool = False, mutate_ledger_after_compile: bool = False):
     ledger, hypotheses, bridges, specs = build_inputs()
     initial_data = {
         "target_id": "T",
@@ -170,7 +171,34 @@ def run_path(*, leak_market_price: bool = False):
     if leak_market_price:
         initial_data["current_market_price"] = 12345
 
+    valuation = deterministic_valuation_adapter(
+        registry=default_evaluator_registry(),
+        plan=valuation_plan(),
+    )
+
+    def valuation_with_optional_ledger_mutation(context):
+        if mutate_ledger_after_compile:
+            context.data["evidence_ledger"].append(
+                EvidenceRecord(
+                    id="E:LATE",
+                    target="T",
+                    metric="late_discovery",
+                    value=1,
+                    unit="dimensionless",
+                    source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
+                    effective_date="2026-06-30",
+                    observed_date="2026-08-25",
+                    source_name="late filing",
+                    source_ref="filing#late",
+                    source_grade="A",
+                    confidence=1.0,
+                    segment="core",
+                )
+            )
+        return valuation(context)
+
     sequence = (
+        "EVIDENCE_LEDGER",
         "SCENARIO_BUILD",
         "DETERMINISTIC_VALUATION",
         "AUDIT_GATE",
@@ -181,11 +209,9 @@ def run_path(*, leak_market_price: bool = False):
         execution_mode=ExecutionMode.PRIMARY_SHADOW,
         stage_sequence=sequence,
         adapters={
+            "EVIDENCE_LEDGER": evidence_ledger_adapter(),
             "SCENARIO_BUILD": scenario_build_adapter(),
-            "DETERMINISTIC_VALUATION": deterministic_valuation_adapter(
-                registry=default_evaluator_registry(),
-                plan=valuation_plan(),
-            ),
+            "DETERMINISTIC_VALUATION": valuation_with_optional_ledger_mutation,
             "AUDIT_GATE": generic_audit_adapter(impact_config=impact_config()),
         },
         required_stages=sequence,
@@ -202,10 +228,12 @@ def test_evidence_to_freeze_token_generic_path_passes_without_market_data():
         StageStatus.PASS,
         StageStatus.PASS,
         StageStatus.PASS,
+        StageStatus.PASS,
     ]
     assert result.data["expected_value_per_share"] is None
     base = next(item for item in result.data["intrinsic_scenario_values"] if item.scenario_id == "Base")
     assert base.value_per_share == Decimal("70000")
+    assert result.freeze_token.ledger_snapshot_hash == result.data["ledger_snapshot_hash"]
     assert result.freeze_token.assumption_set_hash == result.data["assumption_set_hash"]
     assert result.freeze_token.valuation_hash == result.data["valuation_hash"]
     assert result.freeze_token.audit_hash == result.data["audit_hash"]
@@ -217,7 +245,15 @@ def test_evidence_to_freeze_token_generic_path_passes_without_market_data():
     assert observation.assessment is not None
     assert observation.assessment.classification is ImpactClassification.DECISION_MATERIAL
     covered = {item.module_id for item in result.data["runtime_doctrine_coverage"]}
-    assert {"ASSUMPTION_COMPILER", "SCENARIO_ENGINE", "DETERMINISTIC_VALUATION", "SOTP_AGGREGATOR", "DECISION_IMPACT", "AUDIT_GATE", "INTRINSIC_FREEZE"}.issubset(covered)
+    assert {"EVIDENCE_LEDGER", "ASSUMPTION_COMPILER", "SCENARIO_ENGINE", "DETERMINISTIC_VALUATION", "SOTP_AGGREGATOR", "DECISION_IMPACT", "AUDIT_GATE", "INTRINSIC_FREEZE"}.issubset(covered)
+
+
+def test_evidence_ledger_drift_after_compilation_blocks_before_freeze():
+    result = run_path(mutate_ledger_after_compile=True)
+    assert result.freeze_token is None
+    assert result.stage_traces[-1].stage == "AUDIT_GATE"
+    assert result.stage_traces[-1].status is StageStatus.BLOCKED
+    assert "EvidenceLedger content no longer matches ledger_snapshot_hash" in result.stage_traces[-1].rationale
 
 
 def test_market_price_leak_blocks_before_intrinsic_freeze():
