@@ -115,6 +115,7 @@ def compile_exact_document_observation(
         raise ValueError(
             f"KPI {candidate.metric} source host {host!r} is outside the authorized company source set"
         )
+    _validate_registered_sec_issuer(profile, candidate.source_ref, candidate.metric)
     if candidate.locator != spec.locator:
         raise ValueError(
             f"KPI {candidate.metric} locator must match the registered exact locator"
@@ -136,6 +137,8 @@ def compile_exact_document_observation(
             f"canonical company KPI registry; company={profile.company_id}; "
             f"role={spec.evidence_role}; exact locator required"
         ),
+        evidence_role=spec.evidence_role,
+        source_ref=candidate.source_ref,
     )
 
 
@@ -151,6 +154,26 @@ def _profile(
     if len(matches) != 1:
         raise ValueError(f"unknown canonical company KPI profile: {company_id}")
     return matches[0]
+
+
+def _validate_registered_sec_issuer(
+    profile: CanonicalCompanyKPIProfile,
+    source_ref: str,
+    metric: str,
+) -> None:
+    if profile.sec_cik is None:
+        return
+    parsed = urlparse(source_ref)
+    parts = tuple(part for part in parsed.path.split("/") if part)
+    expected_cik = str(int(profile.sec_cik))
+    if (
+        len(parts) < 5
+        or tuple(part.casefold() for part in parts[:3]) != ("archives", "edgar", "data")
+        or parts[3] != expected_cik
+    ):
+        raise ValueError(
+            f"KPI {metric} SEC source CIK must match registered issuer {profile.sec_cik}"
+        )
 
 
 def _validate_numeric_candidate(value: object, metric: str) -> None:
