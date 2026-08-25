@@ -60,17 +60,17 @@ stages:
     status: RUNTIME_READY
     reason: exact Industry-DNA method intent resolves and hashes segment method/version choices before Beta/WACC, and stage 19 verifies the same module, capability, evaluator and method-choice contracts.
   HIERARCHICAL_BETA_ESTIMATION:
-    status: PARTIAL_LIVE
-    reason: typed L1→L4 peer-universe loader, Evidence-backed Economic-Twin selection, normalized return-convention validation and target relevering are implemented; KRX regression-Beta collection exists for Korean equities but full reusable peer selection/capital-structure provider packs remain incomplete.
+    status: LIVE_READY
+    reason: typed L1→L4 peer-universe and target-relevering contracts are implemented, and AuthorizedKRRiskProviderPack composes authorized KRX regression Beta plus Evidence-backed peer capital observations into a validated LiveBetaUniverse; other jurisdictions remain injectable under the same contract.
   WACC_VALIDATION:
-    status: PARTIAL_LIVE
-    reason: typed currency-consistent risk-free/ERP/country-risk/marginal-debt/target-structure loader and same-structure Beta→WACC validation are implemented; ECOS and Damodaran collection paths exist, while marginal debt-cost and target-structure provider breadth remains incomplete.
+    status: LIVE_READY
+    reason: typed currency-consistent WACC validation is implemented, and AuthorizedKRRiskProviderPack composes Bank of Korea ECOS rates, separated Damodaran ERP/CRP, an authorized marginal-debt benchmark, and peer-normalized target capital structure into validated KRW LiveWACCInputs; other currencies remain injectable under the same contract.
   DETERMINISTIC_VALUATION:
     status: PARTIAL_LIVE
-    reason: exact registry/SOTP runtime supports normalized multiples, explicit FCFF DCF, finite-life project_npv/reserve_npv/cohort_npv, and certificate-bound single-event rNPV; multi-stage event trees, NAV/residual-income and other archetype-specific evaluator coverage remain incomplete.
+    reason: exact registry/SOTP runtime supports normalized multiples, explicit FCFF DCF, finite-life project_npv/reserve_npv/cohort_npv, certificate-bound single-event rNPV, and PARTIAL_INTRINSIC with UNVALUED_NOT_ZERO preservation; multi-stage event trees, NAV/residual-income and other archetype-specific evaluator coverage remain incomplete.
   HIERARCHICAL_WARRANTED_PER:
-    status: PARTIAL_LIVE
-    reason: typed Compiled-Assumption/WACC/DCF-fingerprint adapter computes Core, committed-expansion and peer-residual PER layers; filing EPS collection exists but normalized forward-EPS and peer-residual provider packs remain incomplete.
+    status: LIVE_READY
+    reason: typed Compiled-Assumption/WACC/DCF-fingerprint adapter is implemented, and AuthorizedPERProviderPack supplies Evidence-backed normalized forward EPS plus exact L1→L4 peer residual observations through the canonical PERInputsLoader while excluding target-company Street inputs pre-freeze.
   DCF_PER_ASSUMPTION_CONSISTENCY_GATE:
     status: RUNTIME_READY
     reason: may be explicitly not applicable when the selected exact method does not use both DCF and PER.
@@ -79,25 +79,25 @@ stages:
     reason: economic-path and SOTP duplicate protections are implemented.
   PROBABILITY_DISTRIBUTION_ANALYSIS:
     status: PARTIAL_LIVE
-    reason: append-only forecast/outcome ledger, Brier/Brier-Skill/log-loss/ECE promotion metrics and CalibrationCertificate gating are implemented; production historical cohorts, predeclared base rates and validated mapping datasets remain incomplete by forecast class/horizon.
+    reason: append-only forecast/outcome ledger, first-seen historical replay boundaries, Brier/Brier-Skill/log-loss/ECE promotion metrics and CalibrationCertificate gating are implemented; production historical cohorts, predeclared base rates and validated mapping datasets remain incomplete by forecast class/horizon.
   AUDIT_GATE:
     status: RUNTIME_READY
-    reason: generic audit, doctrine coverage and Decision Impact prerequisites are integrated.
+    reason: generic audit, doctrine coverage, Decision Impact prerequisites and the Evidence-to-Freeze replay hash chain are integrated.
   INTRINSIC_VALUE_FREEZE:
     status: RUNTIME_READY
-    reason: same-run hash-bound Freeze Token is implemented.
+    reason: same-run hash-bound Freeze Token includes the frozen Evidence Ledger identity and is implemented.
   STREET_REFERENCE_LOAD:
     status: PARTIAL_LIVE
     reason: repository-provided post-freeze loader accepts only caller-authorized licensed_export or explicit_permission Street JSON and preserves the Freeze boundary; universal vendor/public automatic retrieval remains entitlement-specific.
   STREET_GAP_ANALYZER:
     status: RUNTIME_READY
-    reason: scenario-envelope and calibrated Expected gap analysis are implemented.
+    reason: scenario-envelope and calibrated Expected gap analysis are implemented; whole-company gap comparison is withheld for PARTIAL_INTRINSIC runs.
   MARKET_PRICE_LOAD:
     status: LIVE_READY
     reason: post-freeze market loader contract is implemented; actual price source is supplied by caller.
   MARKET_COMPARE:
     status: RUNTIME_READY
-    reason: scenario/Expected comparison is implemented without upstream mutation.
+    reason: scenario/Expected comparison is implemented without upstream mutation and whole-company comparison is withheld for PARTIAL_INTRINSIC runs.
   THESIS_DELTA:
     status: RUNTIME_READY
     reason: current thesis is compared against prior immutable successful state.
@@ -106,4 +106,4 @@ stages:
     reason: atomic valuation + learning persistence with compensating rollback is implemented.
   FINAL_REPORT:
     status: RUNTIME_READY
-    reason: final report renders the immutable saved payload and Decision Impact visibility.
+    reason: final report renders the immutable saved payload, Decision Impact visibility, and explicit PARTIAL_INTRINSIC/UNVALUED_NOT_ZERO scope when applicable.
