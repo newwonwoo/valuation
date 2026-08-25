@@ -35,10 +35,19 @@ def module_requirement_plan_adapter(
                 blocking=True,
             )
         optional_units = context.data.get("optional_research_units", ())
+        requested_optional_scanners = context.data.get("optional_scanner_ids", ())
         trigger_state = context.data.get("research_trigger_state", {})
         aliases = context.data.get("research_unit_aliases", {})
         if not isinstance(optional_units, tuple) or not all(isinstance(item, str) for item in optional_units):
             return StageExecutionResult(StageStatus.BLOCKED, "optional_research_units must be a string tuple", blocking=True)
+        if not isinstance(requested_optional_scanners, tuple) or not all(
+            isinstance(item, str) and item for item in requested_optional_scanners
+        ):
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "optional_scanner_ids must be a non-empty string tuple",
+                blocking=True,
+            )
         if not isinstance(trigger_state, dict) or not all(isinstance(k, str) and isinstance(v, bool) for k, v in trigger_state.items()):
             return StageExecutionResult(StageStatus.BLOCKED, "research_trigger_state must be str→bool", blocking=True)
         if not isinstance(aliases, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in aliases.items()):
@@ -49,6 +58,17 @@ def module_requirement_plan_adapter(
                 registry_path=registry_path,
                 control_requirements_path=control_requirements_path,
             )
+            unknown_optional_scanners = tuple(
+                scanner_id
+                for scanner_id in dict.fromkeys(requested_optional_scanners)
+                if scanner_id not in plan.optional_scanners
+            )
+            if unknown_optional_scanners:
+                raise ValueError(
+                    "optional scanner activation is outside the Module Requirement Plan: "
+                    + ", ".join(unknown_optional_scanners)
+                )
+            active_optional_scanners = tuple(dict.fromkeys(requested_optional_scanners))
             loadout = build_adaptive_research_loadout(
                 plan,
                 recommendations=recommendations,
@@ -78,6 +98,8 @@ def module_requirement_plan_adapter(
                 "required_evidence": plan.required_evidence,
                 "required_kpis": plan.required_kpis,
                 "mandatory_scanners": plan.mandatory_scanners,
+                "optional_scanners": plan.optional_scanners,
+                "active_optional_scanners": active_optional_scanners,
                 "kill_conditions": plan.kill_conditions,
                 "scenario_variables": plan.scenario_variables,
                 "expected_module_ids": expected_modules,

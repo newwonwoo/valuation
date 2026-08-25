@@ -7,6 +7,7 @@ from typing import Callable, Mapping
 from .control_plane import StageStatus
 from .decision_impact import ModuleImpactTrace, ResearchEffort
 from .ledger import EvidenceLedger
+from .module_plan import ModuleRequirementPlan
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .records import EvidenceSourceLayer
 
@@ -94,12 +95,12 @@ def live_rocket_insight_dispatch_adapter(
     *,
     runners: Mapping[str, ScannerRunner],
 ) -> StageAdapter:
-    """Dispatch the canonical scanner loadout against the current pre-freeze EvidenceLedger.
+    """Dispatch mandatory and explicitly activated optional scanners.
 
-    Mandatory scanner IDs come from Module Requirement Plan. Additional scanner runners are
-    executed only when the adaptive loadout activates them. A runner may interpret Evidence and
-    propose hypotheses/verification paths, but it cannot create Compiled Assumptions or access
-    target-market Evidence through this context.
+    Generic adaptive research units are deliberately not interpreted as scanner IDs. Optional
+    scanners must be declared by the typed Module Requirement Plan and separately activated
+    through ``active_optional_scanners``. This prevents a same-named research module from
+    executing a scanner runner by accident.
     """
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
@@ -109,22 +110,42 @@ def live_rocket_insight_dispatch_adapter(
         ledger = context.data.get("evidence_ledger")
         plan = context.data.get("module_requirement_plan")
         mandatory = context.data.get("mandatory_scanners", ())
-        active = context.data.get("active_research_units", mandatory)
+        active_optional = context.data.get("active_optional_scanners", ())
         if not all(isinstance(value, str) and value for value in (company, ticker, target_id)):
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "company/ticker/target_id missing before scanner dispatch", blocking=True)
         if not isinstance(ledger, EvidenceLedger):
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "EvidenceLedger missing before scanner dispatch", blocking=True)
         if any(item.source_layer is EvidenceSourceLayer.MARKET_COMPARISON for item in ledger.active()):
             return StageExecutionResult(StageStatus.BLOCKED, "Rocket Insight scanner context contains target-market Evidence", blocking=True)
+        if not isinstance(plan, ModuleRequirementPlan):
+            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "typed Module Requirement Plan missing before scanner dispatch", blocking=True)
         if not isinstance(mandatory, tuple) or not all(isinstance(item, str) and item for item in mandatory):
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "typed mandatory scanner loadout missing", blocking=True)
-        if not isinstance(active, tuple) or not all(isinstance(item, str) and item for item in active):
-            return StageExecutionResult(StageStatus.BLOCKED, "active_research_units must be a string tuple", blocking=True)
+        if not isinstance(active_optional, tuple) or not all(isinstance(item, str) and item for item in active_optional):
+            return StageExecutionResult(StageStatus.BLOCKED, "active_optional_scanners must be a string tuple", blocking=True)
+        if tuple(mandatory) != tuple(plan.mandatory_scanners):
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "mandatory scanner loadout does not match the Module Requirement Plan",
+                blocking=True,
+            )
+        undeclared_optional = tuple(
+            scanner_id
+            for scanner_id in dict.fromkeys(active_optional)
+            if scanner_id not in plan.optional_scanners
+        )
+        if undeclared_optional:
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "active optional scanner is outside the Module Requirement Plan: "
+                + ", ".join(undeclared_optional),
+                blocking=True,
+            )
 
         mandatory_set = set(mandatory)
         planned = list(mandatory)
-        for scanner_id in active:
-            if scanner_id in runners and scanner_id not in planned:
+        for scanner_id in active_optional:
+            if scanner_id not in planned:
                 planned.append(scanner_id)
 
         missing_mandatory = tuple(scanner_id for scanner_id in mandatory if scanner_id not in runners)
@@ -143,8 +164,6 @@ def live_rocket_insight_dispatch_adapter(
         for scanner_id in planned:
             runner = runners.get(scanner_id)
             if runner is None:
-                # Non-mandatory adaptive units without a scanner runner remain explicit but do not
-                # block the valuation; they are not silently treated as researched.
                 warnings.append(f"optional scanner runner unavailable: {scanner_id}")
                 continue
             scanner_context = ScannerContext(

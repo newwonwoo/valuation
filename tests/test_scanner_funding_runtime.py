@@ -13,6 +13,11 @@ from valuation_engine.funding_adapter import (
 from valuation_engine.ledger import EvidenceLedger
 from valuation_engine.llm_adapters import researcher_a_adapter
 from valuation_engine.llm_staff import IntelligenceProposal
+from valuation_engine.module_plan import (
+    COMMON_CORE_MODULES,
+    ModuleRequirementPlan,
+    SegmentModuleRequirementPlan,
+)
 from valuation_engine.orchestrator import OrchestratorContext
 from valuation_engine.records import EvidenceRecord, EvidenceSourceLayer, HypothesisRecord
 from valuation_engine.scanner_runtime import (
@@ -40,6 +45,42 @@ def evidence(evidence_id="E1", *, layer=EvidenceSourceLayer.REALIZED_OR_FILING):
     )
 
 
+def scanner_plan() -> ModuleRequirementPlan:
+    segment = SegmentModuleRequirementPlan(
+        segment_id="core",
+        sector_adapter="test.adapter",
+        archetypes=("contracted_backlog",),
+        required_evidence=("backlog",),
+        required_kpis=("book_to_bill",),
+        mandatory_scanners=("BACKLOG_QUALITY",),
+        kill_conditions=("conversion fails",),
+        normalization_rules=("normalize",),
+        beta_peer_features=("risk",),
+        per_peer_features=("growth",),
+        scenario_variables=("backlog_conversion",),
+        funding_scans=(),
+        terminal_policies=("terminal",),
+        double_count_traps=(),
+        forbidden_methods=(),
+        allowed_valuation_methods=("normalized_dcf",),
+        optional_scanners=(),
+    )
+    plan = ModuleRequirementPlan(
+        segments=(segment,),
+        common_core_modules=COMMON_CORE_MODULES,
+        required_evidence=segment.required_evidence,
+        required_kpis=segment.required_kpis,
+        mandatory_scanners=segment.mandatory_scanners,
+        kill_conditions=segment.kill_conditions,
+        scenario_variables=segment.scenario_variables,
+        double_count_traps=(),
+        forbidden_methods=(),
+        optional_scanners=(),
+    )
+    plan.validate()
+    return plan
+
+
 def context(*, plan=None):
     return OrchestratorContext(
         run_id="R1",
@@ -49,7 +90,7 @@ def context(*, plan=None):
             "ticker": "000001",
             "target_id": "T1",
             "evidence_ledger": EvidenceLedger((evidence(), evidence("E2"))),
-            "module_requirement_plan": plan or SimpleNamespace(segments=()),
+            "module_requirement_plan": plan or scanner_plan(),
             "mandatory_scanners": ("BACKLOG_QUALITY",),
             "active_research_units": ("BACKLOG_QUALITY",),
             "prior_hypotheses": (),
