@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from importlib import resources
 
+from valuation_engine.doctrine_runtime import load_default_unit_contract_registry
 from valuation_engine.method_capabilities import load_default_method_capability_registry
-from valuation_engine.runtime_resources import runtime_registry_path
-from valuation_engine.unit_contracts import load_unit_contract_registry
 
 
 REGISTRIES = (
@@ -27,7 +26,8 @@ def main() -> int:
     if method_registry.coverage_summary().total != 41:
         raise SystemExit("installed wheel method registry is incomplete")
 
-    unit_registry = load_unit_contract_registry(runtime_registry_path("unit_contract_registry.yaml"))
+    # Exercise the exact production default path used by run_controlled_workflow and Audit.
+    unit_registry = load_default_unit_contract_registry()
     unit_registry.validate()
     if not unit_registry.units:
         raise SystemExit("installed wheel Unit Contract registry is empty")
