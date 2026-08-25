@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 import pytest
 
 from valuation_engine.control_plane import (
@@ -81,19 +83,22 @@ def test_freeze_requires_audit_and_resolved_blocking_coverage():
         issue_freeze_token(
             run_id="R1", audit_passed=False, coverage_entries=entries,
             expected_module_ids=("industry_dna", "clinical"),
-            assumption_set_hash="a", valuation_hash="v", audit_hash="q",
+            ledger_snapshot_hash="l", assumption_set_hash="a", valuation_hash="v", audit_hash="q",
             industry_snapshot_hash="i", source_snapshot_hash="s",
         )
 
     token = issue_freeze_token(
         run_id="R1", audit_passed=True, coverage_entries=entries,
         expected_module_ids=("industry_dna", "clinical"),
-        assumption_set_hash="a", valuation_hash="v", audit_hash="q",
+        ledger_snapshot_hash="l", assumption_set_hash="a", valuation_hash="v", audit_hash="q",
         industry_snapshot_hash="i", source_snapshot_hash="s",
     )
+    assert token.ledger_snapshot_hash == "l"
     authorize_post_freeze(token, run_id="R1")
     with pytest.raises(PermissionError):
         authorize_post_freeze(token, run_id="R2")
+    with pytest.raises(PermissionError, match="invalid intrinsic freeze token"):
+        authorize_post_freeze(replace(token, ledger_snapshot_hash="tampered"), run_id="R1")
 
 
 def test_blocking_not_implemented_prevents_freeze():
@@ -104,6 +109,6 @@ def test_blocking_not_implemented_prevents_freeze():
         issue_freeze_token(
             run_id="R1", audit_passed=True, coverage_entries=entries,
             expected_module_ids=("required_evaluator",),
-            assumption_set_hash="a", valuation_hash="v", audit_hash="q",
+            ledger_snapshot_hash="l", assumption_set_hash="a", valuation_hash="v", audit_hash="q",
             industry_snapshot_hash="i", source_snapshot_hash="s",
         )
