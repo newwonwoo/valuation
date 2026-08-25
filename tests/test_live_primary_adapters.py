@@ -102,6 +102,22 @@ def _identity_resolver(_):
     )
 
 
+def _lineage(evidence_id: str, content_hash: str) -> AuthoritativeEvidenceLineage:
+    return AuthoritativeEvidenceLineage(
+        evidence_id=evidence_id,
+        target_id="KR:DART:00126380",
+        source_id="KR_OPENDART",
+        observed_date="2026-08-20",
+        content_hash=content_hash,
+        event_date="2026-06-30",
+        effective_date="2026-06-30",
+        published_at="2026-08-20T09:00:00+09:00",
+        first_seen_at="2026-08-20T09:05:00+09:00",
+        revision_id="original",
+        revision_at="2026-08-20T09:00:00+09:00",
+    )
+
+
 def _snapshot_loader(_):
     return IndustryKnowledgeSnapshot.build(
         as_of="2026-08-23",
@@ -110,20 +126,8 @@ def _snapshot_loader(_):
         evidence_ids=("E_INDUSTRY", "E_SEGMENT"),
         content_hashes=("facts-v1", "segment-v1"),
         evidence_lineage=(
-            AuthoritativeEvidenceLineage(
-                "E_INDUSTRY",
-                "KR:DART:00126380",
-                "KR_OPENDART",
-                "2026-08-20",
-                "facts-v1",
-            ),
-            AuthoritativeEvidenceLineage(
-                "E_SEGMENT",
-                "KR:DART:00126380",
-                "KR_OPENDART",
-                "2026-08-20",
-                "segment-v1",
-            ),
+            _lineage("E_INDUSTRY", "facts-v1"),
+            _lineage("E_SEGMENT", "segment-v1"),
         ),
     )
 
