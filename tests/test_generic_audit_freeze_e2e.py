@@ -248,12 +248,12 @@ def test_evidence_to_freeze_token_generic_path_passes_without_market_data():
     assert {"EVIDENCE_LEDGER", "ASSUMPTION_COMPILER", "SCENARIO_ENGINE", "DETERMINISTIC_VALUATION", "SOTP_AGGREGATOR", "DECISION_IMPACT", "AUDIT_GATE", "INTRINSIC_FREEZE"}.issubset(covered)
 
 
-def test_evidence_ledger_drift_after_compilation_blocks_before_freeze():
+def test_evidence_ledger_drift_after_compilation_is_rejected_at_mutation_boundary():
     result = run_path(mutate_ledger_after_compile=True)
     assert result.freeze_token is None
-    assert result.stage_traces[-1].stage == "AUDIT_GATE"
+    assert result.stage_traces[-1].stage == "DETERMINISTIC_VALUATION"
     assert result.stage_traces[-1].status is StageStatus.BLOCKED
-    assert "EvidenceLedger content no longer matches ledger_snapshot_hash" in result.stage_traces[-1].rationale
+    assert "EvidenceLedger is read-only during downstream stage execution" in result.stage_traces[-1].rationale
 
 
 def test_market_price_leak_blocks_before_intrinsic_freeze():

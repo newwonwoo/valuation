@@ -41,6 +41,7 @@ class EvidenceLedger:
         self._records: dict[str, EvidenceRecord] = {}
         self._mutation_version = 0
         self._runtime_snapshot: EvidenceLedgerSnapshot | None = None
+        self._runtime_readonly_depth = 0
         for record in records:
             self.append(record)
 
@@ -52,7 +53,23 @@ class EvidenceLedger:
     def runtime_snapshot(self) -> EvidenceLedgerSnapshot | None:
         return self._runtime_snapshot
 
+    @property
+    def runtime_readonly(self) -> bool:
+        return self._runtime_readonly_depth > 0
+
+    def _enter_runtime_readonly(self) -> None:
+        self._runtime_readonly_depth += 1
+
+    def _exit_runtime_readonly(self) -> None:
+        if self._runtime_readonly_depth <= 0:
+            raise RuntimeError("EvidenceLedger runtime read-only guard is unbalanced")
+        self._runtime_readonly_depth -= 1
+
     def append(self, record: EvidenceRecord) -> None:
+        if self.runtime_readonly:
+            raise RuntimeError(
+                "EvidenceLedger is read-only during downstream stage execution"
+            )
         if record.id in self._records:
             raise ValueError(f"duplicate evidence id: {record.id}")
         if record.supersedes_id:
