@@ -10,6 +10,7 @@ from valuation_engine.evidence_collection import (
 )
 from valuation_engine.industry_dna import EconomicArchetype, IndustryDNAProfile
 from valuation_engine.live_primary_adapters import (
+    AuthoritativeEvidenceLineage,
     CompanyResolutionRequest,
     IndustryKnowledgeSnapshot,
     LiveFreshnessAssessment,
@@ -131,8 +132,24 @@ def industry_snapshot_loader(_: ResolvedCompanyIdentity) -> IndustryKnowledgeSna
         as_of=AS_OF,
         source_ids=(SOURCE_ID,),
         document_ids=("DOC:INDUSTRY",),
-        evidence_ids=("E:INDUSTRY",),
-        content_hashes=("FROZEN-INDUSTRY-CONTENT",),
+        evidence_ids=("E:INDUSTRY", "E:SEGMENT"),
+        content_hashes=("FROZEN-INDUSTRY-CONTENT", "FROZEN-SEGMENT-CONTENT"),
+        evidence_lineage=(
+            AuthoritativeEvidenceLineage(
+                evidence_id="E:INDUSTRY",
+                target_id=TARGET_ID,
+                source_id=SOURCE_ID,
+                observed_date=AS_OF,
+                content_hash="FROZEN-INDUSTRY-CONTENT",
+            ),
+            AuthoritativeEvidenceLineage(
+                evidence_id="E:SEGMENT",
+                target_id=TARGET_ID,
+                source_id=SOURCE_ID,
+                observed_date=AS_OF,
+                content_hash="FROZEN-SEGMENT-CONTENT",
+            ),
+        ),
     )
 
 
