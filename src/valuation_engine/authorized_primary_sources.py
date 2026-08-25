@@ -108,6 +108,7 @@ class PrimaryMetricObservation:
     notes: str = ""
     evidence_role: str = ""
     source_ref: str = ""
+    target_id: str = ""
 
     def validate(self, *, document: AuthorizedPrimaryDocument) -> None:
         if not all((self.metric, self.segment, self.unit, self.effective_date, self.locator)):
@@ -117,6 +118,8 @@ class PrimaryMetricObservation:
         role = _resolve_evidence_role(document, self)
         if self.source_ref and self.source_ref != document.source_ref:
             raise ValueError("primary metric observation source_ref must match authorized document")
+        if self.target_id and self.target_id != document.target_id:
+            raise ValueError("primary metric observation target_id must match authorized document target")
         effective = date.fromisoformat(self.effective_date[:10])
         published = _parse_aware(document.published_at, "published_at").date()
         if (
@@ -242,7 +245,7 @@ def _evidence_record(
         metric=observation.metric,
         value=value,
         unit=observation.unit,
-        source_layer=_evidence_layer_for_role(evidence_role),
+        source_layer=document.kind.evidence_layer,
         effective_date=observation.effective_date[:10],
         observed_date=_parse_aware(document.checked_at, "checked_at").date().isoformat(),
         source_name=document.source_id,
@@ -286,6 +289,7 @@ def _source_fingerprint(
                 "notes": item.notes,
                 "evidence_role": _resolve_evidence_role(document, item),
                 "source_ref": item.source_ref,
+                "target_id": item.target_id,
             }
             for item in observations
         ],
@@ -308,14 +312,6 @@ def _resolve_evidence_role(
     if role not in _ALLOWED_EVIDENCE_ROLES:
         raise ValueError(f"unsupported primary metric evidence_role: {role}")
     return role
-
-
-def _evidence_layer_for_role(role: str) -> EvidenceSourceLayer:
-    return {
-        "realized": EvidenceSourceLayer.REALIZED_OR_FILING,
-        "company_plan": EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
-        "policy": EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
-    }[role]
 
 
 def _reject_forbidden_metric(metric: str) -> None:
