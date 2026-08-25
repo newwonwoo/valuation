@@ -7,8 +7,13 @@ from .control_plane import StageStatus
 from .evaluator_registry import EvaluatorRegistry
 from .module_plan import ModuleRequirementPlan
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
+from .partial_valuation import partial_plan_executable
 from .scenario_binding import BoundScenarioSet
-from .valuation_execution import CompanyValuationPlan, execute_company_valuation
+from .valuation_execution import (
+    CompanyValuationPlan,
+    IntrinsicValuationScope,
+    execute_company_valuation,
+)
 from .valuation_plan_compiler import (
     SegmentMethodChoice,
     ValuationPlanCompilation,
@@ -34,7 +39,11 @@ def _plan_identity(
         for item in plan.segments
     )
     serialized = "\n".join(
-        [plan.reporting_unit, plan.diluted_shares_key]
+        [
+            plan.reporting_unit,
+            plan.diluted_shares_key,
+            f"scope={plan.scope.value}",
+        ]
         + [
             (
                 f"{item.asset_id}|{item.segment_id}|"
@@ -43,6 +52,14 @@ def _plan_identity(
                 f"{item.ev_to_equity_adjustment_key or ''}"
             )
             for item in plan.segments
+        ]
+        + [
+            (
+                f"UNVALUED|{item.asset_id}|{item.segment_id}|{item.status.value}|"
+                f"{item.resolution_status}|{item.rationale}|"
+                f"{','.join(item.missing_assumptions)}"
+            )
+            for item in plan.unvalued_segments
         ]
         + [
             f"PARENT|{item.asset_id}|{item.assumption_key}"
@@ -286,7 +303,7 @@ def deterministic_valuation_adapter(
                         },
                         blocking=True,
                     )
-            if not compilation.ready:
+            if not compilation.ready and not partial_plan_executable(compilation):
                 status = (
                     StageStatus.NOT_IMPLEMENTED
                     if compilation.status is ValuationPlanStatus.CAPABILITY_GAP
@@ -352,6 +369,11 @@ def deterministic_valuation_adapter(
             "expected_value_per_share": result.expected_value_per_share,
             "selected_methods": selected_methods,
             "route_hash": route_hash,
+            "valuation_scope": result.scope,
+            "unvalued_segments": result.unvalued_segments,
+            "full_company_intrinsic_available": (
+                result.full_company_intrinsic_available
+            ),
         }
         if compilation is not None:
             outputs["valuation_plan_compilation"] = compilation
@@ -380,9 +402,14 @@ def deterministic_valuation_adapter(
             outputs["valuation_aggregator_bindings"] = (
                 compilation.aggregator_bindings
             )
+        partial = result.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
         return StageExecutionResult(
-            StageStatus.PASS,
-            "registered deterministic evaluators and SOTP aggregation completed",
+            StageStatus.WARNING if partial else StageStatus.PASS,
+            (
+                "PARTIAL_INTRINSIC completed for valued segments; unresolved segments are preserved as UNVALUED_NOT_ZERO"
+                if partial
+                else "registered deterministic evaluators and SOTP aggregation completed"
+            ),
             outputs,
         )
 
