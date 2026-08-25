@@ -14,7 +14,10 @@ from .post_freeze import MarketComparisonBundle, StreetComparisonBundle
 from .records import AuditReport, RunManifest, RunStatus, iso_now
 from .research_learning import ResearchLearningStore
 from .state import StateStore, thesis_delta
-from .valuation_execution import GenericValuationResult
+from .valuation_execution import (
+    GenericValuationResult,
+    IntrinsicValuationScope,
+)
 
 
 def _jsonable(value: Any) -> Any:
@@ -166,21 +169,49 @@ def render_generic_report(data: dict[str, Any]) -> str:
     if not isinstance(coverage, tuple) or not all(isinstance(item, DoctrineCoverageEntry) for item in coverage):
         raise ValueError("typed doctrine coverage is required")
 
+    partial = valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
     lines = [
         f"# {company} PRISM Research & Valuation Report",
         "",
-        "## Intrinsic Value",
+        (
+            "## Partial Intrinsic — Valued Segments Only"
+            if partial
+            else "## Intrinsic Value"
+        ),
     ]
-    for item in valuation.scenarios:
+    if partial:
         lines.append(
-            f"- {item.scenario_id}: {_fmt(item.value_per_share)} {valuation.reporting_unit}/share"
+            "- Scope: PARTIAL_INTRINSIC — 아래 숫자는 평가 완료 segment subtotal이며 전체 기업가치가 아닙니다."
+        )
+    for item in valuation.scenarios:
+        label = "valued subtotal" if partial else "intrinsic"
+        lines.append(
+            f"- {item.scenario_id} {label}: {_fmt(item.value_per_share)} {valuation.reporting_unit}/share"
         )
     if valuation.expected_value_per_share is None:
         lines.append("- Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.")
+    elif partial:
+        lines.append(
+            f"- Partial Expected Subtotal: {_fmt(valuation.expected_value_per_share)} {valuation.reporting_unit}/share — 전체 기업 공정가치로 사용 금지"
+        )
     else:
         lines.append(
             f"- Expected Value: {_fmt(valuation.expected_value_per_share)} {valuation.reporting_unit}/share"
         )
+
+    if partial:
+        lines.extend(("", "## Unvalued Segments — UNVALUED_NOT_ZERO"))
+        for item in valuation.unvalued_segments:
+            missing = (
+                f"; missing={', '.join(item.missing_assumptions)}"
+                if item.missing_assumptions
+                else ""
+            )
+            lines.append(
+                f"- {item.segment_id} ({item.asset_id}): {item.status.value} — "
+                f"{item.resolution_status}: {item.rationale}{missing}"
+            )
+        lines.append("- 미평가 segment는 0원으로 합산하지 않았습니다.")
 
     street = data.get("street_comparison")
     if isinstance(street, StreetComparisonBundle):
@@ -197,6 +228,12 @@ def render_generic_report(data: dict[str, Any]) -> str:
         if street.envelope.expected_gap is not None:
             item = street.envelope.expected_gap
             lines.append(f"- Expected 대비: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})")
+    elif data.get("street_comparison_withheld_reason"):
+        lines.extend((
+            "",
+            "## Street Gap",
+            f"- 비교 보류: {data['street_comparison_withheld_reason']}",
+        ))
 
     market = data.get("market_comparison")
     if isinstance(market, MarketComparisonBundle):
@@ -212,6 +249,12 @@ def render_generic_report(data: dict[str, Any]) -> str:
         if market.envelope.expected_gap is not None:
             item = market.envelope.expected_gap
             lines.append(f"- Expected 기대수익 간격: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})")
+    elif data.get("market_comparison_withheld_reason"):
+        lines.extend((
+            "",
+            "## Current Market Compare",
+            f"- 비교 보류: {data['market_comparison_withheld_reason']}",
+        ))
 
     impact = _module_impact_summary(data)
     lines.extend((
@@ -251,6 +294,8 @@ def render_generic_report(data: dict[str, Any]) -> str:
     lines.extend((
         "",
         "## Run Integrity",
+        f"- Valuation scope: {valuation.scope.value}",
+        f"- Ledger snapshot: {data.get('ledger_snapshot_hash', '')}",
         f"- Assumption set: {data.get('assumption_set_hash', '')}",
         f"- Valuation: {data.get('valuation_hash', '')}",
         f"- Audit: {data.get('audit_hash', '')}",
@@ -380,24 +425,35 @@ def save_state_adapter(
                 if learning_ref is not None
                 else context.data.get("research_learning_record_hash")
             )
+            partial = valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
             current_state = {
-                "schema_version": "0.6.10",
+                "schema_version": "0.6.11",
                 "ticker": ticker,
                 "company": company,
                 "last_completed_run": context.run_id,
                 "last_successful_valuation_run": context.run_id,
                 "thesis": _current_thesis(context.data),
+                "ledger_snapshot_hash": context.data.get("ledger_snapshot_hash"),
                 "assumption_set_hash": context.data.get("assumption_set_hash"),
                 "valuation_hash": context.data.get("valuation_hash"),
                 "audit_hash": context.data.get("audit_hash"),
                 "decision_impact_hash": context.data.get("decision_impact_hash"),
                 "research_learning_record_hash": learning_hash,
+                "valuation_scope": valuation.scope.value,
+                "full_company_intrinsic_available": valuation.full_company_intrinsic_available,
+                "unvalued_segments": _jsonable(valuation.unvalued_segments),
+                "scenario_values_scope": valuation.scope.value,
                 "scenario_values_per_share": {
                     item.scenario_id: str(item.value_per_share) for item in valuation.scenarios
                 },
                 "expected_value_per_share": (
                     str(valuation.expected_value_per_share)
-                    if valuation.expected_value_per_share is not None
+                    if valuation.expected_value_per_share is not None and not partial
+                    else None
+                ),
+                "partial_expected_value_per_share": (
+                    str(valuation.expected_value_per_share)
+                    if valuation.expected_value_per_share is not None and partial
                     else None
                 ),
                 "freeze_token_hash": token.token_hash,
