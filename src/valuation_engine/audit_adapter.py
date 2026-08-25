@@ -8,7 +8,7 @@ from .decision_impact import ModuleHistoryEntry
 from .doctrine_runtime import load_default_unit_contract_registry
 from .generic_audit import audit_generic_intrinsic
 from .impact_adapter import GenericDecisionImpactConfig, run_generic_decision_impact
-from .ledger import EvidenceLedger, EvidenceLedgerSnapshot
+from .ledger import EvidenceLedger
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
 from .risk_impact import build_risk_impact_traces
@@ -47,7 +47,6 @@ def generic_audit_adapter(
     def run(context: OrchestratorContext) -> StageExecutionResult:
         ledger = context.data.get("evidence_ledger")
         ledger_snapshot_hash = context.data.get("ledger_snapshot_hash")
-        ledger_runtime_snapshot = context.data.get("ledger_runtime_snapshot")
         compiled = context.data.get("compiled_assumption_set")
         scenario_set = context.data.get("bound_scenario_set")
         valuation = context.data.get("generic_valuation_result")
@@ -58,8 +57,6 @@ def generic_audit_adapter(
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "EvidenceLedger missing before audit", blocking=True)
         if not isinstance(ledger_snapshot_hash, str) or not ledger_snapshot_hash:
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "ledger_snapshot_hash missing before audit", blocking=True)
-        if not isinstance(ledger_runtime_snapshot, EvidenceLedgerSnapshot):
-            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "ledger_runtime_snapshot missing before audit", blocking=True)
         if not isinstance(compiled, CompiledAssumptionSet):
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "CompiledAssumptionSet missing", blocking=True)
         if not isinstance(scenario_set, BoundScenarioSet):
@@ -106,7 +103,6 @@ def generic_audit_adapter(
             run_id=context.run_id,
             ledger=ledger,
             ledger_snapshot_hash=ledger_snapshot_hash,
-            ledger_runtime_snapshot=ledger_runtime_snapshot,
             compiled=compiled,
             scenario_set=scenario_set,
             valuation=valuation,
