@@ -30,7 +30,7 @@ def test_canonical_sec_document_candidate_rejects_other_issuer_cik():
         )
 
 
-def test_company_plan_role_survives_sec_filing_collection_as_structured_evidence():
+def test_company_plan_role_survives_sec_filing_without_rewriting_source_provenance():
     source_ref = "https://www.sec.gov/Archives/edgar/data/1996810/000199681026000001/gev.htm"
     observation = compile_exact_document_observation(
         ExactDocumentMetricCandidate(
@@ -45,6 +45,7 @@ def test_company_plan_role_survives_sec_filing_collection_as_structured_evidence
     )
     assert observation.evidence_role == "company_plan"
     assert observation.source_ref == source_ref
+    assert observation.target_id == "SEC:CIK0001996810"
 
     document = AuthorizedPrimaryDocument(
         source_id="SEC_EDGAR_PRIMARY_DOCUMENT",
@@ -70,8 +71,41 @@ def test_company_plan_role_survives_sec_filing_collection_as_structured_evidence
     )
     record = result.ledger.active()[0]
     assert record.evidence_role == "company_plan"
-    assert record.source_layer is EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN
+    assert record.source_layer is EvidenceSourceLayer.REALIZED_OR_FILING
     assert source_ref in record.source_ref
+
+
+def test_observation_target_binding_must_match_authorized_document():
+    source_ref = "https://www.sec.gov/Archives/edgar/data/1341439/000134143926000001/orcl.htm"
+    observation = compile_exact_document_observation(
+        ExactDocumentMetricCandidate(
+            company_id="ORACLE",
+            metric="cloud_infrastructure_revenue",
+            source_ref=source_ref,
+            locator="Cloud infrastructure",
+            value=100,
+            unit="USD",
+            effective_date="2026-05-31",
+        )
+    )
+    wrong_target_document = AuthorizedPrimaryDocument(
+        source_id="SEC_EDGAR_PRIMARY_DOCUMENT",
+        target_id="SEC:CIK0001996810",
+        kind=PrimarySourceKind.REGULATORY_FILING,
+        document_id="0001341439-26-000001",
+        document_hash=sha256(b"oracle filing under wrong target").hexdigest(),
+        source_ref=source_ref,
+        published_at="2026-08-20T09:00:00+00:00",
+        checked_at="2026-08-25T09:00:00+00:00",
+        access_basis="public",
+    )
+    with pytest.raises(ValueError, match="target_id must match authorized document target"):
+        authorized_primary_source_collector(
+            document=wrong_target_document,
+            observations=(observation,),
+            allowed_metrics=("cloud_infrastructure_revenue",),
+            allowed_segments=("cloud_and_software",),
+        )
 
 
 def test_observation_source_binding_must_match_authorized_document():
