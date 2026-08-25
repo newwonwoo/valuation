@@ -1,4 +1,17 @@
-from scripts.validate_project_portfolio import validate_local, validate_pr_snapshot
+import importlib.util
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location(
+    "validate_project_portfolio",
+    ROOT / "scripts" / "validate_project_portfolio.py",
+)
+assert SPEC is not None and SPEC.loader is not None
+VALIDATOR = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(VALIDATOR)
+validate_local = VALIDATOR.validate_local
+validate_pr_snapshot = VALIDATOR.validate_pr_snapshot
 
 
 def _portfolio(*items):
