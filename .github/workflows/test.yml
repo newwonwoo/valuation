@@ -27,6 +27,8 @@ jobs:
         run: PYTHONPATH=src python scripts/validate_probability_calibration_policy.py
       - name: PM project status sync
         run: PYTHONPATH=src python scripts/render_project_status.py --check
+      - name: Canonical runtime performance budget
+        run: PYTHONPATH=src python scripts/check_runtime_performance_budget.py
       - name: Tests
         run: pytest -q
       - name: OCI regression output
