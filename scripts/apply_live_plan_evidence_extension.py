@@ -88,6 +88,17 @@ from .valuation_plan_compiler import (
     replace_once(
         sanil,
         """def _valuation_plan_inputs(context: OrchestratorContext) -> CompanyValuationPlanInputs:
+    return CompanyValuationPlanInputs(
+        reporting_unit="KRW_billion",
+""",
+        """def _valuation_plan_inputs(context: OrchestratorContext) -> CompanyValuationPlanInputs:
+    return CompanyValuationPlanInputs(
+        reporting_unit="KRW",
+""",
+    )
+    replace_once(
+        sanil,
+        """def _valuation_plan_inputs(context: OrchestratorContext) -> CompanyValuationPlanInputs:
 """,
         """def _street_reports() -> tuple[StreetResearchReport, ...]:
     return (
