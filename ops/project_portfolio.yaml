@@ -1,9 +1,9 @@
 version: 2
 blueprint: v0.5.2 canonical workflow + LIVE_PRIMARY readiness
 updated: '2026-08-26'
-recovery_note: Reconstructed from the archived PROJECT_STATUS.md dated 2026-08-25. The archived departmental design totals
-  and accepted baseline points are preserved exactly; unknown historical milestone labels are not invented. New acceptance
-  after recovery is recorded only with exact-SHA validation evidence.
+recovery_note: Reconstructed from the archived PROJECT_STATUS.md dated 2026-08-25. The archived departmental design
+  totals and accepted baseline points are preserved exactly; unknown historical milestone labels are not invented.
+  New acceptance after recovery is recorded only with exact-SHA validation evidence.
 scoring:
   rule: conservative_verified_only
   active_credit: 0
@@ -15,32 +15,39 @@ scoring:
   - pm_integrator_close
   adr_waiver_allowed: true
 validation_baseline:
-  accepted_sha: 6ac7bbcc491248e5d574cbf92b47ec00e82f5b80
+  accepted_sha: 01562387067bd997b146426185f90d6eb27bcb59
   evidence:
   - kind: github_actions
     workflow: valuation-tests
-    run_number: 397
-    run_id: 32912236068
+    run_number: 503
+    run_id: 32961921763
     conclusion: success
     event: push
-    head_sha: 6ac7bbcc491248e5d574cbf92b47ec00e82f5b80
+    head_sha: 01562387067bd997b146426185f90d6eb27bcb59
+  - kind: github_actions
+    workflow: sanil-live-primary
+    run_number: 52
+    run_id: 32961921861
+    conclusion: success
+    event: push
+    head_sha: 01562387067bd997b146426185f90d6eb27bcb59
 departments:
 - id: pm-integrator
   name: Architecture & Program Office
   design_points: 5
   baseline_accepted_points: 5
-  current_work: MAINTENANCE — evidence source wave accepted; final work is real-company LIVE acceptance plus production calibration
-    history
+  current_work: MAINTENANCE — evidence source wave accepted; final work is real-company LIVE acceptance plus production
+    calibration history
   accepted_milestones: []
 - id: evidence-industry-agent
   name: Evidence & Industry Intelligence
   design_points: 13
   baseline_accepted_points: 7
-  current_work: 'MERGED_PENDING_ACCEPTANCE EVI-CONTEXT-STRENGTH-LINKAGE-005 — PR #94 merged; exact-main acceptance evidence
-    pending'
+  current_work: MAINTENANCE — context-strength linkage and the Sanil source-backed run are accepted; design complete
   accepted_milestones:
   - id: EVI-VERTICAL-001
-    title: Complete the first official OpenDART vertical provider pack through raw filing and deterministic KPI extraction
+    title: Complete the first official OpenDART vertical provider pack through raw filing and deterministic KPI
+      extraction
     points: 1
     status: VERIFIED
     accepted_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
@@ -97,6 +104,18 @@ departments:
     - PR 83 Add canonical real-company KPI extraction registry
     - PR 84 Fix PR83 evidence issuer and role integrity
     - PR 85 Preserve primary-source target and provenance semantics
+  - id: EVI-CONTEXT-STRENGTH-LINKAGE-001
+    title: Make Environmental Change–Corporate Strength Linkage a mandatory pre-valuation runtime decision
+    points: 0
+    status: VERIFIED
+    accepted_sha: 01562387067bd997b146426185f90d6eb27bcb59
+    validation_evidence:
+    - PR 94 merged into the integrated main runtime
+    - GHA valuation-tests run 503 PASS at exact integrated main SHA
+    - GHA sanil-live-primary run 52 PASS at exact integrated main SHA
+    implementation_refs:
+    - PR 94 Add mandatory context-strength linkage gate
+    - PR 95 exercised the linkage decision in an actual Sanil 33-stage run
 - id: runtime-safety-agent
   name: Runtime Safety & Control Plane
   design_points: 10
@@ -177,8 +196,8 @@ departments:
   name: Risk, PER & Probability Calibration
   design_points: 10
   baseline_accepted_points: 5
-  current_work: BLOCKED CAL-PRODUCTION-COHORT-003 — Requires sufficient real resolved historical forecasts across production
-    cohorts
+  current_work: BLOCKED CAL-PRODUCTION-COHORT-003 — Requires sufficient real resolved historical forecasts across
+    production cohorts
   accepted_milestones:
   - id: CAL-ASOF-001
     title: Add a first-seen boundary to historical forecast revisions and replay
@@ -277,8 +296,8 @@ departments:
   name: Quality, Security & Release
   design_points: 8
   baseline_accepted_points: 5
-  current_work: ACTIVE QA-LIVE-COMPANY-FIXTURES-003 — Build source-backed LIVE_PRIMARY success and adversarial fixtures for
-    four canonical real companies
+  current_work: ACTIVE QA-LIVE-COMPANY-FIXTURES-003 — Sanil is accepted; complete OCI, Oracle, Bloom Energy and
+    GE Vernova real-company fixtures
   accepted_milestones:
   - id: QA-PR51-001
     title: Publish the accepted canonical LIVE_PRIMARY runtime and verify valuation-tests
@@ -298,11 +317,24 @@ departments:
     - GHA valuation-tests run 385 PASS at exact integrated main SHA
     implementation_refs:
     - PR 80 Add explicit real-company LIVE acceptance gate
+  - id: QA-SANIL-LIVE-PRIMARY-001
+    title: Execute Sanil Electric through source, Capacity, Beta/WACC, DCF, Audit, Freeze and persisted reporting
+    points: 0
+    status: VERIFIED
+    accepted_sha: 01562387067bd997b146426185f90d6eb27bcb59
+    validation_evidence:
+    - GHA valuation-tests run 503 PASS at exact integrated main SHA
+    - GHA sanil-live-primary run 52 PASS at exact integrated main SHA
+    - Tracked report examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md
+    implementation_refs:
+    - PR 95 Run Sanil Electric through the full LIVE_PRIMARY stack
+    - 33/33 canonical stages and VERIFIED_FROZEN execution attestation
 work_items:
 - priority: P1
   status: MERGED_PENDING_ACCEPTANCE
   id: EVI-CONTEXT-STRENGTH-LINKAGE-005
-  title: Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses and reports
+  title: Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses
+    and reports
   owner: evidence-industry-agent
   github_pr: 94
   current_step: 'PR #94 is merged; retain zero completion credit until an exact-main valuation-tests run and PM/Integrator
@@ -311,10 +343,11 @@ work_items:
 - priority: P1
   status: ACTIVE
   id: QA-LIVE-COMPANY-FIXTURES-003
-  title: Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy and GE Vernova
+  title: Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy
+    and GE Vernova
   owner: qa-release-agent
-  current_step: Generate and independently validate real non-synthetic serialized runs now that SEC provider and canonical
-    KPI breadth are accepted.
+  current_step: Sanil Electric pilot is accepted with an attested 33-stage report. Run OCI, Oracle, Bloom Energy
+    and GE Vernova through the same source-backed success-or-block contract.
   dependencies:
   - EVI-COMPANY-KPI-BREADTH-004
 - priority: P1
@@ -322,8 +355,8 @@ work_items:
   id: CAL-PRODUCTION-COHORT-003
   title: Populate production probability calibration cohorts with real resolved history
   owner: calibration-risk-agent
-  current_step: Accumulate real append-only resolved forecasts until declared cohort thresholds can be evaluated; synthetic
-    or post-hoc history is forbidden.
+  current_step: Accumulate real append-only resolved forecasts until declared cohort thresholds can be evaluated;
+    synthetic or post-hoc history is forbidden.
   dependencies: []
 accepted_handoffs:
 - id: H-RECOVERY-EVI-VERTICAL-20260825
@@ -434,3 +467,22 @@ accepted_handoffs:
   residual_work:
   - QA-LIVE-COMPANY-FIXTURES-003
   - CAL-PRODUCTION-COHORT-003
+- id: H-EVIDENCE-CONTEXT-STRENGTH-20260826
+  to: pm-integrator + evidence-industry-agent
+  head: 01562387067bd997b146426185f90d6eb27bcb59
+  validation_evidence:
+  - GHA-VALUATION-TESTS-503
+  - GHA-SANIL-LIVE-PRIMARY-52
+  closes:
+  - EVI-CONTEXT-STRENGTH-LINKAGE-001
+  residual_work: []
+- id: H-QA-SANIL-LIVE-PRIMARY-20260826
+  to: pm-integrator + qa-release-agent
+  head: 01562387067bd997b146426185f90d6eb27bcb59
+  validation_evidence:
+  - GHA-VALUATION-TESTS-503
+  - GHA-SANIL-LIVE-PRIMARY-52
+  closes:
+  - QA-SANIL-LIVE-PRIMARY-001
+  residual_work:
+  - QA-LIVE-COMPANY-FIXTURES-003
