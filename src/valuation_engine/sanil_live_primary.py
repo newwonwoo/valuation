@@ -72,6 +72,7 @@ from .scanner_runtime import ScannerFinding, ScannerFindingStatus
 from .scenario_binding import ScenarioBindingSpec
 from .signal_intelligence import ProjectGate, ProjectGateEvidence, ProjectGateSet
 from .source_watch import WatchFinding, WatchStatus
+from .street import StreetResearchReport
 from .valuation_plan_compiler import (
     CompanyValuationPlanInputs,
     SegmentMethodChoice,
@@ -273,6 +274,7 @@ def _official_records(snapshot: SanilSnapshot) -> tuple[EvidenceRecord, ...]:
         _record(snapshot, metric="unit_cost", value=(float(f["revenue_2025_krw_billion"]) - float(f["operating_profit_2025_krw_billion"])) * 1000 / float(f["nameplate_capacity_2025_count"]), unit="KRW_million", source_key=annual, source_layer=EvidenceSourceLayer.REALIZED_OR_FILING, effective_date="2025-12-31", confidence=0.60, notes="Operating-cost proxy per nameplate unit; not a disclosed manufacturing unit cost."),
         _record(snapshot, metric="expansion_capex", value=f["expansion_capex_committed_krw_billion"], unit="KRW_billion", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2025-12-31"),
         _record(snapshot, metric="expansion_land_control", value=True, unit="dimensionless", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["second_factory_start"]), notes="Second factory site control evidenced by company establishment disclosure."),
+        _record(snapshot, metric="expansion_capacity_committed", value=True, unit="dimensionless", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2025-12-31", notes="Land control and committed investment establish an incremental capacity program; the undisclosed exact capacity is bounded in the Core underwrite."),
         _record(snapshot, metric="expansion_site_area", value=f["second_factory_site_pyeong"], unit="pyeong", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2025-12-31"),
         _record(snapshot, metric="expansion_capex_committed", value=f["expansion_capex_committed_krw_billion"], unit="KRW_billion", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2025-12-31"),
         _record(snapshot, metric="expansion_ramp_date", value=str(snapshot.capacity_project["ramp_date"]), unit="dimensionless", source_key=q2, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2026-06-30", confidence=0.75),
@@ -806,9 +808,25 @@ def _per_loader(context: OrchestratorContext) -> LivePERInputs:
     )
 
 
+def _street_reports() -> tuple[StreetResearchReport, ...]:
+    return (
+        StreetResearchReport(
+            broker="Shinhan Securities",
+            analyst="Choi Seung-hwan / Lee Byung-hwa",
+            published_date="2026-08-11",
+            target_price=310000.0,
+            target_price_currency="KRW",
+            valuation_method="2027E PER 35x",
+            base_year="2027",
+            estimates=(),
+            source_ref="https://www.yna.co.kr/amp/view/AKR20260811028700008",
+        ),
+    )
+
+
 def _valuation_plan_inputs(context: OrchestratorContext) -> CompanyValuationPlanInputs:
     return CompanyValuationPlanInputs(
-        reporting_unit="KRW_billion",
+        reporting_unit="KRW",
         diluted_shares_key="diluted_shares",
         segment_bindings=(
             SegmentValueBinding(
@@ -915,6 +933,7 @@ def build_sanil_live_primary_config(
         wacc_loader=_wacc_loader(snapshot),
         dcf_fingerprint_loader=_dcf_fingerprint_loader,
         per_loader=_per_loader,
+        street_loader=_street_reports,
         market_loader=lambda: MarketObservation(float(snapshot.market["price"]), str(snapshot.market["as_of"]), str(snapshot.market["source_ref"])),
     )
     required_keys = tuple(
@@ -935,6 +954,9 @@ def build_sanil_live_primary_config(
         company_request=CompanyResolutionRequest(TICKER, "KR"),
         scenario_binding_spec=ScenarioBindingSpec(SCENARIOS, required_keys),
         providers=providers,
+        additional_required_evidence={
+            SEGMENT_ID: tuple(item.metric for item in records)
+        },
         method_choices=(SegmentMethodChoice(SEGMENT_ID, "capacity_manufacturing", "driver_dcf", "1"),),
         capacity_core_scenario_id="Core",
         market_currency="KRW",

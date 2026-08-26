@@ -243,6 +243,9 @@ class LivePrimaryRuntimeConfig:
     scenario_binding_spec: ScenarioBindingSpec
     providers: LivePrimaryProviders
     method_choices: tuple[SegmentMethodChoice, ...] = ()
+    additional_required_evidence: Mapping[str, tuple[str, ...]] = field(
+        default_factory=dict
+    )
     capacity_core_scenario_id: str | None = None
     market_currency: str | None = None
     stage_registry_path: str | Path = (
@@ -270,6 +273,16 @@ class LivePrimaryRuntimeConfig:
         self.company_request.validate()
         self.scenario_binding_spec.validate()
         self.providers.validate()
+        if not isinstance(self.additional_required_evidence, Mapping) or not all(
+            isinstance(segment_id, str)
+            and segment_id
+            and isinstance(metrics, tuple)
+            and all(isinstance(metric, str) and metric for metric in metrics)
+            for segment_id, metrics in self.additional_required_evidence.items()
+        ):
+            raise TypeError(
+                "additional_required_evidence must be a segment_id→tuple[str, ...] mapping"
+            )
         if self.providers.market_loader is not None and not self.market_currency:
             raise ValueError("LIVE_PRIMARY market_loader requires market_currency")
         prohibited = {
@@ -558,6 +571,7 @@ def build_live_primary_adapters(
         "MODULE_REQUIREMENT_PLAN": module_requirement_plan_adapter(
             registry_path=config.archetype_registry_path,
             control_requirements_path=config.archetype_control_requirements_path,
+            additional_required_evidence=config.additional_required_evidence,
         ),
         "PRIMARY_EVIDENCE_COLLECTION": primary_evidence_collection_adapter(
             selection_loader=_collection_selection_loader(config)
