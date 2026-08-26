@@ -492,8 +492,6 @@ def _hypothesis(
 
 
 def _intelligence_officer(context) -> IntelligenceProposal:
-    capacity = context.capacity_commitment_assessment
-    capacity_required = bool(capacity and capacity.core_inclusion_required_projects)
     hypotheses = tuple(
         _hypothesis(
             f"H:SANIL:{scenario}",
@@ -582,11 +580,9 @@ def _intelligence_officer(context) -> IntelligenceProposal:
         hypotheses=hypotheses,
         rationale=(
             "Sanil is routed as contracted-backlog plus capacity-manufacturing; "
-            + (
-                "the typed Capacity Gate requires a Core expansion path."
-                if capacity_required
-                else "no incremental Core capacity path is required."
-            )
+            "the declared land-controlled second-factory project must be classified "
+            "by the typed Capacity Gate and, when confirmed incremental, consumed "
+            "as one Core capacity, CAPEX and ramp path."
         ),
         context_strength_linkage_decision=ContextStrengthLinkageDecision(
             linkages=(linkage,),

@@ -194,6 +194,8 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         result.data["capacity_commitment_assessment"]
     )
     assert "산일전기" in result.data["final_report"]
+    assert "must be classified by the typed Capacity Gate" in result.data["final_report"]
+    assert "no incremental Core capacity path is required" not in result.data["final_report"]
 
     run_root = tmp_path / "runs" / TICKER / "SANIL-062040-20260825"
     assert (run_root / "final_report.md").exists()
