@@ -13,7 +13,6 @@ from urllib.parse import urlparse
 from .assumption_compiler import CompiledAssumptionSet
 from .control_plane import ExecutionMode, authorize_post_freeze
 from .evidence_collection import PrimaryEvidenceCollectionResult
-from .generic_audit import GenericAuditResult
 from .ledger import EvidenceLedger
 from .live_primary_adapters import IndustryKnowledgeSnapshot
 from .orchestrator import ControlledRunResult
@@ -68,6 +67,7 @@ def serialize_live_company_success(
         document.validate()
 
     ledger = _require_type(result.data, "evidence_ledger", EvidenceLedger)
+    _validate_evidence_source_lineage(ledger, source_documents)
     compiled = _require_type(result.data, "compiled_assumption_set", CompiledAssumptionSet)
     scenarios = _require_type(result.data, "bound_scenario_set", BoundScenarioSet)
     valuation = _require_type(result.data, "generic_valuation_result", GenericValuationResult)
@@ -212,7 +212,7 @@ def serialize_live_company_blocked(
 def recompute_artifact_hash_proof(proof: dict[str, Any]) -> str:
     encoding = str(proof.get("encoding") or "")
     if not encoding and "payload" in proof:
-        encoding = "canonical_json"  # v1 test/backward-compatible proof shape
+        encoding = "canonical_json"
     if encoding == "canonical_json":
         if "payload" not in proof:
             raise ValueError("canonical_json hash proof requires payload")
@@ -223,6 +223,40 @@ def recompute_artifact_hash_proof(proof: dict[str, Any]) -> str:
             raise ValueError("utf8 hash proof requires string preimage")
         return sha256(preimage.encode("utf-8")).hexdigest()
     raise ValueError(f"unsupported hash proof encoding: {encoding!r}")
+
+
+def _validate_evidence_source_lineage(
+    ledger: EvidenceLedger,
+    source_documents: tuple[SourceDocumentLineage, ...],
+) -> None:
+    by_ref = {item.source_ref: item for item in source_documents}
+    if len(by_ref) != len(source_documents):
+        raise ValueError("source document lineage contains duplicate source_ref")
+    active = ledger.active()
+    if not active:
+        raise ValueError("success artifact requires active primary Evidence")
+    for record in active:
+        base_ref = str(record.source_ref).split("#", 1)[0]
+        parsed = urlparse(base_ref)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError(
+                f"active Evidence {record.id} is not backed by absolute HTTP(S) provenance"
+            )
+        document = by_ref.get(base_ref)
+        if document is None:
+            raise ValueError(
+                f"active Evidence {record.id} source_ref is missing from source document lineage"
+            )
+        source_revision = str(getattr(record, "source_revision", "") or "").casefold()
+        if source_revision and source_revision != document.document_hash.casefold():
+            raise ValueError(
+                f"active Evidence {record.id} source revision does not match source document hash"
+            )
+        first_seen = str(getattr(record, "first_seen_at", "") or "")
+        if first_seen and first_seen != document.first_seen_at:
+            raise ValueError(
+                f"active Evidence {record.id} first_seen_at does not match source document lineage"
+            )
 
 
 def _compiled_assumption_payload(compiled: CompiledAssumptionSet) -> dict[str, Any]:
@@ -340,6 +374,9 @@ def _industry_hash_preimage(snapshot: IndustryKnowledgeSnapshot) -> str:
 
 
 def _source_snapshot_payload(result: PrimaryEvidenceCollectionResult) -> dict[str, Any]:
+    records = result.ledger.records()
+    if not records:
+        raise ValueError("source snapshot proof requires Evidence records")
     batch_rows = [
         {
             "source_id": batch.source_id,
@@ -359,7 +396,7 @@ def _source_snapshot_payload(result: PrimaryEvidenceCollectionResult) -> dict[st
         )
     )
     return {
-        "target_id": next(iter(result.ledger.records())).target,
+        "target_id": records[0].target,
         "batches": batch_rows,
         "evidence": sorted(
             result.ledger.to_list(),
