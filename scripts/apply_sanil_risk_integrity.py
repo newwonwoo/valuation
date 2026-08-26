@@ -4,7 +4,9 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-TARGET = ROOT / "src" / "valuation_engine" / "sanil_live_primary.py"
+SANIL = ROOT / "src" / "valuation_engine" / "sanil_live_primary.py"
+RECORDS = ROOT / "src" / "valuation_engine" / "records.py"
+COLLECTION = ROOT / "src" / "valuation_engine" / "evidence_collection.py"
 
 
 def replace_once(text: str, old: str, new: str) -> str:
@@ -17,14 +19,45 @@ def replace_once(text: str, old: str, new: str) -> str:
 
 
 def main() -> int:
-    text = TARGET.read_text(encoding="utf-8")
+    records = RECORDS.read_text(encoding="utf-8")
+    records = replace_once(
+        records,
+        '''    POLICY_PRIMARY_SOURCE = "policy_primary_source"
+    EXTERNAL_REFERENCE = "external_reference"
+''',
+        '''    POLICY_PRIMARY_SOURCE = "policy_primary_source"
+    AUTHORIZED_MARKET_DATA = "authorized_market_data"
+    ANALYST_UNDERWRITING = "analyst_underwriting"
+    EXTERNAL_REFERENCE = "external_reference"
+''',
+    )
+    RECORDS.write_text(records, encoding="utf-8")
 
+    collection = COLLECTION.read_text(encoding="utf-8")
+    collection = replace_once(
+        collection,
+        '''                EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+            }:
+''',
+        '''                EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+                EvidenceSourceLayer.AUTHORIZED_MARKET_DATA,
+                EvidenceSourceLayer.ANALYST_UNDERWRITING,
+            }:
+''',
+    )
+    COLLECTION.write_text(collection, encoding="utf-8")
+
+    text = SANIL.read_text(encoding="utf-8")
     text = replace_once(
         text,
         'source_grade=("A" if source_layer is not EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN else "B"),',
         '''source_grade=(
             "A"
-            if source_layer is EvidenceSourceLayer.REALIZED_OR_FILING
+            if source_layer
+            in {
+                EvidenceSourceLayer.REALIZED_OR_FILING,
+                EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+            }
             else (
                 "B"
                 if source_layer is EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN
@@ -38,7 +71,16 @@ def main() -> int:
     underwriting = text[start:end]
     underwriting = underwriting.replace(
         "EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN",
-        "EvidenceSourceLayer.EXTERNAL_REFERENCE",
+        "EvidenceSourceLayer.ANALYST_UNDERWRITING",
+    )
+    underwriting = replace_once(
+        underwriting,
+        '''                source_key="risk_snapshot",
+                source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
+''',
+        '''                source_key="risk_snapshot",
+                source_layer=EvidenceSourceLayer.AUTHORIZED_MARKET_DATA,
+''',
     )
     text = text[:start] + underwriting + text[end:]
 
@@ -62,7 +104,7 @@ def main() -> int:
                         ),''',
     )
 
-    TARGET.write_text(text, encoding="utf-8")
+    SANIL.write_text(text, encoding="utf-8")
     return 0
 
 
