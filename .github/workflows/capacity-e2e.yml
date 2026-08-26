@@ -1,0 +1,47 @@
+name: capacity-e2e
+
+on:
+  pull_request:
+    paths:
+      - 'src/valuation_engine/capacity_*.py'
+      - 'src/valuation_engine/live_runtime.py'
+      - 'src/valuation_engine/llm_*.py'
+      - 'config/archetype_*'
+      - 'tests/test_capacity_*'
+      - 'src/valuation_engine/report_form.py'
+      - 'scripts/render_verified_report_form.py'
+      - 'examples/report_forms/**'
+      - '.github/workflows/capacity-e2e.yml'
+  workflow_dispatch:
+
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Generate and verify report form
+        run: |
+          PYTHONPATH=src python scripts/render_verified_report_form.py
+          git diff --exit-code -- examples/report_forms/PRISM_VERIFIED_REPORT_FORM.md
+      - name: Capacity integration tests
+        run: >-
+          pytest -q
+          tests/test_capacity_commitment_gate.py
+          tests/test_capacity_consumption.py
+          tests/test_capacity_live_runtime_integration.py
+          tests/test_live_runtime_assembly.py
+          tests/test_report_form.py
+      - name: Full regression
+        run: pytest -q
+      - name: OCI regression
+        run: valuation-engine examples/oci/company.yaml
+      - name: Upload verified report form
+        uses: actions/upload-artifact@v4
+        with:
+          name: PRISM_VERIFIED_REPORT_FORM
+          path: examples/report_forms/PRISM_VERIFIED_REPORT_FORM.md
