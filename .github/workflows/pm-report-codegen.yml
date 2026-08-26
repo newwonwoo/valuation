@@ -4,7 +4,7 @@ on:
   push:
     branches: [agent/execution-attestation-report]
     paths:
-      - scripts/pm_report_codegen.py
+      - scripts/pm_report_codegen_v2.py
       - .github/workflows/pm-report-codegen.yml
 
 permissions:
@@ -21,7 +21,7 @@ jobs:
       - name: Install
         run: python -m pip install -e '.[dev]'
       - name: Apply deterministic reporting patch
-        run: python scripts/pm_report_codegen.py
+        run: python scripts/pm_report_codegen_v2.py
       - name: Attestation regressions
         run: pytest -q tests/test_execution_attestation.py
       - name: Compile report runtime
