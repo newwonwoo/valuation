@@ -6,6 +6,7 @@ on:
       - feat/sanil-live-primary
     paths:
       - scripts/finalize_sanil_live_primary.py
+      - scripts/patch_sanil_finalizer.py
       - .github/workflows/sanil-finalization-agent.yml
 
 permissions:
@@ -25,6 +26,8 @@ jobs:
           python-version: '3.11'
       - name: Install
         run: python -m pip install -e '.[dev]'
+      - name: Repair finalizer anchors
+        run: python scripts/patch_sanil_finalizer.py
       - name: Apply final integration fixes
         run: python scripts/finalize_sanil_live_primary.py
       - name: Generate actual Sanil report
@@ -56,6 +59,7 @@ jobs:
           git rm
           .github/workflows/sanil-finalization-agent.yml
           scripts/finalize_sanil_live_primary.py
+          scripts/patch_sanil_finalizer.py
       - name: Commit verified final integration
         run: |
           git config user.name "sanil-finalization-agent"
