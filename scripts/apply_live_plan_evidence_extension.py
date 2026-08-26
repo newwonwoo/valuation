@@ -67,6 +67,16 @@ def main() -> int:
     sanil = ROOT / "src" / "valuation_engine" / "sanil_live_primary.py"
     replace_once(
         sanil,
+        """        _record(snapshot, metric="expansion_land_control", value=True, unit="dimensionless", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["second_factory_start"]), notes="Second factory site control evidenced by company establishment disclosure."),
+        _record(snapshot, metric="expansion_site_area", value=f["second_factory_site_pyeong"], unit="pyeong", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2025-12-31"),
+""",
+        """        _record(snapshot, metric="expansion_land_control", value=True, unit="dimensionless", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["second_factory_start"]), notes="Second factory site control evidenced by company establishment disclosure."),
+        _record(snapshot, metric="expansion_capacity_committed", value=True, unit="dimensionless", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2025-12-31", notes="Land control and committed investment establish an incremental capacity program; the undisclosed exact capacity is bounded in the Core underwrite."),
+        _record(snapshot, metric="expansion_site_area", value=f["second_factory_site_pyeong"], unit="pyeong", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2025-12-31"),
+""",
+    )
+    replace_once(
+        sanil,
         """        providers=providers,
         method_choices=(SegmentMethodChoice(SEGMENT_ID, "capacity_manufacturing", "driver_dcf", "1"),),
 """,
@@ -75,6 +85,18 @@ def main() -> int:
             SEGMENT_ID: tuple(item.metric for item in records)
         },
         method_choices=(SegmentMethodChoice(SEGMENT_ID, "capacity_manufacturing", "driver_dcf", "1"),),
+""",
+    )
+
+    runtime_test = ROOT / "tests" / "test_live_runtime_assembly.py"
+    replace_once(
+        runtime_test,
+        """        self.method_choices = ()
+        self.capacity_core_scenario_id = None
+""",
+        """        self.method_choices = ()
+        self.additional_required_evidence = {}
+        self.capacity_core_scenario_id = None
 """,
     )
     return 0
