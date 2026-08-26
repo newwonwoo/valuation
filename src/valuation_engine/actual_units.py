@@ -9,6 +9,7 @@ class Dimension(str, Enum):
     MONEY = "money"
     MASS = "mass"
     POWER = "power"
+    AREA = "area"
     COUNT = "count"
     SHARES = "shares"
     TIME = "time"
@@ -35,6 +36,13 @@ _UNIT_DEFS = {
     "W": UnitDef("W", Dimension.POWER, "W", Decimal("1")),
     "MW": UnitDef("MW", Dimension.POWER, "W", Decimal("1000000")),
     "GW": UnitDef("GW", Dimension.POWER, "W", Decimal("1000000000")),
+    "sqm": UnitDef("sqm", Dimension.AREA, "sqm", Decimal("1")),
+    "pyeong": UnitDef(
+        "pyeong",
+        Dimension.AREA,
+        "sqm",
+        Decimal("3.305785123966942148760330579"),
+    ),
     "count": UnitDef("count", Dimension.COUNT, "count", Decimal("1")),
     "shares": UnitDef("shares", Dimension.SHARES, "shares", Decimal("1")),
     "days": UnitDef("days", Dimension.TIME, "days", Decimal("1")),
