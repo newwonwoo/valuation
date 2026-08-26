@@ -39,6 +39,8 @@ class LiveDCFRegistration:
     version: str
     forecast_years: int
     assumption_prefix: str = ""
+    expansion_capex_key: str | None = None
+    expansion_capex_year: int | None = None
 
     def validate(self) -> None:
         if not all((self.archetype, self.method, self.version)):
@@ -47,6 +49,18 @@ class LiveDCFRegistration:
             raise ValueError("live DCF forecast_years must be in [1, 30]")
         if any(character.isspace() for character in self.assumption_prefix):
             raise ValueError("assumption_prefix cannot contain whitespace")
+        if (self.expansion_capex_key is None) != (self.expansion_capex_year is None):
+            raise ValueError(
+                "expansion CAPEX requires both expansion_capex_key and expansion_capex_year"
+            )
+        if self.expansion_capex_key is not None:
+            if not self.expansion_capex_key or any(
+                character.isspace() for character in self.expansion_capex_key
+            ):
+                raise ValueError("expansion_capex_key must be a non-empty key without whitespace")
+            assert self.expansion_capex_year is not None
+            if not 1 <= self.expansion_capex_year <= self.forecast_years:
+                raise ValueError("expansion_capex_year must fall inside the explicit forecast")
 
 
 @dataclass(frozen=True)
@@ -59,6 +73,8 @@ class ExplicitFCFFDCFEvaluator:
     discount_rate_path_id: str
     assumption_prefix: str = ""
     beta_path_id: str | None = None
+    expansion_capex_key: str | None = None
+    expansion_capex_year: int | None = None
 
     def __post_init__(self) -> None:
         if not all((self.archetype, self.method, self.version, self.discount_rate_path_id)):
@@ -69,6 +85,18 @@ class ExplicitFCFFDCFEvaluator:
             raise ValueError("discount_rate must be finite and positive")
         if self.beta_path_id is not None and not self.beta_path_id:
             raise ValueError("beta_path_id cannot be blank")
+        if (self.expansion_capex_key is None) != (self.expansion_capex_year is None):
+            raise ValueError(
+                "expansion CAPEX requires both expansion_capex_key and expansion_capex_year"
+            )
+        if self.expansion_capex_key is not None:
+            if not self.expansion_capex_key or any(
+                character.isspace() for character in self.expansion_capex_key
+            ):
+                raise ValueError("expansion_capex_key must be a non-empty key without whitespace")
+            assert self.expansion_capex_year is not None
+            if not 1 <= self.expansion_capex_year <= self.forecast_years:
+                raise ValueError("expansion_capex_year must fall inside the explicit forecast")
 
     @property
     def key(self) -> ModelKey:
@@ -83,8 +111,18 @@ class ExplicitFCFFDCFEvaluator:
 
     @property
     def required_assumption_keys(self) -> tuple[str, ...]:
+        fcff_keys = tuple(
+            self._key(f"fcff_year_{year}")
+            for year in range(1, self.forecast_years + 1)
+        )
+        capex_keys = (
+            (self._key(self.expansion_capex_key),)
+            if self.expansion_capex_key is not None
+            else ()
+        )
         return (
-            *(self._key(f"fcff_year_{year}") for year in range(1, self.forecast_years + 1)),
+            *fcff_keys,
+            *capex_keys,
             self._key("terminal_growth"),
             self._key("terminal_roic"),
         )
@@ -97,7 +135,26 @@ class ExplicitFCFFDCFEvaluator:
         first_measure = fcff_assumptions[0].measure
         if first_measure.dimension.value != "money":
             raise ValueError("FCFF path must use money measures")
-        fcff_path = tuple(item.measure.convert_to(first_measure.unit) for item in fcff_assumptions)
+        fcff_path = [
+            item.measure.convert_to(first_measure.unit) for item in fcff_assumptions
+        ]
+
+        capex_assumption = None
+        if self.expansion_capex_key is not None:
+            assert self.expansion_capex_year is not None
+            capex_assumption = scenario.get(self._key(self.expansion_capex_key))
+            if capex_assumption.measure.dimension.value != "money":
+                raise ValueError("expansion CAPEX must use a money measure")
+            capex = capex_assumption.measure.convert_to(first_measure.unit)
+            if capex.amount < 0:
+                raise ValueError("expansion CAPEX must be expressed as a non-negative cash outflow")
+            index = self.expansion_capex_year - 1
+            original = fcff_path[index]
+            fcff_path[index] = Measure(
+                original.amount - capex.amount,
+                original.unit,
+                max(original.as_of, capex.as_of),
+            )
 
         terminal_growth_assumption = scenario.get(self._key("terminal_growth"))
         terminal_roic_assumption = scenario.get(self._key("terminal_roic"))
@@ -120,18 +177,28 @@ class ExplicitFCFFDCFEvaluator:
         terminal_value = terminal_fcff / (self.discount_rate - terminal_growth)
         present_value += terminal_value / (one + self.discount_rate) ** self.forecast_years
 
-        as_of = max(
+        as_of_values = [
             *(item.measure.as_of for item in fcff_assumptions),
             terminal_growth_assumption.measure.as_of,
             terminal_roic_assumption.measure.as_of,
-        )
+        ]
+        if capex_assumption is not None:
+            as_of_values.append(capex_assumption.measure.as_of)
+        as_of = max(as_of_values)
+
         upstream_paths = [f"{self.discount_rate_path_id}:{segment_id}"]
         if self.beta_path_id is not None:
             upstream_paths.append(f"{self.beta_path_id}:{segment_id}")
+        capex_paths = (
+            (capex_assumption.economic_path_id,)
+            if capex_assumption is not None
+            else ()
+        )
         economic_paths = tuple(
             dict.fromkeys(
                 (
                     *(item.economic_path_id for item in fcff_assumptions),
+                    *capex_paths,
                     terminal_growth_assumption.economic_path_id,
                     terminal_roic_assumption.economic_path_id,
                     *upstream_paths,
@@ -206,6 +273,8 @@ def live_fcff_dcf_registry_loader(
                     discount_rate_path_id=f"wacc:{wacc_result.snapshot_hash}",
                     assumption_prefix=item.assumption_prefix,
                     beta_path_id=f"beta:{wacc_result.beta_result.snapshot_hash}",
+                    expansion_capex_key=item.expansion_capex_key,
+                    expansion_capex_year=item.expansion_capex_year,
                 )
             )
         return registry
