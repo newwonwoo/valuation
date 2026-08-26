@@ -36,7 +36,7 @@ def _validate_text_tuple(
         raise ValueError(f"{field_name} requires at least one item")
     for value in values:
         _validate_text(value, field_name)
-    if len(values) != len(set(values)):
+    if len(values) != len(set(values))):
         raise ValueError(f"{field_name} must not contain duplicates")
 
 
@@ -79,7 +79,7 @@ class ContextStrengthLinkage:
             "market_blind_spot",
             "value_capture_path",
         ):
-            _validate_text(str(getattr(self, field_name)), field_name)
+            _validate_text(getattr(self, field_name), field_name)
 
         _validate_text_tuple(self.causal_chain, "causal_chain")
         if len(self.causal_chain) < 5:
