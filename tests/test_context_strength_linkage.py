@@ -1,6 +1,7 @@
 from valuation_engine.context_strength_linkage import (
     ContextStrengthLinkage,
     ContextStrengthLinkageDecision,
+    ContextStrengthReasoningPriority,
 )
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.ledger import EvidenceLedger
@@ -115,6 +116,37 @@ def run_researcher(officer):
     )
 
 
+def not_applicable_proposal() -> IntelligenceProposal:
+    return IntelligenceProposal(
+        hypotheses=(hypothesis(),),
+        rationale="synthetic deterministic valuation fixture",
+        context_strength_linkage_decision=ContextStrengthLinkageDecision(
+            not_applicable_reason=(
+                "This synthetic run validates deterministic valuation plumbing and "
+                "contains no external-change investment claim to test."
+            ),
+        ),
+    )
+
+
+def test_canonical_researcher_receives_primary_reasoning_doctrine():
+    def officer(context):
+        doctrine = context.context_strength_linkage_doctrine
+        assert doctrine.priority is ContextStrengthReasoningPriority.PRIMARY_GATE
+        assert doctrine.reasoning_sequence[0].startswith("Start outside the company")
+        assert doctrine.reasoning_sequence[-1].startswith("Only after the linkage")
+        assert any(
+            "keyword overlap" in shortcut
+            for shortcut in doctrine.prohibited_shortcuts
+        )
+        assert "cannot commit assumptions" in doctrine.valuation_boundary
+        return not_applicable_proposal()
+
+    result = run_researcher(officer)
+
+    assert result.blocked_reasons == ()
+
+
 def test_canonical_researcher_blocks_hypotheses_without_linkage_decision():
     result = run_researcher(
         lambda _: IntelligenceProposal(
@@ -129,25 +161,16 @@ def test_canonical_researcher_blocks_hypotheses_without_linkage_decision():
 
 
 def test_explicit_not_applicable_decision_is_auditable_and_passes():
-    reason = (
-        "This synthetic run validates deterministic valuation plumbing and contains "
-        "no external-change investment claim to test."
-    )
-    result = run_researcher(
-        lambda _: IntelligenceProposal(
-            hypotheses=(hypothesis(),),
-            rationale="synthetic deterministic valuation fixture",
-            context_strength_linkage_decision=ContextStrengthLinkageDecision(
-                not_applicable_reason=reason,
-            ),
-        )
-    )
+    result = run_researcher(lambda _: not_applicable_proposal())
 
     assert result.blocked_reasons == ()
     assert result.data["context_strength_linkage_status"] == "NOT_APPLICABLE"
     assert result.data[
         "context_strength_linkage_not_applicable_reason"
-    ] == reason
+    ] == (
+        "This synthetic run validates deterministic valuation plumbing and contains "
+        "no external-change investment claim to test."
+    )
 
 
 def test_non_obvious_linkage_is_bound_to_evidence_and_hypothesis():
