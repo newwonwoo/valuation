@@ -36,7 +36,7 @@ departments:
   name: Evidence & Industry Intelligence
   design_points: 13
   baseline_accepted_points: 7
-  current_work: MAINTENANCE — accepted design complete
+  current_work: ACTIVE EVI-CONTEXT-STRENGTH-LINKAGE-005 — Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses and reports
   accepted_milestones:
   - id: EVI-VERTICAL-001
     title: Complete the first official OpenDART vertical provider pack through raw filing and deterministic KPI extraction
@@ -298,6 +298,14 @@ departments:
     implementation_refs:
     - PR 80 Add explicit real-company LIVE acceptance gate
 work_items:
+- priority: P1
+  status: ACTIVE
+  id: EVI-CONTEXT-STRENGTH-LINKAGE-005
+  title: Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses and reports
+  owner: evidence-industry-agent
+  github_pr: 94
+  current_step: Validate the typed linkage contract, strict canonical RESEARCHER_A gate, immutable report artifact, and regression coverage on the exact PR head.
+  dependencies: []
 - priority: P1
   status: ACTIVE
   id: QA-LIVE-COMPANY-FIXTURES-003
