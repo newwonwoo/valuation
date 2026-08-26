@@ -1,0 +1,55 @@
+name: sanil-final-report-agent
+
+on:
+  push:
+    branches:
+      - feat/sanil-live-primary
+    paths:
+      - scripts/fix_sanil_capacity_rationale.py
+      - .github/workflows/sanil-final-report-agent.yml
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/sanil-live-primary
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Repair final Capacity rationale
+        run: python scripts/fix_sanil_capacity_rationale.py
+      - name: Generate tracked verified Sanil report
+        run: >-
+          PYTHONPATH=src
+          python scripts/run_sanil_live_primary.py
+          --output examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md
+      - name: Sanil integration regression
+        run: pytest -q tests/test_sanil_live_primary.py
+      - name: Full regression
+        run: pytest -q
+      - name: Verify deterministic report regeneration
+        run: >-
+          PYTHONPATH=src
+          python scripts/run_sanil_live_primary.py
+          --check
+      - name: Remove bootstrap files
+        run: >-
+          git rm
+          .github/workflows/sanil-final-report-agent.yml
+          scripts/fix_sanil_capacity_rationale.py
+      - name: Commit final verified Sanil output
+        run: |
+          git config user.name "sanil-final-report-agent"
+          git config user.email "sanil-final-report-agent@users.noreply.github.com"
+          git add -A
+          git commit -m "Store the verified Sanil LIVE_PRIMARY report"
+          git push origin HEAD:feat/sanil-live-primary
