@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 from .assumption_compiler import AssumptionSpec, TRANSFORMS
+from .capacity_commitment import CapacityCommitmentAssessment
 from .control_plane import LLMAction, validate_llm_authority
 from .ledger import EvidenceLedger
 from .records import BridgeRecord, CriticalIssue, HypothesisRecord
@@ -24,7 +25,10 @@ class IntelligenceProposal:
             if hypothesis.id in seen:
                 raise ValueError(f"duplicate hypothesis proposal: {hypothesis.id}")
             seen.add(hypothesis.id)
-            for evidence_id in (*hypothesis.supporting_evidence_ids, *hypothesis.contradicting_evidence_ids):
+            for evidence_id in (
+                *hypothesis.supporting_evidence_ids,
+                *hypothesis.contradicting_evidence_ids,
+            ):
                 ledger.get(evidence_id)
 
 
@@ -54,13 +58,30 @@ class BridgeDraft:
     max_value: str | None = None
     probability_only_if_calibrated: bool = False
 
-    def validate(self, ledger: EvidenceLedger, hypotheses: dict[str, HypothesisRecord]) -> None:
-        if not all((self.assumption_key, self.scenario_id, self.canonical_unit, self.transform_id)):
-            raise ValueError("bridge draft requires assumption key, scenario, unit and transform")
+    def validate(
+        self,
+        ledger: EvidenceLedger,
+        hypotheses: dict[str, HypothesisRecord],
+    ) -> None:
+        if not all(
+            (
+                self.assumption_key,
+                self.scenario_id,
+                self.canonical_unit,
+                self.transform_id,
+            )
+        ):
+            raise ValueError(
+                "bridge draft requires assumption key, scenario, unit and transform"
+            )
         if self.transform_id not in TRANSFORMS:
-            raise ValueError(f"LLM proposed an unregistered transform: {self.transform_id}")
+            raise ValueError(
+                f"LLM proposed an unregistered transform: {self.transform_id}"
+            )
         if self.bridge.hypothesis_id not in hypotheses:
-            raise ValueError(f"bridge draft references unknown hypothesis: {self.bridge.hypothesis_id}")
+            raise ValueError(
+                f"bridge draft references unknown hypothesis: {self.bridge.hypothesis_id}"
+            )
         input_ids = self.input_evidence_ids or self.bridge.evidence_ids
         if not input_ids:
             raise ValueError("bridge draft requires Evidence inputs")
@@ -73,7 +94,11 @@ class BridgeProposalBundle:
     drafts: tuple[BridgeDraft, ...]
     rationale: str
 
-    def validate(self, ledger: EvidenceLedger, hypotheses: tuple[HypothesisRecord, ...]) -> None:
+    def validate(
+        self,
+        ledger: EvidenceLedger,
+        hypotheses: tuple[HypothesisRecord, ...],
+    ) -> None:
         if not self.rationale:
             raise ValueError("bridge proposal bundle requires rationale")
         hypothesis_map = {item.id: item for item in hypotheses}
@@ -101,11 +126,17 @@ class LLMStaffContext:
     module_requirement_plan: object | None = None
     scanner_findings: tuple[object, ...] = ()
     funding_scan_result: object | None = None
+    capacity_commitment_assessment: CapacityCommitmentAssessment | None = None
 
 
 IntelligenceOfficer = Callable[[LLMStaffContext], IntelligenceProposal]
-RedTeamOfficer = Callable[[LLMStaffContext, tuple[HypothesisRecord, ...]], RedTeamProposal]
-BridgeAnalyst = Callable[[LLMStaffContext, tuple[HypothesisRecord, ...], RedTeamProposal], BridgeProposalBundle]
+RedTeamOfficer = Callable[
+    [LLMStaffContext, tuple[HypothesisRecord, ...]], RedTeamProposal
+]
+BridgeAnalyst = Callable[
+    [LLMStaffContext, tuple[HypothesisRecord, ...], RedTeamProposal],
+    BridgeProposalBundle,
+]
 
 
 def merge_hypothesis_context(
@@ -115,11 +146,16 @@ def merge_hypothesis_context(
     combined = prior + proposed
     ids = tuple(item.id for item in combined)
     if len(ids) != len(set(ids)):
-        raise ValueError("prior and proposed hypothesis IDs must be unique; revisions require a new ID")
+        raise ValueError(
+            "prior and proposed hypothesis IDs must be unique; revisions require a new ID"
+        )
     return combined
 
 
-def run_intelligence_officer(context: LLMStaffContext, officer: IntelligenceOfficer) -> IntelligenceProposal:
+def run_intelligence_officer(
+    context: LLMStaffContext,
+    officer: IntelligenceOfficer,
+) -> IntelligenceProposal:
     validate_llm_authority(LLMAction.OBSERVE)
     validate_llm_authority(LLMAction.REASON)
     validate_llm_authority(LLMAction.PROPOSE)
@@ -136,9 +172,13 @@ def run_red_team(
 ) -> RedTeamProposal:
     validate_llm_authority(LLMAction.REASON)
     validate_llm_authority(LLMAction.PROPOSE)
-    # This is a second lock; the shared Staff context also blocks market Evidence.
-    if any(item.source_layer.value == "market_comparison" for item in context.ledger.active()):
-        raise PermissionError("Blind Red Team context contains market-comparison Evidence")
+    if any(
+        item.source_layer.value == "market_comparison"
+        for item in context.ledger.active()
+    ):
+        raise PermissionError(
+            "Blind Red Team context contains market-comparison Evidence"
+        )
     proposal = officer(context, hypotheses)
     proposal.validate()
     return proposal
@@ -158,12 +198,12 @@ def run_bridge_analyst(
 
 def materialize_bridge_bundle(
     bundle: BridgeProposalBundle,
-) -> tuple[tuple[BridgeRecord, ...], tuple[AssumptionSpec, ...], dict[str, tuple[str, ...]]]:
-    """Turn validated LLM proposals into compiler requests, not committed assumptions.
-
-    The Bridge proposal's numeric value remains non-authoritative; Assumption Compiler will
-    recompute every draft using the registered transform and Evidence inputs.
-    """
+) -> tuple[
+    tuple[BridgeRecord, ...],
+    tuple[AssumptionSpec, ...],
+    dict[str, tuple[str, ...]],
+]:
+    """Turn validated LLM proposals into compiler requests, not committed assumptions."""
     from decimal import Decimal
 
     bridges: list[BridgeRecord] = []
@@ -178,10 +218,22 @@ def materialize_bridge_bundle(
                 bridge_id=draft.bridge.id,
                 canonical_unit=draft.canonical_unit,
                 transform_id=draft.transform_id,
-                min_value=Decimal(draft.min_value) if draft.min_value is not None else None,
-                max_value=Decimal(draft.max_value) if draft.max_value is not None else None,
-                probability_only_if_calibrated=draft.probability_only_if_calibrated,
+                min_value=(
+                    Decimal(draft.min_value)
+                    if draft.min_value is not None
+                    else None
+                ),
+                max_value=(
+                    Decimal(draft.max_value)
+                    if draft.max_value is not None
+                    else None
+                ),
+                probability_only_if_calibrated=(
+                    draft.probability_only_if_calibrated
+                ),
             )
         )
-        input_map[draft.bridge.id] = draft.input_evidence_ids or draft.bridge.evidence_ids
+        input_map[draft.bridge.id] = (
+            draft.input_evidence_ids or draft.bridge.evidence_ids
+        )
     return tuple(bridges), tuple(specs), input_map
