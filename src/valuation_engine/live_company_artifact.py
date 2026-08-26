@@ -67,12 +67,16 @@ def serialize_live_company_success(
         document.validate()
 
     ledger = _require_type(result.data, "evidence_ledger", EvidenceLedger)
-    _validate_evidence_source_lineage(ledger, source_documents)
+    collection = _require_type(result.data, "evidence_collection_result", PrimaryEvidenceCollectionResult)
+    revision_bindings = _build_evidence_revision_bindings(
+        ledger,
+        collection,
+        source_documents,
+    )
     compiled = _require_type(result.data, "compiled_assumption_set", CompiledAssumptionSet)
     scenarios = _require_type(result.data, "bound_scenario_set", BoundScenarioSet)
     valuation = _require_type(result.data, "generic_valuation_result", GenericValuationResult)
     industry = _require_type(result.data, "industry_knowledge_snapshot", IndustryKnowledgeSnapshot)
-    collection = _require_type(result.data, "evidence_collection_result", PrimaryEvidenceCollectionResult)
     audit_report = _require_type(result.data, "generic_audit_report", AuditReport)
     audit_hash = str(result.data.get("audit_hash") or "")
     if not audit_hash:
@@ -145,6 +149,7 @@ def serialize_live_company_success(
     if final_report is None:
         raise ValueError("success artifact requires final_report")
 
+    active_evidence_ids = [record.id for record in ledger.active()]
     artifact: dict[str, Any] = {
         "artifact_type": "serialized_controlled_run/v1",
         "company_id": company_id,
@@ -157,6 +162,8 @@ def serialize_live_company_success(
         "data_hashes": hashes,
         "hash_proofs": proofs,
         "source_documents": [_jsonable(item) for item in source_documents],
+        "active_evidence_ids": active_evidence_ids,
+        "evidence_revision_bindings": revision_bindings,
         "market_compare": {
             "phase": "post_freeze",
             "freeze_token_id": result.freeze_token.token_hash,
@@ -225,16 +232,34 @@ def recompute_artifact_hash_proof(proof: dict[str, Any]) -> str:
     raise ValueError(f"unsupported hash proof encoding: {encoding!r}")
 
 
-def _validate_evidence_source_lineage(
+def _build_evidence_revision_bindings(
     ledger: EvidenceLedger,
+    collection: PrimaryEvidenceCollectionResult,
     source_documents: tuple[SourceDocumentLineage, ...],
-) -> None:
+) -> list[dict[str, str]]:
     by_ref = {item.source_ref: item for item in source_documents}
     if len(by_ref) != len(source_documents):
         raise ValueError("source document lineage contains duplicate source_ref")
+
+    batch_revision_by_evidence: dict[str, str] = {}
+    for batch in collection.batches:
+        revision = str(batch.source_fingerprint or "").casefold()
+        if not _HASH64.fullmatch(revision):
+            raise ValueError(
+                f"Evidence batch {batch.source_id} lacks an immutable source fingerprint"
+            )
+        for record in batch.records:
+            existing = batch_revision_by_evidence.get(record.id)
+            if existing is not None and existing != revision:
+                raise ValueError(
+                    f"active Evidence {record.id} appears in conflicting source revisions"
+                )
+            batch_revision_by_evidence[record.id] = revision
+
     active = ledger.active()
     if not active:
         raise ValueError("success artifact requires active primary Evidence")
+    bindings: list[dict[str, str]] = []
     for record in active:
         base_ref = str(record.source_ref).split("#", 1)[0]
         parsed = urlparse(base_ref)
@@ -247,8 +272,14 @@ def _validate_evidence_source_lineage(
             raise ValueError(
                 f"active Evidence {record.id} source_ref is missing from source document lineage"
             )
-        source_revision = str(getattr(record, "source_revision", "") or "").casefold()
-        if source_revision and source_revision != document.document_hash.casefold():
+
+        record_revision = str(getattr(record, "source_revision", "") or "").casefold()
+        revision = record_revision or batch_revision_by_evidence.get(record.id, "")
+        if not _HASH64.fullmatch(revision):
+            raise ValueError(
+                f"active Evidence {record.id} has no immutable source revision hash"
+            )
+        if revision != document.document_hash.casefold():
             raise ValueError(
                 f"active Evidence {record.id} source revision does not match source document hash"
             )
@@ -257,6 +288,14 @@ def _validate_evidence_source_lineage(
             raise ValueError(
                 f"active Evidence {record.id} first_seen_at does not match source document lineage"
             )
+        bindings.append(
+            {
+                "evidence_id": record.id,
+                "source_ref": base_ref,
+                "revision_hash": revision,
+            }
+        )
+    return bindings
 
 
 def _compiled_assumption_payload(compiled: CompiledAssumptionSet) -> dict[str, Any]:
