@@ -3,13 +3,14 @@ from __future__ import annotations
 from dataclasses import replace
 
 from .assumption_compiler import CompiledAssumptionSet
-from .control_plane import DoctrineCoverageEntry, StageStatus
+from .control_plane import DoctrineCoverageEntry, ExecutionMode, StageStatus
 from .decision_impact import ModuleHistoryEntry
 from .doctrine_runtime import load_default_unit_contract_registry
 from .generic_audit import audit_generic_intrinsic
 from .impact_adapter import GenericDecisionImpactConfig, run_generic_decision_impact
 from .ledger import EvidenceLedger
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
+from .records import AuditReport
 from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
 from .risk_impact import build_risk_impact_traces
 from .scenario_binding import BoundScenarioSet
@@ -75,6 +76,28 @@ def generic_audit_adapter(
         wacc_raw = context.data.get("live_wacc_result")
         beta_result = beta_raw if isinstance(beta_raw, LiveBetaStageResult) else None
         wacc_result = wacc_raw if isinstance(wacc_raw, LiveWACCStageResult) else None
+        capacity_report_raw = context.data.get("capacity_audit_report")
+        capacity_hash_raw = context.data.get("capacity_audit_hash")
+        if context.execution_mode is ExecutionMode.LIVE_PRIMARY and (
+            not isinstance(capacity_report_raw, AuditReport)
+            or not isinstance(capacity_hash_raw, str)
+            or not capacity_hash_raw
+        ):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "LIVE_PRIMARY capacity audit artifact/hash is required before generic audit",
+                blocking=True,
+            )
+        capacity_report = (
+            capacity_report_raw
+            if isinstance(capacity_report_raw, AuditReport)
+            else None
+        )
+        capacity_hash = (
+            capacity_hash_raw
+            if isinstance(capacity_hash_raw, str) and capacity_hash_raw
+            else None
+        )
 
         try:
             effective_config = _effective_impact_config(
@@ -113,6 +136,12 @@ def generic_audit_adapter(
             selected_methods=selected_methods,
             beta_result=beta_result,
             wacc_result=wacc_result,
+            external_guardrail_findings=(
+                capacity_report.findings if capacity_report is not None else ()
+            ),
+            external_guardrail_hashes=(
+                (capacity_hash,) if capacity_hash is not None else ()
+            ),
         )
         common_outputs = {
             "decision_impact_result": impact,

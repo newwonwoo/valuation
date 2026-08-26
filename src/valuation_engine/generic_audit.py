@@ -57,6 +57,8 @@ def audit_generic_intrinsic(
     selected_methods: tuple[str, ...] = (),
     beta_result: LiveBetaStageResult | None = None,
     wacc_result: LiveWACCStageResult | None = None,
+    external_guardrail_findings: tuple[AuditFinding, ...] = (),
+    external_guardrail_hashes: tuple[str, ...] = (),
 ) -> GenericAuditResult:
     findings: list[AuditFinding] = []
 
@@ -284,6 +286,12 @@ def audit_generic_intrinsic(
         )
     )
 
+    if not all(isinstance(item, AuditFinding) for item in external_guardrail_findings):
+        raise TypeError("external_guardrail_findings must contain AuditFinding")
+    if not all(isinstance(item, str) and item for item in external_guardrail_hashes):
+        raise TypeError("external_guardrail_hashes must contain non-empty strings")
+    findings.extend(external_guardrail_findings)
+
     report = AuditReport(tuple(findings))
     payload = "\n".join(
         [
@@ -292,6 +300,7 @@ def audit_generic_intrinsic(
             compiled.assumption_set_hash,
             scenario_set.scenario_set_hash,
             valuation.valuation_hash,
+            *external_guardrail_hashes,
         ]
         + [f"{item.check}|{item.passed}|{item.blocking}|{item.detail}" for item in report.findings]
     )

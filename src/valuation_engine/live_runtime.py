@@ -5,6 +5,21 @@ from pathlib import Path
 from typing import Callable, Mapping
 
 from .audit_adapter import generic_audit_adapter
+from .capacity_commitment import (
+    CapacityCommitmentLoader,
+    capacity_commitment_gate_adapter,
+)
+from .capacity_consumption import (
+    CapacityBridgeConsumptionLoader,
+    capacity_bridge_consumption_gate_adapter,
+)
+from .capacity_runtime import (
+    capacity_audit_adapter,
+    capacity_consistency_gate_adapter,
+    capacity_per_binding_adapter,
+    capacity_scenario_binding_adapter,
+    capacity_valuation_binding_adapter,
+)
 from .collection_plan import (
     CollectorCapability,
     CollectionTask,
@@ -179,6 +194,8 @@ class LivePrimaryProviders:
     bridge_analyst: BridgeAnalyst
     evaluator_registry_loader: RegistryLoader
     valuation_plan_inputs_loader: ValuationPlanInputsLoader
+    capacity_commitment_loader: CapacityCommitmentLoader | None = None
+    capacity_bridge_consumption_loader: CapacityBridgeConsumptionLoader | None = None
     funding_scanner: FundingScanner | None = None
     research_recovery_adapter: StageAdapter | None = None
     beta_loader: BetaUniverseLoader | None = None
@@ -226,6 +243,7 @@ class LivePrimaryRuntimeConfig:
     scenario_binding_spec: ScenarioBindingSpec
     providers: LivePrimaryProviders
     method_choices: tuple[SegmentMethodChoice, ...] = ()
+    capacity_core_scenario_id: str | None = None
     market_currency: str | None = None
     stage_registry_path: str | Path = (
         _REPO_ROOT / "config" / "control_plane_stage_registry.yaml"
@@ -425,6 +443,9 @@ def build_live_primary_adapters(
         load_company_state_adapter(state_root=state_root),
         load_research_learning_adapter(store=learning_store),
     )
+    capacity_commitment = capacity_commitment_gate_adapter(
+        loader=providers.capacity_commitment_loader
+    )
 
     funding = conditional_funding_adapter(
         live_upstream_funding_adapter(scanner=providers.funding_scanner)
@@ -446,7 +467,11 @@ def build_live_primary_adapters(
         label="WACC",
     )
 
-    scenario_chain: list[StageAdapter] = []
+    scenario_chain: list[StageAdapter] = [
+        capacity_bridge_consumption_gate_adapter(
+            loader=providers.capacity_bridge_consumption_loader
+        )
+    ]
     if providers.calibration_loader is not None:
         cohort = config.scenario_binding_spec.calibration_cohort_key
         if not cohort:
@@ -460,6 +485,11 @@ def build_live_primary_adapters(
             )
         )
     scenario_chain.append(scenario_build_adapter())
+    scenario_chain.append(
+        capacity_scenario_binding_adapter(
+            core_scenario_id=config.capacity_core_scenario_id
+        )
+    )
     method_intent = valuation_method_intent_adapter(
         capability_registry=capability_registry,
         method_choices=config.method_choices,
@@ -471,12 +501,16 @@ def build_live_primary_adapters(
             plan_loader=_valuation_plan_loader(config, capability_registry),
         ),
         dcf_consistency_fingerprint_adapter(providers.dcf_fingerprint_loader),
+        capacity_valuation_binding_adapter(),
     )
 
-    per = conditional_warranted_per_adapter(
-        live_hierarchical_warranted_per_adapter(loader=providers.per_loader)
-        if providers.per_loader is not None
-        else None
+    per = chain_stage_adapters(
+        conditional_warranted_per_adapter(
+            live_hierarchical_warranted_per_adapter(loader=providers.per_loader)
+            if providers.per_loader is not None
+            else None
+        ),
+        capacity_per_binding_adapter(),
     )
 
     street_load = (
@@ -496,8 +530,11 @@ def build_live_primary_adapters(
     red_team = recoverable_red_team_adapter(
         blind_red_team_adapter(officer=providers.red_team_officer)
     )
-    bridge = recovery_aware_bridge_adapter(
-        evidence_to_assumption_bridge_adapter(analyst=providers.bridge_analyst)
+    bridge = chain_stage_adapters(
+        capacity_commitment,
+        recovery_aware_bridge_adapter(
+            evidence_to_assumption_bridge_adapter(analyst=providers.bridge_analyst)
+        ),
     )
 
     return {
@@ -544,14 +581,18 @@ def build_live_primary_adapters(
         "WACC_VALIDATION": wacc,
         "DETERMINISTIC_VALUATION": valuation,
         "HIERARCHICAL_WARRANTED_PER": per,
-        "DCF_PER_ASSUMPTION_CONSISTENCY_GATE": (
-            dcf_per_consistency_gate_adapter()
+        "DCF_PER_ASSUMPTION_CONSISTENCY_GATE": chain_stage_adapters(
+            dcf_per_consistency_gate_adapter(),
+            capacity_consistency_gate_adapter(),
         ),
         "CROSS_METHOD_DOUBLE_COUNT_AUDIT": cross_method_double_count_adapter(),
         "PROBABILITY_DISTRIBUTION_ANALYSIS": probability_distribution_adapter(),
-        "AUDIT_GATE": generic_audit_adapter(
-            impact_config=config.impact_config,
-            unit_contract_registry=effective_unit_contract_registry,
+        "AUDIT_GATE": chain_stage_adapters(
+            capacity_audit_adapter(),
+            generic_audit_adapter(
+                impact_config=config.impact_config,
+                unit_contract_registry=effective_unit_contract_registry,
+            ),
         ),
         "STREET_REFERENCE_LOAD": street_load,
         "STREET_GAP_ANALYZER": street_gap_analyzer_adapter(),
