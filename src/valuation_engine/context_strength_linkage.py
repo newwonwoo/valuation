@@ -36,7 +36,7 @@ def _validate_text_tuple(
         raise ValueError(f"{field_name} requires at least one item")
     for value in values:
         _validate_text(value, field_name)
-    if len(values) != len(set(values))):
+    if len(values) != len(set(values)):
         raise ValueError(f"{field_name} must not contain duplicates")
 
 
