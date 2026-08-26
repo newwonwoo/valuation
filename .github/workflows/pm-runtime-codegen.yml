@@ -5,6 +5,7 @@ on:
     branches: [agent/runtime-orchestration-hardening]
     paths:
       - scripts/pm_runtime_codegen.py
+      - scripts/pm_runtime_testfix_codegen.py
       - .github/workflows/pm-runtime-codegen.yml
 
 permissions:
@@ -21,7 +22,9 @@ jobs:
       - name: Install
         run: python -m pip install -e '.[dev]'
       - name: Apply deterministic integration patch
-        run: python scripts/pm_runtime_codegen.py
+        run: |
+          python scripts/pm_runtime_codegen.py
+          python scripts/pm_runtime_testfix_codegen.py
       - name: Runtime and full regression
         run: pytest -q
       - name: Commit generated integration
