@@ -70,6 +70,7 @@ def test_generic_primary_evidence_uses_collected_batch_fingerprint_as_revision()
         source_ref="https://example.com/filing#revenue",
         source_grade="A",
         confidence=1.0,
+        segment="company",
     )
     ledger = EvidenceLedger()
     ledger.append(record)
@@ -122,6 +123,7 @@ def test_generic_primary_evidence_rejects_arbitrary_document_hash():
         source_ref="https://example.com/filing#revenue",
         source_grade="A",
         confidence=1.0,
+        segment="company",
     )
     ledger = EvidenceLedger()
     ledger.append(record)
@@ -162,7 +164,7 @@ def test_success_producer_refuses_existing_fixture_backed_full_live_run(tmp_path
     result = module.run_prism(module.runtime_config(tmp_path))
     assert result.completed
 
-    with pytest.raises(ValueError, match=r"not backed by absolute HTTP\(S\) provenance"):
+    with pytest.raises(ValueError, match="immutable source fingerprint"):
         serialize_live_company_success(
             result,
             company_id="OCI_HOLDINGS",
