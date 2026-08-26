@@ -55,7 +55,7 @@ jobs:
           (cd /tmp && /tmp/valuation-wheel-venv/bin/python "$GITHUB_WORKSPACE/scripts/validate_installed_wheel.py")
       - name: Remove bootstrap agent files
         run: >-
-          git rm --ignore-unmatch
+          git rm -f --ignore-unmatch
           .github/workflows/sanil-finalization-agent.yml
           scripts/finalize_sanil_live_primary.py
           scripts/patch_sanil_finalizer.py
