@@ -60,7 +60,7 @@
 | 9 | `EVIDENCE_LEDGER` | `pass` | NO | append-only EvidenceLedger validated and canonical runtime snapshot frozen |
 | 10 | `ROCKET_INSIGHT_SCAN` | `pass` | NO | live Rocket Insight scanner dispatch completed |
 | 11 | `UPSTREAM_FUNDING_SCAN` | `skipped_not_applicable` | NO | selected Industry DNA does not require a dedicated upstream funding scan |
-| 12 | `RESEARCHER_A` | `pass` | NO | LLM Intelligence Officer produced typed hypotheses/evidence requests without committing assumptions |
+| 12 | `RESEARCHER_A` | `pass` | NO | LLM Intelligence Officer produced typed hypotheses and an auditable environment-change/corporate-strength linkage decision without committing assumptions |
 | 13 | `BLIND_RED_TEAM_B` | `pass` | NO | Blind Red Team completed with no unresolved blocker |
 | 14 | `RESEARCH_LOOP` | `skipped_not_applicable` | NO | Blind Red Team left no unresolved blocking issue |
 | 15 | `EVIDENCE_TO_ASSUMPTION_BRIDGE` | `pass` | NO | no capacity_manufacturing segment requires Capacity Commitment Gate \| LLM Bridge proposals validated and converted to compiler requests; no assumptions committed |
@@ -86,6 +86,11 @@
 ## Persisted Research Report
 
 # Frozen Commodity Co PRISM Research & Valuation Report
+
+## LLM Insight Layer — Environment × Corporate Strength
+- Boundary: 이 영역은 외부 환경 변화와 기업의 기존 강점 사이의 비자명한 연결을 발견·반증하는 사고 계층이며, 밸류에이션 공식을 직접 변경하지 않습니다.
+- Status: NOT_APPLICABLE
+- Reason: This frozen acceptance fixture validates deterministic runtime integrity and does not assert an external-change investment thesis.
 
 ## Intrinsic Value
 - Base intrinsic: 70,000 KRW/share
