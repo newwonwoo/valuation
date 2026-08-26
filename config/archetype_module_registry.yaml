@@ -53,6 +53,15 @@ modules:
     - mix
     - unit_cost
     - expansion_capex
+    - expansion_land_control
+    - expansion_baseline_inclusion
+    - expansion_capacity_committed
+    - expansion_site_area
+    - expansion_capex_committed
+    - expansion_ramp_date
+    - expansion_equipment_commitment
+    - expansion_cancelled
+    - no_active_capacity_expansion
     normalization:
     - nameplate_vs_effective_capacity
     - utilization_definition

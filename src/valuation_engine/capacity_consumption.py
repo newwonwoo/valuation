@@ -366,7 +366,6 @@ def capacity_bridge_consumption_gate_adapter(
                 "no Core-inclusion capacity project requires bridge consumption",
                 {
                     "capacity_bridge_consumption_required": False,
-                    "capacity_commitment_assessment_hash": assessment.assessment_hash,
                 },
             )
         if loader is None:
