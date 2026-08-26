@@ -18,7 +18,11 @@ from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResul
 from .records import EvidenceSourceLayer, HypothesisRecord
 
 
-def _staff_context(context: OrchestratorContext) -> LLMStaffContext:
+def _staff_context(
+    context: OrchestratorContext,
+    *,
+    require_context_strength_linkage: bool = False,
+) -> LLMStaffContext:
     company = context.data.get("company")
     ticker = context.data.get("ticker")
     ledger = context.data.get("evidence_ledger")
@@ -59,18 +63,40 @@ def _staff_context(context: OrchestratorContext) -> LLMStaffContext:
         scanner_findings=scanner_findings,
         funding_scan_result=context.data.get("funding_scan_result"),
         capacity_commitment_assessment=capacity,
+        require_context_strength_linkage=require_context_strength_linkage,
     )
 
 
-def researcher_a_adapter(*, officer: IntelligenceOfficer) -> StageAdapter:
+def researcher_a_adapter(
+    *,
+    officer: IntelligenceOfficer,
+    require_context_strength_linkage: bool | None = None,
+) -> StageAdapter:
     def run(context: OrchestratorContext) -> StageExecutionResult:
         try:
-            staff = _staff_context(context)
+            linkage_required = (
+                context.data.get("module_requirement_plan") is not None
+                if require_context_strength_linkage is None
+                else require_context_strength_linkage
+            )
+            staff = _staff_context(
+                context,
+                require_context_strength_linkage=linkage_required,
+            )
             proposal = run_intelligence_officer(staff, officer)
             active_hypotheses = merge_hypothesis_context(
                 staff.prior_hypotheses,
                 proposal.hypotheses,
             )
+            decision = proposal.context_strength_linkage_decision
+            if decision is None:
+                linkage_status = "NOT_REQUIRED"
+                linkages = ()
+                not_applicable_reason = ""
+            else:
+                linkage_status = decision.status.value
+                linkages = decision.linkages
+                not_applicable_reason = decision.not_applicable_reason
         except Exception as exc:
             return StageExecutionResult(
                 StageStatus.BLOCKED,
@@ -79,12 +105,22 @@ def researcher_a_adapter(*, officer: IntelligenceOfficer) -> StageAdapter:
             )
         return StageExecutionResult(
             StageStatus.PASS,
-            "LLM Intelligence Officer produced typed hypotheses/evidence requests without committing assumptions",
+            (
+                "LLM Intelligence Officer produced typed hypotheses and an "
+                "auditable environment-change/corporate-strength linkage "
+                "decision without committing assumptions"
+            ),
             {
                 "intelligence_proposal": proposal,
                 "hypotheses": active_hypotheses,
                 "llm_requested_evidence": proposal.requested_evidence,
                 "scanner_reinforcements": proposal.scanner_reinforcements,
+                "context_strength_linkage_decision": decision,
+                "context_strength_linkages": linkages,
+                "context_strength_linkage_status": linkage_status,
+                "context_strength_linkage_not_applicable_reason": (
+                    not_applicable_reason
+                ),
             },
         )
 
