@@ -151,7 +151,9 @@ def _validate_success_fixture(
     traces = _require_traces(payload, company_id)
     trace_stages = tuple(str(row.get("stage") or "") for row in traces)
     if trace_stages != canonical_stages:
-        raise ValueError(f"READY fixture {company_id} must contain the exact canonical 33-stage sequence")
+        raise ValueError(
+            f"READY fixture {company_id} must contain the exact canonical 33-stage sequence"
+        )
     for row in traces:
         status = str(row.get("status") or "").casefold()
         if status not in _SUCCESS_STATUSES or bool(row.get("blocking")):
@@ -167,9 +169,7 @@ def _validate_success_fixture(
         "FINAL_REPORT",
     ):
         if str(by_stage[required_pass].get("status") or "").casefold() != "pass":
-            raise ValueError(
-                f"READY fixture {company_id} requires PASS at {required_pass}"
-            )
+            raise ValueError(f"READY fixture {company_id} requires PASS at {required_pass}")
 
     freeze_index = canonical_stages.index("INTRINSIC_VALUE_FREEZE")
     if not (
@@ -185,7 +185,9 @@ def _validate_success_fixture(
     hashes = payload.get("data_hashes")
     proofs = payload.get("hash_proofs")
     if not isinstance(token, dict) or not isinstance(hashes, dict) or not isinstance(proofs, dict):
-        raise ValueError(f"READY fixture {company_id} requires Freeze token, data hashes and hash proofs")
+        raise ValueError(
+            f"READY fixture {company_id} requires Freeze token, data hashes and hash proofs"
+        )
     if token.get("run_id") != run_id:
         raise ValueError(f"READY fixture {company_id} Freeze token run_id mismatch")
     for field in _HASH_FIELDS:
@@ -212,7 +214,9 @@ def _validate_success_fixture(
     if not _HASH64.fullmatch(token_hash):
         raise ValueError(f"READY fixture {company_id} has invalid Freeze token_hash")
     expected_token_hash = sha256(
-        "|".join((run_id, *(str(token[field]).casefold() for field in _HASH_FIELDS))).encode("utf-8")
+        "|".join(
+            (run_id, *(str(token[field]).casefold() for field in _HASH_FIELDS))
+        ).encode("utf-8")
     ).hexdigest()
     if token_hash != expected_token_hash:
         raise ValueError(f"READY fixture {company_id} Freeze token_hash mismatch")
@@ -230,24 +234,25 @@ def _validate_success_fixture(
             raise ValueError(f"READY fixture {company_id} source document lineage is incomplete")
         parsed = urlparse(source_ref)
         if parsed.scheme not in {"http", "https"} or not parsed.netloc:
-            raise ValueError(f"READY fixture {company_id} source document must use absolute HTTP(S) provenance")
+            raise ValueError(
+                f"READY fixture {company_id} source document must use absolute HTTP(S) provenance"
+            )
         document_hash = str(row.get("document_hash") or "").casefold()
         if not _HASH64.fullmatch(document_hash):
             raise ValueError(f"READY fixture {company_id} source document hash is invalid")
         if source_ref in source_by_ref:
-            raise ValueError(f"READY fixture {company_id} contains duplicate source document refs")
+            raise ValueError(
+                f"READY fixture {company_id} contains duplicate source document refs"
+            )
         source_by_ref[source_ref] = document_hash
 
-    _validate_evidence_revision_bindings(
-        company_id,
-        payload,
-        proofs,
-        source_by_ref,
-    )
+    _validate_evidence_revision_bindings(company_id, payload, proofs, source_by_ref)
 
     market_compare = payload.get("market_compare")
     if not isinstance(market_compare, dict) or market_compare.get("phase") != "post_freeze":
-        raise ValueError(f"READY fixture {company_id} requires explicit post-freeze market comparison")
+        raise ValueError(
+            f"READY fixture {company_id} requires explicit post-freeze market comparison"
+        )
     if market_compare.get("freeze_token_id") != token_hash:
         raise ValueError(f"READY fixture {company_id} market comparison Freeze token mismatch")
     if market_compare.get("payload") in (None, {}, []):
@@ -262,13 +267,13 @@ def _validate_evidence_revision_bindings(
     proofs: dict[str, Any],
     source_by_ref: dict[str, str],
 ) -> None:
-    active_ids = payload.get("active_evidence_ids")
+    supplied_active_ids = payload.get("active_evidence_ids")
     bindings = payload.get("evidence_revision_bindings")
     if (
-        not isinstance(active_ids, list)
-        or not active_ids
-        or not all(isinstance(item, str) and item for item in active_ids)
-        or len(active_ids) != len(set(active_ids))
+        not isinstance(supplied_active_ids, list)
+        or not supplied_active_ids
+        or not all(isinstance(item, str) and item for item in supplied_active_ids)
+        or len(supplied_active_ids) != len(set(supplied_active_ids))
     ):
         raise ValueError(f"READY fixture {company_id} requires unique active_evidence_ids")
     if not isinstance(bindings, list) or not bindings:
@@ -276,39 +281,135 @@ def _validate_evidence_revision_bindings(
 
     ledger_proof = proofs.get("ledger_snapshot_hash")
     ledger_rows = ledger_proof.get("payload") if isinstance(ledger_proof, dict) else None
-    if not isinstance(ledger_rows, list):
-        raise ValueError(f"READY fixture {company_id} ledger proof must expose canonical Evidence rows")
-    ledger_by_id = {
-        str(row.get("id") or ""): row
+    if not isinstance(ledger_rows, list) or not all(isinstance(row, dict) for row in ledger_rows):
+        raise ValueError(
+            f"READY fixture {company_id} ledger proof must expose canonical Evidence rows"
+        )
+    ledger_by_id: dict[str, dict[str, Any]] = {}
+    for row in ledger_rows:
+        evidence_id = str(row.get("id") or "")
+        if not evidence_id or evidence_id in ledger_by_id:
+            raise ValueError(
+                f"READY fixture {company_id} ledger proof has duplicate/missing Evidence IDs"
+            )
+        ledger_by_id[evidence_id] = row
+
+    superseded = {
+        str(row.get("supersedes_id"))
         for row in ledger_rows
-        if isinstance(row, dict) and str(row.get("id") or "")
+        if row.get("supersedes_id")
     }
-    if not set(active_ids).issubset(ledger_by_id):
-        raise ValueError(f"READY fixture {company_id} active Evidence is missing from ledger proof")
+    derived_active_ids = {
+        evidence_id
+        for evidence_id, row in ledger_by_id.items()
+        if str(row.get("status") or "").casefold() == "active"
+        and evidence_id not in superseded
+    }
+    if not derived_active_ids:
+        raise ValueError(f"READY fixture {company_id} ledger proof has no active Evidence")
+    if set(supplied_active_ids) != derived_active_ids:
+        raise ValueError(
+            f"READY fixture {company_id} active Evidence IDs do not match frozen ledger proof"
+        )
+
+    source_proof = proofs.get("source_snapshot_hash")
+    source_payload = source_proof.get("payload") if isinstance(source_proof, dict) else None
+    if not isinstance(source_payload, dict):
+        raise ValueError(
+            f"READY fixture {company_id} source snapshot proof must expose canonical payload"
+        )
+    source_evidence = source_payload.get("evidence")
+    if not isinstance(source_evidence, list):
+        raise ValueError(
+            f"READY fixture {company_id} source snapshot proof must include Evidence rows"
+        )
+    if source_evidence != sorted(ledger_rows, key=lambda row: str(row.get("id") or "")):
+        raise ValueError(
+            f"READY fixture {company_id} source snapshot Evidence does not match ledger proof"
+        )
+
+    batch_revision_by_evidence: dict[str, str] = {}
+    batches = source_payload.get("batches")
+    if not isinstance(batches, list):
+        raise ValueError(f"READY fixture {company_id} source snapshot proof requires batches")
+    for batch in batches:
+        if not isinstance(batch, dict):
+            raise ValueError(f"READY fixture {company_id} source snapshot batch must be mapping")
+        revision = str(batch.get("source_fingerprint") or "").casefold()
+        if not _HASH64.fullmatch(revision):
+            raise ValueError(
+                f"READY fixture {company_id} source snapshot batch has invalid fingerprint"
+            )
+        evidence_ids = batch.get("evidence_ids")
+        if not isinstance(evidence_ids, list) or not all(
+            isinstance(item, str) and item for item in evidence_ids
+        ):
+            raise ValueError(
+                f"READY fixture {company_id} source snapshot batch requires Evidence IDs"
+            )
+        for evidence_id in evidence_ids:
+            existing = batch_revision_by_evidence.get(evidence_id)
+            if existing is not None and existing != revision:
+                raise ValueError(
+                    f"READY fixture {company_id} Evidence {evidence_id} has conflicting source revisions"
+                )
+            batch_revision_by_evidence[evidence_id] = revision
 
     binding_by_id: dict[str, dict[str, Any]] = {}
     for binding in bindings:
         if not isinstance(binding, dict):
-            raise ValueError(f"READY fixture {company_id} Evidence revision binding must be mapping")
+            raise ValueError(
+                f"READY fixture {company_id} Evidence revision binding must be mapping"
+            )
         evidence_id = str(binding.get("evidence_id") or "")
         source_ref = str(binding.get("source_ref") or "")
         revision_hash = str(binding.get("revision_hash") or "").casefold()
         if not evidence_id or evidence_id in binding_by_id:
-            raise ValueError(f"READY fixture {company_id} Evidence revision bindings contain duplicate/missing IDs")
-        if not _HASH64.fullmatch(revision_hash):
-            raise ValueError(f"READY fixture {company_id} Evidence {evidence_id} has invalid revision hash")
-        if source_by_ref.get(source_ref) != revision_hash:
             raise ValueError(
-                f"READY fixture {company_id} Evidence {evidence_id} revision is not bound to source document lineage"
+                f"READY fixture {company_id} Evidence revision bindings contain duplicate/missing IDs"
             )
-        ledger_ref = str(ledger_by_id.get(evidence_id, {}).get("source_ref") or "").split("#", 1)[0]
+        if evidence_id not in derived_active_ids:
+            raise ValueError(
+                f"READY fixture {company_id} Evidence binding references non-active {evidence_id}"
+            )
+        if not _HASH64.fullmatch(revision_hash):
+            raise ValueError(
+                f"READY fixture {company_id} Evidence {evidence_id} has invalid revision hash"
+            )
+
+        ledger_row = ledger_by_id[evidence_id]
+        ledger_ref = str(ledger_row.get("source_ref") or "").split("#", 1)[0]
         if ledger_ref != source_ref:
             raise ValueError(
                 f"READY fixture {company_id} Evidence {evidence_id} source_ref does not match ledger proof"
             )
+        explicit_revision = str(ledger_row.get("source_revision") or "").casefold()
+        if explicit_revision:
+            if not _HASH64.fullmatch(explicit_revision):
+                raise ValueError(
+                    f"READY fixture {company_id} Evidence {evidence_id} has invalid frozen source_revision"
+                )
+            expected_revision = explicit_revision
+        else:
+            expected_revision = batch_revision_by_evidence.get(evidence_id, "")
+            if not _HASH64.fullmatch(expected_revision):
+                raise ValueError(
+                    f"READY fixture {company_id} Evidence {evidence_id} lacks a frozen source revision"
+                )
+        if revision_hash != expected_revision:
+            raise ValueError(
+                f"READY fixture {company_id} Evidence {evidence_id} binding does not match frozen source revision"
+            )
+        if source_by_ref.get(source_ref) != expected_revision:
+            raise ValueError(
+                f"READY fixture {company_id} Evidence {evidence_id} revision is not bound to source document lineage"
+            )
         binding_by_id[evidence_id] = binding
-    if set(binding_by_id) != set(active_ids):
-        raise ValueError(f"READY fixture {company_id} every active Evidence requires exactly one revision binding")
+
+    if set(binding_by_id) != derived_active_ids:
+        raise ValueError(
+            f"READY fixture {company_id} every active Evidence requires exactly one revision binding"
+        )
 
 
 def _validate_adversarial_fixture(
@@ -337,7 +438,9 @@ def _validate_adversarial_fixture(
     last = traces[-1]
     last_status = str(last.get("status") or "").casefold()
     if last_status not in _BLOCKING_STATUSES or not bool(last.get("blocking")):
-        raise ValueError(f"adversarial fixture {company_id} must terminate on a blocking stage")
+        raise ValueError(
+            f"adversarial fixture {company_id} must terminate on a blocking stage"
+        )
 
     case = payload.get("adversarial_case")
     if not isinstance(case, dict) or not str(case.get("id") or ""):
@@ -346,7 +449,9 @@ def _validate_adversarial_fixture(
     reason_fragment = str(case.get("expected_reason_contains") or "")
     if expected_stage != str(last.get("stage") or ""):
         raise ValueError(f"adversarial fixture {company_id} blocked at unexpected stage")
-    if not reason_fragment or not any(reason_fragment in str(reason) for reason in blocked_reasons):
+    if not reason_fragment or not any(
+        reason_fragment in str(reason) for reason in blocked_reasons
+    ):
         raise ValueError(f"adversarial fixture {company_id} does not prove expected blocker")
 
 
@@ -385,7 +490,9 @@ def _load_hashed_fixture(path: Path, expected_hash: str, company_id: str) -> dic
 
 def _require_traces(payload: dict[str, Any], company_id: str) -> list[dict[str, Any]]:
     traces = payload.get("stage_traces")
-    if not isinstance(traces, list) or not traces or not all(isinstance(row, dict) for row in traces):
+    if not isinstance(traces, list) or not traces or not all(
+        isinstance(row, dict) for row in traces
+    ):
         raise ValueError(f"fixture {company_id} requires serialized stage traces")
     return traces
 

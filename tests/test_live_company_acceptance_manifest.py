@@ -39,6 +39,23 @@ def _write_fixture(path, payload):
     return sha256(raw).hexdigest()
 
 
+def _refresh_runtime_hashes(fixture):
+    proofs = fixture["hash_proofs"]
+    for field in HASH_FIELDS:
+        digest = recompute_artifact_hash_proof(proofs[field])
+        fixture["data_hashes"][field] = digest
+        fixture["freeze_token"][field] = digest
+    run_id = fixture["run_id"]
+    token_hash = sha256(
+        "|".join(
+            (run_id, *(fixture["freeze_token"][field] for field in HASH_FIELDS))
+        ).encode("utf-8")
+    ).hexdigest()
+    fixture["freeze_token"]["token_hash"] = token_hash
+    fixture["market_compare"]["freeze_token_id"] = token_hash
+    return fixture
+
+
 def _success_fixture(company_id):
     source_ref = "https://example.com/primary-document"
     source_revision = "a" * 64
@@ -47,14 +64,31 @@ def _success_fixture(company_id):
         {
             "id": evidence_id,
             "source_ref": f"{source_ref}#locator",
+            "status": "active",
+            "supersedes_id": None,
+            "source_revision": source_revision,
         }
     ]
+    source_payload = {
+        "target_id": company_id,
+        "batches": [
+            {
+                "source_id": "PRIMARY",
+                "checked_at": "2026-08-25T10:00:00+09:00",
+                "source_fingerprint": source_revision,
+                "document_ids": ["DOC-1"],
+                "evidence_ids": [evidence_id],
+            }
+        ],
+        "evidence": [dict(row) for row in ledger_payload],
+    }
     proofs = {
         field: {"payload": {"company_id": company_id, "field": field, "value": "proof"}}
         for field in HASH_FIELDS
     }
     proofs["ledger_snapshot_hash"] = {"payload": ledger_payload}
-    hashes = {field: _stable_hash(proofs[field]["payload"]) for field in HASH_FIELDS}
+    proofs["source_snapshot_hash"] = {"payload": source_payload}
+    hashes = {field: recompute_artifact_hash_proof(proofs[field]) for field in HASH_FIELDS}
     run_id = f"RUN-{company_id}"
     token_hash = sha256(
         "|".join((run_id, *(hashes[field] for field in HASH_FIELDS))).encode("utf-8")
@@ -141,6 +175,16 @@ def _ready_manifest(tmp_path, company_id="OCI_HOLDINGS"):
     return root, payload, row, success, blocked
 
 
+def _validate_one_ready(root, payload, row, success, blocked, fixture):
+    row["success_fixture_sha256"] = _write_fixture(success, fixture)
+    row["adversarial_fixture_sha256"] = _write_fixture(
+        blocked, _blocked_fixture("OCI_HOLDINGS")
+    )
+    path = root / "acceptance.yaml"
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    return validate_live_company_acceptance(path, repo_root=root)
+
+
 def test_current_company_acceptance_manifest_tracks_all_required_real_companies():
     summary = validate_live_company_acceptance(MANIFEST, repo_root=ROOT)
     assert summary.ready == ()
@@ -171,20 +215,21 @@ def test_ready_company_requires_both_success_and_adversarial_artifacts(tmp_path)
 
 def test_ready_company_validates_full_hash_chain_and_adversarial_block(tmp_path):
     root, payload, row, success, blocked = _ready_manifest(tmp_path)
-    row["success_fixture_sha256"] = _write_fixture(success, _success_fixture("OCI_HOLDINGS"))
-    row["adversarial_fixture_sha256"] = _write_fixture(blocked, _blocked_fixture("OCI_HOLDINGS"))
-    path = root / "acceptance.yaml"
-    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
-
-    summary = validate_live_company_acceptance(path, repo_root=root)
+    summary = _validate_one_ready(
+        root, payload, row, success, blocked, _success_fixture("OCI_HOLDINGS")
+    )
     assert summary.ready == ("OCI_HOLDINGS",)
     assert "OCI_HOLDINGS" not in summary.blocked
 
 
 def test_tampered_success_artifact_fails_file_hash_before_promotion(tmp_path):
     root, payload, row, success, blocked = _ready_manifest(tmp_path)
-    row["success_fixture_sha256"] = _write_fixture(success, _success_fixture("OCI_HOLDINGS"))
-    row["adversarial_fixture_sha256"] = _write_fixture(blocked, _blocked_fixture("OCI_HOLDINGS"))
+    row["success_fixture_sha256"] = _write_fixture(
+        success, _success_fixture("OCI_HOLDINGS")
+    )
+    row["adversarial_fixture_sha256"] = _write_fixture(
+        blocked, _blocked_fixture("OCI_HOLDINGS")
+    )
     success.write_text(success.read_text(encoding="utf-8") + "\n", encoding="utf-8")
     path = root / "acceptance.yaml"
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
@@ -198,7 +243,9 @@ def test_tampered_freeze_token_hash_fails_even_when_market_reference_and_integri
     fixture["freeze_token"]["token_hash"] = "c" * 64
     fixture["market_compare"]["freeze_token_id"] = "c" * 64
     row["success_fixture_sha256"] = _write_fixture(success, fixture)
-    row["adversarial_fixture_sha256"] = _write_fixture(blocked, _blocked_fixture("OCI_HOLDINGS"))
+    row["adversarial_fixture_sha256"] = _write_fixture(
+        blocked, _blocked_fixture("OCI_HOLDINGS")
+    )
     path = root / "acceptance.yaml"
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
     with pytest.raises(ValueError, match="Freeze token_hash mismatch"):
@@ -210,11 +257,87 @@ def test_tampered_evidence_revision_binding_fails_even_with_rewritten_integrity_
     fixture = _success_fixture("OCI_HOLDINGS")
     fixture["evidence_revision_bindings"][0]["revision_hash"] = "d" * 64
     row["success_fixture_sha256"] = _write_fixture(success, fixture)
-    row["adversarial_fixture_sha256"] = _write_fixture(blocked, _blocked_fixture("OCI_HOLDINGS"))
+    row["adversarial_fixture_sha256"] = _write_fixture(
+        blocked, _blocked_fixture("OCI_HOLDINGS")
+    )
     path = root / "acceptance.yaml"
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
-    with pytest.raises(ValueError, match="revision is not bound to source document lineage"):
+    with pytest.raises(ValueError, match="binding does not match frozen source revision"):
         validate_live_company_acceptance(path, repo_root=root)
+
+
+def test_artifact_cannot_omit_an_active_ledger_row_from_bindings(tmp_path):
+    root, payload, row, success, blocked = _ready_manifest(tmp_path)
+    fixture = _success_fixture("OCI_HOLDINGS")
+    second = {
+        "id": "E:OCI_HOLDINGS:SECOND",
+        "source_ref": "https://example.com/primary-document#second",
+        "status": "active",
+        "supersedes_id": None,
+        "source_revision": "a" * 64,
+    }
+    fixture["hash_proofs"]["ledger_snapshot_hash"]["payload"].append(second)
+    source_payload = fixture["hash_proofs"]["source_snapshot_hash"]["payload"]
+    source_payload["evidence"].append(dict(second))
+    source_payload["evidence"] = sorted(source_payload["evidence"], key=lambda item: item["id"])
+    source_payload["batches"][0]["evidence_ids"].append(second["id"])
+    _refresh_runtime_hashes(fixture)
+    row["success_fixture_sha256"] = _write_fixture(success, fixture)
+    row["adversarial_fixture_sha256"] = _write_fixture(
+        blocked, _blocked_fixture("OCI_HOLDINGS")
+    )
+    path = root / "acceptance.yaml"
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    with pytest.raises(ValueError, match="active Evidence IDs do not match frozen ledger proof"):
+        validate_live_company_acceptance(path, repo_root=root)
+
+
+def test_explicit_ledger_source_revision_overrides_tampered_binding_and_batch(tmp_path):
+    root, payload, row, success, blocked = _ready_manifest(tmp_path)
+    fixture = _success_fixture("OCI_HOLDINGS")
+    fixture["source_documents"][0]["document_hash"] = "c" * 64
+    fixture["evidence_revision_bindings"][0]["revision_hash"] = "c" * 64
+    fixture["hash_proofs"]["source_snapshot_hash"]["payload"]["batches"][0][
+        "source_fingerprint"
+    ] = "c" * 64
+    _refresh_runtime_hashes(fixture)
+    row["success_fixture_sha256"] = _write_fixture(success, fixture)
+    row["adversarial_fixture_sha256"] = _write_fixture(
+        blocked, _blocked_fixture("OCI_HOLDINGS")
+    )
+    path = root / "acceptance.yaml"
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    with pytest.raises(ValueError, match="binding does not match frozen source revision"):
+        validate_live_company_acceptance(path, repo_root=root)
+
+
+def test_superseded_active_status_row_is_not_derived_as_active(tmp_path):
+    root, payload, row, success, blocked = _ready_manifest(tmp_path)
+    fixture = _success_fixture("OCI_HOLDINGS")
+    old = fixture["hash_proofs"]["ledger_snapshot_hash"]["payload"][0]
+    new = {
+        "id": "E:OCI_HOLDINGS:NEW",
+        "source_ref": old["source_ref"],
+        "status": "active",
+        "supersedes_id": old["id"],
+        "source_revision": "a" * 64,
+    }
+    fixture["hash_proofs"]["ledger_snapshot_hash"]["payload"].append(new)
+    source_payload = fixture["hash_proofs"]["source_snapshot_hash"]["payload"]
+    source_payload["evidence"].append(dict(new))
+    source_payload["evidence"] = sorted(source_payload["evidence"], key=lambda item: item["id"])
+    source_payload["batches"][0]["evidence_ids"].append(new["id"])
+    fixture["active_evidence_ids"] = [new["id"]]
+    fixture["evidence_revision_bindings"] = [
+        {
+            "evidence_id": new["id"],
+            "source_ref": "https://example.com/primary-document",
+            "revision_hash": "a" * 64,
+        }
+    ]
+    _refresh_runtime_hashes(fixture)
+    summary = _validate_one_ready(root, payload, row, success, blocked, fixture)
+    assert summary.ready == ("OCI_HOLDINGS",)
 
 
 def test_blocked_company_requires_explicit_blocker(tmp_path):
