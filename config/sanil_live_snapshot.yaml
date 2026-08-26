@@ -21,10 +21,10 @@ sources:
     document_hash: c4cf772118095b19217d18efc26d6da3aae366c768720a45f8429c3001ece26c
     published_at: '2026-08-07T09:00:00+09:00'
   risk_snapshot:
-    source_id: PRISM_RISK_SNAPSHOT
-    source_ref: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#risk
-    document_id: SANIL_RISK_SNAPSHOT_20260825
-    document_hash: ecc23df876c056f9b1bf084c2661e797f9208545614702e012c3b26bed40aeb0
+    source_id: PRISM_EXTERNAL_RISK_SNAPSHOT
+    source_ref: https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md
+    document_id: SANIL_RISK_SOURCE_REGISTER_20260825
+    document_hash: 2be1c58a95cccd92fc546f65125f17da728d0849bc432279363221d15e229620
     published_at: '2026-08-25T18:00:00+09:00'
   underwriting:
     source_id: PRISM_UNDERWRITING_MODEL
@@ -65,9 +65,9 @@ capacity_project:
     ramp relative to the frozen 2025 capacity baseline. Exact incremental revenue capacity
     is not disclosed, so the Core path is bounded rather than zero-filled.
 risk:
-  benchmark_id: KOSPI
-  return_frequency: daily
-  estimation_window_months: 24
+  benchmark_id: PROVIDER_5Y_MARKET_BETA
+  return_frequency: provider_5y
+  estimation_window_months: 60
   as_of: '2026-08-25'
   tax_rate: 0.22
   target_equity_weight: 0.98
@@ -79,17 +79,57 @@ risk:
   pre_tax_cost_of_debt: 0.04690
   peers:
     L1_BROAD_SECTOR:
-      - {peer_id: KR_INDUSTRIALS_LOW_FIXED_COST, levered_beta: 0.90, debt_to_equity: 0.20, beta_standard_error: 0.15}
-      - {peer_id: KR_INDUSTRIALS_HIGH_FIXED_COST, levered_beta: 1.30, debt_to_equity: 0.40, beta_standard_error: 0.20}
+      - peer_id: LS_ELECTRIC_010120
+        levered_beta: 1.83
+        debt_to_equity: 0.69
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/010120/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+      - peer_id: HYOSUNG_HEAVY_INDUSTRIES_298040
+        levered_beta: 2.16
+        debt_to_equity: 0.25
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/298040/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
     L2_INDUSTRY:
-      - {peer_id: LS_ELECTRIC, levered_beta: 1.05, debt_to_equity: 0.20, beta_standard_error: 0.16}
-      - {peer_id: HYOSUNG_HEAVY_INDUSTRIES, levered_beta: 1.30, debt_to_equity: 0.30, beta_standard_error: 0.20}
+      - peer_id: HD_HYUNDAI_ELECTRIC_267260
+        levered_beta: 1.17
+        debt_to_equity: 0.08
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/267260/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+      - peer_id: ILJIN_ELECTRIC_103590
+        levered_beta: 1.81
+        debt_to_equity: 0.22
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/103590/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
     L3_RISK_DRIVER_SUBINDUSTRY:
-      - {peer_id: HD_HYUNDAI_ELECTRIC, levered_beta: 1.20, debt_to_equity: 0.15, beta_standard_error: 0.17}
-      - {peer_id: ILJIN_ELECTRIC, levered_beta: 1.25, debt_to_equity: 0.25, beta_standard_error: 0.18}
+      - peer_id: TAIHAN_CABLE_001440
+        levered_beta: 2.18
+        debt_to_equity: 0.67
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/001440/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+      - peer_id: CHERYONG_ELECTRIC_033100
+        levered_beta: 1.24
+        debt_to_equity: 0.08
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/kosdaq/033100/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
     L4_ECONOMIC_TWINS:
-      - {peer_id: EXPORT_TRANSFORMER_TWIN_A, levered_beta: 1.12, debt_to_equity: 0.10, beta_standard_error: 0.16}
-      - {peer_id: EXPORT_TRANSFORMER_TWIN_B, levered_beta: 1.18, debt_to_equity: 0.12, beta_standard_error: 0.17}
+      - peer_id: KWANGMYUNG_ELECTRIC_017040
+        levered_beta: 1.25
+        debt_to_equity: 0.21
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/017040/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+      - peer_id: CHEIL_ELECTRIC_199820
+        levered_beta: 1.58
+        debt_to_equity: 0.22
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/kosdaq/199820/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
 scenarios:
   Down:
     fcff_krw_billion: [145, 160, 180, 200, 220]
