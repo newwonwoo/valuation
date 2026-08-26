@@ -1,0 +1,148 @@
+version: 1
+cutoff: '2026-08-25'
+company:
+  target_id: KR:DART:00366438
+  legal_name: 산일전기 주식회사
+  ticker: '062040'
+  jurisdiction: KR
+  corp_code: '00366438'
+  segment_id: power_transformers
+sources:
+  annual_report:
+    source_id: KR_OPENDART
+    source_ref: https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm
+    document_id: SANIL_2025_ANNUAL_REPORT
+    document_hash: 908bc31f443ce8c972d104ffa83ab71ec763593ca44c028b2a496d4ce32e58d8
+    published_at: '2026-03-17T18:00:00+09:00'
+  q2_ir:
+    source_id: SANIL_IR
+    source_ref: https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002&mode=view&page=1&s_cate=&s_keyword=&s_type=
+    document_id: SANIL_2026_Q2_IR
+    document_hash: c4cf772118095b19217d18efc26d6da3aae366c768720a45f8429c3001ece26c
+    published_at: '2026-08-07T09:00:00+09:00'
+  risk_snapshot:
+    source_id: PRISM_EXTERNAL_RISK_SNAPSHOT
+    source_ref: https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md
+    document_id: SANIL_RISK_SOURCE_REGISTER_20260825
+    document_hash: 2be1c58a95cccd92fc546f65125f17da728d0849bc432279363221d15e229620
+    published_at: '2026-08-25T18:00:00+09:00'
+  underwriting:
+    source_id: PRISM_UNDERWRITING_MODEL
+    source_ref: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#scenarios
+    document_id: SANIL_UNDERWRITING_20260825
+    document_hash: dea034ebf103408f79fbe73cc13aadcf6e6d034dd13c15fc90cc41c6650ca2ec
+    published_at: '2026-08-25T18:00:00+09:00'
+facts:
+  revenue_2025_krw_billion: 501.946
+  operating_profit_2025_krw_billion: 178.634
+  net_income_2025_krw_billion: 148.922
+  cash_2025_krw_billion: 108.606
+  short_term_debt_2025_krw_billion: 0.520
+  new_orders_2025_krw_billion: 565.974
+  backlog_2025_krw_billion: 448.807
+  nameplate_capacity_2025_count: 35431
+  effective_capacity_2025_count: 31500
+  utilization_2025_ratio: 0.889
+  lead_time_years: 0.375
+  diluted_shares: 30445200
+  second_factory_start: '2024-01-01'
+  second_factory_site_pyeong: 11000
+  expansion_capex_committed_krw_billion: 42.0
+  revenue_q2_2026_krw_billion: 164.179
+  operating_profit_q2_2026_krw_billion: 62.035
+  net_income_q2_2026_krw_billion: 54.584
+  revenue_h1_2026_krw_billion: 314.502
+  operating_profit_h1_2026_krw_billion: 117.516
+  net_income_h1_2026_krw_billion: 100.492
+  new_orders_q2_2026_krw_billion: 243.5
+  backlog_q2_2026_krw_billion: 556.7
+capacity_project:
+  project_id: SANIL_SECOND_FACTORY_RAMP
+  baseline_inclusion: not_in_baseline
+  ramp_date: '2026-12-31'
+  rationale: >-
+    The site is controlled and the committed expansion program remains an incremental
+    ramp relative to the frozen 2025 capacity baseline. Exact incremental revenue capacity
+    is not disclosed, so the Core path is bounded rather than zero-filled.
+risk:
+  benchmark_id: PROVIDER_5Y_MARKET_BETA
+  return_frequency: provider_5y
+  estimation_window_months: 60
+  as_of: '2026-08-25'
+  tax_rate: 0.22
+  target_equity_weight: 0.98
+  target_debt_weight: 0.02
+  risk_free_rate: 0.04334
+  mature_market_erp: 0.04230
+  country_risk_premium: 0.00640
+  country_risk_lambda: 0.25
+  pre_tax_cost_of_debt: 0.04690
+  peers:
+    L1_BROAD_SECTOR:
+      - peer_id: LS_ELECTRIC_010120
+        levered_beta: 1.83
+        debt_to_equity: 0.69
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/010120/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+      - peer_id: HYOSUNG_HEAVY_INDUSTRIES_298040
+        levered_beta: 2.16
+        debt_to_equity: 0.25
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/298040/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+    L2_INDUSTRY:
+      - peer_id: HD_HYUNDAI_ELECTRIC_267260
+        levered_beta: 1.17
+        debt_to_equity: 0.08
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/267260/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+      - peer_id: ILJIN_ELECTRIC_103590
+        levered_beta: 1.81
+        debt_to_equity: 0.22
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/103590/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+    L3_RISK_DRIVER_SUBINDUSTRY:
+      - peer_id: TAIHAN_CABLE_001440
+        levered_beta: 2.18
+        debt_to_equity: 0.67
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/001440/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+      - peer_id: CHERYONG_ELECTRIC_033100
+        levered_beta: 1.24
+        debt_to_equity: 0.08
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/kosdaq/033100/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+    L4_ECONOMIC_TWINS:
+      - peer_id: KWANGMYUNG_ELECTRIC_017040
+        levered_beta: 1.25
+        debt_to_equity: 0.21
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/krx/017040/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+      - peer_id: CHEIL_ELECTRIC_199820
+        levered_beta: 1.58
+        debt_to_equity: 0.22
+        beta_standard_error: null
+        source_ref: https://stockanalysis.com/quote/kosdaq/199820/statistics/
+        estimation_method: StockAnalysis Beta (5Y)
+scenarios:
+  Down:
+    fcff_krw_billion: [145, 160, 180, 200, 220]
+    expansion_capex_krw_billion: 42.0
+    terminal_growth: 0.020
+    terminal_roic: 0.130
+  Core:
+    fcff_krw_billion: [175, 195, 220, 245, 270]
+    expansion_capex_krw_billion: 42.0
+    terminal_growth: 0.025
+    terminal_roic: 0.150
+  Bull:
+    fcff_krw_billion: [185, 210, 240, 270, 305]
+    expansion_capex_krw_billion: 42.0
+    terminal_growth: 0.030
+    terminal_roic: 0.170

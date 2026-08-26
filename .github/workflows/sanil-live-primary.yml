@@ -1,0 +1,65 @@
+name: sanil-live-primary
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'config/sanil_live_snapshot.yaml'
+      - 'docs/SANIL_RISK_SOURCE_REGISTER.md'
+      - 'src/valuation_engine/sanil_live_primary.py'
+      - 'src/valuation_engine/module_plan_adapter.py'
+      - 'src/valuation_engine/records.py'
+      - 'src/valuation_engine/evidence_collection.py'
+      - 'tests/test_sanil_live_primary.py'
+      - 'tests/test_module_plan_evidence_extension.py'
+      - 'tests/test_evidence_source_layer_contract.py'
+      - 'scripts/run_sanil_live_primary.py'
+      - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md'
+      - '.github/workflows/sanil-live-primary.yml'
+  pull_request:
+    paths:
+      - 'config/sanil_live_snapshot.yaml'
+      - 'docs/SANIL_RISK_SOURCE_REGISTER.md'
+      - 'src/valuation_engine/sanil_live_primary.py'
+      - 'src/valuation_engine/module_plan_adapter.py'
+      - 'src/valuation_engine/records.py'
+      - 'src/valuation_engine/evidence_collection.py'
+      - 'tests/test_sanil_live_primary.py'
+      - 'tests/test_module_plan_evidence_extension.py'
+      - 'tests/test_evidence_source_layer_contract.py'
+      - 'scripts/run_sanil_live_primary.py'
+      - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md'
+      - '.github/workflows/sanil-live-primary.yml'
+  workflow_dispatch:
+
+jobs:
+  sanil-live-primary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Execute Sanil LIVE_PRIMARY
+        run: >-
+          PYTHONPATH=src
+          python scripts/run_sanil_live_primary.py
+          --output /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md
+      - name: Upload verified Sanil report
+        uses: actions/upload-artifact@v4
+        with:
+          name: SANIL_062040_LIVE_PRIMARY_REPORT
+          path: /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md
+      - name: Verify tracked Sanil LIVE_PRIMARY report
+        run: >-
+          cmp
+          /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md
+          examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md
+      - name: Sanil integration regressions
+        run: pytest -q tests/test_sanil_live_primary.py
+      - name: Full regression
+        run: pytest -q
+      - name: OCI regression
+        run: valuation-engine examples/oci/company.yaml

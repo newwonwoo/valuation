@@ -50,6 +50,8 @@ class EvidenceCollectionBatch:
                 EvidenceSourceLayer.REALIZED_OR_FILING,
                 EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
                 EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+                EvidenceSourceLayer.AUTHORIZED_MARKET_DATA,
+                EvidenceSourceLayer.ANALYST_UNDERWRITING,
             }:
                 raise ValueError(
                     f"source batch {self.source_id} contains non-primary "

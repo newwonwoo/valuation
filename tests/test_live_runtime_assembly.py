@@ -65,6 +65,7 @@ class FakeRuntimeConfig:
         self.state_root = tmp_path / "state"
         self.company_request = CompanyResolutionRequest("000000", "KR")
         self.method_choices = ()
+        self.additional_required_evidence = {}
         self.capacity_core_scenario_id = None
         self.market_currency = None
         self.archetype_registry_path = (
