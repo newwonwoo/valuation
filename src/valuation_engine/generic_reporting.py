@@ -8,6 +8,11 @@ import shutil
 from typing import Any
 
 from .ablation import AblationBatchResult, AblationStatus, LoadoutAction
+from .context_strength_reporting import (
+    context_strength_linkage_artifact,
+    context_strength_linkage_state,
+    render_context_strength_linkage_section,
+)
 from .control_plane import DoctrineCoverageEntry, StageStatus, authorize_post_freeze
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .post_freeze import MarketComparisonBundle, StreetComparisonBundle
@@ -172,6 +177,8 @@ def render_generic_report(data: dict[str, Any]) -> str:
     partial = valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
     lines = [
         f"# {company} PRISM Research & Valuation Report",
+        "",
+        *render_context_strength_linkage_section(data),
         "",
         (
             "## Partial Intrinsic — Valued Segments Only"
@@ -377,6 +384,8 @@ def save_state_adapter(
 
             report = render_generic_report(context.data)
             impact_summary = _module_impact_summary(context.data)
+            linkage_artifact = context_strength_linkage_artifact(context.data)
+            linkage_state = context_strength_linkage_state(context.data)
             prior = context.data.get("company_state", {})
             parent_run = prior.get("last_completed_run") if isinstance(prior, dict) else None
             now = iso_now()
@@ -404,6 +413,7 @@ def save_state_adapter(
                     "summary": impact_summary,
                     "batch": _jsonable(_impact_batch(context.data)),
                 },
+                "context_strength_linkages.json": _jsonable(linkage_artifact),
                 "street_compare.json": _jsonable(context.data.get("street_comparison")),
                 "market_compare.json": _jsonable(context.data.get("market_comparison")),
                 "thesis_delta.json": _jsonable(context.data.get("thesis_delta_result", {})),
@@ -427,7 +437,7 @@ def save_state_adapter(
             )
             partial = valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
             current_state = {
-                "schema_version": "0.6.11",
+                "schema_version": "0.6.12",
                 "ticker": ticker,
                 "company": company,
                 "last_completed_run": context.run_id,
@@ -439,6 +449,7 @@ def save_state_adapter(
                 "audit_hash": context.data.get("audit_hash"),
                 "decision_impact_hash": context.data.get("decision_impact_hash"),
                 "research_learning_record_hash": learning_hash,
+                **linkage_state,
                 "valuation_scope": valuation.scope.value,
                 "full_company_intrinsic_available": valuation.full_company_intrinsic_available,
                 "unvalued_segments": _jsonable(valuation.unvalued_segments),

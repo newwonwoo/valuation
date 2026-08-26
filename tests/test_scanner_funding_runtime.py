@@ -184,7 +184,10 @@ def test_llm_staff_receives_scanner_findings():
             rationale="scanner finding informed the hypothesis",
         )
 
-    result = researcher_a_adapter(officer=officer)(ctx)
+    result = researcher_a_adapter(
+        officer=officer,
+        require_context_strength_linkage=False,
+    )(ctx)
     assert result.status is StageStatus.PASS
     assert result.outputs["hypotheses"][0].id == "H1"
 

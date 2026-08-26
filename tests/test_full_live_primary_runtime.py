@@ -3,6 +3,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from valuation_engine.collection_plan import CollectorCapability
+from valuation_engine.context_strength_linkage import ContextStrengthLinkageDecision
 from valuation_engine.control_plane import StageStatus
 from valuation_engine.evidence_collection import (
     EvidenceCollectionBatch,
@@ -279,6 +280,12 @@ def intelligence_officer(context) -> IntelligenceProposal:
     return IntelligenceProposal(
         hypotheses=tuple(hypotheses),
         rationale="frozen primary evidence supports one unweighted Base scenario",
+        context_strength_linkage_decision=ContextStrengthLinkageDecision(
+            not_applicable_reason=(
+                "This frozen acceptance fixture validates deterministic runtime "
+                "integrity and does not assert an external-change investment thesis."
+            ),
+        ),
     )
 
 
@@ -466,11 +473,22 @@ def test_frozen_provider_live_primary_run_reaches_final_report(tmp_path):
     assert valuation.scenarios[0].value_per_share == Decimal("70000")
     assert result.data["market_comparison"].envelope.get("Base").gap_per_share == Decimal("5000")
     assert result.data["decision_impact_completed"]
+    assert "LLM Insight Layer — Environment × Corporate Strength" in result.data[
+        "final_report"
+    ]
+    assert "Status: NOT_APPLICABLE" in result.data["final_report"]
     assert "Expected Value: 미산출" in result.data["final_report"]
 
     state_root = Path(tmp_path)
     assert (state_root / "state" / "000000" / "current_state.json").exists()
     assert (state_root / "runs" / "000000" / "FULL-LIVE-1" / "final_report.md").exists()
+    assert (
+        state_root
+        / "runs"
+        / "000000"
+        / "FULL-LIVE-1"
+        / "context_strength_linkages.json"
+    ).exists()
     assert (state_root / "learning" / "000000" / "module-impact" / "FULL-LIVE-1.json").exists()
 
 

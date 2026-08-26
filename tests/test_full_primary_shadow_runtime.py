@@ -2,6 +2,7 @@ from dataclasses import replace
 from decimal import Decimal
 from pathlib import Path
 
+from valuation_engine.context_strength_linkage import ContextStrengthLinkageDecision
 from valuation_engine.control_plane import StageStatus
 from valuation_engine.evidence_collection import static_evidence_collector
 from valuation_engine.evaluator_registry import ModelKey
@@ -161,6 +162,13 @@ def intelligence_officer(context):
     return IntelligenceProposal(
         hypotheses=tuple(hypotheses),
         rationale="Primary filings support a normalized commodity-cycle scenario range; no probability weighting is claimed.",
+        context_strength_linkage_decision=ContextStrengthLinkageDecision(
+            not_applicable_reason=(
+                "This synthetic primary-shadow fixture validates deterministic "
+                "pipeline integration and does not assert an external-change "
+                "investment thesis."
+            ),
+        ),
     )
 
 
@@ -333,9 +341,20 @@ def test_full_canonical_primary_shadow_sequence_reaches_final_report_and_persist
     assert result.data["decision_impact_completed"]
     assert result.data["decision_impact_result"].not_measurable_modules
     assert result.data["market_comparison"].envelope.get("Base").gap_per_share == Decimal("5000")
+    assert "LLM Insight Layer — Environment × Corporate Strength" in result.data[
+        "final_report"
+    ]
+    assert "Status: NOT_APPLICABLE" in result.data["final_report"]
     assert "Expected Value: 미산출" in result.data["final_report"]
     assert (Path(tmp_path) / "state" / "EXM" / "current_state.json").exists()
     assert (Path(tmp_path) / "runs" / "EXM" / "FULL-SHADOW-1" / "final_report.md").exists()
+    assert (
+        Path(tmp_path)
+        / "runs"
+        / "EXM"
+        / "FULL-SHADOW-1"
+        / "context_strength_linkages.json"
+    ).exists()
     assert (Path(tmp_path) / "learning" / "EXM" / "module-impact" / "FULL-SHADOW-1.json").exists()
     assert result.data["research_learning_record_hash"]
 
