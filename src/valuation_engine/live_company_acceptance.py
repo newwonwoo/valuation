@@ -208,9 +208,19 @@ def _validate_success_fixture(
                 f"READY fixture {company_id} recomputed {field} does not match runtime hash"
             )
 
+    token_hash = str(token.get("token_hash") or "").casefold()
+    if not _HASH64.fullmatch(token_hash):
+        raise ValueError(f"READY fixture {company_id} has invalid Freeze token_hash")
+    expected_token_hash = sha256(
+        "|".join((run_id, *(str(token[field]).casefold() for field in _HASH_FIELDS))).encode("utf-8")
+    ).hexdigest()
+    if token_hash != expected_token_hash:
+        raise ValueError(f"READY fixture {company_id} Freeze token_hash mismatch")
+
     source_documents = payload.get("source_documents")
     if not isinstance(source_documents, list) or not source_documents:
         raise ValueError(f"READY fixture {company_id} requires source document lineage")
+    source_by_ref: dict[str, str] = {}
     for row in source_documents:
         if not isinstance(row, dict):
             raise ValueError(f"READY fixture {company_id} source document must be mapping")
@@ -224,16 +234,81 @@ def _validate_success_fixture(
         document_hash = str(row.get("document_hash") or "").casefold()
         if not _HASH64.fullmatch(document_hash):
             raise ValueError(f"READY fixture {company_id} source document hash is invalid")
+        if source_ref in source_by_ref:
+            raise ValueError(f"READY fixture {company_id} contains duplicate source document refs")
+        source_by_ref[source_ref] = document_hash
+
+    _validate_evidence_revision_bindings(
+        company_id,
+        payload,
+        proofs,
+        source_by_ref,
+    )
 
     market_compare = payload.get("market_compare")
     if not isinstance(market_compare, dict) or market_compare.get("phase") != "post_freeze":
         raise ValueError(f"READY fixture {company_id} requires explicit post-freeze market comparison")
-    if market_compare.get("freeze_token_id") != token.get("token_hash"):
+    if market_compare.get("freeze_token_id") != token_hash:
         raise ValueError(f"READY fixture {company_id} market comparison Freeze token mismatch")
     if market_compare.get("payload") in (None, {}, []):
         raise ValueError(f"READY fixture {company_id} market comparison payload is empty")
     if payload.get("final_report") in (None, {}, [], ""):
         raise ValueError(f"READY fixture {company_id} requires serialized final_report")
+
+
+def _validate_evidence_revision_bindings(
+    company_id: str,
+    payload: dict[str, Any],
+    proofs: dict[str, Any],
+    source_by_ref: dict[str, str],
+) -> None:
+    active_ids = payload.get("active_evidence_ids")
+    bindings = payload.get("evidence_revision_bindings")
+    if (
+        not isinstance(active_ids, list)
+        or not active_ids
+        or not all(isinstance(item, str) and item for item in active_ids)
+        or len(active_ids) != len(set(active_ids))
+    ):
+        raise ValueError(f"READY fixture {company_id} requires unique active_evidence_ids")
+    if not isinstance(bindings, list) or not bindings:
+        raise ValueError(f"READY fixture {company_id} requires Evidence revision bindings")
+
+    ledger_proof = proofs.get("ledger_snapshot_hash")
+    ledger_rows = ledger_proof.get("payload") if isinstance(ledger_proof, dict) else None
+    if not isinstance(ledger_rows, list):
+        raise ValueError(f"READY fixture {company_id} ledger proof must expose canonical Evidence rows")
+    ledger_by_id = {
+        str(row.get("id") or ""): row
+        for row in ledger_rows
+        if isinstance(row, dict) and str(row.get("id") or "")
+    }
+    if not set(active_ids).issubset(ledger_by_id):
+        raise ValueError(f"READY fixture {company_id} active Evidence is missing from ledger proof")
+
+    binding_by_id: dict[str, dict[str, Any]] = {}
+    for binding in bindings:
+        if not isinstance(binding, dict):
+            raise ValueError(f"READY fixture {company_id} Evidence revision binding must be mapping")
+        evidence_id = str(binding.get("evidence_id") or "")
+        source_ref = str(binding.get("source_ref") or "")
+        revision_hash = str(binding.get("revision_hash") or "").casefold()
+        if not evidence_id or evidence_id in binding_by_id:
+            raise ValueError(f"READY fixture {company_id} Evidence revision bindings contain duplicate/missing IDs")
+        if not _HASH64.fullmatch(revision_hash):
+            raise ValueError(f"READY fixture {company_id} Evidence {evidence_id} has invalid revision hash")
+        if source_by_ref.get(source_ref) != revision_hash:
+            raise ValueError(
+                f"READY fixture {company_id} Evidence {evidence_id} revision is not bound to source document lineage"
+            )
+        ledger_ref = str(ledger_by_id.get(evidence_id, {}).get("source_ref") or "").split("#", 1)[0]
+        if ledger_ref != source_ref:
+            raise ValueError(
+                f"READY fixture {company_id} Evidence {evidence_id} source_ref does not match ledger proof"
+            )
+        binding_by_id[evidence_id] = binding
+    if set(binding_by_id) != set(active_ids):
+        raise ValueError(f"READY fixture {company_id} every active Evidence requires exactly one revision binding")
 
 
 def _validate_adversarial_fixture(
