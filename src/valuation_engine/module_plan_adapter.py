@@ -1,19 +1,86 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
+from typing import Mapping
 
 from .ablation import ResearchLoadoutRecommendation
 from .adaptive_loadout import build_adaptive_research_loadout
 from .control_plane import StageStatus
 from .industry_dna import IndustryDNAProfile
-from .module_plan import build_module_requirement_plan
+from .module_plan import (
+    ModuleRequirementPlan,
+    build_module_requirement_plan,
+)
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
+
+
+def _ordered_unique(values) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(str(value) for value in values if str(value)))
+
+
+def extend_module_required_evidence(
+    plan: ModuleRequirementPlan,
+    additions: Mapping[str, tuple[str, ...]] | None,
+) -> ModuleRequirementPlan:
+    """Add a typed company-specific Evidence contract without weakening canonical routing.
+
+    The canonical archetype plan remains the floor. Company/provider-specific model inputs,
+    peer-selection Evidence or source-backed normalization facts must be declared here before
+    the collection planner can authorize a collector to emit them.
+    """
+    if not additions:
+        return plan
+    if not isinstance(additions, Mapping) or not all(
+        isinstance(segment_id, str)
+        and segment_id
+        and isinstance(metrics, tuple)
+        and all(isinstance(metric, str) and metric for metric in metrics)
+        for segment_id, metrics in additions.items()
+    ):
+        raise TypeError(
+            "additional_required_evidence must be a segment_id→tuple[str, ...] mapping"
+        )
+
+    known_segments = {segment.segment_id for segment in plan.segments}
+    unknown_segments = tuple(sorted(set(additions) - known_segments))
+    if unknown_segments:
+        raise ValueError(
+            "additional Evidence references unknown segments: "
+            + ", ".join(unknown_segments)
+        )
+
+    segments = tuple(
+        replace(
+            segment,
+            required_evidence=_ordered_unique(
+                (*segment.required_evidence, *additions.get(segment.segment_id, ()))
+            ),
+            required_kpis=_ordered_unique(
+                (*segment.required_kpis, *additions.get(segment.segment_id, ()))
+            ),
+        )
+        for segment in plan.segments
+    )
+    result = replace(
+        plan,
+        segments=segments,
+        required_evidence=_ordered_unique(
+            metric for segment in segments for metric in segment.required_evidence
+        ),
+        required_kpis=_ordered_unique(
+            metric for segment in segments for metric in segment.required_kpis
+        ),
+    )
+    result.validate()
+    return result
 
 
 def module_requirement_plan_adapter(
     *,
     registry_path: str | Path,
     control_requirements_path: str | Path,
+    additional_required_evidence: Mapping[str, tuple[str, ...]] | None = None,
 ) -> StageAdapter:
     def run(context: OrchestratorContext) -> StageExecutionResult:
         profiles = context.data.get("industry_dna_profiles")
@@ -57,6 +124,10 @@ def module_requirement_plan_adapter(
                 profiles,
                 registry_path=registry_path,
                 control_requirements_path=control_requirements_path,
+            )
+            plan = extend_module_required_evidence(
+                plan,
+                additional_required_evidence,
             )
             unknown_optional_scanners = tuple(
                 scanner_id
