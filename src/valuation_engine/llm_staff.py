@@ -5,7 +5,11 @@ from typing import Callable
 
 from .assumption_compiler import AssumptionSpec, TRANSFORMS
 from .capacity_commitment import CapacityCommitmentAssessment
-from .context_strength_linkage import ContextStrengthLinkageDecision
+from .context_strength_linkage import (
+    DEFAULT_CONTEXT_STRENGTH_LINKAGE_DOCTRINE,
+    ContextStrengthLinkageDecision,
+    ContextStrengthLinkageDoctrine,
+)
 from .control_plane import LLMAction, validate_llm_authority
 from .ledger import EvidenceLedger
 from .records import BridgeRecord, CriticalIssue, HypothesisRecord
@@ -162,6 +166,9 @@ class LLMStaffContext:
     funding_scan_result: object | None = None
     capacity_commitment_assessment: CapacityCommitmentAssessment | None = None
     require_context_strength_linkage: bool = False
+    context_strength_linkage_doctrine: ContextStrengthLinkageDoctrine = (
+        DEFAULT_CONTEXT_STRENGTH_LINKAGE_DOCTRINE
+    )
 
 
 IntelligenceOfficer = Callable[[LLMStaffContext], IntelligenceProposal]
@@ -194,6 +201,7 @@ def run_intelligence_officer(
     validate_llm_authority(LLMAction.OBSERVE)
     validate_llm_authority(LLMAction.REASON)
     validate_llm_authority(LLMAction.PROPOSE)
+    context.context_strength_linkage_doctrine.validate()
     proposal = officer(context)
     active_hypotheses = merge_hypothesis_context(
         context.prior_hypotheses,
