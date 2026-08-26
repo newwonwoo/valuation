@@ -6,9 +6,11 @@ import json
 from pathlib import Path
 import re
 from typing import Any
+from urllib.parse import urlparse
 
 import yaml
 
+from .live_company_artifact import recompute_artifact_hash_proof
 from .orchestrator import load_stage_sequence
 
 
@@ -98,7 +100,6 @@ def validate_live_company_acceptance(
             blocker = str(row.get("blocker") or "")
             if not blocker:
                 raise ValueError(f"blocked acceptance row {company_id} requires blocker")
-            # Existing partial artifacts are validated when present but never auto-promoted.
             if success_file.is_file():
                 _validate_success_fixture(
                     company_id,
@@ -194,9 +195,14 @@ def _validate_success_fixture(
         if str(token.get(field) or "").casefold() != value:
             raise ValueError(f"READY fixture {company_id} Freeze token mismatch for {field}")
         proof = proofs.get(field)
-        if not isinstance(proof, dict) or "payload" not in proof:
+        if not isinstance(proof, dict):
             raise ValueError(f"READY fixture {company_id} lacks recomputable proof for {field}")
-        recomputed = _stable_hash(proof["payload"])
+        try:
+            recomputed = recompute_artifact_hash_proof(proof)
+        except ValueError as exc:
+            raise ValueError(
+                f"READY fixture {company_id} has invalid proof for {field}: {exc}"
+            ) from exc
         if recomputed != value:
             raise ValueError(
                 f"READY fixture {company_id} recomputed {field} does not match runtime hash"
@@ -208,11 +214,26 @@ def _validate_success_fixture(
     for row in source_documents:
         if not isinstance(row, dict):
             raise ValueError(f"READY fixture {company_id} source document must be mapping")
-        if not str(row.get("source_ref") or "") or not str(row.get("first_seen_at") or ""):
+        source_ref = str(row.get("source_ref") or "")
+        first_seen = str(row.get("first_seen_at") or "")
+        if not source_ref or not first_seen:
             raise ValueError(f"READY fixture {company_id} source document lineage is incomplete")
+        parsed = urlparse(source_ref)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError(f"READY fixture {company_id} source document must use absolute HTTP(S) provenance")
         document_hash = str(row.get("document_hash") or "").casefold()
         if not _HASH64.fullmatch(document_hash):
             raise ValueError(f"READY fixture {company_id} source document hash is invalid")
+
+    market_compare = payload.get("market_compare")
+    if not isinstance(market_compare, dict) or market_compare.get("phase") != "post_freeze":
+        raise ValueError(f"READY fixture {company_id} requires explicit post-freeze market comparison")
+    if market_compare.get("freeze_token_id") != token.get("token_hash"):
+        raise ValueError(f"READY fixture {company_id} market comparison Freeze token mismatch")
+    if market_compare.get("payload") in (None, {}, []):
+        raise ValueError(f"READY fixture {company_id} market comparison payload is empty")
+    if payload.get("final_report") in (None, {}, [], ""):
+        raise ValueError(f"READY fixture {company_id} requires serialized final_report")
 
 
 def _validate_adversarial_fixture(

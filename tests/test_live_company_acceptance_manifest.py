@@ -7,6 +7,7 @@ import pytest
 import yaml
 
 from valuation_engine.live_company_acceptance import validate_live_company_acceptance
+from valuation_engine.live_company_artifact import recompute_artifact_hash_proof
 from valuation_engine.orchestrator import load_stage_sequence
 
 
@@ -44,6 +45,7 @@ def _success_fixture(company_id):
         for field in HASH_FIELDS
     }
     hashes = {field: _stable_hash(proofs[field]["payload"]) for field in HASH_FIELDS}
+    token_hash = "b" * 64
     return {
         "artifact_type": "serialized_controlled_run/v1",
         "company_id": company_id,
@@ -55,16 +57,22 @@ def _success_fixture(company_id):
             for stage in STAGES
         ],
         "blocked_reasons": [],
-        "freeze_token": {"run_id": f"RUN-{company_id}", **hashes},
+        "freeze_token": {"run_id": f"RUN-{company_id}", "token_hash": token_hash, **hashes},
         "data_hashes": hashes,
         "hash_proofs": proofs,
         "source_documents": [
             {
-                "source_ref": "fixture://primary-document",
+                "source_ref": "https://example.com/primary-document",
                 "document_hash": "a" * 64,
                 "first_seen_at": "2026-08-25T10:00:00+09:00",
             }
         ],
+        "market_compare": {
+            "phase": "post_freeze",
+            "freeze_token_id": token_hash,
+            "payload": {"gap": "fixture-contract-only"},
+        },
+        "final_report": {"summary": "fixture-contract-only"},
     }
 
 
@@ -175,3 +183,17 @@ def test_blocked_company_requires_explicit_blocker(tmp_path):
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
     with pytest.raises(ValueError, match="requires blocker"):
         validate_live_company_acceptance(path, repo_root=ROOT)
+
+
+def test_hash_proof_supports_runtime_utf8_preimages_and_legacy_json_payloads():
+    preimage = "run\nledger\nassumption\nvaluation"
+    assert recompute_artifact_hash_proof({"encoding": "utf8", "preimage": preimage}) == sha256(
+        preimage.encode("utf-8")
+    ).hexdigest()
+    legacy = {"a": 1, "b": [2, 3]}
+    assert recompute_artifact_hash_proof({"payload": legacy}) == _stable_hash(legacy)
+
+
+def test_hash_proof_rejects_unknown_encoding():
+    with pytest.raises(ValueError, match="unsupported hash proof encoding"):
+        recompute_artifact_hash_proof({"encoding": "pickle", "payload": {}})
