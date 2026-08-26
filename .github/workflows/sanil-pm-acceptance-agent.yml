@@ -1,0 +1,54 @@
+name: sanil-pm-acceptance-agent
+
+on:
+  push:
+    branches:
+      - chore/accept-sanil-live-primary
+    paths:
+      - scripts/apply_sanil_pm_acceptance.py
+      - .github/workflows/sanil-pm-acceptance-agent.yml
+
+permissions:
+  contents: write
+
+jobs:
+  accept:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: chore/accept-sanil-live-primary
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Apply PM acceptance
+        run: |
+          python scripts/apply_sanil_pm_acceptance.py
+          PYTHONPATH=src python scripts/render_project_status.py --write
+      - name: Validate PM source of truth
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          PYTHONPATH=src python scripts/validate_project_portfolio.py --github
+          PYTHONPATH=src python scripts/render_project_status.py --check
+      - name: Full regression
+        run: pytest -q
+      - name: OCI regression
+        run: valuation-engine examples/oci/company.yaml
+      - name: Remove bootstrap files
+        run: >-
+          git rm -f
+          .github/workflows/sanil-pm-acceptance-agent.yml
+          scripts/apply_sanil_pm_acceptance.py
+      - name: Commit verified PM acceptance
+        run: |
+          git config user.name "prism-pm-bot"
+          git config user.email "prism-pm-bot@users.noreply.github.com"
+          git add -A
+          git commit -m "Accept Sanil LIVE_PRIMARY and context-strength linkage"
+          git push origin HEAD:chore/accept-sanil-live-primary
