@@ -5,6 +5,11 @@ from typing import Callable
 
 from .assumption_compiler import AssumptionSpec, TRANSFORMS
 from .capacity_commitment import CapacityCommitmentAssessment
+from .context_strength_linkage import (
+    DEFAULT_CONTEXT_STRENGTH_LINKAGE_DOCTRINE,
+    ContextStrengthLinkageDecision,
+    ContextStrengthLinkageDoctrine,
+)
 from .control_plane import LLMAction, validate_llm_authority
 from .ledger import EvidenceLedger
 from .records import BridgeRecord, CriticalIssue, HypothesisRecord
@@ -16,8 +21,15 @@ class IntelligenceProposal:
     requested_evidence: tuple[str, ...] = ()
     scanner_reinforcements: tuple[str, ...] = ()
     rationale: str = ""
+    context_strength_linkage_decision: ContextStrengthLinkageDecision | None = None
 
-    def validate(self, ledger: EvidenceLedger) -> None:
+    def validate(
+        self,
+        ledger: EvidenceLedger,
+        *,
+        known_hypotheses: tuple[HypothesisRecord, ...] = (),
+        require_context_strength_linkage: bool = False,
+    ) -> None:
         if not self.rationale:
             raise ValueError("intelligence proposal requires rationale")
         seen: set[str] = set()
@@ -28,6 +40,32 @@ class IntelligenceProposal:
             for evidence_id in (
                 *hypothesis.supporting_evidence_ids,
                 *hypothesis.contradicting_evidence_ids,
+            ):
+                ledger.get(evidence_id)
+
+        decision = self.context_strength_linkage_decision
+        if decision is None:
+            if require_context_strength_linkage:
+                raise ValueError(
+                    "intelligence proposal requires an auditable environment-change/"
+                    "corporate-strength linkage decision before valuation hypotheses"
+                )
+            return
+
+        decision.validate()
+        hypothesis_ids = {item.id for item in known_hypotheses}
+        for linkage in decision.linkages:
+            unknown_hypotheses = set(linkage.hypothesis_ids).difference(
+                hypothesis_ids
+            )
+            if unknown_hypotheses:
+                raise ValueError(
+                    "context-strength linkage references unknown hypotheses: "
+                    + ", ".join(sorted(unknown_hypotheses))
+                )
+            for evidence_id in (
+                *linkage.supporting_evidence_ids,
+                *linkage.contradicting_evidence_ids,
             ):
                 ledger.get(evidence_id)
 
@@ -127,6 +165,10 @@ class LLMStaffContext:
     scanner_findings: tuple[object, ...] = ()
     funding_scan_result: object | None = None
     capacity_commitment_assessment: CapacityCommitmentAssessment | None = None
+    require_context_strength_linkage: bool = False
+    context_strength_linkage_doctrine: ContextStrengthLinkageDoctrine = (
+        DEFAULT_CONTEXT_STRENGTH_LINKAGE_DOCTRINE
+    )
 
 
 IntelligenceOfficer = Callable[[LLMStaffContext], IntelligenceProposal]
@@ -159,9 +201,19 @@ def run_intelligence_officer(
     validate_llm_authority(LLMAction.OBSERVE)
     validate_llm_authority(LLMAction.REASON)
     validate_llm_authority(LLMAction.PROPOSE)
+    context.context_strength_linkage_doctrine.validate()
     proposal = officer(context)
-    proposal.validate(context.ledger)
-    merge_hypothesis_context(context.prior_hypotheses, proposal.hypotheses)
+    active_hypotheses = merge_hypothesis_context(
+        context.prior_hypotheses,
+        proposal.hypotheses,
+    )
+    proposal.validate(
+        context.ledger,
+        known_hypotheses=active_hypotheses,
+        require_context_strength_linkage=(
+            context.require_context_strength_linkage
+        ),
+    )
     return proposal
 
 
