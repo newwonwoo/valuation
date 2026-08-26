@@ -235,6 +235,15 @@ def test_sanil_config_requires_driver_dcf_and_capacity_core(tmp_path):
     assert config.providers.capacity_bridge_consumption_loader is not None
     assert config.providers.street_loader is not None
     assert config.providers.market_loader is not None
+    assert not {
+        "current_market_price",
+        "market_price",
+        "target_price",
+        "street_reference",
+    }.intersection(config.initial_data)
+    market = config.providers.market_loader()
+    assert market.price == 169300
+    assert market.as_of == "2026-08-25"
 
 
 def test_sanil_collector_returns_only_requested_metrics():
