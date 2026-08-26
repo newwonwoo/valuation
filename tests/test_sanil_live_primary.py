@@ -82,6 +82,23 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         for trace in result.stage_traces
     )
 
+    linkage_decision = result.data["context_strength_linkage_decision"]
+    assert linkage_decision.status.value == "APPLICABLE"
+    assert len(linkage_decision.linkages) == 1
+    linkage = linkage_decision.linkages[0]
+    assert linkage.id == "CSL:SANIL:POWER_BOTTLENECK_CAPACITY"
+    assert linkage.hypothesis_ids == ("H:SANIL:CAPACITY", "H:SANIL:Core")
+    assert {
+        "E:SANIL:orders",
+        "E:SANIL:backlog",
+        "E:SANIL:utilization",
+        "E:SANIL:expansion_land_control",
+        "E:SANIL:expansion_site_area",
+        "E:SANIL:expansion_capex_committed",
+    }.issubset(linkage.supporting_evidence_ids)
+    assert "price" not in linkage.linkage_thesis.lower()
+    assert "target" not in linkage.linkage_thesis.lower()
+
     for key in (
         "beta_snapshot_hash",
         "wacc_snapshot_hash",
