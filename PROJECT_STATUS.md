@@ -4,7 +4,7 @@
 
 - Blueprint: **v0.5.2 canonical workflow + LIVE_PRIMARY readiness**
 - Design progress: **97% (67/69 accepted milestone points)**
-- Current delivery: **1 ACTIVE / 0 READY / 1 BLOCKED / 0 BACKLOG / 1 MERGED PENDING ACCEPTANCE**
+- Current delivery: **2 ACTIVE / 0 READY / 1 BLOCKED / 0 BACKLOG / 0 MERGED PENDING ACCEPTANCE**
 - Accepted validation baseline: `6ac7bbcc491248e5d574cbf92b47ec00e82f5b80`
 - Updated: **2026-08-26**
 
@@ -14,18 +14,18 @@ Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE
 
 ## Execution horizon
 
-- Now: `QA-LIVE-COMPANY-FIXTURES-003`
+- Now: `EVI-CONTEXT-STRENGTH-LINKAGE-005`, `QA-LIVE-COMPANY-FIXTURES-003`
 - Next: —
 - Later: `CAL-PRODUCTION-COHORT-003`
-- Pending acceptance: `EVI-CONTEXT-STRENGTH-LINKAGE-005`
+- Pending acceptance: —
 
 ## Organization
 
 ```mermaid
 flowchart TB
-  PM["PM / Integrator<br/>Design 97% (67/69)<br/>Now: 1 ACTIVE workstreams coordinated"]
+  PM["PM / Integrator<br/>Design 97% (67/69)<br/>Now: 2 ACTIVE workstreams coordinated"]
   PM --> PMO["Architecture & Program Office<br/>Design 100% (5/5)<br/>Now: MAINTENANCE — evidence source wave accepted; final work is real-company LIVE acceptance plus production calibration history"]
-  PM --> EVIDENCE["Evidence & Industry Intelligence<br/>Design 100% (13/13)<br/>Now: MERGED_PENDING_ACCEPTANCE EVI-CONTEXT-STRENGTH-LINKAGE-005 — PR #94 merged; exact-main acceptance evidence pending"]
+  PM --> EVIDENCE["Evidence & Industry Intelligence<br/>Design 100% (13/13)<br/>Now: ACTIVE EVI-CONTEXT-STRENGTH-LINKAGE-005 — Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses and reports"]
   PM --> RUNTIME["Runtime Safety & Control Plane<br/>Design 100% (10/10)<br/>Now: MAINTENANCE — accepted design complete"]
   PM --> VALUATION["Deterministic Valuation Engines<br/>Design 100% (8/8)<br/>Now: MAINTENANCE — accepted design complete"]
   PM --> CALIBRATION["Risk, PER & Probability Calibration<br/>Design 90% (9/10)<br/>Now: BLOCKED CAL-PRODUCTION-COHORT-003 — Requires sufficient real resolved historical forecasts across production cohorts"]
@@ -39,7 +39,7 @@ flowchart TB
 | Department | Design progress | Current work |
 |---|---:|---|
 | Architecture & Program Office (`pm-integrator`) | **100% (5/5)** | MAINTENANCE — evidence source wave accepted; final work is real-company LIVE acceptance plus production calibration history |
-| Evidence & Industry Intelligence (`evidence-industry-agent`) | **100% (13/13)** | MERGED_PENDING_ACCEPTANCE EVI-CONTEXT-STRENGTH-LINKAGE-005 — PR #94 merged; exact-main acceptance evidence pending |
+| Evidence & Industry Intelligence (`evidence-industry-agent`) | **100% (13/13)** | ACTIVE EVI-CONTEXT-STRENGTH-LINKAGE-005 — Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses and reports |
 | Runtime Safety & Control Plane (`runtime-safety-agent`) | **100% (10/10)** | MAINTENANCE — accepted design complete |
 | Deterministic Valuation Engines (`valuation-engine-agent`) | **100% (8/8)** | MAINTENANCE — accepted design complete |
 | Risk, PER & Probability Calibration (`calibration-risk-agent`) | **90% (9/10)** | BLOCKED CAL-PRODUCTION-COHORT-003 — Requires sufficient real resolved historical forecasts across production cohorts |
@@ -51,8 +51,8 @@ flowchart TB
 
 | Priority | Status | Work item | Owner | Current step | Dependencies |
 |---|---|---|---|---|---|
+| P1 | **ACTIVE** | `EVI-CONTEXT-STRENGTH-LINKAGE-005` — Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses and reports | `evidence-industry-agent` | Validate the typed linkage contract, strict canonical RESEARCHER_A gate, immutable report artifact, and regression coverage on the exact PR head. | — |
 | P1 | **ACTIVE** | `QA-LIVE-COMPANY-FIXTURES-003` — Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy and GE Vernova | `qa-release-agent` | Generate and independently validate real non-synthetic serialized runs now that SEC provider and canonical KPI breadth are accepted. | `EVI-COMPANY-KPI-BREADTH-004` |
-| P1 | **MERGED_PENDING_ACCEPTANCE** | `EVI-CONTEXT-STRENGTH-LINKAGE-005` — Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses and reports | `evidence-industry-agent` | PR #94 is merged; retain zero completion credit until an exact-main valuation-tests run and PM/Integrator acceptance close the milestone. | — |
 | P1 | **BLOCKED** | `CAL-PRODUCTION-COHORT-003` — Populate production probability calibration cohorts with real resolved history | `calibration-risk-agent` | Accumulate real append-only resolved forecasts until declared cohort thresholds can be evaluated; synthetic or post-hoc history is forbidden. | — |
 
 ## Objective readiness (derived, not manually scored)
