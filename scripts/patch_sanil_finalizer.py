@@ -53,32 +53,6 @@ def main() -> int:
         label="finalizer replacement helper",
     )
 
-    old_market_anchor = (
-        "    replace_once(\n"
-        "        path,\n"
-        "        '''- 현재가: {snapshot.market['source_ref']}\n"
-        "''',\n"
-        "        '''- 현재가: {market_snapshot.source_ref}\n"
-        "''',\n"
-        "    )\n"
-    )
-    new_market_anchor = (
-        "    replace_once(\n"
-        "        path,\n"
-        "        '''- Underwriting assumptions: {snapshot.sources['underwriting']['source_ref']}\n"
-        "''',\n"
-        "        '''- Underwriting assumptions: {snapshot.sources['underwriting']['source_ref']}\n"
-        "- 현재가: {market_snapshot.source_ref}\n"
-        "''',\n"
-        "    )\n"
-    )
-    text = replace_once(
-        text,
-        old_market_anchor,
-        new_market_anchor,
-        label="post-Freeze market source insertion anchor",
-    )
-
     TARGET.write_text(text, encoding="utf-8")
     return 0
 
