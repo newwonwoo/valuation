@@ -239,7 +239,19 @@ def _record(
         observed_date=snapshot.cutoff,
         source_name=str(source["document_id"]),
         source_ref=str(source["source_ref"]),
-        source_grade=("A" if source_layer is not EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN else "B"),
+        source_grade=(
+            "A"
+            if source_layer
+            in {
+                EvidenceSourceLayer.REALIZED_OR_FILING,
+                EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+            }
+            else (
+                "B"
+                if source_layer is EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN
+                else "C"
+            )
+        ),
         confidence=confidence,
         segment=SEGMENT_ID,
         notes=notes,
@@ -301,7 +313,7 @@ def _underwriting_records(snapshot: SanilSnapshot) -> tuple[EvidenceRecord, ...]
                     value=value,
                     unit="KRW_billion",
                     source_key=source,
-                    source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
+                    source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
                     effective_date=snapshot.cutoff,
                     confidence=(0.60 if scenario != "Core" else 0.70),
                     notes="PRISM bounded underwriting input derived from official facts; not company guidance.",
@@ -315,7 +327,7 @@ def _underwriting_records(snapshot: SanilSnapshot) -> tuple[EvidenceRecord, ...]
                     value=inputs[key],
                     unit="ratio",
                     source_key=source,
-                    source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
+                    source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
                     effective_date=snapshot.cutoff,
                     confidence=(0.60 if scenario != "Core" else 0.70),
                     notes="PRISM bounded underwriting input; not company guidance.",
@@ -323,9 +335,9 @@ def _underwriting_records(snapshot: SanilSnapshot) -> tuple[EvidenceRecord, ...]
             )
         rows.extend(
             (
-                _record(snapshot, metric=f"model_{scenario.lower()}_ownership", value=1.0, unit="ratio", source_key=source, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=snapshot.cutoff, notes="Mechanical ownership input."),
-                _record(snapshot, metric=f"model_{scenario.lower()}_ev_adjustment", value=float(snapshot.facts["cash_2025_krw_billion"]) - float(snapshot.facts["short_term_debt_2025_krw_billion"]), unit="KRW_billion", source_key=source, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=snapshot.cutoff, notes="Cash less disclosed short-term debt; conservative EV-to-equity bridge."),
-                _record(snapshot, metric=f"model_{scenario.lower()}_diluted_shares", value=snapshot.facts["diluted_shares"], unit="shares", source_key=source, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=snapshot.cutoff, notes="Issued-share base used as the frozen diluted-share input."),
+                _record(snapshot, metric=f"model_{scenario.lower()}_ownership", value=1.0, unit="ratio", source_key=source, source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING, effective_date=snapshot.cutoff, notes="Mechanical ownership input."),
+                _record(snapshot, metric=f"model_{scenario.lower()}_ev_adjustment", value=float(snapshot.facts["cash_2025_krw_billion"]) - float(snapshot.facts["short_term_debt_2025_krw_billion"]), unit="KRW_billion", source_key=source, source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING, effective_date=snapshot.cutoff, notes="Cash less disclosed short-term debt; conservative EV-to-equity bridge."),
+                _record(snapshot, metric=f"model_{scenario.lower()}_diluted_shares", value=snapshot.facts["diluted_shares"], unit="shares", source_key=source, source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING, effective_date=snapshot.cutoff, notes="Issued-share base used as the frozen diluted-share input."),
             )
         )
     for level in BetaLevelName:
@@ -336,7 +348,7 @@ def _underwriting_records(snapshot: SanilSnapshot) -> tuple[EvidenceRecord, ...]
                 value=1,
                 unit="count",
                 source_key="risk_snapshot",
-                source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
+                source_layer=EvidenceSourceLayer.AUTHORIZED_MARKET_DATA,
                 effective_date=snapshot.cutoff,
                 confidence=0.65,
                 notes="Evidence ID binds the disclosed L1→L4 selection rationale; Beta observations are frozen in the risk snapshot.",
@@ -743,9 +755,21 @@ def _beta_loader(snapshot: SanilSnapshot):
                         return_frequency=str(r["return_frequency"]),
                         estimation_window_months=int(r["estimation_window_months"]),
                         as_of=str(r["as_of"]),
-                        source_ref=str(_source(snapshot, "risk_snapshot")["source_ref"]),
-                        beta_standard_error=float(row["beta_standard_error"]),
-                        estimation_method="frozen OLS-equivalent public-market snapshot",
+                        source_ref=str(
+                            row.get("source_ref")
+                            or _source(snapshot, "risk_snapshot")["source_ref"]
+                        ),
+                        beta_standard_error=(
+                            float(row["beta_standard_error"])
+                            if row.get("beta_standard_error") is not None
+                            else None
+                        ),
+                        estimation_method=str(
+                            row.get(
+                                "estimation_method",
+                                "external provider Beta snapshot",
+                            )
+                        ),
                     )
                 )
             levels.append(

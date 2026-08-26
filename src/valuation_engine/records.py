@@ -10,6 +10,8 @@ class EvidenceSourceLayer(str, Enum):
     REALIZED_OR_FILING = "realized_or_filing"
     COMPANY_OFFICIAL_PLAN = "company_official_plan"
     POLICY_PRIMARY_SOURCE = "policy_primary_source"
+    AUTHORIZED_MARKET_DATA = "authorized_market_data"
+    ANALYST_UNDERWRITING = "analyst_underwriting"
     EXTERNAL_REFERENCE = "external_reference"
     MARKET_COMPARISON = "market_comparison"
 
