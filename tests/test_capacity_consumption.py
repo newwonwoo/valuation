@@ -211,7 +211,7 @@ def test_bridge_must_consume_the_required_project_evidence():
 
 
 def test_capacity_capex_and_ramp_must_share_one_project_economic_path():
-    with pytest.raises(ValueError, match="economic path mismatch"):
+    with pytest.raises(ValueError, match="economic_path_id must be"):
         validate_capacity_bridge_consumption(
             assessment=assessment(),
             bridges=bridges(ramp_path="different_path:ramp"),
