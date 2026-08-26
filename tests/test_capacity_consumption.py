@@ -27,6 +27,9 @@ from valuation_engine.records import (
 from valuation_engine.signal_intelligence import ProjectGate
 
 
+ROOT_PATH = "capacity_project:P1"
+
+
 def assessment(*, core_required=True, recovery_required=False):
     project = CapacityProjectAssessment(
         project_id="P1",
@@ -62,7 +65,8 @@ def bridge(
     *,
     old_value: float,
     new_value: float,
-    path="capacity_project:P1",
+    unit: str,
+    path: str,
 ) -> BridgeRecord:
     return BridgeRecord(
         id=bridge_id,
@@ -72,7 +76,7 @@ def bridge(
         direction=Direction.UP,
         old_value=old_value,
         new_value=new_value,
-        unit="dimensionless",
+        unit=unit,
         rationale="capacity project bridge",
         confidence=0.8,
         kill_condition="project cancelled",
@@ -81,52 +85,70 @@ def bridge(
     )
 
 
-def bridges(*, ramp_path="capacity_project:P1", capacity_new=120, capex_new=420):
+def bridges(
+    *,
+    ramp_path=f"{ROOT_PATH}:ramp",
+    capacity_new=120,
+    capex_new=420,
+):
     return (
         bridge(
             "B_CAPACITY",
             ("E_LAND", "E_SITE"),
             old_value=100,
             new_value=capacity_new,
+            unit="count",
+            path=f"{ROOT_PATH}:capacity",
         ),
         bridge(
             "B_CAPEX",
             ("E_LAND", "E_CAPEX"),
             old_value=0,
             new_value=capex_new,
+            unit="KRW_billion",
+            path=f"{ROOT_PATH}:capex",
         ),
         bridge(
             "B_RAMP",
             ("E_LAND", "E_RAMP"),
             old_value=0,
             new_value=2,
+            unit="years",
             path=ramp_path,
         ),
     )
 
 
-def contract(*, assessment_hash="ASSESSMENT-HASH", include_ramp=True):
+def contract(
+    *,
+    assessment_hash="ASSESSMENT-HASH",
+    include_ramp=True,
+    root_path=ROOT_PATH,
+):
     values = [
         CapacityBridgeBinding(
-            "P1",
-            CapacityBridgeRole.CAPACITY,
-            "B_CAPACITY",
-            ("E_LAND", "E_SITE"),
+            project_id="P1",
+            role=CapacityBridgeRole.CAPACITY,
+            bridge_id="B_CAPACITY",
+            required_evidence_ids=("E_LAND", "E_SITE"),
+            project_economic_path_id=root_path,
         ),
         CapacityBridgeBinding(
-            "P1",
-            CapacityBridgeRole.CAPEX,
-            "B_CAPEX",
-            ("E_CAPEX",),
+            project_id="P1",
+            role=CapacityBridgeRole.CAPEX,
+            bridge_id="B_CAPEX",
+            required_evidence_ids=("E_CAPEX",),
+            project_economic_path_id=root_path,
         ),
     ]
     if include_ramp:
         values.append(
             CapacityBridgeBinding(
-                "P1",
-                CapacityBridgeRole.RAMP,
-                "B_RAMP",
-                ("E_RAMP",),
+                project_id="P1",
+                role=CapacityBridgeRole.RAMP,
+                bridge_id="B_RAMP",
+                required_evidence_ids=("E_RAMP",),
+                project_economic_path_id=root_path,
             )
         )
     return CapacityBridgeConsumptionContract(assessment_hash, tuple(values))
@@ -140,7 +162,12 @@ def test_core_capacity_requires_capacity_capex_and_ramp_consumption():
     )
 
     assert result.consumed_project_ids == ("P1",)
-    assert result.project_economic_paths == (("P1", "capacity_project:P1"),)
+    assert result.project_economic_paths == (("P1", ROOT_PATH),)
+    assert result.role_bindings == (
+        ("P1", "core", "capacity", "B_CAPACITY", f"{ROOT_PATH}:capacity"),
+        ("P1", "core", "capex", "B_CAPEX", f"{ROOT_PATH}:capex"),
+        ("P1", "core", "ramp", "B_RAMP", f"{ROOT_PATH}:ramp"),
+    )
     assert result.bridge_ids == ("B_CAPACITY", "B_CAPEX", "B_RAMP")
     assert result.consumption_hash
 
@@ -170,6 +197,8 @@ def test_bridge_must_consume_the_required_project_evidence():
             ("E_LAND",),
             old_value=100,
             new_value=120,
+            unit="count",
+            path=f"{ROOT_PATH}:capacity",
         ),
         *bridges()[1:],
     )
@@ -182,12 +211,28 @@ def test_bridge_must_consume_the_required_project_evidence():
 
 
 def test_capacity_capex_and_ramp_must_share_one_project_economic_path():
-    with pytest.raises(ValueError, match="share one project economic_path_id"):
+    with pytest.raises(ValueError, match="economic_path_id must be"):
         validate_capacity_bridge_consumption(
             assessment=assessment(),
-            bridges=bridges(ramp_path="different_path"),
+            bridges=bridges(ramp_path="different_path:ramp"),
             contract=contract(),
         )
+
+
+def test_contract_rejects_different_roots_for_one_project():
+    values = list(contract().bindings)
+    values[-1] = CapacityBridgeBinding(
+        project_id="P1",
+        role=CapacityBridgeRole.RAMP,
+        bridge_id="B_RAMP",
+        required_evidence_ids=("E_RAMP",),
+        project_economic_path_id="capacity_project:OTHER",
+    )
+    with pytest.raises(ValueError, match="share one project-economic-path root"):
+        CapacityBridgeConsumptionContract(
+            "ASSESSMENT-HASH",
+            tuple(values),
+        ).validate()
 
 
 def test_capacity_bridge_must_raise_capacity():

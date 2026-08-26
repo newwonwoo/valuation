@@ -1,0 +1,42 @@
+name: verified-report
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  verified-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Verify report-form template
+        run: PYTHONPATH=src python scripts/render_verified_report_form.py --check
+      - name: Run actual canonical LIVE_PRIMARY fixture
+        run: >-
+          PYTHONPATH=src:.
+          python scripts/render_verified_runtime_fixture.py
+          --output /tmp/PRISM_ACTUAL_RUNTIME_REPORT.md
+      - name: Compare tracked actual report when present
+        run: |
+          if [ -f examples/report_forms/PRISM_ACTUAL_RUNTIME_REPORT.md ]; then
+            cmp /tmp/PRISM_ACTUAL_RUNTIME_REPORT.md examples/report_forms/PRISM_ACTUAL_RUNTIME_REPORT.md
+          fi
+      - name: Focused runtime regressions
+        run: >-
+          pytest -q
+          tests/test_capacity_commitment_gate.py
+          tests/test_capacity_consumption.py
+          tests/test_capacity_runtime.py
+          tests/test_live_runtime_assembly.py
+          tests/test_full_live_primary_runtime.py
+          tests/test_report_form.py
+      - name: Upload actual run report
+        uses: actions/upload-artifact@v4
+        with:
+          name: PRISM_ACTUAL_RUNTIME_REPORT
+          path: /tmp/PRISM_ACTUAL_RUNTIME_REPORT.md
