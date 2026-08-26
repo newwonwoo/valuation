@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .capacity_commitment import CapacityCommitmentAssessment
 from .control_plane import StageStatus
 from .ledger import EvidenceLedger
 from .llm_staff import (
@@ -27,14 +28,28 @@ def _staff_context(context: OrchestratorContext) -> LLMStaffContext:
         raise ValueError("ticker missing for LLM Staff")
     if not isinstance(ledger, EvidenceLedger):
         raise ValueError("EvidenceLedger missing for LLM Staff")
-    if any(item.source_layer is EvidenceSourceLayer.MARKET_COMPARISON for item in ledger.active()):
-        raise PermissionError("pre-freeze LLM Staff context contains market-comparison Evidence")
+    if any(
+        item.source_layer is EvidenceSourceLayer.MARKET_COMPARISON
+        for item in ledger.active()
+    ):
+        raise PermissionError(
+            "pre-freeze LLM Staff context contains market-comparison Evidence"
+        )
     prior = context.data.get("prior_hypotheses", ())
-    if not isinstance(prior, tuple) or not all(isinstance(item, HypothesisRecord) for item in prior):
+    if not isinstance(prior, tuple) or not all(
+        isinstance(item, HypothesisRecord) for item in prior
+    ):
         raise ValueError("prior_hypotheses must be a typed tuple")
     scanner_findings = context.data.get("scanner_findings", ())
     if not isinstance(scanner_findings, tuple):
         raise ValueError("scanner_findings must be a tuple")
+    capacity = context.data.get("capacity_commitment_assessment")
+    if capacity is not None and not isinstance(
+        capacity, CapacityCommitmentAssessment
+    ):
+        raise ValueError(
+            "capacity_commitment_assessment must be typed when present"
+        )
     return LLMStaffContext(
         company=company,
         ticker=ticker,
@@ -43,6 +58,7 @@ def _staff_context(context: OrchestratorContext) -> LLMStaffContext:
         module_requirement_plan=context.data.get("module_requirement_plan"),
         scanner_findings=scanner_findings,
         funding_scan_result=context.data.get("funding_scan_result"),
+        capacity_commitment_assessment=capacity,
     )
 
 
@@ -51,7 +67,10 @@ def researcher_a_adapter(*, officer: IntelligenceOfficer) -> StageAdapter:
         try:
             staff = _staff_context(context)
             proposal = run_intelligence_officer(staff, officer)
-            active_hypotheses = merge_hypothesis_context(staff.prior_hypotheses, proposal.hypotheses)
+            active_hypotheses = merge_hypothesis_context(
+                staff.prior_hypotheses,
+                proposal.hypotheses,
+            )
         except Exception as exc:
             return StageExecutionResult(
                 StageStatus.BLOCKED,
@@ -77,8 +96,12 @@ def blind_red_team_adapter(*, officer: RedTeamOfficer) -> StageAdapter:
         try:
             staff = _staff_context(context)
             hypotheses = context.data.get("hypotheses", ())
-            if not isinstance(hypotheses, tuple) or not all(isinstance(item, HypothesisRecord) for item in hypotheses):
-                raise ValueError("Researcher hypotheses missing before Blind Red Team")
+            if not isinstance(hypotheses, tuple) or not all(
+                isinstance(item, HypothesisRecord) for item in hypotheses
+            ):
+                raise ValueError(
+                    "Researcher hypotheses missing before Blind Red Team"
+                )
             proposal = run_red_team(staff, hypotheses, officer)
         except Exception as exc:
             return StageExecutionResult(
@@ -86,7 +109,11 @@ def blind_red_team_adapter(*, officer: RedTeamOfficer) -> StageAdapter:
                 f"Blind Red Team contract failed: {type(exc).__name__}: {exc}",
                 blocking=True,
             )
-        unresolved = tuple(item for item in proposal.issues if item.blocking and not item.resolved)
+        unresolved = tuple(
+            item
+            for item in proposal.issues
+            if item.blocking and not item.resolved
+        )
         outputs = {
             "red_team_proposal": proposal,
             "red_team_counter_thesis": proposal.counter_thesis,
@@ -95,26 +122,43 @@ def blind_red_team_adapter(*, officer: RedTeamOfficer) -> StageAdapter:
         if unresolved:
             return StageExecutionResult(
                 StageStatus.RECOVERY_REQUIRED,
-                "Blind Red Team found unresolved blocking issues: " + ", ".join(item.id for item in unresolved),
+                "Blind Red Team found unresolved blocking issues: "
+                + ", ".join(item.id for item in unresolved),
                 outputs,
                 blocking=True,
             )
-        return StageExecutionResult(StageStatus.PASS, "Blind Red Team completed with no unresolved blocker", outputs)
+        return StageExecutionResult(
+            StageStatus.PASS,
+            "Blind Red Team completed with no unresolved blocker",
+            outputs,
+        )
 
     return run
 
 
-def evidence_to_assumption_bridge_adapter(*, analyst: BridgeAnalyst) -> StageAdapter:
+def evidence_to_assumption_bridge_adapter(
+    *,
+    analyst: BridgeAnalyst,
+) -> StageAdapter:
     def run(context: OrchestratorContext) -> StageExecutionResult:
         try:
             staff = _staff_context(context)
             hypotheses = context.data.get("hypotheses", ())
-            if not isinstance(hypotheses, tuple) or not all(isinstance(item, HypothesisRecord) for item in hypotheses):
-                raise ValueError("Researcher hypotheses missing before Bridge analysis")
+            if not isinstance(hypotheses, tuple) or not all(
+                isinstance(item, HypothesisRecord) for item in hypotheses
+            ):
+                raise ValueError(
+                    "Researcher hypotheses missing before Bridge analysis"
+                )
             red_team = context.data.get("red_team_proposal")
             if red_team is None:
                 raise ValueError("Red Team proposal missing before Bridge analysis")
-            bundle = run_bridge_analyst(staff, hypotheses, red_team, analyst)
+            bundle = run_bridge_analyst(
+                staff,
+                hypotheses,
+                red_team,
+                analyst,
+            )
             bridges, specs, input_map = materialize_bridge_bundle(bundle)
         except Exception as exc:
             return StageExecutionResult(
