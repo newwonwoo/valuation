@@ -4,6 +4,10 @@ from importlib import resources
 
 from valuation_engine.doctrine_runtime import load_default_unit_contract_registry
 from valuation_engine.method_capabilities import load_default_method_capability_registry
+from valuation_engine.sanil_live_primary import (
+    load_sanil_market_snapshot,
+    load_sanil_snapshot,
+)
 
 
 REGISTRIES = (
@@ -13,6 +17,8 @@ REGISTRIES = (
     "valuation_method_capability_registry.yaml",
     "unit_contract_registry.yaml",
     "probability_calibration_policy.yaml",
+    "sanil_live_snapshot.yaml",
+    "sanil_market_snapshot.yaml",
 )
 
 
@@ -31,6 +37,11 @@ def main() -> int:
     unit_registry.validate()
     if not unit_registry.units:
         raise SystemExit("installed wheel Unit Contract registry is empty")
+
+    sanil = load_sanil_snapshot()
+    market = load_sanil_market_snapshot()
+    if sanil.company["ticker"] != "062040" or market.ticker != "062040":
+        raise SystemExit("installed wheel Sanil runtime resources are invalid")
 
     print(
         "installed-wheel runtime OK: "

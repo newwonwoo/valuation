@@ -1,0 +1,12 @@
+version: 1.0
+purpose: Promotion thresholds for forecast-class and horizon-specific probability calibration. A cohort must declare its own pre-registered base_rate before it can be evaluated for CALIBRATED status.
+defaults:
+  min_resolved_events: 200
+  min_companies: 20
+  min_quarters: 8
+  min_per_displayed_band: 30
+  min_oos_windows: 2
+  max_ece: 0.08
+  max_ambiguous_censored_rate: 0.10
+  fixed_bin_edges: [0, 0.2, 0.4, 0.6, 0.8, 1]
+cohorts: {}

@@ -1,0 +1,90 @@
+version: 1.0
+principle: Control Plane commands; LLM advises; Compiler commits assumptions; deterministic engines calculate; Audit alone authorizes intrinsic freeze.
+llm_contract:
+  allowed_actions: [observe, reason, propose, recover, design, ask]
+  forbidden_actions:
+    - commit_assumption
+    - perform_valuation_math
+    - authorize_stage
+    - issue_freeze_token
+    - mutate_canonical_system_without_user_approval
+recovery_ladder:
+  - research
+  - reconcile
+  - derive
+  - proxy
+  - alternate_model
+  - bounded_estimate
+  - partial_valuation
+  - capability_design
+  - valuation_blocked
+capability_build_gate:
+  require_all:
+    - existing_capability_exhausted
+    - material_to_current_analysis
+    - reusable_beyond_current_case
+    - input_output_contract_defined
+  user_decision_required_before_build: true
+coverage_rule:
+  silent_skip_forbidden: true
+  terminal_statuses:
+    - pass
+    - warning
+    - blocked
+    - skipped_not_applicable
+    - not_implemented
+    - recovered
+    - awaiting_user_decision
+phases:
+  I_OPENING:
+    - COMPANY_RESOLUTION
+    - LOAD_COMPANY_STATE
+    - LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT
+    - SOURCE_FRESHNESS_PRECHECK
+  II_BATTLEFIELD_MAPPING:
+    - SEGMENT_DECOMPOSITION
+    - INDUSTRY_DNA_ROUTE
+    - MODULE_REQUIREMENT_PLAN
+  III_INTELLIGENCE:
+    - PRIMARY_EVIDENCE_COLLECTION
+    - EVIDENCE_LEDGER
+    - ROCKET_INSIGHT_SCAN
+    - UPSTREAM_FUNDING_SCAN
+  IV_WAR_COUNCIL:
+    - RESEARCHER_A
+    - BLIND_RED_TEAM_B
+    - RESEARCH_LOOP
+  V_ORDER_COMPILATION:
+    - EVIDENCE_TO_ASSUMPTION_BRIDGE
+    - SCENARIO_BUILD
+  VI_VALUATION_FIREPOWER:
+    - VALUATION_METHOD_INTENT
+    - HIERARCHICAL_BETA_ESTIMATION
+    - WACC_VALIDATION
+    - DETERMINISTIC_VALUATION
+    - HIERARCHICAL_WARRANTED_PER
+    - DCF_PER_ASSUMPTION_CONSISTENCY_GATE
+    - CROSS_METHOD_DOUBLE_COUNT_AUDIT
+    - PROBABILITY_DISTRIBUTION_ANALYSIS
+  VII_FINAL_INSPECTION:
+    - AUDIT_GATE
+    - INTRINSIC_VALUE_FREEZE
+  VIII_POST_FREEZE:
+    - STREET_REFERENCE_LOAD
+    - STREET_GAP_ANALYZER
+    - MARKET_PRICE_LOAD
+    - MARKET_COMPARE
+    - THESIS_DELTA
+    - SAVE_STATE
+    - FINAL_REPORT
+post_freeze_authorization:
+  requires:
+    - audit_pass
+    - doctrine_coverage_complete
+    - intrinsic_freeze_token
+  prohibited_before_token:
+    - target_company_consensus
+    - target_price
+    - target_multiple
+    - rating
+    - current_market_price

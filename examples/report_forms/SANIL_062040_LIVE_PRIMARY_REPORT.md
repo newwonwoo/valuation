@@ -5,7 +5,7 @@
 - 투자검토 상태: **Preliminary source-backed underwrite**
 - 현재가(Freeze 후 로드): **169,300원**
 - Street 참고 목표가(Freeze 후 로드): **310,000원**
-- Down / Core / Bull: **84,408원 / 107,901원 / 127,234원**
+- Down / Core / Bull: **83,265원 / 106,758원 / 126,091원**
 - Hierarchical Beta: **1.297**
 - WACC: **9.852%**
 - Core 반영 Capacity 프로젝트: **SANIL_SECOND_FACTORY_RAMP**
@@ -41,7 +41,7 @@
 - Run ID: `SANIL-062040-20260825`
 - Execution mode: `live_primary`
 - Run status: **VERIFIED_FROZEN**
-- Attestation hash: `05ab190c59e02bdb03d5ae1dacff9b84a7fb87eb4342a9102bc7cd21bda03647`
+- Attestation hash: `6b4047c5f21323baa3967a2471e7ecaf6cdd2229aab6261f7c56c61f5f244871`
 
 ## Execution Attestation
 
@@ -69,21 +69,21 @@
 
 | Artifact | Hash |
 |---|---|
-| Evidence Ledger | `8b4ad0b898f3a628a095e6cf0c32e448428a2191ab1fe6ac50a722a692363e08` |
-| Assumption set | `e10f72fa32cebc101691f2836720ea7d49165d60cf75610b8d83c2019561a891` |
-| Scenario set | `f95f56d4f17a7ca07e80e40e9a833b732b74f2a8aff43111475dda5f5a9c178f` |
+| Evidence Ledger | `3dc77e6b69167052a84e618030d3f525c7cb37ed469d47916e6bce686d8a7ccd` |
+| Assumption set | `2eadbb684885cbddc817fa1a0a090e0bfeadcc055c89eee39701337b67233f65` |
+| Scenario set | `b1386b2822c9a5c962f18f5a289664b4930ebfebb1b8145a2f51160587a10d9b` |
 | Beta | `381bde9f06e4696a7312b9101b27480ccc241a5afa9ec381eb765dd64b1b08e4` |
 | WACC | `e3cde4b2f7b99b1ad5af3350d8e395bfa2828439558604c1b6283c7a0646d958` |
 | Capacity assessment | `c12b740b58356e43f623e446c44e0b1702f4b77deb353b5b4fa5d7c45c77553d` |
-| Capacity consumption | `b89feeea38d80d0310ee8a80db6cbf9636eff4a018f310039b10c7d2958e66c4` |
-| Capacity scenario | `9c932d6ad022c2ba34dc3583ef6a19c9cf086c5df41301842113139d709fc740` |
-| Capacity valuation | `4145fbccadf656793df0eb44ae7e0ff85058738fc06d5d3db23240cb1a97ce25` |
-| Capacity PER | `70a9ef74721ba8eeef0f484344a5f9d91d148310a5e0489df17fbda4f94546a5` |
-| Capacity consistency | `e4c322362744d1a16993d45fb3137aab314da654da85fb497fce7c2645f8d897` |
-| Capacity audit | `88e516fc1b806a546b01012df2fac715bd3214d5bf0f006c2beee649c7527ce6` |
-| Valuation | `c39610a0c51bf1067a2a48b52d59a80c6ad10de33346c45a46a8fb7623d2e379` |
-| Audit | `26e1e1ce37b263932fc3cfb3fd84eec522f9af2ec9ba629810e5785d578289e3` |
-| Intrinsic Freeze | `287b741a12147a30548007d86955a574126eb5de5a50ffca8e96ca834f6aa73d` |
+| Capacity consumption | `da9cf6c223a74002008ab9cc71965841b9b613f06ff036ad9998be6b3b995e83` |
+| Capacity scenario | `d510f0f592e32fbda77b02ac638461f7387af814cdb173e35536d1afcff4a5ae` |
+| Capacity valuation | `60102044ac71025db38332ec33987e1ee05ec47db72284c8e9c846bf74143768` |
+| Capacity PER | `0bea0d594d764ed67e1176ddbb1e4a91b8f15ffbb32064adcf4de873535317b5` |
+| Capacity consistency | `c2dd9c39ebaf090884b6fa21ecc3aaa9ca3776548d0e796e9616d04250d5af80` |
+| Capacity audit | `7f7a8ee44063b3eba3105951f65f1df8132a60847ab837275e1fa8927d3f5a32` |
+| Valuation | `a417aae2e779c930ef2a8473ac2f662818fcf98766a5e8383f06e5718b4e9ce6` |
+| Audit | `77cd47509df8a7aeda2516db44b95a81cf7662d9fb87a6cfa0a0d7514f6af1f5` |
+| Intrinsic Freeze | `53606140ec9e89e14e953aab54c1f2b8eabfb4f4e3715f1252970d9deee5a221` |
 
 ## Stage Trace
 
@@ -98,7 +98,7 @@
 | 7 | `MODULE_REQUIREMENT_PLAN` | `pass` | NO | compiled canonical Module Requirement Plan and non-destructive learned research loadout |
 | 8 | `PRIMARY_EVIDENCE_COLLECTION` | `pass` | NO | primary evidence collected with complete required segment/metric coverage and planned source lineage |
 | 9 | `EVIDENCE_LEDGER` | `pass` | NO | append-only EvidenceLedger validated and canonical runtime snapshot frozen |
-| 10 | `ROCKET_INSIGHT_SCAN` | `pass` | NO | live Rocket Insight scanner dispatch completed |
+| 10 | `ROCKET_INSIGHT_SCAN` | `warning` | NO | live Rocket Insight scanner dispatch completed with warnings |
 | 11 | `UPSTREAM_FUNDING_SCAN` | `pass` | NO | live upstream funding scan completed; result is evidence/hypothesis input only and does not directly change WACC |
 | 12 | `RESEARCHER_A` | `pass` | NO | LLM Intelligence Officer produced typed hypotheses and an auditable environment-change/corporate-strength linkage decision without committing assumptions |
 | 13 | `BLIND_RED_TEAM_B` | `pass` | NO | Blind Red Team completed with no unresolved blocker |
@@ -147,23 +147,23 @@
 - LLM confidence: 78%
 
 ## Intrinsic Value
-- Down intrinsic: 84,408.14 KRW/share
-- Core intrinsic: 107,901.44 KRW/share
-- Bull intrinsic: 127,233.96 KRW/share
+- Down intrinsic: 83,264.96 KRW/share
+- Core intrinsic: 106,758.26 KRW/share
+- Bull intrinsic: 126,090.78 KRW/share
 - Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.
 
 ## Street Gap
 - 리포트 수: 1
 - 평균 목표가: 310,000 KRW
-- Down 대비: -225,591.86 (-72.8%)
-- Core 대비: -202,098.56 (-65.2%)
-- Bull 대비: -182,766.04 (-59.0%)
+- Down 대비: -226,735.04 (-73.1%)
+- Core 대비: -203,241.74 (-65.6%)
+- Bull 대비: -183,909.22 (-59.3%)
 
 ## Current Market Compare
 - 현재가: 169,300 KRW (2026-08-25)
-- Down 기대수익 간격: -84,891.86 (-50.1%)
-- Core 기대수익 간격: -61,398.56 (-36.3%)
-- Bull 기대수익 간격: -42,066.04 (-24.8%)
+- Down 기대수익 간격: -86,035.04 (-50.8%)
+- Core 기대수익 간격: -62,541.74 (-36.9%)
+- Bull 기대수익 간격: -43,209.22 (-25.5%)
 
 ## Module Impact / Research Efficiency
 - 측정 완료: DETERMINISTIC_VALUATION
@@ -184,8 +184,8 @@
 
 ## Run Integrity
 - Valuation scope: FULL_INTRINSIC
-- Ledger snapshot: 8b4ad0b898f3a628a095e6cf0c32e448428a2191ab1fe6ac50a722a692363e08
-- Assumption set: e10f72fa32cebc101691f2836720ea7d49165d60cf75610b8d83c2019561a891
-- Valuation: c39610a0c51bf1067a2a48b52d59a80c6ad10de33346c45a46a8fb7623d2e379
-- Audit: 26e1e1ce37b263932fc3cfb3fd84eec522f9af2ec9ba629810e5785d578289e3
-- Freeze token: 287b741a12147a30548007d86955a574126eb5de5a50ffca8e96ca834f6aa73d
+- Ledger snapshot: 3dc77e6b69167052a84e618030d3f525c7cb37ed469d47916e6bce686d8a7ccd
+- Assumption set: 2eadbb684885cbddc817fa1a0a090e0bfeadcc055c89eee39701337b67233f65
+- Valuation: a417aae2e779c930ef2a8473ac2f662818fcf98766a5e8383f06e5718b4e9ce6
+- Audit: 77cd47509df8a7aeda2516db44b95a81cf7662d9fb87a6cfa0a0d7514f6af1f5
+- Freeze token: 53606140ec9e89e14e953aab54c1f2b8eabfb4f4e3715f1252970d9deee5a221

@@ -1,0 +1,43 @@
+version: 2
+purpose: Source-backed LIVE_PRIMARY acceptance tracking. BLOCKED entries are explicit gaps and never count as accepted company fixtures.
+required_contract:
+  full_live_primary_33_stage: true
+  primary_evidence_lineage: true
+  target_market_isolation_pre_freeze: true
+  audit_and_intrinsic_freeze: true
+  post_freeze_market_compare: true
+  adversarial_blocked_fixture: true
+  synthetic_placeholder_forbidden: true
+companies:
+  OCI_HOLDINGS:
+    display_name: OCI Holdings
+    status: BLOCKED_SOURCE_FIXTURE
+    success_fixture_path: tests/fixtures/live_companies/oci_holdings.success.json
+    adversarial_fixture_path: tests/fixtures/live_companies/oci_holdings.blocked.json
+    success_fixture_sha256: ''
+    adversarial_fixture_sha256: ''
+    blocker: Source-backed successful and adversarial LIVE_PRIMARY artifacts have not both been committed and independently validated.
+  ORACLE:
+    display_name: Oracle
+    status: BLOCKED_SOURCE_FIXTURE
+    success_fixture_path: tests/fixtures/live_companies/oracle.success.json
+    adversarial_fixture_path: tests/fixtures/live_companies/oracle.blocked.json
+    success_fixture_sha256: ''
+    adversarial_fixture_sha256: ''
+    blocker: Source-backed successful and adversarial LIVE_PRIMARY artifacts have not both been committed and independently validated.
+  BLOOM_ENERGY:
+    display_name: Bloom Energy
+    status: BLOCKED_SOURCE_FIXTURE
+    success_fixture_path: tests/fixtures/live_companies/bloom_energy.success.json
+    adversarial_fixture_path: tests/fixtures/live_companies/bloom_energy.blocked.json
+    success_fixture_sha256: ''
+    adversarial_fixture_sha256: ''
+    blocker: Source-backed successful and adversarial LIVE_PRIMARY artifacts have not both been committed and independently validated.
+  GE_VERNOVA:
+    display_name: GE Vernova
+    status: BLOCKED_SOURCE_FIXTURE
+    success_fixture_path: tests/fixtures/live_companies/ge_vernova.success.json
+    adversarial_fixture_path: tests/fixtures/live_companies/ge_vernova.blocked.json
+    success_fixture_sha256: ''
+    adversarial_fixture_sha256: ''
+    blocker: Source-backed successful and adversarial LIVE_PRIMARY artifacts have not both been committed and independently validated.

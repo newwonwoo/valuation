@@ -7,6 +7,7 @@ from valuation_engine.sanil_live_primary import (
     TARGET_ID,
     TICKER,
     build_sanil_live_primary_config,
+    load_sanil_market_snapshot,
     load_sanil_snapshot,
     run_sanil_live_primary,
 )
@@ -23,6 +24,10 @@ def test_sanil_snapshot_is_explicit_and_source_backed():
     assert snapshot.company["ticker"] == TICKER
     assert snapshot.cutoff == "2026-08-25"
     assert tuple(snapshot.scenarios) == ("Down", "Core", "Bull")
+    assert "market" not in snapshot.payload
+    market = load_sanil_market_snapshot()
+    assert market.price == 169300
+    assert market.currency == "KRW"
     assert all(
         str(source["source_ref"]).startswith("https://")
         and len(str(source["document_hash"])) == 64
@@ -157,6 +162,10 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         is EvidenceSourceLayer.ANALYST_UNDERWRITING
     )
     assert (
+        ledger.get("E:SANIL:model_core_expansion_capex").source_layer
+        is EvidenceSourceLayer.ANALYST_UNDERWRITING
+    )
+    assert (
         ledger.get("E:SANIL:beta_selection_L4_ECONOMIC_TWINS").source_layer
         is EvidenceSourceLayer.AUTHORIZED_MARKET_DATA
     )
@@ -171,6 +180,19 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     }
     assert values["Down"] < values["Core"] < values["Bull"]
     assert valuation.expected_value_per_share is None
+    core = next(item for item in valuation.scenarios if item.scenario_id == "Core")
+    assert f"capacity_project:SANIL_SECOND_FACTORY_RAMP:capex" in core.economic_path_ids
+    compiled = result.data["compiled_assumption_set"]
+    assert compiled.get("expansion_capex", "Core").measure.amount == 42
+
+    findings = {
+        item.scanner_id: item for item in result.data["scanner_findings"]
+    }
+    assert findings["BACKLOG_QUALITY"].evidence_ids != findings["UTILIZATION"].evidence_ids
+    assert findings["CAPEX_EXECUTION"].economic_path_ids == (
+        "capacity_project:SANIL_SECOND_FACTORY_RAMP:capex",
+    )
+    assert findings["CANCELLATION_TERMS"].status is not None
 
     assessment = result.data["capacity_commitment_assessment"]
     assert assessment.core_inclusion_required_projects == (
@@ -213,3 +235,17 @@ def test_sanil_config_requires_driver_dcf_and_capacity_core(tmp_path):
     assert config.providers.capacity_bridge_consumption_loader is not None
     assert config.providers.street_loader is not None
     assert config.providers.market_loader is not None
+
+
+def test_sanil_collector_returns_only_requested_metrics():
+    from valuation_engine.evidence_collection import EvidenceCollectionRequest
+    from valuation_engine.sanil_live_primary import _primary_collector
+
+    snapshot = load_sanil_snapshot(SNAPSHOT)
+    batch = _primary_collector(snapshot)(
+        EvidenceCollectionRequest(TARGET_ID, ("backlog", "utilization"))
+    )
+    assert tuple(item.metric for item in batch.records) == (
+        "backlog",
+        "utilization",
+    )

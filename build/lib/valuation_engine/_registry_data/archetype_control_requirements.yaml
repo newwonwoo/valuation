@@ -1,0 +1,155 @@
+version: 1.0
+purpose: Control-Plane-only requirements that complement, but do not duplicate, archetype_module_registry economics.
+rule: Scanner IDs are deployment requirements. If an implementation is unavailable, Control Plane records NOT_IMPLEMENTED and invokes the capability-gap process rather than silently skipping it.
+requirements:
+  contracted_backlog:
+    required_kpis: [orders, backlog, book_to_bill, backlog_conversion, cancellation_rate, contract_liabilities, lead_time]
+    mandatory_scanners: [BACKLOG_QUALITY, CANCELLATION_TERMS, CUSTOMER_ADVANCE_FUNDING]
+    kill_conditions:
+      - backlog fails to convert within the evidenced delivery window
+      - cancellations or deferrals invalidate reported backlog quality
+      - customer advances reverse without corresponding delivery or funded replacement
+
+  capacity_manufacturing:
+    required_kpis: [nameplate_capacity, effective_capacity, utilization, yield, asp, unit_cost, expansion_capex]
+    mandatory_scanners: [CAPACITY_RAMP, QUALIFICATION, UTILIZATION, CAPEX_EXECUTION]
+    kill_conditions:
+      - effective capacity or qualification materially lags the assumed ramp
+      - utilization fails to rise with installed effective capacity
+      - growth requires materially more capex than the compiled reinvestment path
+
+  recurring_subscription:
+    required_kpis: [arr, nrr, gross_retention, churn, gross_margin, rpo, sales_efficiency, fcf_margin]
+    mandatory_scanners: [RETENTION_COHORT, RPO_CONVERSION, SALES_EFFICIENCY]
+    kill_conditions:
+      - retention deterioration breaks the assumed cohort economics
+      - RPO or committed revenue fails to convert within the assumed period
+      - required acquisition spend prevents the assumed FCF conversion
+
+  transaction_marketplace:
+    required_kpis: [gmv, transactions, active_buyers, active_sellers, frequency, take_rate, contribution_margin]
+    mandatory_scanners: [NETWORK_DENSITY, TAKE_RATE, TRANSACTION_FREQUENCY]
+    kill_conditions:
+      - buyer or seller activity falls enough to break network-density assumptions
+      - take-rate gains reverse or require economically offsetting incentives
+      - contribution margin fails to scale with transaction volume
+
+  commodity_price_taker:
+    required_kpis: [realized_price, benchmark_price, production, inventory, cash_cost, utilization, cost_curve_position]
+    mandatory_scanners: [CYCLE_NORMALIZATION, COST_CURVE, INVENTORY, TRADE_FLOW]
+    kill_conditions:
+      - realized pricing persistently disconnects from the modeled benchmark bridge
+      - cost-curve position deteriorates enough to invalidate normalized margins
+      - inventory or new supply prevents the assumed mid-cycle normalization
+
+  process_spread:
+    required_kpis: [input_price, output_price, spread, utilization, yield, turnaround, inventory]
+    mandatory_scanners: [SPREAD_NORMALIZATION, FEEDSTOCK_MIX, UTILIZATION]
+    kill_conditions:
+      - normalized spread is not supported across a full operating cycle
+      - feedstock or product mix removes the assumed structural spread advantage
+      - turnaround or utilization losses persist beyond the modeled normalization
+
+  regulated_rate_base:
+    required_kpis: [rate_base, allowed_roe, earned_roe, capex, regulatory_lag, load_growth, capital_structure]
+    mandatory_scanners: [REGULATORY_DOCKET, RATE_CASE, FINANCING_NEED]
+    kill_conditions:
+      - regulator decisions materially reduce allowed economics or recoverable capex
+      - earned ROE persistently falls below the allowed return without a recovery path
+      - financing needs exceed the capital structure assumed for rate-base growth
+
+  asset_yield_nav:
+    required_kpis: [asset_value, noi, ffo, affo, occupancy, rent, cap_rate, debt_maturities]
+    mandatory_scanners: [OCCUPANCY_RENT, CAP_RATE, REFINANCING]
+    kill_conditions:
+      - occupancy or rent resets invalidate stabilized NOI
+      - cap-rate expansion materially exceeds the modeled range
+      - refinancing terms impair distributable cash flow or covenant headroom
+
+  financial_balance_sheet:
+    required_kpis: [equity, roe, capital_ratio, spread_or_margin, credit_cost, payout, asset_quality]
+    mandatory_scanners: [ASSET_QUALITY, FUNDING_MIX, REGULATORY_CAPITAL]
+    kill_conditions:
+      - credit costs or asset quality invalidate sustainable ROE
+      - regulatory capital prevents the modeled payout or growth
+      - funding mix deterioration breaks the modeled spread economics
+
+  probabilistic_pipeline:
+    required_kpis: [clinical_evidence_stage, target_engagement, patient_poc, dose_response, development_cost, ownership_economics, cash_runway]
+    mandatory_scanners: [CLINICAL_EVIDENCE, REGULATORY_STATE, CASH_RUNWAY, OWNERSHIP_ECONOMICS]
+    kill_conditions:
+      - new patient evidence fails the required efficacy or safety gate
+      - ownership or licensing economics materially reduce attributable value
+      - runway becomes insufficient to reach the next value-validating milestone
+
+  reserve_depletion:
+    required_kpis: [proved_reserves, production, decline, reserve_life, lifting_cost, development_capex, replacement]
+    mandatory_scanners: [RESERVE_REPLACEMENT, DECLINE_CURVE, DEVELOPMENT_CAPEX]
+    kill_conditions:
+      - reserve replacement fails to offset modeled depletion
+      - production decline exceeds the validated decline curve
+      - development cost makes reserve replacement uneconomic at normalized pricing
+
+  consumer_unit_economics:
+    required_kpis: [traffic, units, ticket_or_price, same_store_growth, gross_margin, inventory_turn, new_unit_economics]
+    mandatory_scanners: [TRAFFIC_DEMAND, INVENTORY_CHANNEL, NEW_UNIT_COHORT]
+    kill_conditions:
+      - same-store or cohort economics fail to support new-unit growth
+      - channel inventory diverges materially from sell-through demand
+      - gross margin or working-capital needs break modeled cash returns
+
+  project_finance:
+    required_kpis: [land_control, permit_state, financing_close, offtake, grid_utilities, capex, cod, dscr, utilization]
+    mandatory_scanners: [PROJECT_REALIZATION, PERMIT_REGULATORY, GRID_TIME_TO_POWER, FINANCING_CLOSE, PHYSICAL_CONSTRUCTION]
+    kill_conditions:
+      - a required ProjectGate remains unresolved beyond the modeled schedule
+      - financing or offtake terms fail to support the modeled project economics
+      - COD or capex moves outside the validated project-value range
+
+  metered_usage_network:
+    required_kpis: [active_customers, usage_volume, usage_per_customer, unit_price, committed_spend, infrastructure_cost, gross_margin]
+    mandatory_scanners: [USAGE_GROWTH, COMMITTED_SPEND, INFRASTRUCTURE_COST]
+    kill_conditions:
+      - usage growth fails to convert into revenue at the modeled unit economics
+      - committed spend does not convert within its economic term
+      - infrastructure cost or capex prevents the assumed incremental margin
+
+  ip_royalty_licensing:
+    required_kpis: [design_wins, licensed_units, royalty_rate, license_fees, installed_base, contract_duration]
+    mandatory_scanners: [DESIGN_WIN_CONVERSION, IP_LEGAL_STATE, ARCHITECTURE_SUBSTITUTION]
+    kill_conditions:
+      - design wins fail to convert into licensed shipments
+      - legal or technical substitution weakens royalty enforceability or duration
+      - effective royalty economics fall below the compiled contract path
+
+  hit_driven_content:
+    required_kpis: [title_pipeline, release_schedule, release_probability, bookings, engagement, cohort_decay, development_cost]
+    mandatory_scanners: [RELEASE_PIPELINE, COHORT_DECAY, FRANCHISE_DURABILITY]
+    kill_conditions:
+      - release timing or probability materially slips from the compiled pipeline
+      - cohort decay is faster than the modeled lifetime curve
+      - development cost or title concentration destroys the assumed portfolio economics
+
+  advertising_attention:
+    required_kpis: [active_users, engagement, impressions, ad_load, cpm, fill_rate, traffic_acquisition_cost]
+    mandatory_scanners: [ATTENTION_ENGAGEMENT, AD_MONETIZATION, TRAFFIC_ACQUISITION_COST]
+    kill_conditions:
+      - engagement or active-user trends invalidate monetizable attention assumptions
+      - ad load, CPM and fill rate cannot jointly reach the modeled monetization path
+      - traffic acquisition or platform dependence offsets incremental ad economics
+
+  design_led_product:
+    required_kpis: [design_wins, unit_shipments, asp, gross_margin, product_mix, customer_concentration, product_cycle]
+    mandatory_scanners: [DESIGN_WIN_CONVERSION, PRODUCT_CYCLE, CUSTOMER_CONCENTRATION, SUPPLY_CHAIN]
+    kill_conditions:
+      - design wins fail to convert into shipments on the expected product cycle
+      - customer concentration or substitution materially reduces expected unit volume
+      - mix or ASP deterioration breaks the modeled product margin structure
+
+  aum_fee_economics:
+    required_kpis: [aum, net_flows, market_beta_effect, fee_rate, performance_fees, operating_margin, seed_capital]
+    mandatory_scanners: [NET_FLOWS, FEE_RATE, PERFORMANCE_FEE_NORMALIZATION]
+    kill_conditions:
+      - organic net flows remain negative beyond the assumed recovery period
+      - fee compression invalidates normalized revenue yield on AUM
+      - performance fees or market appreciation were mistaken for recurring organic economics

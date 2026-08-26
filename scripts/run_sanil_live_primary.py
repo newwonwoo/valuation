@@ -6,6 +6,7 @@ from tempfile import TemporaryDirectory
 
 from valuation_engine.report_form import attest_controlled_run, render_controlled_run_report
 from valuation_engine.sanil_live_primary import (
+    load_sanil_market_snapshot,
     load_sanil_snapshot,
     run_sanil_live_primary,
 )
@@ -42,12 +43,13 @@ def render_report(state_root: Path) -> str:
     beta = result.data["live_beta_result"]
     wacc = result.data["live_wacc_result"]
     assessment = result.data["capacity_commitment_assessment"]
+    market_snapshot = load_sanil_market_snapshot()
     market = result.data.get("market_comparison")
     street = result.data.get("street_comparison")
     current_price = (
         market.observation.price
         if market is not None
-        else snapshot.market["price"]
+        else market_snapshot.price
     )
     street_target = (
         street.consensus.mean_target_price
@@ -93,7 +95,7 @@ def render_report(state_root: Path) -> str:
 - 실제 peer Beta·WACC 원장: {snapshot.sources['risk_snapshot']['source_ref']}
 - PRISM underwriting assumptions: {snapshot.sources['underwriting']['source_ref']}
 - Street 참고자료: {STREET_SOURCE_REF}
-- 현재가: {snapshot.market['source_ref']}
+- 현재가: {market_snapshot.source_ref}
 
 ---
 

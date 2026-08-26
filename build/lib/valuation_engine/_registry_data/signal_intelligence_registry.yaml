@@ -1,0 +1,232 @@
+version: 1.0
+sources:
+  - id: KR_G2B_PROCUREMENT_PLAN
+    signal_class: procurement_pipeline
+    knowledge_layer: primary_observed
+    source: Korea PPS / KONEPS procurement plan API
+    geography: KR
+    cadence: realtime
+    measures: [procurement_plan, buyer, category, expected_timing]
+    safe_use: [demand_candidate, public_sector_pipeline]
+    prohibited_use: [book_as_revenue, assume_award]
+    notes: plans can change or bypass a particular published stage
+
+  - id: KR_G2B_BID_AWARD_CONTRACT
+    signal_class: procurement_pipeline
+    knowledge_layer: primary_observed
+    source: Korea PPS / KONEPS bid-award-contract APIs
+    geography: KR
+    cadence: realtime
+    measures: [bid, award, contract, contract_change, delivery_request]
+    safe_use: [funded_demand_validation, public_contract_state]
+    prohibited_use: [recognize_revenue_before_delivery_or_accounting_evidence]
+
+  - id: US_USASPENDING_SAM
+    signal_class: procurement_pipeline
+    knowledge_layer: primary_observed
+    source: USAspending / SAM.gov
+    geography: US
+    cadence: daily_to_realtime
+    measures: [federal_awards, opportunities, subawards]
+    safe_use: [government_demand, award_state]
+    prohibited_use: [equate_opportunity_with_award]
+
+  - id: US_FERC_ELIBRARY_REGULATIONS
+    signal_class: regulatory_progress
+    knowledge_layer: primary_observed
+    source: FERC eLibrary / Regulations.gov
+    geography: US
+    cadence: daily
+    measures: [docket, filing, order, rulemaking, stakeholder_comment]
+    safe_use: [regulatory_state, permit_rule_timing, stakeholder_position]
+    prohibited_use: [treat_comment_as_agency_fact]
+
+  - id: US_EPA_ECHO
+    signal_class: regulatory_progress
+    knowledge_layer: primary_observed
+    source: EPA ECHO web services and downloads
+    geography: US
+    cadence: weekly_to_monthly
+    measures: [permit, inspection, violation, enforcement, penalty, facility]
+    safe_use: [social_license, environmental_execution_risk, facility_status]
+    prohibited_use: [infer_no_risk_from_absence_before_lag_check]
+
+  - id: US_LBNL_INTERCONNECTION_QUEUE
+    signal_class: project_realization
+    knowledge_layer: primary_observed
+    source: Lawrence Berkeley National Laboratory Queued Up
+    geography: US
+    cadence: annual
+    measures: [queue_capacity, interconnection_agreement, withdrawal, COD_duration]
+    safe_use: [realization_prior, grid_bottleneck, time_to_power]
+    prohibited_use: [treat_queue_GW_as_committed_capacity]
+
+  - id: US_ERCOT_LARGE_LOAD
+    signal_class: project_realization
+    knowledge_layer: primary_observed
+    source: ERCOT large-load interconnection updates
+    geography: US-TX
+    cadence: periodic
+    measures: [large_load_requests, project_type, projected_load]
+    safe_use: [large_load_pipeline, regional_power_constraint]
+    prohibited_use: [treat_request_GW_as_realized_load]
+
+  - id: KR_KIPRISPLUS
+    signal_class: technology_innovation
+    knowledge_layer: primary_observed
+    source: KIPRISPlus Open API
+    geography: KR
+    cadence: daily
+    measures: [patent_publication, citation, family, legal_status, transfer]
+    safe_use: [technology_option, competitor_map, IP_legal_state]
+    prohibited_use: [direct_revenue_premium, patent_count_equals_moat]
+
+  - id: WIPO_PCT
+    signal_class: technology_innovation
+    knowledge_layer: public_industry_research
+    source: WIPO PCT / Technology Trends
+    geography: GLOBAL
+    cadence: annual_periodic
+    measures: [patent_family_trend, technology_field, applicant_activity]
+    safe_use: [technology_direction, innovation_intensity_prior]
+    prohibited_use: [company_intrinsic_assumption_without_company_primary]
+
+  - id: CLINICALTRIALS_OPENFDA
+    signal_class: clinical_regulatory
+    knowledge_layer: primary_observed
+    source: ClinicalTrials.gov / openFDA
+    geography: US_GLOBAL
+    cadence: daily
+    measures: [trial_status, protocol_change, approval, recall, adverse_event]
+    safe_use: [clinical_evidence_gate, regulatory_state, kill_condition]
+    prohibited_use: [registry_status_equals_efficacy]
+
+  - id: US_CENSUS_M3_FED_G17
+    signal_class: physical_activity
+    knowledge_layer: primary_observed
+    source: US Census M3 / Federal Reserve G.17
+    geography: US
+    cadence: monthly
+    measures: [new_orders, unfilled_orders, shipments, inventories, production, capacity, utilization]
+    safe_use: [cycle_state, backlog_prior, utilization_prior]
+    prohibited_use: [map_broad_industry_index_directly_to_target_company]
+
+  - id: KR_KOSIS_INDUSTRIAL
+    signal_class: physical_activity
+    knowledge_layer: primary_observed
+    source: KOSIS mining/manufacturing indices
+    geography: KR
+    cadence: monthly
+    measures: [production, shipment, inventory, capacity, utilization]
+    safe_use: [industry_cycle_state, benchmark]
+    prohibited_use: [direct_target_revenue_assumption]
+
+  - id: US_AAR_RAIL
+    signal_class: trade_logistics
+    knowledge_layer: primary_observed
+    source: Association of American Railroads weekly traffic
+    geography: US
+    cadence: weekly
+    measures: [carloads_by_commodity, intermodal_units]
+    safe_use: [physical_flow_confirmation, industrial_nowcast]
+    prohibited_use: [firm_specific_volume_without_mapping]
+
+  - id: OFFICIAL_CUSTOMS_TRADE
+    signal_class: trade_logistics
+    knowledge_layer: primary_observed
+    source: Korea Customs / USITC / UN Comtrade
+    geography: GLOBAL
+    cadence: monthly
+    measures: [imports, exports, HS_product, origin_destination]
+    safe_use: [trade_flow, product_demand, supply_chain_shift]
+    prohibited_use: [company_attribution_without_entity_product_mapping]
+
+  - id: LABOR_JOB_POSTINGS
+    signal_class: labor_capacity
+    knowledge_layer: alternative_data
+    source: public labor statistics / licensed job-posting panels
+    geography: GLOBAL
+    cadence: daily_to_monthly
+    measures: [vacancies, skills, occupation, geography, wage]
+    safe_use: [capacity_intent, skill_bottleneck, verification_request]
+    prohibited_use: [headcount_forecast_without_duplicate_outsourcing_controls]
+
+  - id: US_FED_SLOOS
+    signal_class: credit_financing
+    knowledge_layer: primary_observed
+    source: Federal Reserve Senior Loan Officer Opinion Survey
+    geography: US
+    cadence: quarterly
+    measures: [lending_standards, demand, NDFI_credit_conditions]
+    safe_use: [financing_availability_prior, credit_cycle]
+    prohibited_use: [target_cost_of_debt_without_target_credit_evidence]
+
+  - id: US_FINRA_TRACE
+    signal_class: credit_financing
+    knowledge_layer: financing_market_reference
+    source: FINRA TRACE / Fixed Income API
+    geography: US
+    cadence: intraday_daily
+    measures: [bond_price, yield, volume, market_breadth, sentiment]
+    safe_use: [marginal_cost_of_debt, credit_spread, refinancing_state]
+    prohibited_use: [target_equity_valuation_anchor]
+
+  - id: KR_BOND_CREDIT_MARKET
+    signal_class: credit_financing
+    knowledge_layer: financing_market_reference
+    source: Korea bond market / KOFIA and issuer debt observations
+    geography: KR
+    cadence: daily
+    measures: [yield_curve, corporate_spread, issuance_condition]
+    safe_use: [risk_free_curve, cost_of_debt, credit_regime]
+    prohibited_use: [target_equity_price_anchor]
+
+  - id: SEC_INSIDER_TRANSACTIONS
+    signal_class: ownership_behavior
+    knowledge_layer: positioning_market_signal
+    source: SEC Forms 3/4/5 structured dataset
+    geography: US
+    cadence: filing_event_quarterly_bulk
+    measures: [insider_buy_sell, ownership_change, 10b5_1_flag]
+    safe_use: [behavior_monitoring, catalyst_context]
+    prohibited_use: [same_run_intrinsic_assumption]
+
+  - id: KRX_SHORT_LENDING_FLOWS
+    signal_class: market_positioning
+    knowledge_layer: positioning_market_signal
+    source: KRX Data Marketplace
+    geography: KR
+    cadence: daily_with_lags
+    measures: [short_volume, short_net_position, securities_lending, investor_flows]
+    safe_use: [positioning, squeeze_risk, market_confirmation]
+    prohibited_use: [intrinsic_value_input]
+
+  - id: US_FINRA_SHORT_INTEREST
+    signal_class: market_positioning
+    knowledge_layer: positioning_market_signal
+    source: FINRA short interest
+    geography: US
+    cadence: semi_monthly
+    measures: [short_interest, days_to_cover, revisions]
+    safe_use: [positioning_monitor]
+    prohibited_use: [intrinsic_value_input]
+
+  - id: REMOTE_SENSING_PUBLIC
+    signal_class: remote_sensing
+    knowledge_layer: alternative_data
+    source: NASA Black Marble / Copernicus Sentinel / calibrated providers
+    geography: GLOBAL
+    cadence: daily_to_monthly
+    measures: [night_lights, construction_change, facility_activity_proxy]
+    safe_use: [physical_verification_request, outage_activity_nowcast]
+    prohibited_use: [revenue_assumption_without_ground_truth_calibration]
+
+  - id: TEXT_PRODUCT_NETWORK
+    signal_class: supply_chain_network
+    knowledge_layer: structural_supply_chain_prior
+    source: public filing product descriptions + internal embeddings
+    geography: GLOBAL
+    cadence: annual_quarterly
+    measures: [pairwise_product_similarity, dynamic_competitor_set]
+    safe_use: [economic_twin_candidates, competitor_map, segment_scope]
+    prohibited_use: [automatic_peer_acceptance]
