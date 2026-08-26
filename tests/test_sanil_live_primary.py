@@ -110,24 +110,29 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
 
     beta = result.data["live_beta_result"]
     wacc = result.data["live_wacc_result"]
-    assert beta.peer_ids == tuple(sorted(
-        (
-            "LS_ELECTRIC_010120",
-            "HYOSUNG_HEAVY_INDUSTRIES_298040",
-            "HD_HYUNDAI_ELECTRIC_267260",
-            "ILJIN_ELECTRIC_103590",
-            "TAIHAN_CABLE_001440",
-            "CHERYONG_ELECTRIC_033100",
-            "KWANGMYUNG_ELECTRIC_017040",
-            "CHEIL_ELECTRIC_199820",
+    assert beta.peer_ids == tuple(
+        sorted(
+            (
+                "LS_ELECTRIC_010120",
+                "HYOSUNG_HEAVY_INDUSTRIES_298040",
+                "HD_HYUNDAI_ELECTRIC_267260",
+                "ILJIN_ELECTRIC_103590",
+                "TAIHAN_CABLE_001440",
+                "CHERYONG_ELECTRIC_033100",
+                "KWANGMYUNG_ELECTRIC_017040",
+                "CHEIL_ELECTRIC_199820",
+            )
         )
-    ))
+    )
     assert any(
         source.startswith("https://stockanalysis.com/")
         for source in beta.source_refs
     )
     assert wacc.beta_result.snapshot_hash == beta.snapshot_hash
-    assert wacc.target_capital_structure if hasattr(wacc, "target_capital_structure") else True
+    assert (
+        wacc.beta_result.target_capital_structure
+        == beta.target_capital_structure
+    )
 
     ledger = result.data["evidence_ledger"]
     assert (
