@@ -30,7 +30,7 @@ sources:
     source_id: PRISM_UNDERWRITING_MODEL
     source_ref: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#scenarios
     document_id: SANIL_UNDERWRITING_20260825
-    document_hash: 5feb09f875fded568e76faf8a1d7d172e331594b066be07b92c1158a98ef8d0e
+    document_hash: dea034ebf103408f79fbe73cc13aadcf6e6d034dd13c15fc90cc41c6650ca2ec
     published_at: '2026-08-25T18:00:00+09:00'
 facts:
   revenue_2025_krw_billion: 501.946
@@ -133,17 +133,16 @@ risk:
 scenarios:
   Down:
     fcff_krw_billion: [145, 160, 180, 200, 220]
+    expansion_capex_krw_billion: 42.0
     terminal_growth: 0.020
     terminal_roic: 0.130
   Core:
     fcff_krw_billion: [175, 195, 220, 245, 270]
+    expansion_capex_krw_billion: 42.0
     terminal_growth: 0.025
     terminal_roic: 0.150
   Bull:
     fcff_krw_billion: [185, 210, 240, 270, 305]
+    expansion_capex_krw_billion: 42.0
     terminal_growth: 0.030
     terminal_roic: 0.170
-market:
-  price: 169300
-  as_of: '2026-08-25'
-  source_ref: https://data.krx.co.kr/
