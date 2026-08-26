@@ -45,6 +45,65 @@ class ContextStrengthLinkageStatus(str, Enum):
     NOT_APPLICABLE = "NOT_APPLICABLE"
 
 
+class ContextStrengthReasoningPriority(str, Enum):
+    PRIMARY_GATE = "PRIMARY_GATE"
+
+
+@dataclass(frozen=True)
+class ContextStrengthLinkageDoctrine:
+    """Provider-visible reasoning order for the primary LLM insight layer."""
+
+    priority: ContextStrengthReasoningPriority
+    reasoning_sequence: tuple[str, ...]
+    prohibited_shortcuts: tuple[str, ...]
+    valuation_boundary: str
+
+    def validate(self) -> None:
+        if self.priority is not ContextStrengthReasoningPriority.PRIMARY_GATE:
+            raise ValueError(
+                "context-strength linkage reasoning must remain the primary gate"
+            )
+        _validate_text_tuple(self.reasoning_sequence, "reasoning_sequence")
+        if len(self.reasoning_sequence) < 7:
+            raise ValueError(
+                "reasoning_sequence must cover discovery, linkage, market blind "
+                "spot, value capture, falsification and hypothesis handoff"
+            )
+        _validate_text_tuple(
+            self.prohibited_shortcuts,
+            "prohibited_shortcuts",
+        )
+        _validate_text(self.valuation_boundary, "valuation_boundary")
+
+
+DEFAULT_CONTEXT_STRENGTH_LINKAGE_DOCTRINE = ContextStrengthLinkageDoctrine(
+    priority=ContextStrengthReasoningPriority.PRIMARY_GATE,
+    reasoning_sequence=(
+        "Start outside the company: identify material structural changes in geopolitics, policy, regulation, industry bottlenecks, technology adoption, supply chains, financing or customer behavior without using current price or Street targets.",
+        "Translate each external change into a newly scarce capability, bottleneck, strategic need or decision constraint.",
+        "Inventory the company's already-existing strengths, assets, rights, location, network, installed base, operating know-how, customer access and capacity before relying on a future product claim.",
+        "Test why the emergent need connects specifically and causally to this company's existing strength, including its right and capacity to absorb the benefit.",
+        "Explain why the market may not yet have made the connection, such as category error, organizational research silos, legacy framing, financial-statement lag or attention captured by a more obvious technology narrative.",
+        "Define the value-capture path and the first observable recognition triggers through contracts, utilization, pricing, margins, cash flow, strategic partnerships, regulation, procurement or acquisition interest.",
+        "Search for contradicting evidence, bottlenecks and kill conditions that would break the linkage before assigning confidence.",
+        "Only after the linkage survives falsification, formulate valuation hypotheses and send numeric inputs to deterministic Bridge and valuation controls.",
+    ),
+    prohibited_shortcuts=(
+        "Do not treat keyword overlap or generic sector exposure as a non-obvious linkage.",
+        "Do not make superior technology or a future product claim the entire investment thesis when the investor cannot independently verify it.",
+        "Do not infer monetization from strategic importance without a right, capacity, contract or economic path to capture value.",
+        "Do not invent a linkage merely to satisfy the gate; submit an explicit evidence-based not-applicable decision instead.",
+        "Do not use target-company price, Street forecasts, target multiples or desired upside to select the linkage or its confidence.",
+    ),
+    valuation_boundary=(
+        "This doctrine discovers and falsifies an investment idea. It cannot commit "
+        "assumptions, scenario probabilities, discount rates, multiples, target "
+        "prices or valuation arithmetic."
+    ),
+)
+DEFAULT_CONTEXT_STRENGTH_LINKAGE_DOCTRINE.validate()
+
+
 @dataclass(frozen=True)
 class ContextStrengthLinkage:
     """Auditable LLM output for a non-obvious environment-to-strength connection.
