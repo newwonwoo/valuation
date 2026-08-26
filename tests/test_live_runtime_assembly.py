@@ -49,6 +49,8 @@ class FakeRuntimeConfig:
             bridge_analyst=noop,
             evaluator_registry_loader=noop,
             valuation_plan_inputs_loader=noop,
+            capacity_commitment_loader=None,
+            capacity_bridge_consumption_loader=None,
             funding_scanner=None,
             research_recovery_adapter=None,
             beta_loader=None,
@@ -63,6 +65,7 @@ class FakeRuntimeConfig:
         self.state_root = tmp_path / "state"
         self.company_request = CompanyResolutionRequest("000000", "KR")
         self.method_choices = ()
+        self.capacity_core_scenario_id = None
         self.market_currency = None
         self.archetype_registry_path = (
             ROOT / "config" / "archetype_module_registry.yaml"
