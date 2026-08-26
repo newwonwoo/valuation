@@ -41,7 +41,6 @@ jobs:
           tests/test_sanil_live_primary.py
           tests/test_module_plan_evidence_extension.py
           tests/test_evidence_source_layer_contract.py
-          tests/test_dcf_evaluators.py
           tests/test_live_runtime_assembly.py
       - name: Full regression
         run: pytest -q
