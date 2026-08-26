@@ -5,7 +5,7 @@
 - Blueprint: **v0.5.2 canonical workflow + LIVE_PRIMARY readiness**
 - Design progress: **97% (67/69 accepted milestone points)**
 - Current delivery: **1 ACTIVE / 0 READY / 1 BLOCKED / 0 BACKLOG / 1 MERGED PENDING ACCEPTANCE**
-- Accepted validation baseline: `6ac7bbcc491248e5d574cbf92b47ec00e82f5b80`
+- Accepted validation baseline: `01562387067bd997b146426185f90d6eb27bcb59`
 - Updated: **2026-08-26**
 
 Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE work receives zero credit until every required acceptance check is VERIFIED or explicitly ADR-waived.
@@ -25,13 +25,13 @@ Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE
 flowchart TB
   PM["PM / Integrator<br/>Design 97% (67/69)<br/>Now: 1 ACTIVE workstreams coordinated"]
   PM --> PMO["Architecture & Program Office<br/>Design 100% (5/5)<br/>Now: MAINTENANCE — evidence source wave accepted; final work is real-company LIVE acceptance plus production calibration history"]
-  PM --> EVIDENCE["Evidence & Industry Intelligence<br/>Design 100% (13/13)<br/>Now: MERGED_PENDING_ACCEPTANCE EVI-CONTEXT-STRENGTH-LINKAGE-005 — PR #94 merged; exact-main acceptance evidence pending"]
+  PM --> EVIDENCE["Evidence & Industry Intelligence<br/>Design 100% (13/13)<br/>Now: MAINTENANCE — context-strength linkage and the Sanil source-backed run are accepted; design complete"]
   PM --> RUNTIME["Runtime Safety & Control Plane<br/>Design 100% (10/10)<br/>Now: MAINTENANCE — accepted design complete"]
   PM --> VALUATION["Deterministic Valuation Engines<br/>Design 100% (8/8)<br/>Now: MAINTENANCE — accepted design complete"]
   PM --> CALIBRATION["Risk, PER & Probability Calibration<br/>Design 90% (9/10)<br/>Now: BLOCKED CAL-PRODUCTION-COHORT-003 — Requires sufficient real resolved historical forecasts across production cohorts"]
   PM --> POST_FREEZE["Post-Freeze Market & State<br/>Design 100% (6/6)<br/>Now: MAINTENANCE — accepted design complete"]
   PM --> PLATFORM["Platform, Packaging & Performance<br/>Design 100% (9/9)<br/>Now: MAINTENANCE — accepted design complete"]
-  PM --> QA_RELEASE["Quality, Security & Release<br/>Design 88% (7/8)<br/>Now: ACTIVE QA-LIVE-COMPANY-FIXTURES-003 — Build source-backed LIVE_PRIMARY success and adversarial fixtures for four canonical real companies"]
+  PM --> QA_RELEASE["Quality, Security & Release<br/>Design 88% (7/8)<br/>Now: ACTIVE QA-LIVE-COMPANY-FIXTURES-003 — Sanil is accepted; complete OCI, Oracle, Bloom Energy and GE Vernova real-company fixtures"]
 ```
 
 ## Department status
@@ -39,19 +39,19 @@ flowchart TB
 | Department | Design progress | Current work |
 |---|---:|---|
 | Architecture & Program Office (`pm-integrator`) | **100% (5/5)** | MAINTENANCE — evidence source wave accepted; final work is real-company LIVE acceptance plus production calibration history |
-| Evidence & Industry Intelligence (`evidence-industry-agent`) | **100% (13/13)** | MERGED_PENDING_ACCEPTANCE EVI-CONTEXT-STRENGTH-LINKAGE-005 — PR #94 merged; exact-main acceptance evidence pending |
+| Evidence & Industry Intelligence (`evidence-industry-agent`) | **100% (13/13)** | MAINTENANCE — context-strength linkage and the Sanil source-backed run are accepted; design complete |
 | Runtime Safety & Control Plane (`runtime-safety-agent`) | **100% (10/10)** | MAINTENANCE — accepted design complete |
 | Deterministic Valuation Engines (`valuation-engine-agent`) | **100% (8/8)** | MAINTENANCE — accepted design complete |
 | Risk, PER & Probability Calibration (`calibration-risk-agent`) | **90% (9/10)** | BLOCKED CAL-PRODUCTION-COHORT-003 — Requires sufficient real resolved historical forecasts across production cohorts |
 | Post-Freeze Market & State (`post-freeze-agent`) | **100% (6/6)** | MAINTENANCE — accepted design complete |
 | Platform, Packaging & Performance (`performance-platform-agent`) | **100% (9/9)** | MAINTENANCE — accepted design complete |
-| Quality, Security & Release (`qa-release-agent`) | **88% (7/8)** | ACTIVE QA-LIVE-COMPANY-FIXTURES-003 — Build source-backed LIVE_PRIMARY success and adversarial fixtures for four canonical real companies |
+| Quality, Security & Release (`qa-release-agent`) | **88% (7/8)** | ACTIVE QA-LIVE-COMPANY-FIXTURES-003 — Sanil is accepted; complete OCI, Oracle, Bloom Energy and GE Vernova real-company fixtures |
 
 ## Current execution queue
 
 | Priority | Status | Work item | Owner | Current step | Dependencies |
 |---|---|---|---|---|---|
-| P1 | **ACTIVE** | `QA-LIVE-COMPANY-FIXTURES-003` — Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy and GE Vernova | `qa-release-agent` | Generate and independently validate real non-synthetic serialized runs now that SEC provider and canonical KPI breadth are accepted. | `EVI-COMPANY-KPI-BREADTH-004` |
+| P1 | **ACTIVE** | `QA-LIVE-COMPANY-FIXTURES-003` — Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy and GE Vernova | `qa-release-agent` | Sanil Electric pilot is accepted with an attested 33-stage report. Run OCI, Oracle, Bloom Energy and GE Vernova through the same source-backed success-or-block contract. | `EVI-COMPANY-KPI-BREADTH-004` |
 | P1 | **MERGED_PENDING_ACCEPTANCE** | `EVI-CONTEXT-STRENGTH-LINKAGE-005` — Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses and reports | `evidence-industry-agent` | PR #94 is merged; retain zero completion credit until an exact-main valuation-tests run and PM/Integrator acceptance close the milestone. | — |
 | P1 | **BLOCKED** | `CAL-PRODUCTION-COHORT-003` — Populate production probability calibration cohorts with real resolved history | `calibration-risk-agent` | Accumulate real append-only resolved forecasts until declared cohort thresholds can be evaluated; synthetic or post-hoc history is forbidden. | — |
 
@@ -80,6 +80,8 @@ These registry metrics measure typed runtime readiness, not full live source/pro
 | `H-VALUATION-EXACT-COVERAGE-20260825` | `pm-integrator + valuation-engine-agent` | `1e4f8ac80cc52e26a142bef8bc000e0be50321e6` | `GHA-VALUATION-TESTS-361` | `VAL-EXACT-METHOD-COVERAGE-001` | — |
 | `H-PARALLEL-RESIDUAL-WAVE-20260826` | `pm-integrator + evidence-industry-agent + runtime-safety-agent + calibration-risk-agent + performance-platform-agent + qa-release-agent` | `3b6346ee1b1178068f112505f608d772bbb85ef3` | `GHA-VALUATION-TESTS-385` | `EVI-AUTHORIZED-PRIMARY-SOURCES-002`, `RUN-CONTEXT-ISOLATION-002`, `RUN-LEDGER-SEAL-002`, `RUN-STAGE-CONTRACT-002`, `RUN-SECRET-REDACTION-002`, `CAL-DATASET-CONTRACT-002`, `PLT-WHEEL-RUNTIME-002`, `QA-LIVE-COMPANY-GATE-002` | `EVI-SEC-PRIMARY-003`, `EVI-COMPANY-KPI-BREADTH-004`, `CAL-PRODUCTION-COHORT-003`, `QA-LIVE-COMPANY-FIXTURES-003` |
 | `H-EVIDENCE-SOURCE-WAVE-20260826` | `pm-integrator + evidence-industry-agent + qa-release-agent` | `6ac7bbcc491248e5d574cbf92b47ec00e82f5b80` | `GHA-VALUATION-TESTS-397` | `EVI-SEC-PRIMARY-003`, `EVI-COMPANY-KPI-BREADTH-004` | `QA-LIVE-COMPANY-FIXTURES-003`, `CAL-PRODUCTION-COHORT-003` |
+| `H-EVIDENCE-CONTEXT-STRENGTH-20260826` | `pm-integrator + evidence-industry-agent` | `01562387067bd997b146426185f90d6eb27bcb59` | `GHA-VALUATION-TESTS-503`, `GHA-SANIL-LIVE-PRIMARY-52` | `EVI-CONTEXT-STRENGTH-LINKAGE-001` | — |
+| `H-QA-SANIL-LIVE-PRIMARY-20260826` | `pm-integrator + qa-release-agent` | `01562387067bd997b146426185f90d6eb27bcb59` | `GHA-VALUATION-TESTS-503`, `GHA-SANIL-LIVE-PRIMARY-52` | `QA-SANIL-LIVE-PRIMARY-001` | `QA-LIVE-COMPANY-FIXTURES-003` |
 
 ## Update contract
 
