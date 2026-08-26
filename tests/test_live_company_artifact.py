@@ -4,12 +4,16 @@ from pathlib import Path
 import pytest
 
 from valuation_engine.control_plane import ExecutionMode, StageStatus
+from valuation_engine.evidence_collection import EvidenceCollectionBatch, PrimaryEvidenceCollectionResult
+from valuation_engine.ledger import EvidenceLedger
 from valuation_engine.live_company_artifact import (
     SourceDocumentLineage,
+    _build_evidence_revision_bindings,
     serialize_live_company_blocked,
     serialize_live_company_success,
 )
 from valuation_engine.orchestrator import ControlledRunResult, StageTrace
+from valuation_engine.records import EvidenceRecord, EvidenceSourceLayer
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -50,6 +54,103 @@ def test_blocked_artifact_is_serialized_from_actual_controlled_result():
     assert artifact["stage_traces"][0]["stage"] == "COMPANY_RESOLUTION"
     assert artifact["adversarial_case"]["expected_block_stage"] == "COMPANY_RESOLUTION"
     assert len(artifact["run_integrity_hash"]) == 64
+
+
+def test_generic_primary_evidence_uses_collected_batch_fingerprint_as_revision():
+    record = EvidenceRecord(
+        id="E1",
+        target="T",
+        metric="revenue",
+        value=100,
+        unit="USD",
+        source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
+        effective_date="2026-06-30",
+        observed_date="2026-08-25",
+        source_name="official API",
+        source_ref="https://example.com/filing#revenue",
+        source_grade="A",
+        confidence=1.0,
+    )
+    ledger = EvidenceLedger()
+    ledger.append(record)
+    revision = "a" * 64
+    batch = EvidenceCollectionBatch(
+        source_id="OFFICIAL",
+        checked_at="2026-08-25T10:00:00+09:00",
+        records=(record,),
+        source_fingerprint=revision,
+    )
+    collection = PrimaryEvidenceCollectionResult(
+        ledger=ledger,
+        batches=(batch,),
+        required_metrics=("revenue",),
+        covered_metrics=("revenue",),
+        missing_metrics=(),
+        source_snapshot_hash="b" * 64,
+    )
+    bindings = _build_evidence_revision_bindings(
+        ledger,
+        collection,
+        (
+            SourceDocumentLineage(
+                "https://example.com/filing",
+                revision,
+                "2026-08-25T10:00:00+09:00",
+            ),
+        ),
+    )
+    assert bindings == [
+        {
+            "evidence_id": "E1",
+            "source_ref": "https://example.com/filing",
+            "revision_hash": revision,
+        }
+    ]
+
+
+def test_generic_primary_evidence_rejects_arbitrary_document_hash():
+    record = EvidenceRecord(
+        id="E1",
+        target="T",
+        metric="revenue",
+        value=100,
+        unit="USD",
+        source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
+        effective_date="2026-06-30",
+        observed_date="2026-08-25",
+        source_name="official API",
+        source_ref="https://example.com/filing#revenue",
+        source_grade="A",
+        confidence=1.0,
+    )
+    ledger = EvidenceLedger()
+    ledger.append(record)
+    batch = EvidenceCollectionBatch(
+        source_id="OFFICIAL",
+        checked_at="2026-08-25T10:00:00+09:00",
+        records=(record,),
+        source_fingerprint="a" * 64,
+    )
+    collection = PrimaryEvidenceCollectionResult(
+        ledger=ledger,
+        batches=(batch,),
+        required_metrics=("revenue",),
+        covered_metrics=("revenue",),
+        missing_metrics=(),
+        source_snapshot_hash="b" * 64,
+    )
+    with pytest.raises(ValueError, match="source revision does not match source document hash"):
+        _build_evidence_revision_bindings(
+            ledger,
+            collection,
+            (
+                SourceDocumentLineage(
+                    "https://example.com/filing",
+                    "c" * 64,
+                    "2026-08-25T10:00:00+09:00",
+                ),
+            ),
+        )
 
 
 def test_success_producer_refuses_existing_fixture_backed_full_live_run(tmp_path):
