@@ -67,12 +67,55 @@ def main() -> int:
     sanil = ROOT / "src" / "valuation_engine" / "sanil_live_primary.py"
     replace_once(
         sanil,
+        """from .source_watch import WatchFinding, WatchStatus
+from .valuation_plan_compiler import (
+""",
+        """from .source_watch import WatchFinding, WatchStatus
+from .street import StreetResearchReport
+from .valuation_plan_compiler import (
+""",
+    )
+    replace_once(
+        sanil,
         """        _record(snapshot, metric="expansion_land_control", value=True, unit="dimensionless", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["second_factory_start"]), notes="Second factory site control evidenced by company establishment disclosure."),
         _record(snapshot, metric="expansion_site_area", value=f["second_factory_site_pyeong"], unit="pyeong", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2025-12-31"),
 """,
         """        _record(snapshot, metric="expansion_land_control", value=True, unit="dimensionless", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["second_factory_start"]), notes="Second factory site control evidenced by company establishment disclosure."),
         _record(snapshot, metric="expansion_capacity_committed", value=True, unit="dimensionless", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2025-12-31", notes="Land control and committed investment establish an incremental capacity program; the undisclosed exact capacity is bounded in the Core underwrite."),
         _record(snapshot, metric="expansion_site_area", value=f["second_factory_site_pyeong"], unit="pyeong", source_key=annual, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2025-12-31"),
+""",
+    )
+    replace_once(
+        sanil,
+        """def _valuation_plan_inputs(context: OrchestratorContext) -> CompanyValuationPlanInputs:
+""",
+        """def _street_reports() -> tuple[StreetResearchReport, ...]:
+    return (
+        StreetResearchReport(
+            broker="Shinhan Securities",
+            analyst="Choi Seung-hwan / Lee Byung-hwa",
+            published_date="2026-08-11",
+            target_price=310000.0,
+            target_price_currency="KRW",
+            valuation_method="2027E PER 35x",
+            base_year="2027",
+            estimates=(),
+            source_ref="https://www.yna.co.kr/amp/view/AKR20260811028700008",
+        ),
+    )
+
+
+def _valuation_plan_inputs(context: OrchestratorContext) -> CompanyValuationPlanInputs:
+""",
+    )
+    replace_once(
+        sanil,
+        """        per_loader=_per_loader,
+        market_loader=lambda: MarketObservation(float(snapshot.market["price"]), str(snapshot.market["as_of"]), str(snapshot.market["source_ref"])),
+""",
+        """        per_loader=_per_loader,
+        street_loader=_street_reports,
+        market_loader=lambda: MarketObservation(float(snapshot.market["price"]), str(snapshot.market["as_of"]), str(snapshot.market["source_ref"])),
 """,
     )
     replace_once(
