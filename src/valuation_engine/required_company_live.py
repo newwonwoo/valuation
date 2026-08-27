@@ -380,7 +380,7 @@ def _metric_unit(metric: str, spec: AcceptanceCompanySpec) -> str:
     return "count"
 
 
-def _underwriting_value(metric: str, spec: AcceptanceCompanySpec) -> Any:
+def _underwriting_observation(metric: str, spec: AcceptanceCompanySpec) -> tuple[Any, str]:
     explicit = {
         "normalized_ebitda": spec.payload["normalized_ebitda"],
         "normalized_ebitda_multiple": spec.payload["normalized_multiple"],
@@ -390,15 +390,15 @@ def _underwriting_value(metric: str, spec: AcceptanceCompanySpec) -> Any:
         "diluted_shares": spec.payload["diluted_shares"],
     }
     if metric in explicit:
-        return explicit[metric]
-    unit = _metric_unit(metric, spec)
-    if unit == "ratio":
-        return 0.5
-    if unit == "years":
-        return 1.0
-    if unit == "multiple":
-        return 1.0
-    return 1.0
+        return explicit[metric], _metric_unit(metric, spec)
+    declared = dict(spec.payload.get("underwriting_metrics", {}))
+    if metric not in declared:
+        raise ValueError(
+            f"{spec.company_id} requires an explicit underwriting observation for {metric}; "
+            "implicit placeholder values are forbidden"
+        )
+    value, unit = declared[metric]
+    return value, str(unit)
 
 
 def _record(
@@ -466,23 +466,25 @@ def _official_collector(spec: AcceptanceCompanySpec):
 
 def _underwriting_collector(spec: AcceptanceCompanySpec):
     def collect(request: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
-        rows = tuple(
-            _record(
-                spec,
-                metric=metric,
-                value=_underwriting_value(metric, spec),
-                unit=_metric_unit(metric, spec),
-                layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
-                source_ref=spec.underwriting_source_ref,
-                source_name=f"{spec.company_id} acceptance underwriting contract",
-                confidence=0.6,
+        rows = []
+        for metric in request.required_metrics:
+            value, unit = _underwriting_observation(metric, spec)
+            rows.append(
+                _record(
+                    spec,
+                    metric=metric,
+                    value=value,
+                    unit=unit,
+                    layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
+                    source_ref=spec.underwriting_source_ref,
+                    source_name=f"{spec.company_id} acceptance underwriting contract",
+                    confidence=0.6,
+                )
             )
-            for metric in request.required_metrics
-        )
         return EvidenceCollectionBatch(
             source_id=spec.official_source_id,
             checked_at=spec.as_of,
-            records=rows,
+            records=tuple(rows),
             source_fingerprint=spec.underwriting_document_hash,
             document_ids=(f"{spec.company_id}_UNDERWRITING_SPEC",),
         )

@@ -32,9 +32,14 @@ companies:
       revenue: [4200, KRW_billion]
       production: [2.0, GW]
       capacity: [2.0, GW]
-      price: [1.0, multiple]
-      cash_cost: [1.0, KRW_billion]
-      reserves: [1.0, count]
+      price: [NOT_DISCLOSED, status]
+      cash_cost: [NOT_DISCLOSED, status]
+      reserves: [NOT_DISCLOSED, status]
+    underwriting_metrics:
+      benchmark_price: [NOT_DISCLOSED, status]
+      inventory: [NOT_DISCLOSED, status]
+      realized_price: [NOT_DISCLOSED, status]
+      utilization: [NOT_DISCLOSED, status]
   ORACLE:
     legal_name: Oracle Corporation
     ticker: ORCL
@@ -67,9 +72,16 @@ companies:
       rpo: [552600, USD_million]
       contract_liabilities: [12000, USD_million]
       capex: [39200, USD_million]
-      arr: [1.0, count]
-      nrr: [1.0, ratio]
-      gross_margin: [0.7, ratio]
+      arr: [NOT_DISCLOSED, status]
+      nrr: [NOT_DISCLOSED, status]
+      gross_margin: [NOT_DISCLOSED, status]
+    underwriting_metrics:
+      backlog_conversion: [NOT_DISCLOSED, status]
+      book_to_bill: [NOT_DISCLOSED, status]
+      cancellation_terms: [NOT_DISCLOSED, status]
+      lead_time: [NOT_DISCLOSED, status]
+      orders: [NOT_DISCLOSED, status]
+      revenue_recognition: [NOT_DISCLOSED, status]
   BLOOM_ENERGY:
     legal_name: Bloom Energy Corporation
     ticker: BE
@@ -98,12 +110,19 @@ companies:
     diluted_shares: 275000000
     official_metrics:
       revenue: [1065.365, USD_million]
-      backlog: [1.0, USD_million]
-      orders: [1.0, USD_million]
-      manufacturing_capacity: [1.0, GW]
+      backlog: [NOT_DISCLOSED, status]
+      orders: [NOT_DISCLOSED, status]
+      manufacturing_capacity: [NOT_DISCLOSED, status]
       gross_margin: [0.33, ratio]
-      installed_base: [1.0, count]
-      service: [1.0, USD_million]
+      installed_base: [NOT_DISCLOSED, status]
+      service: [NOT_DISCLOSED, status]
+    underwriting_metrics:
+      backlog_conversion: [NOT_DISCLOSED, status]
+      book_to_bill: [NOT_DISCLOSED, status]
+      cancellation_terms: [NOT_DISCLOSED, status]
+      contract_liabilities: [NOT_DISCLOSED, status]
+      lead_time: [NOT_DISCLOSED, status]
+      revenue_recognition: [NOT_DISCLOSED, status]
   GE_VERNOVA:
     legal_name: GE Vernova Inc.
     ticker: GEV
@@ -133,8 +152,14 @@ companies:
     official_metrics:
       revenue: [11104, USD_million]
       backlog: [176284, USD_million]
-      orders: [1.0, USD_million]
-      slots: [1.0, count]
-      service_contracts: [1.0, USD_million]
-      capacity: [1.0, count]
-      lead_time: [1.0, years]
+      orders: [NOT_DISCLOSED, status]
+      slots: [NOT_DISCLOSED, status]
+      service_contracts: [NOT_DISCLOSED, status]
+      capacity: [NOT_DISCLOSED, status]
+      lead_time: [NOT_DISCLOSED, status]
+    underwriting_metrics:
+      backlog_conversion: [NOT_DISCLOSED, status]
+      book_to_bill: [NOT_DISCLOSED, status]
+      cancellation_terms: [NOT_DISCLOSED, status]
+      contract_liabilities: [NOT_DISCLOSED, status]
+      revenue_recognition: [NOT_DISCLOSED, status]
