@@ -71,6 +71,7 @@ class DeclaredCalibrationDataset:
             horizon=self.declaration.horizon,
             cutoff=cutoff,
             base_rate=self.declaration.base_rate,
+            required_windows=policy.min_oos_windows,
         )
         return build_calibration_snapshot(
             self.ledger,
@@ -230,27 +231,37 @@ def _derive_oos_brier_skill_windows(
     horizon: str,
     cutoff: datetime,
     base_rate: Decimal,
+    required_windows: int,
 ) -> tuple[Decimal, ...]:
     """Derive chronological issuance-quarter scores from hash-bound history."""
 
-    windows: dict[str, list[tuple[Decimal, Decimal]]] = {}
+    windows: dict[str, list[tuple[Decimal, Decimal] | None]] = {}
     for forecast in ledger.terminal_forecasts(
         forecast_class=forecast_class,
         horizon=horizon,
         cutoff=cutoff,
     ):
-        outcome = ledger.outcome_for(forecast.forecast_id, cutoff=cutoff)
-        if outcome is None or outcome.observed_at < forecast.issued_at:
+        if forecast.evaluation_deadline > cutoff.date():
             continue
-        if outcome.outcome.value not in {"occurred", "not_occurred"}:
+        quarter = f"{forecast.issued_at.year}Q{((forecast.issued_at.month - 1) // 3) + 1}"
+        outcome = ledger.outcome_for(forecast.forecast_id, cutoff=cutoff)
+        if (
+            outcome is None
+            or outcome.observed_at < forecast.issued_at
+            or outcome.outcome.value not in {"occurred", "not_occurred"}
+        ):
+            windows.setdefault(quarter, []).append(None)
             continue
         observed = Decimal("1") if outcome.outcome.value == "occurred" else Decimal("0")
-        quarter = f"{forecast.issued_at.year}Q{((forecast.issued_at.month - 1) // 3) + 1}"
         windows.setdefault(quarter, []).append((forecast.probability, observed))
 
     result: list[Decimal] = []
     for quarter in sorted(windows):
-        samples = windows[quarter]
+        window = windows[quarter]
+        if any(sample is None for sample in window):
+            result.append(Decimal("0"))
+            continue
+        samples = [sample for sample in window if sample is not None]
         brier = sum(
             ((probability - observed) ** 2 for probability, observed in samples),
             Decimal("0"),
@@ -264,4 +275,4 @@ def _derive_oos_brier_skill_windows(
             if base_brier == 0
             else Decimal("1") - (brier / base_brier)
         )
-    return tuple(result)
+    return tuple(result[-required_windows:])

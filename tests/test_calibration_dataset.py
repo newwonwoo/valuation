@@ -260,3 +260,94 @@ cohorts: {}
     assert first_snapshot.snapshot_hash != second_snapshot.snapshot_hash
     assert first_snapshot.certificate().dataset_hash == first.dataset_hash
     assert second_snapshot.certificate().dataset_hash == second.dataset_hash
+
+
+def test_oos_excludes_quarter_until_every_forecast_deadline_has_closed(tmp_path):
+    policy = tmp_path / "policy.yaml"
+    policy.write_text(
+        """version: test-v1
+defaults:
+  min_resolved_events: 1
+  min_companies: 1
+  min_quarters: 1
+  min_per_displayed_band: 1
+  min_oos_windows: 1
+  max_ece: 1
+  max_ambiguous_censored_rate: 1
+cohorts: {}
+""",
+        encoding="utf-8",
+    )
+    dataset = load_declared_calibration_dataset(
+        _payload(_ledger()), declaration=_declaration()
+    )
+    snapshot = dataset.build_snapshot(
+        cutoff=datetime(2025, 2, 2, tzinfo=timezone.utc), policy_path=policy
+    )
+    assert snapshot.oos_brier_skill_windows == ()
+    assert "OOS_BRIER_SKILL" in snapshot.gate_failures
+
+
+def test_oos_uses_only_policy_required_recent_consecutive_windows(tmp_path):
+    ledger = ProbabilityCalibrationLedger()
+    rows = (
+        ("F1", "EV1", datetime(2025, 1, 1, 9, tzinfo=timezone.utc), date(2025, 3, 31), ForecastOutcomeState.NOT_OCCURRED),
+        ("F2", "EV2", datetime(2025, 4, 1, 9, tzinfo=timezone.utc), date(2025, 6, 30), ForecastOutcomeState.OCCURRED),
+        ("F3", "EV3", datetime(2025, 7, 1, 9, tzinfo=timezone.utc), date(2025, 9, 30), ForecastOutcomeState.OCCURRED),
+    )
+    for forecast_id, event_key, issued_at, deadline, outcome_state in rows:
+        ledger.append_forecast(
+            ProbabilityForecast(
+                forecast_id=forecast_id,
+                event_key=event_key,
+                hypothesis_id=f"H-{forecast_id}",
+                company_id=f"C-{forecast_id}",
+                forecast_class="project_realization",
+                horizon="90d",
+                event_definition="project gate within 90 days",
+                issued_at=issued_at,
+                evaluation_deadline=deadline,
+                probability=Decimal("0.9"),
+                displayed_band="P90",
+                evidence_snapshot_hash=f"SNAP-{forecast_id}",
+                model_version="m1",
+                resolution_rule="primary evidence by deadline",
+                resolution_source_policy="primary only",
+                first_seen_at=issued_at,
+            )
+        )
+        ledger.append_outcome(
+            ForecastOutcome(
+                forecast_id=forecast_id,
+                observed_at=datetime.combine(deadline, datetime.min.time(), timezone.utc),
+                outcome=outcome_state,
+                outcome_evidence_ids=(f"E-{forecast_id}",),
+                resolver_id="R1",
+                rationale="primary source confirmed",
+                first_seen_at=datetime.combine(deadline, datetime.min.time(), timezone.utc),
+            )
+        )
+    policy = tmp_path / "policy.yaml"
+    policy.write_text(
+        """version: test-v1
+defaults:
+  min_resolved_events: 1
+  min_companies: 1
+  min_quarters: 1
+  min_per_displayed_band: 1
+  min_oos_windows: 2
+  max_ece: 1
+  max_ambiguous_censored_rate: 1
+cohorts: {}
+""",
+        encoding="utf-8",
+    )
+    dataset = load_declared_calibration_dataset(
+        _payload(ledger), declaration=_declaration()
+    )
+    snapshot = dataset.build_snapshot(
+        cutoff=datetime(2026, 1, 1, tzinfo=timezone.utc), policy_path=policy
+    )
+    assert len(snapshot.oos_brier_skill_windows) == 2
+    assert all(score > 0 for score in snapshot.oos_brier_skill_windows)
+    assert "OOS_BRIER_SKILL" not in snapshot.gate_failures
