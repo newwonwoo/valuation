@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-from dataclasses import replace
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -59,25 +58,32 @@ def _download(url: str) -> bytes:
             if not payload:
                 raise RuntimeError(f"empty official document: {url}")
             return payload
-        except Exception as exc:  # network boundary
+        except Exception as exc:
             last_error = exc
-            time.sleep(2 ** attempt)
+            time.sleep(2**attempt)
     raise RuntimeError(f"cannot download official document {url}: {last_error}")
 
 
-def _market_observation(company_id: str, row: dict) -> tuple[float, str]:
+def _market_observation(row: dict) -> tuple[float, str]:
     fallback = float(row["market_fallback_price"])
     as_of = str(row["as_of"])
     try:
         import FinanceDataReader as fdr
 
-        frame = fdr.DataReader(str(row["market_symbol"]), "2026-08-24", "2026-08-28")
+        frame = fdr.DataReader(
+            str(row["market_symbol"]),
+            "2026-08-24",
+            "2026-08-28",
+        )
         if frame.empty or "Close" not in frame.columns:
             return fallback, as_of
         eligible = frame.loc[frame.index.strftime("%Y-%m-%d") <= as_of]
         if eligible.empty:
             return fallback, as_of
-        return float(eligible.iloc[-1]["Close"]), eligible.index[-1].strftime("%Y-%m-%d")
+        return (
+            float(eligible.iloc[-1]["Close"]),
+            eligible.index[-1].strftime("%Y-%m-%d"),
+        )
     except Exception:
         return fallback, as_of
 
@@ -106,16 +112,25 @@ def _source_documents(spec) -> tuple[SourceDocumentLineage, ...]:
 def _write_json(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
-        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
         + "\n",
         encoding="utf-8",
     )
 
 
-def _generate_company(company_id: str, row: dict, fixture_root: Path) -> tuple[Path, Path]:
+def _generate_company(
+    company_id: str,
+    row: dict,
+    fixture_root: Path,
+) -> tuple[Path, Path]:
     official_bytes = _download(str(row["official_source_ref"]))
     official_hash = sha256(official_bytes).hexdigest()
-    market_price, market_as_of = _market_observation(company_id, row)
+    market_price, market_as_of = _market_observation(row)
     spec = build_acceptance_spec(
         company_id,
         official_document_hash=official_hash,
@@ -134,7 +149,8 @@ def _generate_company(company_id: str, row: dict, fixture_root: Path) -> tuple[P
         )
     if not success_result.completed or success_result.freeze_token is None:
         raise RuntimeError(
-            f"{company_id} success run did not complete: {success_result.blocked_reasons}"
+            f"{company_id} success run did not complete: "
+            f"{success_result.blocked_reasons}"
         )
     success_artifact = serialize_live_company_success(
         company_id=company_id,
@@ -180,19 +196,18 @@ def _generate_company(company_id: str, row: dict, fixture_root: Path) -> tuple[P
 
 def _update_manifest(
     manifest_path: Path,
-    fixture_root: Path,
     generated: dict[str, tuple[Path, Path]],
 ) -> None:
     payload = yaml.safe_load(manifest_path.read_text(encoding="utf-8"))
-    by_company = {str(row["company_id"]): row for row in payload["companies"]}
+    companies = payload["companies"]
     for company_id, (success_path, blocked_path) in generated.items():
-        row = by_company[company_id]
+        row = companies[company_id]
         row["status"] = "READY"
-        row["success_fixture"] = str(success_path.relative_to(ROOT))
-        row["blocked_fixture"] = str(blocked_path.relative_to(ROOT))
+        row["success_fixture_path"] = str(success_path.relative_to(ROOT))
+        row["adversarial_fixture_path"] = str(blocked_path.relative_to(ROOT))
         row["success_fixture_sha256"] = sha256_file(success_path)
-        row["blocked_fixture_sha256"] = sha256_file(blocked_path)
-        row["blocked_reason"] = None
+        row["adversarial_fixture_sha256"] = sha256_file(blocked_path)
+        row.pop("blocker", None)
     manifest_path.write_text(
         yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
         encoding="utf-8",
@@ -214,7 +229,7 @@ def main() -> int:
             args.fixture_root,
         )
         print(f"generated {company_id} success + blocked artifacts")
-    _update_manifest(args.manifest, args.fixture_root, generated)
+    _update_manifest(args.manifest, generated)
     print("live-company acceptance manifest updated to READY")
     return 0
 
