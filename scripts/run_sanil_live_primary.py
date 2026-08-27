@@ -7,6 +7,11 @@ from tempfile import TemporaryDirectory
 
 from valuation_engine.brokerage_html import render_sanil_brokerage_html
 from valuation_engine.report_form import attest_controlled_run, render_controlled_run_report
+from valuation_engine.report_claim_sync import (
+    ClaimValuationImpact,
+    ClaimValuationTreatment,
+    audit_claim_to_value_sync,
+)
 from valuation_engine.sanil_live_primary import (
     load_sanil_market_snapshot,
     load_sanil_snapshot,
@@ -30,6 +35,10 @@ DEFAULT_MARKDOWN_OUTPUT = (
 )
 
 DART_UHV_URL = "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660"
+ANNUAL_REPORT_URL = (
+    "https://kind.krx.co.kr/external/2026/03/18/000706/"
+    "20260318003527/11011.htm"
+)
 COMPANY_DISCLOSURE_LIST_URL = "https://www.sanil.co.kr/kr/sub/reference/announce.php"
 KOREA_INVESTMENT_REPORT_URL = (
     "https://securities.koreainvestment.com/main/research/research/StrategyDetail.jsp"
@@ -52,6 +61,10 @@ TRUMP_GRID_SECURITY_ORDER_URL = (
     "https://www.whitehouse.gov/presidential-actions/2026/08/"
     "declaring-a-national-emergency-to-secure-the-united-states-bulk-power-system/"
 )
+PRIOR_CORE_INTRINSIC_VALUE = Decimal(
+    "237906.3278362371640270247038"
+)
+US_GRID_POLICY_CLAIM_ID = "C:SANIL:US_GRID_SECURITY_SLOT_REALIZATION"
 
 
 def _core_terminal_value_share(compiled: object, wacc: Decimal) -> Decimal:
@@ -159,6 +172,41 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
         raise RuntimeError("Sanil report is missing the investor-facing valuation section")
     controlled_body = controlled[controlled.index(valuation_marker):]
     compiled = result.data["compiled_assumption_set"]
+    bridges = tuple(result.data["bridges"])
+    policy_impact = ClaimValuationImpact(
+        claim_id=US_GRID_POLICY_CLAIM_ID,
+        treatment=ClaimValuationTreatment.VALUED,
+        evidence_ids=(
+            "E:SANIL:us_revenue_share_2025",
+            "E:SANIL:us_direct_customer_access",
+            "E:SANIL:us_grid_security_order",
+            "E:SANIL:us_grid_vendor_prequalification",
+            "E:SANIL:us_grid_transformer_scope_kv",
+        ),
+        bridge_ids=("B:SANIL:US_GRID_POLICY:CAPACITY_REALIZATION",),
+        assumption_keys=(("Core", "uhv_fcff_year_4"),),
+        prior_intrinsic_value_per_share=PRIOR_CORE_INTRINSIC_VALUE,
+        revised_intrinsic_value_per_share=Decimal(str(values["Core"])),
+        rationale=(
+            "미국 매출 비중과 직접 고객 접근, 행정명령의 공급자 심사 및 "
+            "사전적격 절차를 결합해 기존제품 생산능력의 기준 실현율을 "
+            "50%에서 60%로 조정했습니다."
+        ),
+    )
+    claim_sync_audit = audit_claim_to_value_sync(
+        impacts=(policy_impact,),
+        headline_claim_ids=(US_GRID_POLICY_CLAIM_ID,),
+        active_evidence_ids=(
+            item.id for item in result.data["evidence_ledger"].active()
+        ),
+        active_bridge_ids=(item.id for item in bridges),
+        bridge_evidence_map={
+            item.id: item.evidence_ids for item in bridges
+        },
+        compiled_assumption_keys=(
+            (item.scenario_id, item.key) for item in compiled.assumptions
+        ),
+    )
     controlled_body = controlled_body.replace(
         "## 가치평가\n",
         "## 가치평가\n\n" + _fcff_connection_table(compiled) + "\n\n",
@@ -167,7 +215,7 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
     evidence_note = """## 핵심 가정과 위험
 - **근거 신뢰도:** 회사 실적·수주·생산능력·부지·자본적지출은 회사 공시·기업설명자료에 기반해 신뢰도가 높습니다.
 - **분석가 추정:** 하방·기준·상방 기업잉여현금흐름은 회사 가이던스가 아니라 공시 사실에서 파생한 분석가 가정입니다.
-- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 매매대금을 확정하지만 정확한 생산능력·설비투자비·양산시점은 미공시입니다. 기존제품 CAPA는 기준 50%, 상방 100%만 인정합니다.
+- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 매매대금을 확정하지만 정확한 생산능력·설비투자비·양산시점은 미공시입니다. 기존제품 CAPA는 정책 연결 전 기준 50%에서 60%로 조정했고, 상방만 100%를 인정합니다.
 - **누락 비용 위험:** 부가가치세·세금·수수료와 향후 건설비는 별도일 수 있습니다. 생산·시험설비는 기준 600억원의 분석가 가정을 반영했습니다.
 - **지급시점 단순화:** 공시된 계약금 69.25억원·중도금 207.75억원·잔금 415.5억원을 현재 모델은 2년차 일괄 현금유출로 처리해, 지급일별 현재가치 계산은 후속 보완이 필요합니다.
 """
@@ -243,6 +291,7 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
 | **투자판단** | {investment_view} — 기준 목표가까지 상승여력 {core_gap:.1%}, 하방 시나리오 병행 관리 |
 | **현재가** | {float(current_price):,.0f}원 ({market_date}) |
 | **기준 내재가치** | {values['Core']:,.0f}원 · 현재가 대비 {core_gap:+.1%} |
+| **정책 반영 전→후** | {PRIOR_CORE_INTRINSIC_VALUE:,.0f}원 → {values['Core']:,.0f}원 · 주당 {policy_impact.value_delta_per_share:+,.0f}원 |
 | **가치평가 범위** | 하방 {values['Down']:,.0f}원 · 기준 {values['Core']:,.0f}원 · 상방 {values['Bull']:,.0f}원 |
 | **시나리오 가능성** | {probability_summary} · 미보정 분석가 사전확률, 기대값 미적용 |
 | **증권사 참고값** | {street_reference} |
@@ -250,13 +299,13 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
 
 ### 한 문장 결론
 
-트럼프 행정부가 전력망 장비를 국가안보 심사 대상으로 올리면서 공급자 자격과 납품 슬롯의 희소성이 커졌고, 산일전기는 87.2% 가동률의 병목을 풀 신규 부지를 확보했습니다. 다만 정책 프리미엄을 목표가에 별도로 더하지 않고 기존제품 순증분을 기준 50%만 인정한 내재가치는 {values['Core']:,.0f}원입니다.
+트럼프 행정부가 전력망 장비를 국가안보 심사 대상으로 올렸고 산일전기는 2025년 매출의 75% 이상을 미국에서 확보했습니다. 이를 신규 부지 기존제품 슬롯의 기준 실현율 50%→60%로만 제한 반영해 내재가치는 {PRIOR_CORE_INTRINSIC_VALUE:,.0f}원에서 {values['Core']:,.0f}원으로 {policy_impact.value_delta_per_share:+,.0f}원 상승했습니다.
 
 ### 트럼프 행정명령이 바꾼 것
 
 - **확인된 사실:** 8월 26일 행정명령은 미국 대용량 전력망의 외국 공급 위험을 국가비상사태로 규정하고, 69kV 이상 계통의 변전소 변압기를 심사 범위에 포함했습니다. 위험 공급자 거래 제한·사전적격 공급자 체계와 120일 이내 세부 규칙 마련도 지시했습니다. [백악관 행정명령 원문]({TRUMP_GRID_SECURITY_ORDER_URL})
-- **산일전기 연결:** 수요의 단순 증가보다 미국 고객이 선택할 수 있는 공급자 자격과 검증된 생산 슬롯이 중요해지는 변화입니다. 산일전기가 향후 공급자 자격을 확보한다면, 이미 높은 가동률을 풀 신규 5,026억원 슬롯의 경제적 가치가 커지는 방향입니다.
-- **해석의 한계:** 모든 외국산 장비를 일괄 금지한 명령은 아니며 산일전기는 한국 생산 수출기업입니다. 직접 수혜 여부는 향후 미국 에너지부 규칙과 사전적격 공급자 인정에 달려 있어, 이번 정책을 목표가 산식의 별도 프리미엄으로 반영하지 않았습니다.
+- **산일전기 연결:** 2025년 매출의 75% 이상이 미국에서 발생하고 글로벌 인버터 업체·미국 전력청에 대부분 직접 납품합니다. 이 기존 고객 접근성과 행정명령의 공급자 심사를 결합해 신규 부지 기존제품 슬롯의 기준 실현율만 50%에서 60%로 조정했습니다. [2025년 사업보고서]({ANNUAL_REPORT_URL})
+- **해석의 한계:** 모든 외국산 장비를 일괄 금지한 명령은 아니며 산일전기는 한국 생산 수출기업입니다. 미국산 조달 우선은 오히려 불리할 수 있어 WACC·마진·영구성장률은 건드리지 않았고, 향후 미국 에너지부 규칙이 산일전기를 배제하면 실현율을 50% 이하로 되돌립니다.
 
 ### 투자포인트
 
@@ -293,7 +342,7 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
 - **회사 확정 사실:** 안산 토지·건물 692.5억원, 자기자금 지급, 초고압 변압기 생산시설과 기존 제품 생산능력 확대 목적입니다.
 - **아직 미공시:** 순증 생산능력, 생산·시험설비 총액, 고객 인증·수주, 상업 생산시점, 매출·마진·현금흐름 기여입니다.
 - **증권사 해석:** [한국투자증권 8월 27일 보고서]({KOREA_INVESTMENT_REPORT_URL})의 2028년 양산·2029년 추가 매출 2,000억원 이상·목표가 270,000원은 회사 확정치가 아니라 증권사 추정치입니다.
-- **모델 처리:** 부지 취득은 수요 대응의 경제적 실질이 있어 DCF에 포함했습니다. 다만 한국투자증권 성장률 전망이 신규공장 효과를 일부 포함할 수 있어 기존제품 CAPA는 기준 50%, 전량은 상방으로 분리했습니다.
+- **모델 처리:** 부지 취득은 수요 대응의 경제적 실질이 있어 DCF에 포함했습니다. 미국 매출 노출과 행정명령의 공급자 심사를 별도 Bridge로 묶어 기존제품 CAPA 실현율을 기준 50%→60%로 바꿨고, 전량은 상방으로 분리했습니다. 정책만으로 WACC·마진·영구성장률을 높이지 않았습니다.
 
 """
     markdown_report = header + controlled_body
@@ -303,6 +352,7 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
         visuals=visuals,
         terminal_value_share=terminal_share,
         markdown_filename=DEFAULT_MARKDOWN_OUTPUT.name,
+        claim_sync_audit=claim_sync_audit,
     )
     return markdown_report, html_report, visuals
 

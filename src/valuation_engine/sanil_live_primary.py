@@ -479,6 +479,58 @@ def _official_records(snapshot: SanilSnapshot) -> tuple[EvidenceRecord, ...]:
         _record(snapshot, metric="revenue_h1_2026", value=f["revenue_h1_2026_krw_billion"], unit="KRW_billion", source_key=q2, source_layer=EvidenceSourceLayer.REALIZED_OR_FILING, effective_date="2026-06-30"),
         _record(snapshot, metric="operating_profit_h1_2026", value=f["operating_profit_h1_2026_krw_billion"], unit="KRW_billion", source_key=q2, source_layer=EvidenceSourceLayer.REALIZED_OR_FILING, effective_date="2026-06-30"),
         _record(snapshot, metric="net_income_h1_2026", value=f["net_income_h1_2026_krw_billion"], unit="KRW_billion", source_key=q2, source_layer=EvidenceSourceLayer.REALIZED_OR_FILING, effective_date="2026-06-30"),
+        _record(
+            snapshot,
+            metric="us_revenue_share_2025",
+            value=f["us_revenue_share_2025"],
+            unit="ratio",
+            source_key=annual,
+            source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
+            effective_date="2025-12-31",
+            notes="The annual filing states that more than 75% of 2025 revenue came from the United States.",
+        ),
+        _record(
+            snapshot,
+            metric="us_direct_customer_access",
+            value=f[
+                "us_direct_delivery_to_top_inverter_and_power_authority_customers"
+            ],
+            unit="dimensionless",
+            source_key=annual,
+            source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
+            effective_date="2025-12-31",
+            notes="The annual filing describes mostly direct delivery to top-tier inverter manufacturers and United States power authorities.",
+        ),
+        _record(
+            snapshot,
+            metric="us_grid_security_order",
+            value=True,
+            unit="dimensionless",
+            source_key="us_grid_security_order",
+            source_layer=EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+            effective_date="2026-08-26",
+            notes="Executive Order 14420 declares a national emergency over foreign supply risks in the United States bulk-power system.",
+        ),
+        _record(
+            snapshot,
+            metric="us_grid_vendor_prequalification",
+            value=f["us_grid_security_order_vendor_prequalification_enabled"],
+            unit="dimensionless",
+            source_key="us_grid_security_order",
+            source_layer=EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+            effective_date="2026-08-26",
+            notes="Section 2(e) authorizes pre-qualified equipment and vendor procedures; it does not itself qualify Sanil.",
+        ),
+        _record(
+            snapshot,
+            metric="us_grid_transformer_scope_kv",
+            value=f["us_grid_security_order_scope_kv"],
+            unit="kV",
+            source_key="us_grid_security_order",
+            source_layer=EvidenceSourceLayer.POLICY_PRIMARY_SOURCE,
+            effective_date="2026-08-26",
+            notes="The order covers transmission facilities at 69 kV or above and explicitly includes substation transformers.",
+        ),
     ]
     return tuple(rows)
 
@@ -995,12 +1047,36 @@ def _intelligence_officer(
             (_evidence_id("cash"), _evidence_id("debt")),
             kill="new leverage or expansion funding materially changes the capital structure",
         ),
+        _hypothesis(
+            "H:SANIL:US_GRID_POLICY_TRANSMISSION",
+            (
+                "Sanil's existing United States revenue exposure and direct customer access "
+                "make supplier-screening policy relevant to new-site slot realization, but "
+                "only while Sanil remains eligible under the implementing rules"
+            ),
+            (
+                _evidence_id("us_revenue_share_2025"),
+                _evidence_id("us_direct_customer_access"),
+                _evidence_id("us_grid_security_order"),
+                _evidence_id("us_grid_vendor_prequalification"),
+                _evidence_id("us_grid_transformer_scope_kv"),
+                _evidence_id("backlog"),
+                _evidence_id("utilization"),
+                _uhv_evidence_id("land_control"),
+            ),
+            kill=(
+                "United States implementing rules exclude Sanil, require domestic manufacture "
+                "for the relevant customer set or fail to produce customer qualification/orders"
+            ),
+            probability=0.55,
+        ),
     )
     linkage = ContextStrengthLinkage(
         id="CSL:SANIL:POWER_BOTTLENECK_CAPACITY",
         external_change=(
-            "전력망 교체, 재생에너지 계통연계, 데이터센터 전력 수요가 늘면서 "
-            "납품 실적이 있는 변압기 생산 슬롯의 희소성이 커지고 있습니다."
+            "미국이 69kV 이상 전력망과 변전소 변압기를 국가안보 조달 대상으로 "
+            "묶고 공급자 심사를 강화하면서, 납품 실적이 있는 생산 슬롯의 희소성이 "
+            "커지고 있습니다."
         ),
         emergent_need=(
             "구매자는 고객 승인 이력, 수주잔고 가시성, 물리적으로 통제 가능한 "
@@ -1041,10 +1117,16 @@ def _intelligence_officer(
             _evidence_id("expansion_capex_committed"),
             _uhv_evidence_id("land_control"),
             _uhv_evidence_id("capex_committed"),
+            _evidence_id("us_revenue_share_2025"),
+            _evidence_id("us_direct_customer_access"),
+            _evidence_id("us_grid_security_order"),
+            _evidence_id("us_grid_vendor_prequalification"),
+            _evidence_id("us_grid_transformer_scope_kv"),
         ),
         hypothesis_ids=(
             "H:SANIL:CAPACITY",
             "H:SANIL:UHV_CAPACITY",
+            "H:SANIL:US_GRID_POLICY_TRANSMISSION",
             "H:SANIL:Core",
         ),
         recognition_triggers=(
@@ -1257,6 +1339,19 @@ def _bridge_analyst(context, hypotheses, red_team) -> BridgeProposalBundle:
                     *transform_evidence_ids,
                 )
                 hypothesis = "H:SANIL:UHV_CAPACITY"
+            elif scenario == "Core" and year == 4:
+                bridge_id = "B:SANIL:US_GRID_POLICY:CAPACITY_REALIZATION"
+                path = "policy:us_grid_security:capacity_realization:year_4"
+                hypothesis = "H:SANIL:US_GRID_POLICY_TRANSMISSION"
+            if scenario == "Core" and year >= 3:
+                evidence_ids = (
+                    *evidence_ids,
+                    _evidence_id("us_revenue_share_2025"),
+                    _evidence_id("us_direct_customer_access"),
+                    _evidence_id("us_grid_security_order"),
+                    _evidence_id("us_grid_vendor_prequalification"),
+                    _evidence_id("us_grid_transformer_scope_kv"),
+                )
             drafts.append(
                 BridgeDraft(
                     assumption_key=f"uhv_fcff_year_{year}",
@@ -1911,7 +2006,7 @@ def _probability_forecast_declarations(
 def build_sanil_live_primary_config(
     state_root: str | Path,
     *,
-    run_id: str = "SANIL-062040-20260826",
+    run_id: str = "SANIL-062040-20260827-POLICY",
     snapshot_path: str | Path | None = None,
     market_snapshot_path: str | Path | None = None,
 ) -> LivePrimaryRuntimeConfig:
@@ -2112,7 +2207,7 @@ def build_sanil_live_primary_config(
 def run_sanil_live_primary(
     state_root: str | Path,
     *,
-    run_id: str = "SANIL-062040-20260826",
+    run_id: str = "SANIL-062040-20260827-POLICY",
     snapshot_path: str | Path | None = None,
     market_snapshot_path: str | Path | None = None,
 ):

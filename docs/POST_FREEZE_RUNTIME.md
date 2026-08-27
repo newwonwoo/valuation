@@ -8,6 +8,8 @@ Status: canonical runtime contract for Street, market, state persistence and fin
 
 No post-freeze observation may mutate the frozen assumption set, scenario set, valuation result, audit result or freeze token. A newly discovered factual claim creates a verification request and a new run.
 
+A report may not promote that newly discovered claim into its title, headline conclusion or valuation-changing investment point until the new run binds it through active Evidence, a Hypothesis, a Bridge and a compiled Assumption and produces a changed intrinsic value. The report must disclose the prior value, revised value, changed assumption and delta. If no intrinsic input changes, the claim is `REFERENCE_ONLY` and is restricted to context/risk disclosure; report generation fails closed if a `VALUED` headline leaves intrinsic value unchanged.
+
 ## 2. Scenario envelope before forced point estimates
 
 When scenario probabilities are not `CALIBRATED`, the runtime does not invent an Expected Value. Street target prices and current price are compared separately against each frozen scenario.

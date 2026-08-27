@@ -30,6 +30,7 @@ If documents conflict, preserve the conflict and reconcile the newest intentiona
 8. CAPEX, funding shocks and qualitative advantages must not be double-counted across economic paths.
 9. Policy Intent and downstream Transmission Effect are separate claims.
 10. Every model change requires regression/audit tests.
+11. A valuation-changing headline, title or investment point must be synchronized to the same run's `Evidence → Hypothesis → Bridge → compiled Assumption → Valuation` chain. The report must show the prior value, revised value, changed assumption and value delta. If the chain does not change intrinsic value, classify the claim `REFERENCE_ONLY`; it may appear only as context/risk and may not lead the title or conclusion. Report generation must fail closed when this mapping is missing or when a `VALUED` headline leaves intrinsic value unchanged.
 
 ## Valuation calibration gates
 - **Beta:** estimate/normalize comparables consistently; unlever peers; L1 Broad Sector → L2 Industry → L3 Risk-Driver Subindustry → L4 Economic Twins; Bayesian/precision partial pooling; then target relever. Fixed level weights are forbidden.

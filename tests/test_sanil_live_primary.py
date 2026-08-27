@@ -29,7 +29,7 @@ def test_sanil_snapshot_is_explicit_and_source_backed():
 
     assert snapshot.company["target_id"] == TARGET_ID
     assert snapshot.company["ticker"] == TICKER
-    assert snapshot.cutoff == "2026-08-26"
+    assert snapshot.cutoff == "2026-08-27"
     assert tuple(snapshot.scenarios) == ("Down", "Core", "Bull")
     assert "market" not in snapshot.payload
     market = load_sanil_market_snapshot()
@@ -119,6 +119,7 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert linkage.hypothesis_ids == (
         "H:SANIL:CAPACITY",
         "H:SANIL:UHV_CAPACITY",
+        "H:SANIL:US_GRID_POLICY_TRANSMISSION",
         "H:SANIL:Core",
     )
     assert {
@@ -128,6 +129,11 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         "E:SANIL:expansion_land_control",
         "E:SANIL:expansion_site_area",
         "E:SANIL:expansion_capex_committed",
+        "E:SANIL:us_revenue_share_2025",
+        "E:SANIL:us_direct_customer_access",
+        "E:SANIL:us_grid_security_order",
+        "E:SANIL:us_grid_vendor_prequalification",
+        "E:SANIL:us_grid_transformer_scope_kv",
     }.issubset(linkage.supporting_evidence_ids)
     assert "price" not in linkage.linkage_thesis.lower()
     assert "target" not in linkage.linkage_thesis.lower()
@@ -233,6 +239,10 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         "capacity_project:SANIL_UHV_PROPERTY_ACQUISITION_20260826:capacity"
         in core.economic_path_ids
     )
+    assert (
+        "policy:us_grid_security:capacity_realization:year_4"
+        in core.economic_path_ids
+    )
     compiled = result.data["compiled_assumption_set"]
     assert compiled.get("expansion_capex", "Core").measure.amount == Decimal(
         "9.373"
@@ -241,10 +251,10 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert compiled.get("uhv_equipment_capex", "Core").measure.amount == 60
     assert compiled.get("uhv_fcff_year_5", "Core").measure.amount.quantize(
         Decimal("0.001")
-    ) == Decimal("94.454")
+    ) == Decimal("103.005")
     core_ramp_fcff = compiled.get("uhv_fcff_year_3", "Core")
     assert core_ramp_fcff.measure.amount.quantize(Decimal("0.001")) == Decimal(
-        "20.383"
+        "22.215"
     )
     assert core_ramp_fcff.transform_id == "ramp_scaled_money"
     assert core_ramp_fcff.economic_path_id.endswith(":ramp")
@@ -367,9 +377,9 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert "미래에셋증권" in result.data["final_report"]
     assert "신한투자증권" in result.data["final_report"]
     assert "한국투자증권" in result.data["final_report"]
-    assert "5년차 DCF 사용 FCFF 4,516억원" in result.data["final_report"]
-    assert "기존 3,572억원 + 증분 945억원" in result.data["final_report"]
-    assert "PRISM 기준 내재가치는 증권사 평균 목표가보다 9.4% 낮습니다" in result.data[
+    assert "5년차 DCF 사용 FCFF 4,602억원" in result.data["final_report"]
+    assert "기존 3,572억원 + 증분 1,030억원" in result.data["final_report"]
+    assert "PRISM 기준 내재가치는 증권사 평균 목표가보다 7.8% 낮습니다" in result.data[
         "final_report"
     ]
     assert "증설 처리" in result.data["final_report"]
@@ -382,7 +392,7 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     )
     llm_end = result.data["final_report"].index("\n## ", llm_start + 3)
     assert len(result.data["final_report"][llm_start:llm_end]) <= 1000
-    run_root = tmp_path / "runs" / TICKER / "SANIL-062040-20260826"
+    run_root = tmp_path / "runs" / TICKER / "SANIL-062040-20260827-POLICY"
     assert len(result.data["saved_report_visuals"]) == 2
     for filename in result.data["saved_report_visuals"]:
         assert (run_root / filename).exists()
@@ -469,18 +479,20 @@ def test_sanil_brokerage_report_integrates_august_27_update(tmp_path):
     assert "8월 27일 신규·정정 공시는 없습니다" in report
     assert "회사 확정치가 아니라 증권사 추정치" in report
     assert "**현재가** | 201,500원 (2026-08-27)" in report
-    assert "5년차 DCF 사용 FCFF 4,516억원" in report
-    assert "기존 3,572억원 + 증분 945억원" in report
-    assert "기준 DCF 기업가치의 84.8%가 영구가치" in report
+    assert "5년차 DCF 사용 FCFF 4,602억원" in report
+    assert "기존 3,572억원 + 증분 1,030억원" in report
+    assert "기준 DCF 기업가치의 84.9%가 영구가치" in report
     assert "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660" in report
     assert len(visuals) == 2
     assert '<html lang="ko">' in html_report
     assert "트럼프가 전력망을 국가안보로 묶었다" in html_report
     assert "산일전기의 5,026억원 생산 슬롯이 중요해진 이유" in html_report
     assert "모든 외국산 장비의 일괄 금지로 해석하지 않습니다" in html_report
-    assert "행정명령 프리미엄은 목표가 산식에 별도로 더하지 않았습니다" in html_report
+    assert "정책 반영 전→후" in html_report
+    assert "237,906원 → 242,038원" in html_report
+    assert "기존제품 슬롯 실현율을 50%에서 60%로 조정" in html_report
     assert "declaring-a-national-emergency-to-secure-the-united-states" in html_report
-    assert "기준 목표가 237,906원" in html_report
+    assert "기준 목표가 242,038원" in html_report
     assert "전량가동 초고압 마진 민감도" in html_report
     assert "신규공장 제품별 물리적 매출 생산능력" in html_report
     assert "특수변압기" in html_report and "2,231억원" in html_report

@@ -5,6 +5,7 @@ from html import escape
 from typing import Any, Iterable
 
 from .report_localization import identifier_label_ko
+from .report_claim_sync import ClaimValuationSyncAudit
 from .source_reporting import build_source_link_index
 from .street import StreetResearchReport
 from .visual_reporting import ReportVisual
@@ -47,7 +48,7 @@ def _source_anchor(url: str, label: str) -> str:
 def _scenario_comment(scenario_id: str) -> str:
     return {
         "Down": "기존품목 CAPA 25%·초고압 CAPA 70%만 매출화",
-        "Core": "기존품목 CAPA 50%·초고압 CAPA 100% 매출화",
+        "Core": "기존품목 CAPA 60%·초고압 CAPA 100% 매출화",
         "Bull": "기존품목·초고압 물리 CAPA를 전부 매출화",
     }.get(scenario_id, "분석가 시나리오")
 
@@ -115,6 +116,7 @@ def render_sanil_brokerage_html(
     visuals: tuple[ReportVisual, ...],
     terminal_value_share: Decimal,
     markdown_filename: str,
+    claim_sync_audit: ClaimValuationSyncAudit,
 ) -> str:
     if len(visuals) != 2:
         raise ValueError("증권사형 최종보고서는 요약 이미지 2장이 필요합니다")
@@ -187,6 +189,15 @@ def render_sanil_brokerage_html(
     core_value = Decimal(str(scenarios["Core"].value_per_share))
     bull_value = Decimal(str(scenarios["Bull"].value_per_share))
     down_value = Decimal(str(scenarios["Down"].value_per_share))
+    if len(claim_sync_audit.headline_claim_ids) != 1:
+        raise ValueError("산일전기 보고서는 단일 가치변경 헤드라인이 필요합니다")
+    policy_impact = claim_sync_audit.impact(
+        claim_sync_audit.headline_claim_ids[0]
+    )
+    prior_core_value = policy_impact.prior_intrinsic_value_per_share
+    policy_value_delta = policy_impact.value_delta_per_share
+    if prior_core_value is None or policy_value_delta is None:
+        raise ValueError("산일전기 정책 가치변경에는 전후 내재가치가 필요합니다")
     street_mean = Decimal(str(street.consensus.mean_target_price))
     investment_view = (
         "매수" if market_gaps["Core"] >= Decimal("0.15") else "관망"
@@ -294,7 +305,7 @@ def render_sanil_brokerage_html(
         "현금흐름은 늘어날 수 있습니다. 반대로 총투자비 대비 회수기간이 약 "
         f"{core_payback:.1f}년으로 너무 짧게 계산되는 점은 낙관의 증거가 아니라 "
         "이전·창고·시험동·고객인증과 매출 중복을 다시 확인하라는 경고입니다. "
-        "따라서 부지는 DCF에서 제외하지 않되 기존품목 CAPA는 기준 50%, "
+        "따라서 부지는 DCF에서 제외하지 않되 기존품목 CAPA는 기준 60%, "
         "전량 인정은 상방으로 분리했습니다. 이 문단은 인공지능의 연결 인사이트입니다."
     )
     if len(ai_insight) > 1000:
@@ -316,6 +327,11 @@ def render_sanil_brokerage_html(
     half_year_link = _source_anchor(
         "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003544",
         "2026년 반기보고서",
+    )
+    annual_report_link = _source_anchor(
+        "https://kind.krx.co.kr/external/2026/03/18/000706/"
+        "20260318003527/11011.htm",
+        "2025년 사업보고서",
     )
     q2_ir_link = _source_anchor(
         "https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002&mode=view&page=1&s_cate=&s_keyword=&s_type=",
@@ -433,12 +449,13 @@ figcaption {{ margin-top:5px; color:var(--muted); font-size:8.5pt; text-align:ce
       <div>
         <h1>트럼프가 전력망을 국가안보로 묶었다 — 산일전기의 5,026억원 생산 슬롯이 중요해진 이유</h1>
         <p class="subtitle">위험 공급자 배제 → 검증된 공급망 재편 → 산일전기 신규 생산 슬롯 · 자료 기준 2026년 8월 27일</p>
-        <p class="lead">8월 26일 트럼프 대통령은 미국 대용량 전력망의 외국 공급 위험을 국가비상사태로 규정했습니다. 모든 외국산을 일괄 금지한 것은 아니지만 69kV 이상 계통의 변전소 변압기를 안보심사 대상으로 올렸습니다. 산일전기의 투자 논리는 막연한 정책 수혜가 아니라, 향후 미국 공급자 자격을 확보할 수 있는지와 87.2% 가동률 아래 생산 슬롯의 희소성입니다. {trump_grid_link}</p>
+        <p class="lead">트럼프 행정명령은 69kV 이상 전력망의 변전소 변압기를 안보심사 대상으로 올렸습니다. 산일전기는 2025년 매출의 75% 이상을 미국에서 확보하고 주요 인버터 업체·미국 전력청에 대부분 직접 납품합니다. 이 연결을 신규 부지 기존제품 슬롯의 기준 실현율 50%→60%로만 제한 반영해 내재가치는 {_money(prior_core_value)}에서 {_money(core_value)}으로 주당 {_money(policy_value_delta)} 상승했습니다. {trump_grid_link} · {annual_report_link}</p>
       </div>
       <aside class="stance">
         <div class="label">투자판단</div><div class="view">{investment_view}</div>
         <div class="metric"><span>현재가</span><strong>{_money(market_price)}</strong></div>
         <div class="metric"><span>목표가(기준)</span><strong>{_money(core_value)}</strong></div>
+        <div class="metric"><span>정책 반영 전→후</span><strong>{_money(prior_core_value)} → {_money(core_value)}</strong></div>
         <div class="metric"><span>상승여력</span><strong class="positive">{_pct(market_gaps['Core'], signed=True)}</strong></div>
         <div class="metric"><span>증권사 평균</span><strong>{_money(street_mean)}</strong></div>
         <div class="metric"><span>평가방법</span><strong>현금흐름할인법</strong></div>
@@ -451,11 +468,11 @@ figcaption {{ margin-top:5px; color:var(--muted); font-size:8.5pt; text-align:ce
     </div>
     <span class="pill">핵심 투자포인트 3가지</span>
     <div class="thesis-list">
-      <div class="thesis"><b>01</b><p><strong>전력망이 국가안보 조달로 바뀌었습니다.</strong> 행정명령은 위험 공급자 거래 제한과 사전적격 공급자 선정을 허용합니다. 이는 총수요 증가보다 공급자 자격과 납품 슬롯의 희소성을 높이는 변화입니다. {trump_grid_link}</p></div>
+      <div class="thesis"><b>01</b><p><strong>정책을 실제 현금흐름에 연결했습니다.</strong> 미국 매출 75% 이상과 직접 납품 기반에 공급자 심사를 결합해 기존제품 슬롯 실현율을 50%에서 60%로 조정했습니다. WACC·마진·영구성장률은 그대로 두어 정책효과를 중복 반영하지 않았습니다. {trump_grid_link} · {annual_report_link}</p></div>
       <div class="thesis"><b>02</b><p><strong>마진 확대보다 절대이익 증가가 핵심입니다.</strong> 신규 부지의 물리적 매출 CAPA는 기존제품 2,936억원과 초고압 2,090억원, 합계 5,026억원입니다. 초고압 마진이 35%여도 전사 영업이익률은 약 40%를 유지합니다.</p></div>
-      <div class="thesis"><b>03</b><p><strong>DCF 반영은 맞지만 전량 인정은 아직 이릅니다.</strong> 기준은 기존품목 CAPA 50%만 증분 매출로 인정하고, 회사가 3,000억원 안팎의 순증 CAPA·설비·시험동을 확인할 때 상방 가정을 기준으로 승격합니다. {disclosure_link}</p></div>
+      <div class="thesis"><b>03</b><p><strong>DCF 반영은 맞지만 전량 인정은 아직 이릅니다.</strong> 기준은 기존품목 CAPA 60%만 증분 매출로 인정하고, 회사가 3,000억원 안팎의 순증 CAPA·설비·시험동을 확인할 때 상방 가정을 기준으로 승격합니다. {disclosure_link}</p></div>
     </div>
-    <p class="footnote">모든 외국산 장비의 일괄 금지로 해석하지 않습니다. 산일전기의 직접 수혜는 향후 미국 에너지부 규칙과 사전적격 공급자 인정에 달려 있으며, 행정명령 프리미엄은 목표가 산식에 별도로 더하지 않았습니다. 목표가는 확률가중값이 아닌 기준 시나리오 DCF입니다. 현재가 기준일 {escape(market_as_of)}. {market_link}</p>
+    <p class="footnote">모든 외국산 장비의 일괄 금지로 해석하지 않습니다. 미국산 조달 우선은 한국 생산기업에 불리할 수도 있습니다. 그래서 정책효과는 기존제품 슬롯 실현율 +10%p만 반영했고, 미국 에너지부 규칙이 산일전기를 배제하면 50% 이하로 되돌립니다. 목표가는 확률가중값이 아닌 기준 시나리오 DCF입니다. 현재가 기준일 {escape(market_as_of)}. {market_link}</p>
   </section>
 
   <section class="page" data-page="02 / 04">
@@ -483,7 +500,7 @@ figcaption {{ margin-top:5px; color:var(--muted); font-size:8.5pt; text-align:ce
       <h3>전량가동 초고압 마진 민감도 · 마진보다 절대금액</h3>
       <p>{' / '.join(margin_points)}입니다. 초고압 초기 마진이 낮아도 전사 마진은 39.4~40.6%를 유지합니다. 보수적 FCF는 세후영업이익 + 감가상각 1.0% − 유지투자 1.5% − 신규공장 증분매출의 운전자본 5%이며, 정상화 FCF는 추가 운전자본 투입이 멈춘 상태입니다.</p>
     </div>
-    <p class="footnote">2029·2030 수치는 회사 가이던스가 아니라 공시 부지와 증권사 CAPA를 연결한 분석가 추론입니다. 3쪽 DCF는 연도별 램프·투자비를 별도로 반영하며, 기준은 기존품목 CAPA 50%, 전량은 상방으로 분리합니다.</p>
+    <p class="footnote">2029·2030 수치는 회사 가이던스가 아니라 공시 부지와 증권사 CAPA를 연결한 분석가 추론입니다. 3쪽 DCF는 연도별 램프·투자비를 별도로 반영하며, 기준은 기존품목 CAPA 60%, 전량은 상방으로 분리합니다.</p>
   </section>
 
   <section class="page" data-page="03 / 04">
@@ -515,7 +532,7 @@ figcaption {{ margin-top:5px; color:var(--muted); font-size:8.5pt; text-align:ce
       <tbody>{''.join(broker_rows)}</tbody>
     </table></div>
     <div class="debate"><strong>핵심 차이</strong><p>증권사는 예상 EPS에 PER을 적용합니다. PRISM은 부지·설비투자비를 차감하고 생산 슬롯이 매출·영업이익·FCF로 전환되는 연도별 경로를 할인합니다.</p></div>
-    <div class="debate"><strong>중복 방지</strong><p>{kis_aug12_link}의 2025~2028년 매출 CAGR 32.5%와 2028년 영업이익률 40.7%는 신규공장·초고압 계획을 일부 포함할 가능성이 있습니다. 따라서 증권사 성장률을 신규 부지 CAPA에 기계적으로 더하지 않고, 기존제품 증분을 기준 50%로 제한했습니다.</p></div>
+    <div class="debate"><strong>중복 방지</strong><p>{kis_aug12_link}의 2025~2028년 매출 CAGR 32.5%와 2028년 영업이익률 40.7%는 신규공장·초고압 계획을 일부 포함할 가능성이 있습니다. 따라서 증권사 성장률을 신규 부지 CAPA에 기계적으로 더하지 않고, 기존제품 증분을 기준 60%로 제한했습니다. 정책효과는 WACC·마진·영구성장률에 중복 반영하지 않았습니다.</p></div>
     <div class="ai" style="margin-top:12px">
       <h3>인공지능 인사이트 <small style="font-weight:500">· 1,000자 이내 별도 구분</small></h3>
       <p>{escape(ai_insight)}</p>
@@ -529,7 +546,7 @@ figcaption {{ margin-top:5px; color:var(--muted); font-size:8.5pt; text-align:ce
     <ol class="source-list">{_source_register(data)}</ol>
     <h3 style="margin-top:16px">최종 요약 이미지 2장</h3>
     <div class="visuals">{_visual_cards(visuals)}</div>
-    <p class="footnote">추가 원문: {trump_grid_link} · {half_year_link} · {q2_ir_link} · {disclosure_link} · {kis_aug12_link} · {kis_link} · {ls_link}. 상세 계산은 <a href="{escape(markdown_filename, quote=True)}" target="_blank">감사용 부속자료</a>에 보존했습니다. 본 자료는 공개자료를 바탕으로 한 조사 보고서이며 최종 투자판단은 독자에게 있습니다.</p>
+    <p class="footnote">추가 원문: {trump_grid_link} · {annual_report_link} · {half_year_link} · {q2_ir_link} · {disclosure_link} · {kis_aug12_link} · {kis_link} · {ls_link}. 상세 계산은 <a href="{escape(markdown_filename, quote=True)}" target="_blank">감사용 부속자료</a>에 보존했습니다. 본 자료는 공개자료를 바탕으로 한 조사 보고서이며 최종 투자판단은 독자에게 있습니다.</p>
   </section>
 </main>
 <details class="technical"><summary>감사용 부속자료 안내</summary><p>수치 재현과 원문 연결 검토가 필요할 때만 Markdown 부속자료를 여십시오. 투자 결론과 핵심 위험은 위 4쪽에 모두 포함돼 있습니다.</p></details>

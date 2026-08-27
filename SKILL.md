@@ -56,6 +56,14 @@ If a blocking issue remains after round three or a blocking audit fails, return 
 - LLM reasoning owns interpretation, Economic-Twin rationale, counter-theses and missing-evidence requests.
 - Street reports and target-company price are comparison objects, not intrinsic inputs.
 
+### Claim-to-Value Synchronization Gate
+
+- A new title, headline or investment point that says a disclosure, policy or event changes value must map within the same new run through `Evidence → Hypothesis → Bridge → compiled Assumption → Valuation`.
+- Show the previous intrinsic value, revised intrinsic value, changed assumption and value delta in the decision-facing report.
+- If verified transmission does not change an intrinsic input, classify the claim `REFERENCE_ONLY`. It may appear only in context or risk, never as the title, headline conclusion or valued catalyst.
+- Fail report generation when a `VALUED` headline has no active Evidence/Bridge/Assumption mapping or when its revised intrinsic value equals the prior run.
+- Do not force a value change from policy intent alone. A policy claim becomes `VALUED` only when company exposure and a causal transmission path are separately evidenced; otherwise the correct outcome is `REFERENCE_ONLY` and no valuation-changing headline.
+
 ## Industry Knowledge & Signal Intelligence v0.5.2
 
 - Freeze `industry_knowledge_snapshot_hash`, `source_watch_snapshot_hash`, taxonomy/module versions and routing evidence for every valuation run. Later reports cannot silently mutate an in-progress run.

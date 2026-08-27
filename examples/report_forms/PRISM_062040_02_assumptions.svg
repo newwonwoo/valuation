@@ -37,10 +37,10 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <line x1="95" y1="753" x2="1105" y2="753" stroke="#E9EEF0" stroke-width="2"/>
 <text x="100" y="810" font-size="21" font-weight="700" fill="#142A3A" text-anchor="start">기준(Core)</text>
 <text x="270" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">1,719억원</text>
-<text x="470" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">4,516억원</text>
+<text x="470" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">4,602억원</text>
 <text x="675" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">2.5%</text>
 <text x="855" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">15.0%</text>
-<text x="1015" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">945억원</text>
+<text x="1015" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">1,030억원</text>
 <line x1="95" y1="838" x2="1105" y2="838" stroke="#E9EEF0" stroke-width="2"/>
 <text x="100" y="895" font-size="21" font-weight="700" fill="#142A3A" text-anchor="start">상방(Bull)</text>
 <text x="270" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">1,719억원</text>

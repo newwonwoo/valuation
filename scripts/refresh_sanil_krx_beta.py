@@ -20,7 +20,7 @@ BENCHMARK_CODE = "KS11"
 BENCHMARK_ID = "FDR_KOSPI_KS11"
 START_DATE = "2024-07-29"
 END_DATE = "2026-08-25"
-SNAPSHOT_CUTOFF = "2026-08-26"
+SNAPSHOT_CUTOFF = "2026-08-27"
 PRICE_SOURCE_REF = "https://finance.naver.com/"
 PROVIDER_REF = "https://github.com/FinanceData/FinanceDataReader"
 
