@@ -331,15 +331,19 @@ def _summary_card(data: dict[str, Any], filename: str) -> ReportVisual:
 def _measure_text(assumption: Any) -> str:
     measure = assumption.measure
     amount = Decimal(str(measure.amount))
-    if measure.unit == "ratio":
+    return _measure_value_text(amount, measure.unit)
+
+
+def _measure_value_text(amount: Decimal, unit: str) -> str:
+    if unit == "ratio":
         return f"{amount * 100:.1f}%"
-    if measure.unit == "KRW_billion":
+    if unit == "KRW_billion":
         return f"{amount * 10:,.0f}억원"
-    if measure.unit == "years":
+    if unit == "years":
         return f"{amount:g}년"
-    if measure.unit == "shares":
+    if unit == "shares":
         return f"{amount:,.0f}주"
-    return f"{amount:g} {measure.unit}"
+    return f"{amount:g} {unit}"
 
 
 def _scenario_assumption(scenario: Any, key: str) -> str:
@@ -347,6 +351,23 @@ def _scenario_assumption(scenario: Any, key: str) -> str:
         return _measure_text(scenario.get(key))
     except KeyError:
         return "—"
+
+
+def _scenario_total_fcff(scenario: Any, year: int) -> str:
+    try:
+        base = scenario.get(f"fcff_year_{year}")
+    except KeyError:
+        return "—"
+    try:
+        incremental = scenario.get(f"uhv_fcff_year_{year}")
+    except KeyError:
+        return _measure_text(base)
+    base_measure = base.measure
+    incremental_measure = incremental.measure.convert_to(base_measure.unit)
+    return _measure_value_text(
+        base_measure.amount + incremental_measure.amount,
+        base_measure.unit,
+    )
 
 
 def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
@@ -385,7 +406,7 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     parts.append(_svg_text("시나리오별 핵심 가정", x=70, y=560, size=30, weight=800, fill="#102D3E"))
     table_y = 600
     parts.append(_rect(70, table_y, 1060, 390, fill="#FFFFFF", radius=22))
-    headers = ("구분", "1년차 FCFF", "5년차 FCFF", "영구성장률", "영구 ROIC", "UHV 정상화")
+    headers = ("구분", "1년 DCF FCFF", "5년 DCF FCFF", "영구성장률", "영구 ROIC", "UHV 5년 증분")
     x_positions = (100, 270, 470, 675, 855, 1015)
     for x, header in zip(x_positions, headers):
         parts.append(_svg_text(header, x=x, y=table_y + 48, size=19, weight=800, fill="#607582"))
@@ -394,11 +415,11 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
         row_y = table_y + 125 + index * 85
         values = (
             f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
-            _scenario_assumption(scenario, "fcff_year_1"),
-            _scenario_assumption(scenario, "fcff_year_5"),
+            _scenario_total_fcff(scenario, 1),
+            _scenario_total_fcff(scenario, 5),
             _scenario_assumption(scenario, "terminal_growth"),
             _scenario_assumption(scenario, "terminal_roic"),
-            _scenario_assumption(scenario, "uhv_ramp_years"),
+            _scenario_assumption(scenario, "uhv_fcff_year_5"),
         )
         for x, value in zip(x_positions, values):
             parts.append(_svg_text(value, x=x, y=row_y, size=21, weight=700 if x == 100 else 500, fill="#142A3A"))

@@ -33,8 +33,8 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="770" y="798" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">217,104원</text>
 <rect x="70" y="890" width="1060" height="170" rx="24" fill="#DDEAE7"/>
 <text x="105" y="942" font-size="24" font-weight="800" fill="#167C72" text-anchor="start">현재가</text>
-<text x="105" y="1002" font-size="38" font-weight="800" fill="#102D3E" text-anchor="start">176,900원</text>
-<text x="1095" y="1002" font-size="21" font-weight="400" fill="#607582" text-anchor="end">기준일 2026-08-26</text>
+<text x="105" y="1002" font-size="38" font-weight="800" fill="#102D3E" text-anchor="start">201,500원</text>
+<text x="1095" y="1002" font-size="21" font-weight="400" fill="#607582" text-anchor="end">기준일 2026-08-27</text>
 <text x="70" y="1110" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">매수 검토 기준</text>
 <rect x="70" y="1138" width="1060" height="145" rx="22" fill="#FFF4DE"/>
 <text x="105" y="1188" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">실제 해결 이력 기반 확률 보정이 완료되지 않았습니다. 따라서 특정 매수가는 만들지 않고 현재가는</text>
@@ -42,9 +42,9 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <rect x="0" y="1370" width="1200" height="130" rx="0" fill="#102D3E"/>
 <text x="70" y="1415" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
 <text x="140" y="1415" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">모든 수치의 원문 주소는 보고서 본문 ‘정보 출처’에서 직접 검증할 수 있습니다.</text>
-<a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660" target="_blank"><text x="70" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
-<a href="https://finance.naver.com/" target="_blank"><text x="170" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 2</text></a>
-<a href="https://finance.naver.com/item/main.naver?code=062040" target="_blank"><text x="270" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 3</text></a>
+<a href="https://alphasquare.co.kr/home/stock-summary?code=062040" target="_blank"><text x="70" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
+<a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660" target="_blank"><text x="170" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 2</text></a>
+<a href="https://finance.naver.com/" target="_blank"><text x="270" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 3</text></a>
 <a href="https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml" target="_blank"><text x="370" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 4</text></a>
 <a href="https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md" target="_blank"><text x="470" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 5</text></a>
 </svg>

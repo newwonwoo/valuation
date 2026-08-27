@@ -93,6 +93,17 @@ sources:
   - earnings_review
   - industry_research
   notes: Use public report metadata/derived claims only; verify target-company operating facts in primary filings/IR and quarantine target prices/forecasts until Freeze.
+- id: KR_KOREA_INVESTMENT_RESEARCH
+  broker_family: KoreaInvestmentSecurities
+  region: KR
+  access_mode: public_summary
+  public_raw_storage_allowed: false
+  url: https://securities.koreainvestment.com/main/research/research/Strategy.jsp
+  strengths:
+  - company_updates
+  - earnings_review
+  - industry_research
+  notes: Use public report metadata and derived claims only; keep target prices and forecasts outside the intrinsic valuation until Freeze.
 - id: KR_SHINHAN_RESEARCH
   broker_family: ShinhanSecurities
   region: KR

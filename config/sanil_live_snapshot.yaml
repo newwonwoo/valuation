@@ -233,12 +233,14 @@ scenarios:
     expansion_capex_krw_billion: 42.0
     terminal_growth: 0.02
     terminal_roic: 0.13
-    uhv_incremental_fcff_krw_billion:
+    uhv_reference_fcff_krw_billion:
     - 0
     - 0
     - 3
     - 10
     - 18
+    uhv_steady_state_fcff_krw_billion: 18
+    uhv_reference_ramp_years: 3.0
     uhv_property_capex_krw_billion: 69.25
     uhv_ramp_years: 3.0
   Core:
@@ -251,12 +253,14 @@ scenarios:
     expansion_capex_krw_billion: 42.0
     terminal_growth: 0.025
     terminal_roic: 0.15
-    uhv_incremental_fcff_krw_billion:
+    uhv_reference_fcff_krw_billion:
     - 0
     - 0
     - 10
     - 25
     - 42
+    uhv_steady_state_fcff_krw_billion: 42
+    uhv_reference_ramp_years: 2.0
     uhv_property_capex_krw_billion: 69.25
     uhv_ramp_years: 2.0
   Bull:
@@ -269,12 +273,14 @@ scenarios:
     expansion_capex_krw_billion: 42.0
     terminal_growth: 0.03
     terminal_roic: 0.17
-    uhv_incremental_fcff_krw_billion:
+    uhv_reference_fcff_krw_billion:
     - 0
     - 2
     - 18
     - 42
     - 68
+    uhv_steady_state_fcff_krw_billion: 68
+    uhv_reference_ramp_years: 1.5
     uhv_property_capex_krw_billion: 69.25
     uhv_ramp_years: 1.5
 scenario_likelihood:

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -21,6 +22,64 @@ DEFAULT_OUTPUT = (
     / "report_forms"
     / "SANIL_062040_LIVE_PRIMARY_REPORT.md"
 )
+
+DART_UHV_URL = "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660"
+COMPANY_DISCLOSURE_LIST_URL = "https://www.sanil.co.kr/kr/sub/reference/announce.php"
+KOREA_INVESTMENT_REPORT_URL = (
+    "https://securities.koreainvestment.com/main/research/research/StrategyDetail.jsp"
+    "?id=158730&jkGubun=6"
+)
+
+
+def _core_terminal_value_share(compiled: object, wacc: Decimal) -> Decimal:
+    scenario = "Core"
+    flows = [
+        compiled.get(f"fcff_year_{year}", scenario).measure.amount
+        + compiled.get(f"uhv_fcff_year_{year}", scenario).measure.amount
+        for year in range(1, 6)
+    ]
+    flows[1] -= compiled.get("expansion_capex", scenario).measure.amount
+    flows[1] -= compiled.get("uhv_property_capex", scenario).measure.amount
+    growth = compiled.get("terminal_growth", scenario).measure.amount
+    one = Decimal("1")
+    explicit_pv = sum(
+        (flow / (one + wacc) ** year for year, flow in enumerate(flows, start=1)),
+        Decimal("0"),
+    )
+    terminal_pv = (
+        flows[-1]
+        * (one + growth)
+        / (wacc - growth)
+        / (one + wacc) ** 5
+    )
+    return terminal_pv / (explicit_pv + terminal_pv)
+
+
+def _fcff_connection_table(compiled: object) -> str:
+    lines = [
+        "### 현금흐름 계산 연결",
+        "",
+        "| 시나리오 | 5년차 기존사업 FCFF | 초고압 증분 | DCF·영구가치 사용 합계 |",
+        "| --- | ---: | ---: | ---: |",
+    ]
+    labels = {"Down": "하방", "Core": "기준", "Bull": "상방"}
+    for scenario in ("Down", "Core", "Bull"):
+        base = compiled.get("fcff_year_5", scenario).measure.amount
+        incremental = compiled.get("uhv_fcff_year_5", scenario).measure.amount
+        lines.append(
+            f"| {labels[scenario]} | {base * 10:,.0f}억원 | "
+            f"{incremental * 10:,.0f}억원 | {(base + incremental) * 10:,.0f}억원 |"
+        )
+    lines.extend(
+        (
+            "",
+            "- 초고압 증분 FCFF는 고정 숫자를 그대로 더하지 않고, 검토된 기준 경로·정상상태 상한·가동기간을 결합해 매년 다시 계산합니다.",
+            "- 현재 계산은 2년차에 제2공장 420억원과 초고압 부동산 692.5억원을 별도 현금유출로 차감합니다. 실제 초고압 대금은 2026년 계약금·중도금과 2027년 잔금으로 나뉘므로 지급시점 정밀화가 남아 있습니다.",
+        )
+    )
+    return "\n".join(lines)
+
+
 def render_report(state_root: Path) -> tuple[str, tuple]:
     snapshot = load_sanil_snapshot()
     result = run_sanil_live_primary(state_root)
@@ -56,6 +115,11 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
         if market is not None
         else market_snapshot.price
     )
+    market_date = (
+        market.observation.as_of
+        if market is not None
+        else market_snapshot.as_of
+    )
     street_target = (
         street.consensus.mean_target_price
         if street is not None
@@ -71,10 +135,18 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
     if valuation_marker not in controlled:
         raise RuntimeError("Sanil report is missing the investor-facing valuation section")
     controlled_body = controlled[controlled.index(valuation_marker):]
+    compiled = result.data["compiled_assumption_set"]
+    controlled_body = controlled_body.replace(
+        "## 가치평가\n",
+        "## 가치평가\n\n" + _fcff_connection_table(compiled) + "\n\n",
+        1,
+    )
     evidence_note = """## 핵심 가정과 위험
 - **근거 신뢰도:** 회사 실적·수주·생산능력·부지·자본적지출은 회사 공시·기업설명자료에 기반해 신뢰도가 높습니다.
 - **분석가 추정:** 하방·기준·상방 기업잉여현금흐름은 회사 가이던스가 아니라 공시 사실에서 파생한 분석가 가정입니다.
-- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 현금유출을 확정하지만 정확한 생산능력은 미공시입니다.
+- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 매매대금을 확정하지만 정확한 생산능력·설비투자비·양산시점은 미공시입니다.
+- **누락 비용 위험:** 부가가치세·세금·수수료와 향후 건설·설비 비용은 692.5억원에 포함되지 않아 현재 DCF에 반영되지 않았습니다.
+- **지급시점 단순화:** 공시된 계약금 69.25억원·중도금 207.75억원·잔금 415.5억원을 현재 모델은 2년차 일괄 현금유출로 처리해, 지급일별 현재가치 계산은 후속 보완이 필요합니다.
 """
     controlled_body = controlled_body.replace(
         "## 핵심 가정과 위험\n",
@@ -91,7 +163,11 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
     } if market is not None else {}
     core_gap = market_gaps.get("Core", 0)
     bull_gap = market_gaps.get("Bull", 0)
-    header = f"""# 산일전기(062040) 투자보고서
+    terminal_share = _core_terminal_value_share(
+        compiled,
+        Decimal(str(wacc.wacc_result.wacc)),
+    )
+    header = f"""# 산일전기(062040) 투자보고서 — 2026.08.27
 
 ## 투자 요약
 
@@ -99,13 +175,13 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
 
 | 핵심 판단 항목 | 내용 |
 | --- | --- |
-| **투자판단** | 판단 유보 — 확률 보정과 진입 규칙이 없어 구체 매수가는 산출하지 않음 |
-| **현재가** | {float(current_price):,.0f}원 ({snapshot.cutoff}) |
+| **투자판단** | 관망 — 기준가 대비 하락위험 {abs(core_gap):.1%}, 상방가까지 상승여력 {bull_gap:.1%} |
+| **현재가** | {float(current_price):,.0f}원 ({market_date}) |
 | **기준 내재가치** | {values['Core']:,.0f}원 · 현재가 대비 {core_gap:+.1%} |
 | **가치평가 범위** | 하방 {values['Down']:,.0f}원 · 기준 {values['Core']:,.0f}원 · 상방 {values['Bull']:,.0f}원 |
 | **시나리오 가능성** | {probability_summary} · 미보정 분석가 사전확률, 기대값 미적용 |
 | **증권사 참고값** | {street_reference} |
-| **보고서 성격** | 공시·원문 기반 예비 투자분석 |
+| **보고서 성격** | 8월 26일 공시와 8월 27일 시장·증권사 후속 해석을 분리 반영한 투자분석 |
 
 ### 한 문장 결론
 
@@ -115,13 +191,21 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
 
 - **가치동인:** {project_names}을 각각 생산능력·자본적지출·가동 정상화 경로로 반영했습니다.
 - **가치평가:** 현금흐름할인법 기준 하방–상방 범위는 {values['Down']:,.0f}–{values['Bull']:,.0f}원이며, 계층형 베타 {beta.target_levered_beta:.3f} · 가중평균자본비용 {wacc.wacc_result.wacc:.3%}를 적용했습니다.
-- **남은 제약:** 상대점수 정규화로 {probability_summary}를 산출했지만 실제 해결 이력으로 보정되지 않아 기대값에는 적용하지 않았습니다.
+- **남은 제약:** 기준 DCF 기업가치의 {terminal_share:.1%}가 영구가치에 있어 가동·마진 정상화 지연에 민감하며, {probability_summary}는 실제 해결 이력으로 보정되지 않아 기대값에는 적용하지 않았습니다.
 
 ### 판단 변경 조건
 
 - **상방 확인:** 제2공장·초고압 설비의 일정 준수, 가동률 정상화, 수주잔고의 매출 전환이 공시로 확인될 때.
 - **하방 훼손:** 증설 지연·취소, 수주잔고 또는 신규수주 감소, 출하 전환 전 마진 둔화가 확인될 때.
 - **행동 가능 조건:** 실제 해결 전망 이력이 누적되어 시나리오 확률을 보정하고 별도 진입 규칙이 승인될 때.
+
+### 8월 27일 자료 반영
+
+- **신규 공시 여부:** [회사 공시목록]({COMPANY_DISCLOSURE_LIST_URL}) 기준 8월 27일 신규·정정 공시는 없습니다. 최신 원문은 8월 26일 [유형자산 양수결정]({DART_UHV_URL})입니다.
+- **회사 확정 사실:** 안산 토지·건물 692.5억원, 자기자금 지급, 초고압 변압기 생산시설과 기존 제품 생산능력 확대 목적입니다.
+- **아직 미공시:** 총 설비투자액, 추가 생산능력, 고객 인증·수주, 상업 생산시점, 매출·마진·현금흐름 기여입니다.
+- **증권사 해석:** [한국투자증권 8월 27일 보고서]({KOREA_INVESTMENT_REPORT_URL})의 2028년 양산·2029년 추가 매출 2,000억원 이상·목표가 270,000원은 회사 확정치가 아니라 증권사 추정치입니다.
+- **모델 처리:** 오늘 증권사 수치는 기존 내재가치 가정을 바꾸지 않고 가치평가 완료 뒤 비교에만 사용했습니다. 초고압 사업은 공시된 부동산 대금과 분석가 가동경로를 분리해 계산합니다.
 
 """
     return header + controlled_body, render_report_visuals(result.data)

@@ -34,6 +34,8 @@ class CapacityBridgeBinding:
     bridge_id: str
     required_evidence_ids: tuple[str, ...]
     project_economic_path_id: str
+    valuation_assumption_key: str | None = None
+    valuation_transform_id: str | None = None
 
     def validate(self) -> None:
         if not all((self.project_id, self.bridge_id, self.project_economic_path_id)):
@@ -46,6 +48,12 @@ class CapacityBridgeBinding:
             raise ValueError("capacity bridge binding has duplicate Evidence IDs")
         if any(character.isspace() for character in self.project_economic_path_id):
             raise ValueError("project_economic_path_id cannot contain whitespace")
+        if (self.valuation_assumption_key is None) != (
+            self.valuation_transform_id is None
+        ):
+            raise ValueError(
+                "capacity value coupling requires both assumption key and transform ID"
+            )
 
     @property
     def role_economic_path_id(self) -> str:
@@ -127,6 +135,7 @@ def _validate_bridge_role(
     bridge: BridgeRecord,
     *,
     role: CapacityBridgeRole,
+    value_coupled: bool = False,
 ) -> None:
     if not isfinite(bridge.old_value) or not isfinite(bridge.new_value):
         raise ValueError(f"capacity bridge {bridge.id} values must be finite")
@@ -168,9 +177,12 @@ def _validate_bridge_role(
         raise ValueError(
             f"Core ramp bridge {bridge.id} cannot carry a negative ramp input"
         )
+    if dimension is Dimension.MONEY and value_coupled:
+        return
     if dimension not in {Dimension.TIME, Dimension.RATIO}:
         raise ValueError(
-            f"Core ramp bridge {bridge.id} requires a time or ratio unit"
+            f"Core ramp bridge {bridge.id} requires a time/ratio input or an "
+            "explicit value-coupled money transform"
         )
 
 
@@ -179,6 +191,7 @@ def validate_capacity_bridge_consumption(
     assessment: CapacityCommitmentAssessment,
     bridges: tuple[BridgeRecord, ...],
     contract: CapacityBridgeConsumptionContract,
+    assumption_specs: tuple[object, ...] = (),
 ) -> CapacityBridgeConsumptionResult:
     contract.validate()
     if contract.assessment_hash != assessment.assessment_hash:
@@ -199,6 +212,11 @@ def validate_capacity_bridge_consumption(
     bridge_map = {item.id: item for item in bridges}
     if len(bridge_map) != len(bridges):
         raise ValueError("capacity bridge consumption received duplicate bridge IDs")
+    specs_by_bridge = {
+        str(getattr(item, "bridge_id", "")): item
+        for item in assumption_specs
+        if getattr(item, "bridge_id", None)
+    }
 
     bindings_by_project: dict[
         str, dict[CapacityBridgeRole, CapacityBridgeBinding]
@@ -287,7 +305,27 @@ def validate_capacity_bridge_consumption(
                 raise ValueError(
                     f"capacity bridge {bridge.id} economic_path_id must be {expected_path}"
                 )
-            _validate_bridge_role(bridge, role=role)
+            value_coupled = binding.valuation_assumption_key is not None
+            if value_coupled:
+                spec = specs_by_bridge.get(binding.bridge_id)
+                if spec is None:
+                    raise ValueError(
+                        f"capacity bridge {bridge.id} lacks its declared valuation assumption"
+                    )
+                if (
+                    getattr(spec, "key", None) != binding.valuation_assumption_key
+                    or getattr(spec, "transform_id", None)
+                    != binding.valuation_transform_id
+                ):
+                    raise ValueError(
+                        f"capacity bridge {bridge.id} valuation coupling does not match "
+                        "the declared assumption/transform"
+                    )
+            _validate_bridge_role(
+                bridge,
+                role=role,
+                value_coupled=value_coupled,
+            )
             consumed_bridges.append(bridge.id)
             role_rows.append(
                 (
@@ -311,6 +349,8 @@ def validate_capacity_bridge_consumption(
                 "bridge_id": item.bridge_id,
                 "required_evidence_ids": item.required_evidence_ids,
                 "project_economic_path_id": item.project_economic_path_id,
+                "valuation_assumption_key": item.valuation_assumption_key,
+                "valuation_transform_id": item.valuation_transform_id,
             }
             for item in sorted(
                 contract.bindings,
@@ -393,6 +433,7 @@ def capacity_bridge_consumption_gate_adapter(
                 assessment=assessment,
                 bridges=bridges,
                 contract=contract,
+                assumption_specs=tuple(context.data.get("assumption_specs", ())),
             )
         except (TypeError, ValueError) as exc:
             return StageExecutionResult(

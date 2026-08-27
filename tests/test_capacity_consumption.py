@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 
 from valuation_engine.capacity_commitment import (
@@ -217,6 +219,54 @@ def test_capacity_capex_and_ramp_must_share_one_project_economic_path():
             bridges=bridges(ramp_path="different_path:ramp"),
             contract=contract(),
         )
+
+
+def test_value_coupled_money_ramp_requires_the_declared_transform():
+    value_bridges = (*bridges()[:2], bridge(
+        "B_RAMP",
+        ("E_LAND", "E_RAMP"),
+        old_value=0,
+        new_value=10,
+        unit="KRW_billion",
+        path=f"{ROOT_PATH}:ramp",
+    ))
+    values = list(contract().bindings)
+    values[-1] = CapacityBridgeBinding(
+        project_id="P1",
+        role=CapacityBridgeRole.RAMP,
+        bridge_id="B_RAMP",
+        required_evidence_ids=("E_RAMP",),
+        project_economic_path_id=ROOT_PATH,
+        valuation_assumption_key="incremental_fcff_year_3",
+        valuation_transform_id="ramp_scaled_money",
+    )
+    value_contract = CapacityBridgeConsumptionContract(
+        "ASSESSMENT-HASH",
+        tuple(values),
+    )
+    with pytest.raises(ValueError, match="valuation coupling does not match"):
+        validate_capacity_bridge_consumption(
+            assessment=assessment(),
+            bridges=value_bridges,
+            contract=value_contract,
+            assumption_specs=(SimpleNamespace(
+                bridge_id="B_RAMP",
+                key="incremental_fcff_year_3",
+                transform_id="identity_observation",
+            ),),
+        )
+
+    result = validate_capacity_bridge_consumption(
+        assessment=assessment(),
+        bridges=value_bridges,
+        contract=value_contract,
+        assumption_specs=(SimpleNamespace(
+            bridge_id="B_RAMP",
+            key="incremental_fcff_year_3",
+            transform_id="ramp_scaled_money",
+        ),),
+    )
+    assert result.consumed_project_ids == ("P1",)
 
 
 def test_contract_rejects_different_roots_for_one_project():

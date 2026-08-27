@@ -117,6 +117,7 @@ _IDENTIFIER_LABELS = {
     "frozen filing fixture": "고정 공시 시험자료",
     "Mirae Asset Securities": "미래에셋증권",
     "IBK Securities": "IBK투자증권",
+    "Korea Investment Securities": "한국투자증권",
     "Shinhan Securities": "신한투자증권",
     "BrokerA": "증권사 A",
     "BrokerB": "증권사 B",
