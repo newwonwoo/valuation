@@ -34,6 +34,8 @@ Current price is a post-freeze reference. It produces scenario and, when allowed
 
 Only an audit-passed completed run may update `current_state.json`. `FINAL_REPORT` emits the same report payload that was saved, so the user-visible result and immutable artifact cannot silently diverge.
 
+After `FINAL_REPORT` passes, the verified controlled-run wrapper includes all five major-gate summaries and retains the complete 33-stage trace as its audit appendix. The fifth summary covers post-freeze comparison, state persistence and final emission; it cannot be emitted early or inferred from a saved draft.
+
 ## 6. Failure policy
 
 - missing or invalid Freeze Token: `BLOCKED`;

@@ -14,6 +14,8 @@
 | `capacity_core_consumption_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
 | `broker_research_primary_verification_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
 | `freeze_hash_binding` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
+| `major_gate_reporting_contract` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
+| `major_gate_delivery` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
 
 ## Immutable Run Identities
 
@@ -34,6 +36,19 @@
 | Valuation | `{{ valuation_hash }}` |
 | Audit | `{{ audit_hash }}` |
 | Intrinsic Freeze | `{{ freeze_token_hash }}` |
+
+## Major Gate Summaries
+
+| Gate | Status | Progress | Decisive result | Residual risk | Next |
+|---|---|---:|---|---|---|
+| `{{ gate_id }}` | `{{ status }}` | `{{ completed/expected }}` | `{{ decisive_result }}` | `{{ residual_risk }}` | `{{ next_action }}` |
+
+## Final Report Delivery Contract
+
+- Main body editorial target: 6–8 pages
+- Audit appendix editorial target: 3–4 pages
+- Combined editorial cap: 12 pages
+- The 33-stage trace remains in the audit appendix; routine progress output uses only the five major-gate summaries.
 
 ## Stage Trace
 

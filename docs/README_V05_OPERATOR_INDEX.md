@@ -20,6 +20,8 @@ Canonical authority:
 
 `None` or a failed method enters the canonical recovery ladder before `VALUATION_BLOCKED`. A material reusable capability gap may be designed by the LLM, but build work requires an explicit user decision. Every applicable module/scanner/gate must leave a doctrine-coverage status; silent skip is forbidden.
 
+Progress and final delivery use the same registry-backed contract: five major-gate summaries for routine operation, followed by the decision-facing final report; all 33 stage traces remain in the verified audit appendix. See `docs/V05_WORKFLOW_CONTRACT.md` and `docs/LIVE_PRIMARY_CLI.md`.
+
 ## 1. What industry is this business?
 Read/use:
 - `config/foundation_source_registry.yaml` — ISIC/KSIC/NAICS classification foundations

@@ -35,6 +35,33 @@ coverage_rule:
     - not_implemented
     - recovered
     - awaiting_user_decision
+reporting_contract:
+  contract_id: prism_major_gate_reporting/v1
+  major_gates:
+    - gate_id: G1_EVIDENCE_ROUTING
+      title: Evidence and Routing
+      terminal_stage: EVIDENCE_LEDGER
+    - gate_id: G2_INSIGHT_CHALLENGE
+      title: Insight and Challenge
+      terminal_stage: RESEARCH_LOOP
+    - gate_id: G3_ASSUMPTIONS_METHOD_RISK
+      title: Assumptions, Method and Risk
+      terminal_stage: WACC_VALIDATION
+    - gate_id: G4_VALUATION_AUDIT_FREEZE
+      title: Valuation, Audit and Freeze
+      terminal_stage: INTRINSIC_VALUE_FREEZE
+    - gate_id: G5_POST_FREEZE_PERSISTENCE
+      title: Post-Freeze Comparison and Persistence
+      terminal_stage: FINAL_REPORT
+  summary_fields:
+    - status
+    - decisive_result
+    - residual_risk
+    - next_action
+  final_report_page_policy:
+    main_body_target_pages: [6, 8]
+    audit_appendix_target_pages: [3, 4]
+    total_page_cap: 12
 phases:
   I_OPENING:
     - COMPANY_RESOLUTION

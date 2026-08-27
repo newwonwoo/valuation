@@ -159,17 +159,18 @@ A blocked result must not retain a Freeze Token or intrinsic-owned outputs such 
 
 ## 8. Secret-safe blocked-run rendering
 
-Terminal progress renders only:
+Routine progress renders one compact block for each of the five canonical major gates:
 
 ```text
-[index/total] STAGE: status
+Gate n/5 — title
+Status / decisive result / residual risk / next action
 ```
 
-It does not print stage rationales because provider exceptions may be embedded in those strings.
+The full 33-stage trace is reserved for the verified audit appendix. If a gate terminates blocked, its compact summary uses only the terminal stage/status code and never the raw blocking rationale, because provider exceptions may be embedded in that string.
 
 When a stage blocks, CLI output contains only:
 
-- stage/status progress;
+- completed major-gate summaries plus the blocked gate's stable stage/status summary;
 - `VALUATION BLOCKED`;
 - stable uppercase `STAGE:STATUS` codes.
 

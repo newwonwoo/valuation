@@ -55,6 +55,72 @@ class StageTrace:
 
 
 @dataclass(frozen=True)
+class MajorGateDefinition:
+    gate_id: str
+    title: str
+    stages: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not self.gate_id or not self.title or not self.stages:
+            raise ValueError("major gate definition is incomplete")
+
+
+@dataclass(frozen=True)
+class ReportingContract:
+    contract_id: str
+    major_gates: tuple[MajorGateDefinition, ...]
+    main_body_target_pages: tuple[int, int]
+    audit_appendix_target_pages: tuple[int, int]
+    total_page_cap: int
+
+    def __post_init__(self) -> None:
+        if not self.contract_id or not self.major_gates:
+            raise ValueError("reporting contract is incomplete")
+        for label, page_range in (
+            ("main body", self.main_body_target_pages),
+            ("audit appendix", self.audit_appendix_target_pages),
+        ):
+            if (
+                len(page_range) != 2
+                or page_range[0] < 1
+                or page_range[0] > page_range[1]
+            ):
+                raise ValueError(f"invalid {label} page target")
+        if self.total_page_cap < sum(
+            (self.main_body_target_pages[0], self.audit_appendix_target_pages[0])
+        ):
+            raise ValueError("total report page cap is below the minimum page targets")
+
+
+@dataclass(frozen=True)
+class MajorGateSummary:
+    gate_id: str
+    title: str
+    ordinal: int
+    gate_count: int
+    status: StageStatus
+    completed_stage_count: int
+    expected_stage_count: int
+    decisive_result: str
+    residual_risk: str
+    next_action: str
+
+    def __post_init__(self) -> None:
+        if (
+            not self.gate_id
+            or not self.title
+            or not self.decisive_result
+            or not self.residual_risk
+            or not self.next_action
+        ):
+            raise ValueError("major gate summary is incomplete")
+        if not 1 <= self.ordinal <= self.gate_count:
+            raise ValueError("major gate summary ordinal is invalid")
+        if not 1 <= self.completed_stage_count <= self.expected_stage_count:
+            raise ValueError("major gate stage counts are invalid")
+
+
+@dataclass(frozen=True)
 class ControlledRunResult:
     run_id: str
     execution_mode: ExecutionMode
@@ -62,6 +128,8 @@ class ControlledRunResult:
     data: dict[str, Any]
     blocked_reasons: tuple[str, ...]
     freeze_token: IntrinsicFreezeToken | None
+    major_gate_summaries: tuple[MajorGateSummary, ...] = ()
+    reporting_warnings: tuple[str, ...] = ()
 
     @property
     def completed(self) -> bool:
@@ -78,6 +146,7 @@ class OrchestratorContext:
 
 
 StageAdapter = Callable[[OrchestratorContext], StageExecutionResult]
+MajorGateReporter = Callable[[MajorGateSummary], None]
 
 _POST_FREEZE_STAGES = {
     "STREET_REFERENCE_LOAD",
@@ -101,6 +170,171 @@ def load_stage_sequence(path: str | Path) -> tuple[str, ...]:
     if "INTRINSIC_VALUE_FREEZE" not in sequence:
         raise ValueError("control-plane sequence requires INTRINSIC_VALUE_FREEZE")
     return sequence
+
+
+def load_reporting_contract(path: str | Path) -> ReportingContract:
+    payload = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    sequence = load_stage_sequence(path)
+    raw = payload.get("reporting_contract")
+    if not isinstance(raw, dict):
+        raise ValueError("control-plane registry requires reporting_contract")
+    raw_gates = raw.get("major_gates")
+    if not isinstance(raw_gates, list) or not raw_gates:
+        raise ValueError("reporting contract requires major_gates")
+
+    gates: list[MajorGateDefinition] = []
+    cursor = 0
+    seen_ids: set[str] = set()
+    for item in raw_gates:
+        if not isinstance(item, dict):
+            raise TypeError("major gate entries must be mappings")
+        gate_id = str(item.get("gate_id") or "").strip()
+        title = str(item.get("title") or "").strip()
+        terminal_stage = str(item.get("terminal_stage") or "").strip()
+        if not gate_id or gate_id in seen_ids:
+            raise ValueError("major gate IDs must be non-empty and unique")
+        if terminal_stage not in sequence[cursor:]:
+            raise ValueError(
+                f"major gate {gate_id} terminal stage is missing or out of order"
+            )
+        terminal_index = sequence.index(terminal_stage, cursor)
+        gates.append(
+            MajorGateDefinition(
+                gate_id=gate_id,
+                title=title,
+                stages=sequence[cursor : terminal_index + 1],
+            )
+        )
+        seen_ids.add(gate_id)
+        cursor = terminal_index + 1
+    if cursor != len(sequence):
+        raise ValueError("major gates must partition the full canonical stage sequence")
+
+    page_policy = raw.get("final_report_page_policy")
+    if not isinstance(page_policy, dict):
+        raise ValueError("reporting contract requires final_report_page_policy")
+
+    def page_range(key: str) -> tuple[int, int]:
+        value = page_policy.get(key)
+        if (
+            not isinstance(value, list)
+            or len(value) != 2
+            or not all(isinstance(item, int) for item in value)
+        ):
+            raise ValueError(f"report page policy {key} must be [min, max]")
+        return value[0], value[1]
+
+    return ReportingContract(
+        contract_id=str(raw.get("contract_id") or "").strip(),
+        major_gates=tuple(gates),
+        main_body_target_pages=page_range("main_body_target_pages"),
+        audit_appendix_target_pages=page_range("audit_appendix_target_pages"),
+        total_page_cap=int(page_policy.get("total_page_cap") or 0),
+    )
+
+
+def _major_gate_status(traces: tuple[StageTrace, ...]) -> StageStatus:
+    if any(item.blocking or item.status is StageStatus.BLOCKED for item in traces):
+        return StageStatus.BLOCKED
+    if any(
+        item.status
+        in {
+            StageStatus.WARNING,
+            StageStatus.NOT_IMPLEMENTED,
+            StageStatus.RECOVERY_REQUIRED,
+            StageStatus.AWAITING_USER_DECISION,
+        }
+        for item in traces
+    ):
+        return StageStatus.WARNING
+    if any(item.status is StageStatus.RECOVERED for item in traces):
+        return StageStatus.RECOVERED
+    return StageStatus.PASS
+
+
+def _major_gate_summary(
+    definition: MajorGateDefinition,
+    *,
+    ordinal: int,
+    gate_count: int,
+    traces: tuple[StageTrace, ...],
+    next_gate: MajorGateDefinition | None,
+) -> MajorGateSummary:
+    relevant = tuple(item for item in traces if item.stage in definition.stages)
+    if not relevant:
+        raise ValueError(f"major gate {definition.gate_id} has no executed stages")
+    status = _major_gate_status(relevant)
+    if status is StageStatus.BLOCKED:
+        next_action = f"RESOLVE_{definition.gate_id}"
+        decisive_result = (
+            f"{relevant[-1].stage} terminated with {relevant[-1].status.value}"
+        )
+        risks = tuple(
+            f"{item.stage}:{item.status.name}"
+            for item in relevant
+            if item.blocking
+            or item.status
+            in {
+                StageStatus.BLOCKED,
+                StageStatus.NOT_IMPLEMENTED,
+                StageStatus.RECOVERY_REQUIRED,
+                StageStatus.AWAITING_USER_DECISION,
+            }
+        )
+    else:
+        next_action = (
+            next_gate.gate_id if next_gate is not None else "FINAL_RESULT_REPORT"
+        )
+        decisive_result = relevant[-1].rationale
+        risks = tuple(
+            f"{item.stage}: {item.rationale}"
+            for item in relevant
+            if item.status in {StageStatus.WARNING, StageStatus.RECOVERED}
+        )
+    return MajorGateSummary(
+        gate_id=definition.gate_id,
+        title=definition.title,
+        ordinal=ordinal,
+        gate_count=gate_count,
+        status=status,
+        completed_stage_count=len(relevant),
+        expected_stage_count=len(definition.stages),
+        decisive_result=decisive_result,
+        residual_risk=" | ".join(risks) if risks else "NONE",
+        next_action=next_action,
+    )
+
+
+def summarize_major_gates(
+    traces: tuple[StageTrace, ...],
+    contract: ReportingContract,
+) -> tuple[MajorGateSummary, ...]:
+    summaries: list[MajorGateSummary] = []
+    for index, definition in enumerate(contract.major_gates):
+        relevant = tuple(item for item in traces if item.stage in definition.stages)
+        if not relevant:
+            break
+        terminal_reached = relevant[-1].stage == definition.stages[-1]
+        blocked = any(item.blocking for item in relevant)
+        if not terminal_reached and not blocked:
+            break
+        next_gate = (
+            contract.major_gates[index + 1]
+            if index + 1 < len(contract.major_gates)
+            else None
+        )
+        summaries.append(
+            _major_gate_summary(
+                definition,
+                ordinal=index + 1,
+                gate_count=len(contract.major_gates),
+                traces=traces,
+                next_gate=next_gate,
+            )
+        )
+        if blocked:
+            break
+    return tuple(summaries)
 
 
 def _freeze_from_context(
@@ -202,6 +436,8 @@ def run_controlled_workflow(
     required_stages: tuple[str, ...],
     initial_data: dict[str, Any] | None = None,
     unit_contract_registry: UnitContractRegistry | None = None,
+    reporting_contract: ReportingContract | None = None,
+    major_gate_reporter: MajorGateReporter | None = None,
 ) -> ControlledRunResult:
     """Execute the canonical stage order for PRIMARY_SHADOW/LIVE_PRIMARY.
 
@@ -215,6 +451,18 @@ def run_controlled_workflow(
         raise ValueError("run_id is required")
     if len(stage_sequence) != len(set(stage_sequence)):
         raise ValueError("stage_sequence contains duplicates")
+    if major_gate_reporter is not None and reporting_contract is None:
+        raise ValueError("major_gate_reporter requires a reporting_contract")
+    if reporting_contract is not None:
+        reporting_stages = tuple(
+            stage
+            for gate in reporting_contract.major_gates
+            for stage in gate.stages
+        )
+        if reporting_stages != stage_sequence:
+            raise ValueError(
+                "reporting contract must partition the executed stage sequence exactly"
+            )
     unknown_required = tuple(stage for stage in required_stages if stage not in stage_sequence)
     if unknown_required:
         raise ValueError("required stages not in sequence: " + ", ".join(unknown_required))
@@ -224,6 +472,29 @@ def run_controlled_workflow(
     context = OrchestratorContext(run_id, execution_mode, dict(initial_data or {}))
     blockers: list[str] = []
     required = set(required_stages)
+    emitted_gate_ids: set[str] = set()
+    gate_summaries: tuple[MajorGateSummary, ...] = ()
+    reporting_warnings: list[str] = []
+
+    def emit_new_gate_summaries() -> None:
+        nonlocal gate_summaries
+        if reporting_contract is None:
+            return
+        gate_summaries = summarize_major_gates(
+            tuple(context.stage_traces), reporting_contract
+        )
+        for summary in gate_summaries:
+            if summary.gate_id in emitted_gate_ids:
+                continue
+            emitted_gate_ids.add(summary.gate_id)
+            if major_gate_reporter is None:
+                continue
+            try:
+                major_gate_reporter(summary)
+            except Exception as exc:
+                reporting_warnings.append(
+                    f"{summary.gate_id}: major-gate reporter failed ({type(exc).__name__})"
+                )
 
     for stage_index, stage in enumerate(stage_sequence):
         if stage in _POST_FREEZE_STAGES:
@@ -234,6 +505,7 @@ def run_controlled_workflow(
                     stage=stage,
                     reason=f"{stage} requires IntrinsicFreezeToken",
                 )
+                emit_new_gate_summaries()
                 break
             authorize_post_freeze(context.freeze_token, run_id=run_id)
 
@@ -257,6 +529,7 @@ def run_controlled_workflow(
                         f"{type(exc).__name__}: {exc}"
                     ),
                 )
+                emit_new_gate_summaries()
                 break
 
         if stage == "INTRINSIC_VALUE_FREEZE":
@@ -290,6 +563,7 @@ def run_controlled_workflow(
                         ),
                     )
                 )
+                emit_new_gate_summaries()
             except Exception as exc:
                 _blocked_trace(
                     context,
@@ -297,6 +571,7 @@ def run_controlled_workflow(
                     stage=stage,
                     reason=f"intrinsic freeze blocked: {type(exc).__name__}: {exc}",
                 )
+                emit_new_gate_summaries()
                 break
             continue
 
@@ -310,6 +585,7 @@ def run_controlled_workflow(
                 else "optional stage adapter is not implemented"
             )
             context.stage_traces.append(StageTrace(stage, status, reason, is_blocking))
+            emit_new_gate_summaries()
             if is_blocking:
                 blockers.append(f"{stage}: {reason}")
                 break
@@ -351,6 +627,7 @@ def run_controlled_workflow(
                     + "; ".join(details)
                 ),
             )
+            emit_new_gate_summaries()
             break
 
         if adapter_error is not None:
@@ -363,6 +640,7 @@ def run_controlled_workflow(
                     f"{type(adapter_error).__name__}: {adapter_error}"
                 ),
             )
+            emit_new_gate_summaries()
             break
 
         if not isinstance(result, StageExecutionResult):
@@ -375,6 +653,7 @@ def run_controlled_workflow(
                     + type(result).__name__
                 ),
             )
+            emit_new_gate_summaries()
             break
 
         safe_rationale = sanitize_runtime_text(result.rationale)
@@ -395,6 +674,7 @@ def run_controlled_workflow(
                 tuple(sorted(result.outputs)),
             )
         )
+        emit_new_gate_summaries()
 
         unresolved = result.blocking and result.status in {
             StageStatus.BLOCKED,
@@ -413,4 +693,6 @@ def run_controlled_workflow(
         data=dict(context.data),
         blocked_reasons=tuple(blockers),
         freeze_token=context.freeze_token,
+        major_gate_summaries=gate_summaries,
+        reporting_warnings=tuple(reporting_warnings),
     )

@@ -21,9 +21,11 @@ from .method_capabilities import load_method_capability_registry
 from .module_plan_adapter import module_requirement_plan_adapter
 from .orchestrator import (
     ControlledRunResult,
+    MajorGateReporter,
     OrchestratorContext,
     StageAdapter,
     StageExecutionResult,
+    load_reporting_contract,
     load_stage_sequence,
     run_controlled_workflow,
 )
@@ -84,6 +86,7 @@ class PrimaryShadowRuntimeConfig:
     research_trigger_state: Mapping[str, bool] = field(default_factory=dict)
     research_unit_aliases: Mapping[str, str] = field(default_factory=dict)
     impact_config: GenericDecisionImpactConfig | None = None
+    major_gate_reporter: MajorGateReporter | None = None
     stage_registry_path: str | Path = _REPO_ROOT / "config" / "control_plane_stage_registry.yaml"
     archetype_registry_path: str | Path = _REPO_ROOT / "config" / "archetype_module_registry.yaml"
     control_requirements_path: str | Path = _REPO_ROOT / "config" / "archetype_control_requirements.yaml"
@@ -122,6 +125,8 @@ class PrimaryShadowRuntimeConfig:
             raise ValueError("research_trigger_state must be str→bool")
         if not all(isinstance(key, str) and isinstance(value, str) for key, value in self.research_unit_aliases.items()):
             raise ValueError("research_unit_aliases must be str→str")
+        if self.major_gate_reporter is not None and not callable(self.major_gate_reporter):
+            raise TypeError("major_gate_reporter must be callable")
         unknown_overrides = set(self.stage_overrides).difference(load_stage_sequence(self.stage_registry_path))
         if unknown_overrides:
             raise ValueError(f"stage overrides contain unknown stages: {sorted(unknown_overrides)}")
@@ -569,6 +574,7 @@ def build_primary_shadow_adapters(config: PrimaryShadowRuntimeConfig) -> dict[st
 def run_primary_shadow(config: PrimaryShadowRuntimeConfig) -> ControlledRunResult:
     config.validate()
     sequence = load_stage_sequence(config.stage_registry_path)
+    reporting_contract = load_reporting_contract(config.stage_registry_path)
     adapters = build_primary_shadow_adapters(config)
     return run_controlled_workflow(
         run_id=config.run_id,
@@ -584,4 +590,6 @@ def run_primary_shadow(config: PrimaryShadowRuntimeConfig) -> ControlledRunResul
             "research_trigger_state": dict(config.research_trigger_state),
             "research_unit_aliases": dict(config.research_unit_aliases),
         },
+        reporting_contract=reporting_contract,
+        major_gate_reporter=config.major_gate_reporter,
     )

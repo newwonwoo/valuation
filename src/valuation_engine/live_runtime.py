@@ -74,9 +74,11 @@ from .method_capabilities import (
 from .module_plan import ModuleRequirementPlan
 from .orchestrator import (
     ControlledRunResult,
+    MajorGateReporter,
     OrchestratorContext,
     StageAdapter,
     StageExecutionResult,
+    load_reporting_contract,
     load_stage_sequence,
     run_controlled_workflow,
 )
@@ -271,6 +273,7 @@ class LivePrimaryRuntimeConfig:
     )
     capability_registry: MethodCapabilityRegistry | None = None
     impact_config: GenericDecisionImpactConfig | None = None
+    major_gate_reporter: MajorGateReporter | None = None
     initial_data: Mapping[str, object] = field(default_factory=dict)
 
     def validate(self) -> None:
@@ -297,6 +300,8 @@ class LivePrimaryRuntimeConfig:
             )
         if self.providers.market_loader is not None and not self.market_currency:
             raise ValueError("LIVE_PRIMARY market_loader requires market_currency")
+        if self.major_gate_reporter is not None and not callable(self.major_gate_reporter):
+            raise TypeError("major_gate_reporter must be callable")
         prohibited = {
             "current_market_price",
             "market_price",
@@ -648,6 +653,7 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> ControlledRunResult:
     """
     config.validate()
     sequence = load_stage_sequence(config.stage_registry_path)
+    reporting_contract = load_reporting_contract(config.stage_registry_path)
     initial = dict(config.initial_data)
     initial["scenario_binding_spec"] = config.scenario_binding_spec
     initial.setdefault("prior_hypotheses", ())
@@ -668,6 +674,8 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> ControlledRunResult:
         required_stages=sequence,
         initial_data=initial,
         unit_contract_registry=unit_contract_registry,
+        reporting_contract=reporting_contract,
+        major_gate_reporter=getattr(config, "major_gate_reporter", None),
     )
     if not result.blocked_reasons:
         return result
@@ -682,4 +690,6 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> ControlledRunResult:
         },
         blocked_reasons=result.blocked_reasons,
         freeze_token=None,
+        major_gate_summaries=result.major_gate_summaries,
+        reporting_warnings=result.reporting_warnings,
     )

@@ -9,7 +9,12 @@ from typing import Any
 from .broker_runtime import BrokerResearchPreFreezeResult
 from .capacity_commitment import CapacityCommitmentAssessment
 from .control_plane import ExecutionMode, StageStatus
-from .orchestrator import ControlledRunResult, load_stage_sequence
+from .orchestrator import (
+    ControlledRunResult,
+    load_reporting_contract,
+    load_stage_sequence,
+    summarize_major_gates,
+)
 from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
 from .risk_impact import selected_methods_require_discount_rate
 
@@ -77,9 +82,13 @@ def attest_controlled_run(
     stage_registry_path: str | Path = _DEFAULT_STAGE_REGISTRY,
 ) -> RunAttestation:
     sequence = load_stage_sequence(stage_registry_path)
+    reporting_contract = load_reporting_contract(stage_registry_path)
     observed_stages = tuple(item.stage for item in result.stage_traces)
     observed_statuses = tuple(
         (item.stage, item.status.value, item.blocking) for item in result.stage_traces
+    )
+    expected_gate_summaries = summarize_major_gates(
+        result.stage_traces, reporting_contract
     )
     data = result.data
 
@@ -154,6 +163,19 @@ def attest_controlled_run(
             isinstance(data.get("final_report"), str) and bool(data.get("final_report")),
             "the final report was emitted from the persisted run payload",
             "the persisted final report is missing",
+        ),
+        _check(
+            "major_gate_reporting_contract",
+            result.major_gate_summaries == expected_gate_summaries
+            and len(expected_gate_summaries) == len(reporting_contract.major_gates),
+            "all five major gates produced compact terminal summaries",
+            "the five-gate summaries are missing, incomplete or stale against the stage trace",
+        ),
+        _check(
+            "major_gate_delivery",
+            not result.reporting_warnings,
+            "major-gate summary delivery recorded no reporter failure",
+            "one or more major-gate summary reporters failed",
         ),
     ]
 
@@ -293,6 +315,19 @@ def attest_controlled_run(
             }
             for item in checks
         ],
+        "major_gate_summaries": [
+            {
+                "gate_id": item.gate_id,
+                "status": item.status.value,
+                "completed_stage_count": item.completed_stage_count,
+                "expected_stage_count": item.expected_stage_count,
+                "decisive_result": item.decisive_result,
+                "residual_risk": item.residual_risk,
+                "next_action": item.next_action,
+            }
+            for item in result.major_gate_summaries
+        ],
+        "reporting_warnings": result.reporting_warnings,
         "hashes": {
             key: data.get(key)
             for key in (
@@ -337,6 +372,7 @@ def render_controlled_run_report(
         else ("VERIFIED_FROZEN" if attestation.passed else "INCOMPLETE")
     )
     data = result.data
+    reporting_contract = load_reporting_contract(stage_registry_path)
     broker_configured = bool(data.get("broker_research_required", False)) or (
         data.get("broker_research_prefreeze_result") is not None
     )
@@ -400,6 +436,40 @@ def render_controlled_run_report(
     lines.extend(
         (
             "",
+            "## Major Gate Summaries",
+            "",
+            "| Gate | Status | Progress | Decisive result | Residual risk | Next |",
+            "|---|---|---:|---|---|---|",
+        )
+    )
+    for summary in result.major_gate_summaries:
+        decisive = summary.decisive_result.replace("|", "\\|").replace("\n", " ")
+        risk = summary.residual_risk.replace("|", "\\|").replace("\n", " ")
+        lines.append(
+            f"| {summary.ordinal}. `{summary.gate_id}` | `{summary.status.value}` | "
+            f"{summary.completed_stage_count}/{summary.expected_stage_count} | "
+            f"{decisive} | {risk} | `{summary.next_action}` |"
+        )
+    if not result.major_gate_summaries:
+        lines.append("| — | `MISSING` | 0/5 | — | reporting contract unavailable | — |")
+    if result.reporting_warnings:
+        lines.extend(("", "### Reporting Delivery Warnings", ""))
+        lines.extend(f"- {item}" for item in result.reporting_warnings)
+    lines.extend(
+        (
+            "",
+            "## Final Report Delivery Contract",
+            "",
+            f"- Main body editorial target: {reporting_contract.main_body_target_pages[0]}–{reporting_contract.main_body_target_pages[1]} pages",
+            f"- Audit appendix editorial target: {reporting_contract.audit_appendix_target_pages[0]}–{reporting_contract.audit_appendix_target_pages[1]} pages",
+            f"- Combined editorial cap: {reporting_contract.total_page_cap} pages",
+            "- The 33-stage trace remains in the audit appendix; routine progress output uses only the five major-gate summaries.",
+        )
+    )
+
+    lines.extend(
+        (
+            "",
             "## Stage Trace",
             "",
             "| # | Stage | Status | Blocking | Rationale |",
@@ -439,6 +509,8 @@ def render_report_form_template() -> str:
 | `capacity_core_consumption_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
 | `broker_research_primary_verification_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
 | `freeze_hash_binding` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
+| `major_gate_reporting_contract` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
+| `major_gate_delivery` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
 
 ## Immutable Run Identities
 
@@ -459,6 +531,19 @@ def render_report_form_template() -> str:
 | Valuation | `{{ valuation_hash }}` |
 | Audit | `{{ audit_hash }}` |
 | Intrinsic Freeze | `{{ freeze_token_hash }}` |
+
+## Major Gate Summaries
+
+| Gate | Status | Progress | Decisive result | Residual risk | Next |
+|---|---|---:|---|---|---|
+| `{{ gate_id }}` | `{{ status }}` | `{{ completed/expected }}` | `{{ decisive_result }}` | `{{ residual_risk }}` | `{{ next_action }}` |
+
+## Final Report Delivery Contract
+
+- Main body editorial target: 6–8 pages
+- Audit appendix editorial target: 3–4 pages
+- Combined editorial cap: 12 pages
+- The 33-stage trace remains in the audit appendix; routine progress output uses only the five major-gate summaries.
 
 ## Stage Trace
 

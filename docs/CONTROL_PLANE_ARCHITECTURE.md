@@ -137,6 +137,7 @@ A Street-discovered fact may create a verification request, but cannot mutate th
 The orchestrator:
 
 - loads or accepts the canonical V05 stage order;
+- loads the same registry's five-gate reporting partition, emits one compact summary only when a gate completes or terminates blocked, and records reporter-delivery failures without allowing them to mutate valuation state;
 - records an explicit terminal trace for every attempted stage;
 - fails closed when a required stage adapter is absent;
 - records unsupported optional capability as `NOT_IMPLEMENTED`, never as a silent success;
@@ -147,3 +148,5 @@ The orchestrator:
 `LEGACY_REGRESSION` remains isolated in `workflow.py`; it is not routed through the canonical Control Plane. `PRIMARY_SHADOW` remains a regression/integration mode. `LIVE_PRIMARY` uses the same shell with typed source/provider contracts and fails closed for any required provider or exact evaluator that is unavailable for the selected route.
 
 A missing live adapter or source is a visible capability state, not permission to fall back to the old keyword router, a generic DCF, fabricated evidence, or a market-anchored estimate.
+
+Routine operator output is therefore five major-gate summaries rather than 33 progress lines. The full stage trace remains the authoritative audit appendix. The verified final result report also records the editorial delivery policy: 6–8 pages for the decision-facing body, 3–4 pages for the audit appendix and 12 pages maximum combined.

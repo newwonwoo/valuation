@@ -40,6 +40,20 @@ Status: canonical runtime contract, merged into repository `SKILL.md` as v0.5.2.
 
 The Control Plane groups these stages into operational phases but may not reorder or bypass them. `None`, a failed method, or missing data enters the canonical recovery ladder before `VALUATION BLOCKED`, unless a non-recoverable audit/safety invariant is violated.
 
+## Major-gate reporting contract
+
+The same 33 stages are partitioned once, by `config/control_plane_stage_registry.yaml`, into five contiguous reporting gates:
+
+1. `G1_EVIDENCE_ROUTING` — stages 1–9;
+2. `G2_INSIGHT_CHALLENGE` — stages 10–14;
+3. `G3_ASSUMPTIONS_METHOD_RISK` — stages 15–19;
+4. `G4_VALUATION_AUDIT_FREEZE` — stages 20–26;
+5. `G5_POST_FREEZE_PERSISTENCE` — stages 27–33.
+
+The orchestrator emits a four-field summary when a gate reaches its terminal stage or terminates blocked: status, decisive result, residual risk and next action. A blocked gate never causes later-gate summaries to be fabricated. Routine output uses these five summaries; the complete stage trace remains available in the verified audit appendix.
+
+The final result report has an editorial target of 6–8 pages for the decision-facing body and 3–4 pages for the audit appendix, capped at 12 pages combined. Page limits do not authorize omission of material blockers, uncertainty labels, source lineage, frozen identities or audit evidence.
+
 ## New v0.5 gates
 
 ### LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT

@@ -3,7 +3,7 @@
 - Run ID: `FULL-LIVE-1`
 - Execution mode: `live_primary`
 - Run status: **VERIFIED_FROZEN**
-- Attestation hash: `4e95414a6563805f7f49ad9d737d59f9d9ca810998750548e0dcc40dafc6df97`
+- Attestation hash: `cb0f4b8281b73bd20d6b2d341c86bfc0c22078b9b878cd26f258e8ab635ef153`
 
 ## Execution Attestation
 
@@ -20,6 +20,8 @@
 | `valuation_hash` | **PASS** | the deterministic valuation hash is present |
 | `audit_hash` | **PASS** | the generic audit passed and its hash is present |
 | `persisted_final_report` | **PASS** | the final report was emitted from the persisted run payload |
+| `major_gate_reporting_contract` | **PASS** | all five major gates produced compact terminal summaries |
+| `major_gate_delivery` | **PASS** | major-gate summary delivery recorded no reporter failure |
 | `selected_method_contract` | **PASS** | selected valuation methods are typed |
 | `capacity_assessment` | **PASS** | the typed Capacity Commitment assessment and hash are present |
 | `capacity_audit` | **PASS** | the Capacity omission/double-count audit passed |
@@ -44,6 +46,23 @@
 | Valuation | `9a85e0c4c2aa4258604a46f7c660105157c494da64aa63e9f3c726971e81b862` |
 | Audit | `469b553cdeb7496048dddcea9c4d6638db0b54feefcccdd92a490160bc4eeae9` |
 | Intrinsic Freeze | `ae680222f1feb481134d92748629befa4578e3065d9ff331f4155d0740fe5b3f` |
+
+## Major Gate Summaries
+
+| Gate | Status | Progress | Decisive result | Residual risk | Next |
+|---|---|---:|---|---|---|
+| 1. `G1_EVIDENCE_ROUTING` | `pass` | 9/9 | append-only EvidenceLedger validated and canonical runtime snapshot frozen | NONE | `G2_INSIGHT_CHALLENGE` |
+| 2. `G2_INSIGHT_CHALLENGE` | `pass` | 5/5 | Blind Red Team left no unresolved blocking issue | NONE | `G3_ASSUMPTIONS_METHOD_RISK` |
+| 3. `G3_ASSUMPTIONS_METHOD_RISK` | `pass` | 5/5 | selected exact economic method path does not require WACC | NONE | `G4_VALUATION_AUDIT_FREEZE` |
+| 4. `G4_VALUATION_AUDIT_FREEZE` | `warning` | 7/7 | audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze | PROBABILITY_DISTRIBUTION_ANALYSIS: scenario probabilities are not calibration-authorized; numeric expected value remains disabled | `G5_POST_FREEZE_PERSISTENCE` |
+| 5. `G5_POST_FREEZE_PERSISTENCE` | `pass` | 7/7 | final report emitted from the same immutable payload saved in the run state | NONE | `FINAL_RESULT_REPORT` |
+
+## Final Report Delivery Contract
+
+- Main body editorial target: 6–8 pages
+- Audit appendix editorial target: 3–4 pages
+- Combined editorial cap: 12 pages
+- The 33-stage trace remains in the audit appendix; routine progress output uses only the five major-gate summaries.
 
 ## Stage Trace
 

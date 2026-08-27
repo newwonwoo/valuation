@@ -68,6 +68,12 @@ Before reporting/publishing model changes run the full pytest suite plus current
 - Migrate live valuation through `LEGACY_REGRESSION → PRIMARY_SHADOW → LIVE_PRIMARY`; never mix modes key-by-key.
 - Label unimplemented live Funding/Street/calibration adapters `CONTRACT_ONLY` or `NOT_IMPLEMENTED`; never fabricate completed scans.
 
+## Reporting and delivery
+- The Control Plane owns the canonical five-gate progress contract in `config/control_plane_stage_registry.yaml`; individual adapters and agents may not invent parallel progress groupings.
+- Emit one compact summary when each major gate completes or terminates blocked: status, decisive result, residual risk and next action. Do not stream all 33 stage traces as routine progress.
+- Keep the complete 33-stage trace and immutable identities in the audit appendix of the verified final result report.
+- Editorial targets are 6–8 pages for the decision-facing body, 3–4 pages for the audit appendix and 12 pages maximum combined. These are presentation targets, never grounds to omit a material blocker, uncertainty or integrity record.
+
 ## Methodology description
 The v0.4 finance-calibration system is **academically grounded engineering synthesis**. v0.5.2 adds repository-specific evidence-governed Industry Knowledge and Signal Intelligence operating contracts. Established finance/accounting components and repository-specific orchestration must be distinguished explicitly; see `docs/V04_ROCKETSLA_EXTENSION.md`.
 

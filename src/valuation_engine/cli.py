@@ -13,6 +13,7 @@ from .cli_runtime import (
     execute_live_analysis,
     load_live_runtime_config_factory,
     render_controlled_run,
+    render_major_gate_summary,
     resolve_provider_factory_spec,
 )
 from .config import load_intrinsic_company_config, load_market_comparison
@@ -109,8 +110,18 @@ def _run_live_analysis(
         provider_factory=factory,
         run_id=args.run_id,
         jurisdiction=args.jurisdiction,
+        major_gate_reporter=lambda summary: print(
+            render_major_gate_summary(summary),
+            flush=True,
+        ),
     )
-    print(render_controlled_run(result), end="")
+    print(
+        render_controlled_run(
+            result,
+            include_gate_summaries=not bool(result.major_gate_summaries),
+        ),
+        end="",
+    )
     return 2 if result.blocked_reasons else 0
 
 

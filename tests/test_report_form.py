@@ -9,7 +9,9 @@ from valuation_engine.control_plane import (
 from valuation_engine.orchestrator import (
     ControlledRunResult,
     StageTrace,
+    load_reporting_contract,
     load_stage_sequence,
+    summarize_major_gates,
 )
 from valuation_engine.report_form import (
     attest_controlled_run,
@@ -24,6 +26,7 @@ STAGES = ROOT / "config" / "control_plane_stage_registry.yaml"
 
 def completed_result() -> ControlledRunResult:
     sequence = load_stage_sequence(STAGES)
+    contract = load_reporting_contract(STAGES)
     token = IntrinsicFreezeToken(
         run_id="REPORT-RUN",
         ledger_snapshot_hash="LEDGER",
@@ -51,16 +54,18 @@ def completed_result() -> ControlledRunResult:
         "capacity_audit_passed": True,
         "final_report": "# Persisted fixture report\n\n- intrinsic: 70,000 KRW/share\n",
     }
+    traces = tuple(
+        StageTrace(stage, StageStatus.PASS, "verified", False)
+        for stage in sequence
+    )
     return ControlledRunResult(
         run_id="REPORT-RUN",
         execution_mode=ExecutionMode.LIVE_PRIMARY,
-        stage_traces=tuple(
-            StageTrace(stage, StageStatus.PASS, "verified", False)
-            for stage in sequence
-        ),
+        stage_traces=traces,
         data=data,
         blocked_reasons=(),
         freeze_token=token,
+        major_gate_summaries=summarize_major_gates(traces, contract),
     )
 
 
@@ -72,6 +77,9 @@ def test_completed_controlled_run_is_verified_and_renders_trace():
     assert attestation.passed
     assert "Run status: **VERIFIED_FROZEN**" in report
     assert "## Stage Trace" in report
+    assert "## Major Gate Summaries" in report
+    assert "G5_POST_FREEZE_PERSISTENCE" in report
+    assert "Combined editorial cap: 12 pages" in report
     assert "CAPACITY-AUDIT" in report
     assert "# Persisted fixture report" in report
 
@@ -102,6 +110,7 @@ def test_report_form_template_contains_required_execution_identities():
     assert "wacc_snapshot_hash" in template
     assert "freeze_token_hash" in template
     assert "immutable_saved_final_report" in template
+    assert "major_gate_reporting_contract" in template
 
 
 def test_report_template_exposes_broker_research_audit_identity():
