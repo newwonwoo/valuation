@@ -8,6 +8,7 @@ UNITS = ROOT / "src" / "valuation_engine" / "actual_units.py"
 SOURCES = ROOT / "config" / "industry_source_registry.yaml"
 SECTORS = ROOT / "config" / "sector_adapter_registry.yaml"
 TEST = ROOT / "tests" / "test_live_company_acceptance_manifest.py"
+GENERATOR = ROOT / "scripts" / "generate_required_live_company_fixtures.py"
 
 VALUATION_METRICS = (
     "normalized_ebitda",
@@ -34,6 +35,18 @@ def add_metrics_after(path: Path, anchor: str) -> None:
     if anchor not in text:
         raise RuntimeError(f"sector anchor not found: {anchor!r}")
     path.write_text(text.replace(anchor, anchor + block, 1), encoding="utf-8")
+
+
+def patch_generator_hash_helper() -> None:
+    replace_once(
+        GENERATOR,
+        "from valuation_engine.live_company_acceptance import sha256_file\n",
+        """def sha256_file(path: Path) -> str:
+    return sha256(path.read_bytes()).hexdigest()
+
+
+""",
+    )
 
 
 def patch_units() -> None:
@@ -132,6 +145,7 @@ def patch_manifest_test() -> None:
 
 
 def main() -> int:
+    patch_generator_hash_helper()
     patch_units()
     patch_sources()
     patch_sectors()
