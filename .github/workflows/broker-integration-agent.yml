@@ -72,8 +72,10 @@ jobs:
           PYTHONPATH=src python scripts/validate_broker_research_layer.py
           PYTHONPATH=src python scripts/validate_workflow_source_injection.py
           PYTHONPATH=src python scripts/validate_module_requirement_plans.py
-      - name: Remove bootstrap files
-        run: git rm -f .github/workflows/broker-integration-agent.yml scripts/apply_broker_live_primary_integration.py scripts/fix_broker_patch_workflow.py scripts/fix_broker_patch_regressions.py
+      - name: Keep workflow changes out of bot push
+        run: |
+          git checkout HEAD -- .github/workflows/sanil-live-primary.yml
+          git rm -f scripts/apply_broker_live_primary_integration.py scripts/fix_broker_patch_workflow.py scripts/fix_broker_patch_regressions.py
       - name: Commit verified Broker Research integration
         run: |
           git config user.name "broker-runtime-agent"
