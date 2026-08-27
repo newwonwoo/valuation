@@ -149,12 +149,44 @@ def _weighted_average(inputs: tuple[Measure, ...], output_unit: str) -> Measure:
     return Measure(weighted_sum / total_weight, output_unit, as_of)
 
 
+def _ramp_scaled_money(inputs: tuple[Measure, ...], output_unit: str) -> Measure:
+    """Scale a frozen reference FCFF cohort by an explicit ramp-duration driver.
+
+    The reference path preserves the reviewed underwriting shape.  A longer current
+    ramp stretches that path and a shorter ramp accelerates it, capped at the
+    declared steady-state FCFF.  This keeps timing changes from becoming trace-only
+    metadata that cannot affect valuation.
+    """
+    if len(inputs) != 4:
+        raise ValueError(
+            "ramp_scaled_money requires reference FCFF, steady-state FCFF, "
+            "reference ramp years and current ramp years"
+        )
+    reference_fcff = inputs[0].convert_to(output_unit)
+    steady_state_fcff = inputs[1].convert_to(output_unit)
+    reference_ramp = inputs[2].convert_to("years")
+    current_ramp = inputs[3].convert_to("years")
+    if reference_fcff.amount < 0 or steady_state_fcff.amount <= 0:
+        raise ValueError("ramp FCFF inputs require non-negative reference and positive steady state")
+    if reference_fcff.amount > steady_state_fcff.amount:
+        raise ValueError("reference ramp FCFF cannot exceed steady-state FCFF")
+    if reference_ramp.amount <= 0 or current_ramp.amount <= 0:
+        raise ValueError("ramp durations must be positive")
+    scaled = reference_fcff.amount * reference_ramp.amount / current_ramp.amount
+    return Measure(
+        min(steady_state_fcff.amount, scaled),
+        output_unit,
+        max(item.as_of for item in inputs),
+    )
+
+
 TRANSFORMS: dict[str, Transform] = {
     "identity_observation": _identity,
     "unit_conversion": _identity,
     "ratio": _ratio,
     "product": _product,
     "weighted_average": _weighted_average,
+    "ramp_scaled_money": _ramp_scaled_money,
 }
 
 

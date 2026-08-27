@@ -1,6 +1,10 @@
 from pathlib import Path
 from decimal import Decimal
+from copy import deepcopy
+import importlib.util
 import json
+
+import yaml
 
 from valuation_engine.control_plane import StageStatus
 from valuation_engine.records import EvidenceSourceLayer
@@ -30,7 +34,9 @@ def test_sanil_snapshot_is_explicit_and_source_backed():
     assert "market" not in snapshot.payload
     market = load_sanil_market_snapshot()
     assert market.price > 0
-    assert market.as_of == snapshot.cutoff
+    assert market.as_of == "2026-08-27"
+    assert market.as_of >= snapshot.cutoff
+    assert market.price == 201500
     assert market.currency == "KRW"
     assert all(
         str(source["source_ref"]).startswith("https://")
@@ -228,10 +234,20 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         in core.economic_path_ids
     )
     compiled = result.data["compiled_assumption_set"]
-    assert compiled.get("expansion_capex", "Core").measure.amount == 42
+    assert compiled.get("expansion_capex", "Core").measure.amount == Decimal(
+        "9.373"
+    )
     assert compiled.get("uhv_property_capex", "Core").measure.amount == 69.25
-    assert compiled.get("uhv_fcff_year_5", "Core").measure.amount == 42
-    assert compiled.get("uhv_ramp_years", "Core").measure.amount == 2
+    assert compiled.get("uhv_equipment_capex", "Core").measure.amount == 60
+    assert compiled.get("uhv_fcff_year_5", "Core").measure.amount.quantize(
+        Decimal("0.001")
+    ) == Decimal("94.454")
+    core_ramp_fcff = compiled.get("uhv_fcff_year_3", "Core")
+    assert core_ramp_fcff.measure.amount.quantize(Decimal("0.001")) == Decimal(
+        "20.383"
+    )
+    assert core_ramp_fcff.transform_id == "ramp_scaled_money"
+    assert core_ramp_fcff.economic_path_id.endswith(":ramp")
 
     findings = {
         item.scanner_id: item for item in result.data["scanner_findings"]
@@ -270,6 +286,7 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert "250000" not in prefreeze_text
     assert "220000" not in prefreeze_text
     assert "310000" not in prefreeze_text
+    assert "270000" not in prefreeze_text
     assert result.data["broker_research_rocket_connected"]
     assert "BROKER_RESEARCH" in findings
     primary_broker_families = {
@@ -297,7 +314,16 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     }
     assert trace_index["INTRINSIC_VALUE_FREEZE"] < trace_index["STREET_REFERENCE_LOAD"]
     assert trace_index["INTRINSIC_VALUE_FREEZE"] < trace_index["MARKET_PRICE_LOAD"]
-    assert result.data["street_comparison"].consensus.report_count == 3
+    assert result.data["street_comparison"].consensus.report_count == 4
+    korea_investment = next(
+        item
+        for item in result.data["street_reports"]
+        if item.broker == "Korea Investment Securities"
+    )
+    assert korea_investment.valuation_method == "2027E EPS × PER 29x"
+    assert korea_investment.estimates[0].metric == "uhv_incremental_revenue"
+    assert korea_investment.estimates[0].period == "2029E"
+    assert korea_investment.estimates[0].value == 200.0
 
     attestation = attest_controlled_run(result)
     report = render_controlled_run_report(result)
@@ -340,7 +366,10 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert "증권사별 목표가와 PRISM의 차이" in result.data["final_report"]
     assert "미래에셋증권" in result.data["final_report"]
     assert "신한투자증권" in result.data["final_report"]
-    assert "PRISM 기준 내재가치는 증권사 평균 목표가보다 35.3% 낮습니다" in result.data[
+    assert "한국투자증권" in result.data["final_report"]
+    assert "5년차 DCF 사용 FCFF 4,516억원" in result.data["final_report"]
+    assert "기존 3,572억원 + 증분 945억원" in result.data["final_report"]
+    assert "PRISM 기준 내재가치는 증권사 평균 목표가보다 9.4% 낮습니다" in result.data[
         "final_report"
     ]
     assert "증설 처리" in result.data["final_report"]
@@ -398,6 +427,70 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert (tmp_path / "state" / TICKER / "current_state.json").exists()
 
 
+def test_sanil_uhv_ramp_duration_is_a_live_valuation_driver(tmp_path):
+    baseline = run_sanil_live_primary(tmp_path / "baseline")
+    payload = deepcopy(load_sanil_snapshot(SNAPSHOT).payload)
+    payload["scenarios"]["Core"]["uhv_ramp_years"] = 4.0
+    slower_snapshot = tmp_path / "sanil_slower_ramp.yaml"
+    slower_snapshot.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    slower = run_sanil_live_primary(
+        tmp_path / "slower",
+        snapshot_path=slower_snapshot,
+    )
+
+    baseline_values = {
+        item.scenario_id: item.value_per_share
+        for item in baseline.data["generic_valuation_result"].scenarios
+    }
+    slower_values = {
+        item.scenario_id: item.value_per_share
+        for item in slower.data["generic_valuation_result"].scenarios
+    }
+    assert slower_values["Core"] < baseline_values["Core"]
+    assert slower_values["Down"] == baseline_values["Down"]
+    assert slower_values["Bull"] == baseline_values["Bull"]
+
+
+def test_sanil_brokerage_report_integrates_august_27_update(tmp_path):
+    spec = importlib.util.spec_from_file_location(
+        "run_sanil_live_primary_script",
+        ROOT / "scripts" / "run_sanil_live_primary.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    report, html_report, visuals = module.render_report(tmp_path)
+
+    assert "8월 27일 자료 반영" in report
+    assert "8월 27일 신규·정정 공시는 없습니다" in report
+    assert "회사 확정치가 아니라 증권사 추정치" in report
+    assert "**현재가** | 201,500원 (2026-08-27)" in report
+    assert "5년차 DCF 사용 FCFF 4,516억원" in report
+    assert "기존 3,572억원 + 증분 945억원" in report
+    assert "기준 DCF 기업가치의 84.8%가 영구가치" in report
+    assert "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660" in report
+    assert len(visuals) == 2
+    assert '<html lang="ko">' in html_report
+    assert "부지가 아니라 5,026억원의 생산 슬롯을 샀다" in html_report
+    assert "기준 목표가 237,906원" in html_report
+    assert "전량가동 초고압 마진 민감도" in html_report
+    assert "기존제품 CAPA 인정" in html_report
+    assert "중복 방지" in html_report
+    assert "가능성 산식: 하방·기준·상방 상대점수 3:5:2" in html_report
+    assert "증권사 목표가와의 차이" in html_report
+    assert "인공지능 인사이트" in html_report
+    assert "원문 열기 ↗" in html_report
+    assert "검증 상태" not in html_report
+    assert "프리즈" not in html_report
+    assert "INTRINSIC_VALUE_FREEZE" not in html_report
+    assert "SANIL_062040_LIVE_PRIMARY_REPORT.md" in html_report
+    assert all(visual.filename in html_report for visual in visuals)
+
+
 def test_sanil_config_requires_driver_dcf_and_capacity_core(tmp_path):
     config = build_sanil_live_primary_config(tmp_path)
 
@@ -419,7 +512,7 @@ def test_sanil_config_requires_driver_dcf_and_capacity_core(tmp_path):
     }.intersection(config.initial_data)
     market = config.providers.market_loader()
     assert market.price > 0
-    assert market.as_of == "2026-08-26"
+    assert market.as_of == "2026-08-27"
 
 
 def test_sanil_collector_returns_only_requested_metrics():

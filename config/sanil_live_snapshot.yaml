@@ -28,9 +28,9 @@ sources:
     published_at: '2026-08-25T18:00:00+09:00'
   underwriting:
     source_id: PRISM_UNDERWRITING_MODEL
-    source_ref: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#scenarios
+    source_ref: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#capacity_economics
     document_id: SANIL_UNDERWRITING_20260826
-    document_hash: 62774daa6df74c05a1c3937e9241ec875938babcfc0027272b523b9f900e11b6
+    document_hash: 1e8bc1a4e7f6f4f2c595f930faee37133c69a79499719ef533825925b3176328
     published_at: '2026-08-26T18:00:00+09:00'
   uhv_property_acquisition:
     source_id: KR_OPENDART
@@ -60,6 +60,13 @@ facts:
   revenue_h1_2026_krw_billion: 314.502
   operating_profit_h1_2026_krw_billion: 117.516
   net_income_h1_2026_krw_billion: 100.492
+  operating_cash_flow_h1_2026_krw_billion: 90.1
+  ppe_capex_h1_2026_krw_billion: 8.2
+  intangible_capex_h1_2026_krw_billion: 1.4
+  utilization_h1_2026_ratio: 0.872
+  specialty_transformer_mix_h1_2026: 0.76
+  grid_transformer_mix_h1_2026: 0.21
+  other_product_mix_h1_2026: 0.03
   new_orders_q2_2026_krw_billion: 243.5
   backlog_q2_2026_krw_billion: 556.7
   uhv_property_contract_date: '2026-08-26'
@@ -222,60 +229,66 @@ risk:
   beta_provider_ref: https://github.com/FinanceData/FinanceDataReader
   beta_methodology: Common KOSPI benchmark; weekly OLS with intercept; daily OLS retained
     as a frequency/non-synchronous-trading diagnostic
+capacity_economics:
+  physical:
+    new_site_area_sqm: 32703
+    reference_site_area_sqm: 37040
+    reference_annual_revenue_capacity_krw_billion: 700
+    existing_product_area_share: 0.50
+    effective_operating_ratio: 0.95
+    uhv_nameplate_revenue_capacity_krw_billion: 220
+  financial:
+    opening_base_revenue_krw_billion: 501.946
+    operating_tax_rate: 0.229
+    depreciation_rate_of_revenue: 0.01
+    maintenance_capex_rate_of_revenue: 0.015
+    incremental_working_capital_rate: 0.05
+  scenarios:
+    Down:
+      base_revenue_krw_billion: [629.004, 720, 830, 920, 1000]
+      base_operating_margin: [0.374, 0.36, 0.35, 0.35, 0.35]
+      existing_capacity_realization: 0.25
+      uhv_capacity_realization: 0.70
+      uhv_operating_margin: 0.30
+      ramp_factor: [0, 0, 0.10, 0.50, 1.0]
+    Core:
+      base_revenue_krw_billion: [629.004, 800, 1000, 1100, 1167.6]
+      base_operating_margin: [0.374, 0.385, 0.395, 0.402, 0.407]
+      existing_capacity_realization: 0.50
+      uhv_capacity_realization: 1.0
+      uhv_operating_margin: 0.35
+      ramp_factor: [0, 0, 0.25, 0.65, 1.0]
+    Bull:
+      base_revenue_krw_billion: [629.004, 820, 1040, 1120, 1167.6]
+      base_operating_margin: [0.374, 0.39, 0.40, 0.405, 0.407]
+      existing_capacity_realization: 1.0
+      uhv_capacity_realization: 1.0
+      uhv_operating_margin: 0.35
+      ramp_factor: [0, 0.05, 0.40, 0.80, 1.0]
 scenarios:
   Down:
-    fcff_krw_billion:
-    - 145
-    - 160
-    - 180
-    - 200
-    - 220
-    expansion_capex_krw_billion: 42.0
+    expansion_capex_krw_billion: 9.373
     terminal_growth: 0.02
     terminal_roic: 0.13
-    uhv_incremental_fcff_krw_billion:
-    - 0
-    - 0
-    - 3
-    - 10
-    - 18
+    uhv_reference_ramp_years: 3.0
     uhv_property_capex_krw_billion: 69.25
+    uhv_equipment_capex_krw_billion: 90.0
     uhv_ramp_years: 3.0
   Core:
-    fcff_krw_billion:
-    - 175
-    - 195
-    - 220
-    - 245
-    - 270
-    expansion_capex_krw_billion: 42.0
+    expansion_capex_krw_billion: 9.373
     terminal_growth: 0.025
     terminal_roic: 0.15
-    uhv_incremental_fcff_krw_billion:
-    - 0
-    - 0
-    - 10
-    - 25
-    - 42
+    uhv_reference_ramp_years: 2.0
     uhv_property_capex_krw_billion: 69.25
+    uhv_equipment_capex_krw_billion: 60.0
     uhv_ramp_years: 2.0
   Bull:
-    fcff_krw_billion:
-    - 185
-    - 210
-    - 240
-    - 270
-    - 305
-    expansion_capex_krw_billion: 42.0
+    expansion_capex_krw_billion: 9.373
     terminal_growth: 0.03
     terminal_roic: 0.17
-    uhv_incremental_fcff_krw_billion:
-    - 0
-    - 2
-    - 18
-    - 42
-    - 68
+    uhv_reference_ramp_years: 1.5
     uhv_property_capex_krw_billion: 69.25
+    uhv_equipment_capex_krw_billion: 30.0
     uhv_ramp_years: 1.5
 scenario_likelihood:
   forecast_class: intrinsic_scenario_path

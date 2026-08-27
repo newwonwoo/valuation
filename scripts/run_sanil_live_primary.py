@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import argparse
+from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from valuation_engine.brokerage_html import render_sanil_brokerage_html
 from valuation_engine.report_form import attest_controlled_run, render_controlled_run_report
-from valuation_engine.report_localization import identifier_label_ko
 from valuation_engine.sanil_live_primary import (
     load_sanil_market_snapshot,
     load_sanil_snapshot,
@@ -19,9 +20,74 @@ DEFAULT_OUTPUT = (
     ROOT
     / "examples"
     / "report_forms"
+    / "SANIL_062040_LIVE_PRIMARY_REPORT.html"
+)
+DEFAULT_MARKDOWN_OUTPUT = (
+    ROOT
+    / "examples"
+    / "report_forms"
     / "SANIL_062040_LIVE_PRIMARY_REPORT.md"
 )
-def render_report(state_root: Path) -> tuple[str, tuple]:
+
+DART_UHV_URL = "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660"
+COMPANY_DISCLOSURE_LIST_URL = "https://www.sanil.co.kr/kr/sub/reference/announce.php"
+KOREA_INVESTMENT_REPORT_URL = (
+    "https://securities.koreainvestment.com/main/research/research/StrategyDetail.jsp"
+    "?id=158730&jkGubun=6"
+)
+
+
+def _core_terminal_value_share(compiled: object, wacc: Decimal) -> Decimal:
+    scenario = "Core"
+    flows = [
+        compiled.get(f"fcff_year_{year}", scenario).measure.amount
+        + compiled.get(f"uhv_fcff_year_{year}", scenario).measure.amount
+        for year in range(1, 6)
+    ]
+    flows[1] -= compiled.get("expansion_capex", scenario).measure.amount
+    flows[1] -= compiled.get("uhv_property_capex", scenario).measure.amount
+    flows[2] -= compiled.get("uhv_equipment_capex", scenario).measure.amount
+    growth = compiled.get("terminal_growth", scenario).measure.amount
+    one = Decimal("1")
+    explicit_pv = sum(
+        (flow / (one + wacc) ** year for year, flow in enumerate(flows, start=1)),
+        Decimal("0"),
+    )
+    terminal_pv = (
+        flows[-1]
+        * (one + growth)
+        / (wacc - growth)
+        / (one + wacc) ** 5
+    )
+    return terminal_pv / (explicit_pv + terminal_pv)
+
+
+def _fcff_connection_table(compiled: object) -> str:
+    lines = [
+        "### 현금흐름 계산 연결",
+        "",
+        "| 시나리오 | 5년차 기존사업 FCFF | 신규 부지 증분 | DCF·영구가치 사용 합계 |",
+        "| --- | ---: | ---: | ---: |",
+    ]
+    labels = {"Down": "하방", "Core": "기준", "Bull": "상방"}
+    for scenario in ("Down", "Core", "Bull"):
+        base = compiled.get("fcff_year_5", scenario).measure.amount
+        incremental = compiled.get("uhv_fcff_year_5", scenario).measure.amount
+        lines.append(
+            f"| {labels[scenario]} | {base * 10:,.0f}억원 | "
+            f"{incremental * 10:,.0f}억원 | {(base + incremental) * 10:,.0f}억원 |"
+        )
+    lines.extend(
+        (
+            "",
+            "- 신규 부지 증분 FCFF는 기존제품 확장과 초고압을 합친 뒤, 연간 증분매출에 대해서만 운전자본을 차감합니다.",
+            "- 현재 계산은 제2공장 2027년 이후 공시 잔여액 93.7억원, 초고압 부동산 692.5억원, 생산·시험설비 분석가 가정을 별도 현금유출로 차감합니다.",
+        )
+    )
+    return "\n".join(lines)
+
+
+def render_report(state_root: Path) -> tuple[str, str, tuple]:
     snapshot = load_sanil_snapshot()
     result = run_sanil_live_primary(state_root)
     attestation = attest_controlled_run(result)
@@ -41,7 +107,6 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
     }
     beta = result.data["live_beta_result"]
     wacc = result.data["live_wacc_result"]
-    capacity_assessment = result.data["capacity_commitment_assessment"]
     probability_assessment = result.data["scenario_probability_assessment"]
     probability_labels = {"Down": "하방", "Core": "기준", "Bull": "상방"}
     probability_summary = " · ".join(
@@ -55,6 +120,11 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
         market.observation.price
         if market is not None
         else market_snapshot.price
+    )
+    market_date = (
+        market.observation.as_of
+        if market is not None
+        else market_snapshot.as_of
     )
     street_target = (
         street.consensus.mean_target_price
@@ -71,82 +141,124 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
     if valuation_marker not in controlled:
         raise RuntimeError("Sanil report is missing the investor-facing valuation section")
     controlled_body = controlled[controlled.index(valuation_marker):]
+    compiled = result.data["compiled_assumption_set"]
+    controlled_body = controlled_body.replace(
+        "## 가치평가\n",
+        "## 가치평가\n\n" + _fcff_connection_table(compiled) + "\n\n",
+        1,
+    )
     evidence_note = """## 핵심 가정과 위험
 - **근거 신뢰도:** 회사 실적·수주·생산능력·부지·자본적지출은 회사 공시·기업설명자료에 기반해 신뢰도가 높습니다.
 - **분석가 추정:** 하방·기준·상방 기업잉여현금흐름은 회사 가이던스가 아니라 공시 사실에서 파생한 분석가 가정입니다.
-- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 현금유출을 확정하지만 정확한 생산능력은 미공시입니다.
+- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 매매대금을 확정하지만 정확한 생산능력·설비투자비·양산시점은 미공시입니다. 기존제품 CAPA는 기준 50%, 상방 100%만 인정합니다.
+- **누락 비용 위험:** 부가가치세·세금·수수료와 향후 건설비는 별도일 수 있습니다. 생산·시험설비는 기준 600억원의 분석가 가정을 반영했습니다.
+- **지급시점 단순화:** 공시된 계약금 69.25억원·중도금 207.75억원·잔금 415.5억원을 현재 모델은 2년차 일괄 현금유출로 처리해, 지급일별 현재가치 계산은 후속 보완이 필요합니다.
 """
     controlled_body = controlled_body.replace(
         "## 핵심 가정과 위험\n",
         evidence_note,
         1,
     )
-    project_names = ", ".join(
-        identifier_label_ko(item)
-        for item in capacity_assessment.core_inclusion_required_projects
-    )
     market_gaps = {
         item.scenario_id: item.gap_pct_of_reference
         for item in market.envelope.scenario_gaps
     } if market is not None else {}
     core_gap = market_gaps.get("Core", 0)
-    bull_gap = market_gaps.get("Bull", 0)
-    header = f"""# 산일전기(062040) 투자보고서
+    terminal_share = _core_terminal_value_share(
+        compiled,
+        Decimal(str(wacc.wacc_result.wacc)),
+    )
+    capacity = result.data["sanil_capacity_economics"]
+    physical = capacity["physical"]
+    capacity_scenarios = {
+        row["scenario_id"]: row for row in capacity["scenarios"]
+    }
+    core_mature = capacity_scenarios["Core"]["years"][-1]
+    bull_mature = capacity_scenarios["Bull"]["years"][-1]
+    investment_view = "매수" if core_gap >= 0.15 else "관망"
+    header = f"""# 산일전기(062040) 투자보고서 — 2026.08.27
 
 ## 투자 요약
 
-### 생산능력 확장이 잉여현금흐름으로 전환되는지가 핵심
+### 부지 3.27만㎡를 생산 슬롯·제품 믹스·현금흐름으로 연결
 
 | 핵심 판단 항목 | 내용 |
 | --- | --- |
-| **투자판단** | 판단 유보 — 확률 보정과 진입 규칙이 없어 구체 매수가는 산출하지 않음 |
-| **현재가** | {float(current_price):,.0f}원 ({snapshot.cutoff}) |
+| **투자판단** | {investment_view} — 기준 목표가까지 상승여력 {core_gap:.1%}, 하방 시나리오 병행 관리 |
+| **현재가** | {float(current_price):,.0f}원 ({market_date}) |
 | **기준 내재가치** | {values['Core']:,.0f}원 · 현재가 대비 {core_gap:+.1%} |
 | **가치평가 범위** | 하방 {values['Down']:,.0f}원 · 기준 {values['Core']:,.0f}원 · 상방 {values['Bull']:,.0f}원 |
 | **시나리오 가능성** | {probability_summary} · 미보정 분석가 사전확률, 기대값 미적용 |
 | **증권사 참고값** | {street_reference} |
-| **보고서 성격** | 공시·원문 기반 예비 투자분석 |
+| **보고서 성격** | 8월 26일 공시와 8월 27일 시장·증권사 후속 해석을 분리 반영한 투자분석 |
 
 ### 한 문장 결론
 
-산일전기의 핵심은 수요의 존재보다 제2공장과 초고압 변압기 부지가 실제 출하·마진·잉여현금흐름으로 전환되는 속도이며, 기준 가치는 현재가 대비 {core_gap:+.1%}이고 상방 가치는 {bull_gap:+.1%}인 만큼 지금은 상승여력보다 전환 증거를 먼저 확인할 구간입니다.
+공장 가동률 87.2%에서는 판매율보다 생산 슬롯이 병목이며, 신규 부지의 물리 CAPA를 제품 믹스·영업이익·FCF로 연결하되 기존제품 순증분은 기준 50%만 인정한 목표가가 {values['Core']:,.0f}원입니다.
 
 ### 투자포인트
 
-- **가치동인:** {project_names}을 각각 생산능력·자본적지출·가동 정상화 경로로 반영했습니다.
+- **가치동인:** 신규 부지 유효 연매출 CAPA는 기존제품 {physical['existing_product_effective_capacity'] * 10:,.0f}억원 + 초고압 {physical['uhv_effective_capacity'] * 10:,.0f}억원 = {physical['total_effective_capacity'] * 10:,.0f}억원입니다.
 - **가치평가:** 현금흐름할인법 기준 하방–상방 범위는 {values['Down']:,.0f}–{values['Bull']:,.0f}원이며, 계층형 베타 {beta.target_levered_beta:.3f} · 가중평균자본비용 {wacc.wacc_result.wacc:.3%}를 적용했습니다.
-- **남은 제약:** 상대점수 정규화로 {probability_summary}를 산출했지만 실제 해결 이력으로 보정되지 않아 기대값에는 적용하지 않았습니다.
+- **현금창출력:** 성숙기 기준은 매출 {core_mature['total_revenue'] * 10:,.0f}억원 · 영업이익 {core_mature['total_operating_profit'] * 10:,.0f}억원 · 잉여현금흐름 {core_mature['total_fcff'] * 10:,.0f}억원, 전량가동 상방은 매출 {bull_mature['total_revenue'] * 10:,.0f}억원 · 잉여현금흐름 {bull_mature['total_fcff'] * 10:,.0f}억원입니다.
+- **남은 제약:** 기준 DCF 기업가치의 {terminal_share:.1%}가 영구가치에 있어 가동·마진 정상화 지연에 민감하며, {probability_summary}는 실제 해결 이력으로 보정되지 않아 기대값에는 적용하지 않았습니다.
 
 ### 판단 변경 조건
 
-- **상방 확인:** 제2공장·초고압 설비의 일정 준수, 가동률 정상화, 수주잔고의 매출 전환이 공시로 확인될 때.
+- **상방 확인:** 회사가 초고압 2,000억원 이상과 기존제품 약 3,000억원의 순증 CAPA, 생산·시험설비, 고객 인증 일정을 확인할 때.
 - **하방 훼손:** 증설 지연·취소, 수주잔고 또는 신규수주 감소, 출하 전환 전 마진 둔화가 확인될 때.
 - **행동 가능 조건:** 실제 해결 전망 이력이 누적되어 시나리오 확률을 보정하고 별도 진입 규칙이 승인될 때.
 
+### 8월 27일 자료 반영
+
+- **신규 공시 여부:** [회사 공시목록]({COMPANY_DISCLOSURE_LIST_URL}) 기준 8월 27일 신규·정정 공시는 없습니다. 최신 원문은 8월 26일 [유형자산 양수결정]({DART_UHV_URL})입니다.
+- **회사 확정 사실:** 안산 토지·건물 692.5억원, 자기자금 지급, 초고압 변압기 생산시설과 기존 제품 생산능력 확대 목적입니다.
+- **아직 미공시:** 순증 생산능력, 생산·시험설비 총액, 고객 인증·수주, 상업 생산시점, 매출·마진·현금흐름 기여입니다.
+- **증권사 해석:** [한국투자증권 8월 27일 보고서]({KOREA_INVESTMENT_REPORT_URL})의 2028년 양산·2029년 추가 매출 2,000억원 이상·목표가 270,000원은 회사 확정치가 아니라 증권사 추정치입니다.
+- **모델 처리:** 부지 취득은 수요 대응의 경제적 실질이 있어 DCF에 포함했습니다. 다만 한국투자증권 성장률 전망이 신규공장 효과를 일부 포함할 수 있어 기존제품 CAPA는 기준 50%, 전량은 상방으로 분리했습니다.
+
 """
-    return header + controlled_body, render_report_visuals(result.data)
+    markdown_report = header + controlled_body
+    visuals = render_report_visuals(result.data)
+    html_report = render_sanil_brokerage_html(
+        result.data,
+        visuals=visuals,
+        terminal_value_share=terminal_share,
+        markdown_filename=DEFAULT_MARKDOWN_OUTPUT.name,
+    )
+    return markdown_report, html_report, visuals
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument(
+        "--markdown-output",
+        type=Path,
+        default=DEFAULT_MARKDOWN_OUTPUT,
+    )
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--state-root", type=Path)
     args = parser.parse_args()
 
     if args.state_root is not None:
         args.state_root.mkdir(parents=True, exist_ok=True)
-        expected, visuals = render_report(args.state_root)
+        expected_markdown, expected_html, visuals = render_report(args.state_root)
     else:
         with TemporaryDirectory(prefix="sanil-prism-") as temporary:
-            expected, visuals = render_report(Path(temporary))
+            expected_markdown, expected_html, visuals = render_report(Path(temporary))
 
     target = args.output
+    markdown_target = args.markdown_output
     if args.check:
         if not target.exists():
             raise SystemExit(f"Sanil report is missing: {target}")
-        if target.read_text(encoding="utf-8") != expected:
+        if target.read_text(encoding="utf-8") != expected_html:
             raise SystemExit(f"Sanil report is stale: {target}")
+        if not markdown_target.exists():
+            raise SystemExit(f"Sanil report appendix is missing: {markdown_target}")
+        if markdown_target.read_text(encoding="utf-8") != expected_markdown:
+            raise SystemExit(f"Sanil report appendix is stale: {markdown_target}")
         for visual in visuals:
             visual_target = target.parent / visual.filename
             if not visual_target.exists() or visual_target.read_text(encoding="utf-8") != visual.svg:
@@ -155,10 +267,13 @@ def main() -> int:
         return 0
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(expected, encoding="utf-8")
+    markdown_target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(expected_html, encoding="utf-8")
+    markdown_target.write_text(expected_markdown, encoding="utf-8")
     for visual in visuals:
         (target.parent / visual.filename).write_text(visual.svg, encoding="utf-8")
-    print(f"Sanil report written: {target}")
+    print(f"Sanil brokerage report written: {target}")
+    print(f"Sanil audit appendix written: {markdown_target}")
     return 0
 
 

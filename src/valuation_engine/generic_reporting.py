@@ -185,6 +185,10 @@ def _measure_text(assumption: object) -> str:
     measure = getattr(assumption, "measure", None)
     amount = Decimal(str(getattr(measure, "amount", 0)))
     unit = str(getattr(measure, "unit", ""))
+    return _amount_unit_text(amount, unit)
+
+
+def _amount_unit_text(amount: Decimal, unit: str) -> str:
     if unit == "ratio":
         return f"{amount * 100:.1f}%"
     if unit == "KRW_billion":
@@ -199,19 +203,47 @@ def _measure_text(assumption: object) -> str:
 
 
 def _scenario_assumptions_line(scenario: object) -> str:
-    labels = (
-        ("1년차 기업잉여현금흐름", "fcff_year_1"),
-        ("5년차 기업잉여현금흐름", "fcff_year_5"),
-        ("영구성장률", "terminal_growth"),
-        ("영구 투하자본이익률", "terminal_roic"),
-    )
     values: list[str] = []
-    for label, key in labels:
+
+    for year in (1, 5):
+        key = f"fcff_year_{year}"
         try:
-            assumption = scenario.get(key)  # type: ignore[attr-defined]
+            base = scenario.get(key)  # type: ignore[attr-defined]
         except (AttributeError, KeyError):
             continue
-        values.append(f"{label} {_measure_text(assumption)}")
+        base_measure = getattr(base, "measure", None)
+        base_amount = Decimal(str(getattr(base_measure, "amount", 0)))
+        unit = str(getattr(base_measure, "unit", ""))
+        try:
+            incremental = scenario.get(f"uhv_fcff_year_{year}")  # type: ignore[attr-defined]
+        except (AttributeError, KeyError):
+            values.append(f"{year}년차 DCF 사용 FCFF {_measure_text(base)}")
+            continue
+        incremental_measure = getattr(incremental, "measure", None)
+        incremental_amount = Decimal(
+            str(getattr(incremental_measure, "amount", 0))
+        )
+        total = base_amount + incremental_amount
+        values.append(
+            f"{year}년차 DCF 사용 FCFF {_amount_unit_text(total, unit)} "
+            f"(기존 {_amount_unit_text(base_amount, unit)} + "
+            f"증분 {_amount_unit_text(incremental_amount, unit)})"
+        )
+
+    try:
+        growth = scenario.get("terminal_growth")  # type: ignore[attr-defined]
+        roic = scenario.get("terminal_roic")  # type: ignore[attr-defined]
+    except (AttributeError, KeyError):
+        return " · ".join(values)
+    growth_amount = Decimal(str(growth.measure.amount))
+    roic_amount = Decimal(str(roic.measure.amount))
+    values.append(f"영구성장률 {_measure_text(growth)}")
+    if roic_amount > 0:
+        reinvestment = growth_amount / roic_amount
+        values.append(
+            f"영구 ROIC {_measure_text(roic)}"
+            f" (성장률 검산·재투자율 {reinvestment * 100:.1f}%)"
+        )
     return " · ".join(values)
 
 

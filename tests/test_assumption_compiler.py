@@ -132,6 +132,39 @@ def test_ratio_transform_uses_registered_evidence_inputs():
     assert result.assumption_set.get("utilization", "Base").measure.amount == Decimal("0.8")
 
 
+def test_ramp_scaled_money_preserves_reference_and_responds_to_duration():
+    ledger = EvidenceLedger((
+        evidence("E1", 25, "KRW_billion", metric="reference_fcff"),
+        evidence("E2", 42, "KRW_billion", metric="steady_state_fcff"),
+        evidence("E3", 2, "years", metric="reference_ramp"),
+        evidence("E4", 4, "years", metric="current_ramp"),
+    ))
+    result = compile_assumptions(
+        target_id="T",
+        ledger=ledger,
+        hypotheses=(hypothesis(),),
+        bridges=(bridge(
+            evidence_ids=("E1", "E2", "E3", "E4"),
+            new_value=12.5,
+            unit="KRW_billion",
+        ),),
+        specs=(AssumptionSpec(
+            "incremental_fcff",
+            "Base",
+            "B1",
+            "KRW_billion",
+            "ramp_scaled_money",
+        ),),
+        bridge_input_map={"B1": ("E1", "E2", "E3", "E4")},
+    )
+    assert result.passed
+    assert result.assumption_set is not None
+    assert (
+        result.assumption_set.get("incremental_fcff", "Base").measure.amount
+        == Decimal("12.5")
+    )
+
+
 def test_market_comparison_evidence_is_blocked_pre_freeze():
     ledger = EvidenceLedger((
         evidence("E1", 100000, "KRW", layer=EvidenceSourceLayer.MARKET_COMPARISON),

@@ -204,7 +204,7 @@ class AssumptionTransform:
     calculate: Callable[[tuple[Measure, ...], TransformParameters], Measure]
 ```
 
-초기 transform은 `identity_observation`, `unit_conversion`, `annualization`, `ratio`, `product`, `weighted_average`, `date_math`, `scenario_policy_lookup`, `probability_event_update`로 제한한다. 임의 Python expression, `eval`, LLM 산술은 금지한다. Multiple·discount rate처럼 직접 관측되지 않는 값은 versioned model policy table과 Bridge rationale를 함께 요구한다.
+초기 transform은 `identity_observation`, `unit_conversion`, `annualization`, `ratio`, `product`, `weighted_average`, `ramp_scaled_money`, `date_math`, `scenario_policy_lookup`, `probability_event_update`로 제한한다. `ramp_scaled_money`는 검토가 끝난 기준 현금흐름 경로·정상상태 상한·기준 가동기간·현재 가동기간을 입력받아 `min(정상상태 상한, 기준 경로 × 기준 가동기간 / 현재 가동기간)`으로 연도별 증분 현금흐름을 다시 계산한다. 가동기간은 추적용 메타데이터로만 둘 수 없으며, 생산능력 반영 계약에서 이 transform을 선언하면 해당 가정 key와 transform ID가 실제 Compiler 요청에 일치하지 않을 때 차단한다. 임의 Python expression, `eval`, LLM 산술은 금지한다. Multiple·discount rate처럼 직접 관측되지 않는 값은 versioned model policy table과 Bridge rationale를 함께 요구한다.
 
 ### 4.2 결정론적 컴파일 순서
 

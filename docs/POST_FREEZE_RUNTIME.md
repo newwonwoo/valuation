@@ -30,7 +30,7 @@ Current price is a post-freeze reference. It produces scenario and, when allowed
 
 ## 5. Immutable state and report
 
-`SAVE_STATE` writes one immutable run directory containing the Control Plane trace, compiled assumptions, bound scenarios, valuation, audit, doctrine coverage, Street/market comparison, thesis delta, freeze token, the exact Korean report Markdown and two deterministic Korean SVG summary cards.
+`SAVE_STATE` writes one immutable run directory containing the Control Plane trace, compiled assumptions, bound scenarios, valuation, audit, doctrine coverage, Street/market comparison, thesis delta, freeze token, the exact Korean report Markdown and two deterministic Korean SVG summary cards. A company publication adapter may render a standalone Korean brokerage-style HTML report from that same completed run payload; repository synchronization and CI must compare the HTML, Markdown appendix and both SVG cards together so the reader-facing report cannot drift from the immutable calculation record.
 
 Only an audit-passed completed run may update `current_state.json`. `FINAL_REPORT` emits the same report payload that was saved, so the user-visible result and immutable artifact cannot silently diverge.
 
