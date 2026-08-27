@@ -10,6 +10,10 @@ from typing import Any, Mapping
 
 import yaml
 
+from .capacity_economics import (
+    build_capacity_economics,
+    materialize_capacity_economics,
+)
 from .broker_research import (
     BrokerClaim,
     BrokerFieldClass,
@@ -264,6 +268,8 @@ class SanilSnapshot:
                 )
             if float(row.get("uhv_property_capex_krw_billion", 0)) <= 0:
                 raise ValueError(f"{name} requires positive UHV property CAPEX")
+            if float(row.get("uhv_equipment_capex_krw_billion", 0)) <= 0:
+                raise ValueError(f"{name} requires positive UHV equipment CAPEX")
             if float(row.get("uhv_reference_ramp_years", 0)) <= 0:
                 raise ValueError(f"{name} requires positive UHV reference ramp duration")
             if float(row.get("uhv_ramp_years", 0)) <= 0:
@@ -322,6 +328,7 @@ def load_sanil_snapshot(path: str | Path | None = None) -> SanilSnapshot:
     payload = yaml.safe_load(target.read_text(encoding="utf-8"))
     if not isinstance(payload, Mapping):
         raise ValueError("Sanil snapshot root must be a mapping")
+    materialize_capacity_economics(payload)
     snapshot = SanilSnapshot(payload, target)
     snapshot.validate()
     return snapshot
@@ -558,6 +565,22 @@ def _underwriting_records(snapshot: SanilSnapshot) -> tuple[EvidenceRecord, ...]
                 notes=(
                     "DCF cash-outflow input equals the full disclosed property "
                     "consideration and is deducted separately from incremental FCFF."
+                ),
+            )
+        )
+        rows.append(
+            _record(
+                snapshot,
+                metric=f"model_{scenario.lower()}_uhv_equipment_capex",
+                value=inputs["uhv_equipment_capex_krw_billion"],
+                unit="KRW_billion",
+                source_key=source,
+                source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
+                effective_date=snapshot.cutoff,
+                confidence=(0.40 if scenario != "Core" else 0.50),
+                notes=(
+                    "Analyst allowance for production lines, testing equipment and "
+                    "installation that are not included in the disclosed property price."
                 ),
             )
         )
@@ -1302,6 +1325,38 @@ def _bridge_analyst(context, hypotheses, red_team) -> BridgeProposalBundle:
             )
         )
 
+        equipment_metric = f"model_{scenario.lower()}_uhv_equipment_capex"
+        equipment_value = float(
+            context.ledger.get(_evidence_id(equipment_metric)).value
+        )
+        drafts.append(
+            BridgeDraft(
+                assumption_key="uhv_equipment_capex",
+                scenario_id=scenario,
+                bridge=_bridge(
+                    bridge_id=f"B:SANIL:{scenario}:uhv_equipment_capex",
+                    evidence_ids=(_evidence_id(equipment_metric),),
+                    hypothesis_id=f"H:SANIL:{scenario}",
+                    affected_variable=AffectedVariable.QUANTITY,
+                    direction=Direction.UP,
+                    old_value=0.0,
+                    new_value=equipment_value,
+                    unit="KRW_billion",
+                    economic_path_id=(
+                        f"sanil:{scenario.lower()}:uhv_equipment_capex"
+                    ),
+                    rationale=(
+                        "analyst equipment and test-line allowance is deducted "
+                        "separately from the disclosed property consideration"
+                    ),
+                ),
+                canonical_unit="KRW_billion",
+                transform_id="identity_observation",
+                input_evidence_ids=(_evidence_id(equipment_metric),),
+                min_value="0",
+            )
+        )
+
         for key in ("terminal_growth", "terminal_roic"):
             metric = f"model_{scenario.lower()}_{key}"
             value = float(context.ledger.get(_evidence_id(metric)).value)
@@ -1956,7 +2011,10 @@ def build_sanil_live_primary_config(
                     expansion_capex_key="expansion_capex",
                     expansion_capex_year=2,
                     additive_fcff_prefixes=("uhv_",),
-                    additional_expansion_capex=(("uhv_property_capex", 2),),
+                    additional_expansion_capex=(
+                        ("uhv_property_capex", 2),
+                        ("uhv_equipment_capex", 3),
+                    ),
                 ),
             ),
             include_default_normalized_multiples=True,
@@ -1980,6 +2038,7 @@ def build_sanil_live_primary_config(
                 "expansion_capex",
                 *(f"uhv_fcff_year_{year}" for year in range(1, FORECAST_YEARS + 1)),
                 "uhv_property_capex",
+                "uhv_equipment_capex",
                 "terminal_growth",
                 "terminal_roic",
                 "ownership",
@@ -2007,6 +2066,38 @@ def build_sanil_live_primary_config(
             "probability_forecast_declarations": _probability_forecast_declarations(
                 snapshot
             ),
+            "sanil_capacity_economics": build_capacity_economics(
+                snapshot.payload
+            ).as_primitive_dict(),
+            "sanil_operating_facts": {
+                "revenue_h1_2026_krw_billion": float(
+                    snapshot.facts["revenue_h1_2026_krw_billion"]
+                ),
+                "operating_profit_h1_2026_krw_billion": float(
+                    snapshot.facts["operating_profit_h1_2026_krw_billion"]
+                ),
+                "operating_cash_flow_h1_2026_krw_billion": float(
+                    snapshot.facts["operating_cash_flow_h1_2026_krw_billion"]
+                ),
+                "ppe_capex_h1_2026_krw_billion": float(
+                    snapshot.facts["ppe_capex_h1_2026_krw_billion"]
+                ),
+                "intangible_capex_h1_2026_krw_billion": float(
+                    snapshot.facts["intangible_capex_h1_2026_krw_billion"]
+                ),
+                "utilization_h1_2026_ratio": float(
+                    snapshot.facts["utilization_h1_2026_ratio"]
+                ),
+                "specialty_transformer_mix_h1_2026": float(
+                    snapshot.facts["specialty_transformer_mix_h1_2026"]
+                ),
+                "grid_transformer_mix_h1_2026": float(
+                    snapshot.facts["grid_transformer_mix_h1_2026"]
+                ),
+                "other_product_mix_h1_2026": float(
+                    snapshot.facts["other_product_mix_h1_2026"]
+                ),
+            },
             "underwriting_status": "PRELIMINARY_SOURCE_BACKED_UNDERWRITE",
             "evidence_confidence": "official company facts and signed UHV land contract high; common-source regression Beta moderate; forward FCFF assumptions moderate",
         },

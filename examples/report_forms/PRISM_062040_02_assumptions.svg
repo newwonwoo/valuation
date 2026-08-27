@@ -29,29 +29,29 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="1015" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">UHV 5년 증분</text>
 <line x1="95" y1="668" x2="1105" y2="668" stroke="#D6DFE3" stroke-width="2"/>
 <text x="100" y="725" font-size="21" font-weight="700" fill="#142A3A" text-anchor="start">하방(Down)</text>
-<text x="270" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">1,450억원</text>
-<text x="470" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">2,380억원</text>
+<text x="270" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">1,719억원</text>
+<text x="470" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">3,079억원</text>
 <text x="675" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">2.0%</text>
 <text x="855" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">13.0%</text>
-<text x="1015" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">180억원</text>
+<text x="1015" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">471억원</text>
 <line x1="95" y1="753" x2="1105" y2="753" stroke="#E9EEF0" stroke-width="2"/>
 <text x="100" y="810" font-size="21" font-weight="700" fill="#142A3A" text-anchor="start">기준(Core)</text>
-<text x="270" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">1,750억원</text>
-<text x="470" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">3,120억원</text>
+<text x="270" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">1,719억원</text>
+<text x="470" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">4,516억원</text>
 <text x="675" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">2.5%</text>
 <text x="855" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">15.0%</text>
-<text x="1015" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">420억원</text>
+<text x="1015" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">945억원</text>
 <line x1="95" y1="838" x2="1105" y2="838" stroke="#E9EEF0" stroke-width="2"/>
 <text x="100" y="895" font-size="21" font-weight="700" fill="#142A3A" text-anchor="start">상방(Bull)</text>
-<text x="270" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">1,850억원</text>
-<text x="470" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">3,730억원</text>
+<text x="270" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">1,719억원</text>
+<text x="470" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">4,992억원</text>
 <text x="675" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">3.0%</text>
 <text x="855" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">17.0%</text>
-<text x="1015" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">680억원</text>
+<text x="1015" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">1,410억원</text>
 <text x="70" y="1050" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">평가방법</text>
 <text x="250" y="1050" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">capacity_manufacturing/driver_dcf/1</text>
 <text x="70" y="1112" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">핵심 자본적지출</text>
-<text x="250" y="1112" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">기존 증설 420억원 + 초고압 부동산 692억원</text>
+<text x="250" y="1112" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">기존 증설 94억원 + 초고압 부동산 692억원</text>
 <text x="70" y="1174" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">생산능력 반영</text>
 <text x="250" y="1174" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">SANIL_SECOND_FACTORY_RAMP,</text>
 <text x="250" y="1205" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">SANIL_UHV_PROPERTY_ACQUISITION_20260826</text>

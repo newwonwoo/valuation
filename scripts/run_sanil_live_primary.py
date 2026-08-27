@@ -7,7 +7,6 @@ from tempfile import TemporaryDirectory
 
 from valuation_engine.brokerage_html import render_sanil_brokerage_html
 from valuation_engine.report_form import attest_controlled_run, render_controlled_run_report
-from valuation_engine.report_localization import identifier_label_ko
 from valuation_engine.sanil_live_primary import (
     load_sanil_market_snapshot,
     load_sanil_snapshot,
@@ -47,6 +46,7 @@ def _core_terminal_value_share(compiled: object, wacc: Decimal) -> Decimal:
     ]
     flows[1] -= compiled.get("expansion_capex", scenario).measure.amount
     flows[1] -= compiled.get("uhv_property_capex", scenario).measure.amount
+    flows[2] -= compiled.get("uhv_equipment_capex", scenario).measure.amount
     growth = compiled.get("terminal_growth", scenario).measure.amount
     one = Decimal("1")
     explicit_pv = sum(
@@ -66,7 +66,7 @@ def _fcff_connection_table(compiled: object) -> str:
     lines = [
         "### 현금흐름 계산 연결",
         "",
-        "| 시나리오 | 5년차 기존사업 FCFF | 초고압 증분 | DCF·영구가치 사용 합계 |",
+        "| 시나리오 | 5년차 기존사업 FCFF | 신규 부지 증분 | DCF·영구가치 사용 합계 |",
         "| --- | ---: | ---: | ---: |",
     ]
     labels = {"Down": "하방", "Core": "기준", "Bull": "상방"}
@@ -80,8 +80,8 @@ def _fcff_connection_table(compiled: object) -> str:
     lines.extend(
         (
             "",
-            "- 초고압 증분 FCFF는 고정 숫자를 그대로 더하지 않고, 검토된 기준 경로·정상상태 상한·가동기간을 결합해 매년 다시 계산합니다.",
-            "- 현재 계산은 2년차에 제2공장 420억원과 초고압 부동산 692.5억원을 별도 현금유출로 차감합니다. 실제 초고압 대금은 2026년 계약금·중도금과 2027년 잔금으로 나뉘므로 지급시점 정밀화가 남아 있습니다.",
+            "- 신규 부지 증분 FCFF는 기존제품 확장과 초고압을 합친 뒤, 연간 증분매출에 대해서만 운전자본을 차감합니다.",
+            "- 현재 계산은 제2공장 2027년 이후 공시 잔여액 93.7억원, 초고압 부동산 692.5억원, 생산·시험설비 분석가 가정을 별도 현금유출로 차감합니다.",
         )
     )
     return "\n".join(lines)
@@ -107,7 +107,6 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
     }
     beta = result.data["live_beta_result"]
     wacc = result.data["live_wacc_result"]
-    capacity_assessment = result.data["capacity_commitment_assessment"]
     probability_assessment = result.data["scenario_probability_assessment"]
     probability_labels = {"Down": "하방", "Core": "기준", "Bull": "상방"}
     probability_summary = " · ".join(
@@ -151,8 +150,8 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
     evidence_note = """## 핵심 가정과 위험
 - **근거 신뢰도:** 회사 실적·수주·생산능력·부지·자본적지출은 회사 공시·기업설명자료에 기반해 신뢰도가 높습니다.
 - **분석가 추정:** 하방·기준·상방 기업잉여현금흐름은 회사 가이던스가 아니라 공시 사실에서 파생한 분석가 가정입니다.
-- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 매매대금을 확정하지만 정확한 생산능력·설비투자비·양산시점은 미공시입니다.
-- **누락 비용 위험:** 부가가치세·세금·수수료와 향후 건설·설비 비용은 692.5억원에 포함되지 않아 현재 DCF에 반영되지 않았습니다.
+- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 매매대금을 확정하지만 정확한 생산능력·설비투자비·양산시점은 미공시입니다. 기존제품 CAPA는 기준 50%, 상방 100%만 인정합니다.
+- **누락 비용 위험:** 부가가치세·세금·수수료와 향후 건설비는 별도일 수 있습니다. 생산·시험설비는 기준 600억원의 분석가 가정을 반영했습니다.
 - **지급시점 단순화:** 공시된 계약금 69.25억원·중도금 207.75억원·잔금 415.5억원을 현재 모델은 2년차 일괄 현금유출로 처리해, 지급일별 현재가치 계산은 후속 보완이 필요합니다.
 """
     controlled_body = controlled_body.replace(
@@ -160,29 +159,32 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
         evidence_note,
         1,
     )
-    project_names = ", ".join(
-        identifier_label_ko(item)
-        for item in capacity_assessment.core_inclusion_required_projects
-    )
     market_gaps = {
         item.scenario_id: item.gap_pct_of_reference
         for item in market.envelope.scenario_gaps
     } if market is not None else {}
     core_gap = market_gaps.get("Core", 0)
-    bull_gap = market_gaps.get("Bull", 0)
     terminal_share = _core_terminal_value_share(
         compiled,
         Decimal(str(wacc.wacc_result.wacc)),
     )
+    capacity = result.data["sanil_capacity_economics"]
+    physical = capacity["physical"]
+    capacity_scenarios = {
+        row["scenario_id"]: row for row in capacity["scenarios"]
+    }
+    core_mature = capacity_scenarios["Core"]["years"][-1]
+    bull_mature = capacity_scenarios["Bull"]["years"][-1]
+    investment_view = "매수" if core_gap >= 0.15 else "관망"
     header = f"""# 산일전기(062040) 투자보고서 — 2026.08.27
 
 ## 투자 요약
 
-### 생산능력 확장이 잉여현금흐름으로 전환되는지가 핵심
+### 부지 3.27만㎡를 생산 슬롯·제품 믹스·현금흐름으로 연결
 
 | 핵심 판단 항목 | 내용 |
 | --- | --- |
-| **투자판단** | 관망 — 기준가 대비 하락위험 {abs(core_gap):.1%}, 상방가까지 상승여력 {bull_gap:.1%} |
+| **투자판단** | {investment_view} — 기준 목표가까지 상승여력 {core_gap:.1%}, 하방 시나리오 병행 관리 |
 | **현재가** | {float(current_price):,.0f}원 ({market_date}) |
 | **기준 내재가치** | {values['Core']:,.0f}원 · 현재가 대비 {core_gap:+.1%} |
 | **가치평가 범위** | 하방 {values['Down']:,.0f}원 · 기준 {values['Core']:,.0f}원 · 상방 {values['Bull']:,.0f}원 |
@@ -192,17 +194,18 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
 
 ### 한 문장 결론
 
-산일전기의 핵심은 수요의 존재보다 제2공장과 초고압 변압기 부지가 실제 출하·마진·잉여현금흐름으로 전환되는 속도이며, 기준 가치는 현재가 대비 {core_gap:+.1%}이고 상방 가치는 {bull_gap:+.1%}인 만큼 지금은 상승여력보다 전환 증거를 먼저 확인할 구간입니다.
+공장 가동률 87.2%에서는 판매율보다 생산 슬롯이 병목이며, 신규 부지의 물리 CAPA를 제품 믹스·영업이익·FCF로 연결하되 기존제품 순증분은 기준 50%만 인정한 목표가가 {values['Core']:,.0f}원입니다.
 
 ### 투자포인트
 
-- **가치동인:** {project_names}을 각각 생산능력·자본적지출·가동 정상화 경로로 반영했습니다.
+- **가치동인:** 신규 부지 유효 연매출 CAPA는 기존제품 {physical['existing_product_effective_capacity'] * 10:,.0f}억원 + 초고압 {physical['uhv_effective_capacity'] * 10:,.0f}억원 = {physical['total_effective_capacity'] * 10:,.0f}억원입니다.
 - **가치평가:** 현금흐름할인법 기준 하방–상방 범위는 {values['Down']:,.0f}–{values['Bull']:,.0f}원이며, 계층형 베타 {beta.target_levered_beta:.3f} · 가중평균자본비용 {wacc.wacc_result.wacc:.3%}를 적용했습니다.
+- **현금창출력:** 성숙기 기준은 매출 {core_mature['total_revenue'] * 10:,.0f}억원 · 영업이익 {core_mature['total_operating_profit'] * 10:,.0f}억원 · 잉여현금흐름 {core_mature['total_fcff'] * 10:,.0f}억원, 전량가동 상방은 매출 {bull_mature['total_revenue'] * 10:,.0f}억원 · 잉여현금흐름 {bull_mature['total_fcff'] * 10:,.0f}억원입니다.
 - **남은 제약:** 기준 DCF 기업가치의 {terminal_share:.1%}가 영구가치에 있어 가동·마진 정상화 지연에 민감하며, {probability_summary}는 실제 해결 이력으로 보정되지 않아 기대값에는 적용하지 않았습니다.
 
 ### 판단 변경 조건
 
-- **상방 확인:** 제2공장·초고압 설비의 일정 준수, 가동률 정상화, 수주잔고의 매출 전환이 공시로 확인될 때.
+- **상방 확인:** 회사가 초고압 2,000억원 이상과 기존제품 약 3,000억원의 순증 CAPA, 생산·시험설비, 고객 인증 일정을 확인할 때.
 - **하방 훼손:** 증설 지연·취소, 수주잔고 또는 신규수주 감소, 출하 전환 전 마진 둔화가 확인될 때.
 - **행동 가능 조건:** 실제 해결 전망 이력이 누적되어 시나리오 확률을 보정하고 별도 진입 규칙이 승인될 때.
 
@@ -210,9 +213,9 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
 
 - **신규 공시 여부:** [회사 공시목록]({COMPANY_DISCLOSURE_LIST_URL}) 기준 8월 27일 신규·정정 공시는 없습니다. 최신 원문은 8월 26일 [유형자산 양수결정]({DART_UHV_URL})입니다.
 - **회사 확정 사실:** 안산 토지·건물 692.5억원, 자기자금 지급, 초고압 변압기 생산시설과 기존 제품 생산능력 확대 목적입니다.
-- **아직 미공시:** 총 설비투자액, 추가 생산능력, 고객 인증·수주, 상업 생산시점, 매출·마진·현금흐름 기여입니다.
+- **아직 미공시:** 순증 생산능력, 생산·시험설비 총액, 고객 인증·수주, 상업 생산시점, 매출·마진·현금흐름 기여입니다.
 - **증권사 해석:** [한국투자증권 8월 27일 보고서]({KOREA_INVESTMENT_REPORT_URL})의 2028년 양산·2029년 추가 매출 2,000억원 이상·목표가 270,000원은 회사 확정치가 아니라 증권사 추정치입니다.
-- **모델 처리:** 오늘 증권사 수치는 기존 내재가치 가정을 바꾸지 않고 가치평가 완료 뒤 비교에만 사용했습니다. 초고압 사업은 공시된 부동산 대금과 분석가 가동경로를 분리해 계산합니다.
+- **모델 처리:** 부지 취득은 수요 대응의 경제적 실질이 있어 DCF에 포함했습니다. 다만 한국투자증권 성장률 전망이 신규공장 효과를 일부 포함할 수 있어 기존제품 CAPA는 기준 50%, 전량은 상방으로 분리했습니다.
 
 """
     markdown_report = header + controlled_body

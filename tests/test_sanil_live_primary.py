@@ -234,11 +234,18 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         in core.economic_path_ids
     )
     compiled = result.data["compiled_assumption_set"]
-    assert compiled.get("expansion_capex", "Core").measure.amount == 42
+    assert compiled.get("expansion_capex", "Core").measure.amount == Decimal(
+        "9.373"
+    )
     assert compiled.get("uhv_property_capex", "Core").measure.amount == 69.25
-    assert compiled.get("uhv_fcff_year_5", "Core").measure.amount == 42
+    assert compiled.get("uhv_equipment_capex", "Core").measure.amount == 60
+    assert compiled.get("uhv_fcff_year_5", "Core").measure.amount.quantize(
+        Decimal("0.001")
+    ) == Decimal("94.454")
     core_ramp_fcff = compiled.get("uhv_fcff_year_3", "Core")
-    assert core_ramp_fcff.measure.amount == 10
+    assert core_ramp_fcff.measure.amount.quantize(Decimal("0.001")) == Decimal(
+        "20.383"
+    )
     assert core_ramp_fcff.transform_id == "ramp_scaled_money"
     assert core_ramp_fcff.economic_path_id.endswith(":ramp")
 
@@ -360,9 +367,9 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert "미래에셋증권" in result.data["final_report"]
     assert "신한투자증권" in result.data["final_report"]
     assert "한국투자증권" in result.data["final_report"]
-    assert "5년차 DCF 사용 FCFF 3,120억원" in result.data["final_report"]
-    assert "기존 2,700억원 + 증분 420억원" in result.data["final_report"]
-    assert "PRISM 기준 내재가치는 증권사 평균 목표가보다 35.9% 낮습니다" in result.data[
+    assert "5년차 DCF 사용 FCFF 4,516억원" in result.data["final_report"]
+    assert "기존 3,572억원 + 증분 945억원" in result.data["final_report"]
+    assert "PRISM 기준 내재가치는 증권사 평균 목표가보다 9.4% 낮습니다" in result.data[
         "final_report"
     ]
     assert "증설 처리" in result.data["final_report"]
@@ -462,14 +469,17 @@ def test_sanil_brokerage_report_integrates_august_27_update(tmp_path):
     assert "8월 27일 신규·정정 공시는 없습니다" in report
     assert "회사 확정치가 아니라 증권사 추정치" in report
     assert "**현재가** | 201,500원 (2026-08-27)" in report
-    assert "5년차 DCF 사용 FCFF 3,120억원" in report
-    assert "기존 2,700억원 + 증분 420억원" in report
-    assert "기준 DCF 기업가치의 83.4%가 영구가치" in report
+    assert "5년차 DCF 사용 FCFF 4,516억원" in report
+    assert "기존 3,572억원 + 증분 945억원" in report
+    assert "기준 DCF 기업가치의 84.8%가 영구가치" in report
     assert "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660" in report
     assert len(visuals) == 2
     assert '<html lang="ko">' in html_report
-    assert "증설 발표보다 중요한 것은 현금흐름 전환 속도" in html_report
-    assert "현재가는 기준가보다 상방가에 가깝다" in html_report
+    assert "부지가 아니라 5,026억원의 생산 슬롯을 샀다" in html_report
+    assert "기준 목표가 237,906원" in html_report
+    assert "전량가동 초고압 마진 민감도" in html_report
+    assert "기존제품 CAPA 인정" in html_report
+    assert "중복 방지" in html_report
     assert "가능성 산식: 하방·기준·상방 상대점수 3:5:2" in html_report
     assert "증권사 목표가와의 차이" in html_report
     assert "인공지능 인사이트" in html_report
