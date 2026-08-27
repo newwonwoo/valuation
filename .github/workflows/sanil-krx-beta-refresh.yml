@@ -1,4 +1,4 @@
-name: sanil-krx-beta-refresh
+name: sanil-regression-beta-refresh
 
 on:
   push:
@@ -24,18 +24,18 @@ jobs:
         with:
           python-version: '3.11'
       - name: Install refresh dependencies
-        run: python -m pip install pykrx pandas numpy PyYAML
-      - name: Refresh frozen KRX regressions
+        run: python -m pip install finance-datareader pandas numpy PyYAML
+      - name: Refresh frozen same-source regressions
         run: python scripts/refresh_sanil_krx_beta.py
       - name: Install repository
         run: python -m pip install -e '.[dev]'
       - name: Sanil regressions
         run: pytest -q tests/test_sanil_live_primary.py tests/test_authorized_risk_providers.py
-      - name: Commit generated KRX snapshot
+      - name: Commit generated regression snapshot
         run: |
           git config user.name "sanil-risk-provider-agent"
           git config user.email "sanil-risk-provider-agent@users.noreply.github.com"
           git add config/sanil_live_snapshot.yaml docs/SANIL_RISK_SOURCE_REGISTER.md
           git diff --cached --quiet && exit 0
-          git commit -m "Replace external Sanil Betas with KRX regression snapshot"
+          git commit -m "Replace provider Betas with common-source regression snapshot"
           git push origin HEAD:fix/sanil-provider-integrity-v2
