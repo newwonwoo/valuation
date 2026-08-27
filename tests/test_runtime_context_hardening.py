@@ -131,6 +131,31 @@ def test_basic_authorization_and_quoted_mapping_credentials_are_fully_redacted()
     assert rendered.count("[REDACTED]") >= 3
 
 
+def test_quoted_authorization_key_is_redacted_for_supported_schemes():
+    markers = (
+        ("Basic", "BASIC_VISIBLE_MARKER"),
+        ("Bearer", "BEARER_VISIBLE_MARKER"),
+        ("Token", "TOKEN_VISIBLE_MARKER"),
+        ("Digest", "DIGEST_VISIBLE_MARKER"),
+        ("ApiKey", "APIKEY_VISIBLE_MARKER"),
+    )
+
+    def adapter(_):
+        rendered_headers = " ".join(
+            f'{{"Authorization": "{scheme} {marker}"}}'
+            for scheme, marker in markers
+        )
+        raise RuntimeError(f"request failed headers={rendered_headers}")
+
+    result = _run(adapter)
+    rendered = " | ".join(
+        [*result.blocked_reasons, *(trace.rationale for trace in result.stage_traces)]
+    )
+    for _, marker in markers:
+        assert marker not in rendered
+    assert rendered.count("[REDACTED]") >= len(markers)
+
+
 def test_wrong_adapter_return_type_blocks_cleanly():
     result = _run(lambda _: {"status": "pass"})
     assert result.stage_traces[-1].status is StageStatus.BLOCKED
