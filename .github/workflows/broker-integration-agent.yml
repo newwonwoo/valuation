@@ -26,13 +26,23 @@ jobs:
           python-version: '3.11'
       - name: Install
         run: python -m pip install -e '.[dev]'
-      - name: Repair integration patch
+      - name: Repair integration generator
         run: |
           python scripts/fix_broker_patch_workflow.py
-          python scripts/fix_broker_patch_regressions.py
           python -m py_compile scripts/apply_broker_live_primary_integration.py
       - name: Apply Broker Research integration
         run: python scripts/apply_broker_live_primary_integration.py
+      - name: Repair generated compatibility regressions
+        run: |
+          python scripts/fix_broker_patch_regressions.py
+          python -m py_compile \
+            src/valuation_engine/broker_runtime.py \
+            src/valuation_engine/live_runtime.py \
+            src/valuation_engine/llm_staff.py \
+            src/valuation_engine/llm_adapters.py \
+            src/valuation_engine/audit_adapter.py \
+            src/valuation_engine/report_form.py \
+            src/valuation_engine/sanil_live_primary.py
       - name: Focused Broker + Sanil regressions
         run: >-
           pytest -q
