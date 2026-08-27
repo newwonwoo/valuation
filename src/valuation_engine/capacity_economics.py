@@ -21,6 +21,9 @@ class CapacityPhysicalBridge:
     existing_product_effective_capacity: Decimal
     uhv_effective_capacity: Decimal
     total_effective_capacity: Decimal
+    specialty_transformer_effective_capacity: Decimal
+    grid_transformer_effective_capacity: Decimal
+    other_product_effective_capacity: Decimal
     existing_product_mix: Decimal
     uhv_mix: Decimal
 
@@ -54,9 +57,29 @@ class CapacityEconomicsScenario:
 
 
 @dataclass(frozen=True)
+class CapacityRampCheckpoint:
+    year: int
+    label: str
+    existing_capacity_realization: Decimal
+    base_revenue: Decimal
+    existing_product_incremental_revenue: Decimal
+    uhv_incremental_revenue: Decimal
+    total_revenue: Decimal
+    operating_profit: Decimal
+    operating_margin: Decimal
+    nopat: Decimal
+    depreciation: Decimal
+    working_capital_investment: Decimal
+    maintenance_capex: Decimal
+    fcff: Decimal
+    normalized_fcff: Decimal
+
+
+@dataclass(frozen=True)
 class CapacityEconomicsResult:
     physical: CapacityPhysicalBridge
     scenarios: tuple[CapacityEconomicsScenario, ...]
+    checkpoints: tuple[CapacityRampCheckpoint, ...]
 
     def scenario(self, scenario_id: str) -> CapacityEconomicsScenario:
         try:
@@ -68,7 +91,7 @@ class CapacityEconomicsResult:
         def convert(value: Any) -> Any:
             if isinstance(value, Decimal):
                 return float(value)
-            if isinstance(value, tuple):
+            if isinstance(value, (list, tuple)):
                 return [convert(item) for item in value]
             if isinstance(value, dict):
                 return {key: convert(item) for key, item in value.items()}
@@ -108,6 +131,14 @@ def build_capacity_economics(payload: Mapping[str, Any]) -> CapacityEconomicsRes
     existing_effective = existing_nameplate * operating_ratio
     uhv_effective = uhv_nameplate * operating_ratio
     total_effective = existing_effective + uhv_effective
+    operating_facts = payload["facts"]
+    specialty_mix = _decimal(
+        operating_facts["specialty_transformer_mix_h1_2026"]
+    )
+    grid_mix = _decimal(operating_facts["grid_transformer_mix_h1_2026"])
+    other_mix = _decimal(operating_facts["other_product_mix_h1_2026"])
+    if specialty_mix + grid_mix + other_mix != Decimal("1"):
+        raise ValueError("existing-product mix must sum to one")
     physical = CapacityPhysicalBridge(
         new_site_area_sqm=new_site_area,
         reference_site_area_sqm=reference_site_area,
@@ -119,6 +150,11 @@ def build_capacity_economics(payload: Mapping[str, Any]) -> CapacityEconomicsRes
         existing_product_effective_capacity=existing_effective,
         uhv_effective_capacity=uhv_effective,
         total_effective_capacity=total_effective,
+        specialty_transformer_effective_capacity=(
+            existing_effective * specialty_mix
+        ),
+        grid_transformer_effective_capacity=existing_effective * grid_mix,
+        other_product_effective_capacity=existing_effective * other_mix,
         existing_product_mix=existing_effective / total_effective,
         uhv_mix=uhv_effective / total_effective,
     )
@@ -231,7 +267,70 @@ def build_capacity_economics(payload: Mapping[str, Any]) -> CapacityEconomicsRes
             )
         )
 
-    return CapacityEconomicsResult(physical=physical, scenarios=tuple(scenarios))
+    checkpoint_rows: list[CapacityRampCheckpoint] = []
+    checkpoint_input = economics.get("checkpoints", {})
+    if checkpoint_input:
+        base_scenario_id = str(checkpoint_input["base_scenario_id"])
+        try:
+            base_scenario = next(
+                row for row in scenarios if row.scenario_id == base_scenario_id
+            )
+        except StopIteration as exc:
+            raise ValueError(
+                f"unknown checkpoint base scenario: {base_scenario_id}"
+            ) from exc
+        base_year = base_scenario.mature
+        base_margin = base_year.base_operating_profit / base_year.base_revenue
+        for year_key, row in checkpoint_input["years"].items():
+            existing_realization = _decimal(
+                row["existing_capacity_realization"]
+            )
+            if not Decimal("0") <= existing_realization <= Decimal("1"):
+                raise ValueError(
+                    "checkpoint existing-capacity realization must be within [0,1]"
+                )
+            existing_revenue = existing_effective * existing_realization
+            uhv_revenue = _decimal(row["uhv_revenue_krw_billion"])
+            if not Decimal("0") <= uhv_revenue <= uhv_effective:
+                raise ValueError("checkpoint UHV revenue cannot exceed effective capacity")
+            total_incremental_revenue = existing_revenue + uhv_revenue
+            total_revenue = base_year.base_revenue + total_incremental_revenue
+            operating_profit = (
+                (base_year.base_revenue + existing_revenue) * base_margin
+                + uhv_revenue * _decimal(row["uhv_operating_margin"])
+            )
+            nopat = operating_profit * (Decimal("1") - tax_rate)
+            depreciation = total_revenue * depreciation_rate
+            maintenance_capex = total_revenue * maintenance_capex_rate
+            working_capital_investment = (
+                total_incremental_revenue * working_capital_rate
+            )
+            normalized_fcff = nopat + depreciation - maintenance_capex
+            checkpoint_rows.append(
+                CapacityRampCheckpoint(
+                    year=int(year_key),
+                    label=str(row["label"]),
+                    existing_capacity_realization=existing_realization,
+                    base_revenue=base_year.base_revenue,
+                    existing_product_incremental_revenue=existing_revenue,
+                    uhv_incremental_revenue=uhv_revenue,
+                    total_revenue=total_revenue,
+                    operating_profit=operating_profit,
+                    operating_margin=operating_profit / total_revenue,
+                    nopat=nopat,
+                    depreciation=depreciation,
+                    working_capital_investment=working_capital_investment,
+                    maintenance_capex=maintenance_capex,
+                    fcff=normalized_fcff - working_capital_investment,
+                    normalized_fcff=normalized_fcff,
+                )
+            )
+
+    return CapacityEconomicsResult(
+        physical=physical,
+        scenarios=tuple(scenarios),
+        checkpoints=tuple(checkpoint_rows),
+    )
 
 
 def materialize_capacity_economics(payload: Mapping[str, Any]) -> None:

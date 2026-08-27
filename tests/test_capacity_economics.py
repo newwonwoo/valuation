@@ -23,6 +23,15 @@ def test_sanil_site_capacity_connects_to_mix_profit_and_fcff():
         "0.584"
     )
     assert physical.uhv_mix.quantize(Decimal("0.001")) == Decimal("0.416")
+    assert physical.specialty_transformer_effective_capacity.quantize(
+        Decimal("0.001")
+    ) == Decimal("223.111")
+    assert physical.grid_transformer_effective_capacity.quantize(
+        Decimal("0.001")
+    ) == Decimal("61.649")
+    assert physical.other_product_effective_capacity.quantize(
+        Decimal("0.001")
+    ) == Decimal("8.807")
 
     core = result.scenario("Core").mature
     bull = result.scenario("Bull").mature
@@ -36,6 +45,17 @@ def test_sanil_site_capacity_connects_to_mix_profit_and_fcff():
         "667.8"
     )
     assert bull.total_fcff.quantize(Decimal("0.1")) == Decimal("499.2")
+
+    ramp, mature = result.checkpoints
+    assert (ramp.year, ramp.label) == (2029, "램프업")
+    assert ramp.total_revenue.quantize(Decimal("0.1")) == Decimal("1514.4")
+    assert ramp.operating_profit.quantize(Decimal("0.1")) == Decimal("595.0")
+    assert ramp.fcff.quantize(Decimal("0.1")) == Decimal("433.8")
+    assert (mature.year, mature.label) == (2030, "전량가동")
+    assert mature.total_revenue.quantize(Decimal("0.1")) == Decimal("1670.2")
+    assert mature.operating_profit.quantize(Decimal("0.1")) == Decimal("667.8")
+    assert mature.fcff.quantize(Decimal("0.1")) == Decimal("481.4")
+    assert mature.normalized_fcff.quantize(Decimal("0.1")) == Decimal("506.6")
 
 
 def test_working_capital_is_charged_on_annual_revenue_change_only():

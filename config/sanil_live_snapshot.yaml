@@ -30,7 +30,7 @@ sources:
     source_id: PRISM_UNDERWRITING_MODEL
     source_ref: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#capacity_economics
     document_id: SANIL_UNDERWRITING_20260826
-    document_hash: 1e8bc1a4e7f6f4f2c595f930faee37133c69a79499719ef533825925b3176328
+    document_hash: 5e7713c64ad87a5783c658e3ad6e95b0b2700b3e01dda5b9a9137c217079ee65
     published_at: '2026-08-26T18:00:00+09:00'
   uhv_property_acquisition:
     source_id: KR_OPENDART
@@ -63,6 +63,7 @@ facts:
   operating_cash_flow_h1_2026_krw_billion: 90.1
   ppe_capex_h1_2026_krw_billion: 8.2
   intangible_capex_h1_2026_krw_billion: 1.4
+  net_working_capital_change_h1_2026_krw_billion: -0.17
   utilization_h1_2026_ratio: 0.872
   specialty_transformer_mix_h1_2026: 0.76
   grid_transformer_mix_h1_2026: 0.21
@@ -265,6 +266,19 @@ capacity_economics:
       uhv_capacity_realization: 1.0
       uhv_operating_margin: 0.35
       ramp_factor: [0, 0.05, 0.40, 0.80, 1.0]
+  checkpoints:
+    base_scenario_id: Core
+    years:
+      '2029':
+        label: 램프업
+        existing_capacity_realization: 0.50
+        uhv_revenue_krw_billion: 200
+        uhv_operating_margin: 0.30
+      '2030':
+        label: 전량가동
+        existing_capacity_realization: 1.0
+        uhv_revenue_krw_billion: 209
+        uhv_operating_margin: 0.35
 scenarios:
   Down:
     expansion_capex_krw_billion: 9.373
