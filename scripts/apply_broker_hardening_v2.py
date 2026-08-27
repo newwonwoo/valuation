@@ -24,7 +24,7 @@ def patch_live_runtime() -> None:
         )
     text = path.read_text(encoding="utf-8")
     old = '''        "ROCKET_INSIGHT_SCAN": live_rocket_insight_dispatch_adapter(\n            runners=providers.scanner_runners\n        ),\n'''
-    new = '''        "ROCKET_INSIGHT_SCAN": broker_aware_rocket_insight_adapter(\n            live_rocket_insight_dispatch_adapter(\n                runners=providers.scanner_runners\n            ),\n            required=bool(config.require_broker_research),\n        ),\n'''
+    new = '''        "ROCKET_INSIGHT_SCAN": broker_aware_rocket_insight_adapter(\n            live_rocket_insight_dispatch_adapter(\n                runners=providers.scanner_runners\n            ),\n            required=bool(getattr(config, "require_broker_research", False)),\n        ),\n'''
     if old in text:
         replace_once(path, old, new)
     elif "broker_aware_rocket_insight_adapter(" not in text:
