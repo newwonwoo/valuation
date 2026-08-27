@@ -1,6 +1,6 @@
 version: 2
 blueprint: v0.5.2 canonical workflow + LIVE_PRIMARY readiness
-updated: '2026-08-26'
+updated: '2026-08-27'
 recovery_note: Reconstructed from the archived PROJECT_STATUS.md dated 2026-08-25. The archived departmental design
   totals and accepted baseline points are preserved exactly; unknown historical milestone labels are not invented.
   New acceptance after recovery is recorded only with exact-SHA validation evidence.
@@ -15,29 +15,21 @@ scoring:
   - pm_integrator_close
   adr_waiver_allowed: true
 validation_baseline:
-  accepted_sha: 01562387067bd997b146426185f90d6eb27bcb59
+  accepted_sha: f1df53f79688aff51ec92d990462104a555f2df3
   evidence:
   - kind: github_actions
     workflow: valuation-tests
-    run_number: 503
-    run_id: 32961921763
+    run_number: 517
+    run_id: 33034534407
     conclusion: success
     event: push
-    head_sha: 01562387067bd997b146426185f90d6eb27bcb59
-  - kind: github_actions
-    workflow: sanil-live-primary
-    run_number: 52
-    run_id: 32961921861
-    conclusion: success
-    event: push
-    head_sha: 01562387067bd997b146426185f90d6eb27bcb59
+    head_sha: f1df53f79688aff51ec92d990462104a555f2df3
 departments:
 - id: pm-integrator
   name: Architecture & Program Office
   design_points: 5
   baseline_accepted_points: 5
-  current_work: MAINTENANCE — evidence source wave accepted; final work is real-company LIVE acceptance plus production
-    calibration history
+  current_work: MAINTENANCE — real-company LIVE acceptance is complete; only production calibration history remains
   accepted_milestones: []
 - id: evidence-industry-agent
   name: Evidence & Industry Intelligence
@@ -296,8 +288,7 @@ departments:
   name: Quality, Security & Release
   design_points: 8
   baseline_accepted_points: 5
-  current_work: ACTIVE QA-LIVE-COMPANY-FIXTURES-003 — Sanil is accepted; complete OCI, Oracle, Bloom Energy and
-    GE Vernova real-company fixtures
+  current_work: MAINTENANCE — all required real-company LIVE_PRIMARY acceptance fixtures are accepted
   accepted_milestones:
   - id: QA-PR51-001
     title: Publish the accepted canonical LIVE_PRIMARY runtime and verify valuation-tests
@@ -329,6 +320,18 @@ departments:
     implementation_refs:
     - PR 95 Run Sanil Electric through the full LIVE_PRIMARY stack
     - 33/33 canonical stages and VERIFIED_FROZEN execution attestation
+  - id: QA-LIVE-COMPANY-FIXTURES-003
+    title: Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy
+      and GE Vernova
+    points: 1
+    status: VERIFIED
+    accepted_sha: f1df53f79688aff51ec92d990462104a555f2df3
+    validation_evidence:
+    - GHA valuation-tests run 517 PASS at exact integrated main SHA
+    - Acceptance manifest validates ready=4 and blocked=0
+    implementation_refs:
+    - PR 99 Complete required LIVE_PRIMARY company fixtures
+    - PR 101 Advance the merged delivery through the strict PM synchronization gate
 work_items:
 - priority: P1
   status: MERGED_PENDING_ACCEPTANCE
@@ -340,17 +343,6 @@ work_items:
   current_step: 'PR #94 is merged; retain zero completion credit until an exact-main valuation-tests run and PM/Integrator
     acceptance close the milestone.'
   dependencies: []
-- priority: P1
-  status: MERGED_PENDING_ACCEPTANCE
-  id: QA-LIVE-COMPANY-FIXTURES-003
-  title: Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy
-    and GE Vernova
-  owner: qa-release-agent
-  github_pr: 99
-  current_step: 'PR #99 is merged at 1daf6333432b11b71ad8e2991de865a49bd7cf02; retain zero completion credit
-    until an exact-main valuation-tests run succeeds and PM/Integrator acceptance closes the milestone.'
-  dependencies:
-  - EVI-COMPANY-KPI-BREADTH-004
 - priority: P1
   status: BLOCKED
   id: CAL-PRODUCTION-COHORT-003
@@ -487,3 +479,12 @@ accepted_handoffs:
   - QA-SANIL-LIVE-PRIMARY-001
   residual_work:
   - QA-LIVE-COMPANY-FIXTURES-003
+- id: H-QA-LIVE-COMPANY-FIXTURES-20260827
+  to: pm-integrator + qa-release-agent
+  head: f1df53f79688aff51ec92d990462104a555f2df3
+  validation_evidence:
+  - GHA-VALUATION-TESTS-517
+  closes:
+  - QA-LIVE-COMPANY-FIXTURES-003
+  residual_work:
+  - CAL-PRODUCTION-COHORT-003
