@@ -234,18 +234,40 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert result.data["capacity_audit_passed"]
     assert result.data["broker_research_audit_passed"]
     broker_result = result.data["broker_research_prefreeze_result"]
-    assert tuple(
+    primary_claim_ids = tuple(
         item.claim_id for item in broker_result.primary_verification_claims
-    ) == (
+    )
+    assert primary_claim_ids == (
         "B:SANIL:MIRAE:2Q26_PRIMARY_LEADS",
         "B:SANIL:MIRAE:UHV_PRIMARY_LEADS",
+        "B:SANIL:IBK:2Q26_PRIMARY_LEADS",
+        "B:SANIL:SHINHAN:ORDER_PRIMARY_LEADS",
+    )
+    assert tuple(item.claim_id for item in broker_result.context_claims) == (
+        "B:SANIL:MIRAE:POWER_SOLUTION_CONTEXT",
     )
     assert tuple(item.claim_id for item in broker_result.quarantined_claims) == (
         "B:SANIL:MIRAE:FORWARD_FORECAST",
         "B:SANIL:MIRAE:TARGET_PRICE",
+        "B:SANIL:IBK:TARGET_PRICE",
+        "B:SANIL:SHINHAN:TARGET_PRICE",
+    )
+    primary_broker_families = {
+        item.broker_family for item in broker_result.primary_verification_claims
+    }
+    assert primary_broker_families == {
+        "MiraeAssetSecurities",
+        "IBKSecurities",
+        "ShinhanSecurities",
+    }
+    broker_domains = (
+        "securities.miraeasset.com",
+        "yna.co.kr",
+        "ibks.com",
+        "shinhansec.com",
     )
     assert not any(
-        "securities.miraeasset.com" in item.source_ref
+        any(domain in item.source_ref for domain in broker_domains)
         for item in ledger.active()
     )
     assert result.data["intelligence_proposal"].requested_evidence
@@ -255,7 +277,7 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     }
     assert trace_index["INTRINSIC_VALUE_FREEZE"] < trace_index["STREET_REFERENCE_LOAD"]
     assert trace_index["INTRINSIC_VALUE_FREEZE"] < trace_index["MARKET_PRICE_LOAD"]
-    assert result.data["street_comparison"].consensus.report_count == 2
+    assert result.data["street_comparison"].consensus.report_count == 3
 
     attestation = attest_controlled_run(result)
     report = render_controlled_run_report(result)

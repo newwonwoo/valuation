@@ -19,7 +19,20 @@ DEFAULT_OUTPUT = (
     / "report_forms"
     / "SANIL_062040_LIVE_PRIMARY_REPORT.md"
 )
-STREET_SOURCE_REF = "https://www.yna.co.kr/amp/view/AKR20260811028700008"
+STREET_SOURCE_REFS = (
+    (
+        "미래에셋증권",
+        "https://securities.miraeasset.com/bbs/board/message/view.do?categoryId=1800&messageId=2341906",
+    ),
+    (
+        "IBK투자증권",
+        "https://www.yna.co.kr/view/AKR20260810017900008",
+    ),
+    (
+        "신한투자증권",
+        "https://www.yna.co.kr/amp/view/AKR20260811028700008",
+    ),
+)
 
 
 def render_report(state_root: Path) -> str:
@@ -61,6 +74,10 @@ def render_report(state_root: Path) -> str:
         if street_target is not None
         else "- Street 참고 목표가: **미확보**\n"
     )
+    street_sources = "\n".join(
+        f"- Street 참고자료({broker}): {source_ref}"
+        for broker, source_ref in STREET_SOURCE_REFS
+    )
 
     header = f"""# 산일전기(062040) PRISM LIVE_PRIMARY 보고서
 
@@ -95,7 +112,7 @@ def render_report(state_root: Path) -> str:
 - 2026년 8월 26일 초고압 생산용 부동산 양수결정: {snapshot.sources['uhv_property_acquisition']['source_ref']}
 - 실제 peer Beta·WACC 원장: {snapshot.sources['risk_snapshot']['source_ref']}
 - PRISM underwriting assumptions: {snapshot.sources['underwriting']['source_ref']}
-- Street 참고자료: {STREET_SOURCE_REF}
+{street_sources}
 - 현재가: {market_snapshot.source_ref}
 
 ---
