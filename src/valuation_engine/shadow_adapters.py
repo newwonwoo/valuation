@@ -202,6 +202,8 @@ def scenario_build_adapter() -> StageAdapter:
         }
         if scenario_set.calibration_snapshot_hash is not None:
             outputs["probability_calibration_snapshot_hash"] = scenario_set.calibration_snapshot_hash
+        if scenario_set.calibration_dataset_hash is not None:
+            outputs["probability_calibration_dataset_hash"] = scenario_set.calibration_dataset_hash
         return StageExecutionResult(
             StageStatus.PASS,
             "Bridge proposals deterministically compiled and bound into generic scenarios",

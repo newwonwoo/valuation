@@ -230,3 +230,5 @@ def test_final_report_distinguishes_measured_from_not_measurable_and_shows_cost(
     assert "미측정(NOT_MEASURABLE): UNMEASURED_MODULE" in report
     assert "source queries 2, documents 4, LLM calls 1, elapsed 4.5s" in report
     assert "미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE" in report
+    assert "## Probability Calibration" in report
+    assert "Numeric weighting: WITHHELD" in report

@@ -206,6 +206,22 @@ def render_generic_report(data: dict[str, Any]) -> str:
             f"- Expected Value: {_fmt(valuation.expected_value_per_share)} {valuation.reporting_unit}/share"
         )
 
+    scenario_set = data.get("bound_scenario_set")
+    calibration_status = getattr(
+        getattr(scenario_set, "calibration_status", None), "value", "UNCALIBRATED"
+    )
+    calibration_applied = bool(
+        getattr(scenario_set, "numeric_weighting_allowed", False)
+    )
+    lines.extend((
+        "",
+        "## Probability Calibration",
+        f"- Status: {calibration_status}",
+        f"- Numeric weighting: {'APPLIED' if calibration_applied else 'WITHHELD'}",
+        f"- Dataset hash: {getattr(scenario_set, 'calibration_dataset_hash', None) or 'NOT_AVAILABLE'}",
+        f"- Snapshot hash: {getattr(scenario_set, 'calibration_snapshot_hash', None) or 'NOT_AVAILABLE'}",
+    ))
+
     if partial:
         lines.extend(("", "## Unvalued Segments — UNVALUED_NOT_ZERO"))
         for item in valuation.unvalued_segments:
@@ -307,6 +323,8 @@ def render_generic_report(data: dict[str, Any]) -> str:
         f"- Valuation: {data.get('valuation_hash', '')}",
         f"- Audit: {data.get('audit_hash', '')}",
         f"- Freeze token: {getattr(data.get('intrinsic_freeze_token'), 'token_hash', '')}",
+        f"- Calibration dataset: {data.get('probability_calibration_dataset_hash', '') or 'NOT_APPLIED'}",
+        f"- Calibration snapshot: {data.get('probability_calibration_snapshot_hash', '') or 'NOT_APPLIED'}",
     ))
     return "\n".join(lines) + "\n"
 
@@ -406,6 +424,9 @@ def save_state_adapter(
                 "control_plane_trace.json": _jsonable(tuple(context.stage_traces)),
                 "compiled_assumptions.json": _jsonable(context.data.get("compiled_assumption_set")),
                 "scenario_set.json": _jsonable(context.data.get("bound_scenario_set")),
+                "calibration_certificate.json": _jsonable(
+                    context.data.get("probability_calibration_certificate")
+                ),
                 "valuation.json": _jsonable(valuation),
                 "audit.json": _jsonable(audit),
                 "doctrine_coverage.json": _jsonable(context.data.get("doctrine_coverage", ())),
@@ -447,6 +468,18 @@ def save_state_adapter(
                 "assumption_set_hash": context.data.get("assumption_set_hash"),
                 "valuation_hash": context.data.get("valuation_hash"),
                 "audit_hash": context.data.get("audit_hash"),
+                "probability_calibration_status": getattr(
+                    context.data.get("probability_calibration_status"), "value", None
+                ),
+                "probability_weighting_allowed": bool(
+                    context.data.get("probability_weighting_allowed", False)
+                ),
+                "probability_calibration_dataset_hash": context.data.get(
+                    "probability_calibration_dataset_hash"
+                ),
+                "probability_calibration_snapshot_hash": context.data.get(
+                    "probability_calibration_snapshot_hash"
+                ),
                 "decision_impact_hash": context.data.get("decision_impact_hash"),
                 "research_learning_record_hash": learning_hash,
                 **linkage_state,

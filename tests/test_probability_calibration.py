@@ -291,6 +291,7 @@ def test_live_weighting_requires_matching_certificate():
     assert with_cert.passed
     assert with_cert.scenario_set.numeric_weighting_allowed
     assert with_cert.scenario_set.calibration_snapshot_hash == "CALIBRATION-SNAPSHOT"
+    assert with_cert.scenario_set.calibration_dataset_hash == "DATASET1"
 
     wrong = CalibrationCertificate(
         "clinical|90d",

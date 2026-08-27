@@ -56,6 +56,7 @@ class BoundScenarioSet:
     numeric_weighting_allowed: bool
     scenario_set_hash: str
     calibration_snapshot_hash: str | None = None
+    calibration_dataset_hash: str | None = None
 
     def get(self, scenario_id: str) -> BoundScenario:
         for item in self.scenarios:
@@ -156,6 +157,7 @@ def bind_scenarios(
     calibration_status = CalibrationStatus.UNCALIBRATED
     numeric_weighting_allowed = False
     calibration_snapshot_hash: str | None = None
+    calibration_dataset_hash: str | None = None
     if spec.probability_key is not None:
         all_calibrated = all(status is CalibrationStatus.CALIBRATED for status in probability_calibration)
         total = sum(probability_candidates, Decimal("0"))
@@ -206,12 +208,14 @@ def bind_scenarios(
                         ),
                     )
                 calibration_snapshot_hash = calibration_certificate.snapshot_hash
+                calibration_dataset_hash = calibration_certificate.dataset_hash
             elif calibration_certificate is not None:
                 try:
                     calibration_certificate.validate_for_weighting()
                     if spec.calibration_cohort_key and calibration_certificate.cohort_key != spec.calibration_cohort_key:
                         raise ValueError("calibration certificate cohort mismatch")
                     calibration_snapshot_hash = calibration_certificate.snapshot_hash
+                    calibration_dataset_hash = calibration_certificate.dataset_hash
                 except (PermissionError, ValueError) as exc:
                     return ScenarioBindingResult(
                         ScenarioBindingStatus.BLOCKED,
@@ -247,7 +251,12 @@ def bind_scenarios(
             bound = [BoundScenario(item.scenario_id, item.assumptions, None) for item in bound]
 
     serialized = "\n".join(
-        [compiled.assumption_set_hash, calibration_status.value, calibration_snapshot_hash or "NO_CERTIFICATE"]
+        [
+            compiled.assumption_set_hash,
+            calibration_status.value,
+            calibration_snapshot_hash or "NO_CERTIFICATE",
+            calibration_dataset_hash or "NO_DATASET",
+        ]
         + [
             f"{scenario.scenario_id}|{scenario.probability if scenario.probability is not None else 'NA'}|"
             + ",".join(sorted(f"{item.key}:{item.measure.amount}:{item.measure.unit}" for item in scenario.assumptions))
@@ -261,5 +270,6 @@ def bind_scenarios(
         numeric_weighting_allowed=numeric_weighting_allowed,
         scenario_set_hash=sha256(serialized.encode("utf-8")).hexdigest(),
         calibration_snapshot_hash=calibration_snapshot_hash,
+        calibration_dataset_hash=calibration_dataset_hash,
     )
     return ScenarioBindingResult(ScenarioBindingStatus.BOUND, scenario_set, tuple(findings))
