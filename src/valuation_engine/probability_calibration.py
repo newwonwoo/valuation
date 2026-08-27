@@ -535,6 +535,7 @@ class CalibrationCertificate:
     mapping_version: str
     snapshot_hash: str
     status: CalibrationStatus
+    dataset_hash: str = ""
 
     def validate_for_weighting(self) -> None:
         if self.status is not CalibrationStatus.CALIBRATED:
@@ -549,6 +550,7 @@ class CalibrationCertificate:
                 self.policy_version,
                 self.mapping_version,
                 self.snapshot_hash,
+                self.dataset_hash,
             )
         ):
             raise ValueError("calibration certificate is incomplete")
@@ -578,6 +580,7 @@ class CalibrationSnapshot:
     status: CalibrationStatus
     gate_failures: tuple[str, ...]
     snapshot_hash: str
+    dataset_hash: str = ""
 
     def certificate(self) -> CalibrationCertificate:
         if self.status is not CalibrationStatus.CALIBRATED:
@@ -592,6 +595,7 @@ class CalibrationSnapshot:
             self.mapping_version,
             self.snapshot_hash,
             self.status,
+            self.dataset_hash,
         )
         certificate.validate_for_weighting()
         return certificate
@@ -662,6 +666,7 @@ def build_calibration_snapshot(
     mapping_version: str,
     oos_brier_skill_windows: tuple[Decimal, ...] = (),
     prior_status: CalibrationStatus = CalibrationStatus.UNCALIBRATED,
+    dataset_hash: str = "",
 ) -> CalibrationSnapshot:
     policy.validate()
     if cutoff.tzinfo is None or not forecast_class or not horizon or not mapping_version:
@@ -811,6 +816,7 @@ def build_calibration_snapshot(
         "policy_version": policy.version,
         "status": status.value,
         "failures": failures,
+        "dataset_hash": dataset_hash,
     }
     snapshot_hash = sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -838,6 +844,7 @@ def build_calibration_snapshot(
         status=status,
         gate_failures=tuple(failures),
         snapshot_hash=snapshot_hash,
+        dataset_hash=dataset_hash,
     )
 
 

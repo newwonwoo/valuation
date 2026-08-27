@@ -58,11 +58,18 @@ class DeclaredCalibrationDataset:
         *,
         cutoff: datetime,
         policy_path: str | Path,
-        oos_brier_skill_windows: tuple[Decimal, ...] = (),
         prior_status: CalibrationStatus = CalibrationStatus.UNCALIBRATED,
     ) -> CalibrationSnapshot:
-        policy = _policy_from_defaults(
+        policy = _policy_for_cohort(
             policy_path,
+            cohort_key=self.declaration.cohort_key,
+            base_rate=self.declaration.base_rate,
+        )
+        oos_brier_skill_windows = _derive_oos_brier_skill_windows(
+            self.ledger,
+            forecast_class=self.declaration.forecast_class,
+            horizon=self.declaration.horizon,
+            cutoff=cutoff,
             base_rate=self.declaration.base_rate,
         )
         return build_calibration_snapshot(
@@ -74,6 +81,7 @@ class DeclaredCalibrationDataset:
             mapping_version=self.declaration.mapping_version,
             oos_brier_skill_windows=oos_brier_skill_windows,
             prior_status=prior_status,
+            dataset_hash=self.dataset_hash,
         )
 
 
@@ -102,6 +110,28 @@ def load_declared_calibration_dataset(
         raise ValueError("calibration dataset version does not match declaration")
     if declared_source != declaration.source_ref:
         raise ValueError("calibration dataset source_ref does not match declaration")
+
+    forecast_rows = ledger_payload.get("forecasts")
+    outcome_rows = ledger_payload.get("outcomes")
+    if not isinstance(forecast_rows, list) or not isinstance(outcome_rows, list):
+        raise ValueError("calibration ledger requires forecast and outcome lists")
+    forecast_ids = {
+        str(row.get("forecast_id") or "")
+        for row in forecast_rows
+        if isinstance(row, dict)
+    }
+    orphan_ids = sorted(
+        {
+            str(row.get("forecast_id") or "")
+            for row in outcome_rows
+            if isinstance(row, dict)
+            and str(row.get("forecast_id") or "") not in forecast_ids
+        }
+    )
+    if orphan_ids:
+        raise ValueError(
+            f"calibration dataset contains orphan outcomes: {', '.join(orphan_ids)}"
+        )
 
     full_ledger = ProbabilityCalibrationLedger.from_payload(ledger_payload)
     if not full_ledger.forecasts:
@@ -149,9 +179,10 @@ def load_declared_calibration_dataset(
     return DeclaredCalibrationDataset(declaration, ledger, dataset_hash)
 
 
-def _policy_from_defaults(
+def _policy_for_cohort(
     path: str | Path,
     *,
+    cohort_key: str,
     base_rate: Decimal,
 ) -> CalibrationPolicy:
     payload = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
@@ -161,21 +192,28 @@ def _policy_from_defaults(
     defaults = payload.get("defaults")
     if not isinstance(defaults, dict):
         raise ValueError("probability calibration policy requires defaults")
+    cohorts = payload.get("cohorts") or {}
+    if not isinstance(cohorts, dict):
+        raise ValueError("probability calibration policy cohorts must be a mapping")
+    cohort = cohorts.get(cohort_key) or {}
+    if not isinstance(cohort, dict):
+        raise ValueError(f"calibration policy cohort {cohort_key} must be a mapping")
+    merged = {**defaults, **cohort}
     policy = CalibrationPolicy(
         version=version,
         base_rate=base_rate,
-        min_resolved_events=int(defaults.get("min_resolved_events", 200)),
-        min_companies=int(defaults.get("min_companies", 20)),
-        min_quarters=int(defaults.get("min_quarters", 8)),
-        min_per_displayed_band=int(defaults.get("min_per_displayed_band", 30)),
-        min_oos_windows=int(defaults.get("min_oos_windows", 2)),
-        max_ece=Decimal(str(defaults.get("max_ece", "0.08"))),
+        min_resolved_events=int(merged.get("min_resolved_events", 200)),
+        min_companies=int(merged.get("min_companies", 20)),
+        min_quarters=int(merged.get("min_quarters", 8)),
+        min_per_displayed_band=int(merged.get("min_per_displayed_band", 30)),
+        min_oos_windows=int(merged.get("min_oos_windows", 2)),
+        max_ece=Decimal(str(merged.get("max_ece", "0.08"))),
         max_ambiguous_censored_rate=Decimal(
-            str(defaults.get("max_ambiguous_censored_rate", "0.10"))
+            str(merged.get("max_ambiguous_censored_rate", "0.10"))
         ),
         fixed_bin_edges=tuple(
             Decimal(str(value))
-            for value in defaults.get(
+            for value in merged.get(
                 "fixed_bin_edges",
                 (0, 0.2, 0.4, 0.6, 0.8, 1),
             )
@@ -183,3 +221,47 @@ def _policy_from_defaults(
     )
     policy.validate()
     return policy
+
+
+def _derive_oos_brier_skill_windows(
+    ledger: ProbabilityCalibrationLedger,
+    *,
+    forecast_class: str,
+    horizon: str,
+    cutoff: datetime,
+    base_rate: Decimal,
+) -> tuple[Decimal, ...]:
+    """Derive chronological issuance-quarter scores from hash-bound history."""
+
+    windows: dict[str, list[tuple[Decimal, Decimal]]] = {}
+    for forecast in ledger.terminal_forecasts(
+        forecast_class=forecast_class,
+        horizon=horizon,
+        cutoff=cutoff,
+    ):
+        outcome = ledger.outcome_for(forecast.forecast_id, cutoff=cutoff)
+        if outcome is None or outcome.observed_at < forecast.issued_at:
+            continue
+        if outcome.outcome.value not in {"occurred", "not_occurred"}:
+            continue
+        observed = Decimal("1") if outcome.outcome.value == "occurred" else Decimal("0")
+        quarter = f"{forecast.issued_at.year}Q{((forecast.issued_at.month - 1) // 3) + 1}"
+        windows.setdefault(quarter, []).append((forecast.probability, observed))
+
+    result: list[Decimal] = []
+    for quarter in sorted(windows):
+        samples = windows[quarter]
+        brier = sum(
+            ((probability - observed) ** 2 for probability, observed in samples),
+            Decimal("0"),
+        ) / Decimal(len(samples))
+        base_brier = sum(
+            ((base_rate - observed) ** 2 for _, observed in samples),
+            Decimal("0"),
+        ) / Decimal(len(samples))
+        result.append(
+            Decimal("0")
+            if base_brier == 0
+            else Decimal("1") - (brier / base_brier)
+        )
+    return tuple(result)

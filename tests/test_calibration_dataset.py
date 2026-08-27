@@ -164,9 +164,99 @@ cohorts: {}
     snapshot = dataset.build_snapshot(
         cutoff=datetime(2025, 4, 1, tzinfo=timezone.utc),
         policy_path=policy,
-        oos_brier_skill_windows=(Decimal("0.01"),),
     )
     # One realized success has an observed rate of 100%; the predeclared base rate is 40%.
     assert snapshot.brier_skill_score is not None
     assert snapshot.mapping_version == "project-realization-v1"
     assert snapshot.policy_version == "test-v1"
+    assert snapshot.oos_brier_skill_windows == (Decimal("0.5555555555555555555555555556"),)
+    assert snapshot.dataset_hash == dataset.dataset_hash
+    assert snapshot.certificate().dataset_hash == dataset.dataset_hash
+
+
+def test_declared_dataset_rejects_orphan_outcome_rows():
+    payload = _payload(_ledger())
+    payload["ledger"]["outcomes"].append(
+        {**payload["ledger"]["outcomes"][0], "forecast_id": "MISSING"}
+    )
+    with pytest.raises(ValueError, match="orphan outcomes: MISSING"):
+        load_declared_calibration_dataset(payload, declaration=_declaration())
+
+
+def test_declared_dataset_applies_cohort_policy_overrides(tmp_path):
+    policy = tmp_path / "policy.yaml"
+    policy.write_text(
+        """version: test-v2
+defaults:
+  min_resolved_events: 1
+  min_companies: 1
+  min_quarters: 1
+  min_per_displayed_band: 1
+  min_oos_windows: 1
+  max_ece: 1
+  max_ambiguous_censored_rate: 1
+  fixed_bin_edges: [0, 0.5, 1]
+cohorts:
+  project_realization|90d:
+    min_resolved_events: 2
+""",
+        encoding="utf-8",
+    )
+    dataset = load_declared_calibration_dataset(
+        _payload(_ledger()), declaration=_declaration()
+    )
+    snapshot = dataset.build_snapshot(
+        cutoff=datetime(2025, 4, 1, tzinfo=timezone.utc), policy_path=policy
+    )
+    assert snapshot.status.value == "CALIBRATING"
+    assert "MIN_RESOLVED_EVENTS" in snapshot.gate_failures
+
+
+def test_declared_dataset_does_not_accept_caller_supplied_oos_scores(tmp_path):
+    policy = tmp_path / "policy.yaml"
+    policy.write_text(
+        """version: test-v1
+defaults: {}
+cohorts: {}
+""",
+        encoding="utf-8",
+    )
+    dataset = load_declared_calibration_dataset(
+        _payload(_ledger()), declaration=_declaration()
+    )
+    with pytest.raises(TypeError, match="oos_brier_skill_windows"):
+        dataset.build_snapshot(
+            cutoff=datetime(2025, 4, 1, tzinfo=timezone.utc),
+            policy_path=policy,
+            oos_brier_skill_windows=(Decimal("1"),),
+        )
+
+
+def test_dataset_hash_changes_snapshot_and_certificate_lineage(tmp_path):
+    policy = tmp_path / "policy.yaml"
+    policy.write_text(
+        """version: test-v1
+defaults:
+  min_resolved_events: 1
+  min_companies: 1
+  min_quarters: 1
+  min_per_displayed_band: 1
+  min_oos_windows: 1
+  max_ece: 1
+  max_ambiguous_censored_rate: 1
+cohorts: {}
+""",
+        encoding="utf-8",
+    )
+    first_payload = _payload(_ledger())
+    second_payload = _payload(_ledger())
+    second_payload["ledger"]["outcomes"][0]["rationale"] = "same result, corrected rationale"
+    first = load_declared_calibration_dataset(first_payload, declaration=_declaration())
+    second = load_declared_calibration_dataset(second_payload, declaration=_declaration())
+    cutoff = datetime(2025, 4, 1, tzinfo=timezone.utc)
+    first_snapshot = first.build_snapshot(cutoff=cutoff, policy_path=policy)
+    second_snapshot = second.build_snapshot(cutoff=cutoff, policy_path=policy)
+    assert first.dataset_hash != second.dataset_hash
+    assert first_snapshot.snapshot_hash != second_snapshot.snapshot_hash
+    assert first_snapshot.certificate().dataset_hash == first.dataset_hash
+    assert second_snapshot.certificate().dataset_hash == second.dataset_hash
