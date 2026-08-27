@@ -67,6 +67,19 @@ units:
     canonical_refs: [src/valuation_engine/control_plane.py, src/valuation_engine/orchestrator.py, src/valuation_engine/live_readiness.py, config/control_plane_stage_registry.yaml, config/live_primary_readiness.yaml, docs/CONTROL_PLANE_ARCHITECTURE.md, docs/LIVE_PRIMARY_READINESS.md]
     forbidden_effects: [perform_valuation_math, commit_assumption, bypass_audit]
 
+  - unit_id: REVISION_REQUEST_ORCHESTRATOR
+    unit_type: controller
+    implementation_status: implemented
+    stages: [GLOBAL]
+    purpose: Compile atomic user corrections into the smallest validated unit/file task graph, parallel waves, retry scope, and merge-readiness decision.
+    inputs: [user_revision_clauses, base_revision, unit_contract_registry, declared_read_write_sets, acceptance_criteria]
+    outputs: [revision_plan, parallel_waves, selected_units, skipped_units, retry_scope, merge_readiness, plan_hash]
+    consumers: [VALUATION_CONTROL_PLANE, FINAL_REPORT]
+    effect_types: [routing_effect, guardrail_effect, reporting_effect]
+    final_outputs: [delta_revalidation_plan, reduced_rework, artifact_freshness]
+    canonical_refs: [src/valuation_engine/revision_orchestration.py, tests/test_revision_orchestration.py, docs/CONTROL_PLANE_ARCHITECTURE.md, AGENTS.md, SKILL.md]
+    forbidden_effects: [direct_assumption_value, perform_valuation_math, unordered_overlapping_writes, stale_plan_reuse]
+
   - unit_id: INDUSTRY_DNA_ROUTER
     unit_type: router
     implementation_status: implemented

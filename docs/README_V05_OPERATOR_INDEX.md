@@ -117,6 +117,13 @@ Read/use:
 
 Use this layer before editing a scanner/gate/engine. It records inputs, outputs, downstream consumers, allowed effect classes, final-output reach, forbidden effects and canonical implementation references. `ModuleImpactTrace` remains run-specific actual truth; the Unit Contract Registry is static expected design truth.
 
+For a user correction, also read/use:
+
+- `src/valuation_engine/revision_orchestration.py` — atomic clauses, minimum unit selection, acyclic task waves, write-conflict blocking, descendant-only retry and merge-readiness audit
+- `tests/test_revision_orchestration.py` — report-only routing, valued-claim closure, parallel/write-conflict, cycle, retry and stale-plan regressions
+
+This maintenance plan is separate from the live valuation stage sequence. The Unit Contract graph scopes impact but is never copied into an execution DAG because feedback cycles are intentional.
+
 ## 12. How does a generic run build Coverage, Impact, Audit and Freeze automatically?
 Read/use:
 - `docs/GENERIC_RUNTIME_GOVERNANCE.md`

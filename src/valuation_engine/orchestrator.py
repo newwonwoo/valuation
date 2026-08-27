@@ -97,6 +97,10 @@ class ReportingContract:
     )
     decision_report_precedes_audit_appendix: bool = True
     technical_identifiers_collapsed: bool = True
+    immutable_versioned_report_required: bool = True
+    latest_manifest_required: bool = True
+    visible_artifact_id_required: bool = True
+    user_delivery_must_use_versioned_filename: bool = True
     brokerage_style_reference: str = "docs/KOREAN_BROKERAGE_REPORT_STYLE.md"
     brokerage_style_sample_count: int = 4
     brokerage_style_structural_only: bool = True
@@ -149,6 +153,15 @@ class ReportingContract:
             )
         ):
             raise ValueError("live report source-link requirements cannot be disabled")
+        if not all(
+            (
+                self.immutable_versioned_report_required,
+                self.latest_manifest_required,
+                self.visible_artifact_id_required,
+                self.user_delivery_must_use_versioned_filename,
+            )
+        ):
+            raise ValueError("report artifact freshness requirements cannot be disabled")
         if not all(
             (
                 self.llm_insight_separate_section_required,
@@ -351,6 +364,9 @@ def load_reporting_contract(path: str | Path) -> ReportingContract:
     source_links = raw.get("source_link_policy")
     if not isinstance(source_links, dict):
         raise ValueError("reporting contract requires source_link_policy")
+    artifact_policy = raw.get("artifact_freshness_policy")
+    if not isinstance(artifact_policy, dict):
+        raise ValueError("reporting contract requires artifact_freshness_policy")
     llm_policy = raw.get("llm_insight_policy")
     if not isinstance(llm_policy, dict):
         raise ValueError("reporting contract requires llm_insight_policy")
@@ -404,6 +420,18 @@ def load_reporting_contract(path: str | Path) -> ReportingContract:
         ),
         non_http_source_refs_forbidden_in_live_reports=bool(
             source_links.get("non_http_source_refs_forbidden_in_live_reports", False)
+        ),
+        immutable_versioned_report_required=bool(
+            artifact_policy.get("immutable_versioned_report_required", False)
+        ),
+        latest_manifest_required=bool(
+            artifact_policy.get("latest_manifest_required", False)
+        ),
+        visible_artifact_id_required=bool(
+            artifact_policy.get("visible_artifact_id_required", False)
+        ),
+        user_delivery_must_use_versioned_filename=bool(
+            artifact_policy.get("user_delivery_must_use_versioned_filename", False)
         ),
         llm_insight_separate_section_required=bool(
             llm_policy.get("separate_section_required", False)

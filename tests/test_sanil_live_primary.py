@@ -513,8 +513,19 @@ def test_sanil_brokerage_report_integrates_august_27_update(tmp_path):
     assert "검증 상태" not in html_report
     assert "프리즈" not in html_report
     assert "INTRINSIC_VALUE_FREEZE" not in html_report
-    assert "SANIL_062040_LIVE_PRIMARY_REPORT.md" in html_report
-    assert all(visual.filename in html_report for visual in visuals)
+    artifact_id, _, versioned_markdown_name = module.report_artifact_bundle(
+        report,
+        html_report,
+    )
+    assert artifact_id in html_report
+    assert versioned_markdown_name in html_report
+    assert f"PRISM_062040_01_summary_{artifact_id.rsplit('-', 1)[-1]}.svg" in html_report
+    assert f"PRISM_062040_02_assumptions_{artifact_id.rsplit('-', 1)[-1]}.svg" in html_report
+    visual_hash = artifact_id.rsplit("-", 1)[-1]
+    assert all(
+        visual.filename.replace(".svg", f"_{visual_hash}.svg") in html_report
+        for visual in visuals
+    )
 
 
 def test_sanil_config_requires_driver_dcf_and_capacity_core(tmp_path):

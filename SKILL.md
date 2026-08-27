@@ -64,6 +64,16 @@ If a blocking issue remains after round three or a blocking audit fails, return 
 - Fail report generation when a `VALUED` headline has no active Evidence/Bridge/Assumption mapping or when its revised intrinsic value equals the prior run.
 - Do not force a value change from policy intent alone. A policy claim becomes `VALUED` only when company exposure and a causal transmission path are separately evidenced; otherwise the correct outcome is `REFERENCE_ONLY` and no valuation-changing headline.
 
+### Revision Request Efficiency Gate
+
+- Convert each user correction into atomic clauses with the requested outcome, affected Unit Contract roots, read/write set and observable acceptance criteria. Do not call unrelated research or valuation units.
+- Use the Unit Contract graph only to identify impact. Build a separate acyclic task graph for execution because the impact graph intentionally permits feedback cycles.
+- Run tasks in parallel only when they have no dependency and disjoint write sets. Same-file or same-artifact writers require one owner or an explicit sequential dependency.
+- Preserve the sequence `Evidence → Bridge → Compiler/model → report/artifacts → targeted validation → full regression → publish/merge`. Report-only copy/layout changes stop at the reporter unless they add a material valuation claim; a `VALUED` claim automatically requires the full model-to-report path.
+- When a task fails or a clause changes, rerun only that task and its descendants. Reuse independent completed work only when the base revision and `plan_hash` still match; any scope expansion creates a new plan.
+- Block merge for an unmapped clause, missing acceptance validator, dependency cycle, unordered write overlap, unplanned file change, stale plan result or generated artifact that predates its upstream model.
+- Deliver a hash-bound immutable report filename containing the as-of date and reference intrinsic value. A mutable latest alias is automation-only and must never be the user-facing download link.
+
 ## Industry Knowledge & Signal Intelligence v0.5.2
 
 - Freeze `industry_knowledge_snapshot_hash`, `source_watch_snapshot_hash`, taxonomy/module versions and routing evidence for every valuation run. Later reports cannot silently mutate an in-progress run.

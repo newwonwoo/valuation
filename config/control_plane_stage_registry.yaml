@@ -72,6 +72,11 @@ reporting_contract:
     direct_http_links_required: true
     claim_source_mapping_required: true
     non_http_source_refs_forbidden_in_live_reports: true
+  artifact_freshness_policy:
+    immutable_versioned_report_required: true
+    latest_manifest_required: true
+    visible_artifact_id_required: true
+    user_delivery_must_use_versioned_filename: true
   llm_insight_policy:
     separate_section_required: true
     max_chars: 1000
@@ -107,6 +112,32 @@ reporting_contract:
         - 한 문장 결론
         - 투자포인트
         - 판단 변경 조건
+revision_request_contract:
+  contract_id: prism_revision_request_delta/v1
+  atomic_clause_fields:
+    - desired_outcome
+    - affected_units
+    - read_set
+    - write_set
+    - acceptance_criteria
+  parallel_when_all:
+    - no_dependency
+    - disjoint_write_sets
+  ordered_barriers:
+    - evidence_before_bridge
+    - bridge_before_compiler_and_model
+    - model_before_report_and_generated_artifacts
+    - targeted_validation_before_full_regression
+    - full_regression_before_publish_and_merge
+  fail_closed_on:
+    - unmapped_clause
+    - missing_validator
+    - execution_dependency_cycle
+    - unordered_write_overlap
+    - unplanned_write
+    - stale_base_revision_or_plan_hash
+    - artifact_older_than_upstream_model
+  retry_scope: failed_task_and_descendants_only
 phases:
   I_OPENING:
     - COMPANY_RESOLUTION
