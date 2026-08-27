@@ -56,19 +56,6 @@ def patch_sanil_test() -> None:
         raise RuntimeError("Sanil Broker quarantine regression marker not found")
 
 
-def patch_workflow() -> None:
-    path = ROOT / ".github" / "workflows" / "sanil-live-primary.yml"
-    text = path.read_text(encoding="utf-8")
-    needle = "      - 'src/valuation_engine/broker_runtime.py'\n"
-    addition = needle + "      - 'src/valuation_engine/broker_runtime_v2.py'\n"
-    if "broker_runtime_v2.py" not in text:
-        count = text.count(needle)
-        if count != 2:
-            raise RuntimeError(f"expected two Broker workflow path markers, got {count}")
-        text = text.replace(needle, addition)
-        path.write_text(text, encoding="utf-8")
-
-
 def patch_docs() -> None:
     path = ROOT / "docs" / "BROKER_RESEARCH_LAYER_V1.md"
     text = path.read_text(encoding="utf-8")
@@ -83,7 +70,6 @@ def main() -> int:
     patch_live_runtime()
     patch_sanil()
     patch_sanil_test()
-    patch_workflow()
     patch_docs()
     return 0
 
