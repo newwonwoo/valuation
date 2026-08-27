@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict, is_dataclass
+from dataclasses import asdict, is_dataclass, replace
 from decimal import Decimal
 from enum import Enum
 from datetime import date, datetime
@@ -21,7 +21,12 @@ from .control_plane import (
     StageStatus,
     authorize_post_freeze,
 )
-from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
+from .orchestrator import (
+    ControlledRunResult,
+    OrchestratorContext,
+    StageAdapter,
+    StageExecutionResult,
+)
 from .post_freeze import MarketComparisonBundle, StreetComparisonBundle
 from .probability_forecasting import (
     ProbabilityForecastDraft,
@@ -90,6 +95,8 @@ def _street_method_label_ko(value: str) -> str:
         return "주가수익비율법"
     if normalized == "per-based target framework":
         return "주가수익비율 기반 목표가"
+    if normalized == "broker target-price framework":
+        return "증권사 목표가 산정 방식"
     match = re.fullmatch(r"(\d{4})e per ([0-9.]+)x", normalized)
     if match:
         return f"예상 주가수익비율 {match.group(2)}배"
@@ -353,6 +360,8 @@ def render_generic_report(
             f"{scenario_label_ko(item.scenario_id)} {_probability_percent(item.displayed_probability)}"
             for item in probability_assessment.rows
         ) + " (미보정·기대값 미적용)"
+    reference_label = "평가 완료 사업부 소계" if partial else "기준 내재가치"
+    range_label = "평가 완료 사업부 범위" if partial else "가치평가 범위"
     lines = [
         f"# {company} 투자보고서",
         "",
@@ -362,8 +371,8 @@ def render_generic_report(
         "| --- | --- |",
         f"| **투자판단** | 판단 유보 — {entry_posture} |",
         f"| **현재가** | {current_price} |",
-        f"| **기준 내재가치** | {reference_value} |",
-        f"| **가치평가 범위** | {value_range} |",
+        f"| **{reference_label}** | {reference_value} |",
+        f"| **{range_label}** | {value_range} |",
         f"| **시나리오 가능성** | {probability_summary} |",
         f"| **증권사 참고값** | {street_reference} |",
         "",
@@ -713,6 +722,40 @@ def _rollback_exact_path(root: Path, target_value: object, expected_relative: Pa
         shutil.rmtree(resolved_target)
     else:
         resolved_target.unlink(missing_ok=True)
+
+
+def finalize_live_primary_run_artifacts(
+    result: ControlledRunResult,
+    *,
+    state_root: str | Path,
+    stage_registry_path: str | Path,
+) -> ControlledRunResult:
+    """Finalize reader and trace artifacts only after all 33 stages are terminal."""
+    if result.blocked_reasons or result.execution_mode is not ExecutionMode.LIVE_PRIMARY:
+        return result
+    if not result.stage_traces:
+        return result
+    if result.stage_traces[-1].stage != "FINAL_REPORT":
+        raise ValueError("completed LIVE_PRIMARY run requires a terminal FINAL_REPORT trace")
+    from .report_form import render_controlled_run_report
+
+    full_report = render_controlled_run_report(
+        result,
+        stage_registry_path=stage_registry_path,
+    )
+    ticker = result.data.get("ticker")
+    if not isinstance(ticker, str) or not ticker:
+        raise ValueError("completed LIVE_PRIMARY run requires ticker for final persistence")
+    StateStore(state_root).finalize_completed_run_artifacts(
+        ticker=ticker,
+        run_id=result.run_id,
+        final_report=full_report,
+        control_plane_trace=_jsonable(result.stage_traces),
+    )
+    data = dict(result.data)
+    data["saved_report_markdown"] = full_report
+    data["final_report"] = full_report
+    return replace(result, data=data)
 
 
 def save_state_adapter(

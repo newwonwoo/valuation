@@ -11,7 +11,7 @@
 | **기준 내재가치** | 168,223원 · 현재가 대비 -4.9% |
 | **가치평가 범위** | 하방 119,833원 · 기준 168,223원 · 상방 217,104원 |
 | **시나리오 가능성** | 하방 30% · 기준 50% · 상방 20% · 미보정 분석가 사전확률, 기대값 미적용 |
-| **증권사 참고값** | 280,000원 (2건, 가치평가 확정 후 참고) |
+| **증권사 참고값** | 260,000원 (3건, 가치평가 확정 후 참고) |
 | **보고서 성격** | 공시·원문 기반 예비 투자분석 |
 
 ### 한 문장 결론
@@ -70,21 +70,22 @@
 - 위 예측은 분석 당시 값과 이후 변경 이력을 함께 저장하며, 사후 공시를 보고 과거 확률을 다시 쓰지 않습니다.
 
 ## 증권사·시장 비교
-- **증권사 평균 목표가:** 280,000원 (2건)
-- PRISM 기준 내재가치는 증권사 평균 목표가보다 39.9% 낮습니다.
+- **증권사 평균 목표가:** 260,000원 (3건)
+- PRISM 기준 내재가치는 증권사 평균 목표가보다 35.3% 낮습니다.
 
 ### 증권사별 목표가와 PRISM의 차이
 
 | 증권사 | 목표가 | 적용 기준 | PRISM 기준가 대비 |
 | --- | ---: | --- | ---: |
 | 미래에셋증권 | 250,000원 | 2028년 기준 · 주가수익비율 기반 목표가 | +48.6% |
+| IBK투자증권 | 220,000원 | 2027년 기준 · 증권사 목표가 산정 방식 | +30.8% |
 | 신한투자증권 | 310,000원 | 2027년 기준 · 예상 주가수익비율 35배 | +84.3% |
 
 ### 왜 차이가 나는가
 
-- **평가방법:** PRISM은 핵심동인 현금흐름할인법으로 현금흐름을 현재가치화하지만, 증권사는 미래 이익에 목표 주가수익비율을 적용합니다.
-- **기준시점:** 미래에셋증권: 2028년 주가수익비율 기반 목표가 · 신한투자증권: 2027년 예상 주가수익비율 35배. 평가 기준과 기준연도가 다르므로 목표가를 PRISM 기준가와 동일한 숫자로 볼 수 없습니다.
-- **증권사 간 차이:** 신한투자증권 목표가는 미래에셋증권보다 60,000원 (24.0%) 높습니다. 두 보고서의 기준연도와 평가방법이 달라 목표가 차이를 단순 평균으로 해석하면 안 됩니다.
+- **평가방법:** PRISM은 핵심동인 현금흐름할인법을 사용하며, 증권사별 평가방법은 표와 같습니다. 현금흐름·이익·할인율·적용 배수의 기준이 다르면 목표가도 달라집니다.
+- **기준시점:** 미래에셋증권: 2028년 주가수익비율 기반 목표가 · IBK투자증권: 2027년 증권사 목표가 산정 방식 · 신한투자증권: 2027년 예상 주가수익비율 35배. 평가 기준과 기준연도가 다르므로 목표가를 PRISM 기준가와 동일한 숫자로 볼 수 없습니다.
+- **증권사 간 차이:** 신한투자증권 목표가는 IBK투자증권보다 90,000원 (40.9%) 높습니다. 두 보고서의 기준연도와 평가방법이 달라 목표가 차이를 단순 평균으로 해석하면 안 됩니다.
 - **증설 처리:** PRISM은 공시된 자본적지출과 가동 정상화 경로를 현금흐름에 직접 반영하고, 정확한 추가 생산능력이 미공시된 부분은 확정 이익으로 앞당기지 않았습니다.
 - **분해 한계:** 현재 확보된 증권사 자료에는 목표가·평가방법·기준연도는 있으나 모든 세부 이익 추정치가 구조화되어 있지 않아, 차이를 이익 전망과 적용 배수로 완전히 분해할 수는 없습니다.
 - **해석:** 증권사 목표가를 지지하려면 PRISM보다 낙관적인 미래 이익·현금흐름이 실현되거나 목표 배수가 유지되어야 합니다. 차이 자체가 계산 오류를 뜻하지는 않습니다.
@@ -112,19 +113,45 @@
 
 ## 정보 출처 — 원문 바로 확인
 - **초고압 변압기 생산용 부동산 양수계약** — 근거 7개: 초고압 부동산 자산 비율, 기존 생산능력 포함 여부, 확정 증설 자본적지출, 초고압 부동산 계약금액, 증설 부지 통제, 증설 가동 시점 외 1개 유형 (기준일 2026-08-26) [원문 바로 열기](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660)
+<details>
+<summary>이 원문에 연결된 근거 7개 보기</summary>
+
+- `E:SANIL:UHV:asset_ratio` · `E:SANIL:UHV:baseline_inclusion` · `E:SANIL:UHV:capex_committed` · `E:SANIL:UHV:contract_amount` · `E:SANIL:UHV:land_control` · `E:SANIL:UHV:ramp_boundary` · `E:SANIL:UHV:self_funded`
+
+</details>
 - **베타 입력값** — 베타 입력 출처 [원문 바로 열기](https://finance.naver.com/)
 - **현재 시장가격** — 시장가격 기준일 2026-08-26 [원문 바로 열기](https://finance.naver.com/item/main.naver?code=062040)
 - **산일전기 분석가 가치평가 가정** — 근거 54개: 가치평가 모형 입력값 (기준일 2026-08-26) [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml)
-- **산일전기 위험 입력 출처 등록부 / 가중평균자본비용 입력값 / 베타 입력값** — 가중평균자본비용 입력 출처; 베타 비교군 선정 근거 (기준일 2026-08-26); 베타 입력 출처 [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md)
+<details>
+<summary>이 원문에 연결된 근거 54개 보기</summary>
+
+- `E:SANIL:model_bull_diluted_shares` · `E:SANIL:model_bull_ev_adjustment` · `E:SANIL:model_bull_expansion_capex` · `E:SANIL:model_bull_fcff_year_1` · `E:SANIL:model_bull_fcff_year_2` · `E:SANIL:model_bull_fcff_year_3` · `E:SANIL:model_bull_fcff_year_4` · `E:SANIL:model_bull_fcff_year_5` · `E:SANIL:model_bull_ownership` · `E:SANIL:model_bull_terminal_growth` · `E:SANIL:model_bull_terminal_roic` · `E:SANIL:model_bull_uhv_fcff_year_1` · `E:SANIL:model_bull_uhv_fcff_year_2` · `E:SANIL:model_bull_uhv_fcff_year_3` · `E:SANIL:model_bull_uhv_fcff_year_4` · `E:SANIL:model_bull_uhv_fcff_year_5` · `E:SANIL:model_bull_uhv_property_capex` · `E:SANIL:model_bull_uhv_ramp_years` · `E:SANIL:model_core_diluted_shares` · `E:SANIL:model_core_ev_adjustment` · `E:SANIL:model_core_expansion_capex` · `E:SANIL:model_core_fcff_year_1` · `E:SANIL:model_core_fcff_year_2` · `E:SANIL:model_core_fcff_year_3` · `E:SANIL:model_core_fcff_year_4` · `E:SANIL:model_core_fcff_year_5` · `E:SANIL:model_core_ownership` · `E:SANIL:model_core_terminal_growth` · `E:SANIL:model_core_terminal_roic` · `E:SANIL:model_core_uhv_fcff_year_1` · `E:SANIL:model_core_uhv_fcff_year_2` · `E:SANIL:model_core_uhv_fcff_year_3` · `E:SANIL:model_core_uhv_fcff_year_4` · `E:SANIL:model_core_uhv_fcff_year_5` · `E:SANIL:model_core_uhv_property_capex` · `E:SANIL:model_core_uhv_ramp_years` · `E:SANIL:model_down_diluted_shares` · `E:SANIL:model_down_ev_adjustment` · `E:SANIL:model_down_expansion_capex` · `E:SANIL:model_down_fcff_year_1` · `E:SANIL:model_down_fcff_year_2` · `E:SANIL:model_down_fcff_year_3` · `E:SANIL:model_down_fcff_year_4` · `E:SANIL:model_down_fcff_year_5` · `E:SANIL:model_down_ownership` · `E:SANIL:model_down_terminal_growth` · `E:SANIL:model_down_terminal_roic` · `E:SANIL:model_down_uhv_fcff_year_1` · `E:SANIL:model_down_uhv_fcff_year_2` · `E:SANIL:model_down_uhv_fcff_year_3` · `E:SANIL:model_down_uhv_fcff_year_4` · `E:SANIL:model_down_uhv_fcff_year_5` · `E:SANIL:model_down_uhv_property_capex` · `E:SANIL:model_down_uhv_ramp_years`
+
+</details>
+- **산일전기 위험 입력 출처 등록부 / 가중평균자본비용 입력값 / 베타 입력값** — 가중평균자본비용 입력 출처; 근거 E:SANIL:beta_selection_L1_BROAD_SECTOR · 베타 비교군 선정 근거 (기준일 2026-08-26); 근거 E:SANIL:beta_selection_L2_INDUSTRY · 베타 비교군 선정 근거 (기준일 2026-08-26); 근거 E:SANIL:beta_selection_L3_RISK_DRIVER_SUBINDUSTRY · 베타 비교군 선정 근거 (기준일 2026-08-26); 근거 E:SANIL:beta_selection_L4_ECONOMIC_TWINS · 베타 비교군 선정 근거 (기준일 2026-08-26); 베타 입력 출처 [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md)
 - **산일전기 2025년 사업보고서 / 가중평균자본비용 입력값 / 기업 식별정보 / 베타 입력값** — 근거 26개: 평균판매가격, 수주잔고의 매출 전환, 수주·매출 비율, 수주 취소율, 수주 취소 조건, 현금 외 20개 유형 (기준일 2024-01-01, 2025-12-31); 가중평균자본비용 입력 출처; 기업 식별 확인; 베타 입력 출처 [원문 바로 열기](https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm)
+<details>
+<summary>이 원문에 연결된 근거 26개 보기</summary>
+
+- `E:SANIL:asp` · `E:SANIL:backlog_conversion` · `E:SANIL:book_to_bill` · `E:SANIL:cancellation_rate` · `E:SANIL:cancellation_terms` · `E:SANIL:cash` · `E:SANIL:contract_liabilities` · `E:SANIL:debt` · `E:SANIL:effective_capacity` · `E:SANIL:expansion_capacity_committed` · `E:SANIL:expansion_capex` · `E:SANIL:expansion_capex_committed` · `E:SANIL:expansion_equipment_commitment` · `E:SANIL:expansion_land_control` · `E:SANIL:expansion_site_area` · `E:SANIL:lead_time` · `E:SANIL:mix` · `E:SANIL:nameplate_capacity` · `E:SANIL:net_income` · `E:SANIL:operating_profit` · `E:SANIL:orders` · `E:SANIL:revenue` · `E:SANIL:revenue_recognition` · `E:SANIL:unit_cost` · `E:SANIL:utilization` · `E:SANIL:yield`
+
+</details>
+- **증권사 자료 탐색** — 가치평가 입력과 분리한 사실 탐색·교차확인 자료 [원문 바로 열기](https://securities.miraeasset.com/bbs/board/message/list.do?categoryId=1800&searchStartYear=2026&searchStartMonth=07&searchStartDay=16&searchEndYear=2026&searchEndMonth=07&searchEndDay=16)
 - **증권사 자료 탐색 / 증권사: 미래에셋증권** — 가치평가 입력과 분리한 사실 탐색·교차확인 자료; 목표가 발표일 2026-08-07 [원문 바로 열기](https://securities.miraeasset.com/bbs/board/message/view.do?categoryId=1800&messageId=2341906)
 - **산일전기 2026년 2분기 기업설명자료** — 근거 8개: 수주잔고, 기존 생산능력 포함 여부, 증설 취소 여부, 증설 가동 시점, 2026년 상반기 순이익, 진행 중 증설 부재 여부 외 2개 유형 (기준일 2026-06-30) [원문 바로 열기](https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002&mode=view&page=1&s_cate=&s_keyword=&s_type=)
-- **증권사: 신한투자증권** — 목표가 발표일 2026-08-11 [원문 바로 열기](https://www.yna.co.kr/amp/view/AKR20260811028700008)
+<details>
+<summary>이 원문에 연결된 근거 8개 보기</summary>
+
+- `E:SANIL:backlog` · `E:SANIL:expansion_baseline_inclusion` · `E:SANIL:expansion_cancelled` · `E:SANIL:expansion_ramp_date` · `E:SANIL:net_income_h1_2026` · `E:SANIL:no_active_capacity_expansion` · `E:SANIL:operating_profit_h1_2026` · `E:SANIL:revenue_h1_2026`
+
+</details>
+- **증권사 자료 탐색 / 증권사: 신한투자증권** — 가치평가 입력과 분리한 사실 탐색·교차확인 자료; 목표가 발표일 2026-08-11 [원문 바로 열기](https://www.yna.co.kr/amp/view/AKR20260811028700008)
+- **증권사 자료 탐색 / 증권사: IBK투자증권** — 가치평가 입력과 분리한 사실 탐색·교차확인 자료; 목표가 발표일 2026-08-10 [원문 바로 열기](https://www.yna.co.kr/view/AKR20260810017900008)
 - 전체 근거 식별자·지표·기준일 연결 내역은 별도 분석 기록에 보관됩니다.
 
 ## 분석 범위와 유의사항
 - **평가범위:** 전체 기업 내재가치
-- **계산 확인:** 자동 오류 점검 29개 통과 · 분석 원칙 27/27개 충족
+- **계산 확인:** 자동 오류 점검 31개 통과 · 분석 원칙 27/27개 충족
 - 회사 공시 사실, 분석가 가정, 인공지능 연결 인사이트를 구분해 표시했습니다.
 - 증권사 목표가와 현재가는 가치평가를 마친 뒤 참고했으며, 앞서 계산한 가정을 바꾸는 데 사용하지 않았습니다.
 
@@ -179,14 +206,14 @@
 
 - 실행 식별자: `SANIL-062040-20260826`
 - 실행 모드: `live_primary`
-- 작성 확인 해시: `5484dad32d04b706bc5911d8b4b803562b374df0eec3d7317edeafd3ce921ed4`
+- 작성 확인 해시: `81af92d6bd97586e54190f2ee04e3257a8fb336aa75e79d43dc4e2525815c457`
 - 증거 해시: `b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0`
 - 가정 해시: `6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed`
 - 시나리오 해시: `16bdd1d42c1cef90abae55d0fe1872fd729bdc49b86d873f968bc3ba55717694`
 - 가치평가 해시: `f3c586a7786ca8691ae343dd02a70d9d093b8c0853622634a48b7ca8d7c08492`
-- 오류 점검 해시: `7526decadfa3282335509009aa9faec346655d84e13192756ab67c111542f1db`
-- 가치평가 확정 해시: `a1de2ff479af4f8b748d4e49fd9f87d0b9bebe7a27c89f1fe0c4d944daa38f10`
-- 보조 결속정보: 베타 `567700b4b5094f7aaa61cc030d0c8758ed146e9a38a3be4f4d56c5999f0a121e` · 가중평균자본비용 `2beebb32d08c7f6e354a0771edba24e0f108aea78e9ba175b0b59de16257325b` · 생산능력 평가 `30990a2dd5985f766892ce206687c4aa4368e6a59dfef0da6f0f777939cb4543` · 생산능력 반영 `cc91fcc67ce9685c60520f028185caac90360ed900e1acaf0c0dc3cf60ea11b7` · 생산능력 시나리오 `28e27a5c5fd1659ccd718165d846e0ef53c67022a135fe1ac84e86c9123d7683` · 생산능력 가치평가 `7356323a77f47efb13c2dc00feb918515da43180f9096aaff252ea1402f72b2d` · 생산능력 주가수익비율 `2fde85da7644231967ea95f2d6af39a66cff72e96b70f0d3cb0dfedd3695c9e0` · 생산능력 정합성 `e6fffcfc4c0f4b7a442ac18e72d5eec96e201be11331abd7a6ebed9b793af6fb` · 생산능력 오류 점검 `c57b0531cf5655cd0828cdd3a7288391b72a642a1d838678961d526711999bcd` · 사전 증권사 조사자료 `ce7d809ba2f9e2a91a5fbb3604dbb80fbe7af2b2694f3195ce549cdef95991eb` · 증권사 자료 확인 `a7c344017374899fdbefb684ba0facfde4b5ed7a6caaa2ac29f330f6233ab9f6`
+- 오류 점검 해시: `3e336ef39dbe0e5a69ad722d1cdf7ade3815ccd5ab184ba33e6b0332d5d9d0f7`
+- 가치평가 확정 해시: `7b48eb1a792a21aef688fc176a3676048afd43b4d7b330ababf0d5f7cd19f276`
+- 보조 결속정보: 베타 `567700b4b5094f7aaa61cc030d0c8758ed146e9a38a3be4f4d56c5999f0a121e` · 가중평균자본비용 `2beebb32d08c7f6e354a0771edba24e0f108aea78e9ba175b0b59de16257325b` · 생산능력 평가 `30990a2dd5985f766892ce206687c4aa4368e6a59dfef0da6f0f777939cb4543` · 생산능력 반영 `cc91fcc67ce9685c60520f028185caac90360ed900e1acaf0c0dc3cf60ea11b7` · 생산능력 시나리오 `28e27a5c5fd1659ccd718165d846e0ef53c67022a135fe1ac84e86c9123d7683` · 생산능력 가치평가 `7356323a77f47efb13c2dc00feb918515da43180f9096aaff252ea1402f72b2d` · 생산능력 주가수익비율 `2fde85da7644231967ea95f2d6af39a66cff72e96b70f0d3cb0dfedd3695c9e0` · 생산능력 정합성 `e6fffcfc4c0f4b7a442ac18e72d5eec96e201be11331abd7a6ebed9b793af6fb` · 생산능력 오류 점검 `c57b0531cf5655cd0828cdd3a7288391b72a642a1d838678961d526711999bcd` · 사전 증권사 조사자료 `417db8265b01cc7c16da4ae303db11c8403af2a3389cab70cece2a36571e6ed5` · 증권사 자료 확인 `8685e012d2049a35d5eeec7e21185a36af163a0da06db11b05edd3c1af2baed2`
 - 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=warning · 11 `UPSTREAM_FUNDING_SCAN`=pass · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=pass · 19 `WACC_VALIDATION`=pass · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=pass · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=pass · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
 
 </details>

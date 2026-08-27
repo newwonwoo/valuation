@@ -73,3 +73,14 @@ Calibration changes *weight*, never truth status. A historically accurate analys
 ## Copyright / entitlement
 
 Public research indices may be indexed for metadata. Raw text/PDF storage obeys the publisher's terms. Client-only, entitled, redacted or third-party-distributed reports are stored only as metadata plus user-authorized derived facts in private state. Never bulk mirror sell-side PDFs into a public repository.
+
+
+## V2 runtime hardening
+
+Canonical LIVE_PRIMARY broker use is fail-closed:
+
+- Target-company forecasts, target prices, ratings, target multiples and consensus are not merely hidden from LLM context; they must not exist in pre-Freeze orchestrator state. They enter only through `STREET_REFERENCE_LOAD` after `INTRINSIC_VALUE_FREEZE`.
+- Every target-company factual broker lead requires at least one typed `(segment, metric)` primary-verification row. Free-text verification requests alone are insufficient.
+- A broker-discovered metric is considered verified only by active company-primary Evidence (`REALIZED_OR_FILING` or `COMPANY_OFFICIAL_PLAN`), with the satisfying Evidence IDs bound into the Broker Research audit. Analyst underwriting and market-data rows cannot satisfy this gate.
+- `checked_at` and every broker `report_date` must be on or before the frozen run `data_cutoff`; later reports hard-fail to prevent look-ahead bias.
+- Broker mechanism context and verification leads are merged into `ROCKET_INSIGHT_SCAN`, while broker claim IDs and report URLs remain forbidden as direct intrinsic-assumption Evidence.

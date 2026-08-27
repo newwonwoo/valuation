@@ -70,6 +70,12 @@
 
 ## 정보 출처 — 원문 바로 확인
 - **고정 공시 시험자료 / 기업 식별정보 / 증권사: 증권사 A / 증권사: 증권사 B / 현재 시장가격** — 근거 8개: 기준 가격, 생산능력, 현금원가, 원가곡선상 위치, 재고, 생산량 외 2개 유형 (기준일 2026-06-30); 기업 식별 확인; 목표가 발표일 2026-08-01; 목표가 발표일 2026-08-05; 시장가격 기준일 2026-08-23 [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/tests/test_full_live_primary_runtime.py)
+<details>
+<summary>이 원문에 연결된 근거 8개 보기</summary>
+
+- `E:core:benchmark_price` · `E:core:capacity` · `E:core:cash_cost` · `E:core:cost_curve_position` · `E:core:inventory` · `E:core:production` · `E:core:realized_price` · `E:core:utilization`
+
+</details>
 - 전체 근거 식별자·지표·기준일 연결 내역은 별도 분석 기록에 보관됩니다.
 
 ## 분석 범위와 유의사항

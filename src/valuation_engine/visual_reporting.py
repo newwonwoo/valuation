@@ -9,7 +9,7 @@ from typing import Any
 
 from .context_strength_reporting import resolve_context_strength_linkage
 from .source_reporting import build_source_link_index
-from .valuation_execution import GenericValuationResult
+from .valuation_execution import GenericValuationResult, IntrinsicValuationScope
 
 
 _SAFE_FILE_PART = re.compile(r"[^A-Za-z0-9._-]+")
@@ -162,6 +162,7 @@ def _summary_card(data: dict[str, Any], filename: str) -> ReportVisual:
     valuation = data.get("generic_valuation_result")
     if not isinstance(valuation, GenericValuationResult):
         raise ValueError("최종 요약 이미지에는 GenericValuationResult가 필요합니다")
+    partial = valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
 
     parts = [
         _rect(0, 0, _CARD_WIDTH, _CARD_HEIGHT, fill="#F3F0E8", radius=0),
@@ -213,7 +214,14 @@ def _summary_card(data: dict[str, Any], filename: str) -> ReportVisual:
     y = max(y + 5, 650)
     parts.extend(
         (
-            _svg_text("결정론적 가치평가 결과", x=70, y=y, size=32, weight=800, fill="#102D3E"),
+            _svg_text(
+                "평가 완료 사업부 소계" if partial else "결정론적 가치평가 결과",
+                x=70,
+                y=y,
+                size=32,
+                weight=800,
+                fill="#102D3E",
+            ),
             _svg_text("확률가중 전 개별 시나리오", x=1090, y=y, size=20, fill="#607582", anchor="end"),
         )
     )

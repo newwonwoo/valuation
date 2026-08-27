@@ -10,14 +10,24 @@ from .street import StreetResearchReport
 
 
 _SENSITIVE_QUERY_KEYS = {
+    "auth",
+    "authorization",
     "api_key",
     "apikey",
+    "awsaccesskeyid",
     "crtfc_key",
     "access_token",
     "refresh_token",
+    "sig",
+    "signature",
     "token",
     "password",
     "secret",
+    "x-amz-credential",
+    "x-amz-security-token",
+    "x-amz-signature",
+    "x-goog-credential",
+    "x-goog-signature",
 }
 
 
@@ -160,6 +170,10 @@ def render_source_link_section(links: tuple[SourceLink, ...]) -> tuple[str, ...]
             row for row in item.coverage if not row.startswith("근거 ")
         )
         if len(evidence_rows) > 6:
+            evidence_ids = tuple(
+                row.split(": ", 1)[0].removeprefix("근거 ")
+                for row in evidence_rows
+            )
             metrics = tuple(dict.fromkeys(
                 metric_label_ko(
                     row.split(": ", 1)[1].split(" (기준일 ", 1)[0]
@@ -183,6 +197,7 @@ def render_source_link_section(links: tuple[SourceLink, ...]) -> tuple[str, ...]
         else:
             coverage = tuple(dict.fromkeys(
                 (
+                    f"근거 {row.split(': ', 1)[0].removeprefix('근거 ')} · "
                     f"{metric_label_ko(row.split(': ', 1)[1].split(' (기준일 ', 1)[0])} "
                     f"(기준일 {row.rsplit(' (기준일 ', 1)[1].rstrip(')')})"
                 )
@@ -194,6 +209,15 @@ def render_source_link_section(links: tuple[SourceLink, ...]) -> tuple[str, ...]
             f"- **{' / '.join(identifier_label_ko(label) for label in item.labels)}** — {'; '.join(coverage)} "
             f"[원문 바로 열기]({item.url})"
         )
+        if len(evidence_rows) > 6:
+            lines.extend((
+                "<details>",
+                f"<summary>이 원문에 연결된 근거 {len(evidence_ids)}개 보기</summary>",
+                "",
+                "- " + " · ".join(f"`{evidence_id}`" for evidence_id in evidence_ids),
+                "",
+                "</details>",
+            ))
     lines.append(
         "- 전체 근거 식별자·지표·기준일 연결 내역은 별도 분석 기록에 보관됩니다."
     )

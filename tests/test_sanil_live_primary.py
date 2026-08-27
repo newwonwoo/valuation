@@ -1,5 +1,6 @@
 from pathlib import Path
 from decimal import Decimal
+import json
 
 from valuation_engine.control_plane import StageStatus
 from valuation_engine.records import EvidenceSourceLayer
@@ -249,18 +250,44 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert result.data["capacity_audit_passed"]
     assert result.data["broker_research_audit_passed"]
     broker_result = result.data["broker_research_prefreeze_result"]
-    assert tuple(
+    primary_claim_ids = tuple(
         item.claim_id for item in broker_result.primary_verification_claims
-    ) == (
+    )
+    assert primary_claim_ids == (
         "B:SANIL:MIRAE:2Q26_PRIMARY_LEADS",
         "B:SANIL:MIRAE:UHV_PRIMARY_LEADS",
+        "B:SANIL:IBK:2Q26_PRIMARY_LEADS",
+        "B:SANIL:SHINHAN:ORDER_PRIMARY_LEADS",
     )
-    assert tuple(item.claim_id for item in broker_result.quarantined_claims) == (
-        "B:SANIL:MIRAE:FORWARD_FORECAST",
-        "B:SANIL:MIRAE:TARGET_PRICE",
+    assert tuple(item.claim_id for item in broker_result.context_claims) == (
+        "B:SANIL:MIRAE:POWER_SOLUTION_CONTEXT",
+    )
+    # Street forecasts/targets are not merely quarantined from the LLM; they are
+    # absent from the entire pre-Freeze orchestrator state and enter only through
+    # STREET_REFERENCE_LOAD after Intrinsic Freeze.
+    assert broker_result.quarantined_claims == ()
+    prefreeze_text = repr(broker_result)
+    assert "250000" not in prefreeze_text
+    assert "220000" not in prefreeze_text
+    assert "310000" not in prefreeze_text
+    assert result.data["broker_research_rocket_connected"]
+    assert "BROKER_RESEARCH" in findings
+    primary_broker_families = {
+        item.broker_family for item in broker_result.primary_verification_claims
+    }
+    assert primary_broker_families == {
+        "MiraeAssetSecurities",
+        "IBKSecurities",
+        "ShinhanSecurities",
+    }
+    broker_domains = (
+        "securities.miraeasset.com",
+        "yna.co.kr",
+        "ibks.com",
+        "shinhansec.com",
     )
     assert not any(
-        "securities.miraeasset.com" in item.source_ref
+        any(domain in item.source_ref for domain in broker_domains)
         for item in ledger.active()
     )
     assert result.data["intelligence_proposal"].requested_evidence
@@ -270,7 +297,7 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     }
     assert trace_index["INTRINSIC_VALUE_FREEZE"] < trace_index["STREET_REFERENCE_LOAD"]
     assert trace_index["INTRINSIC_VALUE_FREEZE"] < trace_index["MARKET_PRICE_LOAD"]
-    assert result.data["street_comparison"].consensus.report_count == 2
+    assert result.data["street_comparison"].consensus.report_count == 3
 
     attestation = attest_controlled_run(result)
     report = render_controlled_run_report(result)
@@ -313,11 +340,11 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert "증권사별 목표가와 PRISM의 차이" in result.data["final_report"]
     assert "미래에셋증권" in result.data["final_report"]
     assert "신한투자증권" in result.data["final_report"]
-    assert "PRISM 기준 내재가치는 증권사 평균 목표가보다 39.9% 낮습니다" in result.data[
+    assert "PRISM 기준 내재가치는 증권사 평균 목표가보다 35.3% 낮습니다" in result.data[
         "final_report"
     ]
     assert "증설 처리" in result.data["final_report"]
-    assert "신한투자증권 목표가는 미래에셋증권보다 60,000원 (24.0%) 높습니다" in result.data[
+    assert "신한투자증권 목표가는 IBK투자증권보다 90,000원 (40.9%) 높습니다" in result.data[
         "final_report"
     ]
     assert "생산능력 게이트에서 분류" in result.data["final_report"]
@@ -347,6 +374,13 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert "no incremental Core capacity path is required" not in result.data["final_report"]
 
     assert (run_root / "final_report.md").exists()
+    persisted_report = (run_root / "final_report.md").read_text(encoding="utf-8")
+    persisted_trace = json.loads(
+        (run_root / "control_plane_trace.json").read_text(encoding="utf-8")
+    )
+    assert persisted_report == result.data["final_report"]
+    assert "<summary>작성 근거와 계산 과정 보기</summary>" in persisted_report
+    assert len(persisted_trace) == 33
     assert (run_root / "scenario_probability_assessment.json").exists()
     assert (run_root / "probability_forecast_drafts.json").exists()
     history_store = ProbabilityForecastHistoryStore(tmp_path)

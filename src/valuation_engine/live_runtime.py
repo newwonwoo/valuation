@@ -8,6 +8,7 @@ from .audit_adapter import generic_audit_adapter
 from .broker_runtime import (
     BrokerResearchLoader,
     broker_aware_module_requirement_plan_adapter,
+    broker_aware_rocket_insight_adapter,
     broker_research_audit_adapter,
 )
 from .capacity_commitment import (
@@ -45,7 +46,12 @@ from .evidence_collection import (
     EvidenceCollector,
 )
 from .funding_adapter import FundingScanner, live_upstream_funding_adapter
-from .generic_reporting import final_report_adapter, save_state_adapter, thesis_delta_adapter
+from .generic_reporting import (
+    final_report_adapter,
+    finalize_live_primary_run_artifacts,
+    save_state_adapter,
+    thesis_delta_adapter,
+)
 from .impact_adapter import GenericDecisionImpactConfig
 from .live_primary_adapters import (
     CompanyResolutionRequest,
@@ -600,8 +606,11 @@ def build_live_primary_adapters(
             selection_loader=_collection_selection_loader(config)
         ),
         "EVIDENCE_LEDGER": evidence_ledger_adapter(),
-        "ROCKET_INSIGHT_SCAN": live_rocket_insight_dispatch_adapter(
-            runners=providers.scanner_runners
+        "ROCKET_INSIGHT_SCAN": broker_aware_rocket_insight_adapter(
+            live_rocket_insight_dispatch_adapter(
+                runners=providers.scanner_runners
+            ),
+            required=bool(getattr(config, "require_broker_research", False)),
         ),
         "UPSTREAM_FUNDING_SCAN": funding,
         "RESEARCHER_A": researcher_a_adapter(
@@ -681,7 +690,11 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> ControlledRunResult:
         major_gate_reporter=getattr(config, "major_gate_reporter", None),
     )
     if not result.blocked_reasons:
-        return result
+        return finalize_live_primary_run_artifacts(
+            result,
+            state_root=config.state_root,
+            stage_registry_path=config.stage_registry_path,
+        )
     return ControlledRunResult(
         run_id=result.run_id,
         execution_mode=result.execution_mode,

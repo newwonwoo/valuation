@@ -551,6 +551,11 @@ def render_controlled_run_report(
     passed_checks = sum(item.passed for item in attestation.checks)
     failed_checks = tuple(item for item in attestation.checks if not item.passed)
     persisted = data.get("final_report")
+    if (
+        isinstance(persisted, str)
+        and "<summary>작성 근거와 계산 과정 보기</summary>" in persisted
+    ):
+        return persisted.rstrip() + "\n"
     lines = []
     if isinstance(persisted, str) and persisted:
         lines.append(persisted.rstrip())

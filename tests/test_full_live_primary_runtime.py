@@ -1,5 +1,6 @@
 from dataclasses import replace
 from decimal import Decimal
+import json
 from pathlib import Path
 
 from valuation_engine.collection_plan import CollectorCapability
@@ -489,6 +490,22 @@ def test_frozen_provider_live_primary_run_reaches_final_report(tmp_path):
     state_root = Path(tmp_path)
     assert (state_root / "state" / "000000" / "current_state.json").exists()
     assert (state_root / "runs" / "000000" / "FULL-LIVE-1" / "final_report.md").exists()
+    persisted_report = (
+        state_root / "runs" / "000000" / "FULL-LIVE-1" / "final_report.md"
+    ).read_text(encoding="utf-8")
+    persisted_trace = json.loads(
+        (
+            state_root
+            / "runs"
+            / "000000"
+            / "FULL-LIVE-1"
+            / "control_plane_trace.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert persisted_report == result.data["final_report"]
+    assert "<summary>작성 근거와 계산 과정 보기</summary>" in persisted_report
+    assert len(persisted_trace) == 33
+    assert persisted_trace[-1]["stage"] == "FINAL_REPORT"
     assert len(result.data["saved_report_visuals"]) == 2
     for filename in result.data["saved_report_visuals"]:
         assert (state_root / "runs" / "000000" / "FULL-LIVE-1" / filename).exists()
