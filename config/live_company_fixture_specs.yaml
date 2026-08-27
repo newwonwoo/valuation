@@ -13,7 +13,7 @@ companies:
     sector_adapter: real_assets.mining
     archetype: commodity_price_taker
     method: normalized_multiple
-    currency: KRW_billion
+    currency: KRW
     market_symbol: '010060'
     market_currency: KRW
     market_fallback_price: 275000
@@ -23,10 +23,10 @@ companies:
     official_document_id: OCI_HOLDINGS_2026Q2_IR_SUMMARY
     published_at: '2026-07-23T06:00:00+00:00'
     first_seen_at: '2026-08-27T00:00:00+00:00'
-    normalized_ebitda: 420
+    normalized_ebitda: 420000000000
     normalized_multiple: 5.5
     ownership: 1.0
-    ev_adjustment: 900
+    ev_adjustment: 900000000000
     diluted_shares: 17900000
     official_metrics:
       revenue: [4200, KRW_billion]
@@ -46,7 +46,7 @@ companies:
     sector_adapter: software.database
     archetype: contracted_backlog
     method: normalized_ebitda
-    currency: USD_million
+    currency: USD
     market_symbol: ORCL
     market_currency: USD
     market_fallback_price: 210
@@ -56,10 +56,10 @@ companies:
     official_document_id: ORACLE_2026Q3_10Q
     published_at: '2026-03-11T12:00:00+00:00'
     first_seen_at: '2026-08-27T00:00:00+00:00'
-    normalized_ebitda: 30000
+    normalized_ebitda: 30000000000
     normalized_multiple: 18
     ownership: 1.0
-    ev_adjustment: -85000
+    ev_adjustment: -85000000000
     diluted_shares: 2850000000
     official_metrics:
       revenue: [59000, USD_million]
@@ -81,7 +81,7 @@ companies:
     sector_adapter: power.distributed_power
     archetype: contracted_backlog
     method: normalized_ebitda
-    currency: USD_million
+    currency: USD
     market_symbol: BE
     market_currency: USD
     market_fallback_price: 85
@@ -91,10 +91,10 @@ companies:
     official_document_id: BLOOM_ENERGY_2026Q2_10Q
     published_at: '2026-08-04T12:00:00+00:00'
     first_seen_at: '2026-08-27T00:00:00+00:00'
-    normalized_ebitda: 700
+    normalized_ebitda: 700000000
     normalized_multiple: 25
     ownership: 1.0
-    ev_adjustment: 500
+    ev_adjustment: 500000000
     diluted_shares: 275000000
     official_metrics:
       revenue: [1065.365, USD_million]
@@ -115,7 +115,7 @@ companies:
     sector_adapter: power.turbine_oem
     archetype: contracted_backlog
     method: normalized_ebitda
-    currency: USD_million
+    currency: USD
     market_symbol: GEV
     market_currency: USD
     market_fallback_price: 750
@@ -125,10 +125,10 @@ companies:
     official_document_id: GE_VERNOVA_2026Q2_10Q
     published_at: '2026-07-22T12:00:00+00:00'
     first_seen_at: '2026-08-27T00:00:00+00:00'
-    normalized_ebitda: 4500
+    normalized_ebitda: 4500000000
     normalized_multiple: 22
     ownership: 1.0
-    ev_adjustment: 10000
+    ev_adjustment: 10000000000
     diluted_shares: 275000000
     official_metrics:
       revenue: [11104, USD_million]
