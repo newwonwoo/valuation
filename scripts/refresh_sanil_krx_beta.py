@@ -73,7 +73,10 @@ def _close_series(frame: pd.DataFrame, label: str) -> pd.Series:
 
 def _returns(series: pd.Series, frequency: str) -> pd.Series:
     if frequency == "weekly":
-        sampled = series.resample("W-FRI").last().dropna()
+        frame = series.rename("close").to_frame()
+        frame["week"] = frame.index.to_period("W-FRI")
+        sampled = frame.groupby("week", sort=True).tail(1)["close"]
+        sampled.name = series.name
     elif frequency == "daily":
         sampled = series
     else:
