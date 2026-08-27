@@ -13,12 +13,18 @@ from .context_strength_reporting import (
     context_strength_linkage_state,
     render_context_strength_linkage_section,
 )
-from .control_plane import DoctrineCoverageEntry, StageStatus, authorize_post_freeze
+from .control_plane import (
+    DoctrineCoverageEntry,
+    ExecutionMode,
+    StageStatus,
+    authorize_post_freeze,
+)
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .post_freeze import MarketComparisonBundle, StreetComparisonBundle
 from .records import AuditReport, RunManifest, RunStatus, iso_now
 from .research_learning import ResearchLearningStore
 from .state import StateStore, thesis_delta
+from .source_reporting import build_source_link_index, render_source_link_section
 from .valuation_execution import (
     GenericValuationResult,
     IntrinsicValuationScope,
@@ -162,7 +168,11 @@ def thesis_delta_adapter() -> StageAdapter:
     return run
 
 
-def render_generic_report(data: dict[str, Any]) -> str:
+def render_generic_report(
+    data: dict[str, Any],
+    *,
+    require_verifiable_sources: bool = False,
+) -> str:
     company = str(data.get("company", data.get("target_id", "Target")))
     valuation = data.get("generic_valuation_result")
     audit = data.get("generic_audit_report")
@@ -216,10 +226,8 @@ def render_generic_report(data: dict[str, Any]) -> str:
     lines.extend((
         "",
         "## Probability Calibration",
-        f"- Status: {calibration_status}",
-        f"- Numeric weighting: {'APPLIED' if calibration_applied else 'WITHHELD'}",
-        f"- Dataset hash: {getattr(scenario_set, 'calibration_dataset_hash', None) or 'NOT_AVAILABLE'}",
-        f"- Snapshot hash: {getattr(scenario_set, 'calibration_snapshot_hash', None) or 'NOT_AVAILABLE'}",
+        f"- Status: {calibration_status} · Numeric weighting: {'APPLIED' if calibration_applied else 'WITHHELD'}",
+        f"- Lineage: dataset `{getattr(scenario_set, 'calibration_dataset_hash', None) or 'NOT_AVAILABLE'}` · snapshot `{getattr(scenario_set, 'calibration_snapshot_hash', None) or 'NOT_AVAILABLE'}`",
     ))
 
     if partial:
@@ -279,17 +287,20 @@ def render_generic_report(data: dict[str, Any]) -> str:
             f"- 비교 보류: {data['market_comparison_withheld_reason']}",
         ))
 
+    source_links = build_source_link_index(
+        data,
+        require_all_http=require_verifiable_sources,
+    )
+    lines.extend(("", *render_source_link_section(source_links)))
+
     impact = _module_impact_summary(data)
     lines.extend((
         "",
         "## Module Impact / Research Efficiency",
-        f"- 측정 완료: {_compact_list(impact['measured'])}",
-        f"- 미측정(NOT_MEASURABLE): {_compact_list(impact['not_measurable'])}",
-        f"- 비적용: {_compact_list(impact['not_applicable'])}",
-        f"- 실패: {_compact_list(impact['failed'])}",
+        f"- 측정 완료: {_compact_list(impact['measured'])} · 미측정(NOT_MEASURABLE): {_compact_list(impact['not_measurable'])}",
+        f"- 비적용: {_compact_list(impact['not_applicable'])} · 실패: {_compact_list(impact['failed'])}",
         f"- 조사비용: {_research_effort_line(impact)}",
-        f"- 하향 검토 후보: {_compact_list(impact['downrank_candidates'])}",
-        "- 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.",
+        f"- 하향 검토 후보: {_compact_list(impact['downrank_candidates'])} · 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.",
     ))
 
     non_pass = tuple(
@@ -317,14 +328,9 @@ def render_generic_report(data: dict[str, Any]) -> str:
     lines.extend((
         "",
         "## Run Integrity",
-        f"- Valuation scope: {valuation.scope.value}",
-        f"- Ledger snapshot: {data.get('ledger_snapshot_hash', '')}",
-        f"- Assumption set: {data.get('assumption_set_hash', '')}",
-        f"- Valuation: {data.get('valuation_hash', '')}",
-        f"- Audit: {data.get('audit_hash', '')}",
-        f"- Freeze token: {getattr(data.get('intrinsic_freeze_token'), 'token_hash', '')}",
-        f"- Calibration dataset: {data.get('probability_calibration_dataset_hash', '') or 'NOT_APPLIED'}",
-        f"- Calibration snapshot: {data.get('probability_calibration_snapshot_hash', '') or 'NOT_APPLIED'}",
+        f"- Scope: {valuation.scope.value} · Freeze: `{getattr(data.get('intrinsic_freeze_token'), 'token_hash', '')}`",
+        f"- Chain: ledger `{data.get('ledger_snapshot_hash', '')}` · assumptions `{data.get('assumption_set_hash', '')}` · valuation `{data.get('valuation_hash', '')}` · audit `{data.get('audit_hash', '')}`",
+        f"- Calibration: dataset `{data.get('probability_calibration_dataset_hash', '') or 'NOT_APPLIED'}` · snapshot `{data.get('probability_calibration_snapshot_hash', '') or 'NOT_APPLIED'}`",
     ))
     return "\n".join(lines) + "\n"
 
@@ -400,7 +406,12 @@ def save_state_adapter(
                 raise ValueError("same-run IntrinsicFreezeToken is required")
             authorize_post_freeze(token, run_id=context.run_id)
 
-            report = render_generic_report(context.data)
+            report = render_generic_report(
+                context.data,
+                require_verifiable_sources=(
+                    context.execution_mode is ExecutionMode.LIVE_PRIMARY
+                ),
+            )
             impact_summary = _module_impact_summary(context.data)
             linkage_artifact = context_strength_linkage_artifact(context.data)
             linkage_state = context_strength_linkage_state(context.data)

@@ -3,104 +3,57 @@
 - Run ID: `FULL-LIVE-1`
 - Execution mode: `live_primary`
 - Run status: **VERIFIED_FROZEN**
-- Attestation hash: `cb0f4b8281b73bd20d6b2d341c86bfc0c22078b9b878cd26f258e8ab635ef153`
+- Attestation hash: `24dd96b0a7510eef734e54effec838ceb7186034aed647e1417dd364c519a189`
 
-## Execution Attestation
+## Verification
+- Checks: **18/18 PASS**
+- Canonical stages: **33/33 terminal traces**
 
-| Check | Result | Detail |
-|---|---:|---|
-| `live_primary_mode` | **PASS** | the report was produced by LIVE_PRIMARY |
-| `run_unblocked` | **PASS** | the controlled run has no blocking reason |
-| `canonical_stage_sequence` | **PASS** | all 33 canonical stages executed in order |
-| `terminal_stage_statuses` | **PASS** | every stage ended in a non-blocking terminal status |
-| `intrinsic_freeze_token` | **PASS** | the same run issued an IntrinsicFreezeToken |
-| `evidence_ledger_hash` | **PASS** | the frozen Evidence Ledger hash is present |
-| `assumption_set_hash` | **PASS** | the compiled assumption-set hash is present |
-| `scenario_set_hash` | **PASS** | the bound scenario-set hash is present |
-| `valuation_hash` | **PASS** | the deterministic valuation hash is present |
-| `audit_hash` | **PASS** | the generic audit passed and its hash is present |
-| `persisted_final_report` | **PASS** | the final report was emitted from the persisted run payload |
-| `major_gate_reporting_contract` | **PASS** | all five major gates produced compact terminal summaries |
-| `major_gate_delivery` | **PASS** | major-gate summary delivery recorded no reporter failure |
-| `selected_method_contract` | **PASS** | selected valuation methods are typed |
-| `capacity_assessment` | **PASS** | the typed Capacity Commitment assessment and hash are present |
-| `capacity_audit` | **PASS** | the Capacity omission/double-count audit passed |
-| `freeze_hash_binding` | **PASS** | Freeze is bound to the same Evidence, assumptions, valuation and audit |
-
-## Immutable Run Identities
-
-| Artifact | Hash |
-|---|---|
-| Evidence Ledger | `3081f4574bf2b47592b44dae62d62555296ba1197312b70399f8b105d53fcbde` |
-| Assumption set | `091053e3e982493c131b3d77d7fce59e7e8b8c9f2b9da3b8fcdb7c9a2e9f0979` |
-| Scenario set | `ef87d8f464c8272a2538047127ef06645348ac5552fe97a7f73f53992f8514bc` |
-| Beta | `NOT_APPLICABLE` |
-| WACC | `NOT_APPLICABLE` |
-| Capacity assessment | `a3545801a2b8a62a817dc8625fd5baccc104aa9ed22e1476e89b8c440ce55462` |
-| Capacity consumption | `NOT_APPLICABLE` |
-| Capacity scenario | `749eb5803378d1917242a7bbc628d9f735b5a3101a0593da19d5c3fa3a17ff24` |
-| Capacity valuation | `26a1aaf558a3a1626e711265723d816d56e3f175919c8e9f19fd28856cfa4e58` |
-| Capacity PER | `d7d0730b0c54c63b2586b3e8f355b08f1e5205b7d697202fdb91ad4ac37a5e34` |
-| Capacity consistency | `dd6b3bfce8b91907a4d89c14f661e93b957449d343c920d16e7352a7805e4333` |
-| Capacity audit | `c3c87aec1adf84bd72369c1be022579ecc1491a81c9e19c31ed53076a315e4d9` |
-| Valuation | `9a85e0c4c2aa4258604a46f7c660105157c494da64aa63e9f3c726971e81b862` |
-| Audit | `469b553cdeb7496048dddcea9c4d6638db0b54feefcccdd92a490160bc4eeae9` |
-| Intrinsic Freeze | `ae680222f1feb481134d92748629befa4578e3065d9ff331f4155d0740fe5b3f` |
+## Frozen Identity Chain
+- Evidence: `844702b379f405baffd8cea944854ac2c00a1b0e8141a693bfd75fd8934a786d`
+- Assumptions: `f9a111745f4945d119f02f1708f026ff7473c9c96a6055c454370634d2a0e818`
+- Scenarios: `363189a1674c763b0f3d2e60be59156f25e956d800342bf9f468dbf093c4538c`
+- Valuation: `759890294b90fb9bda449cc6b539214a0795bb59ad27d1f46e37b42b8f99da06`
+- Audit: `484915ff80ef965128618a753168b38ae268ebcc4f4656bfb8a9e84270a15d5a`
+- Intrinsic Freeze: `77990c6f5d8c2fd9b152a537b6ecf4cf6e5140640e00c9f817acad2bf0105ed1`
+- Auxiliary bindings: Capacity assessment `a3545801a2b8a62a817dc8625fd5baccc104aa9ed22e1476e89b8c440ce55462` · Capacity scenario `749eb5803378d1917242a7bbc628d9f735b5a3101a0593da19d5c3fa3a17ff24` · Capacity valuation `5e36a496bd37604aa33ffb0b4f80cd48eadf839b83218aaa9422a35649e297fe` · Capacity PER `09d1f570a1c55c08e4639a4c59546ddac49c2704ed6ebdf185cba5cd4457d478` · Capacity consistency `adfc3920a842875012b27720a55cf7324ede5d2ae4abf320d1c4484f3aafb1eb` · Capacity audit `5405620256db2ab82529b83171ef2e5f41bc1d1fd8d1785902318c52f5b0c353`
 
 ## Major Gate Summaries
 
-| Gate | Status | Progress | Decisive result | Residual risk | Next |
-|---|---|---:|---|---|---|
-| 1. `G1_EVIDENCE_ROUTING` | `pass` | 9/9 | append-only EvidenceLedger validated and canonical runtime snapshot frozen | NONE | `G2_INSIGHT_CHALLENGE` |
-| 2. `G2_INSIGHT_CHALLENGE` | `pass` | 5/5 | Blind Red Team left no unresolved blocking issue | NONE | `G3_ASSUMPTIONS_METHOD_RISK` |
-| 3. `G3_ASSUMPTIONS_METHOD_RISK` | `pass` | 5/5 | selected exact economic method path does not require WACC | NONE | `G4_VALUATION_AUDIT_FREEZE` |
-| 4. `G4_VALUATION_AUDIT_FREEZE` | `warning` | 7/7 | audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze | PROBABILITY_DISTRIBUTION_ANALYSIS: scenario probabilities are not calibration-authorized; numeric expected value remains disabled | `G5_POST_FREEZE_PERSISTENCE` |
-| 5. `G5_POST_FREEZE_PERSISTENCE` | `pass` | 7/7 | final report emitted from the same immutable payload saved in the run state | NONE | `FINAL_RESULT_REPORT` |
+### 1. Evidence and Routing — PASS (9/9)
+- Result: append-only EvidenceLedger validated and canonical runtime snapshot frozen
+- Risk: NONE · Next: `G2_INSIGHT_CHALLENGE`
+
+### 2. Insight and Challenge — PASS (5/5)
+- Result: Blind Red Team left no unresolved blocking issue
+- Risk: NONE · Next: `G3_ASSUMPTIONS_METHOD_RISK`
+
+### 3. Assumptions, Method and Risk — PASS (5/5)
+- Result: selected exact economic method path does not require WACC
+- Risk: NONE · Next: `G4_VALUATION_AUDIT_FREEZE`
+
+### 4. Valuation, Audit and Freeze — WARNING (7/7)
+- Result: audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze
+- Risk: PROBABILITY_DISTRIBUTION_ANALYSIS: scenario probabilities are not calibration-authorized; numeric expected value remains disabled · Next: `G5_POST_FREEZE_PERSISTENCE`
+
+### 5. Post-Freeze Comparison and Persistence — PASS (7/7)
+- Result: final report emitted from the same immutable payload saved in the run state
+- Risk: NONE · Next: `FINAL_RESULT_REPORT`
 
 ## Final Report Delivery Contract
+- Main body editorial target: 3–4 pages
+- Audit appendix editorial target: 1–2 pages
+- Combined editorial cap: 6 pages
+- Typography: body ≥ 13pt, primary heading ≥ 22pt, section heading ≥ 18pt; dense wide tables forbidden.
+- Mandatory: every claim source is mapped to a direct HTTP(S) original link in `Sources — Direct Verification`.
 
-- Main body editorial target: 6–8 pages
-- Audit appendix editorial target: 3–4 pages
-- Combined editorial cap: 12 pages
-- The 33-stage trace remains in the audit appendix; routine progress output uses only the five major-gate summaries.
-
-## Stage Trace
-
-| # | Stage | Status | Blocking | Rationale |
-|---:|---|---|---:|---|
-| 1 | `COMPANY_RESOLUTION` | `pass` | NO | company identity resolved from a declared live resolver contract |
-| 2 | `LOAD_COMPANY_STATE` | `pass` | NO | no prior company state; first-run empty state is valid \| loaded 0 immutable module-impact learning record(s) |
-| 3 | `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT` | `pass` | NO | versioned Industry Knowledge snapshot loaded and hash-verified |
-| 4 | `SOURCE_FRESHNESS_PRECHECK` | `pass` | NO | live source-watch precheck passed |
-| 5 | `SEGMENT_DECOMPOSITION` | `pass` | NO | authoritative-lineage-backed segment decomposition completed |
-| 6 | `INDUSTRY_DNA_ROUTE` | `pass` | NO | all decomposed segments routed to evidence-backed multi-label Industry DNA profiles |
-| 7 | `MODULE_REQUIREMENT_PLAN` | `pass` | NO | compiled canonical Module Requirement Plan and non-destructive learned research loadout |
-| 8 | `PRIMARY_EVIDENCE_COLLECTION` | `pass` | NO | primary evidence collected with complete required segment/metric coverage and planned source lineage |
-| 9 | `EVIDENCE_LEDGER` | `pass` | NO | append-only EvidenceLedger validated and canonical runtime snapshot frozen |
-| 10 | `ROCKET_INSIGHT_SCAN` | `pass` | NO | live Rocket Insight scanner dispatch completed |
-| 11 | `UPSTREAM_FUNDING_SCAN` | `skipped_not_applicable` | NO | selected Industry DNA does not require a dedicated upstream funding scan |
-| 12 | `RESEARCHER_A` | `pass` | NO | LLM Intelligence Officer produced typed hypotheses and an auditable environment-change/corporate-strength linkage decision without committing assumptions |
-| 13 | `BLIND_RED_TEAM_B` | `pass` | NO | Blind Red Team completed with no unresolved blocker |
-| 14 | `RESEARCH_LOOP` | `skipped_not_applicable` | NO | Blind Red Team left no unresolved blocking issue |
-| 15 | `EVIDENCE_TO_ASSUMPTION_BRIDGE` | `pass` | NO | no capacity_manufacturing segment requires Capacity Commitment Gate \| LLM Bridge proposals validated and converted to compiler requests; no assumptions committed |
-| 16 | `SCENARIO_BUILD` | `pass` | NO | no Core-inclusion capacity project requires bridge consumption \| Bridge proposals deterministically compiled and bound into generic scenarios \| no Core-inclusion capacity project requires scenario binding |
-| 17 | `VALUATION_METHOD_INTENT` | `pass` | NO | economic valuation-method intent resolved before Beta/WACC; exact evaluator construction remains downstream |
-| 18 | `HIERARCHICAL_BETA_ESTIMATION` | `skipped_not_applicable` | NO | selected exact economic method path does not require Hierarchical Beta |
-| 19 | `WACC_VALIDATION` | `skipped_not_applicable` | NO | selected exact economic method path does not require WACC |
-| 20 | `DETERMINISTIC_VALUATION` | `pass` | NO | registered deterministic evaluators and SOTP aggregation completed \| no Warranted PER cross-check requires a DCF fingerprint \| no Core-inclusion capacity project requires valuation binding |
-| 21 | `HIERARCHICAL_WARRANTED_PER` | `skipped_not_applicable` | NO | selected Industry DNA does not route any segment to Warranted PER \| Warranted PER is not applicable; capacity PER double-count path is closed |
-| 22 | `DCF_PER_ASSUMPTION_CONSISTENCY_GATE` | `pass` | NO | DCF-PER consistency gate is not applicable \| capacity assessment, scenario, valuation and PER identities are consistent |
-| 23 | `CROSS_METHOD_DOUBLE_COUNT_AUDIT` | `pass` | NO | cross-method economic paths are unique |
-| 24 | `PROBABILITY_DISTRIBUTION_ANALYSIS` | `warning` | NO | scenario probabilities are not calibration-authorized; numeric expected value remains disabled |
-| 25 | `AUDIT_GATE` | `pass` | NO | pre-freeze Broker Research is not configured for this run \| capacity omission, baseline and double-count audit passed \| decision-impact record and run-bound generic intrinsic audit passed; run is eligible for freeze if snapshot hashes are present |
-| 26 | `INTRINSIC_VALUE_FREEZE` | `pass` | NO | audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze |
-| 27 | `STREET_REFERENCE_LOAD` | `pass` | NO | target-company Street references loaded after a valid same-run Freeze Token |
-| 28 | `STREET_GAP_ANALYZER` | `pass` | NO | Street gap preserved as scenario envelope because probability weighting is not calibrated |
-| 29 | `MARKET_PRICE_LOAD` | `pass` | NO | target-company market price loaded only after intrinsic freeze |
-| 30 | `MARKET_COMPARE` | `pass` | NO | current price compared with each intrinsic scenario; no Expected Value fabricated |
-| 31 | `THESIS_DELTA` | `pass` | NO | current thesis compared with the prior immutable successful state |
-| 32 | `SAVE_STATE` | `pass` | NO | immutable learning/run artifacts saved and audit-passed current state promoted |
-| 33 | `FINAL_REPORT` | `pass` | NO | final report emitted from the same immutable payload saved in the run state |
+## Compact Audit Appendix — 33-Stage Trace
+- **G1_EVIDENCE_ROUTING:** 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass
+- **G2_INSIGHT_CHALLENGE:** 10 `ROCKET_INSIGHT_SCAN`=pass · 11 `UPSTREAM_FUNDING_SCAN`=skipped_not_applicable · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable
+- **G3_ASSUMPTIONS_METHOD_RISK:** 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=skipped_not_applicable · 19 `WACC_VALIDATION`=skipped_not_applicable
+- **G4_VALUATION_AUDIT_FREEZE:** 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=pass · 26 `INTRINSIC_VALUE_FREEZE`=pass
+- **G5_POST_FREEZE_PERSISTENCE:** 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=pass · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
+- Exact rationales and output keys remain in the immutable `control_plane_trace.json` artifact.
 
 ## Persisted Research Report
 
@@ -116,10 +69,8 @@
 - Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.
 
 ## Probability Calibration
-- Status: UNCALIBRATED
-- Numeric weighting: WITHHELD
-- Dataset hash: NOT_AVAILABLE
-- Snapshot hash: NOT_AVAILABLE
+- Status: UNCALIBRATED · Numeric weighting: WITHHELD
+- Lineage: dataset `NOT_AVAILABLE` · snapshot `NOT_AVAILABLE`
 
 ## Street Gap
 - 리포트 수: 2
@@ -130,14 +81,15 @@
 - 현재가: 65,000 KRW (2026-08-23)
 - Base 기대수익 간격: 5,000 (+7.7%)
 
+## Sources — Direct Verification
+- **Company identity / Current market price / Street: BrokerA / Street: BrokerB / frozen filing fixture** — Evidence 8개: benchmark_price, capacity, cash_cost, cost_curve_position, inventory, production 외 2개 (effective 2026-06-30); company resolution; market price as of 2026-08-23; target price published 2026-08-01; target price published 2026-08-05 [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/tests/test_full_live_primary_runtime.py)
+- 전체 Evidence ID·지표·기준일 매핑은 동일 run의 immutable Evidence Ledger에 보존됩니다.
+
 ## Module Impact / Research Efficiency
-- 측정 완료: DETERMINISTIC_VALUATION
-- 미측정(NOT_MEASURABLE): ASSUMPTION_COMPILER, BLIND_RED_TEAM_B, BROKER_RESEARCH, EVIDENCE_LEDGER, EVIDENCE_TO_ASSUMPTION_BRIDGE, INDUSTRY_DNA_ROUTER, INDUSTRY_KNOWLEDGE, KNOWLEDGE_PLACEMENT_GATE 외 7개
-- 비적용: HIERARCHICAL_BETA_ENGINE, UPSTREAM_FUNDING_SCAN, WACC_ENGINE
-- 실패: 없음
+- 측정 완료: DETERMINISTIC_VALUATION · 미측정(NOT_MEASURABLE): ASSUMPTION_COMPILER, BLIND_RED_TEAM_B, BROKER_RESEARCH, EVIDENCE_LEDGER, EVIDENCE_TO_ASSUMPTION_BRIDGE, INDUSTRY_DNA_ROUTER, INDUSTRY_KNOWLEDGE, KNOWLEDGE_PLACEMENT_GATE 외 7개
+- 비적용: HIERARCHICAL_BETA_ENGINE, UPSTREAM_FUNDING_SCAN, WACC_ENGINE · 실패: 없음
 - 조사비용: source queries 0, documents 0, LLM calls 0, elapsed 0.0s
-- 하향 검토 후보: 없음
-- 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.
+- 하향 검토 후보: 없음 · 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.
 
 ## Audit & Coverage
 - Audit: PASS (22 checks)
@@ -148,11 +100,6 @@
 - 약화·폐기: 없음
 
 ## Run Integrity
-- Valuation scope: FULL_INTRINSIC
-- Ledger snapshot: 3081f4574bf2b47592b44dae62d62555296ba1197312b70399f8b105d53fcbde
-- Assumption set: 091053e3e982493c131b3d77d7fce59e7e8b8c9f2b9da3b8fcdb7c9a2e9f0979
-- Valuation: 9a85e0c4c2aa4258604a46f7c660105157c494da64aa63e9f3c726971e81b862
-- Audit: 469b553cdeb7496048dddcea9c4d6638db0b54feefcccdd92a490160bc4eeae9
-- Freeze token: ae680222f1feb481134d92748629befa4578e3065d9ff331f4155d0740fe5b3f
-- Calibration dataset: NOT_APPLIED
-- Calibration snapshot: NOT_APPLIED
+- Scope: FULL_INTRINSIC · Freeze: `77990c6f5d8c2fd9b152a537b6ecf4cf6e5140640e00c9f817acad2bf0105ed1`
+- Chain: ledger `844702b379f405baffd8cea944854ac2c00a1b0e8141a693bfd75fd8934a786d` · assumptions `f9a111745f4945d119f02f1708f026ff7473c9c96a6055c454370634d2a0e818` · valuation `759890294b90fb9bda449cc6b539214a0795bb59ad27d1f46e37b42b8f99da06` · audit `484915ff80ef965128618a753168b38ae268ebcc4f4656bfb8a9e84270a15d5a`
+- Calibration: dataset `NOT_APPLIED` · snapshot `NOT_APPLIED`

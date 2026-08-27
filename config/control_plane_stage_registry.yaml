@@ -59,9 +59,18 @@ reporting_contract:
     - residual_risk
     - next_action
   final_report_page_policy:
-    main_body_target_pages: [6, 8]
-    audit_appendix_target_pages: [3, 4]
-    total_page_cap: 12
+    main_body_target_pages: [3, 4]
+    audit_appendix_target_pages: [1, 2]
+    total_page_cap: 6
+  typography_policy:
+    body_min_pt: 13
+    primary_heading_min_pt: 22
+    section_heading_min_pt: 18
+    dense_wide_tables_forbidden: true
+  source_link_policy:
+    direct_http_links_required: true
+    claim_source_mapping_required: true
+    non_http_source_refs_forbidden_in_live_reports: true
 phases:
   I_OPENING:
     - COMPANY_RESOLUTION

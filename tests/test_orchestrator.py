@@ -28,6 +28,13 @@ def reporting_contract(*gates):
         main_body_target_pages=(6, 8),
         audit_appendix_target_pages=(3, 4),
         total_page_cap=12,
+        body_min_pt=13,
+        primary_heading_min_pt=22,
+        section_heading_min_pt=18,
+        dense_wide_tables_forbidden=True,
+        direct_http_links_required=True,
+        claim_source_mapping_required=True,
+        non_http_source_refs_forbidden_in_live_reports=True,
     )
 
 
@@ -41,7 +48,10 @@ def test_canonical_reporting_contract_partitions_all_33_stages_once():
     assert tuple(stage for gate in contract.major_gates for stage in gate.stages) == (
         load_stage_sequence(root / "config" / "control_plane_stage_registry.yaml")
     )
-    assert contract.total_page_cap == 12
+    assert contract.main_body_target_pages == (3, 4)
+    assert contract.audit_appendix_target_pages == (1, 2)
+    assert contract.total_page_cap == 6
+    assert contract.body_min_pt == 13
 
 
 def test_orchestrator_emits_one_summary_only_when_each_major_gate_completes():

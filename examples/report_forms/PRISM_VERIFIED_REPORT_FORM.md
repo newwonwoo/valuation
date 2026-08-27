@@ -5,57 +5,42 @@
 - Run status: **{{ VERIFIED_FROZEN | INCOMPLETE | BLOCKED }}**
 - Attestation hash: `{{ attestation_hash }}`
 
-## Execution Attestation
+## Verification
 
-| Check | Result | Detail |
-|---|---:|---|
-| `canonical_stage_sequence` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
-| `beta_wacc_same_run_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
-| `capacity_core_consumption_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
-| `broker_research_primary_verification_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
-| `freeze_hash_binding` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
-| `major_gate_reporting_contract` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
-| `major_gate_delivery` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
+- Checks: **{{ passed_checks }}/{{ total_checks }} PASS**
+- Canonical stages: **{{ terminal_stage_count }}/33 terminal traces**
+- Failed checks only: `{{ canonical_stage_sequence | beta_wacc_same_run_chain | capacity_core_consumption_chain | broker_research_primary_verification_chain | freeze_hash_binding | major_gate_reporting_contract | major_gate_delivery | direct_source_links | none }} — {{ detail }}`
 
-## Immutable Run Identities
+## Frozen Identity Chain
 
-| Artifact | Hash |
-|---|---|
-| Evidence Ledger | `{{ ledger_snapshot_hash }}` |
-| Assumption set | `{{ assumption_set_hash }}` |
-| Scenario set | `{{ scenario_set_hash }}` |
-| Beta | `{{ beta_snapshot_hash_or_not_applicable }}` |
-| WACC | `{{ wacc_snapshot_hash_or_not_applicable }}` |
-| Capacity assessment | `{{ capacity_commitment_assessment_hash }}` |
-| Capacity consumption | `{{ capacity_bridge_consumption_hash_or_not_applicable }}` |
-| Capacity scenario | `{{ capacity_scenario_binding_hash_or_not_applicable }}` |
-| Capacity valuation | `{{ capacity_valuation_binding_hash_or_not_applicable }}` |
-| Capacity audit | `{{ capacity_audit_hash }}` |
-| Broker pre-freeze | `{{ broker_research_snapshot_hash_or_not_applicable }}` |
-| Broker audit | `{{ broker_research_audit_hash_or_not_applicable }}` |
-| Valuation | `{{ valuation_hash }}` |
-| Audit | `{{ audit_hash }}` |
-| Intrinsic Freeze | `{{ freeze_token_hash }}` |
+- Evidence: `{{ ledger_snapshot_hash }}`
+- Assumptions: `{{ assumption_set_hash }}`
+- Scenarios: `{{ scenario_set_hash }}`
+- Valuation: `{{ valuation_hash }}`
+- Audit: `{{ audit_hash }}`
+- Intrinsic Freeze: `{{ freeze_token_hash }}`
+- Auxiliary bindings: `{{ beta_snapshot_hash | wacc_snapshot_hash | capacity_audit_hash | broker_research_snapshot_hash | broker_research_audit_hash | NOT_APPLICABLE }}`
 
 ## Major Gate Summaries
 
-| Gate | Status | Progress | Decisive result | Residual risk | Next |
-|---|---|---:|---|---|---|
-| `{{ gate_id }}` | `{{ status }}` | `{{ completed/expected }}` | `{{ decisive_result }}` | `{{ residual_risk }}` | `{{ next_action }}` |
+### {{ ordinal }}. {{ title }} — {{ STATUS }} ({{ completed/expected }})
+
+- Result: `{{ decisive_result }}`
+- Risk: `{{ residual_risk }}` · Next: `{{ next_action }}`
 
 ## Final Report Delivery Contract
 
-- Main body editorial target: 6–8 pages
-- Audit appendix editorial target: 3–4 pages
-- Combined editorial cap: 12 pages
-- The 33-stage trace remains in the audit appendix; routine progress output uses only the five major-gate summaries.
+- Main body editorial target: 3–4 pages
+- Audit appendix editorial target: 1–2 pages
+- Combined editorial cap: 6 pages
+- Typography: body ≥ 13pt, primary heading ≥ 22pt, section heading ≥ 18pt; dense wide tables forbidden.
+- Mandatory: every claim source is mapped to a direct HTTP(S) original link in `Sources — Direct Verification`.
 
-## Stage Trace
+## Compact Audit Appendix — 33-Stage Trace
 
-| # | Stage | Status | Blocking | Rationale |
-|---:|---|---|---:|---|
-| 1 | `{{ stage }}` | `{{ status }}` | `{{ YES_OR_NO }}` | `{{ rationale }}` |
+- **{{ gate_id }}:** `{{ stage_number }} {{ stage }}={{ status }}` · …
+- Exact rationales and output keys remain in the immutable `control_plane_trace.json` artifact.
 
 ## Persisted Research Report
 
-{{ immutable_saved_final_report }}
+{{ immutable_saved_final_report_including_sources_direct_verification }}

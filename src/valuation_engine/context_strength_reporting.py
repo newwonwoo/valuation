@@ -6,6 +6,7 @@ from .context_strength_linkage import (
     ContextStrengthLinkage,
     ContextStrengthLinkageDecision,
 )
+from .source_reporting import linked_evidence_ids
 
 
 _MISSING_REQUIRED = "MISSING_REQUIRED"
@@ -67,9 +68,9 @@ def render_context_strength_linkage_section(
 
     lines.append("- Status: APPLICABLE")
     for linkage in linkages:
-        supporting = ", ".join(linkage.supporting_evidence_ids)
+        supporting = linked_evidence_ids(data, linkage.supporting_evidence_ids)
         contradicting = (
-            ", ".join(linkage.contradicting_evidence_ids) or "없음"
+            linked_evidence_ids(data, linkage.contradicting_evidence_ids) or "없음"
         )
         lines.extend(
             (

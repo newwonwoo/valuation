@@ -17,6 +17,7 @@ from .orchestrator import (
 )
 from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
 from .risk_impact import selected_methods_require_discount_rate
+from .source_reporting import build_source_link_index
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -91,6 +92,17 @@ def attest_controlled_run(
         result.stage_traces, reporting_contract
     )
     data = result.data
+    try:
+        source_links = build_source_link_index(
+            data,
+            require_all_http=reporting_contract.direct_http_links_required,
+        )
+    except (TypeError, ValueError):
+        source_links = ()
+    persisted_report = data.get("final_report")
+    source_links_bound = bool(source_links) and isinstance(persisted_report, str) and all(
+        item.url in persisted_report for item in source_links
+    )
 
     checks: list[ExecutionCheck] = [
         _check(
@@ -176,6 +188,12 @@ def attest_controlled_run(
             not result.reporting_warnings,
             "major-gate summary delivery recorded no reporter failure",
             "one or more major-gate summary reporters failed",
+        ),
+        _check(
+            "direct_source_links",
+            source_links_bound,
+            "all report source references are direct HTTP(S) links bound into the final report",
+            "direct source links are missing, invalid or absent from the final report",
         ),
     ]
 
@@ -328,6 +346,20 @@ def attest_controlled_run(
             for item in result.major_gate_summaries
         ],
         "reporting_warnings": result.reporting_warnings,
+        "reporting_contract": {
+            "contract_id": reporting_contract.contract_id,
+            "main_body_target_pages": reporting_contract.main_body_target_pages,
+            "audit_appendix_target_pages": reporting_contract.audit_appendix_target_pages,
+            "total_page_cap": reporting_contract.total_page_cap,
+            "body_min_pt": reporting_contract.body_min_pt,
+            "primary_heading_min_pt": reporting_contract.primary_heading_min_pt,
+            "section_heading_min_pt": reporting_contract.section_heading_min_pt,
+            "dense_wide_tables_forbidden": reporting_contract.dense_wide_tables_forbidden,
+            "direct_http_links_required": reporting_contract.direct_http_links_required,
+            "claim_source_mapping_required": reporting_contract.claim_source_mapping_required,
+            "non_http_source_refs_forbidden_in_live_reports": reporting_contract.non_http_source_refs_forbidden_in_live_reports,
+        },
+        "direct_source_links": [item.url for item in source_links],
         "hashes": {
             key: data.get(key)
             for key in (
@@ -376,6 +408,8 @@ def render_controlled_run_report(
     broker_configured = bool(data.get("broker_research_required", False)) or (
         data.get("broker_research_prefreeze_result") is not None
     )
+    passed_checks = sum(item.passed for item in attestation.checks)
+    failed_checks = tuple(item for item in attestation.checks if not item.passed)
     lines = [
         "# PRISM Verified Controlled-Run Report",
         "",
@@ -384,74 +418,67 @@ def render_controlled_run_report(
         f"- Run status: **{status}**",
         f"- Attestation hash: `{attestation.attestation_hash}`",
         "",
-        "## Execution Attestation",
-        "",
-        "| Check | Result | Detail |",
-        "|---|---:|---|",
+        "## Verification",
+        f"- Checks: **{passed_checks}/{len(attestation.checks)} PASS**",
+        f"- Canonical stages: **{len(result.stage_traces)}/33 terminal traces**",
     ]
-    for item in attestation.checks:
-        result_label = "PASS" if item.passed else "FAIL"
-        detail = item.detail.replace("|", "\\|")
-        lines.append(f"| `{item.check_id}` | **{result_label}** | {detail} |")
+    for item in failed_checks:
+        lines.append(f"- **FAIL `{item.check_id}`:** {item.detail}")
 
     lines.extend(
         (
             "",
-            "## Immutable Run Identities",
-            "",
-            "| Artifact | Hash |",
-            "|---|---|",
+            "## Frozen Identity Chain",
+            f"- Evidence: `{data.get('ledger_snapshot_hash') or 'MISSING'}`",
+            f"- Assumptions: `{data.get('assumption_set_hash') or 'MISSING'}`",
+            f"- Scenarios: `{data.get('scenario_set_hash') or 'MISSING'}`",
+            f"- Valuation: `{data.get('valuation_hash') or 'MISSING'}`",
+            f"- Audit: `{data.get('audit_hash') or 'MISSING'}`",
+            f"- Intrinsic Freeze: `{getattr(result.freeze_token, 'token_hash', None) or 'MISSING'}`",
         )
     )
-    for label, key in (
-        ("Evidence Ledger", "ledger_snapshot_hash"),
-        ("Assumption set", "assumption_set_hash"),
-        ("Scenario set", "scenario_set_hash"),
-        ("Beta", "beta_snapshot_hash"),
-        ("WACC", "wacc_snapshot_hash"),
-        ("Capacity assessment", "capacity_commitment_assessment_hash"),
-        ("Capacity consumption", "capacity_bridge_consumption_hash"),
-        ("Capacity scenario", "capacity_scenario_binding_hash"),
-        ("Capacity valuation", "capacity_valuation_binding_hash"),
-        ("Capacity PER", "capacity_per_binding_hash"),
-        ("Capacity consistency", "capacity_consistency_hash"),
-        ("Capacity audit", "capacity_audit_hash"),
-        *(
-            (
-                ("Broker pre-freeze", "broker_research_snapshot_hash"),
-                ("Broker audit", "broker_research_audit_hash"),
-            )
-            if broker_configured
-            else ()
-        ),
-        ("Valuation", "valuation_hash"),
-        ("Audit", "audit_hash"),
-    ):
-        value = data.get(key)
-        lines.append(f"| {label} | `{value if value is not None else 'NOT_APPLICABLE'}` |")
-    lines.append(
-        f"| Intrinsic Freeze | `{getattr(result.freeze_token, 'token_hash', None) or 'MISSING'}` |"
-    )
-
-    lines.extend(
-        (
-            "",
-            "## Major Gate Summaries",
-            "",
-            "| Gate | Status | Progress | Decisive result | Residual risk | Next |",
-            "|---|---|---:|---|---|---|",
+    auxiliary = tuple(
+        (label, data.get(key))
+        for label, key in (
+            ("Beta", "beta_snapshot_hash"),
+            ("WACC", "wacc_snapshot_hash"),
+            ("Capacity assessment", "capacity_commitment_assessment_hash"),
+            ("Capacity consumption", "capacity_bridge_consumption_hash"),
+            ("Capacity scenario", "capacity_scenario_binding_hash"),
+            ("Capacity valuation", "capacity_valuation_binding_hash"),
+            ("Capacity PER", "capacity_per_binding_hash"),
+            ("Capacity consistency", "capacity_consistency_hash"),
+            ("Capacity audit", "capacity_audit_hash"),
+            *(
+                (
+                    ("Broker pre-freeze", "broker_research_snapshot_hash"),
+                    ("Broker audit", "broker_research_audit_hash"),
+                )
+                if broker_configured
+                else ()
+            ),
         )
+        if data.get(key) is not None
     )
-    for summary in result.major_gate_summaries:
-        decisive = summary.decisive_result.replace("|", "\\|").replace("\n", " ")
-        risk = summary.residual_risk.replace("|", "\\|").replace("\n", " ")
+    if auxiliary:
         lines.append(
-            f"| {summary.ordinal}. `{summary.gate_id}` | `{summary.status.value}` | "
-            f"{summary.completed_stage_count}/{summary.expected_stage_count} | "
-            f"{decisive} | {risk} | `{summary.next_action}` |"
+            "- Auxiliary bindings: "
+            + " · ".join(f"{label} `{value}`" for label, value in auxiliary)
+        )
+
+    lines.extend(("", "## Major Gate Summaries"))
+    for summary in result.major_gate_summaries:
+        lines.extend(
+            (
+                "",
+                f"### {summary.ordinal}. {summary.title} — {summary.status.value.upper()} "
+                f"({summary.completed_stage_count}/{summary.expected_stage_count})",
+                f"- Result: {summary.decisive_result}",
+                f"- Risk: {summary.residual_risk} · Next: `{summary.next_action}`",
+            )
         )
     if not result.major_gate_summaries:
-        lines.append("| — | `MISSING` | 0/5 | — | reporting contract unavailable | — |")
+        lines.extend(("", "### MISSING", "- Five-gate reporting contract unavailable."))
     if result.reporting_warnings:
         lines.extend(("", "### Reporting Delivery Warnings", ""))
         lines.extend(f"- {item}" for item in result.reporting_warnings)
@@ -459,29 +486,30 @@ def render_controlled_run_report(
         (
             "",
             "## Final Report Delivery Contract",
-            "",
             f"- Main body editorial target: {reporting_contract.main_body_target_pages[0]}–{reporting_contract.main_body_target_pages[1]} pages",
             f"- Audit appendix editorial target: {reporting_contract.audit_appendix_target_pages[0]}–{reporting_contract.audit_appendix_target_pages[1]} pages",
             f"- Combined editorial cap: {reporting_contract.total_page_cap} pages",
-            "- The 33-stage trace remains in the audit appendix; routine progress output uses only the five major-gate summaries.",
+            f"- Typography: body ≥ {reporting_contract.body_min_pt}pt, primary heading ≥ {reporting_contract.primary_heading_min_pt}pt, section heading ≥ {reporting_contract.section_heading_min_pt}pt; dense wide tables forbidden.",
+            "- Mandatory: every claim source is mapped to a direct HTTP(S) original link in `Sources — Direct Verification`.",
         )
     )
 
-    lines.extend(
-        (
-            "",
-            "## Stage Trace",
-            "",
-            "| # | Stage | Status | Blocking | Rationale |",
-            "|---:|---|---|---:|---|",
+    lines.extend(("", "## Compact Audit Appendix — 33-Stage Trace"))
+    trace_index = {trace.stage: trace for trace in result.stage_traces}
+    stage_number = {
+        trace.stage: index
+        for index, trace in enumerate(result.stage_traces, start=1)
+    }
+    for gate in reporting_contract.major_gates:
+        compact = " · ".join(
+            f"{stage_number[stage]} `{stage}`={trace_index[stage].status.value}"
+            for stage in gate.stages
+            if stage in trace_index
         )
+        lines.append(f"- **{gate.gate_id}:** {compact or 'NOT_EXECUTED'}")
+    lines.append(
+        "- Exact rationales and output keys remain in the immutable `control_plane_trace.json` artifact."
     )
-    for index, trace in enumerate(result.stage_traces, start=1):
-        rationale = trace.rationale.replace("|", "\\|").replace("\n", " ")
-        lines.append(
-            f"| {index} | `{trace.stage}` | `{trace.status.value}` | "
-            f"{'YES' if trace.blocking else 'NO'} | {rationale} |"
-        )
 
     persisted = data.get("final_report")
     lines.extend(("", "## Persisted Research Report", ""))
@@ -500,60 +528,45 @@ def render_report_form_template() -> str:
 - Run status: **{{ VERIFIED_FROZEN | INCOMPLETE | BLOCKED }}**
 - Attestation hash: `{{ attestation_hash }}`
 
-## Execution Attestation
+## Verification
 
-| Check | Result | Detail |
-|---|---:|---|
-| `canonical_stage_sequence` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
-| `beta_wacc_same_run_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
-| `capacity_core_consumption_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
-| `broker_research_primary_verification_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
-| `freeze_hash_binding` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
-| `major_gate_reporting_contract` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
-| `major_gate_delivery` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
+- Checks: **{{ passed_checks }}/{{ total_checks }} PASS**
+- Canonical stages: **{{ terminal_stage_count }}/33 terminal traces**
+- Failed checks only: `{{ canonical_stage_sequence | beta_wacc_same_run_chain | capacity_core_consumption_chain | broker_research_primary_verification_chain | freeze_hash_binding | major_gate_reporting_contract | major_gate_delivery | direct_source_links | none }} — {{ detail }}`
 
-## Immutable Run Identities
+## Frozen Identity Chain
 
-| Artifact | Hash |
-|---|---|
-| Evidence Ledger | `{{ ledger_snapshot_hash }}` |
-| Assumption set | `{{ assumption_set_hash }}` |
-| Scenario set | `{{ scenario_set_hash }}` |
-| Beta | `{{ beta_snapshot_hash_or_not_applicable }}` |
-| WACC | `{{ wacc_snapshot_hash_or_not_applicable }}` |
-| Capacity assessment | `{{ capacity_commitment_assessment_hash }}` |
-| Capacity consumption | `{{ capacity_bridge_consumption_hash_or_not_applicable }}` |
-| Capacity scenario | `{{ capacity_scenario_binding_hash_or_not_applicable }}` |
-| Capacity valuation | `{{ capacity_valuation_binding_hash_or_not_applicable }}` |
-| Capacity audit | `{{ capacity_audit_hash }}` |
-| Broker pre-freeze | `{{ broker_research_snapshot_hash_or_not_applicable }}` |
-| Broker audit | `{{ broker_research_audit_hash_or_not_applicable }}` |
-| Valuation | `{{ valuation_hash }}` |
-| Audit | `{{ audit_hash }}` |
-| Intrinsic Freeze | `{{ freeze_token_hash }}` |
+- Evidence: `{{ ledger_snapshot_hash }}`
+- Assumptions: `{{ assumption_set_hash }}`
+- Scenarios: `{{ scenario_set_hash }}`
+- Valuation: `{{ valuation_hash }}`
+- Audit: `{{ audit_hash }}`
+- Intrinsic Freeze: `{{ freeze_token_hash }}`
+- Auxiliary bindings: `{{ beta_snapshot_hash | wacc_snapshot_hash | capacity_audit_hash | broker_research_snapshot_hash | broker_research_audit_hash | NOT_APPLICABLE }}`
 
 ## Major Gate Summaries
 
-| Gate | Status | Progress | Decisive result | Residual risk | Next |
-|---|---|---:|---|---|---|
-| `{{ gate_id }}` | `{{ status }}` | `{{ completed/expected }}` | `{{ decisive_result }}` | `{{ residual_risk }}` | `{{ next_action }}` |
+### {{ ordinal }}. {{ title }} — {{ STATUS }} ({{ completed/expected }})
+
+- Result: `{{ decisive_result }}`
+- Risk: `{{ residual_risk }}` · Next: `{{ next_action }}`
 
 ## Final Report Delivery Contract
 
-- Main body editorial target: 6–8 pages
-- Audit appendix editorial target: 3–4 pages
-- Combined editorial cap: 12 pages
-- The 33-stage trace remains in the audit appendix; routine progress output uses only the five major-gate summaries.
+- Main body editorial target: 3–4 pages
+- Audit appendix editorial target: 1–2 pages
+- Combined editorial cap: 6 pages
+- Typography: body ≥ 13pt, primary heading ≥ 22pt, section heading ≥ 18pt; dense wide tables forbidden.
+- Mandatory: every claim source is mapped to a direct HTTP(S) original link in `Sources — Direct Verification`.
 
-## Stage Trace
+## Compact Audit Appendix — 33-Stage Trace
 
-| # | Stage | Status | Blocking | Rationale |
-|---:|---|---|---:|---|
-| 1 | `{{ stage }}` | `{{ status }}` | `{{ YES_OR_NO }}` | `{{ rationale }}` |
+- **{{ gate_id }}:** `{{ stage_number }} {{ stage }}={{ status }}` · …
+- Exact rationales and output keys remain in the immutable `control_plane_trace.json` artifact.
 
 ## Persisted Research Report
 
-{{ immutable_saved_final_report }}
+{{ immutable_saved_final_report_including_sources_direct_verification }}
 """
 
 

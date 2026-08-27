@@ -72,6 +72,13 @@ class ReportingContract:
     main_body_target_pages: tuple[int, int]
     audit_appendix_target_pages: tuple[int, int]
     total_page_cap: int
+    body_min_pt: int
+    primary_heading_min_pt: int
+    section_heading_min_pt: int
+    dense_wide_tables_forbidden: bool
+    direct_http_links_required: bool
+    claim_source_mapping_required: bool
+    non_http_source_refs_forbidden_in_live_reports: bool
 
     def __post_init__(self) -> None:
         if not self.contract_id or not self.major_gates:
@@ -90,6 +97,22 @@ class ReportingContract:
             (self.main_body_target_pages[0], self.audit_appendix_target_pages[0])
         ):
             raise ValueError("total report page cap is below the minimum page targets")
+        if not (
+            self.body_min_pt >= 12
+            and self.primary_heading_min_pt > self.section_heading_min_pt
+            and self.section_heading_min_pt > self.body_min_pt
+        ):
+            raise ValueError("report typography hierarchy is invalid")
+        if not self.dense_wide_tables_forbidden:
+            raise ValueError("compact report contract must forbid dense wide tables")
+        if not all(
+            (
+                self.direct_http_links_required,
+                self.claim_source_mapping_required,
+                self.non_http_source_refs_forbidden_in_live_reports,
+            )
+        ):
+            raise ValueError("live report source-link requirements cannot be disabled")
 
 
 @dataclass(frozen=True)
@@ -224,12 +247,38 @@ def load_reporting_contract(path: str | Path) -> ReportingContract:
             raise ValueError(f"report page policy {key} must be [min, max]")
         return value[0], value[1]
 
+    typography = raw.get("typography_policy")
+    if not isinstance(typography, dict):
+        raise ValueError("reporting contract requires typography_policy")
+    source_links = raw.get("source_link_policy")
+    if not isinstance(source_links, dict):
+        raise ValueError("reporting contract requires source_link_policy")
+
     return ReportingContract(
         contract_id=str(raw.get("contract_id") or "").strip(),
         major_gates=tuple(gates),
         main_body_target_pages=page_range("main_body_target_pages"),
         audit_appendix_target_pages=page_range("audit_appendix_target_pages"),
         total_page_cap=int(page_policy.get("total_page_cap") or 0),
+        body_min_pt=int(typography.get("body_min_pt") or 0),
+        primary_heading_min_pt=int(
+            typography.get("primary_heading_min_pt") or 0
+        ),
+        section_heading_min_pt=int(
+            typography.get("section_heading_min_pt") or 0
+        ),
+        dense_wide_tables_forbidden=bool(
+            typography.get("dense_wide_tables_forbidden", False)
+        ),
+        direct_http_links_required=bool(
+            source_links.get("direct_http_links_required", False)
+        ),
+        claim_source_mapping_required=bool(
+            source_links.get("claim_source_mapping_required", False)
+        ),
+        non_http_source_refs_forbidden_in_live_reports=bool(
+            source_links.get("non_http_source_refs_forbidden_in_live_reports", False)
+        ),
     )
 
 

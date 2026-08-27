@@ -50,9 +50,11 @@ The same 33 stages are partitioned once, by `config/control_plane_stage_registry
 4. `G4_VALUATION_AUDIT_FREEZE` — stages 20–26;
 5. `G5_POST_FREEZE_PERSISTENCE` — stages 27–33.
 
-The orchestrator emits a four-field summary when a gate reaches its terminal stage or terminates blocked: status, decisive result, residual risk and next action. A blocked gate never causes later-gate summaries to be fabricated. Routine output uses these five summaries; the complete stage trace remains available in the verified audit appendix.
+The orchestrator emits a four-field summary when a gate reaches its terminal stage or terminates blocked: status, decisive result, residual risk and next action. A blocked gate never causes later-gate summaries to be fabricated. Routine output uses these five summaries; the compact verified appendix retains every stage identity/status and the immutable trace artifact retains exact rationale/output-key detail.
 
-The final result report has an editorial target of 6–8 pages for the decision-facing body and 3–4 pages for the audit appendix, capped at 12 pages combined. Page limits do not authorize omission of material blockers, uncertainty labels, source lineage, frozen identities or audit evidence.
+The final result report has an editorial target of 3–4 pages for the decision-facing body and 1–2 pages for the compact audit appendix, capped at 6 pages combined. Body text is at least 13pt, primary headings at least 22pt and section headings at least 18pt; dense wide tables are forbidden. The appendix preserves all 33 stage identities/statuses, while exact rationales/output keys remain in the immutable trace artifact. Page limits do not authorize omission of material blockers, uncertainty labels, source lineage, frozen identities or audit evidence.
+
+Source links are a hard exception to omission. Every active Evidence record and each reported identity/Beta/WACC/PER/Street/market reference must resolve to a credential-free HTTP(S) original-source link. Repeated claims from one document are grouped under that link with covered metrics/effective dates; high-volume groups show counts and representative metrics while the immutable Evidence Ledger retains every exact ID/metric/date mapping. A `LIVE_PRIMARY` run with a missing, non-HTTP or credential-bearing reference is blocked during final-report persistence; a verified wrapper also checks that every accepted link is actually embedded in the persisted report.
 
 ## New v0.5 gates
 

@@ -149,4 +149,4 @@ The orchestrator:
 
 A missing live adapter or source is a visible capability state, not permission to fall back to the old keyword router, a generic DCF, fabricated evidence, or a market-anchored estimate.
 
-Routine operator output is therefore five major-gate summaries rather than 33 progress lines. The full stage trace remains the authoritative audit appendix. The verified final result report also records the editorial delivery policy: 6–8 pages for the decision-facing body, 3–4 pages for the audit appendix and 12 pages maximum combined.
+Routine operator output is therefore five major-gate summaries rather than 33 progress lines. The compact appendix retains all 33 stage identities/statuses while the immutable trace artifact retains exact rationales/output keys. The verified final result report targets 3–4 pages for the decision-facing body, 1–2 pages for the appendix and 6 pages maximum combined, with body text at least 13pt and section headings at least 18pt.

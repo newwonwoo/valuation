@@ -88,16 +88,6 @@ def render_report(state_root: Path) -> str:
 - Down/Core/Bull FCFF: 공시 사실에서 파생한 분석가 가정이며 회사 가이던스가 아닙니다.
 - 초고압 부동산 계약은 LAND_CONTROL과 692.5억원 현금유출을 공식 확정하지만, 정확한 생산 CAPA는 미공시이므로 증분 FCFF는 보수적 bounded underwrite입니다.
 
-## Source Register
-
-- 2025 사업보고서: {snapshot.sources['annual_report']['source_ref']}
-- 2026년 2분기 IR: {snapshot.sources['q2_ir']['source_ref']}
-- 2026년 8월 26일 초고압 생산용 부동산 양수결정: {snapshot.sources['uhv_property_acquisition']['source_ref']}
-- 실제 peer Beta·WACC 원장: {snapshot.sources['risk_snapshot']['source_ref']}
-- PRISM underwriting assumptions: {snapshot.sources['underwriting']['source_ref']}
-- Street 참고자료: {STREET_SOURCE_REF}
-- 현재가: {market_snapshot.source_ref}
-
 ---
 
 """

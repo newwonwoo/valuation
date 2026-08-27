@@ -6,6 +6,7 @@ from valuation_engine.control_plane import (
     IntrinsicFreezeToken,
     StageStatus,
 )
+from valuation_engine.ledger import EvidenceLedger
 from valuation_engine.orchestrator import (
     ControlledRunResult,
     StageTrace,
@@ -18,10 +19,12 @@ from valuation_engine.report_form import (
     render_controlled_run_report,
     render_report_form_template,
 )
+from valuation_engine.records import EvidenceRecord, EvidenceSourceLayer
 
 
 ROOT = Path(__file__).resolve().parents[1]
 STAGES = ROOT / "config" / "control_plane_stage_registry.yaml"
+SOURCE_URL = "https://example.com/verified-filing"
 
 
 def completed_result() -> ControlledRunResult:
@@ -52,7 +55,31 @@ def completed_result() -> ControlledRunResult:
         "capacity_commitment_assessment_hash": "CAPACITY-ASSESSMENT",
         "capacity_audit_hash": "CAPACITY-AUDIT",
         "capacity_audit_passed": True,
-        "final_report": "# Persisted fixture report\n\n- intrinsic: 70,000 KRW/share\n",
+        "evidence_ledger": EvidenceLedger(
+            (
+                EvidenceRecord(
+                    id="E-REPORT",
+                    target="REPORT-RUN",
+                    metric="normalized_earnings",
+                    value=1,
+                    unit="KRW",
+                    source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
+                    effective_date="2026-06-30",
+                    observed_date="2026-08-01",
+                    source_name="Verified filing",
+                    source_ref=SOURCE_URL,
+                    source_grade="A",
+                    confidence=1.0,
+                    segment="core",
+                ),
+            )
+        ),
+        "final_report": (
+            "# Persisted fixture report\n\n"
+            "- intrinsic: 70,000 KRW/share\n"
+            "\n## Sources — Direct Verification\n"
+            f"- source: [original]({SOURCE_URL})\n"
+        ),
     }
     traces = tuple(
         StageTrace(stage, StageStatus.PASS, "verified", False)
@@ -76,11 +103,14 @@ def test_completed_controlled_run_is_verified_and_renders_trace():
 
     assert attestation.passed
     assert "Run status: **VERIFIED_FROZEN**" in report
-    assert "## Stage Trace" in report
+    assert "## Compact Audit Appendix — 33-Stage Trace" in report
     assert "## Major Gate Summaries" in report
     assert "G5_POST_FREEZE_PERSISTENCE" in report
-    assert "Combined editorial cap: 12 pages" in report
+    assert "Combined editorial cap: 6 pages" in report
+    assert "body ≥ 13pt" in report
+    assert "| Gate |" not in report
     assert "CAPACITY-AUDIT" in report
+    assert SOURCE_URL in report
     assert "# Persisted fixture report" in report
 
 
@@ -99,7 +129,7 @@ def test_manual_or_partial_result_cannot_be_labelled_verified():
 
     assert not attestation.passed
     assert "Run status: **INCOMPLETE**" in report
-    assert "`canonical_stage_sequence` | **FAIL**" in report
+    assert "**FAIL `canonical_stage_sequence`:**" in report
 
 
 def test_report_form_template_contains_required_execution_identities():
@@ -111,6 +141,8 @@ def test_report_form_template_contains_required_execution_identities():
     assert "freeze_token_hash" in template
     assert "immutable_saved_final_report" in template
     assert "major_gate_reporting_contract" in template
+    assert "direct_source_links" in template
+    assert "Sources — Direct Verification" in template
 
 
 def test_report_template_exposes_broker_research_audit_identity():

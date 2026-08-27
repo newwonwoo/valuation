@@ -25,16 +25,6 @@
 - Down/Core/Bull FCFF: 공시 사실에서 파생한 분석가 가정이며 회사 가이던스가 아닙니다.
 - 초고압 부동산 계약은 LAND_CONTROL과 692.5억원 현금유출을 공식 확정하지만, 정확한 생산 CAPA는 미공시이므로 증분 FCFF는 보수적 bounded underwrite입니다.
 
-## Source Register
-
-- 2025 사업보고서: https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm
-- 2026년 2분기 IR: https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002&mode=view&page=1&s_cate=&s_keyword=&s_type=
-- 2026년 8월 26일 초고압 생산용 부동산 양수결정: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660
-- 실제 peer Beta·WACC 원장: https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md
-- PRISM underwriting assumptions: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#scenarios
-- Street 참고자료: https://www.yna.co.kr/amp/view/AKR20260811028700008
-- 현재가: https://finance.naver.com/item/main.naver?code=062040
-
 ---
 
 # PRISM Verified Controlled-Run Report
@@ -42,90 +32,57 @@
 - Run ID: `SANIL-062040-20260826`
 - Execution mode: `live_primary`
 - Run status: **VERIFIED_FROZEN**
-- Attestation hash: `a98a5e0e38e682525ed5a77defef6d35024bbca3d8c51c0b3a0bb388209c3acb`
+- Attestation hash: `1df4b3ab44f750a240c50d9d5003a275a2e32b4fde83c4d606f0e6a025b3d51a`
 
-## Execution Attestation
+## Verification
+- Checks: **21/21 PASS**
+- Canonical stages: **33/33 terminal traces**
 
-| Check | Result | Detail |
-|---|---:|---|
-| `live_primary_mode` | **PASS** | the report was produced by LIVE_PRIMARY |
-| `run_unblocked` | **PASS** | the controlled run has no blocking reason |
-| `canonical_stage_sequence` | **PASS** | all 33 canonical stages executed in order |
-| `terminal_stage_statuses` | **PASS** | every stage ended in a non-blocking terminal status |
-| `intrinsic_freeze_token` | **PASS** | the same run issued an IntrinsicFreezeToken |
-| `evidence_ledger_hash` | **PASS** | the frozen Evidence Ledger hash is present |
-| `assumption_set_hash` | **PASS** | the compiled assumption-set hash is present |
-| `scenario_set_hash` | **PASS** | the bound scenario-set hash is present |
-| `valuation_hash` | **PASS** | the deterministic valuation hash is present |
-| `audit_hash` | **PASS** | the generic audit passed and its hash is present |
-| `persisted_final_report` | **PASS** | the final report was emitted from the persisted run payload |
-| `selected_method_contract` | **PASS** | selected valuation methods are typed |
-| `beta_wacc_same_run_chain` | **PASS** | Beta and WACC snapshots are executed and bound to one risk chain |
-| `broker_research_primary_verification_chain` | **PASS** | pre-freeze Broker Research was partitioned, primary-verified and audit-bound |
-| `capacity_assessment` | **PASS** | the typed Capacity Commitment assessment and hash are present |
-| `capacity_audit` | **PASS** | the Capacity omission/double-count audit passed |
-| `capacity_core_consumption_chain` | **PASS** | Core Capacity, CAPEX and ramp paths are bound through valuation |
-| `freeze_hash_binding` | **PASS** | Freeze is bound to the same Evidence, assumptions, valuation and audit |
+## Frozen Identity Chain
+- Evidence: `b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0`
+- Assumptions: `6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed`
+- Scenarios: `16bdd1d42c1cef90abae55d0fe1872fd729bdc49b86d873f968bc3ba55717694`
+- Valuation: `f3c586a7786ca8691ae343dd02a70d9d093b8c0853622634a48b7ca8d7c08492`
+- Audit: `7526decadfa3282335509009aa9faec346655d84e13192756ab67c111542f1db`
+- Intrinsic Freeze: `a1de2ff479af4f8b748d4e49fd9f87d0b9bebe7a27c89f1fe0c4d944daa38f10`
+- Auxiliary bindings: Beta `567700b4b5094f7aaa61cc030d0c8758ed146e9a38a3be4f4d56c5999f0a121e` · WACC `2beebb32d08c7f6e354a0771edba24e0f108aea78e9ba175b0b59de16257325b` · Capacity assessment `30990a2dd5985f766892ce206687c4aa4368e6a59dfef0da6f0f777939cb4543` · Capacity consumption `cc91fcc67ce9685c60520f028185caac90360ed900e1acaf0c0dc3cf60ea11b7` · Capacity scenario `28e27a5c5fd1659ccd718165d846e0ef53c67022a135fe1ac84e86c9123d7683` · Capacity valuation `7356323a77f47efb13c2dc00feb918515da43180f9096aaff252ea1402f72b2d` · Capacity PER `2fde85da7644231967ea95f2d6af39a66cff72e96b70f0d3cb0dfedd3695c9e0` · Capacity consistency `e6fffcfc4c0f4b7a442ac18e72d5eec96e201be11331abd7a6ebed9b793af6fb` · Capacity audit `c57b0531cf5655cd0828cdd3a7288391b72a642a1d838678961d526711999bcd` · Broker pre-freeze `ce7d809ba2f9e2a91a5fbb3604dbb80fbe7af2b2694f3195ce549cdef95991eb` · Broker audit `a7c344017374899fdbefb684ba0facfde4b5ed7a6caaa2ac29f330f6233ab9f6`
 
-## Immutable Run Identities
+## Major Gate Summaries
 
-| Artifact | Hash |
-|---|---|
-| Evidence Ledger | `b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0` |
-| Assumption set | `6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed` |
-| Scenario set | `8e75f10a05a561d7fb1c98d4ee431287c27a7cf0232aa6db52e8b50a8f34f974` |
-| Beta | `567700b4b5094f7aaa61cc030d0c8758ed146e9a38a3be4f4d56c5999f0a121e` |
-| WACC | `2beebb32d08c7f6e354a0771edba24e0f108aea78e9ba175b0b59de16257325b` |
-| Capacity assessment | `30990a2dd5985f766892ce206687c4aa4368e6a59dfef0da6f0f777939cb4543` |
-| Capacity consumption | `cc91fcc67ce9685c60520f028185caac90360ed900e1acaf0c0dc3cf60ea11b7` |
-| Capacity scenario | `d497a0b33d96c14fbef1bc813fa8a417bb56cf02fcf1df72173a50ba1530cb5d` |
-| Capacity valuation | `c4014c11bd060ce675b9eb0d5505e7571e5df6bd596b3eb5530591dae73aed52` |
-| Capacity PER | `3f41768bb057dfa6c56282eccb2d9c8c8327d7ed61b1834c2772d76ef4e49884` |
-| Capacity consistency | `bbe422353f84d98bdfe7662b34ff4e5b32f0dd7ba09a4f66b216c389433282fe` |
-| Capacity audit | `c209afaec588228ea553f88ae0f0d6cc281f8757b7dd3d23b2799a43f8f7c172` |
-| Broker pre-freeze | `ce7d809ba2f9e2a91a5fbb3604dbb80fbe7af2b2694f3195ce549cdef95991eb` |
-| Broker audit | `a7c344017374899fdbefb684ba0facfde4b5ed7a6caaa2ac29f330f6233ab9f6` |
-| Valuation | `923c3eeeb6ab9a1431c01b08099fe2cf46ea4189d85e0242ea7df53ea7481413` |
-| Audit | `c5d02475b452156306cbd73ea49a168b7bc981e2c7687b542ef1d1f1307e22b3` |
-| Intrinsic Freeze | `0b034f4976138e59056b622e4cc04d594099a0a729e0078cac9e8613f0e56ffa` |
+### 1. Evidence and Routing — PASS (9/9)
+- Result: append-only EvidenceLedger validated and canonical runtime snapshot frozen
+- Risk: NONE · Next: `G2_INSIGHT_CHALLENGE`
 
-## Stage Trace
+### 2. Insight and Challenge — WARNING (5/5)
+- Result: Blind Red Team left no unresolved blocking issue
+- Risk: ROCKET_INSIGHT_SCAN: live Rocket Insight scanner dispatch completed with warnings · Next: `G3_ASSUMPTIONS_METHOD_RISK`
 
-| # | Stage | Status | Blocking | Rationale |
-|---:|---|---|---:|---|
-| 1 | `COMPANY_RESOLUTION` | `pass` | NO | company identity resolved from a declared live resolver contract |
-| 2 | `LOAD_COMPANY_STATE` | `pass` | NO | no prior company state; first-run empty state is valid \| loaded 0 immutable module-impact learning record(s) |
-| 3 | `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT` | `pass` | NO | versioned Industry Knowledge snapshot loaded and hash-verified |
-| 4 | `SOURCE_FRESHNESS_PRECHECK` | `pass` | NO | live source-watch precheck passed |
-| 5 | `SEGMENT_DECOMPOSITION` | `pass` | NO | authoritative-lineage-backed segment decomposition completed |
-| 6 | `INDUSTRY_DNA_ROUTE` | `pass` | NO | all decomposed segments routed to evidence-backed multi-label Industry DNA profiles |
-| 7 | `MODULE_REQUIREMENT_PLAN` | `pass` | NO | Broker Research discovery partitioned context, primary-verification-only and quarantined claims; primary verification metrics were compiled into the Module Requirement Plan \| compiled canonical Module Requirement Plan and non-destructive learned research loadout |
-| 8 | `PRIMARY_EVIDENCE_COLLECTION` | `pass` | NO | primary evidence collected with complete required segment/metric coverage and planned source lineage |
-| 9 | `EVIDENCE_LEDGER` | `pass` | NO | append-only EvidenceLedger validated and canonical runtime snapshot frozen |
-| 10 | `ROCKET_INSIGHT_SCAN` | `warning` | NO | live Rocket Insight scanner dispatch completed with warnings |
-| 11 | `UPSTREAM_FUNDING_SCAN` | `pass` | NO | live upstream funding scan completed; result is evidence/hypothesis input only and does not directly change WACC |
-| 12 | `RESEARCHER_A` | `pass` | NO | LLM Intelligence Officer produced typed hypotheses and an auditable environment-change/corporate-strength linkage decision without committing assumptions |
-| 13 | `BLIND_RED_TEAM_B` | `pass` | NO | Blind Red Team completed with no unresolved blocker |
-| 14 | `RESEARCH_LOOP` | `skipped_not_applicable` | NO | Blind Red Team left no unresolved blocking issue |
-| 15 | `EVIDENCE_TO_ASSUMPTION_BRIDGE` | `pass` | NO | canonical project gates were classified and Core capacity obligations frozen \| LLM Bridge proposals validated and converted to compiler requests; no assumptions committed |
-| 16 | `SCENARIO_BUILD` | `pass` | NO | every Core-inclusion capacity project consumed explicit capacity, CAPEX and ramp bridge paths \| Bridge proposals deterministically compiled and bound into generic scenarios \| every required capacity, CAPEX and ramp path compiled into the Core scenario |
-| 17 | `VALUATION_METHOD_INTENT` | `pass` | NO | economic valuation-method intent resolved before Beta/WACC; exact evaluator construction remains downstream |
-| 18 | `HIERARCHICAL_BETA_ESTIMATION` | `pass` | NO | live L1→L4 Economic-Twin Beta estimated and relevered with one target structure |
-| 19 | `WACC_VALIDATION` | `pass` | NO | currency-consistent WACC computed from live Beta and independent marginal financing inputs |
-| 20 | `DETERMINISTIC_VALUATION` | `pass` | NO | registered deterministic evaluators and SOTP aggregation completed \| driver-specific DCF economic fingerprint bound for cross-method consistency \| deterministic valuation consumed every Core capacity economic path |
-| 21 | `HIERARCHICAL_WARRANTED_PER` | `skipped_not_applicable` | NO | No authorized same-as-of Economic-Twin residual PER pack is included; PER is withheld rather than approximated. \| Warranted PER is not applicable; capacity PER double-count path is closed |
-| 22 | `DCF_PER_ASSUMPTION_CONSISTENCY_GATE` | `pass` | NO | DCF-PER consistency gate is not applicable \| capacity assessment, scenario, valuation and PER identities are consistent |
-| 23 | `CROSS_METHOD_DOUBLE_COUNT_AUDIT` | `pass` | NO | cross-method economic paths are unique |
-| 24 | `PROBABILITY_DISTRIBUTION_ANALYSIS` | `warning` | NO | scenario probabilities are not calibration-authorized; numeric expected value remains disabled |
-| 25 | `AUDIT_GATE` | `pass` | NO | Broker Research pre-freeze placement, primary verification and quarantine audit passed \| capacity omission, baseline and double-count audit passed \| decision-impact record and run-bound generic intrinsic audit passed; run is eligible for freeze if snapshot hashes are present |
-| 26 | `INTRINSIC_VALUE_FREEZE` | `pass` | NO | audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze |
-| 27 | `STREET_REFERENCE_LOAD` | `pass` | NO | target-company Street references loaded after a valid same-run Freeze Token |
-| 28 | `STREET_GAP_ANALYZER` | `pass` | NO | Street gap preserved as scenario envelope because probability weighting is not calibrated |
-| 29 | `MARKET_PRICE_LOAD` | `pass` | NO | target-company market price loaded only after intrinsic freeze |
-| 30 | `MARKET_COMPARE` | `pass` | NO | current price compared with each intrinsic scenario; no Expected Value fabricated |
-| 31 | `THESIS_DELTA` | `pass` | NO | current thesis compared with the prior immutable successful state |
-| 32 | `SAVE_STATE` | `pass` | NO | immutable learning/run artifacts saved and audit-passed current state promoted |
-| 33 | `FINAL_REPORT` | `pass` | NO | final report emitted from the same immutable payload saved in the run state |
+### 3. Assumptions, Method and Risk — PASS (5/5)
+- Result: currency-consistent WACC computed from live Beta and independent marginal financing inputs
+- Risk: NONE · Next: `G4_VALUATION_AUDIT_FREEZE`
+
+### 4. Valuation, Audit and Freeze — WARNING (7/7)
+- Result: audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze
+- Risk: PROBABILITY_DISTRIBUTION_ANALYSIS: scenario probabilities are not calibration-authorized; numeric expected value remains disabled · Next: `G5_POST_FREEZE_PERSISTENCE`
+
+### 5. Post-Freeze Comparison and Persistence — PASS (7/7)
+- Result: final report emitted from the same immutable payload saved in the run state
+- Risk: NONE · Next: `FINAL_RESULT_REPORT`
+
+## Final Report Delivery Contract
+- Main body editorial target: 3–4 pages
+- Audit appendix editorial target: 1–2 pages
+- Combined editorial cap: 6 pages
+- Typography: body ≥ 13pt, primary heading ≥ 22pt, section heading ≥ 18pt; dense wide tables forbidden.
+- Mandatory: every claim source is mapped to a direct HTTP(S) original link in `Sources — Direct Verification`.
+
+## Compact Audit Appendix — 33-Stage Trace
+- **G1_EVIDENCE_ROUTING:** 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass
+- **G2_INSIGHT_CHALLENGE:** 10 `ROCKET_INSIGHT_SCAN`=warning · 11 `UPSTREAM_FUNDING_SCAN`=pass · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable
+- **G3_ASSUMPTIONS_METHOD_RISK:** 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=pass · 19 `WACC_VALIDATION`=pass
+- **G4_VALUATION_AUDIT_FREEZE:** 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=pass · 26 `INTRINSIC_VALUE_FREEZE`=pass
+- **G5_POST_FREEZE_PERSISTENCE:** 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=pass · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
+- Exact rationales and output keys remain in the immutable `control_plane_trace.json` artifact.
 
 ## Persisted Research Report
 
@@ -146,7 +103,7 @@
 - 시장 인식 트리거: official second-factory equipment or production ramp disclosure; effective-capacity growth with backlog conversion; high-value product mix and margin retention after ramp
 - 반증·철회 조건: the company cancels the program or confirms it is fully included in the frozen baseline; backlog or orders decline before capacity converts to shipments; ramp costs and margin normalization offset the added production ceiling
 - 다음 검증: next quarterly filing for factory ramp, CAPEX and utilization; orders-to-revenue conversion and customer concentration; cash conversion after expansion spending
-- Supporting Evidence: E:SANIL:orders, E:SANIL:backlog, E:SANIL:utilization, E:SANIL:expansion_land_control, E:SANIL:expansion_site_area, E:SANIL:expansion_capex_committed, E:SANIL:UHV:land_control, E:SANIL:UHV:capex_committed
+- Supporting Evidence: [E:SANIL:orders](https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm), [E:SANIL:backlog](https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002&mode=view&page=1&s_cate=&s_keyword=&s_type=), [E:SANIL:utilization](https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm), [E:SANIL:expansion_land_control](https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm), [E:SANIL:expansion_site_area](https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm), [E:SANIL:expansion_capex_committed](https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm), [E:SANIL:UHV:land_control](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660), [E:SANIL:UHV:capex_committed](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660)
 - Contradicting Evidence: 없음
 - LLM confidence: 78%
 
@@ -155,6 +112,10 @@
 - Core intrinsic: 168,223.31 KRW/share
 - Bull intrinsic: 217,104.3 KRW/share
 - Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.
+
+## Probability Calibration
+- Status: UNCALIBRATED · Numeric weighting: WITHHELD
+- Lineage: dataset `NOT_AVAILABLE` · snapshot `NOT_AVAILABLE`
 
 ## Street Gap
 - 리포트 수: 2
@@ -169,14 +130,23 @@
 - Core 기대수익 간격: -8,676.69 (-4.9%)
 - Bull 기대수익 간격: 40,204.3 (+22.7%)
 
+## Sources — Direct Verification
+- **SANIL_UHV_PROPERTY_ACQUISITION_20260826** — Evidence 7개: uhv_property_asset_ratio, expansion_baseline_inclusion, expansion_capex_committed, uhv_property_contract_amount, expansion_land_control, expansion_ramp_date 외 1개 (effective 2026-08-26) [원문 바로 열기](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660)
+- **Beta inputs** — beta_source_refs [원문 바로 열기](https://finance.naver.com/)
+- **Current market price** — market price as of 2026-08-26 [원문 바로 열기](https://finance.naver.com/item/main.naver?code=062040)
+- **SANIL_UNDERWRITING_20260826** — Evidence 54개: model_bull_diluted_shares, model_bull_ev_adjustment, model_bull_expansion_capex, model_bull_fcff_year_1, model_bull_fcff_year_2, model_bull_fcff_year_3 외 48개 (effective 2026-08-26) [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml)
+- **Beta inputs / SANIL_RISK_SOURCE_REGISTER_20260825_REGRESSION / WACC inputs** — Evidence E:SANIL:beta_selection_L1_BROAD_SECTOR: beta_selection_L1_BROAD_SECTOR (effective 2026-08-26); Evidence E:SANIL:beta_selection_L2_INDUSTRY: beta_selection_L2_INDUSTRY (effective 2026-08-26); Evidence E:SANIL:beta_selection_L3_RISK_DRIVER_SUBINDUSTRY: beta_selection_L3_RISK_DRIVER_SUBINDUSTRY (effective 2026-08-26); Evidence E:SANIL:beta_selection_L4_ECONOMIC_TWINS: beta_selection_L4_ECONOMIC_TWINS (effective 2026-08-26); beta_source_refs; wacc_source_refs [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md)
+- **Beta inputs / Company identity / SANIL_2025_ANNUAL_REPORT / WACC inputs** — Evidence 26개: asp, backlog_conversion, book_to_bill, cancellation_rate, cancellation_terms, cash 외 20개 (effective 2024-01-01, 2025-12-31); beta_source_refs; company resolution; wacc_source_refs [원문 바로 열기](https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm)
+- **Broker research discovery / Street: Mirae Asset Securities** — pre-freeze discovery/corroboration only; target price published 2026-08-07 [원문 바로 열기](https://securities.miraeasset.com/bbs/board/message/view.do?categoryId=1800&messageId=2341906)
+- **SANIL_2026_Q2_IR** — Evidence 8개: backlog, expansion_baseline_inclusion, expansion_cancelled, expansion_ramp_date, net_income_h1_2026, no_active_capacity_expansion 외 2개 (effective 2026-06-30) [원문 바로 열기](https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002&mode=view&page=1&s_cate=&s_keyword=&s_type=)
+- **Street: Shinhan Securities** — target price published 2026-08-11 [원문 바로 열기](https://www.yna.co.kr/amp/view/AKR20260811028700008)
+- 전체 Evidence ID·지표·기준일 매핑은 동일 run의 immutable Evidence Ledger에 보존됩니다.
+
 ## Module Impact / Research Efficiency
-- 측정 완료: DETERMINISTIC_VALUATION
-- 미측정(NOT_MEASURABLE): ASSUMPTION_COMPILER, BLIND_RED_TEAM_B, BROKER_RESEARCH, EVIDENCE_LEDGER, EVIDENCE_TO_ASSUMPTION_BRIDGE, HIERARCHICAL_BETA_ENGINE, INDUSTRY_DNA_ROUTER, INDUSTRY_KNOWLEDGE 외 10개
-- 비적용: 없음
-- 실패: 없음
+- 측정 완료: DETERMINISTIC_VALUATION · 미측정(NOT_MEASURABLE): ASSUMPTION_COMPILER, BLIND_RED_TEAM_B, BROKER_RESEARCH, EVIDENCE_LEDGER, EVIDENCE_TO_ASSUMPTION_BRIDGE, HIERARCHICAL_BETA_ENGINE, INDUSTRY_DNA_ROUTER, INDUSTRY_KNOWLEDGE 외 10개
+- 비적용: 없음 · 실패: 없음
 - 조사비용: source queries 0, documents 0, LLM calls 0, elapsed 0.0s
-- 하향 검토 후보: 없음
-- 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.
+- 하향 검토 후보: 없음 · 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.
 
 ## Audit & Coverage
 - Audit: PASS (29 checks)
@@ -187,9 +157,6 @@
 - 약화·폐기: 없음
 
 ## Run Integrity
-- Valuation scope: FULL_INTRINSIC
-- Ledger snapshot: b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0
-- Assumption set: 6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed
-- Valuation: 923c3eeeb6ab9a1431c01b08099fe2cf46ea4189d85e0242ea7df53ea7481413
-- Audit: c5d02475b452156306cbd73ea49a168b7bc981e2c7687b542ef1d1f1307e22b3
-- Freeze token: 0b034f4976138e59056b622e4cc04d594099a0a729e0078cac9e8613f0e56ffa
+- Scope: FULL_INTRINSIC · Freeze: `a1de2ff479af4f8b748d4e49fd9f87d0b9bebe7a27c89f1fe0c4d944daa38f10`
+- Chain: ledger `b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0` · assumptions `6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed` · valuation `f3c586a7786ca8691ae343dd02a70d9d093b8c0853622634a48b7ca8d7c08492` · audit `7526decadfa3282335509009aa9faec346655d84e13192756ab67c111542f1db`
+- Calibration: dataset `NOT_APPLIED` · snapshot `NOT_APPLIED`

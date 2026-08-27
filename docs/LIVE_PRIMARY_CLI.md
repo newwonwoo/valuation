@@ -166,7 +166,7 @@ Gate n/5 — title
 Status / decisive result / residual risk / next action
 ```
 
-The full 33-stage trace is reserved for the verified audit appendix. If a gate terminates blocked, its compact summary uses only the terminal stage/status code and never the raw blocking rationale, because provider exceptions may be embedded in that string.
+All 33 stage identities/statuses are reserved for the compact verified appendix; exact rationales/output keys remain in the immutable trace artifact. If a gate terminates blocked, its compact summary uses only the terminal stage/status code and never the raw blocking rationale, because provider exceptions may be embedded in that string.
 
 When a stage blocks, CLI output contains only:
 

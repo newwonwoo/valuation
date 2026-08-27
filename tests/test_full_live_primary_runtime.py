@@ -56,6 +56,10 @@ SEGMENT_ID = "core"
 COLLECTOR_ID = "dart-fixture"
 SOURCE_ID = "KR_OPENDART"
 AS_OF = "2026-08-23"
+FIXTURE_SOURCE_URL = (
+    "https://github.com/newwonwoo/valuation/blob/main/"
+    "tests/test_full_live_primary_runtime.py"
+)
 
 COLLECTOR_METRICS = (
     "realized_price",
@@ -120,7 +124,7 @@ def identity() -> ResolvedCompanyIdentity:
             ("opendart_corp_code", "00000000"),
             ("krx_stock_code", "000000"),
         ),
-        source_refs=("fixture://company-resolution",),
+        source_refs=(FIXTURE_SOURCE_URL,),
     )
 
 
@@ -234,7 +238,7 @@ def _evidence(metric: str) -> EvidenceRecord:
         effective_date="2026-06-30",
         observed_date=AS_OF,
         source_name="frozen filing fixture",
-        source_ref=f"fixture://filing/{metric}",
+        source_ref=FIXTURE_SOURCE_URL,
         source_grade="A",
         confidence=1.0,
         segment=SEGMENT_ID,
@@ -370,7 +374,7 @@ def street_reports() -> tuple[StreetResearchReport, ...]:
             valuation_method="DCF",
             base_year="2027",
             estimates=(),
-            source_ref="fixture://street/a",
+            source_ref=FIXTURE_SOURCE_URL,
         ),
         StreetResearchReport(
             broker="BrokerB",
@@ -381,7 +385,7 @@ def street_reports() -> tuple[StreetResearchReport, ...]:
             valuation_method="PER",
             base_year="2027",
             estimates=(),
-            source_ref="fixture://street/b",
+            source_ref=FIXTURE_SOURCE_URL,
         ),
     )
 
@@ -414,7 +418,7 @@ def runtime_config(tmp_path: Path) -> LivePrimaryRuntimeConfig:
         market_loader=lambda: MarketObservation(
             65_000,
             AS_OF,
-            "fixture://market",
+            FIXTURE_SOURCE_URL,
         ),
     )
     return LivePrimaryRuntimeConfig(
@@ -478,6 +482,8 @@ def test_frozen_provider_live_primary_run_reaches_final_report(tmp_path):
     ]
     assert "Status: NOT_APPLICABLE" in result.data["final_report"]
     assert "Expected Value: 미산출" in result.data["final_report"]
+    assert "## Sources — Direct Verification" in result.data["final_report"]
+    assert FIXTURE_SOURCE_URL in result.data["final_report"]
 
     state_root = Path(tmp_path)
     assert (state_root / "state" / "000000" / "current_state.json").exists()
@@ -513,6 +519,41 @@ def test_post_freeze_provider_gap_redacts_intrinsic_outputs(tmp_path):
         "intrinsic_freeze_token",
     ):
         assert key not in result.data
+
+
+def test_live_final_report_blocks_when_evidence_source_is_not_clickable(tmp_path):
+    config = runtime_config(tmp_path)
+    original_provider = config.providers.collectors[0]
+
+    def non_http_collector(request):
+        batch = collector(request)
+        return replace(
+            batch,
+            records=tuple(
+                replace(record, source_ref="fixture://non-verifiable")
+                for record in batch.records
+            ),
+        )
+
+    config = replace(
+        config,
+        providers=replace(
+            config.providers,
+            collectors=(
+                LiveCollectorProvider(
+                    original_provider.capability,
+                    non_http_collector,
+                ),
+            ),
+        ),
+    )
+
+    result = run_prism(config)
+
+    assert result.blocked_reasons
+    assert result.stage_traces[-1].stage == "SAVE_STATE"
+    assert result.stage_traces[-1].status is StageStatus.BLOCKED
+    assert "final_report" not in result.data
 
 
 def test_reserved_save_state_output_blocks_before_persistence(tmp_path):
