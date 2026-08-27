@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 from hashlib import sha256
+from html.parser import HTMLParser
 import json
 from pathlib import Path
 from typing import Any, Mapping
@@ -88,6 +89,135 @@ ASSUMPTION_METRICS = (
     "ev_adjustment",
     "diluted_shares",
 )
+_NOT_DISCLOSED = "NOT_DISCLOSED"
+_MAX_SOURCE_LOCATOR_DISTANCE = 500
+
+
+class _OfficialDocumentTextParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+        self._ignored_depth = 0
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag.lower() in {"script", "style"}:
+            self._ignored_depth += 1
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag.lower() in {"script", "style"} and self._ignored_depth:
+            self._ignored_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if not self._ignored_depth:
+            self.parts.append(data)
+
+
+def _normalized_official_document_text(document: bytes) -> str:
+    if not document:
+        raise ValueError("official source document cannot be empty")
+    parser = _OfficialDocumentTextParser()
+    parser.feed(document.decode("utf-8", errors="replace"))
+    return " ".join(" ".join(parser.parts).split()).casefold()
+
+
+def _literal_positions(text: str, literal: str) -> tuple[int, ...]:
+    normalized = " ".join(literal.split()).casefold()
+    if not normalized:
+        return ()
+    positions: list[int] = []
+    start = 0
+    while (position := text.find(normalized, start)) >= 0:
+        positions.append(position)
+        start = position + 1
+    return tuple(positions)
+
+
+def validate_official_document_evidence(
+    company_id: str,
+    payload: Mapping[str, Any],
+    document: bytes,
+) -> None:
+    """Fail closed unless every numeric official fixture claim is found in the source.
+
+    The document hash proves byte identity. These checks additionally prove that the
+    bytes are for the declared issuer/period and contain each configured numeric fact
+    near its declared source label. Status-only ``NOT_DISCLOSED`` observations make no
+    numeric source claim and therefore do not receive a locator.
+    """
+
+    text = _normalized_official_document_text(document)
+    identity = payload.get("official_document_identity")
+    if not isinstance(identity, list) or not identity or not all(
+        isinstance(anchor, str) and anchor.strip() for anchor in identity
+    ):
+        raise ValueError(f"{company_id} requires official_document_identity anchors")
+    for anchor in identity:
+        if not _literal_positions(text, anchor):
+            raise ValueError(
+                f"{company_id} official document identity anchor is missing: {anchor}"
+            )
+
+    metrics = payload.get("official_metrics")
+    locators = payload.get("official_metric_locators", {})
+    if not isinstance(metrics, Mapping) or not isinstance(locators, Mapping):
+        raise ValueError(f"{company_id} official metrics and locators must be mappings")
+    unknown_locators = sorted(set(locators).difference(metrics))
+    if unknown_locators:
+        raise ValueError(
+            f"{company_id} has locators for unknown metrics: {', '.join(unknown_locators)}"
+        )
+
+    for metric, observation in metrics.items():
+        if not isinstance(observation, (list, tuple)) or len(observation) != 2:
+            raise ValueError(f"{company_id} official metric {metric} requires value and unit")
+        value, unit = observation
+        if str(value) == _NOT_DISCLOSED:
+            if metric in locators:
+                raise ValueError(
+                    f"{company_id} status-only metric {metric} must not declare a numeric locator"
+                )
+            continue
+
+        locator = locators.get(metric)
+        if not isinstance(locator, Mapping):
+            raise ValueError(
+                f"{company_id} numeric official metric {metric} requires a source locator"
+            )
+        label = locator.get("label")
+        source_text = locator.get("source_text")
+        source_value = locator.get("source_value")
+        source_multiplier = locator.get("source_multiplier", 1)
+        source_unit = locator.get("unit")
+        if not isinstance(label, str) or not label.strip():
+            raise ValueError(f"{company_id} {metric} source locator requires a label")
+        if not isinstance(source_text, str) or not source_text.strip():
+            raise ValueError(f"{company_id} {metric} source locator requires source_text")
+        if str(source_unit) != str(unit):
+            raise ValueError(f"{company_id} {metric} source locator unit mismatch")
+        try:
+            declared_value = Decimal(str(value))
+            located_value = Decimal(str(source_value)) * Decimal(str(source_multiplier))
+        except Exception as exc:
+            raise ValueError(
+                f"{company_id} {metric} source locator requires numeric values"
+            ) from exc
+        if declared_value != located_value:
+            raise ValueError(f"{company_id} {metric} source locator value mismatch")
+
+        label_positions = _literal_positions(text, label)
+        value_positions = _literal_positions(text, source_text)
+        if not label_positions or not value_positions:
+            raise ValueError(
+                f"{company_id} {metric} source label/value is missing from official document"
+            )
+        if min(
+            abs(label_position - value_position)
+            for label_position in label_positions
+            for value_position in value_positions
+        ) > _MAX_SOURCE_LOCATOR_DISTANCE:
+            raise ValueError(
+                f"{company_id} {metric} source label and value are not locally bound"
+            )
 
 
 @dataclass(frozen=True)

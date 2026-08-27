@@ -21,6 +21,10 @@ companies:
     official_source_id: KR_OPENDART
     official_source_ref: https://www.oci-holdings.co.kr/ir/summary
     official_document_id: OCI_HOLDINGS_2026Q2_IR_SUMMARY
+    official_document_identity:
+      - OCI홀딩스
+      - '010060'
+      - IR 요약
     published_at: '2026-07-23T06:00:00+00:00'
     first_seen_at: '2026-08-27T00:00:00+00:00'
     normalized_ebitda: 420000000000
@@ -29,9 +33,9 @@ companies:
     ev_adjustment: 900000000000
     diluted_shares: 17900000
     official_metrics:
-      revenue: [4200, KRW_billion]
-      production: [2.0, GW]
-      capacity: [2.0, GW]
+      revenue: [NOT_DISCLOSED, status]
+      production: [NOT_DISCLOSED, status]
+      capacity: [NOT_DISCLOSED, status]
       price: [NOT_DISCLOSED, status]
       cash_cost: [NOT_DISCLOSED, status]
       reserves: [NOT_DISCLOSED, status]
@@ -59,6 +63,9 @@ companies:
     official_source_id: US_SEC_EDGAR
     official_source_ref: https://www.sec.gov/Archives/edgar/data/1341439/000119312526101045/orcl-20260228.htm
     official_document_id: ORACLE_2026Q3_10Q
+    official_document_identity:
+      - Oracle Corporation
+      - For the quarterly period ended February 28, 2026
     published_at: '2026-03-11T12:00:00+00:00'
     first_seen_at: '2026-08-27T00:00:00+00:00'
     normalized_ebitda: 30000000000
@@ -67,14 +74,38 @@ companies:
     ev_adjustment: -85000000000
     diluted_shares: 2850000000
     official_metrics:
-      revenue: [59000, USD_million]
+      revenue: [48173, USD_million]
       backlog: [552600, USD_million]
       rpo: [552600, USD_million]
-      contract_liabilities: [12000, USD_million]
+      contract_liabilities: [NOT_DISCLOSED, status]
       capex: [39200, USD_million]
       arr: [NOT_DISCLOSED, status]
       nrr: [NOT_DISCLOSED, status]
       gross_margin: [NOT_DISCLOSED, status]
+    official_metric_locators:
+      revenue:
+        label: Total revenues
+        source_text: '48,173'
+        source_value: 48173
+        unit: USD_million
+      backlog:
+        label: Remaining performance obligations were
+        source_text: 552.6 billion
+        source_value: 552.6
+        source_multiplier: 1000
+        unit: USD_million
+      rpo:
+        label: Remaining performance obligations were
+        source_text: 552.6 billion
+        source_value: 552.6
+        source_multiplier: 1000
+        unit: USD_million
+      capex:
+        label: cash used for capital expenditures
+        source_text: $39.2 billion
+        source_value: 39.2
+        source_multiplier: 1000
+        unit: USD_million
     underwriting_metrics:
       backlog_conversion: [NOT_DISCLOSED, status]
       book_to_bill: [NOT_DISCLOSED, status]
@@ -101,6 +132,9 @@ companies:
     official_source_id: US_SEC_EDGAR
     official_source_ref: https://www.sec.gov/Archives/edgar/data/1664703/000162828026050247/be-20260630.htm
     official_document_id: BLOOM_ENERGY_2026Q2_10Q
+    official_document_identity:
+      - Bloom Energy Corporation
+      - For the quarterly period ended June 30, 2026
     published_at: '2026-08-04T12:00:00+00:00'
     first_seen_at: '2026-08-27T00:00:00+00:00'
     normalized_ebitda: 700000000
@@ -116,6 +150,19 @@ companies:
       gross_margin: [0.33, ratio]
       installed_base: [NOT_DISCLOSED, status]
       service: [NOT_DISCLOSED, status]
+    official_metric_locators:
+      revenue:
+        label: Total revenue
+        source_text: 1,065,365
+        source_value: 1065365
+        source_multiplier: 0.001
+        unit: USD_million
+      gross_margin:
+        label: Total gross margin
+        source_text: 33 %
+        source_value: 33
+        source_multiplier: 0.01
+        unit: ratio
     underwriting_metrics:
       backlog_conversion: [NOT_DISCLOSED, status]
       book_to_bill: [NOT_DISCLOSED, status]
@@ -142,6 +189,9 @@ companies:
     official_source_id: US_SEC_EDGAR
     official_source_ref: https://www.sec.gov/Archives/edgar/data/1996810/000199681026000148/gev-20260630.htm
     official_document_id: GE_VERNOVA_2026Q2_10Q
+    official_document_identity:
+      - GE Vernova Inc.
+      - For the quarterly period ended June 30, 2026
     published_at: '2026-07-22T12:00:00+00:00'
     first_seen_at: '2026-08-27T00:00:00+00:00'
     normalized_ebitda: 4500000000
@@ -151,12 +201,24 @@ companies:
     diluted_shares: 275000000
     official_metrics:
       revenue: [11104, USD_million]
-      backlog: [176284, USD_million]
+      backlog: [NOT_DISCLOSED, status]
+      rpo: [176284, USD_million]
       orders: [NOT_DISCLOSED, status]
       slots: [NOT_DISCLOSED, status]
       service_contracts: [NOT_DISCLOSED, status]
       capacity: [NOT_DISCLOSED, status]
       lead_time: [NOT_DISCLOSED, status]
+    official_metric_locators:
+      revenue:
+        label: Total revenues
+        source_text: '11,104'
+        source_value: 11104
+        unit: USD_million
+      rpo:
+        label: unsatisfied (or partially unsatisfied) performance obligations were
+        source_text: 176,284 million
+        source_value: 176284
+        unit: USD_million
     underwriting_metrics:
       backlog_conversion: [NOT_DISCLOSED, status]
       book_to_bill: [NOT_DISCLOSED, status]
