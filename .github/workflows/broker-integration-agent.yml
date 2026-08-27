@@ -1,0 +1,85 @@
+name: broker-integration-agent
+
+on:
+  push:
+    branches: [fix/broker-research-live-primary]
+    paths:
+      - scripts/apply_broker_live_primary_integration.py
+      - scripts/fix_broker_patch_workflow.py
+      - scripts/fix_broker_patch_regressions.py
+      - .github/workflows/broker-integration-agent.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/broker-research-live-primary
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Repair integration generator only
+        run: |
+          python scripts/fix_broker_patch_workflow.py
+          python -m py_compile scripts/apply_broker_live_primary_integration.py
+      - name: Apply Broker Research integration
+        run: python scripts/apply_broker_live_primary_integration.py
+      - name: Repair generated compatibility regressions
+        run: |
+          python scripts/fix_broker_patch_regressions.py
+          python -m py_compile \
+            src/valuation_engine/broker_runtime.py \
+            src/valuation_engine/live_runtime.py \
+            src/valuation_engine/llm_staff.py \
+            src/valuation_engine/llm_adapters.py \
+            src/valuation_engine/audit_adapter.py \
+            src/valuation_engine/report_form.py \
+            src/valuation_engine/sanil_live_primary.py
+      - name: Focused Broker + Sanil regressions
+        run: >-
+          pytest -q
+          tests/test_broker_runtime.py
+          tests/test_live_runtime_assembly.py
+          tests/test_full_live_primary_runtime.py
+          tests/test_report_form.py
+          tests/test_sanil_live_primary.py
+      - name: Generate synchronized report form
+        run: PYTHONPATH=src python scripts/render_verified_report_form.py
+      - name: Generate actual generic LIVE_PRIMARY report
+        run: >-
+          PYTHONPATH=src:.
+          python scripts/render_verified_runtime_fixture.py
+          --output examples/report_forms/PRISM_ACTUAL_RUNTIME_REPORT.md
+      - name: Generate actual Sanil LIVE_PRIMARY report
+        run: >-
+          PYTHONPATH=src
+          python scripts/run_sanil_live_primary.py
+          --output examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md
+      - name: Full regression
+        run: pytest -q
+      - name: OCI regression
+        run: valuation-engine examples/oci/company.yaml
+      - name: Registry validations
+        run: |
+          PYTHONPATH=src python scripts/validate_broker_research_layer.py
+          PYTHONPATH=src python scripts/validate_workflow_source_injection.py
+          PYTHONPATH=src python scripts/validate_module_requirement_plans.py
+      - name: Keep workflow changes out of bot push
+        run: |
+          git checkout HEAD -- .github/workflows/sanil-live-primary.yml
+          git rm -f scripts/apply_broker_live_primary_integration.py scripts/fix_broker_patch_workflow.py scripts/fix_broker_patch_regressions.py
+      - name: Commit verified Broker Research integration
+        run: |
+          git config user.name "broker-runtime-agent"
+          git config user.email "broker-runtime-agent@users.noreply.github.com"
+          git add -A
+          git commit -m "Wire Broker Research through LIVE_PRIMARY [broker-agent]"
+          git push origin HEAD:fix/broker-research-live-primary

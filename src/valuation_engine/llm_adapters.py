@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from .broker_runtime import BrokerResearchLLMContext
 from .capacity_commitment import CapacityCommitmentAssessment
 from .control_plane import StageStatus
 from .ledger import EvidenceLedger
@@ -47,6 +48,11 @@ def _staff_context(
     scanner_findings = context.data.get("scanner_findings", ())
     if not isinstance(scanner_findings, tuple):
         raise ValueError("scanner_findings must be a tuple")
+    broker_context = context.data.get("broker_research_llm_context")
+    if broker_context is not None and not isinstance(
+        broker_context, BrokerResearchLLMContext
+    ):
+        raise ValueError("broker_research_llm_context must be typed when present")
     capacity = context.data.get("capacity_commitment_assessment")
     if capacity is not None and not isinstance(
         capacity, CapacityCommitmentAssessment
@@ -62,6 +68,7 @@ def _staff_context(
         module_requirement_plan=context.data.get("module_requirement_plan"),
         scanner_findings=scanner_findings,
         funding_scan_result=context.data.get("funding_scan_result"),
+        broker_research_context=broker_context,
         capacity_commitment_assessment=capacity,
         require_context_strength_linkage=require_context_strength_linkage,
     )

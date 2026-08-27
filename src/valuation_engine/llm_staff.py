@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Callable
 
 from .assumption_compiler import AssumptionSpec, TRANSFORMS
+from .broker_runtime import BrokerResearchLLMContext
 from .capacity_commitment import CapacityCommitmentAssessment
 from .context_strength_linkage import (
     DEFAULT_CONTEXT_STRENGTH_LINKAGE_DOCTRINE,
@@ -164,6 +165,7 @@ class LLMStaffContext:
     module_requirement_plan: object | None = None
     scanner_findings: tuple[object, ...] = ()
     funding_scan_result: object | None = None
+    broker_research_context: BrokerResearchLLMContext | None = None
     capacity_commitment_assessment: CapacityCommitmentAssessment | None = None
     require_context_strength_linkage: bool = False
     context_strength_linkage_doctrine: ContextStrengthLinkageDoctrine = (

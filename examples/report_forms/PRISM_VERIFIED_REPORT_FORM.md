@@ -12,6 +12,7 @@
 | `canonical_stage_sequence` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
 | `beta_wacc_same_run_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
 | `capacity_core_consumption_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
+| `broker_research_primary_verification_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
 | `freeze_hash_binding` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
 
 ## Immutable Run Identities
@@ -28,6 +29,8 @@
 | Capacity scenario | `{{ capacity_scenario_binding_hash_or_not_applicable }}` |
 | Capacity valuation | `{{ capacity_valuation_binding_hash_or_not_applicable }}` |
 | Capacity audit | `{{ capacity_audit_hash }}` |
+| Broker pre-freeze | `{{ broker_research_snapshot_hash_or_not_applicable }}` |
+| Broker audit | `{{ broker_research_audit_hash_or_not_applicable }}` |
 | Valuation | `{{ valuation_hash }}` |
 | Audit | `{{ audit_hash }}` |
 | Intrinsic Freeze | `{{ freeze_token_hash }}` |

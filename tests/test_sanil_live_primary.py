@@ -133,6 +133,8 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         "capacity_per_binding_hash",
         "capacity_consistency_hash",
         "capacity_audit_hash",
+        "broker_research_snapshot_hash",
+        "broker_research_audit_hash",
         "valuation_hash",
         "audit_hash",
     ):
@@ -230,13 +232,30 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         "SANIL_UHV_PROPERTY_ACQUISITION_20260826",
     )
     assert result.data["capacity_audit_passed"]
+    assert result.data["broker_research_audit_passed"]
+    broker_result = result.data["broker_research_prefreeze_result"]
+    assert tuple(
+        item.claim_id for item in broker_result.primary_verification_claims
+    ) == (
+        "B:SANIL:MIRAE:2Q26_PRIMARY_LEADS",
+        "B:SANIL:MIRAE:UHV_PRIMARY_LEADS",
+    )
+    assert tuple(item.claim_id for item in broker_result.quarantined_claims) == (
+        "B:SANIL:MIRAE:FORWARD_FORECAST",
+        "B:SANIL:MIRAE:TARGET_PRICE",
+    )
+    assert not any(
+        "securities.miraeasset.com" in item.source_ref
+        for item in ledger.active()
+    )
+    assert result.data["intelligence_proposal"].requested_evidence
 
     trace_index = {
         trace.stage: index for index, trace in enumerate(result.stage_traces)
     }
     assert trace_index["INTRINSIC_VALUE_FREEZE"] < trace_index["STREET_REFERENCE_LOAD"]
     assert trace_index["INTRINSIC_VALUE_FREEZE"] < trace_index["MARKET_PRICE_LOAD"]
-    assert result.data["street_comparison"].consensus.report_count == 1
+    assert result.data["street_comparison"].consensus.report_count == 2
 
     attestation = attest_controlled_run(result)
     report = render_controlled_run_report(result)
@@ -264,6 +283,8 @@ def test_sanil_config_requires_driver_dcf_and_capacity_core(tmp_path):
 
     assert config.capacity_core_scenario_id == "Core"
     assert config.method_choices[0].method == "driver_dcf"
+    assert config.require_broker_research
+    assert config.providers.broker_research_loader is not None
     assert config.providers.beta_loader is not None
     assert config.providers.wacc_loader is not None
     assert config.providers.capacity_commitment_loader is not None

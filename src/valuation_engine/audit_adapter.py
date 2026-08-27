@@ -98,6 +98,29 @@ def generic_audit_adapter(
             if isinstance(capacity_hash_raw, str) and capacity_hash_raw
             else None
         )
+        broker_required = bool(context.data.get("broker_research_required", False))
+        broker_result_present = context.data.get("broker_research_prefreeze_result") is not None
+        broker_report_raw = context.data.get("broker_research_audit_report")
+        broker_hash_raw = context.data.get("broker_research_audit_hash")
+        if (broker_required or broker_result_present) and (
+            not isinstance(broker_report_raw, AuditReport)
+            or not isinstance(broker_hash_raw, str)
+            or not broker_hash_raw
+            or not bool(context.data.get("broker_research_audit_passed"))
+        ):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "Broker Research audit artifact/hash is required before generic audit",
+                blocking=True,
+            )
+        broker_report = (
+            broker_report_raw if isinstance(broker_report_raw, AuditReport) else None
+        )
+        broker_hash = (
+            broker_hash_raw
+            if isinstance(broker_hash_raw, str) and broker_hash_raw
+            else None
+        )
 
         try:
             effective_config = _effective_impact_config(
@@ -137,10 +160,12 @@ def generic_audit_adapter(
             beta_result=beta_result,
             wacc_result=wacc_result,
             external_guardrail_findings=(
-                capacity_report.findings if capacity_report is not None else ()
+                *(capacity_report.findings if capacity_report is not None else ()),
+                *(broker_report.findings if broker_report is not None else ()),
             ),
             external_guardrail_hashes=(
-                (capacity_hash,) if capacity_hash is not None else ()
+                *((capacity_hash,) if capacity_hash is not None else ()),
+                *((broker_hash,) if broker_hash is not None else ()),
             ),
         )
         common_outputs = {
