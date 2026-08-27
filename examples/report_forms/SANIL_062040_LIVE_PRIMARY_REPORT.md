@@ -4,7 +4,7 @@
 - 검증 상태: **VERIFIED_FROZEN**
 - 투자검토 상태: **Preliminary source-backed underwrite**
 - 현재가(Freeze 후 로드): **176,900원**
-- Street 참고 목표가(Freeze 후 로드): **280,000원**
+- Street 참고 목표가(Freeze 후 로드): **260,000원**
 - Down / Core / Bull: **119,833원 / 168,223원 / 217,104원**
 - Hierarchical Beta: **0.793**
 - WACC: **7.764%**
@@ -42,7 +42,7 @@
 - Run ID: `SANIL-062040-20260826`
 - Execution mode: `live_primary`
 - Run status: **VERIFIED_FROZEN**
-- Attestation hash: `a98a5e0e38e682525ed5a77defef6d35024bbca3d8c51c0b3a0bb388209c3acb`
+- Attestation hash: `86b4e41abd188f9b9b9b1c90c06e89410d4400f48e31aad4a5dc853c507ecd3c`
 
 ## Execution Attestation
 
@@ -83,11 +83,11 @@
 | Capacity PER | `3f41768bb057dfa6c56282eccb2d9c8c8327d7ed61b1834c2772d76ef4e49884` |
 | Capacity consistency | `bbe422353f84d98bdfe7662b34ff4e5b32f0dd7ba09a4f66b216c389433282fe` |
 | Capacity audit | `c209afaec588228ea553f88ae0f0d6cc281f8757b7dd3d23b2799a43f8f7c172` |
-| Broker pre-freeze | `ce7d809ba2f9e2a91a5fbb3604dbb80fbe7af2b2694f3195ce549cdef95991eb` |
-| Broker audit | `a7c344017374899fdbefb684ba0facfde4b5ed7a6caaa2ac29f330f6233ab9f6` |
+| Broker pre-freeze | `480a3a2ca4b960a5b69e7c88c49515942e9e5d73b12ce6a03f160ceedbce368e` |
+| Broker audit | `cde5e8a6d1871c5b8ac75c278bd6db27e66d2a9e6024ba11990464c890413cc8` |
 | Valuation | `923c3eeeb6ab9a1431c01b08099fe2cf46ea4189d85e0242ea7df53ea7481413` |
-| Audit | `c5d02475b452156306cbd73ea49a168b7bc981e2c7687b542ef1d1f1307e22b3` |
-| Intrinsic Freeze | `0b034f4976138e59056b622e4cc04d594099a0a729e0078cac9e8613f0e56ffa` |
+| Audit | `4fc733474f2a83eb0bc803a34c687a985bf4598d7db89af309c04057595a87f3` |
+| Intrinsic Freeze | `ebaa5714184a6769e84162a612483b957eccfbf466f336a31c4920039eeab8b8` |
 
 ## Stage Trace
 
@@ -157,11 +157,11 @@
 - Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.
 
 ## Street Gap
-- 리포트 수: 2
-- 평균 목표가: 280,000 KRW
-- Down 대비: -160,167.23 (-57.2%)
-- Core 대비: -111,776.69 (-39.9%)
-- Bull 대비: -62,895.7 (-22.5%)
+- 리포트 수: 3
+- 평균 목표가: 260,000 KRW
+- Down 대비: -140,167.23 (-53.9%)
+- Core 대비: -91,776.69 (-35.3%)
+- Bull 대비: -42,895.7 (-16.5%)
 
 ## Current Market Compare
 - 현재가: 176,900 KRW (2026-08-26)
@@ -191,5 +191,5 @@
 - Ledger snapshot: b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0
 - Assumption set: 6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed
 - Valuation: 923c3eeeb6ab9a1431c01b08099fe2cf46ea4189d85e0242ea7df53ea7481413
-- Audit: c5d02475b452156306cbd73ea49a168b7bc981e2c7687b542ef1d1f1307e22b3
-- Freeze token: 0b034f4976138e59056b622e4cc04d594099a0a729e0078cac9e8613f0e56ffa
+- Audit: 4fc733474f2a83eb0bc803a34c687a985bf4598d7db89af309c04057595a87f3
+- Freeze token: ebaa5714184a6769e84162a612483b957eccfbf466f336a31c4920039eeab8b8
