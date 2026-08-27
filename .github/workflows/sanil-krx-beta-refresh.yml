@@ -5,6 +5,7 @@ on:
     branches: [fix/sanil-provider-integrity-v2]
     paths:
       - 'scripts/refresh_sanil_krx_beta.py'
+      - 'tests/test_sanil_live_primary.py'
       - '.github/workflows/sanil-krx-beta-refresh.yml'
   workflow_dispatch:
 
