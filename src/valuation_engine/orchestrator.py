@@ -83,6 +83,16 @@ class ReportingContract:
     llm_insight_separate_section_required: bool
     llm_insight_max_chars: int
     deterministic_outputs_separated_from_llm: bool
+    visible_language: str = "ko"
+    primary_section_order: tuple[str, ...] = (
+        "투자 요약",
+        "가치평가",
+        "핵심 가정과 위험",
+        "증권사·시장 비교",
+        "정보 출처 — 원문 직접 검증",
+    )
+    decision_report_precedes_audit_appendix: bool = True
+    technical_identifiers_collapsed: bool = True
 
     def __post_init__(self) -> None:
         if not self.contract_id or not self.major_gates:
@@ -126,6 +136,15 @@ class ReportingContract:
             )
         ) or not 1 <= self.llm_insight_max_chars <= 1000:
             raise ValueError("LLM insight reporting must be separate and capped at 1,000 characters")
+        if self.visible_language != "ko" or not self.primary_section_order:
+            raise ValueError("reader-facing report must declare Korean section ordering")
+        if not all(
+            (
+                self.decision_report_precedes_audit_appendix,
+                self.technical_identifiers_collapsed,
+            )
+        ):
+            raise ValueError("developer-facing report details must remain in the collapsed audit appendix")
 
 
 @dataclass(frozen=True)
@@ -195,7 +214,7 @@ _POST_FREEZE_STAGES = {
 }
 
 _GATE_COMPLETION_KO = {
-    "G1_EVIDENCE_ROUTING": "증거 수집·산업 라우팅을 완료하고 불변 Evidence Ledger를 고정했습니다",
+    "G1_EVIDENCE_ROUTING": "증거 수집·산업 라우팅을 완료하고 불변 근거 원장을 고정했습니다",
     "G2_INSIGHT_CHALLENGE": "환경 변화와 기업 강점의 연결 인사이트 및 반증 검토를 완료했습니다",
     "G3_ASSUMPTIONS_METHOD_RISK": "가정·평가방법·베타·가중평균자본비용의 적용 여부를 확정했습니다",
     "G4_VALUATION_AUDIT_FREEZE": "결정론적 가치평가와 감사를 통과해 내재가치를 고정했습니다",
@@ -206,12 +225,12 @@ _GATE_COMPLETION_KO = {
 def _stage_risk_ko(trace: StageTrace) -> str:
     if trace.stage == "PROBABILITY_DISTRIBUTION_ANALYSIS":
         return (
-            "PROBABILITY_DISTRIBUTION_ANALYSIS: 실제 해결 이력 기반 확률 보정이 "
+            "시나리오 확률 보정 점검: 실제 해결 이력 기반 확률 보정이 "
             "완료되지 않아 확률가중 기대값을 산출하지 않았습니다"
         )
     if trace.stage == "ROCKET_INSIGHT_SCAN":
-        return "ROCKET_INSIGHT_SCAN: 로켓슬라 인사이트 스캐너가 확인 필요 경고를 남겼습니다"
-    return f"{trace.stage}: {trace.status.value} 상태가 기록되었습니다. 상세 사유는 불변 추적 파일을 확인하십시오"
+        return "환경 변화 인사이트 탐색: 로켓슬라 인사이트 스캐너가 확인 필요 경고를 남겼습니다"
+    return "확인 필요 상태가 기록되었습니다. 상세 사유는 불변 추적 파일을 확인하십시오"
 
 
 def load_stage_sequence(path: str | Path) -> tuple[str, ...]:
@@ -288,6 +307,14 @@ def load_reporting_contract(path: str | Path) -> ReportingContract:
     llm_policy = raw.get("llm_insight_policy")
     if not isinstance(llm_policy, dict):
         raise ValueError("reporting contract requires llm_insight_policy")
+    reader_policy = raw.get("reader_experience_policy")
+    if not isinstance(reader_policy, dict):
+        raise ValueError("reporting contract requires reader_experience_policy")
+    primary_section_order = reader_policy.get("primary_section_order")
+    if not isinstance(primary_section_order, list) or not all(
+        isinstance(item, str) and item.strip() for item in primary_section_order
+    ):
+        raise ValueError("reader experience policy requires primary_section_order")
 
     return ReportingContract(
         contract_id=str(raw.get("contract_id") or "").strip(),
@@ -323,6 +350,14 @@ def load_reporting_contract(path: str | Path) -> ReportingContract:
         llm_insight_max_chars=int(llm_policy.get("max_chars") or 0),
         deterministic_outputs_separated_from_llm=bool(
             llm_policy.get("deterministic_outputs_separated", False)
+        ),
+        visible_language=str(reader_policy.get("visible_language") or "").strip(),
+        primary_section_order=tuple(item.strip() for item in primary_section_order),
+        decision_report_precedes_audit_appendix=bool(
+            reader_policy.get("decision_report_precedes_audit_appendix", False)
+        ),
+        technical_identifiers_collapsed=bool(
+            reader_policy.get("technical_identifiers_collapsed", False)
         ),
     )
 

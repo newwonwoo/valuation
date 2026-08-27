@@ -58,6 +58,10 @@ def test_canonical_reporting_contract_partitions_all_33_stages_once():
     assert contract.visual_pages_included_in_main_body == 2
     assert contract.body_min_pt == 13
     assert contract.llm_insight_max_chars == 1000
+    assert contract.visible_language == "ko"
+    assert contract.primary_section_order[:2] == ("투자 요약", "가치평가")
+    assert contract.decision_report_precedes_audit_appendix
+    assert contract.technical_identifiers_collapsed
 
 
 def test_orchestrator_emits_one_summary_only_when_each_major_gate_completes():

@@ -76,7 +76,10 @@ def completed_result() -> ControlledRunResult:
         ),
         "final_report": (
             "# 영구 저장된 시험 보고서\n\n"
-            "- 내재가치: 주당 70,000원\n"
+            "## 투자 요약\n- 핵심 판단: 시험 보고서입니다.\n"
+            "\n## 가치평가\n- 내재가치: 주당 70,000원\n"
+            "\n## 핵심 가정과 위험\n- 가정: 시험 가정입니다.\n"
+            "\n## 증권사·시장 비교\n- 비교: 시험 비교입니다.\n"
             "\n## 인공지능 인사이트 — 환경 변화 × 기업 강점\n"
             "- 적용범위: 연결 가설만 제시하며 가치평가 계산에는 관여하지 않습니다.\n"
             "\n## 정보 출처 — 원문 직접 검증\n"
@@ -104,12 +107,12 @@ def test_completed_controlled_run_is_verified_and_renders_trace():
     report = render_controlled_run_report(result, stage_registry_path=STAGES)
 
     assert attestation.passed
-    assert "실행 상태: **검증·고정 완료 (`VERIFIED_FROZEN`)**" in report
-    assert "## 압축 감사 부록 — 33단계 추적" in report
+    assert report.startswith("# 영구 저장된 시험 보고서")
+    assert "**검증 상태:** 검증·고정 완료" in report
+    assert "## 33단계 진행 상태" in report
     assert "## 대형 게이트 완료 요약" in report
-    assert "G5_POST_FREEZE_PERSISTENCE" in report
-    assert "전체 상한: 6쪽" in report
-    assert "본문 ≥ 13pt" in report
+    assert "고정 후 비교·영구 저장" in report
+    assert "기술 식별자·해시 확인" in report
     assert "| Gate |" not in report
     assert "CAPACITY-AUDIT" in report
     assert SOURCE_URL in report
@@ -130,8 +133,8 @@ def test_manual_or_partial_result_cannot_be_labelled_verified():
     report = render_controlled_run_report(broken, stage_registry_path=STAGES)
 
     assert not attestation.passed
-    assert "실행 상태: **검증 미완료 (`INCOMPLETE`)**" in report
-    assert "**실패 `canonical_stage_sequence`:**" in report
+    assert "**검증 상태:** 검증 미완료" in report
+    assert "**실패 점검:**" in report
 
 
 def test_report_form_template_contains_required_execution_identities():
@@ -141,7 +144,9 @@ def test_report_form_template_contains_required_execution_identities():
     assert "beta_snapshot_hash" in template
     assert "wacc_snapshot_hash" in template
     assert "freeze_token_hash" in template
-    assert "불변 최종보고서" in template
+    assert "리서치·가치평가 보고서" in template
+    assert "## 투자 요약" in template
+    assert "# 감사 부록 — 검증·추적" in template
     assert "major_gate_reporting_contract" in template
     assert "direct_source_links" in template
     assert "정보 출처 — 원문 직접 검증" in template

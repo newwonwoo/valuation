@@ -16,6 +16,11 @@ from .live_runtime import (
     run_prism,
 )
 from .orchestrator import ControlledRunResult, MajorGateReporter, MajorGateSummary
+from .report_localization import (
+    localize_stage_references,
+    next_action_label_ko,
+    status_label_ko,
+)
 from .runtime_resources import runtime_registry_path
 
 
@@ -374,12 +379,12 @@ def _blocked_codes(result: ControlledRunResult) -> tuple[str, ...]:
 def render_major_gate_summary(summary: MajorGateSummary) -> str:
     return "\n".join(
         (
-            f"## Gate {summary.ordinal}/{summary.gate_count} — {summary.title}",
-            f"- Status: {summary.status.value} "
+            f"## 대형 게이트 {summary.ordinal}/{summary.gate_count} — {summary.title}",
+            f"- 상태: {status_label_ko(summary.status)} "
             f"({summary.completed_stage_count}/{summary.expected_stage_count})",
-            f"- Decisive result: {summary.decisive_result}",
-            f"- Residual risk: {summary.residual_risk}",
-            f"- Next: {summary.next_action}",
+            f"- 핵심 결과: {localize_stage_references(summary.decisive_result)}",
+            f"- 잔여위험: {localize_stage_references(summary.residual_risk)}",
+            f"- 다음 단계: {next_action_label_ko(summary.next_action)}",
         )
     )
 

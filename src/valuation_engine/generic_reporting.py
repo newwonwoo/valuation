@@ -4,6 +4,7 @@ from dataclasses import asdict, is_dataclass
 from decimal import Decimal
 from enum import Enum
 from pathlib import Path
+import re
 import shutil
 from typing import Any
 
@@ -21,6 +22,15 @@ from .control_plane import (
 )
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .post_freeze import MarketComparisonBundle, StreetComparisonBundle
+from .report_localization import (
+    calibration_label_ko,
+    currency_label_ko,
+    identifier_label_ko,
+    method_label_ko,
+    module_label_ko,
+    scenario_label_ko,
+    valuation_scope_label_ko,
+)
 from .records import AuditReport, RunManifest, RunStatus, iso_now
 from .research_learning import ResearchLearningStore
 from .state import StateStore, thesis_delta
@@ -49,6 +59,14 @@ def _jsonable(value: Any) -> Any:
 def _fmt(value: Decimal | float | int) -> str:
     number = Decimal(str(value))
     return f"{number:,.2f}".rstrip("0").rstrip(".")
+
+
+def _fmt_money(value: Decimal | float | int, unit: str) -> str:
+    number = Decimal(str(value))
+    decimals = 0 if unit in {"KRW", "JPY"} else 2
+    if decimals == 0:
+        return f"{number:,.0f}"
+    return f"{number:,.{decimals}f}".rstrip("0").rstrip(".")
 
 
 def _current_thesis(data: dict[str, Any]) -> str:
@@ -124,22 +142,67 @@ def _module_impact_summary(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _compact_list(values: list[str], *, limit: int = 8) -> str:
-    if not values:
-        return "없음"
-    head = values[:limit]
-    suffix = f" 외 {len(values) - limit}개" if len(values) > limit else ""
-    return ", ".join(head) + suffix
+def _korean_text_or(value: object, fallback: str) -> str:
+    text = " ".join(str(value or "").split())
+    return text if re.search(r"[가-힣]", text) else fallback
 
 
-def _research_effort_line(summary: dict[str, Any]) -> str:
-    effort = summary["research_effort"]
-    return (
-        f"출처 조회 {effort['source_queries']}회, "
-        f"문서 검토 {effort['documents_reviewed']}건, "
-        f"대규모 언어모델 호출 {effort['llm_calls']}회, "
-        f"소요시간 {float(effort['elapsed_seconds']):.1f}초"
+def _measure_text(assumption: object) -> str:
+    measure = getattr(assumption, "measure", None)
+    amount = Decimal(str(getattr(measure, "amount", 0)))
+    unit = str(getattr(measure, "unit", ""))
+    if unit == "ratio":
+        return f"{amount * 100:.1f}%"
+    if unit == "KRW_billion":
+        return f"{amount * 10:,.0f}억원"
+    if unit == "USD_million":
+        return f"{amount:,.0f}백만 달러"
+    if unit == "years":
+        return f"{amount:g}년"
+    if unit == "shares":
+        return f"{amount:,.0f}주"
+    return f"{amount:g} {unit}".strip()
+
+
+def _scenario_assumptions_line(scenario: object) -> str:
+    labels = (
+        ("1년차 기업잉여현금흐름", "fcff_year_1"),
+        ("5년차 기업잉여현금흐름", "fcff_year_5"),
+        ("영구성장률", "terminal_growth"),
+        ("영구 투하자본이익률", "terminal_roic"),
     )
+    values: list[str] = []
+    for label, key in labels:
+        try:
+            assumption = scenario.get(key)  # type: ignore[attr-defined]
+        except (AttributeError, KeyError):
+            continue
+        values.append(f"{label} {_measure_text(assumption)}")
+    return " · ".join(values)
+
+
+def _market_interpretation(
+    market: MarketComparisonBundle | None,
+) -> str:
+    if market is None:
+        return "현재 시장가격이 확보되지 않아 내재가치와의 차이는 제시하지 않습니다."
+    preferred = next(
+        (
+            item
+            for scenario_id in ("Core", "Base")
+            for item in market.envelope.scenario_gaps
+            if item.scenario_id == scenario_id
+        ),
+        None,
+    )
+    if preferred is None:
+        return "현재가와 각 시나리오의 내재가치를 개별 비교해야 합니다."
+    pct = preferred.gap_pct_of_reference
+    if pct < 0:
+        return f"기준 내재가치는 현재가보다 {abs(pct):.1%} 낮습니다. 상방 시나리오의 실현 조건 확인이 필요합니다."
+    if pct > 0:
+        return f"기준 내재가치는 현재가보다 {pct:.1%} 높습니다. 하방 위험과 가정 실현 여부를 함께 점검해야 합니다."
+    return "현재가는 기준 내재가치와 같은 수준입니다. 추가 상승여력은 상방 가정의 실현 여부에 달려 있습니다."
 
 
 def thesis_delta_adapter() -> StageAdapter:
@@ -187,42 +250,6 @@ def render_generic_report(
 
     partial = valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
     summary_visual, assumptions_visual = report_visual_filenames(data)
-    lines = [
-        f"# {company} PRISM 리서치·가치평가 보고서",
-        "",
-        "## 최종 요약 이미지",
-        f"![{company} 회사 강점·투자 결론·가치평가]({summary_visual})",
-        "",
-        f"![{company} 가치평가 가정·위험·출처]({assumptions_visual})",
-        "",
-        *render_context_strength_linkage_section(data),
-        "",
-        (
-            "## 부분 내재가치 — 평가 완료 사업부만 포함"
-            if partial
-            else "## 내재가치"
-        ),
-    ]
-    if partial:
-        lines.append(
-            "- 평가범위: `PARTIAL_INTRINSIC` — 아래 숫자는 평가 완료 사업부 소계이며 전체 기업가치가 아닙니다."
-        )
-    for item in valuation.scenarios:
-        label = "평가완료 소계" if partial else "내재가치"
-        lines.append(
-            f"- {item.scenario_id} {label}: 주당 {_fmt(item.value_per_share)} {valuation.reporting_unit}"
-        )
-    if valuation.expected_value_per_share is None:
-        lines.append("- 확률가중 기대값: 미산출 — 시나리오 확률이 보정 완료 상태가 아니므로 수치 가중을 보류했습니다.")
-    elif partial:
-        lines.append(
-            f"- 부분 확률가중 소계: 주당 {_fmt(valuation.expected_value_per_share)} {valuation.reporting_unit} — 전체 기업 공정가치로 사용 금지"
-        )
-    else:
-        lines.append(
-            f"- 확률가중 기대값: 주당 {_fmt(valuation.expected_value_per_share)} {valuation.reporting_unit}"
-        )
-
     scenario_set = data.get("bound_scenario_set")
     calibration_status = getattr(
         getattr(scenario_set, "calibration_status", None), "value", "UNCALIBRATED"
@@ -230,69 +257,175 @@ def render_generic_report(
     calibration_applied = bool(
         getattr(scenario_set, "numeric_weighting_allowed", False)
     )
+    market = data.get("market_comparison")
+    market_bundle = market if isinstance(market, MarketComparisonBundle) else None
+    thesis = _korean_text_or(
+        _current_thesis(data),
+        "공식 근거와 결정론적 가치평가를 바탕으로 시나리오별 내재가치를 비교했습니다.",
+    )
+    if len(thesis) > 420:
+        thesis = thesis[:419].rstrip() + "…"
+    entry_posture = (
+        "실제 해결 이력 기반 확률 보정과 별도 진입 규칙이 모두 갖춰지기 전까지 "
+        "구체적인 매수가는 제시하지 않습니다."
+        if not calibration_applied
+        else "확률가중 값은 참고할 수 있으나 별도 진입 규칙이 없어 구체적인 매수가는 제시하지 않습니다."
+    )
+    values = tuple(item.value_per_share for item in valuation.scenarios)
+    value_range = (
+        f"주당 {_fmt_money(min(values), valuation.reporting_unit)}~"
+        f"{_fmt_money(max(values), valuation.reporting_unit)}"
+        f"{currency_label_ko(valuation.reporting_unit)}"
+        if values
+        else "미산출"
+    )
+    lines = [
+        f"# {company} 리서치·가치평가 보고서",
+        "",
+        "## 투자 요약",
+        f"- **핵심 판단:** {thesis}",
+        f"- **가치평가 범위:** {value_range}",
+        f"- **현재가 해석:** {_market_interpretation(market_bundle)}",
+        f"- **매수 판단:** {entry_posture}",
+        "",
+        (
+            "## 부분 내재가치 — 평가 완료 사업부만 포함"
+            if partial
+            else "## 가치평가"
+        ),
+    ]
+    if partial:
+        lines.append(
+            "- 평가범위: 평가 완료 사업부 소계이며 전체 기업가치가 아닙니다."
+        )
+    for item in valuation.scenarios:
+        label = "평가완료 소계" if partial else "내재가치"
+        lines.append(
+            f"- **{scenario_label_ko(item.scenario_id)} 시나리오:** {label} 주당 "
+            f"{_fmt_money(item.value_per_share, valuation.reporting_unit)}"
+            f"{currency_label_ko(valuation.reporting_unit)}"
+        )
+    if valuation.expected_value_per_share is None:
+        lines.append(
+            "- **확률가중 기대값:** 미산출 — 실제 해결 이력 기반 보정이 끝나지 않아 수치 가중을 보류했습니다."
+        )
+    elif partial:
+        lines.append(
+            f"- **부분 확률가중 소계:** 주당 {_fmt_money(valuation.expected_value_per_share, valuation.reporting_unit)}"
+            f"{currency_label_ko(valuation.reporting_unit)} — 전체 기업 공정가치로 사용하지 않습니다."
+        )
+    else:
+        lines.append(
+            f"- **확률가중 기대값:** 주당 {_fmt_money(valuation.expected_value_per_share, valuation.reporting_unit)}"
+            f"{currency_label_ko(valuation.reporting_unit)}"
+        )
+
+    methods = tuple(data.get("selected_methods", ()))
+    method_labels = tuple(dict.fromkeys(method_label_ko(item) for item in methods))
+    beta_result = data.get("live_beta_result")
+    wacc_result = data.get("live_wacc_result")
+    beta = getattr(beta_result, "target_levered_beta", None)
+    wacc = getattr(getattr(wacc_result, "wacc_result", None), "wacc", None)
     lines.extend((
         "",
-        "## 확률 보정 상태",
-        f"- 보정 상태: `{calibration_status}` · 수치 가중: {'적용' if calibration_applied else '보류'}",
-        f"- 계보: 데이터셋 `{getattr(scenario_set, 'calibration_dataset_hash', None) or '없음'}` · 스냅샷 `{getattr(scenario_set, 'calibration_snapshot_hash', None) or '없음'}`",
+        "## 핵심 가정과 위험",
+        f"- **평가방법:** {', '.join(method_labels) if method_labels else '등록된 결정론적 가치평가법'}",
+        f"- **위험 입력:** 계층형 베타 {beta:.3f} · 가중평균자본비용 {wacc:.3%}"
+        if beta is not None and wacc is not None
+        else "- **위험 입력:** 선택된 평가방법에서 별도 베타·가중평균자본비용을 요구하지 않습니다.",
+        f"- **확률 보정:** {calibration_label_ko(calibration_status)} · 수치 가중 {'적용' if calibration_applied else '보류'}",
     ))
+    for scenario in tuple(getattr(scenario_set, "scenarios", ()))[:3]:
+        assumptions = _scenario_assumptions_line(scenario)
+        if assumptions:
+            lines.append(
+                f"- **{scenario_label_ko(getattr(scenario, 'scenario_id', ''))} 가정:** {assumptions}"
+            )
+    capacity = data.get("capacity_commitment_assessment")
+    projects = tuple(getattr(capacity, "core_inclusion_required_projects", ()))
+    if projects:
+        lines.append(
+            "- **기준 시나리오 생산능력:** "
+            + ", ".join(identifier_label_ko(item) for item in projects)
+        )
+    if not calibration_applied:
+        lines.append(
+            "- **핵심 제약:** 실제 해결 전망의 누적 이력이 부족해 시나리오 확률과 기대값을 투자판단에 사용할 수 없습니다."
+        )
 
     if partial:
-        lines.extend(("", "## 미평가 사업부 — 0원 처리 금지 (`UNVALUED_NOT_ZERO`)"))
+        lines.extend(("", "## 미평가 사업부 — 0원으로 간주하지 않음"))
         for item in valuation.unvalued_segments:
             missing = (
                 f"; 누락 가정={', '.join(item.missing_assumptions)}"
                 if item.missing_assumptions
                 else ""
             )
+            rationale = _korean_text_or(
+                item.rationale,
+                "가치평가에 필요한 근거 또는 가정이 부족합니다.",
+            )
             lines.append(
-                f"- {item.segment_id} ({item.asset_id}): {item.status.value} — "
-                f"{item.resolution_status}: {item.rationale}{missing}"
+                f"- {item.segment_id}: {rationale}{missing}"
             )
         lines.append("- 미평가 사업부는 0원으로 합산하지 않았습니다.")
 
     street = data.get("street_comparison")
+    lines.extend(("", "## 증권사·시장 비교"))
     if isinstance(street, StreetComparisonBundle):
         lines.extend((
-            "",
-            "## 증권사 목표가 비교",
-            f"- 반영 리포트: {street.consensus.report_count}건",
-            f"- 평균 목표가: {_fmt(street.consensus.mean_target_price)} {street.consensus.target_price_currency}",
+            f"- **증권사 평균 목표가:** {_fmt_money(street.consensus.mean_target_price, street.consensus.target_price_currency)}"
+            f"{currency_label_ko(street.consensus.target_price_currency)} ({street.consensus.report_count}건)",
         ))
-        for item in street.envelope.scenario_gaps:
+        reference_gap = next(
+            (
+                item
+                for scenario_id in ("Core", "Base")
+                for item in street.envelope.scenario_gaps
+                if item.scenario_id == scenario_id
+            ),
+            None,
+        )
+        if reference_gap is not None and reference_gap.gap_pct_of_reference == 0:
+            lines.append("- 증권사 평균 목표가는 기준 내재가치와 같습니다.")
+        elif reference_gap is not None:
             lines.append(
-                f"- {item.scenario_id} 대비: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})"
+                "- 증권사 평균 목표가는 기준 내재가치보다 "
+                f"{abs(reference_gap.gap_pct_of_reference):.1%} "
+                f"{'높습니다' if reference_gap.gap_pct_of_reference < 0 else '낮습니다'}."
             )
-        if street.envelope.expected_gap is not None:
-            item = street.envelope.expected_gap
-            lines.append(f"- 확률가중 기대값 대비: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})")
     elif data.get("street_comparison_withheld_reason"):
-        lines.extend((
-            "",
-            "## 증권사 목표가 비교",
-            f"- 비교 보류: {data['street_comparison_withheld_reason']}",
-        ))
+        lines.append("- **증권사 목표가:** 비교를 보류했습니다.")
+    else:
+        lines.append("- **증권사 목표가:** 확보되지 않았습니다.")
 
-    market = data.get("market_comparison")
-    if isinstance(market, MarketComparisonBundle):
-        lines.extend((
-            "",
-            "## 현재 시장가격 비교",
-            f"- 현재가: {_fmt(market.observation.price)} {market.envelope.currency} ({market.observation.as_of})",
-        ))
-        for item in market.envelope.scenario_gaps:
+    if market_bundle is not None:
+        lines.append(
+            f"- **현재가:** {_fmt_money(market_bundle.observation.price, market_bundle.envelope.currency)}"
+            f"{currency_label_ko(market_bundle.envelope.currency)} ({market_bundle.observation.as_of})"
+        )
+        for item in market_bundle.envelope.scenario_gaps:
+            direction = "상승여력" if item.gap_per_share >= 0 else "하락위험"
             lines.append(
-                f"- {item.scenario_id} 기대수익 간격: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})"
+                f"- **{scenario_label_ko(item.scenario_id)} 대비 {direction}:** "
+                f"{_fmt_money(abs(item.gap_per_share), market_bundle.envelope.currency)}"
+                f"{currency_label_ko(market_bundle.envelope.currency)} "
+                f"({abs(item.gap_pct_of_reference):.1%})"
             )
-        if market.envelope.expected_gap is not None:
-            item = market.envelope.expected_gap
-            lines.append(f"- 확률가중 기대값 대비 수익 간격: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})")
     elif data.get("market_comparison_withheld_reason"):
-        lines.extend((
-            "",
-            "## 현재 시장가격 비교",
-            f"- 비교 보류: {data['market_comparison_withheld_reason']}",
-        ))
+        lines.append("- **현재가:** 비교를 보류했습니다.")
+    else:
+        lines.append("- **현재가:** 확보되지 않았습니다.")
+
+    lines.extend(("", *render_context_strength_linkage_section(data)))
+
+    lines.extend((
+        "",
+        "## 최종 요약 이미지",
+        f"![{company} 회사 강점·투자 결론·가치평가]({summary_visual})",
+        "",
+        f"![{company} 가치평가 가정·위험·출처]({assumptions_visual})",
+    ))
 
     source_links = build_source_link_index(
         data,
@@ -300,45 +433,23 @@ def render_generic_report(
     )
     lines.extend(("", *render_source_link_section(source_links)))
 
-    impact = _module_impact_summary(data)
-    lines.extend((
-        "",
-        "## 모듈 영향·조사 효율성",
-        f"- 측정 완료: {_compact_list(impact['measured'])} · 미측정(NOT_MEASURABLE): {_compact_list(impact['not_measurable'])}",
-        f"- 비적용: {_compact_list(impact['not_applicable'])} · 실패: {_compact_list(impact['failed'])}",
-        f"- 조사비용: {_research_effort_line(impact)}",
-        f"- 하향 검토 후보: {_compact_list(impact['downrank_candidates'])} · 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.",
-    ))
-
     non_pass = tuple(
         item for item in coverage
         if item.status not in {StageStatus.PASS, StageStatus.WARNING, StageStatus.SKIPPED_NOT_APPLICABLE}
     )
     lines.extend((
         "",
-        "## 감사·준수 범위",
-        f"- 감사: 통과 ({len(audit.findings)}개 점검)",
-        f"- 원칙 준수: {len(coverage) - len(non_pass)}/{len(coverage)}개 최종 허용 상태",
+        "## 분석 범위와 유의사항",
+        f"- **평가범위:** {valuation_scope_label_ko(valuation.scope.value)}",
+        f"- **검증:** 결정론적 감사 {len(audit.findings)}개 점검 통과 · 원칙 준수 {len(coverage) - len(non_pass)}/{len(coverage)}개 허용 상태",
+        "- 회사 공시 사실, 분석가 가정, 인공지능 연결 인사이트를 구분해 표시했습니다.",
+        "- 증권사 목표가와 현재가는 내재가치 고정 이후 비교용으로만 불러왔으며 같은 실행의 가정을 바꾸지 않았습니다.",
     ))
     for item in non_pass:
-        lines.append(f"- {item.module_id}: {item.status.value} — {item.rationale}")
-
-    delta = data.get("thesis_delta_result", {})
-    if isinstance(delta, dict):
-        lines.extend((
-            "",
-            "## 투자논지 변화",
-            f"- 강화·신규: {', '.join(delta.get('strengthened_or_new', [])) or '없음'}",
-            f"- 약화·폐기: {', '.join(delta.get('weakened_or_removed', [])) or '없음'}",
-        ))
-
-    lines.extend((
-        "",
-        "## 실행 무결성",
-        f"- 평가범위: `{valuation.scope.value}` · 내재가치 고정: `{getattr(data.get('intrinsic_freeze_token'), 'token_hash', '')}`",
-        f"- 해시 사슬: 원장 `{data.get('ledger_snapshot_hash', '')}` · 가정 `{data.get('assumption_set_hash', '')}` · 가치평가 `{data.get('valuation_hash', '')}` · 감사 `{data.get('audit_hash', '')}`",
-        f"- 확률 보정: 데이터셋 `{data.get('probability_calibration_dataset_hash', '') or '미적용'}` · 스냅샷 `{data.get('probability_calibration_snapshot_hash', '') or '미적용'}`",
-    ))
+        lines.append(
+            f"- 추가 확인: {module_label_ko(item.module_id)} — "
+            f"{_korean_text_or(item.rationale, '검토가 완료되지 않았습니다.')}"
+        )
     return "\n".join(lines) + "\n"
 
 

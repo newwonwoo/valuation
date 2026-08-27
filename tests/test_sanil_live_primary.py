@@ -260,8 +260,9 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     attestation = attest_controlled_run(result)
     report = render_controlled_run_report(result)
     assert attestation.passed
-    assert "실행 상태: **검증·고정 완료 (`VERIFIED_FROZEN`)**" in report
-    assert "Beta" in report and "WACC" in report
+    assert "**검증 상태:** 검증·고정 완료" in report
+    assert "베타" in report and "가중평균자본비용" in report
+    assert report.index("## 투자 요약") < report.index("# 감사 부록 — 검증·추적")
     assert "SANIL_SECOND_FACTORY_RAMP" in str(
         result.data["capacity_commitment_assessment"]
     )

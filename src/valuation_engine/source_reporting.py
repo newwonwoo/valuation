@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from urllib.parse import parse_qsl, urlsplit, urlunsplit
 
 from .ledger import EvidenceLedger
+from .report_localization import identifier_label_ko, metric_label_ko
 from .records import MarketObservation
 from .street import StreetResearchReport
 
@@ -159,10 +160,12 @@ def render_source_link_section(links: tuple[SourceLink, ...]) -> tuple[str, ...]
             row for row in item.coverage if not row.startswith("근거 ")
         )
         if len(evidence_rows) > 6:
-            metrics = tuple(
-                row.split(": ", 1)[1].split(" (기준일 ", 1)[0]
+            metrics = tuple(dict.fromkeys(
+                metric_label_ko(
+                    row.split(": ", 1)[1].split(" (기준일 ", 1)[0]
+                )
                 for row in evidence_rows
-            )
+            ))
             dates = tuple(
                 sorted(
                     {
@@ -172,18 +175,27 @@ def render_source_link_section(links: tuple[SourceLink, ...]) -> tuple[str, ...]
                 )
             )
             evidence_summary = (
-                f"근거 {len(evidence_rows)}개: {', '.join(metrics[:6])} "
-                f"외 {len(metrics) - 6}개 (기준일 {', '.join(dates)})"
+                f"근거 {len(evidence_rows)}개: {', '.join(metrics[:6])}"
+                + (f" 외 {len(metrics) - 6}개 유형" if len(metrics) > 6 else "")
+                + f" (기준일 {', '.join(dates)})"
             )
             coverage = (evidence_summary, *other_rows)
         else:
-            coverage = item.coverage
+            coverage = tuple(dict.fromkeys(
+                (
+                    f"{metric_label_ko(row.split(': ', 1)[1].split(' (기준일 ', 1)[0])} "
+                    f"(기준일 {row.rsplit(' (기준일 ', 1)[1].rstrip(')')})"
+                )
+                if row.startswith("근거 ")
+                else row
+                for row in item.coverage
+            ))
         lines.append(
-            f"- **{' / '.join(item.labels)}** — {'; '.join(coverage)} "
+            f"- **{' / '.join(identifier_label_ko(label) for label in item.labels)}** — {'; '.join(coverage)} "
             f"[원문 바로 열기]({item.url})"
         )
     lines.append(
-        "- 전체 근거 ID·지표·기준일 매핑은 동일 실행의 불변 Evidence Ledger에 보존됩니다."
+        "- 전체 근거 식별자·지표·기준일 매핑은 동일 실행의 불변 근거 원장에 보존됩니다."
     )
     return tuple(lines)
 

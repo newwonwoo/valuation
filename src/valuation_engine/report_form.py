@@ -17,6 +17,11 @@ from .orchestrator import (
 )
 from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
 from .risk_impact import selected_methods_require_discount_rate
+from .report_localization import (
+    localize_stage_references,
+    module_label_ko,
+    stage_label_ko,
+)
 from .source_reporting import build_source_link_index
 from .visual_reporting import render_report_visuals
 
@@ -44,6 +49,29 @@ _STAGE_STATUS_KO = {
 
 def _stage_status_ko(status: StageStatus) -> str:
     return _STAGE_STATUS_KO.get(status, status.value)
+
+
+def _next_action_ko(
+    value: str,
+    reporting_contract: object,
+) -> str:
+    if value == "FINAL_RESULT_REPORT":
+        return "최종 결과보고서"
+    for gate in getattr(reporting_contract, "major_gates", ()):
+        if value == gate.gate_id:
+            return gate.title
+        if value == f"RESOLVE_{gate.gate_id}":
+            return f"{gate.title} 차단 해소"
+    return localize_stage_references(value)
+
+
+def _compact_localized_modules(values: object, *, limit: int = 8) -> str:
+    if not isinstance(values, (list, tuple)) or not values:
+        return "없음"
+    labels = [module_label_ko(item) for item in values]
+    head = labels[:limit]
+    suffix = f" 외 {len(labels) - limit}개" if len(labels) > limit else ""
+    return ", ".join(head) + suffix
 
 
 @dataclass(frozen=True)
@@ -134,6 +162,17 @@ def attest_controlled_run(
     source_links_bound = bool(source_links) and isinstance(persisted_report, str) and all(
         item.url in persisted_report for item in source_links
     )
+    reader_sections = tuple(
+        f"## {section}" for section in reporting_contract.primary_section_order
+    )
+    reader_positions = (
+        tuple(persisted_report.find(section) for section in reader_sections)
+        if isinstance(persisted_report, str)
+        else ()
+    )
+    broker_report_structure = bool(reader_positions) and all(
+        position >= 0 for position in reader_positions
+    ) and tuple(sorted(reader_positions)) == reader_positions
 
     checks: list[ExecutionCheck] = [
         _check(
@@ -232,6 +271,12 @@ def attest_controlled_run(
             and len(llm_section) <= reporting_contract.llm_insight_max_chars,
             "인공지능 관여 내용이 결정론적 결과와 분리되어 1,000자 이하로 표시되었습니다",
             "인공지능 인사이트 독립 구역이 없거나 1,000자 상한을 초과했습니다",
+        ),
+        _check(
+            "korean_broker_report_structure",
+            broker_report_structure,
+            "투자판단·가치평가·가정과 위험·시장 비교·원문 출처 순서의 한국어 증권사형 본문을 생성했습니다",
+            "한국어 증권사형 본문 순서가 누락되었거나 개발자용 정보가 본문 구조를 대신하고 있습니다",
         ),
     ]
 
@@ -400,6 +445,10 @@ def attest_controlled_run(
             "llm_insight_separate_section_required": reporting_contract.llm_insight_separate_section_required,
             "llm_insight_max_chars": reporting_contract.llm_insight_max_chars,
             "deterministic_outputs_separated_from_llm": reporting_contract.deterministic_outputs_separated_from_llm,
+            "visible_language": reporting_contract.visible_language,
+            "primary_section_order": reporting_contract.primary_section_order,
+            "decision_report_precedes_audit_appendix": reporting_contract.decision_report_precedes_audit_appendix,
+            "technical_identifiers_collapsed": reporting_contract.technical_identifiers_collapsed,
         },
         "direct_source_links": [item.url for item in source_links],
         "hashes": {
@@ -441,13 +490,9 @@ def render_controlled_run_report(
         stage_registry_path=stage_registry_path,
     )
     status = (
-        "차단 (`BLOCKED`)"
+        "차단"
         if result.blocked_reasons
-        else (
-            "검증·고정 완료 (`VERIFIED_FROZEN`)"
-            if attestation.passed
-            else "검증 미완료 (`INCOMPLETE`)"
-        )
+        else ("검증·고정 완료" if attestation.passed else "검증 미완료")
     )
     data = result.data
     reporting_contract = load_reporting_contract(stage_registry_path)
@@ -456,38 +501,33 @@ def render_controlled_run_report(
     )
     passed_checks = sum(item.passed for item in attestation.checks)
     failed_checks = tuple(item for item in attestation.checks if not item.passed)
-    lines = [
-        "# PRISM 검증·통제 실행 보고서",
-        "",
-        f"- 실행 ID: `{result.run_id}`",
-        f"- 실행 모드: `{result.execution_mode.value}`",
-        f"- 실행 상태: **{status}**",
-        f"- 검증증명 해시: `{attestation.attestation_hash}`",
-        "",
-        "## 실행 검증",
-        f"- 점검 결과: **{passed_checks}/{len(attestation.checks)} 통과**",
-        f"- 표준 단계: **{len(result.stage_traces)}/33개 최종 추적 완료**",
-    ]
-    for item in failed_checks:
-        lines.append(f"- **실패 `{item.check_id}`:** {item.detail}")
-
-    lines.extend(
-        (
+    persisted = data.get("final_report")
+    lines = []
+    if isinstance(persisted, str) and persisted:
+        lines.append(persisted.rstrip())
+    else:
+        lines.extend((
+            "# 리서치·가치평가 보고서",
             "",
-            "## 고정된 식별정보 사슬",
-            f"- 증거: `{data.get('ledger_snapshot_hash') or '누락'}`",
-            f"- 가정: `{data.get('assumption_set_hash') or '누락'}`",
-            f"- 시나리오: `{data.get('scenario_set_hash') or '누락'}`",
-            f"- 가치평가: `{data.get('valuation_hash') or '누락'}`",
-            f"- 감사: `{data.get('audit_hash') or '누락'}`",
-            f"- 내재가치 고정: `{getattr(result.freeze_token, 'token_hash', None) or '누락'}`",
-        )
-    )
+            "최종 투자보고서가 저장되지 않았습니다.",
+        ))
+    lines.extend((
+        "",
+        "---",
+        "",
+        "# 감사 부록 — 검증·추적",
+        "",
+        f"- **검증 상태:** {status}",
+        f"- **자동 점검:** {passed_checks}/{len(attestation.checks)} 통과",
+        f"- **통제 단계:** {len(result.stage_traces)}/33개 최종 추적 완료",
+    ))
+    for item in failed_checks:
+        lines.append(f"- **실패 점검:** {item.detail}")
     auxiliary = tuple(
         (label, data.get(key))
         for label, key in (
-            ("Beta", "beta_snapshot_hash"),
-            ("WACC", "wacc_snapshot_hash"),
+            ("베타", "beta_snapshot_hash"),
+            ("가중평균자본비용", "wacc_snapshot_hash"),
             ("생산능력 평가", "capacity_commitment_assessment_hash"),
             ("생산능력 반영", "capacity_bridge_consumption_hash"),
             ("생산능력 시나리오", "capacity_scenario_binding_hash"),
@@ -506,12 +546,6 @@ def render_controlled_run_report(
         )
         if data.get(key) is not None
     )
-    if auxiliary:
-        lines.append(
-            "- 보조 결속정보: "
-            + " · ".join(f"{label} `{value}`" for label, value in auxiliary)
-        )
-
     lines.extend(("", "## 대형 게이트 완료 요약"))
     for summary in result.major_gate_summaries:
         lines.extend(
@@ -519,8 +553,9 @@ def render_controlled_run_report(
                 "",
                 f"### {summary.ordinal}. {summary.title} — {_stage_status_ko(summary.status)} "
                 f"({summary.completed_stage_count}/{summary.expected_stage_count})",
-                f"- 결과: {summary.decisive_result}",
-                f"- 잔여위험: {summary.residual_risk} · 다음 단계: `{summary.next_action}`",
+                f"- 결과: {localize_stage_references(summary.decisive_result)}",
+                f"- 잔여위험: {localize_stage_references(summary.residual_risk)} "
+                f"· 다음 단계: {_next_action_ko(summary.next_action, reporting_contract)}",
             )
         )
     if not result.major_gate_summaries:
@@ -528,22 +563,7 @@ def render_controlled_run_report(
     if result.reporting_warnings:
         lines.extend(("", "### 보고 전달 경고", ""))
         lines.extend(f"- {item}" for item in result.reporting_warnings)
-    lines.extend(
-        (
-            "",
-            "## 최종보고서 편집 계약",
-            f"- 본문 목표: {reporting_contract.main_body_target_pages[0]}–{reporting_contract.main_body_target_pages[1]}쪽",
-            f"- 감사 부록 목표: {reporting_contract.audit_appendix_target_pages[0]}–{reporting_contract.audit_appendix_target_pages[1]}쪽",
-            f"- 전체 상한: {reporting_contract.total_page_cap}쪽",
-            f"- 이미지: {reporting_contract.visual_pages_included_in_main_body}장을 본문 {reporting_contract.main_body_target_pages[0]}–{reporting_contract.main_body_target_pages[1]}쪽 안에 포함합니다.",
-            f"- 활자: 본문 ≥ {reporting_contract.body_min_pt}pt, 주 제목 ≥ {reporting_contract.primary_heading_min_pt}pt, 절 제목 ≥ {reporting_contract.section_heading_min_pt}pt. 조밀한 대형 표는 금지합니다.",
-            "- 필수: 모든 주장의 출처를 `정보 출처 — 원문 직접 검증`의 HTTP(S) 원문 링크에 연결합니다.",
-            "- 필수 산출물: 한국어 본문과 함께 투자결론·가치평가 요약 1장, 가치평가 가정·위험·출처 요약 1장을 생성합니다.",
-            f"- 인공지능 관여 내용: 결정론적 결과와 분리된 독립 구역으로 표시하고 {reporting_contract.llm_insight_max_chars:,}자 이하로 제한합니다.",
-        )
-    )
-
-    lines.extend(("", "## 압축 감사 부록 — 33단계 추적"))
+    technical_stage_lines = ["", "### 33단계 진행 상태"]
     trace_index = {trace.stage: trace for trace in result.stage_traces}
     stage_number = {
         trace.stage: index
@@ -551,74 +571,139 @@ def render_controlled_run_report(
     }
     for gate in reporting_contract.major_gates:
         compact = " · ".join(
-            f"{stage_number[stage]} `{stage}`={_stage_status_ko(trace_index[stage].status)}"
+            f"{stage_number[stage]} {stage_label_ko(stage)}={_stage_status_ko(trace_index[stage].status)}"
             for stage in gate.stages
             if stage in trace_index
         )
-        lines.append(f"- **{gate.gate_id}:** {compact or '미실행'}")
-    lines.append(
-        "- 단계별 정확한 사유와 출력 키는 불변 `control_plane_trace.json` 산출물에 보존됩니다."
+        technical_stage_lines.append(f"- **{gate.title}:** {compact or '미실행'}")
+    technical_stage_lines.append(
+        "- 단계별 정확한 사유와 출력값 식별자는 불변 추적 파일에 보존됩니다."
     )
 
-    persisted = data.get("final_report")
-    lines.extend(("", "## 영구 저장된 리서치 보고서", ""))
-    if isinstance(persisted, str) and persisted:
-        lines.append(persisted.rstrip())
-    else:
-        lines.append("이 실행에는 영구 저장된 최종보고서가 없습니다.")
+    impact = data.get("module_impact_summary")
+    technical_module_lines: list[str] = []
+    if isinstance(impact, dict):
+        technical_module_lines.extend((
+            "",
+            "### 분석 모듈 점검",
+            f"- 영향 측정 완료: {_compact_localized_modules(impact.get('measured', []))}",
+            f"- 영향 미측정: {_compact_localized_modules(impact.get('not_measurable', []))}",
+            f"- 비적용: {_compact_localized_modules(impact.get('not_applicable', []))} · 실패: {_compact_localized_modules(impact.get('failed', []))}",
+        ))
+
+    lines.extend((
+        "",
+        "<details>",
+        "<summary>기술 식별자·해시 확인</summary>",
+        *technical_stage_lines,
+        *technical_module_lines,
+        "",
+        "### 실행 식별자와 해시",
+        "",
+        f"- 실행 식별자: `{result.run_id}`",
+        f"- 실행 모드: `{result.execution_mode.value}`",
+        f"- 검증증명 해시: `{attestation.attestation_hash}`",
+        f"- 증거 해시: `{data.get('ledger_snapshot_hash') or '누락'}`",
+        f"- 가정 해시: `{data.get('assumption_set_hash') or '누락'}`",
+        f"- 시나리오 해시: `{data.get('scenario_set_hash') or '누락'}`",
+        f"- 가치평가 해시: `{data.get('valuation_hash') or '누락'}`",
+        f"- 감사 해시: `{data.get('audit_hash') or '누락'}`",
+        f"- 내재가치 고정 해시: `{getattr(result.freeze_token, 'token_hash', None) or '누락'}`",
+    ))
+    if auxiliary:
+        lines.append(
+            "- 보조 결속정보: "
+            + " · ".join(f"{label} `{value}`" for label, value in auxiliary)
+        )
+    lines.extend((
+        "- 단계 기술 식별자: "
+        + " · ".join(
+            f"{index} `{trace.stage}`={trace.status.value}"
+            for index, trace in enumerate(result.stage_traces, start=1)
+        ),
+        "",
+        "</details>",
+    ))
     return "\n".join(lines) + "\n"
 
 
 def render_report_form_template() -> str:
-    return """# PRISM 검증·통제 실행 보고서
+    return """# {{ 기업명 }} 리서치·가치평가 보고서
 
-- 실행 ID: `{{ run_id }}`
-- 실행 모드: `LIVE_PRIMARY`
-- 실행 상태: **{{ 검증·고정 완료 | 검증 미완료 | 차단 }}**
-- 검증증명 해시: `{{ attestation_hash }}`
+## 투자 요약
 
-## 실행 검증
+- 핵심 판단: {{ 근거에 기반한 투자논지와 결정요인 }}
+- 가치평가 범위: {{ 하방 }}원–{{ 상방 }}원
+- 현재가 해석: {{ 기준 내재가치와 현재가의 차이 및 필요한 확인사항 }}
+- 매수 판단: {{ 확률 보정 또는 진입 규칙 미충족 시 구체적 매수가 보류 }}
 
-- 점검 결과: **{{ passed_checks }}/{{ total_checks }} 통과**
-- 표준 단계: **{{ terminal_stage_count }}/33개 최종 추적 완료**
-- 실패 점검만 표시: `{{ canonical_stage_sequence | beta_wacc_same_run_chain | capacity_core_consumption_chain | broker_research_primary_verification_chain | freeze_hash_binding | major_gate_reporting_contract | major_gate_delivery | direct_source_links | 없음 }} — {{ detail }}`
+## 가치평가
 
-## 고정된 식별정보 사슬
+- 하방 시나리오: 주당 {{ down_value }}원
+- 기준 시나리오: 주당 {{ core_value }}원
+- 상방 시나리오: 주당 {{ bull_value }}원
+- 확률가중 기대값: {{ 보정 완료 시 산출 | 미보정 시 보류 }}
 
-- 증거: `{{ ledger_snapshot_hash }}`
-- 가정: `{{ assumption_set_hash }}`
-- 시나리오: `{{ scenario_set_hash }}`
-- 가치평가: `{{ valuation_hash }}`
-- 감사: `{{ audit_hash }}`
-- 내재가치 고정: `{{ freeze_token_hash }}`
-- 보조 결속정보: `{{ beta_snapshot_hash | wacc_snapshot_hash | capacity_audit_hash | broker_research_snapshot_hash | broker_research_audit_hash | 해당 없음 }}`
+## 핵심 가정과 위험
+
+- 평가방법: {{ 한국어 평가방법명 }}
+- 위험 입력: {{ 계층형 베타와 가중평균자본비용 }}
+- 시나리오 가정: {{ 기업잉여현금흐름·영구성장률·영구 투하자본이익률 }}
+- 핵심 위험: {{ 실적·생산능력·자본적지출·확률 보정 제약 }}
+
+## 증권사·시장 비교
+
+{{ 내재가치 고정 후 불러온 증권사 목표가와 현재가 비교 }}
+
+## 인공지능 인사이트 — 환경 변화 × 기업 강점
+
+{{ 가치평가 계산과 분리한 1,000자 이하 연결 인사이트 }}
+
+## 최종 요약 이미지
+
+{{ 회사 강점·투자 결론·가치평가 이미지 1장 }}
+
+{{ 가치평가 가정·위험·출처 이미지 1장 }}
+
+## 정보 출처 — 원문 직접 검증
+
+{{ 모든 핵심 주장과 입력값의 직접 원문 링크 }}
+
+## 분석 범위와 유의사항
+
+{{ 사실·분석가 가정·인공지능 인사이트의 구분 및 평가 제약 }}
+
+---
+
+# 감사 부록 — 검증·추적
+
+- 검증 상태: {{ 검증·고정 완료 | 검증 미완료 | 차단 }}
+- 자동 점검: {{ passed_checks }}/{{ total_checks }} 통과
+- 통제 단계: {{ terminal_stage_count }}/33개 최종 추적 완료
 
 ## 대형 게이트 완료 요약
 
-### {{ ordinal }}. {{ title }} — {{ 상태 }} ({{ completed/expected }})
+### {{ 순번 }}. {{ 한국어 게이트명 }} — {{ 상태 }}
 
-- 결과: `{{ decisive_result }}`
-- 잔여위험: `{{ residual_risk }}` · 다음 단계: `{{ next_action }}`
+- 결과: {{ 한국어 요약 }}
+- 잔여위험: {{ 한국어 위험 요약 }} · 다음 단계: {{ 한국어 단계명 }}
 
-## 최종보고서 편집 계약
+<details>
+<summary>기술 식별자·해시 확인</summary>
 
-- 본문 목표: 3–4쪽
-- 감사 부록 목표: 1–2쪽
-- 전체 상한: 6쪽
-- 이미지 2장은 별도 가산하지 않고 본문 3–4쪽 안에 포함
-- 활자: 본문 ≥ 13pt, 주 제목 ≥ 22pt, 절 제목 ≥ 18pt. 조밀한 대형 표는 금지합니다.
-- 필수: 모든 주장의 출처를 `정보 출처 — 원문 직접 검증`의 HTTP(S) 원문 링크에 연결합니다.
-- 필수 이미지: `회사 강점·투자 결론·가치평가` 1장 + `가치평가 가정·위험·출처` 1장
-- 인공지능 관여 내용: 결정론적 결과와 분리한 독립 구역으로 표시하며 1,000자 이하
+### 33단계 진행 상태
 
-## 압축 감사 부록 — 33단계 추적
+{{ 33개 단계의 한국어 이름과 상태 }}
 
-- **{{ gate_id }}:** `{{ stage_number }} {{ stage }}={{ status }}` · …
-- 단계별 정확한 사유와 출력 키는 불변 `control_plane_trace.json` 산출물에 보존됩니다.
+### 실행 식별자와 해시
 
-## 영구 저장된 리서치 보고서
+- 실행 식별자: `{{ run_id }}`
+- 검증증명 해시: `{{ attestation_hash }}`
+- 고정 해시: `{{ ledger_snapshot_hash | assumption_set_hash | scenario_set_hash | valuation_hash | audit_hash | freeze_token_hash }}`
+- 보조 결속정보: `{{ beta_snapshot_hash | wacc_snapshot_hash | capacity_audit_hash | broker_research_snapshot_hash | broker_research_audit_hash | 해당 없음 }}`
+- 실패 점검 기술 식별자: `{{ canonical_stage_sequence | beta_wacc_same_run_chain | capacity_core_consumption_chain | broker_research_primary_verification_chain | freeze_hash_binding | major_gate_reporting_contract | major_gate_delivery | direct_source_links | 없음 }}`
 
-{{ 원문 검증 링크와 한국어 요약 이미지 2장을 포함한 불변 최종보고서 }}
+</details>
 """
 
 

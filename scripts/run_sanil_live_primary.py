@@ -5,6 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from valuation_engine.report_form import attest_controlled_run, render_controlled_run_report
+from valuation_engine.report_localization import identifier_label_ko
 from valuation_engine.sanil_live_primary import (
     load_sanil_market_snapshot,
     load_sanil_snapshot,
@@ -58,41 +59,56 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
         else None
     )
     street_line = (
-        f"- 증권사 참고 목표가(내재가치 고정 후 로드): **{float(street_target):,.0f}원**\n"
+        f"- 증권사 평균 목표가: **{float(street_target):,.0f}원**\n"
         if street_target is not None
         else "- 증권사 참고 목표가: **미확보**\n"
     )
 
-    header = f"""# 산일전기(062040) PRISM 실데이터 통제 실행 보고서
+    valuation_marker = "## 가치평가"
+    if valuation_marker not in controlled:
+        raise RuntimeError("Sanil report is missing the investor-facing valuation section")
+    controlled_body = controlled[controlled.index(valuation_marker):]
+    evidence_note = """## 핵심 가정과 위험
+- **근거 신뢰도:** 회사 실적·수주·생산능력·부지·자본적지출은 회사 공시·기업설명자료에 기반해 신뢰도가 높습니다.
+- **분석가 추정:** 하방·기준·상방 기업잉여현금흐름은 회사 가이던스가 아니라 공시 사실에서 파생한 분석가 가정입니다.
+- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 현금유출을 확정하지만 정확한 생산능력은 미공시입니다.
+"""
+    controlled_body = controlled_body.replace(
+        "## 핵심 가정과 위험\n",
+        evidence_note,
+        1,
+    )
+    project_names = ", ".join(
+        identifier_label_ko(item)
+        for item in assessment.core_inclusion_required_projects
+    )
+    market_gaps = {
+        item.scenario_id: item.gap_pct_of_reference
+        for item in market.envelope.scenario_gaps
+    } if market is not None else {}
+    core_gap = abs(market_gaps.get("Core", 0))
+    bull_gap = abs(market_gaps.get("Bull", 0))
+    header = f"""# 산일전기(062040) 리서치·가치평가 보고서
 
 - 데이터 기준일: **{snapshot.cutoff}**
-- 검증 상태: **검증·고정 완료** (`VERIFIED_FROZEN`)
-- 투자검토 상태: **출처 검증 기반 예비 분석**
-- 현재가(내재가치 고정 후 로드): **{float(current_price):,.0f}원**
-{street_line}- 하방 / 기준 / 상방: **{values['Down']:,.0f}원 / {values['Core']:,.0f}원 / {values['Bull']:,.0f}원**
+- 분석 성격: **출처 검증 기반 예비 투자분석**
+- 현재가: **{float(current_price):,.0f}원**
+{street_line}- 가치평가 범위(하방 / 기준 / 상방): **{values['Down']:,.0f}원 / {values['Core']:,.0f}원 / {values['Bull']:,.0f}원**
 - 계층형 베타: **{beta.target_levered_beta:.3f}**
 - 가중평균자본비용: **{wacc.wacc_result.wacc:.3%}**
-- 기준 시나리오 반영 생산능력 프로젝트: **{', '.join(assessment.core_inclusion_required_projects)}**
+- 기준 시나리오 반영 생산능력 프로젝트: **{project_names}**
 
-## PM 결론
+## 투자 요약
 
 산일전기는 수요 검증 단계를 넘어 생산능력과 가동 정상화가 가치의 핵심 병목이 된 회사입니다. 이번 실행은 기존 제2공장뿐 아니라 2026년 8월 26일 체결된 초고압 변압기 생산용 부동산 양수계약을 별도 기준 시나리오 프로젝트로 분리했습니다. 두 프로젝트의 생산능력·자본적지출·가동 정상화 경로를 시나리오와 현금흐름할인법이 실제 반영한 뒤 베타·가중평균자본비용·감사·내재가치 고정을 통과했습니다.
 
 현재가는 확률가중 기대값이 아니라 개별 하방·기준·상방 시나리오와 비교해야 합니다. 실제 해결 이력으로 구성된 확률 보정 코호트가 아직 충분하지 않아 확률가중 기대값은 의도적으로 산출하지 않았습니다. 이 보고서의 기업 잉여현금흐름 경로는 회사 가이던스가 아니라 2025년 사업보고서와 2026년 2분기 기업설명자료를 기반으로 한 **PRISM 분석가 추정**입니다.
 
-## 증거 신뢰도·분석가 추정 상태
-
-- 회사 실적·수주·생산능력·부지·자본적지출: 회사 공시·기업설명자료 기반, **높은 증거 신뢰도**
-- 베타 비교기업 관측: 동일 코스피 기준지수·동일 기간·주간 수익률 최소제곱회귀 기반이며 회귀 표준오차와 시계열 해시를 보존, **중간~높은 증거 신뢰도**
-- 일간 최소제곱회귀는 비동시거래·빈도 민감도 진단값으로 별도 보존하며 주간 베타와 임의 평균하지 않습니다.
-- 가중평균자본비용의 거시 입력과 국가위험 노출계수: 출처가 명시된 외부 시장자료 및 PRISM 판단값, **중간 신뢰도**
-- 하방·기준·상방 기업 잉여현금흐름: 공시 사실에서 파생한 분석가 가정이며 회사 가이던스가 아닙니다.
-- 초고압 부동산 계약은 부지 통제와 692.5억원 현금유출을 공식 확정하지만, 정확한 생산능력은 미공시이므로 증분 잉여현금흐름은 보수적 범위 추정입니다.
-
----
+- **현재가 해석:** 기준 내재가치는 현재가보다 {core_gap:.1%} 낮고, 상방 내재가치는 현재가보다 {bull_gap:.1%} 높습니다.
+- **매수 판단:** 확률 보정과 별도 진입 규칙이 갖춰지기 전까지 구체적인 매수가는 제시하지 않습니다.
 
 """
-    return header + controlled, render_report_visuals(result.data)
+    return header + controlled_body, render_report_visuals(result.data)
 
 
 def main() -> int:

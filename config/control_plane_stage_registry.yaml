@@ -76,6 +76,16 @@ reporting_contract:
     separate_section_required: true
     max_chars: 1000
     deterministic_outputs_separated: true
+  reader_experience_policy:
+    visible_language: ko
+    primary_section_order:
+      - 투자 요약
+      - 가치평가
+      - 핵심 가정과 위험
+      - 증권사·시장 비교
+      - 정보 출처 — 원문 직접 검증
+    decision_report_precedes_audit_appendix: true
+    technical_identifiers_collapsed: true
 phases:
   I_OPENING:
     - COMPANY_RESOLUTION

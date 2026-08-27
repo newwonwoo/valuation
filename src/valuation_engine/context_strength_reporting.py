@@ -6,6 +6,7 @@ from .context_strength_linkage import (
     ContextStrengthLinkage,
     ContextStrengthLinkageDecision,
 )
+from .report_localization import evidence_label_ko
 _MISSING_REQUIRED = "MISSING_REQUIRED"
 _MAX_LLM_REPORT_CHARS = 1000
 
@@ -23,7 +24,7 @@ def _bounded_llm_section(lines: list[str]) -> tuple[str, ...]:
         "## 인공지능 인사이트 — 환경 변화 × 기업 강점",
         "- 적용범위: 인공지능은 연결 가설과 반증 조건만 제시하며 가치평가 계산·가정 확정에는 관여하지 않습니다.",
         "- 요약이 1,000자 상한을 초과해 본문 표시를 축약했습니다.",
-        "- 전체 형식화 인사이트와 근거 ID는 불변 `context_strength_linkages.json`에 보존됩니다.",
+        "- 전체 형식화 인사이트와 근거 식별자는 별도 불변 근거 파일에 보존됩니다.",
     )
     if len("\n".join(fallback)) > _MAX_LLM_REPORT_CHARS:
         raise ValueError("인공지능 인사이트 보고 구역이 1,000자 상한을 초과했습니다")
@@ -70,22 +71,24 @@ def render_context_strength_linkage_section(
     ]
     if status == _MISSING_REQUIRED:
         lines.append(
-            "- 상태: 필수정보 누락 (`MISSING_REQUIRED`) — 표준 가치평가 보고서에 필요한 "
+            "- 상태: 필수정보 누락 — 표준 가치평가 보고서에 필요한 "
             "연결 인사이트 결정이 없습니다."
         )
         return _bounded_llm_section(lines)
     if not linkages:
         lines.extend(
             (
-                "- 상태: 해당 없음 (`NOT_APPLICABLE`)",
+                "- 상태: 해당 없음",
                 f"- 사유: {not_applicable_reason}",
             )
         )
         return _bounded_llm_section(lines)
 
-    lines.append("- 상태: 적용 (`APPLICABLE`)")
+    lines.append("- 상태: 적용")
     linkage = linkages[0]
-    evidence_ids = ", ".join(linkage.supporting_evidence_ids[:4]) or "없음"
+    evidence_labels = ", ".join(
+        evidence_label_ko(item) for item in linkage.supporting_evidence_ids[:4]
+    ) or "없음"
     lines.extend(
         (
             f"- 연결: {_short(linkage.external_change, 105)} → {_short(linkage.company_strength, 105)}",
@@ -93,9 +96,9 @@ def render_context_strength_linkage_section(
             f"- 가치 포착: {_short(linkage.value_capture_path, 120)}",
             f"- 반증 조건: {_short('; '.join(linkage.kill_conditions[:2]), 145)}",
             f"- 다음 검증: {_short('; '.join(linkage.next_checks[:2]), 110)}",
-            f"- 근거 ID: {_short(evidence_ids, 120)} — 원문 링크는 `정보 출처 — 원문 직접 검증` 참조",
+            f"- 핵심 근거: {_short(evidence_labels, 120)} — 원문 링크는 `정보 출처 — 원문 직접 검증` 참조",
             f"- 인공지능 판단 신뢰도: {linkage.confidence:.0%}",
-            "- 전체 형식화 인사이트는 불변 `context_strength_linkages.json`에 보존됩니다.",
+            "- 전체 형식화 인사이트는 별도 불변 근거 파일에 보존됩니다.",
         )
     )
     if len(linkages) > 1:
