@@ -159,6 +159,7 @@ adapters:
     - metered_usage_network
     optional_archetypes:
     - ip_royalty_licensing
+    - contracted_backlog
     key_evidence:
     - subscription_arr
     - cloud_consumption

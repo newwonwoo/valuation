@@ -31,6 +31,7 @@ _UNIT_DEFS = {
     "KRW_million": UnitDef("KRW_million", Dimension.MONEY, "KRW", Decimal("1000000")),
     "KRW_billion": UnitDef("KRW_billion", Dimension.MONEY, "KRW", Decimal("1000000000")),
     "USD": UnitDef("USD", Dimension.MONEY, "USD", Decimal("1")),
+    "USD_million": UnitDef("USD_million", Dimension.MONEY, "USD", Decimal("1000000")),
     "kg": UnitDef("kg", Dimension.MASS, "kg", Decimal("1")),
     "kMT": UnitDef("kMT", Dimension.MASS, "kg", Decimal("1000000")),
     "W": UnitDef("W", Dimension.POWER, "W", Decimal("1")),

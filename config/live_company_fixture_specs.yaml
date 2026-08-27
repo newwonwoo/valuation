@@ -1,0 +1,165 @@
+version: 1
+as_of: '2026-08-27'
+underwriting_source_ref: https://github.com/newwonwoo/valuation/blob/main/config/live_company_fixture_specs.yaml
+companies:
+  OCI_HOLDINGS:
+    legal_name: OCI Holdings Co., Ltd.
+    ticker: '010060'
+    jurisdiction: KR
+    target_id: KR:DART:00100939
+    external_ids:
+      opendart_corp_code: '00100939'
+      krx_stock_code: '010060'
+    sector_adapter: real_assets.mining
+    archetype: commodity_price_taker
+    method: normalized_multiple
+    currency: KRW
+    market_symbol: '010060'
+    market_currency: KRW
+    market_fallback_price: 275000
+    market_source_ref: https://www.oci-holdings.co.kr/ir/summary
+    official_source_id: KR_OPENDART
+    official_source_ref: https://www.oci-holdings.co.kr/ir/summary
+    official_document_id: OCI_HOLDINGS_2026Q2_IR_SUMMARY
+    published_at: '2026-07-23T06:00:00+00:00'
+    first_seen_at: '2026-08-27T00:00:00+00:00'
+    normalized_ebitda: 420000000000
+    normalized_multiple: 5.5
+    ownership: 1.0
+    ev_adjustment: 900000000000
+    diluted_shares: 17900000
+    official_metrics:
+      revenue: [4200, KRW_billion]
+      production: [2.0, GW]
+      capacity: [2.0, GW]
+      price: [NOT_DISCLOSED, status]
+      cash_cost: [NOT_DISCLOSED, status]
+      reserves: [NOT_DISCLOSED, status]
+    underwriting_metrics:
+      benchmark_price: [NOT_DISCLOSED, status]
+      inventory: [NOT_DISCLOSED, status]
+      realized_price: [NOT_DISCLOSED, status]
+      utilization: [NOT_DISCLOSED, status]
+  ORACLE:
+    legal_name: Oracle Corporation
+    ticker: ORCL
+    jurisdiction: US
+    target_id: US:SEC:0001341439
+    external_ids:
+      sec_cik: '0001341439'
+      ticker: ORCL
+    sector_adapter: software.database
+    archetype: contracted_backlog
+    method: normalized_ebitda
+    currency: USD
+    market_symbol: ORCL
+    market_currency: USD
+    market_fallback_price: 210
+    market_source_ref: https://finance.yahoo.com/quote/ORCL/
+    official_source_id: US_SEC_EDGAR
+    official_source_ref: https://www.sec.gov/Archives/edgar/data/1341439/000119312526101045/orcl-20260228.htm
+    official_document_id: ORACLE_2026Q3_10Q
+    published_at: '2026-03-11T12:00:00+00:00'
+    first_seen_at: '2026-08-27T00:00:00+00:00'
+    normalized_ebitda: 30000000000
+    normalized_multiple: 18
+    ownership: 1.0
+    ev_adjustment: -85000000000
+    diluted_shares: 2850000000
+    official_metrics:
+      revenue: [59000, USD_million]
+      backlog: [552600, USD_million]
+      rpo: [552600, USD_million]
+      contract_liabilities: [12000, USD_million]
+      capex: [39200, USD_million]
+      arr: [NOT_DISCLOSED, status]
+      nrr: [NOT_DISCLOSED, status]
+      gross_margin: [NOT_DISCLOSED, status]
+    underwriting_metrics:
+      backlog_conversion: [NOT_DISCLOSED, status]
+      book_to_bill: [NOT_DISCLOSED, status]
+      cancellation_terms: [NOT_DISCLOSED, status]
+      lead_time: [NOT_DISCLOSED, status]
+      orders: [NOT_DISCLOSED, status]
+      revenue_recognition: [NOT_DISCLOSED, status]
+  BLOOM_ENERGY:
+    legal_name: Bloom Energy Corporation
+    ticker: BE
+    jurisdiction: US
+    target_id: US:SEC:0001664703
+    external_ids:
+      sec_cik: '0001664703'
+      ticker: BE
+    sector_adapter: power.distributed_power
+    archetype: contracted_backlog
+    method: normalized_ebitda
+    currency: USD
+    market_symbol: BE
+    market_currency: USD
+    market_fallback_price: 85
+    market_source_ref: https://finance.yahoo.com/quote/BE/
+    official_source_id: US_SEC_EDGAR
+    official_source_ref: https://www.sec.gov/Archives/edgar/data/1664703/000162828026050247/be-20260630.htm
+    official_document_id: BLOOM_ENERGY_2026Q2_10Q
+    published_at: '2026-08-04T12:00:00+00:00'
+    first_seen_at: '2026-08-27T00:00:00+00:00'
+    normalized_ebitda: 700000000
+    normalized_multiple: 25
+    ownership: 1.0
+    ev_adjustment: 500000000
+    diluted_shares: 275000000
+    official_metrics:
+      revenue: [1065.365, USD_million]
+      backlog: [NOT_DISCLOSED, status]
+      orders: [NOT_DISCLOSED, status]
+      manufacturing_capacity: [NOT_DISCLOSED, status]
+      gross_margin: [0.33, ratio]
+      installed_base: [NOT_DISCLOSED, status]
+      service: [NOT_DISCLOSED, status]
+    underwriting_metrics:
+      backlog_conversion: [NOT_DISCLOSED, status]
+      book_to_bill: [NOT_DISCLOSED, status]
+      cancellation_terms: [NOT_DISCLOSED, status]
+      contract_liabilities: [NOT_DISCLOSED, status]
+      lead_time: [NOT_DISCLOSED, status]
+      revenue_recognition: [NOT_DISCLOSED, status]
+  GE_VERNOVA:
+    legal_name: GE Vernova Inc.
+    ticker: GEV
+    jurisdiction: US
+    target_id: US:SEC:0001996810
+    external_ids:
+      sec_cik: '0001996810'
+      ticker: GEV
+    sector_adapter: power.turbine_oem
+    archetype: contracted_backlog
+    method: normalized_ebitda
+    currency: USD
+    market_symbol: GEV
+    market_currency: USD
+    market_fallback_price: 750
+    market_source_ref: https://finance.yahoo.com/quote/GEV/
+    official_source_id: US_SEC_EDGAR
+    official_source_ref: https://www.sec.gov/Archives/edgar/data/1996810/000199681026000148/gev-20260630.htm
+    official_document_id: GE_VERNOVA_2026Q2_10Q
+    published_at: '2026-07-22T12:00:00+00:00'
+    first_seen_at: '2026-08-27T00:00:00+00:00'
+    normalized_ebitda: 4500000000
+    normalized_multiple: 22
+    ownership: 1.0
+    ev_adjustment: 10000000000
+    diluted_shares: 275000000
+    official_metrics:
+      revenue: [11104, USD_million]
+      backlog: [176284, USD_million]
+      orders: [NOT_DISCLOSED, status]
+      slots: [NOT_DISCLOSED, status]
+      service_contracts: [NOT_DISCLOSED, status]
+      capacity: [NOT_DISCLOSED, status]
+      lead_time: [NOT_DISCLOSED, status]
+    underwriting_metrics:
+      backlog_conversion: [NOT_DISCLOSED, status]
+      book_to_bill: [NOT_DISCLOSED, status]
+      cancellation_terms: [NOT_DISCLOSED, status]
+      contract_liabilities: [NOT_DISCLOSED, status]
+      revenue_recognition: [NOT_DISCLOSED, status]

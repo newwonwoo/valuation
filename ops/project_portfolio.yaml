@@ -346,6 +346,7 @@ work_items:
   title: Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy
     and GE Vernova
   owner: qa-release-agent
+  github_pr: 99
   current_step: Sanil Electric pilot is accepted with an attested 33-stage report. Run OCI, Oracle, Bloom Energy
     and GE Vernova through the same source-backed success-or-block contract.
   dependencies:

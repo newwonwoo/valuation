@@ -1,5 +1,6 @@
 version: 2
-purpose: Source-backed LIVE_PRIMARY acceptance tracking. BLOCKED entries are explicit gaps and never count as accepted company fixtures.
+purpose: Source-backed LIVE_PRIMARY acceptance tracking. BLOCKED entries are explicit
+  gaps and never count as accepted company fixtures.
 required_contract:
   full_live_primary_33_stage: true
   primary_evidence_lineage: true
@@ -11,33 +12,29 @@ required_contract:
 companies:
   OCI_HOLDINGS:
     display_name: OCI Holdings
-    status: BLOCKED_SOURCE_FIXTURE
+    status: READY
     success_fixture_path: tests/fixtures/live_companies/oci_holdings.success.json
     adversarial_fixture_path: tests/fixtures/live_companies/oci_holdings.blocked.json
-    success_fixture_sha256: ''
-    adversarial_fixture_sha256: ''
-    blocker: Source-backed successful and adversarial LIVE_PRIMARY artifacts have not both been committed and independently validated.
+    success_fixture_sha256: ddf35712dbae08dcba7cbafb90747a9d183387fbe14eb2171c3491322a622992
+    adversarial_fixture_sha256: d8d94ad7651b6f227ea88eb7f1a4b0a2bd9bf02d10df7b183680b8f37146047f
   ORACLE:
     display_name: Oracle
-    status: BLOCKED_SOURCE_FIXTURE
+    status: READY
     success_fixture_path: tests/fixtures/live_companies/oracle.success.json
     adversarial_fixture_path: tests/fixtures/live_companies/oracle.blocked.json
-    success_fixture_sha256: ''
-    adversarial_fixture_sha256: ''
-    blocker: Source-backed successful and adversarial LIVE_PRIMARY artifacts have not both been committed and independently validated.
+    success_fixture_sha256: df54303a0283e2e28c890b1438d32435b1c40698446f1ba3d0d08fe0c39a090b
+    adversarial_fixture_sha256: 1dfbeac3e724ba569d77a05593d2945a29141ff8b8ab81788a4118d8c14222c6
   BLOOM_ENERGY:
     display_name: Bloom Energy
-    status: BLOCKED_SOURCE_FIXTURE
+    status: READY
     success_fixture_path: tests/fixtures/live_companies/bloom_energy.success.json
     adversarial_fixture_path: tests/fixtures/live_companies/bloom_energy.blocked.json
-    success_fixture_sha256: ''
-    adversarial_fixture_sha256: ''
-    blocker: Source-backed successful and adversarial LIVE_PRIMARY artifacts have not both been committed and independently validated.
+    success_fixture_sha256: 4b8f3d39af87f87f0866fff67ffb82de824d0cd3bb0b9790b000752abb0a66a2
+    adversarial_fixture_sha256: ef40a5c4c7a86fde2a60f18d896425e3b6070f0a8aae0594d2d12420286c115e
   GE_VERNOVA:
     display_name: GE Vernova
-    status: BLOCKED_SOURCE_FIXTURE
+    status: READY
     success_fixture_path: tests/fixtures/live_companies/ge_vernova.success.json
     adversarial_fixture_path: tests/fixtures/live_companies/ge_vernova.blocked.json
-    success_fixture_sha256: ''
-    adversarial_fixture_sha256: ''
-    blocker: Source-backed successful and adversarial LIVE_PRIMARY artifacts have not both been committed and independently validated.
+    success_fixture_sha256: 448d04f79799e0730979381cb017139e682a1d657b1827229f4433ea078bf26c
+    adversarial_fixture_sha256: 43b8a9c4caebd3cf57282541c546c3876c3b37f443f122d070ab8d22ad794dd5
