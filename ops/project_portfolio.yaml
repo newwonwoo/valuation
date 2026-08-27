@@ -15,15 +15,15 @@ scoring:
   - pm_integrator_close
   adr_waiver_allowed: true
 validation_baseline:
-  accepted_sha: f1df53f79688aff51ec92d990462104a555f2df3
+  accepted_sha: fd1926973363dd46b021dee51c4e1fd5c3174e00
   evidence:
   - kind: github_actions
     workflow: valuation-tests
-    run_number: 517
-    run_id: 33034534407
+    run_number: 519
+    run_id: 33034748328
     conclusion: success
     event: push
-    head_sha: f1df53f79688aff51ec92d990462104a555f2df3
+    head_sha: fd1926973363dd46b021dee51c4e1fd5c3174e00
 departments:
 - id: pm-integrator
   name: Architecture & Program Office
@@ -108,6 +108,17 @@ departments:
     implementation_refs:
     - PR 94 Add mandatory context-strength linkage gate
     - PR 95 exercised the linkage decision in an actual Sanil 33-stage run
+  - id: EVI-CONTEXT-STRENGTH-LINKAGE-005
+    title: Close the auditable environment-change and corporate-strength linkage acceptance follow-up
+    points: 0
+    status: VERIFIED
+    accepted_sha: fd1926973363dd46b021dee51c4e1fd5c3174e00
+    validation_evidence:
+    - PR 94 remains merged in the integrated main runtime
+    - GHA valuation-tests run 519 PASS at exact integrated main SHA
+    implementation_refs:
+    - PR 94 Add mandatory context-strength linkage gate
+    - Acceptance follow-up to EVI-CONTEXT-STRENGTH-LINKAGE-001; no duplicate design credit
 - id: runtime-safety-agent
   name: Runtime Safety & Control Plane
   design_points: 10
@@ -334,16 +345,6 @@ departments:
     - PR 101 Advance the merged delivery through the strict PM synchronization gate
 work_items:
 - priority: P1
-  status: MERGED_PENDING_ACCEPTANCE
-  id: EVI-CONTEXT-STRENGTH-LINKAGE-005
-  title: Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses
-    and reports
-  owner: evidence-industry-agent
-  github_pr: 94
-  current_step: 'PR #94 is merged; retain zero completion credit until an exact-main valuation-tests run and PM/Integrator
-    acceptance close the milestone.'
-  dependencies: []
-- priority: P1
   status: BLOCKED
   id: CAL-PRODUCTION-COHORT-003
   title: Populate production probability calibration cohorts with real resolved history
@@ -352,6 +353,14 @@ work_items:
     synthetic or post-hoc history is forbidden.
   dependencies: []
 accepted_handoffs:
+- id: H-EVIDENCE-CONTEXT-STRENGTH-ACCEPTANCE-20260827
+  to: pm-integrator + evidence-industry-agent
+  head: fd1926973363dd46b021dee51c4e1fd5c3174e00
+  validation_evidence:
+  - GHA-VALUATION-TESTS-519
+  closes:
+  - EVI-CONTEXT-STRENGTH-LINKAGE-005
+  residual_work: []
 - id: H-RECOVERY-EVI-VERTICAL-20260825
   to: pm-integrator + evidence-industry-agent
   head: 76b13159c8955ed6e337f4342a741fdceaa00fbe

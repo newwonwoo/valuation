@@ -4,8 +4,8 @@
 
 - Blueprint: **v0.5.2 canonical workflow + LIVE_PRIMARY readiness**
 - Design progress: **99% (68/69 accepted milestone points)**
-- Current delivery: **0 ACTIVE / 0 READY / 1 BLOCKED / 0 BACKLOG / 1 MERGED PENDING ACCEPTANCE**
-- Accepted validation baseline: `f1df53f79688aff51ec92d990462104a555f2df3`
+- Current delivery: **0 ACTIVE / 0 READY / 1 BLOCKED / 0 BACKLOG / 0 MERGED PENDING ACCEPTANCE**
+- Accepted validation baseline: `fd1926973363dd46b021dee51c4e1fd5c3174e00`
 - Updated: **2026-08-27**
 
 Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE work receives zero credit until every required acceptance check is VERIFIED or explicitly ADR-waived.
@@ -17,7 +17,7 @@ Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE
 - Now: —
 - Next: —
 - Later: `CAL-PRODUCTION-COHORT-003`
-- Pending acceptance: `EVI-CONTEXT-STRENGTH-LINKAGE-005`
+- Pending acceptance: —
 
 ## Organization
 
@@ -51,7 +51,6 @@ flowchart TB
 
 | Priority | Status | Work item | Owner | Current step | Dependencies |
 |---|---|---|---|---|---|
-| P1 | **MERGED_PENDING_ACCEPTANCE** | `EVI-CONTEXT-STRENGTH-LINKAGE-005` — Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses and reports | `evidence-industry-agent` | PR #94 is merged; retain zero completion credit until an exact-main valuation-tests run and PM/Integrator acceptance close the milestone. | — |
 | P1 | **BLOCKED** | `CAL-PRODUCTION-COHORT-003` — Populate production probability calibration cohorts with real resolved history | `calibration-risk-agent` | Accumulate real append-only resolved forecasts until declared cohort thresholds can be evaluated; synthetic or post-hoc history is forbidden. | — |
 
 ## Objective readiness (derived, not manually scored)
@@ -68,6 +67,7 @@ These registry metrics measure typed runtime readiness, not full live source/pro
 
 | Handoff | To | Head | Validation evidence | Closes | Residual work |
 |---|---|---|---|---|---|
+| `H-EVIDENCE-CONTEXT-STRENGTH-ACCEPTANCE-20260827` | `pm-integrator + evidence-industry-agent` | `fd1926973363dd46b021dee51c4e1fd5c3174e00` | `GHA-VALUATION-TESTS-519` | `EVI-CONTEXT-STRENGTH-LINKAGE-005` | — |
 | `H-RECOVERY-EVI-VERTICAL-20260825` | `pm-integrator + evidence-industry-agent` | `76b13159c8955ed6e337f4342a741fdceaa00fbe` | `GHA-VALUATION-TESTS-302` | `EVI-VERTICAL-001` | — |
 | `H-RECOVERY-PST-STREET-20260825` | `pm-integrator + post-freeze-agent` | `76b13159c8955ed6e337f4342a741fdceaa00fbe` | `GHA-VALUATION-TESTS-302` | `PST-STREET-001` | — |
 | `H-RECOVERY-QA-PR51-20260825` | `pm-integrator + qa-release-agent` | `76b13159c8955ed6e337f4342a741fdceaa00fbe` | `GHA-VALUATION-TESTS-302` | `QA-PR51-001` | — |
