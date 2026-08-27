@@ -74,6 +74,7 @@ class LiveDCFRegistration:
     expansion_capex_year: int | None = None
     additive_fcff_prefixes: tuple[str, ...] = ()
     additional_expansion_capex: tuple[tuple[str, int], ...] = ()
+    trace_assumption_keys: tuple[str, ...] = ()
 
     def validate(self) -> None:
         if not all((self.archetype, self.method, self.version)):
@@ -92,6 +93,10 @@ class LiveDCFRegistration:
             primary_year=self.expansion_capex_year,
             additional=self.additional_expansion_capex,
         )
+        for key in self.trace_assumption_keys:
+            _validate_relative_key(key, "trace assumption key")
+        if len(self.trace_assumption_keys) != len(set(self.trace_assumption_keys)):
+            raise ValueError("trace assumption keys must be unique")
 
 
 @dataclass(frozen=True)
@@ -108,6 +113,7 @@ class ExplicitFCFFDCFEvaluator:
     expansion_capex_year: int | None = None
     additive_fcff_prefixes: tuple[str, ...] = ()
     additional_expansion_capex: tuple[tuple[str, int], ...] = ()
+    trace_assumption_keys: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not all((self.archetype, self.method, self.version, self.discount_rate_path_id)):
@@ -130,6 +136,10 @@ class ExplicitFCFFDCFEvaluator:
             primary_year=self.expansion_capex_year,
             additional=self.additional_expansion_capex,
         )
+        for key in self.trace_assumption_keys:
+            _validate_relative_key(key, "trace assumption key")
+        if len(self.trace_assumption_keys) != len(set(self.trace_assumption_keys)):
+            raise ValueError("trace assumption keys must be unique")
 
     @property
     def key(self) -> ModelKey:
@@ -166,10 +176,12 @@ class ExplicitFCFFDCFEvaluator:
             for year in range(1, self.forecast_years + 1)
         )
         capex_keys = tuple(self._key(key) for key, _ in self._capex_entries())
+        trace_keys = tuple(self._key(key) for key in self.trace_assumption_keys)
         return (
             *base_fcff,
             *additive_fcff,
             *capex_keys,
+            *trace_keys,
             self._key("terminal_growth"),
             self._key("terminal_roic"),
         )
@@ -223,6 +235,10 @@ class ExplicitFCFFDCFEvaluator:
             )
             capex_assumptions.append(capex_assumption)
 
+        trace_assumptions = tuple(
+            scenario.get(self._key(key)) for key in self.trace_assumption_keys
+        )
+
         terminal_growth_assumption = scenario.get(self._key("terminal_growth"))
         terminal_roic_assumption = scenario.get(self._key("terminal_roic"))
         terminal_growth = terminal_growth_assumption.measure.convert_to("ratio").amount
@@ -248,6 +264,7 @@ class ExplicitFCFFDCFEvaluator:
             *(item.measure.as_of for item in base_assumptions),
             *(item.measure.as_of for item in additive_assumptions),
             *(item.measure.as_of for item in capex_assumptions),
+            *(item.measure.as_of for item in trace_assumptions),
             terminal_growth_assumption.measure.as_of,
             terminal_roic_assumption.measure.as_of,
         )
@@ -260,6 +277,7 @@ class ExplicitFCFFDCFEvaluator:
                     *(item.economic_path_id for item in base_assumptions),
                     *(item.economic_path_id for item in additive_assumptions),
                     *(item.economic_path_id for item in capex_assumptions),
+                    *(item.economic_path_id for item in trace_assumptions),
                     terminal_growth_assumption.economic_path_id,
                     terminal_roic_assumption.economic_path_id,
                     *upstream_paths,
@@ -338,6 +356,7 @@ def live_fcff_dcf_registry_loader(
                     expansion_capex_year=item.expansion_capex_year,
                     additive_fcff_prefixes=item.additive_fcff_prefixes,
                     additional_expansion_capex=item.additional_expansion_capex,
+                    trace_assumption_keys=item.trace_assumption_keys,
                 )
             )
         return registry

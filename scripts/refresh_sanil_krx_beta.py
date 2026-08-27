@@ -20,6 +20,7 @@ BENCHMARK_CODE = "KS11"
 BENCHMARK_ID = "FDR_KOSPI_KS11"
 START_DATE = "2024-07-29"
 END_DATE = "2026-08-25"
+SNAPSHOT_CUTOFF = "2026-08-26"
 PRICE_SOURCE_REF = "https://finance.naver.com/"
 PROVIDER_REF = "https://github.com/FinanceData/FinanceDataReader"
 
@@ -146,10 +147,12 @@ def _refresh_snapshot(snapshot_path: Path) -> tuple[dict, list[dict]]:
     payload = yaml.safe_load(snapshot_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise RuntimeError("Sanil snapshot root must be a mapping")
-    if str(payload.get("cutoff")) != END_DATE:
+    if str(payload.get("cutoff")) != SNAPSHOT_CUTOFF:
         raise RuntimeError(
-            f"Beta cutoff {END_DATE} must equal Sanil snapshot cutoff {payload.get('cutoff')}"
+            f"Sanil snapshot cutoff must remain {SNAPSHOT_CUTOFF}, got {payload.get('cutoff')}"
         )
+    if END_DATE > SNAPSHOT_CUTOFF:
+        raise RuntimeError("Beta observation cutoff cannot exceed valuation cutoff")
     risk = payload["risk"]
     market_close = _fetch_close(BENCHMARK_CODE)
     results: list[dict] = []

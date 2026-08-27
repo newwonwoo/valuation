@@ -1,5 +1,5 @@
 version: 1
-cutoff: '2026-08-25'
+cutoff: '2026-08-26'
 company:
   target_id: KR:DART:00366438
   legal_name: 산일전기 주식회사
@@ -23,15 +23,21 @@ sources:
   risk_snapshot:
     source_id: PRISM_EXTERNAL_RISK_SNAPSHOT
     source_ref: https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md
-    document_id: SANIL_RISK_SOURCE_REGISTER_20260825
-    document_hash: 2be1c58a95cccd92fc546f65125f17da728d0849bc432279363221d15e229620
+    document_id: SANIL_RISK_SOURCE_REGISTER_20260825_REGRESSION
+    document_hash: 1d26ac9845f7b1397781ec641a57b5755d38612905f9caefc7f8f3fa0d9a9fbd
     published_at: '2026-08-25T18:00:00+09:00'
   underwriting:
     source_id: PRISM_UNDERWRITING_MODEL
     source_ref: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#scenarios
-    document_id: SANIL_UNDERWRITING_20260825
-    document_hash: dea034ebf103408f79fbe73cc13aadcf6e6d034dd13c15fc90cc41c6650ca2ec
-    published_at: '2026-08-25T18:00:00+09:00'
+    document_id: SANIL_UNDERWRITING_20260826
+    document_hash: 62774daa6df74c05a1c3937e9241ec875938babcfc0027272b523b9f900e11b6
+    published_at: '2026-08-26T18:00:00+09:00'
+  uhv_property_acquisition:
+    source_id: KR_OPENDART
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660
+    document_id: SANIL_UHV_PROPERTY_ACQUISITION_20260826
+    document_hash: 79e63422aca51b90f44a5a97917188cf562006e20e17a3665820ab83bc3528c8
+    published_at: '2026-08-26T00:00:00+09:00'
 facts:
   revenue_2025_krw_billion: 501.946
   operating_profit_2025_krw_billion: 178.634
@@ -56,6 +62,16 @@ facts:
   net_income_h1_2026_krw_billion: 100.492
   new_orders_q2_2026_krw_billion: 243.5
   backlog_q2_2026_krw_billion: 556.7
+  uhv_property_contract_date: '2026-08-26'
+  uhv_property_closing_date: '2027-02-19'
+  uhv_property_amount_krw_billion: 69.25
+  uhv_property_asset_ratio: 0.1015
+  uhv_property_deposit_krw_billion: 6.925
+  uhv_property_interim_krw_billion: 20.775
+  uhv_property_balance_krw_billion: 41.55
+  uhv_property_self_funded: true
+  uhv_property_location: 경기도 안산시 단원구 성곡동 667-1 토지 및 건물
+  uhv_property_purpose: 초고압 변압기 생산설비 구축 및 기존 제품 생산능력 확대
 capacity_project:
   project_id: SANIL_SECOND_FACTORY_RAMP
   baseline_inclusion: not_in_baseline
@@ -217,6 +233,14 @@ scenarios:
     expansion_capex_krw_billion: 42.0
     terminal_growth: 0.02
     terminal_roic: 0.13
+    uhv_incremental_fcff_krw_billion:
+    - 0
+    - 0
+    - 3
+    - 10
+    - 18
+    uhv_property_capex_krw_billion: 69.25
+    uhv_ramp_years: 3.0
   Core:
     fcff_krw_billion:
     - 175
@@ -227,6 +251,14 @@ scenarios:
     expansion_capex_krw_billion: 42.0
     terminal_growth: 0.025
     terminal_roic: 0.15
+    uhv_incremental_fcff_krw_billion:
+    - 0
+    - 0
+    - 10
+    - 25
+    - 42
+    uhv_property_capex_krw_billion: 69.25
+    uhv_ramp_years: 2.0
   Bull:
     fcff_krw_billion:
     - 185
@@ -237,3 +269,21 @@ scenarios:
     expansion_capex_krw_billion: 42.0
     terminal_growth: 0.03
     terminal_roic: 0.17
+    uhv_incremental_fcff_krw_billion:
+    - 0
+    - 2
+    - 18
+    - 42
+    - 68
+    uhv_property_capex_krw_billion: 69.25
+    uhv_ramp_years: 1.5
+uhv_capacity_project:
+  project_id: SANIL_UHV_PROPERTY_ACQUISITION_20260826
+  baseline_inclusion: not_in_baseline
+  contract_date: '2026-08-26'
+  closing_date: '2027-02-19'
+  ramp_boundary: '2027-02-19'
+  rationale: A signed official property-acquisition contract crosses LAND_CONTROL
+    and is incremental to the frozen operating baseline. Exact production capacity
+    is not disclosed, so the Core scenario uses a bounded incremental FCFF cohort
+    together with the full disclosed acquisition cash outflow.
