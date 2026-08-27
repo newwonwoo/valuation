@@ -13,7 +13,7 @@ def replace_once(old: str, new: str) -> None:
 
 
 def main() -> int:
-    for variable, rationale in (
+    for variable, methodology in (
         ("risk_free", "explicit acceptance-underwriting risk-free observation"),
         ("erp", "explicit acceptance-underwriting market ERP"),
         ("debt_cost", "explicit acceptance-underwriting marginal debt cost"),
@@ -24,14 +24,14 @@ def main() -> int:
                 currency,
                 spec.as_of,
                 source,
-                "{rationale}",
+                "{methodology}",
             )''',
             f'''RateObservation(
                 value={variable},
                 currency=currency,
+                as_of=spec.as_of,
                 source_ref=source,
-                rationale="{rationale}",
-                observed_at=spec.as_of,
+                methodology="{methodology}",
             )''',
         )
     replace_once(
