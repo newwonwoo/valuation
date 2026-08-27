@@ -1,0 +1,57 @@
+name: live-company-replay-fix-agent
+
+on:
+  push:
+    branches:
+      - feat/live-company-acceptance-fixtures
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/live-company-acceptance-fixtures
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install external fixture dependencies
+        run: python -m pip install finance-datareader PyYAML
+      - name: Apply one-shot acceptance registry and replay repairs
+        run: |
+          python scripts/apply_live_company_acceptance_registry.py
+          python scripts/apply_capacity_audit_replay_patch.py
+      - name: Install repaired repository
+        run: python -m pip install -e '.[dev]'
+      - name: Generate required success and blocked artifacts
+        run: python scripts/generate_required_live_company_fixtures.py
+      - name: Validate acceptance manifest and focused contracts
+        run: |
+          python scripts/validate_live_company_acceptance.py
+          pytest -q \
+            tests/test_live_company_acceptance.py \
+            tests/test_live_company_artifact.py \
+            tests/test_live_company_capture.py
+      - name: Full regression
+        run: pytest -q
+      - name: OCI regression
+        run: valuation-engine examples/oci/company.yaml
+      - name: Remove one-shot automation
+        run: |
+          git rm -f \
+            .github/workflows/live-company-acceptance-agent.yml \
+            .github/workflows/live-company-replay-fix-agent.yml \
+            scripts/apply_live_company_acceptance_registry.py \
+            scripts/apply_capacity_audit_replay_patch.py
+      - name: Commit accepted live-company artifacts
+        run: |
+          git config user.name "live-company-acceptance-agent"
+          git config user.email "live-company-acceptance-agent@users.noreply.github.com"
+          git add -A
+          git commit -m "Accept required live-company success and blocked fixtures"
+          git push origin HEAD:feat/live-company-acceptance-fixtures
