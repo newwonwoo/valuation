@@ -81,6 +81,12 @@ def serialize_live_company_success(
     audit_hash = str(result.data.get("audit_hash") or "")
     if not audit_hash:
         raise ValueError("success artifact requires audit_hash")
+    capacity_audit_hash = str(result.data.get("capacity_audit_hash") or "")
+    if not _HASH64.fullmatch(capacity_audit_hash.casefold()):
+        raise ValueError(
+            "success artifact requires the exact Capacity Audit guardrail hash"
+        )
+    external_guardrail_hashes = (capacity_audit_hash,)
 
     proofs = {
         "ledger_snapshot_hash": {
@@ -97,12 +103,14 @@ def serialize_live_company_success(
         },
         "audit_hash": {
             "encoding": "utf8",
+            "external_guardrail_hashes": list(external_guardrail_hashes),
             "preimage": _audit_hash_preimage(
                 run_id=result.run_id,
                 ledger_snapshot_hash=result.freeze_token.ledger_snapshot_hash,
                 assumption_set_hash=compiled.assumption_set_hash,
                 scenario_set_hash=scenarios.scenario_set_hash,
                 valuation_hash=valuation.valuation_hash,
+                external_guardrail_hashes=external_guardrail_hashes,
                 report=audit_report,
             ),
         },
@@ -376,8 +384,14 @@ def _audit_hash_preimage(
     assumption_set_hash: str,
     scenario_set_hash: str,
     valuation_hash: str,
+    external_guardrail_hashes: tuple[str, ...] = (),
     report: AuditReport,
 ) -> str:
+    if not all(
+        isinstance(item, str) and _HASH64.fullmatch(item.casefold())
+        for item in external_guardrail_hashes
+    ):
+        raise ValueError("audit proof external guardrail hashes must be SHA-256 values")
     return "\n".join(
         [
             run_id,
@@ -385,6 +399,7 @@ def _audit_hash_preimage(
             assumption_set_hash,
             scenario_set_hash,
             valuation_hash,
+            *external_guardrail_hashes,
         ]
         + [
             f"{item.check}|{item.passed}|{item.blocking}|{item.detail}"

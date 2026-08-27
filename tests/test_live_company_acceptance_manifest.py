@@ -167,6 +167,13 @@ def _temp_root(tmp_path):
 def _ready_manifest(tmp_path, company_id="OCI_HOLDINGS"):
     root = _temp_root(tmp_path)
     payload = yaml.safe_load(MANIFEST.read_text(encoding="utf-8"))
+    for other_id, other_row in payload["companies"].items():
+        if other_id == company_id:
+            continue
+        other_row["status"] = "BLOCKED_SOURCE_FIXTURE"
+        other_row["success_fixture_sha256"] = ""
+        other_row["adversarial_fixture_sha256"] = ""
+        other_row["blocker"] = "isolated unit-test blocker"
     row = payload["companies"][company_id]
     row["status"] = "READY"
     row.pop("blocker", None)
@@ -187,13 +194,13 @@ def _validate_one_ready(root, payload, row, success, blocked, fixture):
 
 def test_current_company_acceptance_manifest_tracks_all_required_real_companies():
     summary = validate_live_company_acceptance(MANIFEST, repo_root=ROOT)
-    assert summary.ready == ()
-    assert summary.blocked == (
+    assert summary.ready == (
         "OCI_HOLDINGS",
         "ORACLE",
         "BLOOM_ENERGY",
         "GE_VERNOVA",
     )
+    assert summary.blocked == ()
 
 
 def test_manifest_fails_if_a_required_company_disappears(tmp_path):
@@ -342,7 +349,9 @@ def test_superseded_active_status_row_is_not_derived_as_active(tmp_path):
 
 def test_blocked_company_requires_explicit_blocker(tmp_path):
     payload = yaml.safe_load(MANIFEST.read_text(encoding="utf-8"))
-    payload["companies"]["BLOOM_ENERGY"]["blocker"] = ""
+    row = payload["companies"]["BLOOM_ENERGY"]
+    row["status"] = "BLOCKED_SOURCE_FIXTURE"
+    row["blocker"] = ""
     path = tmp_path / "acceptance.yaml"
     path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
     with pytest.raises(ValueError, match="requires blocker"):

@@ -673,6 +673,30 @@ sources:
   public_fulltext_allowed: true
   notes: Commercial real-estate rental trend survey; preserve office/store property-type
     definitions and quarterly vintages.
+- id: US_SEC_EDGAR
+  family: SEC_EDGAR
+  authority: regulator_primary
+  roles:
+  - observed_state
+  - definition_standard
+  - company_primary
+  access: public_file
+  cadence: event_and_quarterly
+  industries:
+  - listed_companies
+  - software
+  - power
+  - industrials
+  metrics:
+  - financials
+  - shares
+  - debt
+  - contracts
+  - capex
+  - segments
+  - filings
+  url: https://www.sec.gov/edgar/search/
+  public_fulltext_allowed: true
 phase2_candidates_to_verify:
 - id: KR_MSIT_TELECOM
   industries:
