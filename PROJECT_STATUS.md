@@ -4,7 +4,7 @@
 
 - Blueprint: **v0.5.2 canonical workflow + LIVE_PRIMARY readiness**
 - Design progress: **97% (67/69 accepted milestone points)**
-- Current delivery: **1 ACTIVE / 0 READY / 1 BLOCKED / 0 BACKLOG / 1 MERGED PENDING ACCEPTANCE**
+- Current delivery: **0 ACTIVE / 0 READY / 1 BLOCKED / 0 BACKLOG / 2 MERGED PENDING ACCEPTANCE**
 - Accepted validation baseline: `01562387067bd997b146426185f90d6eb27bcb59`
 - Updated: **2026-08-26**
 
@@ -14,16 +14,16 @@ Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE
 
 ## Execution horizon
 
-- Now: `QA-LIVE-COMPANY-FIXTURES-003`
+- Now: —
 - Next: —
 - Later: `CAL-PRODUCTION-COHORT-003`
-- Pending acceptance: `EVI-CONTEXT-STRENGTH-LINKAGE-005`
+- Pending acceptance: `EVI-CONTEXT-STRENGTH-LINKAGE-005`, `QA-LIVE-COMPANY-FIXTURES-003`
 
 ## Organization
 
 ```mermaid
 flowchart TB
-  PM["PM / Integrator<br/>Design 97% (67/69)<br/>Now: 1 ACTIVE workstreams coordinated"]
+  PM["PM / Integrator<br/>Design 97% (67/69)<br/>Now: 0 ACTIVE workstreams coordinated"]
   PM --> PMO["Architecture & Program Office<br/>Design 100% (5/5)<br/>Now: MAINTENANCE — evidence source wave accepted; final work is real-company LIVE acceptance plus production calibration history"]
   PM --> EVIDENCE["Evidence & Industry Intelligence<br/>Design 100% (13/13)<br/>Now: MAINTENANCE — context-strength linkage and the Sanil source-backed run are accepted; design complete"]
   PM --> RUNTIME["Runtime Safety & Control Plane<br/>Design 100% (10/10)<br/>Now: MAINTENANCE — accepted design complete"]
@@ -51,8 +51,8 @@ flowchart TB
 
 | Priority | Status | Work item | Owner | Current step | Dependencies |
 |---|---|---|---|---|---|
-| P1 | **ACTIVE** | `QA-LIVE-COMPANY-FIXTURES-003` — Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy and GE Vernova | `qa-release-agent` | Sanil Electric pilot is accepted with an attested 33-stage report. Run OCI, Oracle, Bloom Energy and GE Vernova through the same source-backed success-or-block contract. | `EVI-COMPANY-KPI-BREADTH-004` |
 | P1 | **MERGED_PENDING_ACCEPTANCE** | `EVI-CONTEXT-STRENGTH-LINKAGE-005` — Require auditable environment-change and corporate-strength linkage reasoning before valuation hypotheses and reports | `evidence-industry-agent` | PR #94 is merged; retain zero completion credit until an exact-main valuation-tests run and PM/Integrator acceptance close the milestone. | — |
+| P1 | **MERGED_PENDING_ACCEPTANCE** | `QA-LIVE-COMPANY-FIXTURES-003` — Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy and GE Vernova | `qa-release-agent` | PR #99 is merged at 1daf6333432b11b71ad8e2991de865a49bd7cf02; retain zero completion credit until an exact-main valuation-tests run succeeds and PM/Integrator acceptance closes the milestone. | `EVI-COMPANY-KPI-BREADTH-004` |
 | P1 | **BLOCKED** | `CAL-PRODUCTION-COHORT-003` — Populate production probability calibration cohorts with real resolved history | `calibration-risk-agent` | Accumulate real append-only resolved forecasts until declared cohort thresholds can be evaluated; synthetic or post-hoc history is forbidden. | — |
 
 ## Objective readiness (derived, not manually scored)
