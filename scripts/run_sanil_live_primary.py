@@ -5,6 +5,7 @@ from decimal import Decimal
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from valuation_engine.brokerage_html import render_sanil_brokerage_html
 from valuation_engine.report_form import attest_controlled_run, render_controlled_run_report
 from valuation_engine.report_localization import identifier_label_ko
 from valuation_engine.sanil_live_primary import (
@@ -17,6 +18,12 @@ from valuation_engine.visual_reporting import render_report_visuals
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = (
+    ROOT
+    / "examples"
+    / "report_forms"
+    / "SANIL_062040_LIVE_PRIMARY_REPORT.html"
+)
+DEFAULT_MARKDOWN_OUTPUT = (
     ROOT
     / "examples"
     / "report_forms"
@@ -80,7 +87,7 @@ def _fcff_connection_table(compiled: object) -> str:
     return "\n".join(lines)
 
 
-def render_report(state_root: Path) -> tuple[str, tuple]:
+def render_report(state_root: Path) -> tuple[str, str, tuple]:
     snapshot = load_sanil_snapshot()
     result = run_sanil_live_primary(state_root)
     attestation = attest_controlled_run(result)
@@ -208,29 +215,47 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
 - **모델 처리:** 오늘 증권사 수치는 기존 내재가치 가정을 바꾸지 않고 가치평가 완료 뒤 비교에만 사용했습니다. 초고압 사업은 공시된 부동산 대금과 분석가 가동경로를 분리해 계산합니다.
 
 """
-    return header + controlled_body, render_report_visuals(result.data)
+    markdown_report = header + controlled_body
+    visuals = render_report_visuals(result.data)
+    html_report = render_sanil_brokerage_html(
+        result.data,
+        visuals=visuals,
+        terminal_value_share=terminal_share,
+        markdown_filename=DEFAULT_MARKDOWN_OUTPUT.name,
+    )
+    return markdown_report, html_report, visuals
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
+    parser.add_argument(
+        "--markdown-output",
+        type=Path,
+        default=DEFAULT_MARKDOWN_OUTPUT,
+    )
     parser.add_argument("--check", action="store_true")
     parser.add_argument("--state-root", type=Path)
     args = parser.parse_args()
 
     if args.state_root is not None:
         args.state_root.mkdir(parents=True, exist_ok=True)
-        expected, visuals = render_report(args.state_root)
+        expected_markdown, expected_html, visuals = render_report(args.state_root)
     else:
         with TemporaryDirectory(prefix="sanil-prism-") as temporary:
-            expected, visuals = render_report(Path(temporary))
+            expected_markdown, expected_html, visuals = render_report(Path(temporary))
 
     target = args.output
+    markdown_target = args.markdown_output
     if args.check:
         if not target.exists():
             raise SystemExit(f"Sanil report is missing: {target}")
-        if target.read_text(encoding="utf-8") != expected:
+        if target.read_text(encoding="utf-8") != expected_html:
             raise SystemExit(f"Sanil report is stale: {target}")
+        if not markdown_target.exists():
+            raise SystemExit(f"Sanil report appendix is missing: {markdown_target}")
+        if markdown_target.read_text(encoding="utf-8") != expected_markdown:
+            raise SystemExit(f"Sanil report appendix is stale: {markdown_target}")
         for visual in visuals:
             visual_target = target.parent / visual.filename
             if not visual_target.exists() or visual_target.read_text(encoding="utf-8") != visual.svg:
@@ -239,10 +264,13 @@ def main() -> int:
         return 0
 
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(expected, encoding="utf-8")
+    markdown_target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(expected_html, encoding="utf-8")
+    markdown_target.write_text(expected_markdown, encoding="utf-8")
     for visual in visuals:
         (target.parent / visual.filename).write_text(visual.svg, encoding="utf-8")
-    print(f"Sanil report written: {target}")
+    print(f"Sanil brokerage report written: {target}")
+    print(f"Sanil audit appendix written: {markdown_target}")
     return 0
 
 
