@@ -217,6 +217,33 @@ def test_cross_offset_later_instant_is_rejected_even_with_earlier_local_date():
         raise AssertionError("later cross-offset observation must fail closed")
 
 
+def test_timezone_naive_observed_timestamp_is_rejected():
+    naive = static_evidence_collector(
+        source_id="DART",
+        checked_at="2026-08-23T00:00:00+00:00",
+        records=(
+            evidence(
+                "E-NAIVE",
+                "revenue",
+                100,
+                "KRW_billion",
+                observed_date="2026-08-23T23:59:59",
+            ),
+        ),
+        source_fingerprint="FP:DART",
+    )
+    try:
+        collect_primary_evidence(
+            target_id="T",
+            required_metrics=("revenue",),
+            collectors=(naive,),
+        )
+    except ValueError as exc:
+        assert "observed_date timestamp must be timezone-aware" in str(exc)
+    else:
+        raise AssertionError("timezone-naive observed timestamp must fail closed")
+
+
 def test_control_plane_collection_and_ledger_stages_pass():
     result = run_controlled_workflow(
         run_id="COLLECT",
