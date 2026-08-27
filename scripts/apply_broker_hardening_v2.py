@@ -45,6 +45,17 @@ def patch_sanil() -> None:
         raise RuntimeError("Sanil locked Street fields remain in pre-freeze loader")
 
 
+def patch_sanil_test() -> None:
+    path = ROOT / "tests" / "test_sanil_live_primary.py"
+    text = path.read_text(encoding="utf-8")
+    old = '''    assert tuple(item.claim_id for item in broker_result.quarantined_claims) == (\n        "B:SANIL:MIRAE:FORWARD_FORECAST",\n        "B:SANIL:MIRAE:TARGET_PRICE",\n        "B:SANIL:IBK:TARGET_PRICE",\n        "B:SANIL:SHINHAN:TARGET_PRICE",\n    )\n'''
+    new = '''    # Street forecasts/targets are not merely quarantined from the LLM; they are\n    # absent from the entire pre-Freeze orchestrator state and enter only through\n    # STREET_REFERENCE_LOAD after Intrinsic Freeze.\n    assert broker_result.quarantined_claims == ()\n    prefreeze_text = repr(broker_result)\n    assert "250000" not in prefreeze_text\n    assert "220000" not in prefreeze_text\n    assert "310000" not in prefreeze_text\n    assert result.data["broker_research_rocket_connected"]\n    assert "BROKER_RESEARCH" in findings\n'''
+    if old in text:
+        replace_once(path, old, new)
+    elif "broker_result.quarantined_claims == ()" not in text:
+        raise RuntimeError("Sanil Broker quarantine regression marker not found")
+
+
 def patch_workflow() -> None:
     path = ROOT / ".github" / "workflows" / "sanil-live-primary.yml"
     text = path.read_text(encoding="utf-8")
@@ -71,6 +82,7 @@ def patch_docs() -> None:
 def main() -> int:
     patch_live_runtime()
     patch_sanil()
+    patch_sanil_test()
     patch_workflow()
     patch_docs()
     return 0
