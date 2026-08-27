@@ -117,7 +117,7 @@ MANDATORY_SCANNERS = (
 def identity() -> ResolvedCompanyIdentity:
     return ResolvedCompanyIdentity(
         target_id=TARGET_ID,
-        legal_name="Frozen Commodity Co",
+        legal_name="고정 원자재 기업",
         ticker="000000",
         jurisdiction="KR",
         external_ids=(
@@ -283,11 +283,11 @@ def intelligence_officer(context) -> IntelligenceProposal:
         )
     return IntelligenceProposal(
         hypotheses=tuple(hypotheses),
-        rationale="frozen primary evidence supports one unweighted Base scenario",
+        rationale="고정된 1차 출처가 확률가중하지 않은 기준 시나리오 하나를 뒷받침합니다",
         context_strength_linkage_decision=ContextStrengthLinkageDecision(
             not_applicable_reason=(
-                "This frozen acceptance fixture validates deterministic runtime "
-                "integrity and does not assert an external-change investment thesis."
+                "이 고정 인수시험 데이터는 결정론적 실행 무결성을 검증하며 "
+                "외부 환경 변화에 관한 투자논지를 주장하지 않습니다."
             ),
         ),
     )
@@ -477,17 +477,21 @@ def test_frozen_provider_live_primary_run_reaches_final_report(tmp_path):
     assert valuation.scenarios[0].value_per_share == Decimal("70000")
     assert result.data["market_comparison"].envelope.get("Base").gap_per_share == Decimal("5000")
     assert result.data["decision_impact_completed"]
-    assert "LLM Insight Layer — Environment × Corporate Strength" in result.data[
+    assert "인공지능 인사이트 — 환경 변화 × 기업 강점" in result.data[
         "final_report"
     ]
-    assert "Status: NOT_APPLICABLE" in result.data["final_report"]
-    assert "Expected Value: 미산출" in result.data["final_report"]
-    assert "## Sources — Direct Verification" in result.data["final_report"]
+    assert "상태: 해당 없음 (`NOT_APPLICABLE`)" in result.data["final_report"]
+    assert "확률가중 기대값: 미산출" in result.data["final_report"]
+    assert "## 정보 출처 — 원문 직접 검증" in result.data["final_report"]
+    assert "## 최종 요약 이미지" in result.data["final_report"]
     assert FIXTURE_SOURCE_URL in result.data["final_report"]
 
     state_root = Path(tmp_path)
     assert (state_root / "state" / "000000" / "current_state.json").exists()
     assert (state_root / "runs" / "000000" / "FULL-LIVE-1" / "final_report.md").exists()
+    assert len(result.data["saved_report_visuals"]) == 2
+    for filename in result.data["saved_report_visuals"]:
+        assert (state_root / "runs" / "000000" / "FULL-LIVE-1" / filename).exists()
     assert (
         state_root
         / "runs"

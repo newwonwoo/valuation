@@ -47,7 +47,7 @@ def test_direct_source_index_groups_claim_coverage_and_renders_clickable_link():
     rendered = "\n".join(render_source_link_section(links))
 
     assert links[0].url == "https://example.com/filing"
-    assert any("Evidence E-SOURCE: revenue" in item for item in links[0].coverage)
+    assert any("근거 E-SOURCE: revenue" in item for item in links[0].coverage)
     assert "[원문 바로 열기](https://example.com/filing)" in rendered
     assert linked_evidence_ids(data, ("E-SOURCE",)) == (
         "[E-SOURCE](https://example.com/filing)"

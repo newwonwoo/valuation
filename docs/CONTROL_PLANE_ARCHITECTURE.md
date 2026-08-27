@@ -150,3 +150,5 @@ The orchestrator:
 A missing live adapter or source is a visible capability state, not permission to fall back to the old keyword router, a generic DCF, fabricated evidence, or a market-anchored estimate.
 
 Routine operator output is therefore five major-gate summaries rather than 33 progress lines. The compact appendix retains all 33 stage identities/statuses while the immutable trace artifact retains exact rationales/output keys. The verified final result report targets 3–4 pages for the decision-facing body, 1–2 pages for the appendix and 6 pages maximum combined, with body text at least 13pt and section headings at least 18pt.
+
+The user-facing layer is Korean-first. The Control Plane requires a separate LLM insight section capped at 1,000 characters and keeps deterministic assumptions, calculations, Audit and Freeze results outside that boundary. `SAVE_STATE` also writes two deterministic Korean SVG report cards from the same immutable payload; the two cards count inside the 3–4 page main-body target, their filenames are recorded in current state and their source buttons resolve to the report's accepted HTTP(S) provenance set.

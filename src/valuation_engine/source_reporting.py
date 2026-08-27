@@ -70,8 +70,8 @@ def build_source_link_index(
             record.source_ref,
             label=record.source_name,
             coverage=(
-                f"Evidence {record.id}: {record.metric} "
-                f"(effective {record.effective_date})"
+                f"근거 {record.id}: {record.metric} "
+                f"(기준일 {record.effective_date})"
             ),
         )
 
@@ -80,19 +80,19 @@ def build_source_link_index(
         for source_ref in identity_refs:
             add(
                 source_ref,
-                label="Company identity",
-                coverage="company resolution",
+                label="기업 식별정보",
+                coverage="기업 식별 확인",
             )
 
-    for key, label in (
-        ("beta_source_refs", "Beta inputs"),
-        ("wacc_source_refs", "WACC inputs"),
-        ("per_source_refs", "PER inputs"),
+    for key, label, coverage_label in (
+        ("beta_source_refs", "베타 입력값", "베타 입력 출처"),
+        ("wacc_source_refs", "가중평균자본비용 입력값", "가중평균자본비용 입력 출처"),
+        ("per_source_refs", "주가수익비율 입력값", "주가수익비율 입력 출처"),
     ):
         refs = data.get(key, ())
         if isinstance(refs, tuple):
             for source_ref in refs:
-                add(source_ref, label=label, coverage=key)
+                add(source_ref, label=label, coverage=coverage_label)
 
     broker_result = data.get("broker_research_prefreeze_result")
     broker_refs = getattr(broker_result, "source_refs", ())
@@ -100,8 +100,8 @@ def build_source_link_index(
         for source_ref in broker_refs:
             add(
                 source_ref,
-                label="Broker research discovery",
-                coverage="pre-freeze discovery/corroboration only",
+                label="증권사 자료 탐색",
+                coverage="내재가치 고정 전 사실 탐색·교차검증 전용",
             )
 
     street_reports = data.get("street_reports", ())
@@ -110,9 +110,9 @@ def build_source_link_index(
             if isinstance(report, StreetResearchReport):
                 add(
                     report.source_ref,
-                    label=f"Street: {report.broker}",
+                    label=f"증권사: {report.broker}",
                     coverage=(
-                        f"target price published {report.published_date[:10]}"
+                        f"목표가 발표일 {report.published_date[:10]}"
                     ),
                 )
 
@@ -120,8 +120,8 @@ def build_source_link_index(
     if isinstance(market, MarketObservation):
         add(
             market.source_ref,
-            label="Current market price",
-            coverage=f"market price as of {market.as_of}",
+            label="현재 시장가격",
+            coverage=f"시장가격 기준일 {market.as_of}",
         )
 
     if require_all_http:
@@ -145,7 +145,7 @@ def build_source_link_index(
 
 
 def render_source_link_section(links: tuple[SourceLink, ...]) -> tuple[str, ...]:
-    lines = ["## Sources — Direct Verification"]
+    lines = ["## 정보 출처 — 원문 직접 검증"]
     if not links:
         lines.append(
             "- 검증 가능한 HTTP(S) 원문 링크가 없습니다. 이 실행은 독립 검증용으로 사용할 수 없습니다."
@@ -153,27 +153,27 @@ def render_source_link_section(links: tuple[SourceLink, ...]) -> tuple[str, ...]
         return tuple(lines)
     for item in links:
         evidence_rows = tuple(
-            row for row in item.coverage if row.startswith("Evidence ")
+            row for row in item.coverage if row.startswith("근거 ")
         )
         other_rows = tuple(
-            row for row in item.coverage if not row.startswith("Evidence ")
+            row for row in item.coverage if not row.startswith("근거 ")
         )
         if len(evidence_rows) > 6:
             metrics = tuple(
-                row.split(": ", 1)[1].split(" (effective ", 1)[0]
+                row.split(": ", 1)[1].split(" (기준일 ", 1)[0]
                 for row in evidence_rows
             )
             dates = tuple(
                 sorted(
                     {
-                        row.rsplit(" (effective ", 1)[1].rstrip(")")
+                        row.rsplit(" (기준일 ", 1)[1].rstrip(")")
                         for row in evidence_rows
                     }
                 )
             )
             evidence_summary = (
-                f"Evidence {len(evidence_rows)}개: {', '.join(metrics[:6])} "
-                f"외 {len(metrics) - 6}개 (effective {', '.join(dates)})"
+                f"근거 {len(evidence_rows)}개: {', '.join(metrics[:6])} "
+                f"외 {len(metrics) - 6}개 (기준일 {', '.join(dates)})"
             )
             coverage = (evidence_summary, *other_rows)
         else:
@@ -183,7 +183,7 @@ def render_source_link_section(links: tuple[SourceLink, ...]) -> tuple[str, ...]
             f"[원문 바로 열기]({item.url})"
         )
     lines.append(
-        "- 전체 Evidence ID·지표·기준일 매핑은 동일 run의 immutable Evidence Ledger에 보존됩니다."
+        "- 전체 근거 ID·지표·기준일 매핑은 동일 실행의 불변 Evidence Ledger에 보존됩니다."
     )
     return tuple(lines)
 

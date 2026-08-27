@@ -260,7 +260,7 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     attestation = attest_controlled_run(result)
     report = render_controlled_run_report(result)
     assert attestation.passed
-    assert "Run status: **VERIFIED_FROZEN**" in report
+    assert "실행 상태: **검증·고정 완료 (`VERIFIED_FROZEN`)**" in report
     assert "Beta" in report and "WACC" in report
     assert "SANIL_SECOND_FACTORY_RAMP" in str(
         result.data["capacity_commitment_assessment"]
@@ -269,11 +269,30 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         result.data["capacity_commitment_assessment"]
     )
     assert "산일전기" in result.data["final_report"]
-    assert "must be classified by the typed Capacity Gate" in result.data["final_report"]
+    assert "생산능력 게이트에서 분류" in result.data["final_report"]
+    llm_start = result.data["final_report"].index(
+        "## 인공지능 인사이트 — 환경 변화 × 기업 강점"
+    )
+    llm_end = result.data["final_report"].index("\n## ", llm_start + 3)
+    assert len(result.data["final_report"][llm_start:llm_end]) <= 1000
+    run_root = tmp_path / "runs" / TICKER / "SANIL-062040-20260826"
+    assert len(result.data["saved_report_visuals"]) == 2
+    for filename in result.data["saved_report_visuals"]:
+        assert (run_root / filename).exists()
+        assert filename in result.data["final_report"]
+    summary_svg = (run_root / result.data["saved_report_visuals"][0]).read_text(
+        encoding="utf-8"
+    )
+    assumptions_svg = (run_root / result.data["saved_report_visuals"][1]).read_text(
+        encoding="utf-8"
+    )
+    assert "회사 강점 · 투자 결론 · 가치평가" in summary_svg
+    assert "특정 매수가는 만들지 않고" in summary_svg
+    assert "가치평가 가정 · 위험 · 출처" in assumptions_svg
+    assert "href=\"https://" in summary_svg and "href=\"https://" in assumptions_svg
     assert "SANIL_UHV_PROPERTY_ACQUISITION_20260826" in str(assessment)
     assert "no incremental Core capacity path is required" not in result.data["final_report"]
 
-    run_root = tmp_path / "runs" / TICKER / "SANIL-062040-20260826"
     assert (run_root / "final_report.md").exists()
     assert (tmp_path / "state" / TICKER / "current_state.json").exists()
 

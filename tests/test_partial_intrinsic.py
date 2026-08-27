@@ -305,7 +305,7 @@ def test_partial_report_labels_subtotal_and_unvalued_not_zero():
             "doctrine_coverage": (),
         }
     )
-    assert "Partial Intrinsic — Valued Segments Only" in report
-    assert "valued subtotal" in report
+    assert "부분 내재가치 — 평가 완료 사업부만 포함" in report
+    assert "평가완료 소계" in report
     assert "UNVALUED_NOT_ZERO" in report
-    assert "미평가 segment는 0원으로 합산하지 않았습니다" in report
+    assert "미평가 사업부는 0원으로 합산하지 않았습니다" in report

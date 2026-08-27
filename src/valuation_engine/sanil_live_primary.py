@@ -855,39 +855,38 @@ def _intelligence_officer(context) -> IntelligenceProposal:
     linkage = ContextStrengthLinkage(
         id="CSL:SANIL:POWER_BOTTLENECK_CAPACITY",
         external_change=(
-            "Grid replacement, renewable interconnection and data-center power demand "
-            "are increasing the scarcity of qualified transformer delivery slots."
+            "전력망 교체, 재생에너지 계통연계, 데이터센터 전력 수요가 늘면서 "
+            "검증된 변압기 납품 슬롯의 희소성이 커지고 있습니다."
         ),
         emergent_need=(
-            "Buyers need proven manufacturers with customer qualification, backlog "
-            "visibility and physically controllable expansion capacity."
+            "구매자는 고객 승인 이력, 수주잔고 가시성, 물리적으로 통제 가능한 "
+            "증설 능력을 갖춘 검증된 제조사를 필요로 합니다."
         ),
         company_strength=(
-            "Sanil already has export customer access, a high-value specialty-transformer "
-            "mix, an 88.9% utilized production base, reported backlog and a controlled "
-            "second-factory site with committed CAPEX and a separate signed UHV "
-            "property-acquisition contract."
+            "산일전기는 수출 고객 접근성, 고부가 특수변압기 제품 구성, 88.9%의 "
+            "설비가동률, 공시된 수주잔고를 확보했습니다. 확정된 자본적지출이 있는 "
+            "제2공장 부지와 별도로 계약이 체결된 초고압 생산용 부동산도 통제합니다."
         ),
         linkage_thesis=(
-            "The external power-equipment bottleneck specifically revalues Sanil's "
-            "existing customer relationships and pre-invested site because those assets "
-            "can convert scarce delivery slots into backlog conversion and FCFF."
+            "전력기기 공급 병목은 산일전기의 기존 고객관계와 선투자 부지를 재평가하게 "
+            "합니다. 이 자산들이 희소한 납품 슬롯을 수주잔고 전환과 잉여현금흐름으로 "
+            "바꿀 수 있기 때문입니다."
         ),
         market_blind_spot=(
-            "A generic small-transformer framing can separate current earnings from the "
-            "option value of land-controlled capacity and overlook that the site, customer "
-            "access and production know-how already exist."
+            "회사를 단순 중소형 변압기 업체로 보면 현재 이익과 부지 통제형 생산능력의 "
+            "옵션가치를 분리하게 됩니다. 이미 확보된 부지·고객 접근성·생산 노하우가 "
+            "과소평가될 수 있습니다."
         ),
         value_capture_path=(
-            "land control and committed CAPEX → equipment/ramp execution → effective "
-            "capacity → backlog conversion → revenue, margin and free cash flow"
+            "부지 통제와 확정 자본적지출 → 설비 구축·가동 정상화 → 유효 생산능력 → "
+            "수주잔고 전환 → 매출·마진·잉여현금흐름"
         ),
         causal_chain=(
-            "power-infrastructure demand and transformer-slot scarcity rise",
-            "qualified delivery capacity becomes the binding buyer constraint",
-            "Sanil's existing customer access, operating base and controlled site absorb the need",
-            "capacity, CAPEX and ramp are consumed together in the Core scenario",
-            "incremental shipments convert backlog into revenue and FCFF",
+            "전력 인프라 수요와 변압기 납품 슬롯 희소성 상승",
+            "검증된 납품 능력이 구매자의 핵심 제약으로 이동",
+            "산일전기의 기존 고객 접근성·가동 기반·통제 부지가 수요 흡수",
+            "생산능력·자본적지출·가동 정상화를 기준 시나리오에 함께 반영",
+            "증가한 출하가 수주잔고를 매출과 잉여현금흐름으로 전환",
         ),
         supporting_evidence_ids=(
             _evidence_id("orders"),
@@ -905,19 +904,19 @@ def _intelligence_officer(context) -> IntelligenceProposal:
             "H:SANIL:Core",
         ),
         recognition_triggers=(
-            "official second-factory equipment or production ramp disclosure",
-            "effective-capacity growth with backlog conversion",
-            "high-value product mix and margin retention after ramp",
+            "제2공장 설비 구축 또는 생산 정상화 공식 공시",
+            "수주잔고 전환을 동반한 유효 생산능력 증가",
+            "가동 정상화 후 고부가 제품 구성과 마진 유지",
         ),
         kill_conditions=(
-            "the company cancels the program or confirms it is fully included in the frozen baseline",
-            "backlog or orders decline before capacity converts to shipments",
-            "ramp costs and margin normalization offset the added production ceiling",
+            "회사가 증설을 취소하거나 기존 기준 생산능력에 이미 전부 포함됐다고 확인",
+            "생산능력이 출하로 전환되기 전에 수주잔고 또는 신규수주 감소",
+            "가동 정상화 비용과 마진 하락이 추가 생산능력 효과를 상쇄",
         ),
         next_checks=(
-            "next quarterly filing for factory ramp, CAPEX and utilization",
-            "orders-to-revenue conversion and customer concentration",
-            "cash conversion after expansion spending",
+            "다음 분기 공시의 공장 정상화·자본적지출·가동률",
+            "수주에서 매출로의 전환과 고객 집중도",
+            "증설 지출 이후 현금 전환",
         ),
         confidence=0.78,
     )
@@ -925,12 +924,11 @@ def _intelligence_officer(context) -> IntelligenceProposal:
         hypotheses=hypotheses,
         requested_evidence=broker_context.verification_requests,
         rationale=(
-            "Broker Research factual leads were converted to primary-source verification "
-            "and target forecasts/targets were quarantined before intrinsic valuation. "
-            "Sanil is routed as contracted-backlog plus capacity-manufacturing; "
-            "the declared land-controlled second-factory project must be classified "
-            "by the typed Capacity Gate and, when confirmed incremental, consumed "
-            "as one Core capacity, CAPEX and ramp path."
+            "증권사 자료의 사실 단서를 1차 출처 검증으로 전환하고, 전망치와 목표가는 "
+            "내재가치 평가 전에 격리했습니다. 산일전기는 계약형 수주잔고와 생산능력 "
+            "제조업으로 분류됩니다. 공시된 부지 통제형 제2공장 프로젝트는 생산능력 "
+            "게이트에서 분류하고, 증분으로 확인되면 기준 시나리오의 생산능력·자본적지출·"
+            "가동 정상화 경로에 하나로 반영해야 합니다."
         ),
         context_strength_linkage_decision=ContextStrengthLinkageDecision(
             linkages=(linkage,),

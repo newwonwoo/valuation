@@ -39,19 +39,19 @@ reporting_contract:
   contract_id: prism_major_gate_reporting/v1
   major_gates:
     - gate_id: G1_EVIDENCE_ROUTING
-      title: Evidence and Routing
+      title: 증거 수집·산업 라우팅
       terminal_stage: EVIDENCE_LEDGER
     - gate_id: G2_INSIGHT_CHALLENGE
-      title: Insight and Challenge
+      title: 인사이트 도출·반증 검토
       terminal_stage: RESEARCH_LOOP
     - gate_id: G3_ASSUMPTIONS_METHOD_RISK
-      title: Assumptions, Method and Risk
+      title: 가정·평가방법·위험
       terminal_stage: WACC_VALIDATION
     - gate_id: G4_VALUATION_AUDIT_FREEZE
-      title: Valuation, Audit and Freeze
+      title: 가치평가·감사·내재가치 고정
       terminal_stage: INTRINSIC_VALUE_FREEZE
     - gate_id: G5_POST_FREEZE_PERSISTENCE
-      title: Post-Freeze Comparison and Persistence
+      title: 고정 후 비교·영구 저장
       terminal_stage: FINAL_REPORT
   summary_fields:
     - status
@@ -62,6 +62,7 @@ reporting_contract:
     main_body_target_pages: [3, 4]
     audit_appendix_target_pages: [1, 2]
     total_page_cap: 6
+    visual_pages_included_in_main_body: 2
   typography_policy:
     body_min_pt: 13
     primary_heading_min_pt: 22
@@ -71,6 +72,10 @@ reporting_contract:
     direct_http_links_required: true
     claim_source_mapping_required: true
     non_http_source_refs_forbidden_in_live_reports: true
+  llm_insight_policy:
+    separate_section_required: true
+    max_chars: 1000
+    deterministic_outputs_separated: true
 phases:
   I_OPENING:
     - COMPANY_RESOLUTION

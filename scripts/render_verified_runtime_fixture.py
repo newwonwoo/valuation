@@ -7,6 +7,7 @@ from tempfile import TemporaryDirectory
 
 from valuation_engine.live_runtime import run_prism
 from valuation_engine.report_form import attest_controlled_run, write_verified_report
+from valuation_engine.visual_reporting import render_report_visuals
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +27,7 @@ def _load_fixture_module():
     return module
 
 
-def _render() -> str:
+def _render() -> tuple[str, tuple]:
     fixture = _load_fixture_module()
     with TemporaryDirectory(prefix="prism-report-") as temporary:
         result = run_prism(fixture.runtime_config(Path(temporary)))
@@ -41,7 +42,7 @@ def _render() -> str:
             )
         target = Path(temporary) / "verified.md"
         write_verified_report(result, target)
-        return target.read_text(encoding="utf-8")
+        return target.read_text(encoding="utf-8"), render_report_visuals(result.data)
 
 
 def main() -> int:
@@ -50,18 +51,24 @@ def main() -> int:
     parser.add_argument("--check", action="store_true")
     args = parser.parse_args()
 
-    expected = _render()
+    expected, visuals = _render()
     target = args.output
     if args.check:
         if not target.exists():
             raise SystemExit(f"actual runtime report is missing: {target}")
         if target.read_text(encoding="utf-8") != expected:
             raise SystemExit(f"actual runtime report is stale: {target}")
+        for visual in visuals:
+            visual_target = target.parent / visual.filename
+            if not visual_target.exists() or visual_target.read_text(encoding="utf-8") != visual.svg:
+                raise SystemExit(f"actual runtime report visual is stale: {visual_target}")
         print(f"actual runtime report synchronized: {target}")
         return 0
 
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(expected, encoding="utf-8")
+    for visual in visuals:
+        (target.parent / visual.filename).write_text(visual.svg, encoding="utf-8")
     print(f"actual runtime report written: {target}")
     return 0
 

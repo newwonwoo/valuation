@@ -29,6 +29,7 @@ from .valuation_execution import (
     GenericValuationResult,
     IntrinsicValuationScope,
 )
+from .visual_reporting import render_report_visuals, report_visual_filenames
 
 
 def _jsonable(value: Any) -> Any:
@@ -134,10 +135,10 @@ def _compact_list(values: list[str], *, limit: int = 8) -> str:
 def _research_effort_line(summary: dict[str, Any]) -> str:
     effort = summary["research_effort"]
     return (
-        f"source queries {effort['source_queries']}, "
-        f"documents {effort['documents_reviewed']}, "
-        f"LLM calls {effort['llm_calls']}, "
-        f"elapsed {float(effort['elapsed_seconds']):.1f}s"
+        f"출처 조회 {effort['source_queries']}회, "
+        f"문서 검토 {effort['documents_reviewed']}건, "
+        f"대규모 언어모델 호출 {effort['llm_calls']}회, "
+        f"소요시간 {float(effort['elapsed_seconds']):.1f}초"
     )
 
 
@@ -147,13 +148,13 @@ def thesis_delta_adapter() -> StageAdapter:
         if not isinstance(state, dict):
             return StageExecutionResult(
                 StageStatus.RECOVERY_REQUIRED,
-                "company_state must be a mapping before Thesis Delta",
+                "투자논지 변화 비교 전에 company_state가 매핑 형식이어야 합니다",
                 blocking=True,
             )
         previous = str(state.get("thesis", ""))
         current = _current_thesis(context.data)
         if not current:
-            current = "No material thesis statement was produced in this run."
+            current = "이번 실행에서는 중대한 투자논지가 새로 생성되지 않았습니다."
         outputs: dict[str, Any] = {
             "thesis_delta_result": thesis_delta(previous, current),
         }
@@ -161,7 +162,7 @@ def thesis_delta_adapter() -> StageAdapter:
             outputs["current_thesis"] = current
         return StageExecutionResult(
             StageStatus.PASS,
-            "current thesis compared with the prior immutable successful state",
+            "현재 투자논지를 직전 불변 성공 상태와 비교했습니다",
             outputs,
         )
 
@@ -185,35 +186,41 @@ def render_generic_report(
         raise ValueError("typed doctrine coverage is required")
 
     partial = valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
+    summary_visual, assumptions_visual = report_visual_filenames(data)
     lines = [
-        f"# {company} PRISM Research & Valuation Report",
+        f"# {company} PRISM 리서치·가치평가 보고서",
+        "",
+        "## 최종 요약 이미지",
+        f"![{company} 회사 강점·투자 결론·가치평가]({summary_visual})",
+        "",
+        f"![{company} 가치평가 가정·위험·출처]({assumptions_visual})",
         "",
         *render_context_strength_linkage_section(data),
         "",
         (
-            "## Partial Intrinsic — Valued Segments Only"
+            "## 부분 내재가치 — 평가 완료 사업부만 포함"
             if partial
-            else "## Intrinsic Value"
+            else "## 내재가치"
         ),
     ]
     if partial:
         lines.append(
-            "- Scope: PARTIAL_INTRINSIC — 아래 숫자는 평가 완료 segment subtotal이며 전체 기업가치가 아닙니다."
+            "- 평가범위: `PARTIAL_INTRINSIC` — 아래 숫자는 평가 완료 사업부 소계이며 전체 기업가치가 아닙니다."
         )
     for item in valuation.scenarios:
-        label = "valued subtotal" if partial else "intrinsic"
+        label = "평가완료 소계" if partial else "내재가치"
         lines.append(
-            f"- {item.scenario_id} {label}: {_fmt(item.value_per_share)} {valuation.reporting_unit}/share"
+            f"- {item.scenario_id} {label}: 주당 {_fmt(item.value_per_share)} {valuation.reporting_unit}"
         )
     if valuation.expected_value_per_share is None:
-        lines.append("- Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.")
+        lines.append("- 확률가중 기대값: 미산출 — 시나리오 확률이 보정 완료 상태가 아니므로 수치 가중을 보류했습니다.")
     elif partial:
         lines.append(
-            f"- Partial Expected Subtotal: {_fmt(valuation.expected_value_per_share)} {valuation.reporting_unit}/share — 전체 기업 공정가치로 사용 금지"
+            f"- 부분 확률가중 소계: 주당 {_fmt(valuation.expected_value_per_share)} {valuation.reporting_unit} — 전체 기업 공정가치로 사용 금지"
         )
     else:
         lines.append(
-            f"- Expected Value: {_fmt(valuation.expected_value_per_share)} {valuation.reporting_unit}/share"
+            f"- 확률가중 기대값: 주당 {_fmt(valuation.expected_value_per_share)} {valuation.reporting_unit}"
         )
 
     scenario_set = data.get("bound_scenario_set")
@@ -225,16 +232,16 @@ def render_generic_report(
     )
     lines.extend((
         "",
-        "## Probability Calibration",
-        f"- Status: {calibration_status} · Numeric weighting: {'APPLIED' if calibration_applied else 'WITHHELD'}",
-        f"- Lineage: dataset `{getattr(scenario_set, 'calibration_dataset_hash', None) or 'NOT_AVAILABLE'}` · snapshot `{getattr(scenario_set, 'calibration_snapshot_hash', None) or 'NOT_AVAILABLE'}`",
+        "## 확률 보정 상태",
+        f"- 보정 상태: `{calibration_status}` · 수치 가중: {'적용' if calibration_applied else '보류'}",
+        f"- 계보: 데이터셋 `{getattr(scenario_set, 'calibration_dataset_hash', None) or '없음'}` · 스냅샷 `{getattr(scenario_set, 'calibration_snapshot_hash', None) or '없음'}`",
     ))
 
     if partial:
-        lines.extend(("", "## Unvalued Segments — UNVALUED_NOT_ZERO"))
+        lines.extend(("", "## 미평가 사업부 — 0원 처리 금지 (`UNVALUED_NOT_ZERO`)"))
         for item in valuation.unvalued_segments:
             missing = (
-                f"; missing={', '.join(item.missing_assumptions)}"
+                f"; 누락 가정={', '.join(item.missing_assumptions)}"
                 if item.missing_assumptions
                 else ""
             )
@@ -242,14 +249,14 @@ def render_generic_report(
                 f"- {item.segment_id} ({item.asset_id}): {item.status.value} — "
                 f"{item.resolution_status}: {item.rationale}{missing}"
             )
-        lines.append("- 미평가 segment는 0원으로 합산하지 않았습니다.")
+        lines.append("- 미평가 사업부는 0원으로 합산하지 않았습니다.")
 
     street = data.get("street_comparison")
     if isinstance(street, StreetComparisonBundle):
         lines.extend((
             "",
-            "## Street Gap",
-            f"- 리포트 수: {street.consensus.report_count}",
+            "## 증권사 목표가 비교",
+            f"- 반영 리포트: {street.consensus.report_count}건",
             f"- 평균 목표가: {_fmt(street.consensus.mean_target_price)} {street.consensus.target_price_currency}",
         ))
         for item in street.envelope.scenario_gaps:
@@ -258,11 +265,11 @@ def render_generic_report(
             )
         if street.envelope.expected_gap is not None:
             item = street.envelope.expected_gap
-            lines.append(f"- Expected 대비: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})")
+            lines.append(f"- 확률가중 기대값 대비: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})")
     elif data.get("street_comparison_withheld_reason"):
         lines.extend((
             "",
-            "## Street Gap",
+            "## 증권사 목표가 비교",
             f"- 비교 보류: {data['street_comparison_withheld_reason']}",
         ))
 
@@ -270,7 +277,7 @@ def render_generic_report(
     if isinstance(market, MarketComparisonBundle):
         lines.extend((
             "",
-            "## Current Market Compare",
+            "## 현재 시장가격 비교",
             f"- 현재가: {_fmt(market.observation.price)} {market.envelope.currency} ({market.observation.as_of})",
         ))
         for item in market.envelope.scenario_gaps:
@@ -279,11 +286,11 @@ def render_generic_report(
             )
         if market.envelope.expected_gap is not None:
             item = market.envelope.expected_gap
-            lines.append(f"- Expected 기대수익 간격: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})")
+            lines.append(f"- 확률가중 기대값 대비 수익 간격: {_fmt(item.gap_per_share)} ({item.gap_pct_of_reference:+.1%})")
     elif data.get("market_comparison_withheld_reason"):
         lines.extend((
             "",
-            "## Current Market Compare",
+            "## 현재 시장가격 비교",
             f"- 비교 보류: {data['market_comparison_withheld_reason']}",
         ))
 
@@ -296,7 +303,7 @@ def render_generic_report(
     impact = _module_impact_summary(data)
     lines.extend((
         "",
-        "## Module Impact / Research Efficiency",
+        "## 모듈 영향·조사 효율성",
         f"- 측정 완료: {_compact_list(impact['measured'])} · 미측정(NOT_MEASURABLE): {_compact_list(impact['not_measurable'])}",
         f"- 비적용: {_compact_list(impact['not_applicable'])} · 실패: {_compact_list(impact['failed'])}",
         f"- 조사비용: {_research_effort_line(impact)}",
@@ -309,9 +316,9 @@ def render_generic_report(
     )
     lines.extend((
         "",
-        "## Audit & Coverage",
-        f"- Audit: PASS ({len(audit.findings)} checks)",
-        f"- Doctrine coverage: {len(coverage) - len(non_pass)}/{len(coverage)} terminally acceptable",
+        "## 감사·준수 범위",
+        f"- 감사: 통과 ({len(audit.findings)}개 점검)",
+        f"- 원칙 준수: {len(coverage) - len(non_pass)}/{len(coverage)}개 최종 허용 상태",
     ))
     for item in non_pass:
         lines.append(f"- {item.module_id}: {item.status.value} — {item.rationale}")
@@ -320,17 +327,17 @@ def render_generic_report(
     if isinstance(delta, dict):
         lines.extend((
             "",
-            "## Thesis Delta",
+            "## 투자논지 변화",
             f"- 강화·신규: {', '.join(delta.get('strengthened_or_new', [])) or '없음'}",
             f"- 약화·폐기: {', '.join(delta.get('weakened_or_removed', [])) or '없음'}",
         ))
 
     lines.extend((
         "",
-        "## Run Integrity",
-        f"- Scope: {valuation.scope.value} · Freeze: `{getattr(data.get('intrinsic_freeze_token'), 'token_hash', '')}`",
-        f"- Chain: ledger `{data.get('ledger_snapshot_hash', '')}` · assumptions `{data.get('assumption_set_hash', '')}` · valuation `{data.get('valuation_hash', '')}` · audit `{data.get('audit_hash', '')}`",
-        f"- Calibration: dataset `{data.get('probability_calibration_dataset_hash', '') or 'NOT_APPLIED'}` · snapshot `{data.get('probability_calibration_snapshot_hash', '') or 'NOT_APPLIED'}`",
+        "## 실행 무결성",
+        f"- 평가범위: `{valuation.scope.value}` · 내재가치 고정: `{getattr(data.get('intrinsic_freeze_token'), 'token_hash', '')}`",
+        f"- 해시 사슬: 원장 `{data.get('ledger_snapshot_hash', '')}` · 가정 `{data.get('assumption_set_hash', '')}` · 가치평가 `{data.get('valuation_hash', '')}` · 감사 `{data.get('audit_hash', '')}`",
+        f"- 확률 보정: 데이터셋 `{data.get('probability_calibration_dataset_hash', '') or '미적용'}` · 스냅샷 `{data.get('probability_calibration_snapshot_hash', '') or '미적용'}`",
     ))
     return "\n".join(lines) + "\n"
 
@@ -364,6 +371,7 @@ def save_state_adapter(
             "saved_run_dir",
             "saved_current_state",
             "saved_report_markdown",
+            "saved_report_visuals",
             "module_impact_summary",
             "final_report",
         }
@@ -406,6 +414,7 @@ def save_state_adapter(
                 raise ValueError("same-run IntrinsicFreezeToken is required")
             authorize_post_freeze(token, run_id=context.run_id)
 
+            report_visuals = render_report_visuals(context.data)
             report = render_generic_report(
                 context.data,
                 require_verifiable_sources=(
@@ -451,6 +460,7 @@ def save_state_adapter(
                 "thesis_delta.json": _jsonable(context.data.get("thesis_delta_result", {})),
                 "freeze_token.json": _jsonable(token),
                 "final_report.md": report,
+                **{visual.filename: visual.svg for visual in report_visuals},
             }
             if learning_store is not None:
                 batch = _impact_batch(context.data)
@@ -469,7 +479,7 @@ def save_state_adapter(
             )
             partial = valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
             current_state = {
-                "schema_version": "0.6.12",
+                "schema_version": "0.6.13",
                 "ticker": ticker,
                 "company": company,
                 "last_completed_run": context.run_id,
@@ -512,6 +522,7 @@ def save_state_adapter(
                     else None
                 ),
                 "freeze_token_hash": token.token_hash,
+                "report_visuals": [visual.filename for visual in report_visuals],
             }
             store.promote_current(manifest, current_state)
         except Exception as exc:
@@ -541,6 +552,7 @@ def save_state_adapter(
             "saved_run_dir": str(run_dir),
             "saved_current_state": current_state,
             "saved_report_markdown": report,
+            "saved_report_visuals": tuple(visual.filename for visual in report_visuals),
             "module_impact_summary": impact_summary,
         }
         if learning_ref is not None:
@@ -551,11 +563,7 @@ def save_state_adapter(
             })
         return StageExecutionResult(
             StageStatus.PASS,
-            (
-                "immutable learning/run artifacts saved and audit-passed current state promoted"
-                if learning_ref is not None
-                else "immutable run artifacts saved and audit-passed current state promoted"
-            ),
+            "불변 실행 산출물·한국어 보고서·요약 이미지 2장을 저장하고 감사 통과 상태로 승격했습니다",
             outputs,
         )
 
@@ -568,12 +576,12 @@ def final_report_adapter() -> StageAdapter:
         if not isinstance(report, str) or not report:
             return StageExecutionResult(
                 StageStatus.RECOVERY_REQUIRED,
-                "saved report artifact is missing; SAVE_STATE must complete first",
+                "저장된 보고서가 없습니다. 먼저 SAVE_STATE를 완료해야 합니다",
                 blocking=True,
             )
         return StageExecutionResult(
             StageStatus.PASS,
-            "final report emitted from the same immutable payload saved in the run state",
+            "동일한 불변 실행 데이터에서 한국어 최종보고서와 요약 이미지 2장을 생성했습니다",
             {"final_report": report},
         )
 

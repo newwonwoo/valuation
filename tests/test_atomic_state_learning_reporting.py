@@ -225,10 +225,10 @@ def test_final_report_distinguishes_measured_from_not_measurable_and_shows_cost(
 
     report = render_generic_report(data)
 
-    assert "## Module Impact / Research Efficiency" in report
+    assert "## 모듈 영향·조사 효율성" in report
     assert "측정 완료: MEASURED_MODULE" in report
     assert "미측정(NOT_MEASURABLE): UNMEASURED_MODULE" in report
-    assert "source queries 2, documents 4, LLM calls 1, elapsed 4.5s" in report
+    assert "출처 조회 2회, 문서 검토 4건, 대규모 언어모델 호출 1회, 소요시간 4.5초" in report
     assert "미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE" in report
-    assert "## Probability Calibration" in report
-    assert "Numeric weighting: WITHHELD" in report
+    assert "## 확률 보정 상태" in report
+    assert "수치 가중: 보류" in report

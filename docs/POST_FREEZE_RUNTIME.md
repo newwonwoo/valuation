@@ -30,13 +30,15 @@ Current price is a post-freeze reference. It produces scenario and, when allowed
 
 ## 5. Immutable state and report
 
-`SAVE_STATE` writes one immutable run directory containing the Control Plane trace, compiled assumptions, bound scenarios, valuation, audit, doctrine coverage, Street/market comparison, thesis delta, freeze token and the exact report Markdown.
+`SAVE_STATE` writes one immutable run directory containing the Control Plane trace, compiled assumptions, bound scenarios, valuation, audit, doctrine coverage, Street/market comparison, thesis delta, freeze token, the exact Korean report Markdown and two deterministic Korean SVG summary cards.
 
 Only an audit-passed completed run may update `current_state.json`. `FINAL_REPORT` emits the same report payload that was saved, so the user-visible result and immutable artifact cannot silently diverge.
 
 After `FINAL_REPORT` passes, the verified controlled-run wrapper includes all five major-gate summaries and a compact appendix containing every one of the 33 stage identities/statuses. Exact rationales/output keys remain in immutable `control_plane_trace.json`. The fifth summary covers post-freeze comparison, state persistence and final emission; it cannot be emitted early or inferred from a saved draft.
 
 The persisted final report contains a direct-verification source section. Street reports and the market observation retain their original HTTP(S) links alongside the pre-freeze Evidence links. `SAVE_STATE` fails closed if any live report source is missing, non-HTTP or credential-bearing, so the immutable report and user-visible report cannot diverge on provenance.
+
+LLM-authored linkage reasoning is displayed only in a separate `인공지능 인사이트` section capped at 1,000 characters. The complete typed linkage artifact remains separately persisted. Neither the compact display nor either SVG card may blur this reasoning into deterministic valuation output or invent a buy price when calibration/entry governance is absent.
 
 ## 6. Failure policy
 

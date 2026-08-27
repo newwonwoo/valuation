@@ -28,6 +28,7 @@ def reporting_contract(*gates):
         main_body_target_pages=(6, 8),
         audit_appendix_target_pages=(3, 4),
         total_page_cap=12,
+        visual_pages_included_in_main_body=2,
         body_min_pt=13,
         primary_heading_min_pt=22,
         section_heading_min_pt=18,
@@ -35,6 +36,9 @@ def reporting_contract(*gates):
         direct_http_links_required=True,
         claim_source_mapping_required=True,
         non_http_source_refs_forbidden_in_live_reports=True,
+        llm_insight_separate_section_required=True,
+        llm_insight_max_chars=1000,
+        deterministic_outputs_separated_from_llm=True,
     )
 
 
@@ -51,7 +55,9 @@ def test_canonical_reporting_contract_partitions_all_33_stages_once():
     assert contract.main_body_target_pages == (3, 4)
     assert contract.audit_appendix_target_pages == (1, 2)
     assert contract.total_page_cap == 6
+    assert contract.visual_pages_included_in_main_body == 2
     assert contract.body_min_pt == 13
+    assert contract.llm_insight_max_chars == 1000
 
 
 def test_orchestrator_emits_one_summary_only_when_each_major_gate_completes():
@@ -108,7 +114,7 @@ def test_blocked_gate_emits_partial_summary_and_never_fabricates_later_gate():
     assert seen[0].completed_stage_count == 2
     assert seen[0].expected_stage_count == 3
     assert seen[0].next_action == "RESOLVE_G1"
-    assert seen[0].decisive_result == "B terminated with blocked"
+    assert seen[0].decisive_result == "B 단계가 blocked 상태로 종료되었습니다"
     assert seen[0].residual_risk == "B:BLOCKED"
     assert "material evidence gap" not in seen[0].decisive_result
     assert tuple(item.gate_id for item in result.major_gate_summaries) == ("G1",)
