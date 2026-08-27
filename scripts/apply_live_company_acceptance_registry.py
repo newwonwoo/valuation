@@ -38,14 +38,21 @@ def add_metrics_after(path: Path, anchor: str) -> None:
 
 
 def patch_generator_hash_helper() -> None:
-    replace_once(
-        GENERATOR,
-        "from valuation_engine.live_company_acceptance import sha256_file\n",
-        """def sha256_file(path: Path) -> str:
+    old = "from valuation_engine.live_company_acceptance import sha256_file\n"
+    text = GENERATOR.read_text(encoding="utf-8")
+    if old not in text:
+        return
+    GENERATOR.write_text(
+        text.replace(
+            old,
+            """def sha256_file(path: Path) -> str:
     return sha256(path.read_bytes()).hexdigest()
 
 
 """,
+            1,
+        ),
+        encoding="utf-8",
     )
 
 
