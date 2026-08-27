@@ -29,16 +29,18 @@ def _checked_at_temporal(value: str) -> date | datetime:
 
 
 def _observed_temporal(value: str) -> date | datetime:
-    text = str(value or "").strip()
-    observed_date = date.fromisoformat(text[:10])
+    text = str(value or "").strip().replace("Z", "+00:00")
     if len(text) == 10:
-        return observed_date
+        try:
+            return date.fromisoformat(text)
+        except ValueError as exc:
+            raise ValueError("evidence observed_date must be an ISO date/timestamp") from exc
     try:
-        parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
-    except ValueError:
-        return observed_date
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise ValueError("evidence observed_date must be an ISO date/timestamp") from exc
     if parsed.tzinfo is None or parsed.utcoffset() is None:
-        return observed_date
+        raise ValueError("evidence observed_date timestamp must be timezone-aware")
     return parsed
 
 
