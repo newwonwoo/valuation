@@ -83,13 +83,17 @@ class ReportingContract:
     llm_insight_separate_section_required: bool
     llm_insight_max_chars: int
     deterministic_outputs_separated_from_llm: bool
+    uncalibrated_prior_display_allowed: bool = True
+    uncalibrated_prior_weighting_forbidden: bool = True
+    declared_forecast_history_capture_required: bool = True
+    append_only_probability_history_required: bool = True
     visible_language: str = "ko"
     primary_section_order: tuple[str, ...] = (
         "투자 요약",
         "가치평가",
         "핵심 가정과 위험",
         "증권사·시장 비교",
-        "정보 출처 — 원문 직접 검증",
+        "정보 출처 — 원문 바로 확인",
     )
     decision_report_precedes_audit_appendix: bool = True
     technical_identifiers_collapsed: bool = True
@@ -152,6 +156,18 @@ class ReportingContract:
             )
         ) or not 1 <= self.llm_insight_max_chars <= 1000:
             raise ValueError("LLM insight reporting must be separate and capped at 1,000 characters")
+        if not all(
+            (
+                self.uncalibrated_prior_display_allowed,
+                self.uncalibrated_prior_weighting_forbidden,
+                self.declared_forecast_history_capture_required,
+                self.append_only_probability_history_required,
+            )
+        ):
+            raise ValueError(
+                "probability reporting must separate display priors from calibrated weighting "
+                "and require append-only declared forecast history"
+            )
         if self.visible_language != "ko" or not self.primary_section_order:
             raise ValueError("reader-facing report must declare Korean section ordering")
         if not all(
@@ -245,11 +261,11 @@ _POST_FREEZE_STAGES = {
 }
 
 _GATE_COMPLETION_KO = {
-    "G1_EVIDENCE_ROUTING": "증거 수집·산업 라우팅을 완료하고 불변 근거 원장을 고정했습니다",
+    "G1_EVIDENCE_ROUTING": "증거 수집·산업 라우팅을 완료하고 근거 기록을 확정했습니다",
     "G2_INSIGHT_CHALLENGE": "환경 변화와 기업 강점의 연결 인사이트 및 반증 검토를 완료했습니다",
     "G3_ASSUMPTIONS_METHOD_RISK": "가정·평가방법·베타·가중평균자본비용의 적용 여부를 확정했습니다",
-    "G4_VALUATION_AUDIT_FREEZE": "결정론적 가치평가와 감사를 통과해 내재가치를 고정했습니다",
-    "G5_POST_FREEZE_PERSISTENCE": "시장·증권사 비교 후 한국어 최종보고서와 요약 이미지 2장을 불변 저장했습니다",
+    "G4_VALUATION_AUDIT_FREEZE": "가치평가와 오류 점검을 마치고 결과를 확정했습니다",
+    "G5_POST_FREEZE_PERSISTENCE": "시장·증권사 비교 후 한국어 최종보고서와 요약 이미지 2장을 저장했습니다",
 }
 
 
@@ -261,7 +277,7 @@ def _stage_risk_ko(trace: StageTrace) -> str:
         )
     if trace.stage == "ROCKET_INSIGHT_SCAN":
         return "환경 변화 인사이트 탐색: 로켓슬라 인사이트 스캐너가 확인 필요 경고를 남겼습니다"
-    return "확인 필요 상태가 기록되었습니다. 상세 사유는 불변 추적 파일을 확인하십시오"
+    return "확인 필요 상태가 기록되었습니다. 상세 사유는 분석 기록을 확인하십시오"
 
 
 def load_stage_sequence(path: str | Path) -> tuple[str, ...]:
@@ -338,6 +354,9 @@ def load_reporting_contract(path: str | Path) -> ReportingContract:
     llm_policy = raw.get("llm_insight_policy")
     if not isinstance(llm_policy, dict):
         raise ValueError("reporting contract requires llm_insight_policy")
+    probability_policy = raw.get("probability_reporting_policy")
+    if not isinstance(probability_policy, dict):
+        raise ValueError("reporting contract requires probability_reporting_policy")
     reader_policy = raw.get("reader_experience_policy")
     if not isinstance(reader_policy, dict):
         raise ValueError("reporting contract requires reader_experience_policy")
@@ -392,6 +411,18 @@ def load_reporting_contract(path: str | Path) -> ReportingContract:
         llm_insight_max_chars=int(llm_policy.get("max_chars") or 0),
         deterministic_outputs_separated_from_llm=bool(
             llm_policy.get("deterministic_outputs_separated", False)
+        ),
+        uncalibrated_prior_display_allowed=bool(
+            probability_policy.get("uncalibrated_prior_display_allowed", False)
+        ),
+        uncalibrated_prior_weighting_forbidden=bool(
+            probability_policy.get("uncalibrated_prior_weighting_forbidden", False)
+        ),
+        declared_forecast_history_capture_required=bool(
+            probability_policy.get("declared_forecast_history_capture_required", False)
+        ),
+        append_only_probability_history_required=bool(
+            probability_policy.get("append_only_history_required", False)
         ),
         visible_language=str(reader_policy.get("visible_language") or "").strip(),
         primary_section_order=tuple(item.strip() for item in primary_section_order),

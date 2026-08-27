@@ -199,8 +199,8 @@ departments:
   name: Risk, PER & Probability Calibration
   design_points: 10
   baseline_accepted_points: 5
-  current_work: BLOCKED CAL-PRODUCTION-COHORT-003 — Requires sufficient real resolved historical forecasts across
-    production cohorts
+  current_work: BLOCKED CAL-PRODUCTION-COHORT-003 — Production capture is wired; requires sufficient real resolved
+    historical forecasts across declared cohorts
   accepted_milestones:
   - id: CAL-ASOF-001
     title: Add a first-seen boundary to historical forecast revisions and replay
@@ -349,8 +349,9 @@ work_items:
   id: CAL-PRODUCTION-COHORT-003
   title: Populate production probability calibration cohorts with real resolved history
   owner: calibration-risk-agent
-  current_step: Accumulate real append-only resolved forecasts until declared cohort thresholds can be evaluated;
-    synthetic or post-hoc history is forbidden.
+  current_step: Run declared pre-resolution forecasts through the append-only production writer, resolve only with
+    first-seen primary-source Evidence, and accumulate enough real outcomes for declared cohort thresholds; synthetic
+    or post-hoc history remains forbidden.
   dependencies: []
 accepted_handoffs:
 - id: H-EVIDENCE-CONTEXT-STRENGTH-ACCEPTANCE-20260827

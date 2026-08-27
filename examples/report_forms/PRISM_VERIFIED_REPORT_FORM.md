@@ -8,6 +8,7 @@
 | **현재가** | {{ 현재가와 기준일 }} |
 | **기준 내재가치** | {{ 기준 내재가치와 현재가 대비 차이 }} |
 | **가치평가 범위** | {{ 하방 }}원–{{ 상방 }}원 |
+| **시나리오 가능성** | {{ 미보정 사전확률 또는 보정 상태 · 기대값 적용 여부 }} |
 
 ### 한 문장 결론
 
@@ -41,7 +42,7 @@
 
 ## 증권사·시장 비교
 
-{{ 내재가치 고정 후 불러온 증권사 목표가와 현재가 비교 }}
+{{ 가치평가 확정 후 참고한 증권사 목표가와 현재가 }}
 
 ## 인공지능 인사이트 — 환경 변화 × 기업 강점
 
@@ -53,7 +54,7 @@
 
 {{ 가치평가 가정·위험·출처 이미지 1장 }}
 
-## 정보 출처 — 원문 직접 검증
+## 정보 출처 — 원문 바로 확인
 
 {{ 모든 핵심 주장과 입력값의 직접 원문 링크 }}
 
@@ -61,34 +62,33 @@
 
 {{ 사실·분석가 가정·인공지능 인사이트의 구분 및 평가 제약 }}
 
----
+<details>
+<summary>작성 근거와 계산 과정 보기</summary>
 
-# 감사 부록 — 검증·추적
+## 분석 절차 요약
 
-- 검증 상태: {{ 검증·고정 완료 | 검증 미완료 | 차단 }}
-- 자동 점검: {{ passed_checks }}/{{ total_checks }} 통과
-- 통제 단계: {{ terminal_stage_count }}/33개 최종 추적 완료
+- 자동 오류 점검: {{ passed_checks }}/{{ total_checks }}개 통과
+- 분석 절차 기록: {{ terminal_stage_count }}/33개 완료
 
-## 대형 게이트 완료 요약
+## 주요 작업 단계
 
 ### {{ 순번 }}. {{ 한국어 게이트명 }} — {{ 상태 }}
 
 - 결과: {{ 한국어 요약 }}
 - 잔여위험: {{ 한국어 위험 요약 }} · 다음 단계: {{ 한국어 단계명 }}
 
-<details>
-<summary>기술 식별자·해시 확인</summary>
+## 세부 계산 기록
 
-### 33단계 진행 상태
+### 분석 절차별 기록
 
 {{ 33개 단계의 한국어 이름과 상태 }}
 
 ### 실행 식별자와 해시
 
 - 실행 식별자: `{{ run_id }}`
-- 검증증명 해시: `{{ attestation_hash }}`
-- 고정 해시: `{{ ledger_snapshot_hash | assumption_set_hash | scenario_set_hash | valuation_hash | audit_hash | freeze_token_hash }}`
+- 작성 확인 해시: `{{ attestation_hash }}`
+- 계산 기준 해시: `{{ ledger_snapshot_hash | assumption_set_hash | scenario_set_hash | valuation_hash | audit_hash | freeze_token_hash }}`
 - 보조 결속정보: `{{ beta_snapshot_hash | wacc_snapshot_hash | capacity_audit_hash | broker_research_snapshot_hash | broker_research_audit_hash | 해당 없음 }}`
-- 실패 점검 기술 식별자: `{{ canonical_stage_sequence | beta_wacc_same_run_chain | capacity_core_consumption_chain | broker_research_primary_verification_chain | freeze_hash_binding | major_gate_reporting_contract | major_gate_delivery | direct_source_links | 없음 }}`
+- 실패 점검 기술 식별자: `{{ canonical_stage_sequence | beta_wacc_same_run_chain | capacity_core_consumption_chain | broker_research_primary_verification_chain | freeze_hash_binding | probability_reporting_and_history_contract | major_gate_reporting_contract | major_gate_delivery | direct_source_links | 없음 }}`
 
 </details>

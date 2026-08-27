@@ -83,6 +83,7 @@ def completed_result() -> ControlledRunResult:
             "| **현재가** | 미확보 |\n"
             "| **기준 내재가치** | 70,000원 |\n"
             "| **가치평가 범위** | 60,000~80,000원 |\n"
+            "| **시나리오 가능성** | 미산출 |\n"
             "\n### 한 문장 결론\n시험 보고서입니다.\n"
             "\n### 투자포인트\n- 시험 가치동인입니다.\n"
             "\n### 판단 변경 조건\n- 시험 조건입니다.\n"
@@ -91,7 +92,7 @@ def completed_result() -> ControlledRunResult:
             "\n## 증권사·시장 비교\n- 비교: 시험 비교입니다.\n"
             "\n## 인공지능 인사이트 — 환경 변화 × 기업 강점\n"
             "- 적용범위: 연결 가설만 제시하며 가치평가 계산에는 관여하지 않습니다.\n"
-            "\n## 정보 출처 — 원문 직접 검증\n"
+            "\n## 정보 출처 — 원문 바로 확인\n"
             f"- 출처: [원문]({SOURCE_URL})\n"
         ),
     }
@@ -117,11 +118,11 @@ def test_completed_controlled_run_is_verified_and_renders_trace():
 
     assert attestation.passed
     assert report.startswith("# 영구 저장된 시험 보고서")
-    assert "**검증 상태:** 검증·고정 완료" in report
-    assert "## 33단계 진행 상태" in report
-    assert "## 대형 게이트 완료 요약" in report
-    assert "고정 후 비교·영구 저장" in report
-    assert "기술 식별자·해시 확인" in report
+    assert "검증 상태" not in report
+    assert "### 33단계 진행 상태" in report
+    assert "## 주요 작업 단계" in report
+    assert "증권사·시장 비교·보고서 저장" in report
+    assert "작성 근거와 계산 과정 보기" in report
     assert "| Gate |" not in report
     assert "CAPACITY-AUDIT" in report
     assert SOURCE_URL in report
@@ -142,8 +143,8 @@ def test_manual_or_partial_result_cannot_be_labelled_verified():
     report = render_controlled_run_report(broken, stage_registry_path=STAGES)
 
     assert not attestation.passed
-    assert "**검증 상태:** 검증 미완료" in report
-    assert "**실패 점검:**" in report
+    assert "검증 상태" not in report
+    assert "> **확인 필요:**" in report
 
 
 def test_report_form_template_contains_required_execution_identities():
@@ -158,10 +159,13 @@ def test_report_form_template_contains_required_execution_identities():
     assert "### 한 문장 결론" in template
     assert "### 투자포인트" in template
     assert "### 판단 변경 조건" in template
-    assert "# 감사 부록 — 검증·추적" in template
+    assert "**시나리오 가능성**" in template
+    assert "probability_reporting_and_history_contract" in template
+    assert "작성 근거와 계산 과정 보기" in template
+    assert "검증 상태" not in template
     assert "major_gate_reporting_contract" in template
     assert "direct_source_links" in template
-    assert "정보 출처 — 원문 직접 검증" in template
+    assert "정보 출처 — 원문 바로 확인" in template
     assert "회사 강점·투자 결론·가치평가" in template
     assert "가치평가 가정·위험·출처" in template
 

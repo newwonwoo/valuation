@@ -35,7 +35,7 @@ Execute in this order; unavailable live modules must be labelled `CONTRACT_ONLY`
 20. `HIERARCHICAL_WARRANTED_PER` when PER is allowed
 21. `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`
 22. `CROSS_METHOD_DOUBLE_COUNT_AUDIT`
-23. `PROBABILITY_DISTRIBUTION_ANALYSIS` when calibrated
+23. `PROBABILITY_DISTRIBUTION_ANALYSIS` when likelihood/forecast inputs are declared or calibrated
 24. `AUDIT_GATE`
 25. `INTRINSIC_VALUE_FREEZE`
 26. `STREET_REFERENCE_LOAD`
@@ -82,6 +82,7 @@ If a blocking issue remains after round three or a blocking audit fails, return 
 - Never double count the same evidence/economic path across operating value, option/SOTP, funding, WACC or PER premium.
 - Never deduct gross CAPEX again when expansion economics already include the same investment through future EBITDA/funding gap/terminal debt.
 - Mark uncalibrated probabilities `UNCALIBRATED`.
+- An uncalibrated analyst prior may be displayed only as a clearly labelled 5% band; never bind it into scenario weights or expected value. Declared binary forecasts from an audit-passed live run must be captured append-only before resolution. Resolve them only with explicit first-seen primary Evidence and a directly verifiable source link; synthetic or post-hoc history is forbidden.
 - Red Team input excludes price, Street target, intrinsic value, market gap, position data and market/Street loader access.
 - Blocked runs are saved but never promoted to current state.
 

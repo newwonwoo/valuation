@@ -34,8 +34,8 @@ _GATE_LABELS = {
     "G1_EVIDENCE_ROUTING": "증거 수집·산업 라우팅",
     "G2_INSIGHT_CHALLENGE": "인사이트 도출·반증 검토",
     "G3_ASSUMPTIONS_METHOD_RISK": "가정·평가방법·위험",
-    "G4_VALUATION_AUDIT_FREEZE": "가치평가·감사·내재가치 고정",
-    "G5_POST_FREEZE_PERSISTENCE": "고정 후 비교·영구 저장",
+    "G4_VALUATION_AUDIT_FREEZE": "가치평가·오류 점검·결과 확정",
+    "G5_POST_FREEZE_PERSISTENCE": "증권사·시장 비교·보고서 저장",
 }
 
 _STATUS_LABELS = {
@@ -52,13 +52,13 @@ _STATUS_LABELS = {
 _STAGE_LABELS = {
     "COMPANY_RESOLUTION": "기업 식별",
     "LOAD_COMPANY_STATE": "기존 분석 상태 불러오기",
-    "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT": "산업 지식 시점 고정",
+    "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT": "산업 지식 기준일 설정",
     "SOURCE_FRESHNESS_PRECHECK": "출처 최신성 사전점검",
     "SEGMENT_DECOMPOSITION": "사업부 분해",
     "INDUSTRY_DNA_ROUTE": "산업 특성 분류",
     "MODULE_REQUIREMENT_PLAN": "필수 분석 모듈 확정",
     "PRIMARY_EVIDENCE_COLLECTION": "1차 근거 수집",
-    "EVIDENCE_LEDGER": "근거 원장 고정",
+    "EVIDENCE_LEDGER": "근거 기록 확정",
     "ROCKET_INSIGHT_SCAN": "환경 변화 인사이트 탐색",
     "UPSTREAM_FUNDING_SCAN": "상류 자금흐름 점검",
     "RESEARCHER_A": "주 분석가 가설 도출",
@@ -75,13 +75,13 @@ _STAGE_LABELS = {
     "CROSS_METHOD_DOUBLE_COUNT_AUDIT": "평가방법 간 이중계상 감사",
     "PROBABILITY_DISTRIBUTION_ANALYSIS": "시나리오 확률 보정 점검",
     "AUDIT_GATE": "최종 감사",
-    "INTRINSIC_VALUE_FREEZE": "내재가치 고정",
+    "INTRINSIC_VALUE_FREEZE": "가치평가 결과 확정",
     "STREET_REFERENCE_LOAD": "증권사 자료 불러오기",
     "STREET_GAP_ANALYZER": "증권사 목표가 비교",
     "MARKET_PRICE_LOAD": "현재 시장가격 불러오기",
     "MARKET_COMPARE": "시장가격 비교",
     "THESIS_DELTA": "투자논지 변화 점검",
-    "SAVE_STATE": "불변 실행 저장",
+    "SAVE_STATE": "분석 결과 저장",
     "FINAL_REPORT": "최종보고서 생성",
 }
 

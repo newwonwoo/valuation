@@ -236,7 +236,9 @@ class CalibrationSnapshot:
     status: CalibrationStatus
 ```
 
-발행 후 probability, deadline, resolution rule을 수정하지 않는다. 새 Evidence가 생기면 superseding forecast version을 만든다. 같은 사건의 여러 revision은 독립 표본으로 세지 않는다.
+발행 후 기존 record의 probability, deadline, resolution rule을 수정하지 않는다. 새 Evidence가 생기면 사건 정의·기한·해소 계약을 그대로 유지한 superseding forecast version으로 확률만 갱신한다. 같은 사건의 여러 revision은 독립 표본으로 세지 않는다.
+
+`LIVE_PRIMARY`의 선언된 binary event는 `PROBABILITY_DISTRIBUTION_ANALYSIS`에서 평가 결과와 분리된 raw forecast draft로 고정되고, 감사 통과 실행의 `SAVE_STATE`에서 append-only 생산 원장에 저장된다. outcome은 명시적 `first_seen_at`, 활성 primary Evidence ID, 직접 검증 가능한 HTTP(S) 원문 링크가 모두 있어야 저장된다. 분석가 주장·시장 비교·합성 또는 사후 구성된 outcome은 생산 이력으로 들어갈 수 없다.
 
 ## 8. Calibration status
 
@@ -297,10 +299,10 @@ Binary hypothesis는 Brier가 주지표다. Bear/Base/Bull은 사전에 결정�
 
 ## 11. Calibration 적용 순서
 
-1. v0.3 run부터 ProbabilityForecast를 append-only로 저장한다.
-2. outcome resolver는 primary evidence만 사용한다.
-3. Hypothesis binary event부터 Brier 계산을 구현한다.
-4. 최소 표본 전에는 `UNCALIBRATED`를 유지한다.
+1. 구현 완료: 선언된 ProbabilityForecast를 감사 통과 `LIVE_PRIMARY` run에서 append-only로 저장한다.
+2. 구현 완료: outcome writer는 primary Evidence와 `first_seen_at`을 강제한다.
+3. 구현 완료: binary event Brier/Brier Skill/log loss/ECE와 promotion gate를 계산한다.
+4. 운영 중: 최소 표본 전에는 `UNCALIBRATED`를 유지하고 실제 해소 이력을 축적한다.
 5. Calibration report를 만들되 valuation probability 자동변환은 하지 않는다.
 6. 충분한 표본 후 forecast class·horizon별 mapping을 versioned config로 제안한다.
 7. mapping 변경은 chronological holdout과 forward period에서 검증 후 적용한다.

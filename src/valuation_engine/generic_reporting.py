@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, is_dataclass
 from decimal import Decimal
 from enum import Enum
+from datetime import date, datetime
 from pathlib import Path
 import re
 import shutil
@@ -22,6 +23,11 @@ from .control_plane import (
 )
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .post_freeze import MarketComparisonBundle, StreetComparisonBundle
+from .probability_forecasting import (
+    ProbabilityForecastDraft,
+    ProbabilityForecastHistoryStore,
+    ScenarioProbabilityAssessment,
+)
 from .report_localization import (
     calibration_label_ko,
     currency_label_ko,
@@ -34,6 +40,7 @@ from .report_localization import (
 from .records import AuditReport, RunManifest, RunStatus, iso_now
 from .research_learning import ResearchLearningStore
 from .state import StateStore, thesis_delta
+from .street import StreetResearchReport
 from .source_reporting import build_source_link_index, render_source_link_section
 from .valuation_execution import (
     GenericValuationResult,
@@ -53,6 +60,8 @@ def _jsonable(value: Any) -> Any:
         return str(value)
     if isinstance(value, Enum):
         return value.value
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
     return value
 
 
@@ -67,6 +76,24 @@ def _fmt_money(value: Decimal | float | int, unit: str) -> str:
     if decimals == 0:
         return f"{number:,.0f}"
     return f"{number:,.{decimals}f}".rstrip("0").rstrip(".")
+
+
+def _probability_percent(value: Decimal | float | int) -> str:
+    return f"{Decimal(str(value)) * 100:.0f}%"
+
+
+def _street_method_label_ko(value: str) -> str:
+    normalized = value.strip().casefold()
+    if normalized == "dcf":
+        return "현금흐름할인법"
+    if normalized == "per":
+        return "주가수익비율법"
+    if normalized == "per-based target framework":
+        return "주가수익비율 기반 목표가"
+    match = re.fullmatch(r"(\d{4})e per ([0-9.]+)x", normalized)
+    if match:
+        return f"예상 주가수익비율 {match.group(2)}배"
+    return value
 
 
 def _current_thesis(data: dict[str, Any]) -> str:
@@ -316,9 +343,16 @@ def render_generic_report(
         else (
             f"{_fmt_money(street_bundle.consensus.mean_target_price, street_bundle.consensus.target_price_currency)}"
             f"{currency_label_ko(street_bundle.consensus.target_price_currency)}"
-            f" ({street_bundle.consensus.report_count}건, 내재가치 고정 후 비교)"
+            f" ({street_bundle.consensus.report_count}건, 가치평가 확정 후 참고)"
         )
     )
+    probability_assessment = data.get("scenario_probability_assessment")
+    probability_summary = "미산출"
+    if isinstance(probability_assessment, ScenarioProbabilityAssessment):
+        probability_summary = " · ".join(
+            f"{scenario_label_ko(item.scenario_id)} {_probability_percent(item.displayed_probability)}"
+            for item in probability_assessment.rows
+        ) + " (미보정·기대값 미적용)"
     lines = [
         f"# {company} 투자보고서",
         "",
@@ -330,6 +364,7 @@ def render_generic_report(
         f"| **현재가** | {current_price} |",
         f"| **기준 내재가치** | {reference_value} |",
         f"| **가치평가 범위** | {value_range} |",
+        f"| **시나리오 가능성** | {probability_summary} |",
         f"| **증권사 참고값** | {street_reference} |",
         "",
         "### 한 문장 결론",
@@ -368,6 +403,29 @@ def render_generic_report(
             f"- **{scenario_label_ko(item.scenario_id)} 시나리오:** {label} 주당 "
             f"{_fmt_money(item.value_per_share, valuation.reporting_unit)}"
             f"{currency_label_ko(valuation.reporting_unit)}"
+        )
+    if isinstance(probability_assessment, ScenarioProbabilityAssessment):
+        lines.extend(
+            (
+                "",
+                "### 시나리오 발생 가능성 — 미보정 분석가 사전확률",
+                "",
+                "| 시나리오 | 상대점수 | 표시 확률 | 판단 근거 |",
+                "| --- | ---: | ---: | --- |",
+            )
+        )
+        for item in probability_assessment.rows:
+            lines.append(
+                f"| {scenario_label_ko(item.scenario_id)} | {_fmt(item.relative_score)} | "
+                f"{_probability_percent(item.displayed_probability)} | {item.rationale} |"
+            )
+        lines.extend(
+            (
+                "",
+                "- **산출식:** 각 시나리오의 명시적 상대점수를 전체 점수로 나눠 정규화하고, 표시는 5% 단위로 반올림했습니다.",
+                "- **사용 제한:** 분석가 사전확률이며 실제 해소 이력으로 보정되지 않았으므로 기대가치·매수판단에는 사용하지 않습니다.",
+                f"- **기준일·기간:** {probability_assessment.as_of_date} · {probability_assessment.horizon}",
+            )
         )
     if valuation.expected_value_per_share is None:
         lines.append(
@@ -416,6 +474,27 @@ def render_generic_report(
         lines.append(
             "- **핵심 제약:** 실제 해결 전망의 누적 이력이 부족해 시나리오 확률과 기대값을 투자판단에 사용할 수 없습니다."
         )
+    forecast_drafts = data.get("probability_forecast_drafts", ())
+    if isinstance(forecast_drafts, tuple) and forecast_drafts and all(
+        isinstance(item, ProbabilityForecastDraft) for item in forecast_drafts
+    ):
+        lines.extend(
+            (
+                "",
+                "### 사전에 기록한 사건 예측 — 보정 이력 적립용",
+                "",
+                "| 사건 | 미보정 확률 | 해소기한 | 해소 기준 |",
+                "| --- | ---: | --- | --- |",
+            )
+        )
+        for item in forecast_drafts:
+            lines.append(
+                f"| {item.event_definition} | {item.displayed_band} | "
+                f"{item.evaluation_deadline.isoformat()} | {item.resolution_rule} |"
+            )
+        lines.append(
+            "- 위 예측은 분석 당시 값과 이후 변경 이력을 함께 저장하며, 사후 공시를 보고 과거 확률을 다시 쓰지 않습니다."
+        )
 
     if partial:
         lines.extend(("", "## 미평가 사업부 — 0원으로 간주하지 않음"))
@@ -453,10 +532,116 @@ def render_generic_report(
             lines.append("- 증권사 평균 목표가는 기준 내재가치와 같습니다.")
         elif reference_gap is not None:
             lines.append(
-                "- 증권사 평균 목표가는 기준 내재가치보다 "
+                "- PRISM 기준 내재가치는 증권사 평균 목표가보다 "
                 f"{abs(reference_gap.gap_pct_of_reference):.1%} "
-                f"{'높습니다' if reference_gap.gap_pct_of_reference < 0 else '낮습니다'}."
+                f"{'낮습니다' if reference_gap.gap_pct_of_reference < 0 else '높습니다'}."
             )
+
+        street_reports = data.get("street_reports", ())
+        if (
+            reference_scenario is not None
+            and isinstance(street_reports, tuple)
+            and street_reports
+            and all(isinstance(item, StreetResearchReport) for item in street_reports)
+        ):
+            reference_amount = Decimal(str(reference_scenario.value_per_share))
+            lines.extend(
+                (
+                    "",
+                    "### 증권사별 목표가와 PRISM의 차이",
+                    "",
+                    "| 증권사 | 목표가 | 적용 기준 | PRISM 기준가 대비 |",
+                    "| --- | ---: | --- | ---: |",
+                )
+            )
+            for report in street_reports:
+                premium = Decimal(str(report.target_price)) / reference_amount - 1
+                lines.append(
+                    f"| {identifier_label_ko(report.broker)} | "
+                    f"{_fmt_money(report.target_price, report.target_price_currency)}"
+                    f"{currency_label_ko(report.target_price_currency)} | "
+                    f"{report.base_year}년 기준 · {_street_method_label_ko(report.valuation_method)} | "
+                    f"{premium:+.1%} |"
+                )
+
+            selected_method_ids = tuple(
+                item
+                for item in data.get("selected_methods", ())
+                if isinstance(item, str)
+            )
+            selected_method_labels = tuple(
+                method_label_ko(item)
+                for item in selected_method_ids
+            )
+            prism_method = ", ".join(selected_method_labels) or "결정론적 내재가치 평가"
+            street_basis = " · ".join(
+                f"{identifier_label_ko(report.broker)}: {report.base_year}년 "
+                f"{_street_method_label_ko(report.valuation_method)}"
+                for report in street_reports
+            )
+            prism_uses_dcf = any("dcf" in item.casefold() for item in selected_method_ids)
+            street_uses_per_only = all(
+                "per" in report.valuation_method.casefold()
+                for report in street_reports
+            )
+            if prism_uses_dcf and street_uses_per_only:
+                method_difference = (
+                    f"PRISM은 {prism_method}으로 현금흐름을 현재가치화하지만, "
+                    "증권사는 미래 이익에 목표 주가수익비율을 적용합니다."
+                )
+            else:
+                method_difference = (
+                    f"PRISM은 {prism_method}을 사용하며, 증권사별 평가방법은 표와 같습니다. "
+                    "현금흐름·이익·할인율·적용 배수의 기준이 다르면 목표가도 달라집니다."
+                )
+            lines.extend(
+                (
+                    "",
+                    "### 왜 차이가 나는가",
+                    "",
+                    f"- **평가방법:** {method_difference}",
+                    f"- **기준시점:** {street_basis}. 평가 기준과 기준연도가 다르므로 목표가를 PRISM 기준가와 동일한 숫자로 볼 수 없습니다.",
+                )
+            )
+            if len(street_reports) >= 2:
+                lowest = min(street_reports, key=lambda item: item.target_price)
+                highest = max(street_reports, key=lambda item: item.target_price)
+                broker_spread = Decimal(str(highest.target_price)) - Decimal(
+                    str(lowest.target_price)
+                )
+                broker_spread_pct = broker_spread / Decimal(str(lowest.target_price))
+                lines.append(
+                    f"- **증권사 간 차이:** {identifier_label_ko(highest.broker)} 목표가는 "
+                    f"{identifier_label_ko(lowest.broker)}보다 "
+                    f"{_fmt_money(broker_spread, highest.target_price_currency)}"
+                    f"{currency_label_ko(highest.target_price_currency)} "
+                    f"({broker_spread_pct:.1%}) 높습니다. 두 보고서의 기준연도와 평가방법이 달라 "
+                    "목표가 차이를 단순 평균으로 해석하면 안 됩니다."
+                )
+            capacity_assessment = data.get("capacity_commitment_assessment")
+            if getattr(
+                capacity_assessment,
+                "core_inclusion_required_projects",
+                (),
+            ):
+                lines.append(
+                    "- **증설 처리:** PRISM은 공시된 자본적지출과 가동 정상화 경로를 현금흐름에 직접 반영하고, 정확한 추가 생산능력이 미공시된 부분은 확정 이익으로 앞당기지 않았습니다."
+                )
+            if any(not report.estimates for report in street_reports):
+                lines.append(
+                    "- **분해 한계:** 현재 확보된 증권사 자료에는 목표가·평가방법·기준연도는 있으나 모든 세부 이익 추정치가 구조화되어 있지 않아, 차이를 이익 전망과 적용 배수로 완전히 분해할 수는 없습니다."
+                )
+            if all(
+                Decimal(str(report.target_price)) > reference_amount
+                for report in street_reports
+            ):
+                lines.append(
+                    "- **해석:** 증권사 목표가를 지지하려면 PRISM보다 낙관적인 미래 이익·현금흐름이 실현되거나 목표 배수가 유지되어야 합니다. 차이 자체가 계산 오류를 뜻하지는 않습니다."
+                )
+            else:
+                lines.append(
+                    "- **해석:** 증권사 목표가는 각 보고서의 현금흐름·이익·할인율·배수 가정을 반영한 참고값입니다. PRISM 결과와의 차이 자체가 계산 오류를 뜻하지는 않습니다."
+                )
     elif data.get("street_comparison_withheld_reason"):
         lines.append("- **증권사 목표가:** 비교를 보류했습니다.")
     else:
@@ -504,9 +689,9 @@ def render_generic_report(
         "",
         "## 분석 범위와 유의사항",
         f"- **평가범위:** {valuation_scope_label_ko(valuation.scope.value)}",
-        f"- **검증:** 결정론적 감사 {len(audit.findings)}개 점검 통과 · 원칙 준수 {len(coverage) - len(non_pass)}/{len(coverage)}개 허용 상태",
+        f"- **계산 확인:** 자동 오류 점검 {len(audit.findings)}개 통과 · 분석 원칙 {len(coverage) - len(non_pass)}/{len(coverage)}개 충족",
         "- 회사 공시 사실, 분석가 가정, 인공지능 연결 인사이트를 구분해 표시했습니다.",
-        "- 증권사 목표가와 현재가는 내재가치 고정 이후 비교용으로만 불러왔으며 같은 실행의 가정을 바꾸지 않았습니다.",
+        "- 증권사 목표가와 현재가는 가치평가를 마친 뒤 참고했으며, 앞서 계산한 가정을 바꾸는 데 사용하지 않았습니다.",
     ))
     for item in non_pass:
         lines.append(
@@ -534,11 +719,17 @@ def save_state_adapter(
     *,
     state_root: str | Path,
     learning_store: ResearchLearningStore | None = None,
+    probability_history_store: ProbabilityForecastHistoryStore | None = None,
 ) -> StageAdapter:
     root = Path(state_root)
     store = StateStore(root)
     if learning_store is not None and learning_store.root.resolve() != root.resolve():
         raise ValueError("state and research-learning stores must share one root")
+    if (
+        probability_history_store is not None
+        and probability_history_store.root.resolve() != root.resolve()
+    ):
+        raise ValueError("state and probability-history stores must share one root")
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
         reserved_output_keys = {
@@ -557,6 +748,15 @@ def save_state_adapter(
                     "research_learning_recorded_at",
                 }
             )
+        if probability_history_store is not None:
+            reserved_output_keys.update(
+                {
+                    "probability_forecast_record_path",
+                    "probability_forecast_record_hash",
+                    "probability_forecast_recorded_at",
+                    "probability_forecast_ids",
+                }
+            )
         collisions = tuple(
             sorted(reserved_output_keys.intersection(context.data))
         )
@@ -571,6 +771,7 @@ def save_state_adapter(
         ticker = context.data.get("ticker")
         company = context.data.get("company")
         learning_ref = None
+        probability_ref = None
         run_dir: Path | None = None
         try:
             valuation = context.data.get("generic_valuation_result")
@@ -621,6 +822,12 @@ def save_state_adapter(
                 "calibration_certificate.json": _jsonable(
                     context.data.get("probability_calibration_certificate")
                 ),
+                "scenario_probability_assessment.json": _jsonable(
+                    context.data.get("scenario_probability_assessment")
+                ),
+                "probability_forecast_drafts.json": _jsonable(
+                    context.data.get("probability_forecast_drafts", ())
+                ),
                 "valuation.json": _jsonable(valuation),
                 "audit.json": _jsonable(audit),
                 "doctrine_coverage.json": _jsonable(context.data.get("doctrine_coverage", ())),
@@ -644,6 +851,18 @@ def save_state_adapter(
                     ticker=ticker,
                     run_id=context.run_id,
                     batch=batch,
+                )
+            forecast_drafts = context.data.get("probability_forecast_drafts", ())
+            if not isinstance(forecast_drafts, tuple) or not all(
+                isinstance(item, ProbabilityForecastDraft)
+                for item in forecast_drafts
+            ):
+                raise ValueError("probability forecast drafts must be typed")
+            if probability_history_store is not None and forecast_drafts:
+                probability_ref = probability_history_store.save_forecast_run(
+                    ticker=ticker,
+                    run_id=context.run_id,
+                    drafts=forecast_drafts,
                 )
             run_dir = store.save_run(manifest, artifacts)
             learning_hash = (
@@ -674,6 +893,14 @@ def save_state_adapter(
                 ),
                 "probability_calibration_snapshot_hash": context.data.get(
                     "probability_calibration_snapshot_hash"
+                ),
+                "scenario_probability_assessment_hash": context.data.get(
+                    "scenario_probability_assessment_hash"
+                ),
+                "probability_forecast_record_hash": (
+                    probability_ref.content_hash
+                    if probability_ref is not None
+                    else None
                 ),
                 "decision_impact_hash": context.data.get("decision_impact_hash"),
                 "research_learning_record_hash": learning_hash,
@@ -714,6 +941,21 @@ def save_state_adapter(
                         _rollback_exact_path(root, learning_ref.path, expected_learning)
                     except Exception as rollback_exc:
                         rollback_errors.append(f"learning rollback: {rollback_exc}")
+                if probability_ref is not None:
+                    try:
+                        expected_probability = (
+                            Path("calibration")
+                            / "forecast-runs"
+                            / ticker
+                            / f"{context.run_id}.json"
+                        )
+                        _rollback_exact_path(
+                            root, probability_ref.path, expected_probability
+                        )
+                    except Exception as rollback_exc:
+                        rollback_errors.append(
+                            f"probability-history rollback: {rollback_exc}"
+                        )
             detail = f"state persistence failed: {type(exc).__name__}: {exc}"
             if rollback_errors:
                 detail += " | " + " | ".join(rollback_errors)
@@ -735,6 +977,15 @@ def save_state_adapter(
                 "research_learning_record_hash": learning_ref.content_hash,
                 "research_learning_recorded_at": learning_ref.recorded_at,
             })
+        if probability_ref is not None:
+            outputs.update(
+                {
+                    "probability_forecast_record_path": probability_ref.path,
+                    "probability_forecast_record_hash": probability_ref.content_hash,
+                    "probability_forecast_recorded_at": probability_ref.recorded_at,
+                    "probability_forecast_ids": probability_ref.forecast_ids,
+                }
+            )
         return StageExecutionResult(
             StageStatus.PASS,
             "불변 실행 산출물·한국어 보고서·요약 이미지 2장을 저장하고 감사 통과 상태로 승격했습니다",

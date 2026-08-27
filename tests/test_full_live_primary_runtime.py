@@ -482,7 +482,7 @@ def test_frozen_provider_live_primary_run_reaches_final_report(tmp_path):
     ]
     assert "상태: 해당 없음" in result.data["final_report"]
     assert "**확률가중 기대값:** 미산출" in result.data["final_report"]
-    assert "## 정보 출처 — 원문 직접 검증" in result.data["final_report"]
+    assert "## 정보 출처 — 원문 바로 확인" in result.data["final_report"]
     assert "## 최종 요약 이미지" in result.data["final_report"]
     assert FIXTURE_SOURCE_URL in result.data["final_report"]
 

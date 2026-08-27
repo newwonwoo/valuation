@@ -7,6 +7,13 @@ from .llm_staff import RedTeamProposal
 from .module_plan import ModuleRequirementPlan
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .per import EconomicAssumptionFingerprint, validate_dcf_per_assumption_consistency
+from .ledger import EvidenceLedger
+from .probability_forecasting import (
+    ProbabilityForecastDeclaration,
+    ScenarioLikelihoodSpec,
+    build_probability_forecast_drafts,
+    calculate_scenario_probability_assessment,
+)
 from .records import HypothesisRecord
 from .scenario_binding import BoundScenarioSet
 from .valuation_method_intent import ValuationMethodIntent
@@ -528,16 +535,97 @@ def probability_distribution_adapter() -> StageAdapter:
                 "scenario set missing before probability analysis",
                 blocking=True,
             )
+        ledger = context.data.get("evidence_ledger")
+        hypotheses = context.data.get("hypotheses")
+        likelihood_spec = context.data.get("scenario_likelihood_spec")
+        declarations = context.data.get("probability_forecast_declarations", ())
+        if not isinstance(ledger, EvidenceLedger):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "EvidenceLedger missing before probability analysis",
+                blocking=True,
+            )
+        if not isinstance(hypotheses, tuple) or not all(
+            isinstance(item, HypothesisRecord) for item in hypotheses
+        ):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "Hypothesis records missing before probability analysis",
+                blocking=True,
+            )
+        if likelihood_spec is not None and not isinstance(
+            likelihood_spec, ScenarioLikelihoodSpec
+        ):
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "scenario_likelihood_spec must be typed",
+                blocking=True,
+            )
+        if not isinstance(declarations, tuple) or not all(
+            isinstance(item, ProbabilityForecastDeclaration)
+            for item in declarations
+        ):
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "probability_forecast_declarations must be typed",
+                blocking=True,
+            )
+
+        outputs: dict[str, object] = {}
+        try:
+            if likelihood_spec is not None:
+                assessment = calculate_scenario_probability_assessment(
+                    likelihood_spec,
+                    scenario_ids=tuple(
+                        item.scenario_id for item in scenarios.scenarios
+                    ),
+                    ledger=ledger,
+                )
+                outputs["scenario_probability_assessment"] = assessment
+                outputs["scenario_probability_assessment_hash"] = (
+                    assessment.assessment_hash
+                )
+            drafts = build_probability_forecast_drafts(
+                declarations,
+                hypotheses=hypotheses,
+                company_id=str(context.data.get("target_id") or ""),
+                evidence_snapshot_hash=str(
+                    context.data.get("ledger_snapshot_hash") or ""
+                ),
+                ledger=ledger,
+            )
+            if drafts:
+                outputs["probability_forecast_drafts"] = drafts
+                outputs["probability_forecast_count"] = len(drafts)
+        except (KeyError, TypeError, ValueError) as exc:
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                f"probability forecast preparation failed: {type(exc).__name__}: {exc}",
+                blocking=True,
+            )
+
         if not scenarios.numeric_weighting_allowed:
+            outputs["probability_distribution_status"] = (
+                "UNCALIBRATED_PRIOR_CAPTURED"
+                if "scenario_probability_assessment" in outputs or drafts
+                else "DESCRIPTIVE_ONLY"
+            )
             return StageExecutionResult(
                 StageStatus.WARNING,
-                "scenario probabilities are not calibration-authorized; numeric expected value remains disabled",
-                {"probability_distribution_status": "DESCRIPTIVE_ONLY"},
+                (
+                    "uncalibrated scenario likelihood and pre-resolution event forecasts "
+                    "are preserved, but numeric expected value remains disabled"
+                    if outputs["probability_distribution_status"]
+                    == "UNCALIBRATED_PRIOR_CAPTURED"
+                    else "scenario probabilities are not calibration-authorized; numeric expected value remains disabled"
+                ),
+                outputs,
             )
+        outputs["probability_distribution_status"] = "CALIBRATED"
         return StageExecutionResult(
             StageStatus.PASS,
             "calibrated probability weighting is authorized by the bound scenario set",
-            {"probability_distribution_status": "CALIBRATED"},
+            outputs,
         )
 
     return run

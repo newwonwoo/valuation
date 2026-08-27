@@ -48,10 +48,10 @@ reporting_contract:
       title: 가정·평가방법·위험
       terminal_stage: WACC_VALIDATION
     - gate_id: G4_VALUATION_AUDIT_FREEZE
-      title: 가치평가·감사·내재가치 고정
+      title: 가치평가·오류 점검·결과 확정
       terminal_stage: INTRINSIC_VALUE_FREEZE
     - gate_id: G5_POST_FREEZE_PERSISTENCE
-      title: 고정 후 비교·영구 저장
+      title: 증권사·시장 비교·보고서 저장
       terminal_stage: FINAL_REPORT
   summary_fields:
     - status
@@ -76,6 +76,11 @@ reporting_contract:
     separate_section_required: true
     max_chars: 1000
     deterministic_outputs_separated: true
+  probability_reporting_policy:
+    uncalibrated_prior_display_allowed: true
+    uncalibrated_prior_weighting_forbidden: true
+    declared_forecast_history_capture_required: true
+    append_only_history_required: true
   reader_experience_policy:
     visible_language: ko
     primary_section_order:
@@ -83,7 +88,7 @@ reporting_contract:
       - 가치평가
       - 핵심 가정과 위험
       - 증권사·시장 비교
-      - 정보 출처 — 원문 직접 검증
+      - 정보 출처 — 원문 바로 확인
     decision_report_precedes_audit_appendix: true
     technical_identifiers_collapsed: true
     brokerage_style_basis:
@@ -97,6 +102,7 @@ reporting_contract:
         - 현재가
         - 기준 내재가치
         - 가치평가 범위
+        - 시나리오 가능성
       first_screen_required_blocks:
         - 한 문장 결론
         - 투자포인트

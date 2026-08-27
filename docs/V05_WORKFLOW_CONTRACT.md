@@ -28,7 +28,7 @@ Status: canonical runtime contract, merged into repository `SKILL.md` as v0.5.2.
 21 HIERARCHICAL_WARRANTED_PER when allowed
 22 DCF_PER_ASSUMPTION_CONSISTENCY_GATE
 23 CROSS_METHOD_DOUBLE_COUNT_AUDIT
-24 PROBABILITY_DISTRIBUTION_ANALYSIS when calibrated
+24 PROBABILITY_DISTRIBUTION_ANALYSIS when likelihood or forecast inputs are declared, or calibrated
 25 AUDIT_GATE
 26 INTRINSIC_VALUE_FREEZE
 27 STREET_REFERENCE_LOAD
@@ -54,7 +54,9 @@ The orchestrator emits a four-field summary when a gate reaches its terminal sta
 
 The final result report has an editorial target of 3–4 pages for the decision-facing body and 1–2 pages for the compact audit appendix, capped at 6 pages combined. Body text is at least 13pt, primary headings at least 22pt and section headings at least 18pt; dense wide tables are forbidden. The appendix preserves all 33 stage identities/statuses, while exact rationales/output keys remain in the immutable trace artifact. Page limits do not authorize omission of material blockers, uncertainty labels, source lineage, frozen identities or audit evidence.
 
-The reader-facing order is Korean brokerage-research style: 투자 요약 → 가치평가 → 핵심 가정과 위험 → 증권사·시장 비교 → 원문 출처, followed by the audit appendix. `투자 요약` is the primary investment report rather than a preface and must independently expose the decision, current price, reference intrinsic value, valuation range, one-sentence conclusion, investment points and decision-change conditions. Stage names and statuses are Korean in the visible appendix. Raw technical IDs, enums and hashes are collapsed or retained in immutable machine artifacts so the user sees the investment case before execution diagnostics.
+The reader-facing order is Korean brokerage-research style: 투자 요약 → 가치평가 → 핵심 가정과 위험 → 증권사·시장 비교 → 원문 출처, followed by the audit appendix. `투자 요약` is the primary investment report rather than a preface and must independently expose the decision, current price, reference intrinsic value, valuation range, scenario likelihood status, one-sentence conclusion, investment points and decision-change conditions. Stage names and statuses are Korean in the visible appendix. Raw technical IDs, enums and hashes are collapsed or retained in immutable machine artifacts so the user sees the investment case before execution diagnostics.
+
+Uncalibrated scenario likelihood may be shown only as an explicitly labelled analyst prior. Deterministic code normalizes declared relative scores and rounds the displayed distribution to 5% bands, but it leaves bound scenario probabilities and expected intrinsic value empty. Declared binary events are captured before resolution and saved after a successful audit as immutable production forecast revisions. Only primary-source outcomes with explicit first-seen time and direct source links may enter calibration history.
 
 The user-facing report and all five major-gate summaries are Korean by default. LLM-authored environment-change/company-strength reasoning is isolated in one `인공지능 인사이트` section capped at 1,000 characters; it must not be presented as a deterministic assumption, calculation, Audit finding or Freeze authorization. The full typed insight remains in the immutable `context_strength_linkages.json` artifact.
 

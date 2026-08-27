@@ -185,6 +185,32 @@ def attest_controlled_run(
             for block in reporting_contract.first_screen_required_blocks
         )
     )
+    probability_assessment = data.get("scenario_probability_assessment")
+    probability_drafts = data.get("probability_forecast_drafts", ())
+    valuation = data.get("generic_valuation_result")
+    bound_scenarios = getattr(data.get("bound_scenario_set"), "scenarios", ())
+    uncalibrated_prior_contract = probability_assessment is None or (
+        getattr(getattr(probability_assessment, "status", None), "value", None)
+        == "UNCALIBRATED"
+        and not bool(
+            getattr(probability_assessment, "numeric_weighting_allowed", True)
+        )
+        and getattr(valuation, "expected_value_per_share", None) is None
+        and all(getattr(item, "probability", None) is None for item in bound_scenarios)
+        and isinstance(persisted_report, str)
+        and "**시나리오 가능성**" in persisted_report
+        and "시나리오 발생 가능성 — 미보정 분석가 사전확률" in persisted_report
+        and bool(data.get("scenario_probability_assessment_hash"))
+    )
+    declared_history_contract = not probability_drafts or (
+        isinstance(probability_drafts, tuple)
+        and bool(data.get("probability_forecast_record_path"))
+        and bool(data.get("probability_forecast_record_hash"))
+        and isinstance(data.get("probability_forecast_ids"), tuple)
+        and len(data["probability_forecast_ids"]) == len(probability_drafts)
+        and isinstance(persisted_report, str)
+        and "사전에 기록한 사건 예측 — 보정 이력 적립용" in persisted_report
+    )
 
     checks: list[ExecutionCheck] = [
         _check(
@@ -218,8 +244,8 @@ def attest_controlled_run(
         _check(
             "intrinsic_freeze_token",
             result.freeze_token is not None,
-            "동일 실행에서 내재가치 고정 토큰을 발급했습니다",
-            "내재가치 고정 토큰이 발급되지 않았습니다",
+            "가치평가 결과가 이후 참고자료와 분리된 상태로 확정되었습니다",
+            "가치평가 결과 확정 기록이 누락되었습니다",
         ),
         _check(
             "evidence_ledger_hash",
@@ -296,6 +322,12 @@ def attest_controlled_run(
             "첫 화면의 투자 요약만으로 판단·현재가·내재가치·핵심 동인·판단 변경 조건을 확인할 수 있습니다",
             "투자 요약이 독립적인 투자보고서 역할을 하지 못하거나 필수 판단 항목이 누락되었습니다",
         ),
+        _check(
+            "probability_reporting_and_history_contract",
+            uncalibrated_prior_contract and declared_history_contract,
+            "미보정 사전확률은 기대값과 분리했고 선언된 사건 예측의 변경 이력을 보존했습니다",
+            "미보정 확률이 기대값에 섞였거나 선언된 사건 예측의 생산 이력 저장이 누락되었습니다",
+        ),
     ]
 
     selected_methods = data.get("selected_methods", ())
@@ -348,7 +380,7 @@ def attest_controlled_run(
             _check(
                 "broker_research_primary_verification_chain",
                 broker_runtime_ok,
-                "고정 전 증권사 자료가 분리되고 1차 출처 검증 및 감사에 결속되었습니다",
+                "사전 증권사 조사자료가 가치평가 입력과 분리되고 원문 확인 기록에 연결되었습니다",
                 "증권사 자료 탐색·1차 출처 검증 또는 감사 결속이 누락되었습니다",
             )
         )
@@ -463,6 +495,10 @@ def attest_controlled_run(
             "llm_insight_separate_section_required": reporting_contract.llm_insight_separate_section_required,
             "llm_insight_max_chars": reporting_contract.llm_insight_max_chars,
             "deterministic_outputs_separated_from_llm": reporting_contract.deterministic_outputs_separated_from_llm,
+            "uncalibrated_prior_display_allowed": reporting_contract.uncalibrated_prior_display_allowed,
+            "uncalibrated_prior_weighting_forbidden": reporting_contract.uncalibrated_prior_weighting_forbidden,
+            "declared_forecast_history_capture_required": reporting_contract.declared_forecast_history_capture_required,
+            "append_only_probability_history_required": reporting_contract.append_only_probability_history_required,
             "visible_language": reporting_contract.visible_language,
             "primary_section_order": reporting_contract.primary_section_order,
             "decision_report_precedes_audit_appendix": reporting_contract.decision_report_precedes_audit_appendix,
@@ -507,11 +543,6 @@ def render_controlled_run_report(
         result,
         stage_registry_path=stage_registry_path,
     )
-    status = (
-        "차단"
-        if result.blocked_reasons
-        else ("검증·고정 완료" if attestation.passed else "검증 미완료")
-    )
     data = result.data
     reporting_contract = load_reporting_contract(stage_registry_path)
     broker_configured = bool(data.get("broker_research_required", False)) or (
@@ -529,18 +560,13 @@ def render_controlled_run_report(
             "",
             "최종 투자보고서가 저장되지 않았습니다.",
         ))
-    lines.extend((
-        "",
-        "---",
-        "",
-        "# 감사 부록 — 검증·추적",
-        "",
-        f"- **검증 상태:** {status}",
-        f"- **자동 점검:** {passed_checks}/{len(attestation.checks)} 통과",
-        f"- **통제 단계:** {len(result.stage_traces)}/33개 최종 추적 완료",
-    ))
-    for item in failed_checks:
-        lines.append(f"- **실패 점검:** {item.detail}")
+    if result.blocked_reasons or failed_checks:
+        lines.extend((
+            "",
+            "> **확인 필요:** 보고서 작성 과정에서 추가 확인이 필요한 항목이 있습니다.",
+        ))
+        for item in failed_checks:
+            lines.append(f"> - {item.detail}")
     auxiliary = tuple(
         (label, data.get(key))
         for label, key in (
@@ -552,11 +578,11 @@ def render_controlled_run_report(
             ("생산능력 가치평가", "capacity_valuation_binding_hash"),
             ("생산능력 주가수익비율", "capacity_per_binding_hash"),
             ("생산능력 정합성", "capacity_consistency_hash"),
-            ("생산능력 감사", "capacity_audit_hash"),
+            ("생산능력 오류 점검", "capacity_audit_hash"),
             *(
                 (
-                    ("내재가치 고정 전 증권사 자료", "broker_research_snapshot_hash"),
-                    ("증권사 자료 감사", "broker_research_audit_hash"),
+                    ("사전 증권사 조사자료", "broker_research_snapshot_hash"),
+                    ("증권사 자료 확인", "broker_research_audit_hash"),
                 )
                 if broker_configured
                 else ()
@@ -564,7 +590,20 @@ def render_controlled_run_report(
         )
         if data.get(key) is not None
     )
-    lines.extend(("", "## 대형 게이트 완료 요약"))
+    lines.extend((
+        "",
+        "---",
+        "",
+        "<details>",
+        "<summary>작성 근거와 계산 과정 보기</summary>",
+        "",
+        "## 분석 절차 요약",
+        "",
+        f"- 자동 오류 점검: {passed_checks}/{len(attestation.checks)}개 통과",
+        f"- 분석 절차 기록: {len(result.stage_traces)}/33개 완료",
+        "",
+        "## 주요 작업 단계",
+    ))
     for summary in result.major_gate_summaries:
         lines.extend(
             (
@@ -595,7 +634,7 @@ def render_controlled_run_report(
         )
         technical_stage_lines.append(f"- **{gate.title}:** {compact or '미실행'}")
     technical_stage_lines.append(
-        "- 단계별 정확한 사유와 출력값 식별자는 불변 추적 파일에 보존됩니다."
+        "- 단계별 사유와 출력값 식별자는 별도 분석 기록에 보존됩니다."
     )
 
     impact = data.get("module_impact_summary")
@@ -611,8 +650,7 @@ def render_controlled_run_report(
 
     lines.extend((
         "",
-        "<details>",
-        "<summary>기술 식별자·해시 확인</summary>",
+        "## 세부 계산 기록",
         *technical_stage_lines,
         *technical_module_lines,
         "",
@@ -620,13 +658,13 @@ def render_controlled_run_report(
         "",
         f"- 실행 식별자: `{result.run_id}`",
         f"- 실행 모드: `{result.execution_mode.value}`",
-        f"- 검증증명 해시: `{attestation.attestation_hash}`",
+        f"- 작성 확인 해시: `{attestation.attestation_hash}`",
         f"- 증거 해시: `{data.get('ledger_snapshot_hash') or '누락'}`",
         f"- 가정 해시: `{data.get('assumption_set_hash') or '누락'}`",
         f"- 시나리오 해시: `{data.get('scenario_set_hash') or '누락'}`",
         f"- 가치평가 해시: `{data.get('valuation_hash') or '누락'}`",
-        f"- 감사 해시: `{data.get('audit_hash') or '누락'}`",
-        f"- 내재가치 고정 해시: `{getattr(result.freeze_token, 'token_hash', None) or '누락'}`",
+        f"- 오류 점검 해시: `{data.get('audit_hash') or '누락'}`",
+        f"- 가치평가 확정 해시: `{getattr(result.freeze_token, 'token_hash', None) or '누락'}`",
     ))
     if auxiliary:
         lines.append(
@@ -656,6 +694,7 @@ def render_report_form_template() -> str:
 | **현재가** | {{ 현재가와 기준일 }} |
 | **기준 내재가치** | {{ 기준 내재가치와 현재가 대비 차이 }} |
 | **가치평가 범위** | {{ 하방 }}원–{{ 상방 }}원 |
+| **시나리오 가능성** | {{ 미보정 사전확률 또는 보정 상태 · 기대값 적용 여부 }} |
 
 ### 한 문장 결론
 
@@ -689,7 +728,7 @@ def render_report_form_template() -> str:
 
 ## 증권사·시장 비교
 
-{{ 내재가치 고정 후 불러온 증권사 목표가와 현재가 비교 }}
+{{ 가치평가 확정 후 참고한 증권사 목표가와 현재가 }}
 
 ## 인공지능 인사이트 — 환경 변화 × 기업 강점
 
@@ -701,7 +740,7 @@ def render_report_form_template() -> str:
 
 {{ 가치평가 가정·위험·출처 이미지 1장 }}
 
-## 정보 출처 — 원문 직접 검증
+## 정보 출처 — 원문 바로 확인
 
 {{ 모든 핵심 주장과 입력값의 직접 원문 링크 }}
 
@@ -709,35 +748,34 @@ def render_report_form_template() -> str:
 
 {{ 사실·분석가 가정·인공지능 인사이트의 구분 및 평가 제약 }}
 
----
+<details>
+<summary>작성 근거와 계산 과정 보기</summary>
 
-# 감사 부록 — 검증·추적
+## 분석 절차 요약
 
-- 검증 상태: {{ 검증·고정 완료 | 검증 미완료 | 차단 }}
-- 자동 점검: {{ passed_checks }}/{{ total_checks }} 통과
-- 통제 단계: {{ terminal_stage_count }}/33개 최종 추적 완료
+- 자동 오류 점검: {{ passed_checks }}/{{ total_checks }}개 통과
+- 분석 절차 기록: {{ terminal_stage_count }}/33개 완료
 
-## 대형 게이트 완료 요약
+## 주요 작업 단계
 
 ### {{ 순번 }}. {{ 한국어 게이트명 }} — {{ 상태 }}
 
 - 결과: {{ 한국어 요약 }}
 - 잔여위험: {{ 한국어 위험 요약 }} · 다음 단계: {{ 한국어 단계명 }}
 
-<details>
-<summary>기술 식별자·해시 확인</summary>
+## 세부 계산 기록
 
-### 33단계 진행 상태
+### 분석 절차별 기록
 
 {{ 33개 단계의 한국어 이름과 상태 }}
 
 ### 실행 식별자와 해시
 
 - 실행 식별자: `{{ run_id }}`
-- 검증증명 해시: `{{ attestation_hash }}`
-- 고정 해시: `{{ ledger_snapshot_hash | assumption_set_hash | scenario_set_hash | valuation_hash | audit_hash | freeze_token_hash }}`
+- 작성 확인 해시: `{{ attestation_hash }}`
+- 계산 기준 해시: `{{ ledger_snapshot_hash | assumption_set_hash | scenario_set_hash | valuation_hash | audit_hash | freeze_token_hash }}`
 - 보조 결속정보: `{{ beta_snapshot_hash | wacc_snapshot_hash | capacity_audit_hash | broker_research_snapshot_hash | broker_research_audit_hash | 해당 없음 }}`
-- 실패 점검 기술 식별자: `{{ canonical_stage_sequence | beta_wacc_same_run_chain | capacity_core_consumption_chain | broker_research_primary_verification_chain | freeze_hash_binding | major_gate_reporting_contract | major_gate_delivery | direct_source_links | 없음 }}`
+- 실패 점검 기술 식별자: `{{ canonical_stage_sequence | beta_wacc_same_run_chain | capacity_core_consumption_chain | broker_research_primary_verification_chain | freeze_hash_binding | probability_reporting_and_history_contract | major_gate_reporting_contract | major_gate_delivery | direct_source_links | 없음 }}`
 
 </details>
 """

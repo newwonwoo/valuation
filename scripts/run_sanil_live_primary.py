@@ -41,7 +41,13 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
     }
     beta = result.data["live_beta_result"]
     wacc = result.data["live_wacc_result"]
-    assessment = result.data["capacity_commitment_assessment"]
+    capacity_assessment = result.data["capacity_commitment_assessment"]
+    probability_assessment = result.data["scenario_probability_assessment"]
+    probability_labels = {"Down": "하방", "Core": "기준", "Bull": "상방"}
+    probability_summary = " · ".join(
+        f"{probability_labels[item.scenario_id]} {item.displayed_probability * 100:.0f}%"
+        for item in probability_assessment.rows
+    )
     market_snapshot = load_sanil_market_snapshot()
     market = result.data.get("market_comparison")
     street = result.data.get("street_comparison")
@@ -56,7 +62,7 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
         else None
     )
     street_reference = (
-        f"{float(street_target):,.0f}원 ({street.consensus.report_count}건, 내재가치 고정 후 비교)"
+        f"{float(street_target):,.0f}원 ({street.consensus.report_count}건, 가치평가 확정 후 참고)"
         if street_target is not None and street is not None
         else "미확보"
     )
@@ -77,7 +83,7 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
     )
     project_names = ", ".join(
         identifier_label_ko(item)
-        for item in assessment.core_inclusion_required_projects
+        for item in capacity_assessment.core_inclusion_required_projects
     )
     market_gaps = {
         item.scenario_id: item.gap_pct_of_reference
@@ -97,8 +103,9 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
 | **현재가** | {float(current_price):,.0f}원 ({snapshot.cutoff}) |
 | **기준 내재가치** | {values['Core']:,.0f}원 · 현재가 대비 {core_gap:+.1%} |
 | **가치평가 범위** | 하방 {values['Down']:,.0f}원 · 기준 {values['Core']:,.0f}원 · 상방 {values['Bull']:,.0f}원 |
+| **시나리오 가능성** | {probability_summary} · 미보정 분석가 사전확률, 기대값 미적용 |
 | **증권사 참고값** | {street_reference} |
-| **보고서 성격** | 출처 검증 기반 예비 투자분석 |
+| **보고서 성격** | 공시·원문 기반 예비 투자분석 |
 
 ### 한 문장 결론
 
@@ -108,7 +115,7 @@ def render_report(state_root: Path) -> tuple[str, tuple]:
 
 - **가치동인:** {project_names}을 각각 생산능력·자본적지출·가동 정상화 경로로 반영했습니다.
 - **가치평가:** 현금흐름할인법 기준 하방–상방 범위는 {values['Down']:,.0f}–{values['Bull']:,.0f}원이며, 계층형 베타 {beta.target_levered_beta:.3f} · 가중평균자본비용 {wacc.wacc_result.wacc:.3%}를 적용했습니다.
-- **남은 제약:** 기업잉여현금흐름은 공시에서 파생한 PRISM 분석가 추정이며, 실제 해결 이력 기반 확률 보정이 없어 기대값은 산출하지 않았습니다.
+- **남은 제약:** 상대점수 정규화로 {probability_summary}를 산출했지만 실제 해결 이력으로 보정되지 않아 기대값에는 적용하지 않았습니다.
 
 ### 판단 변경 조건
 

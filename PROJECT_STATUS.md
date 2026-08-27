@@ -28,7 +28,7 @@ flowchart TB
   PM --> EVIDENCE["Evidence & Industry Intelligence<br/>Design 100% (13/13)<br/>Now: MAINTENANCE — context-strength linkage and the Sanil source-backed run are accepted; design complete"]
   PM --> RUNTIME["Runtime Safety & Control Plane<br/>Design 100% (10/10)<br/>Now: MAINTENANCE — accepted design complete"]
   PM --> VALUATION["Deterministic Valuation Engines<br/>Design 100% (8/8)<br/>Now: MAINTENANCE — accepted design complete"]
-  PM --> CALIBRATION["Risk, PER & Probability Calibration<br/>Design 90% (9/10)<br/>Now: BLOCKED CAL-PRODUCTION-COHORT-003 — Requires sufficient real resolved historical forecasts across production cohorts"]
+  PM --> CALIBRATION["Risk, PER & Probability Calibration<br/>Design 90% (9/10)<br/>Now: BLOCKED CAL-PRODUCTION-COHORT-003 — Production capture is wired; requires sufficient real resolved historical forecasts across declared cohorts"]
   PM --> POST_FREEZE["Post-Freeze Market & State<br/>Design 100% (6/6)<br/>Now: MAINTENANCE — accepted design complete"]
   PM --> PLATFORM["Platform, Packaging & Performance<br/>Design 100% (9/9)<br/>Now: MAINTENANCE — accepted design complete"]
   PM --> QA_RELEASE["Quality, Security & Release<br/>Design 100% (8/8)<br/>Now: MAINTENANCE — all required real-company LIVE_PRIMARY acceptance fixtures are accepted"]
@@ -42,7 +42,7 @@ flowchart TB
 | Evidence & Industry Intelligence (`evidence-industry-agent`) | **100% (13/13)** | MAINTENANCE — context-strength linkage and the Sanil source-backed run are accepted; design complete |
 | Runtime Safety & Control Plane (`runtime-safety-agent`) | **100% (10/10)** | MAINTENANCE — accepted design complete |
 | Deterministic Valuation Engines (`valuation-engine-agent`) | **100% (8/8)** | MAINTENANCE — accepted design complete |
-| Risk, PER & Probability Calibration (`calibration-risk-agent`) | **90% (9/10)** | BLOCKED CAL-PRODUCTION-COHORT-003 — Requires sufficient real resolved historical forecasts across production cohorts |
+| Risk, PER & Probability Calibration (`calibration-risk-agent`) | **90% (9/10)** | BLOCKED CAL-PRODUCTION-COHORT-003 — Production capture is wired; requires sufficient real resolved historical forecasts across declared cohorts |
 | Post-Freeze Market & State (`post-freeze-agent`) | **100% (6/6)** | MAINTENANCE — accepted design complete |
 | Platform, Packaging & Performance (`performance-platform-agent`) | **100% (9/9)** | MAINTENANCE — accepted design complete |
 | Quality, Security & Release (`qa-release-agent`) | **100% (8/8)** | MAINTENANCE — all required real-company LIVE_PRIMARY acceptance fixtures are accepted |
@@ -51,7 +51,7 @@ flowchart TB
 
 | Priority | Status | Work item | Owner | Current step | Dependencies |
 |---|---|---|---|---|---|
-| P1 | **BLOCKED** | `CAL-PRODUCTION-COHORT-003` — Populate production probability calibration cohorts with real resolved history | `calibration-risk-agent` | Accumulate real append-only resolved forecasts until declared cohort thresholds can be evaluated; synthetic or post-hoc history is forbidden. | — |
+| P1 | **BLOCKED** | `CAL-PRODUCTION-COHORT-003` — Populate production probability calibration cohorts with real resolved history | `calibration-risk-agent` | Run declared pre-resolution forecasts through the append-only production writer, resolve only with first-seen primary-source Evidence, and accumulate enough real outcomes for declared cohort thresholds; synthetic or post-hoc history remains forbidden. | — |
 
 ## Objective readiness (derived, not manually scored)
 

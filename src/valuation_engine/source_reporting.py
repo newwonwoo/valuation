@@ -102,7 +102,7 @@ def build_source_link_index(
             add(
                 source_ref,
                 label="증권사 자료 탐색",
-                coverage="내재가치 고정 전 사실 탐색·교차검증 전용",
+                coverage="가치평가 입력과 분리한 사실 탐색·교차확인 자료",
             )
 
     street_reports = data.get("street_reports", ())
@@ -146,7 +146,7 @@ def build_source_link_index(
 
 
 def render_source_link_section(links: tuple[SourceLink, ...]) -> tuple[str, ...]:
-    lines = ["## 정보 출처 — 원문 직접 검증"]
+    lines = ["## 정보 출처 — 원문 바로 확인"]
     if not links:
         lines.append(
             "- 검증 가능한 HTTP(S) 원문 링크가 없습니다. 이 실행은 독립 검증용으로 사용할 수 없습니다."
@@ -195,7 +195,7 @@ def render_source_link_section(links: tuple[SourceLink, ...]) -> tuple[str, ...]
             f"[원문 바로 열기]({item.url})"
         )
     lines.append(
-        "- 전체 근거 식별자·지표·기준일 매핑은 동일 실행의 불변 근거 원장에 보존됩니다."
+        "- 전체 근거 식별자·지표·기준일 연결 내역은 별도 분석 기록에 보관됩니다."
     )
     return tuple(lines)
 

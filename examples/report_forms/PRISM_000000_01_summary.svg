@@ -21,13 +21,13 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="94" y="733" font-size="22" font-weight="700" fill="#607582" text-anchor="start">기준 (Base)</text>
 <text x="94" y="793" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">70,000원</text>
 <rect x="70" y="885" width="1060" height="170" rx="24" fill="#DDEAE7"/>
-<text x="105" y="937" font-size="24" font-weight="800" fill="#167C72" text-anchor="start">현재가 비교</text>
+<text x="105" y="937" font-size="24" font-weight="800" fill="#167C72" text-anchor="start">현재가</text>
 <text x="105" y="997" font-size="38" font-weight="800" fill="#102D3E" text-anchor="start">65,000원</text>
 <text x="1095" y="997" font-size="21" font-weight="400" fill="#607582" text-anchor="end">기준일 2026-08-23</text>
 <text x="70" y="1105" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">매수 검토 기준</text>
 <rect x="70" y="1133" width="1060" height="145" rx="22" fill="#FFF4DE"/>
-<text x="105" y="1183" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">실제 해결 이력 기반 확률 보정이 완료되지 않았습니다. 따라서 특정 매수가는 만들지 않고 현재가와</text>
-<text x="105" y="1221" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">하방·기준·상방 가치만 비교합니다.</text>
+<text x="105" y="1183" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">실제 해결 이력 기반 확률 보정이 완료되지 않았습니다. 따라서 특정 매수가는 만들지 않고 현재가는</text>
+<text x="105" y="1221" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">참고값으로만 표시합니다.</text>
 <rect x="0" y="1370" width="1200" height="130" rx="0" fill="#102D3E"/>
 <text x="70" y="1415" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
 <text x="140" y="1415" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">모든 수치의 원문 주소는 보고서 본문 ‘정보 출처’에서 직접 검증할 수 있습니다.</text>

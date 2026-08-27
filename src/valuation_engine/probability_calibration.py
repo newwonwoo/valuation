@@ -167,6 +167,19 @@ class ProbabilityCalibrationLedger:
                 raise ValueError(
                     "superseding forecast must preserve event key, forecast class and horizon"
                 )
+            if (
+                prior.hypothesis_id != forecast.hypothesis_id
+                or prior.company_id != forecast.company_id
+                or prior.event_definition != forecast.event_definition
+                or prior.evaluation_deadline != forecast.evaluation_deadline
+                or prior.resolution_rule != forecast.resolution_rule
+                or prior.resolution_source_policy
+                != forecast.resolution_source_policy
+            ):
+                raise ValueError(
+                    "superseding forecast must preserve hypothesis, company, event definition, "
+                    "deadline and resolution contract"
+                )
             if forecast.issued_at <= prior.issued_at:
                 raise ValueError(
                     "superseding forecast must be issued after the prior forecast"

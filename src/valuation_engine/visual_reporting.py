@@ -251,7 +251,7 @@ def _summary_card(data: dict[str, Any], filename: str) -> ReportVisual:
     parts.extend(
         (
             _rect(70, y, 1060, 170, fill="#DDEAE7", radius=24),
-            _svg_text("현재가 비교", x=105, y=y + 52, size=24, weight=800, fill="#167C72"),
+            _svg_text("현재가", x=105, y=y + 52, size=24, weight=800, fill="#167C72"),
             _svg_text(
                 _price_text(current_price, valuation.reporting_unit) if current_price is not None else "미확보",
                 x=105,
@@ -282,7 +282,7 @@ def _summary_card(data: dict[str, Any], filename: str) -> ReportVisual:
     else:
         entry_text = (
             "실제 해결 이력 기반 확률 보정이 완료되지 않았습니다. "
-            "따라서 특정 매수가는 만들지 않고 현재가와 하방·기준·상방 가치만 비교합니다."
+            "따라서 특정 매수가는 만들지 않고 현재가는 참고값으로만 표시합니다."
         )
     y += 220
     parts.extend(

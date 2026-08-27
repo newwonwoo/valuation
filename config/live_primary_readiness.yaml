@@ -79,7 +79,7 @@ stages:
     reason: economic-path and SOTP duplicate protections are implemented.
   PROBABILITY_DISTRIBUTION_ANALYSIS:
     status: PARTIAL_LIVE
-    reason: append-only forecast/outcome ledger, first-seen historical replay boundaries, Brier/Brier-Skill/log-loss/ECE promotion metrics and CalibrationCertificate gating are implemented; production historical cohorts, predeclared base rates and validated mapping datasets remain incomplete by forecast class/horizon.
+    reason: declared pre-resolution forecasts now flow from LIVE_PRIMARY hypotheses into an append-only production store, source-backed outcome ingestion enforces first-seen boundaries, and Brier/Brier-Skill/log-loss/ECE plus CalibrationCertificate gates are implemented; enough real resolved cohorts, predeclared base rates and validated mappings remain missing by forecast class/horizon.
   AUDIT_GATE:
     status: RUNTIME_READY
     reason: generic audit, doctrine coverage, Decision Impact prerequisites and the Evidence-to-Freeze replay hash chain are integrated.
@@ -103,7 +103,7 @@ stages:
     reason: current thesis is compared against prior immutable successful state.
   SAVE_STATE:
     status: RUNTIME_READY
-    reason: atomic valuation + learning persistence with compensating rollback is implemented.
+    reason: atomic valuation + learning persistence and declared production forecast-history capture use compensating rollback; duplicate run records remain immutable.
   FINAL_REPORT:
     status: RUNTIME_READY
     reason: final report renders the immutable saved payload, Decision Impact visibility, and explicit PARTIAL_INTRINSIC/UNVALUED_NOT_ZERO scope when applicable.

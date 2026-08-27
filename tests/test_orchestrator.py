@@ -72,7 +72,12 @@ def test_canonical_reporting_contract_partitions_all_33_stages_once():
         "현재가",
         "기준 내재가치",
         "가치평가 범위",
+        "시나리오 가능성",
     )
+    assert contract.uncalibrated_prior_display_allowed
+    assert contract.uncalibrated_prior_weighting_forbidden
+    assert contract.declared_forecast_history_capture_required
+    assert contract.append_only_probability_history_required
     assert contract.first_screen_required_blocks == (
         "한 문장 결론",
         "투자포인트",

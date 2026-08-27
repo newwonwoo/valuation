@@ -96,6 +96,7 @@ from .probability_adapter import (
     CalibrationSnapshotLoader,
     probability_calibration_load_adapter,
 )
+from .probability_forecasting import ProbabilityForecastHistoryStore
 from .research_learning import ResearchLearningStore
 from .risk_adapters import (
     BetaUniverseLoader,
@@ -462,6 +463,7 @@ def build_live_primary_adapters(
     )
     state_root = Path(config.state_root)
     learning_store = ResearchLearningStore(state_root)
+    probability_history_store = ProbabilityForecastHistoryStore(state_root)
     effective_unit_contract_registry = (
         unit_contract_registry
         if unit_contract_registry is not None
@@ -640,6 +642,7 @@ def build_live_primary_adapters(
         "SAVE_STATE": save_state_adapter(
             state_root=state_root,
             learning_store=learning_store,
+            probability_history_store=probability_history_store,
         ),
         "FINAL_REPORT": final_report_adapter(),
     }
