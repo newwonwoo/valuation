@@ -40,7 +40,10 @@ def add_metrics_before_next_adapter(path: Path, anchor: str) -> None:
         raise RuntimeError(
             f"sector anchor has no next-adapter boundary: {anchor!r}"
         )
-    replacement = anchor[: boundary + 1] + block + anchor[boundary + 1 :]
+    prefix = anchor[: boundary + 1]
+    if prefix.endswith(block):
+        return
+    replacement = prefix + block + anchor[boundary + 1 :]
     path.write_text(text.replace(anchor, replacement, 1), encoding="utf-8")
 
 
@@ -113,8 +116,8 @@ def patch_factory_evidence_contract() -> None:
     preferred = next(iter(spec.payload.get("official_metrics", {"revenue": None})))
 ''',
         '''def _scanner_runner(spec: AcceptanceCompanySpec):
-    # normalized_ebitda is always part of the declared additional Evidence contract,
-    # so every scanner leaves a valid ledger trace even when a route does not request revenue.
+    # normalized_ebitda is always part of the sector-specific additional Evidence
+    # contract, so every scanner leaves a valid ledger trace.
     preferred = "normalized_ebitda"
 ''',
     )
