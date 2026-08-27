@@ -27,14 +27,16 @@ def replace_once(path: Path, old: str, new: str) -> None:
     path.write_text(text.replace(old, new, 1), encoding="utf-8")
 
 
-def add_metrics_after(path: Path, anchor: str) -> None:
+def add_metrics_before_next_adapter(path: Path, anchor: str) -> None:
     text = path.read_text(encoding="utf-8")
     block = "".join(f"    - {metric}\n" for metric in VALUATION_METRICS)
-    if block in text:
-        return
     if anchor not in text:
         raise RuntimeError(f"sector anchor not found: {anchor!r}")
-    path.write_text(text.replace(anchor, anchor + block, 1), encoding="utf-8")
+    boundary = anchor.rfind("\n  ")
+    if boundary < 0:
+        raise RuntimeError(f"sector anchor has no next-adapter boundary: {anchor!r}")
+    replacement = anchor[: boundary + 1] + block + anchor[boundary + 1 :]
+    path.write_text(text.replace(anchor, replacement, 1), encoding="utf-8")
 
 
 def patch_generator_hash_helper() -> None:
@@ -119,10 +121,10 @@ def patch_sectors() -> None:
     - contracted_backlog
 ''',
     )
-    add_metrics_after(SECTORS, "    - capex\n  software.marketplace:\n")
-    add_metrics_after(SECTORS, "    - lead_time\n  power.project_developer:\n")
-    add_metrics_after(SECTORS, "    - fuel_or_input_economics\n  financials.asset_manager:\n")
-    add_metrics_after(SECTORS, "    - price\n  real_assets.midstream:\n")
+    add_metrics_before_next_adapter(SECTORS, "    - capex\n  software.marketplace:\n")
+    add_metrics_before_next_adapter(SECTORS, "    - lead_time\n  power.project_developer:\n")
+    add_metrics_before_next_adapter(SECTORS, "    - fuel_or_input_economics\n  financials.asset_manager:\n")
+    add_metrics_before_next_adapter(SECTORS, "    - price\n  real_assets.midstream:\n")
 
 
 def patch_manifest_test() -> None:
