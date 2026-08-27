@@ -100,6 +100,7 @@ def bound_scenario_set_hash(
             compiled.assumption_set_hash,
             scenario_set.calibration_status.value,
             scenario_set.calibration_snapshot_hash or "NO_CERTIFICATE",
+            scenario_set.calibration_dataset_hash or "NO_DATASET",
         ]
         + [
             f"{scenario.scenario_id}|"

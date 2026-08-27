@@ -138,6 +138,8 @@ class IntrinsicFreezeToken:
     industry_snapshot_hash: str
     source_snapshot_hash: str
     token_hash: str
+    calibration_dataset_hash: str = ""
+    calibration_snapshot_hash: str = ""
 
 
 def validate_llm_authority(
@@ -219,6 +221,8 @@ def issue_freeze_token(
     audit_hash: str,
     industry_snapshot_hash: str,
     source_snapshot_hash: str,
+    calibration_dataset_hash: str = "",
+    calibration_snapshot_hash: str = "",
 ) -> IntrinsicFreezeToken:
     if not audit_passed:
         raise ValueError("audit PASS is required before intrinsic freeze")
@@ -237,8 +241,11 @@ def issue_freeze_token(
     )
     if any(not value for value in fields):
         raise ValueError("freeze token requires all snapshot/value hashes")
-    digest = hashlib.sha256("|".join(fields).encode("utf-8")).hexdigest()
-    return IntrinsicFreezeToken(*fields, digest)
+    lineage = (calibration_dataset_hash, calibration_snapshot_hash)
+    if bool(lineage[0]) != bool(lineage[1]):
+        raise ValueError("calibration dataset and snapshot hashes must be supplied together")
+    digest = hashlib.sha256("|".join((*fields, *lineage)).encode("utf-8")).hexdigest()
+    return IntrinsicFreezeToken(*fields, digest, *lineage)
 
 
 def authorize_post_freeze(token: IntrinsicFreezeToken, *, run_id: str) -> None:
@@ -252,6 +259,8 @@ def authorize_post_freeze(token: IntrinsicFreezeToken, *, run_id: str) -> None:
         token.audit_hash,
         token.industry_snapshot_hash,
         token.source_snapshot_hash,
+        token.calibration_dataset_hash,
+        token.calibration_snapshot_hash,
     )
     expected = hashlib.sha256("|".join(fields).encode("utf-8")).hexdigest()
     if token.token_hash != expected:

@@ -167,6 +167,7 @@ def test_production_promotion_gate_issues_certificate():
         policy=production_policy(),
         mapping_version="map-v1",
         oos_brier_skill_windows=(Decimal("0.10"), Decimal("0.06")),
+        dataset_hash="DATASET1",
     )
     assert snapshot.status is CalibrationStatus.CALIBRATED
     assert snapshot.effective_sample_count == 200
@@ -279,6 +280,7 @@ def test_live_weighting_requires_matching_certificate():
         "map-v1",
         "CALIBRATION-SNAPSHOT",
         CalibrationStatus.CALIBRATED,
+        "DATASET1",
     )
     with_cert = bind_scenarios(
         compiled_probabilities(),
@@ -289,6 +291,7 @@ def test_live_weighting_requires_matching_certificate():
     assert with_cert.passed
     assert with_cert.scenario_set.numeric_weighting_allowed
     assert with_cert.scenario_set.calibration_snapshot_hash == "CALIBRATION-SNAPSHOT"
+    assert with_cert.scenario_set.calibration_dataset_hash == "DATASET1"
 
     wrong = CalibrationCertificate(
         "clinical|90d",
@@ -298,6 +301,7 @@ def test_live_weighting_requires_matching_certificate():
         "map-v1",
         "OTHER",
         CalibrationStatus.CALIBRATED,
+        "DATASET1",
     )
     mismatch = bind_scenarios(
         compiled_probabilities(),
@@ -330,6 +334,7 @@ def test_calibration_loader_emits_certificate_only_after_promotion():
         policy=production_policy(),
         mapping_version="map-v1",
         oos_brier_skill_windows=(Decimal("0.10"), Decimal("0.06")),
+        dataset_hash="DATASET1",
     )
     adapter = probability_calibration_load_adapter(
         loader=lambda _: calibrated,

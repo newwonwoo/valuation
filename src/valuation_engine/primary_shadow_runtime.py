@@ -446,12 +446,20 @@ def _probability_distribution_adapter() -> StageAdapter:
             return StageExecutionResult(
                 StageStatus.SKIPPED_NOT_APPLICABLE,
                 "scenario probabilities are not CALIBRATED; descriptive scenarios remain unweighted",
-                {"probability_distribution_state": "WITHHELD_UNCALIBRATED"},
+                {
+                    "probability_distribution_state": "WITHHELD_UNCALIBRATED",
+                    "probability_calibration_dataset_hash": None,
+                    "probability_calibration_snapshot_hash": None,
+                },
             )
         return StageExecutionResult(
             StageStatus.PASS,
             "calibrated scenario probabilities are authorized for deterministic expected-value aggregation",
-            {"probability_distribution_state": "CALIBRATED"},
+            {
+                "probability_distribution_state": "CALIBRATED",
+                "probability_calibration_dataset_hash": scenario_set.calibration_dataset_hash,
+                "probability_calibration_snapshot_hash": scenario_set.calibration_snapshot_hash,
+            },
         )
 
     return run

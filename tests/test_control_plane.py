@@ -100,6 +100,21 @@ def test_freeze_requires_audit_and_resolved_blocking_coverage():
     with pytest.raises(PermissionError, match="invalid intrinsic freeze token"):
         authorize_post_freeze(replace(token, ledger_snapshot_hash="tampered"), run_id="R1")
 
+    calibrated = issue_freeze_token(
+        run_id="R1", audit_passed=True, coverage_entries=entries,
+        expected_module_ids=("industry_dna", "clinical"),
+        ledger_snapshot_hash="l", assumption_set_hash="a", valuation_hash="v", audit_hash="q",
+        industry_snapshot_hash="i", source_snapshot_hash="s",
+        calibration_dataset_hash="dataset", calibration_snapshot_hash="snapshot",
+    )
+    authorize_post_freeze(calibrated, run_id="R1")
+    assert calibrated.calibration_dataset_hash == "dataset"
+    assert calibrated.calibration_snapshot_hash == "snapshot"
+    with pytest.raises(PermissionError, match="invalid intrinsic freeze token"):
+        authorize_post_freeze(
+            replace(calibrated, calibration_dataset_hash="tampered"), run_id="R1"
+        )
+
 
 def test_blocking_not_implemented_prevents_freeze():
     entries = (

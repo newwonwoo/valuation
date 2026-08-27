@@ -83,6 +83,7 @@ def certificate(cohort: str = "clinical_poc|5y") -> CalibrationCertificate:
         "clinical-map-v1",
         "CAL-HASH",
         CalibrationStatus.CALIBRATED,
+        "CLINICAL-DATASET-HASH",
     )
 
 

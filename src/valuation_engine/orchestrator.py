@@ -133,6 +133,12 @@ def _freeze_from_context(
         audit_hash=str(context.data["audit_hash"]),
         industry_snapshot_hash=str(context.data["industry_snapshot_hash"]),
         source_snapshot_hash=str(context.data["source_snapshot_hash"]),
+        calibration_dataset_hash=str(
+            context.data.get("probability_calibration_dataset_hash") or ""
+        ),
+        calibration_snapshot_hash=str(
+            context.data.get("probability_calibration_snapshot_hash") or ""
+        ),
     )
 
 

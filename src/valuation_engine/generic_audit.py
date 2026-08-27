@@ -169,6 +169,8 @@ def audit_generic_intrinsic(
     if scenario_set.numeric_weighting_allowed:
         probability_ok = (
             scenario_set.calibration_status is CalibrationStatus.CALIBRATED
+            and bool(scenario_set.calibration_snapshot_hash)
+            and bool(scenario_set.calibration_dataset_hash)
             and all(item.probability is not None for item in scenario_set.scenarios)
             and valuation.expected_value_per_share is not None
         )
@@ -299,6 +301,8 @@ def audit_generic_intrinsic(
             ledger_snapshot_hash,
             compiled.assumption_set_hash,
             scenario_set.scenario_set_hash,
+            scenario_set.calibration_dataset_hash or "NO_CALIBRATION_DATASET",
+            scenario_set.calibration_snapshot_hash or "NO_CALIBRATION_SNAPSHOT",
             valuation.valuation_hash,
             *external_guardrail_hashes,
         ]
