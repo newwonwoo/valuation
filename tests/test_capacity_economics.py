@@ -35,11 +35,11 @@ def test_sanil_site_capacity_connects_to_mix_profit_and_fcff():
 
     core = result.scenario("Core").mature
     bull = result.scenario("Bull").mature
-    assert core.total_revenue.quantize(Decimal("0.1")) == Decimal("1523.4")
+    assert core.total_revenue.quantize(Decimal("0.1")) == Decimal("1552.7")
     assert core.total_operating_profit.quantize(Decimal("0.1")) == Decimal(
-        "608.1"
+        "620.1"
     )
-    assert core.total_fcff.quantize(Decimal("0.1")) == Decimal("451.6")
+    assert core.total_fcff.quantize(Decimal("0.1")) == Decimal("460.2")
     assert bull.total_revenue.quantize(Decimal("0.1")) == Decimal("1670.2")
     assert bull.total_operating_profit.quantize(Decimal("0.1")) == Decimal(
         "667.8"
