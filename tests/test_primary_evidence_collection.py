@@ -13,6 +13,8 @@ def evidence(
     *,
     target: str = "T",
     layer: EvidenceSourceLayer = EvidenceSourceLayer.REALIZED_OR_FILING,
+    effective_date: str = "2026-06-30",
+    observed_date: str = "2026-07-01",
 ) -> EvidenceRecord:
     return EvidenceRecord(
         id=evidence_id,
@@ -21,8 +23,8 @@ def evidence(
         value=value,
         unit=unit,
         source_layer=layer,
-        effective_date="2026-06-30",
-        observed_date="2026-07-01",
+        effective_date=effective_date,
+        observed_date=observed_date,
         source_name="filing",
         source_ref=f"source#{evidence_id}",
         source_grade="A",
@@ -86,6 +88,83 @@ def test_target_mismatch_is_rejected():
         assert "target mismatch" in str(exc)
     else:
         raise AssertionError("target mismatch must fail closed")
+
+
+def test_record_observed_after_collection_checkpoint_is_rejected():
+    future_known = static_evidence_collector(
+        source_id="DART",
+        checked_at="2026-08-23T12:00:00+09:00",
+        records=(
+            evidence(
+                "E-FUTURE",
+                "revenue",
+                100,
+                "KRW_billion",
+                observed_date="2026-08-24",
+            ),
+        ),
+        source_fingerprint="FP:DART",
+    )
+    try:
+        collect_primary_evidence(
+            target_id="T",
+            required_metrics=("revenue",),
+            collectors=(future_known,),
+        )
+    except ValueError as exc:
+        assert "observed after source batch checked_at" in str(exc)
+    else:
+        raise AssertionError("future-observed evidence must fail closed")
+
+
+def test_future_effective_plan_is_allowed_when_already_observed():
+    known_plan = static_evidence_collector(
+        source_id="IR",
+        checked_at="2026-08-23",
+        records=(
+            evidence(
+                "E-PLAN",
+                "capacity",
+                200,
+                "MW",
+                layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
+                effective_date="2027-12-31",
+                observed_date="2026-08-20",
+            ),
+        ),
+        source_fingerprint="FP:IR",
+    )
+    result = collect_primary_evidence(
+        target_id="T",
+        required_metrics=("capacity",),
+        collectors=(known_plan,),
+    )
+    assert result.coverage_complete
+    assert result.ledger.active()[0].effective_date == "2027-12-31"
+
+
+def test_observed_timestamp_before_checkpoint_remains_supported():
+    timestamped = static_evidence_collector(
+        source_id="DART",
+        checked_at="2026-08-23T12:00:00+09:00",
+        records=(
+            evidence(
+                "E-TIMESTAMP",
+                "revenue",
+                100,
+                "KRW_billion",
+                observed_date="2026-08-22T23:59:59+09:00",
+            ),
+        ),
+        source_fingerprint="FP:DART",
+    )
+    result = collect_primary_evidence(
+        target_id="T",
+        required_metrics=("revenue",),
+        collectors=(timestamped,),
+    )
+    assert result.coverage_complete
+    assert result.ledger.active()[0].observed_date.startswith("2026-08-22")
 
 
 def test_control_plane_collection_and_ledger_stages_pass():
