@@ -456,7 +456,7 @@ def test_sanil_brokerage_report_integrates_august_27_update(tmp_path):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
 
-    report, visuals = module.render_report(tmp_path)
+    report, html_report, visuals = module.render_report(tmp_path)
 
     assert "8월 27일 자료 반영" in report
     assert "8월 27일 신규·정정 공시는 없습니다" in report
@@ -467,6 +467,18 @@ def test_sanil_brokerage_report_integrates_august_27_update(tmp_path):
     assert "기준 DCF 기업가치의 83.4%가 영구가치" in report
     assert "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660" in report
     assert len(visuals) == 2
+    assert '<html lang="ko">' in html_report
+    assert "증설 발표보다 중요한 것은 현금흐름 전환 속도" in html_report
+    assert "현재가는 기준가보다 상방가에 가깝다" in html_report
+    assert "가능성 산식: 하방·기준·상방 상대점수 3:5:2" in html_report
+    assert "증권사 목표가와의 차이" in html_report
+    assert "인공지능 인사이트" in html_report
+    assert "원문 열기 ↗" in html_report
+    assert "검증 상태" not in html_report
+    assert "프리즈" not in html_report
+    assert "INTRINSIC_VALUE_FREEZE" not in html_report
+    assert "SANIL_062040_LIVE_PRIMARY_REPORT.md" in html_report
+    assert all(visual.filename in html_report for visual in visuals)
 
 
 def test_sanil_config_requires_driver_dcf_and_capacity_core(tmp_path):
