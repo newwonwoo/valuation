@@ -48,6 +48,10 @@ LS_CAPACITY_REPORT_URL = (
     "%EC%84%B1%EC%A2%85%ED%99%94_1976_Online%20report%20_%206_10p_"
     "%EC%82%B0%EC%9D%BC%EC%A0%84%EA%B8%B0.pdf"
 )
+TRUMP_GRID_SECURITY_ORDER_URL = (
+    "https://www.whitehouse.gov/presidential-actions/2026/08/"
+    "declaring-a-national-emergency-to-secure-the-united-states-bulk-power-system/"
+)
 
 
 def _core_terminal_value_share(compiled: object, wacc: Decimal) -> Decimal:
@@ -228,11 +232,11 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
         for row in capacity["checkpoints"]
     )
     investment_view = "매수" if core_gap >= 0.15 else "관망"
-    header = f"""# 산일전기(062040) 투자보고서 — 2026.08.27
+    header = f"""# 트럼프가 전력망을 국가안보로 묶었다 — 산일전기(062040)
 
 ## 투자 요약
 
-### 부지 3.27만㎡를 생산 슬롯·제품 믹스·현금흐름으로 연결
+### 위험 공급자 배제 → 검증된 공급망 → 5,026억원 생산 슬롯
 
 | 핵심 판단 항목 | 내용 |
 | --- | --- |
@@ -246,7 +250,13 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
 
 ### 한 문장 결론
 
-공장 가동률 87.2%에서는 판매율보다 생산 슬롯이 병목이며, 신규 부지의 물리 CAPA를 제품 믹스·영업이익·FCF로 연결하되 기존제품 순증분은 기준 50%만 인정한 목표가가 {values['Core']:,.0f}원입니다.
+트럼프 행정부가 전력망 장비를 국가안보 심사 대상으로 올리면서 공급자 자격과 납품 슬롯의 희소성이 커졌고, 산일전기는 87.2% 가동률의 병목을 풀 신규 부지를 확보했습니다. 다만 정책 프리미엄을 목표가에 별도로 더하지 않고 기존제품 순증분을 기준 50%만 인정한 내재가치는 {values['Core']:,.0f}원입니다.
+
+### 트럼프 행정명령이 바꾼 것
+
+- **확인된 사실:** 8월 26일 행정명령은 미국 대용량 전력망의 외국 공급 위험을 국가비상사태로 규정하고, 69kV 이상 계통의 변전소 변압기를 심사 범위에 포함했습니다. 위험 공급자 거래 제한·사전적격 공급자 체계와 120일 이내 세부 규칙 마련도 지시했습니다. [백악관 행정명령 원문]({TRUMP_GRID_SECURITY_ORDER_URL})
+- **산일전기 연결:** 수요의 단순 증가보다 미국 고객이 선택할 수 있는 공급자 자격과 검증된 생산 슬롯이 중요해지는 변화입니다. 산일전기가 향후 공급자 자격을 확보한다면, 이미 높은 가동률을 풀 신규 5,026억원 슬롯의 경제적 가치가 커지는 방향입니다.
+- **해석의 한계:** 모든 외국산 장비를 일괄 금지한 명령은 아니며 산일전기는 한국 생산 수출기업입니다. 직접 수혜 여부는 향후 미국 에너지부 규칙과 사전적격 공급자 인정에 달려 있어, 이번 정책을 목표가 산식의 별도 프리미엄으로 반영하지 않았습니다.
 
 ### 투자포인트
 

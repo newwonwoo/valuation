@@ -325,13 +325,18 @@ def render_sanil_brokerage_html(
         "https://file.alphasquare.co.kr/media/pdfs/company-report/_%EC%82%B0%EC%9D%BC%EC%A0%84%EA%B8%B0_2Q25%20Review_250807%E2%98%86_%EC%84%B1%EC%A2%85%ED%99%94_1976_Online%20report%20_%206_10p_%EC%82%B0%EC%9D%BC%EC%A0%84%EA%B8%B0.pdf",
         "LS증권 CAPA 참고자료",
     )
+    trump_grid_link = _source_anchor(
+        "https://www.whitehouse.gov/presidential-actions/2026/08/"
+        "declaring-a-national-emergency-to-secure-the-united-states-bulk-power-system/",
+        "백악관 행정명령 원문",
+    )
 
     return f'''<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>산일전기(062040) 기업분석 — 2026.08.27</title>
+<title>트럼프 전력망 안보 행정명령과 산일전기 가치평가 — 2026.08.27</title>
 <style>
 :root {{
   --navy:#112a46; --blue:#1f5f9b; --sky:#eaf3fb; --ink:#152033;
@@ -426,9 +431,9 @@ figcaption {{ margin-top:5px; color:var(--muted); font-size:8.5pt; text-align:ce
     <div class="eyebrow" style="margin-top:20px">산일전기 · 062040 · KOSPI</div>
     <div class="hero-grid">
       <div>
-        <h1>부지가 아니라 5,026억원의 생산 슬롯을 샀다</h1>
-        <p class="subtitle">신규 부지 → 제품 구성 → 영업이익 → 잉여현금흐름 → 현금흐름할인법 연결 · 자료 기준 2026년 8월 27일</p>
-        <p class="lead">공장 가동률 87.2%에서는 판매율보다 생산 슬롯이 병목입니다. 신규 부지를 DCF에 반영하면 기준 내재가치는 {_money(core_value)}, 현재가 대비 {_pct(market_gaps['Core'], signed=True)}입니다. 다만 1년 안팎의 회수기간은 지나치게 좋아 보이므로 기존품목 증분 CAPA는 기준에 50%만 인정했습니다.</p>
+        <h1>트럼프가 전력망을 국가안보로 묶었다 — 산일전기의 5,026억원 생산 슬롯이 중요해진 이유</h1>
+        <p class="subtitle">위험 공급자 배제 → 검증된 공급망 재편 → 산일전기 신규 생산 슬롯 · 자료 기준 2026년 8월 27일</p>
+        <p class="lead">8월 26일 트럼프 대통령은 미국 대용량 전력망의 외국 공급 위험을 국가비상사태로 규정했습니다. 모든 외국산을 일괄 금지한 것은 아니지만 69kV 이상 계통의 변전소 변압기를 안보심사 대상으로 올렸습니다. 산일전기의 투자 논리는 막연한 정책 수혜가 아니라, 향후 미국 공급자 자격을 확보할 수 있는지와 87.2% 가동률 아래 생산 슬롯의 희소성입니다. {trump_grid_link}</p>
       </div>
       <aside class="stance">
         <div class="label">투자판단</div><div class="view">{investment_view}</div>
@@ -446,11 +451,11 @@ figcaption {{ margin-top:5px; color:var(--muted); font-size:8.5pt; text-align:ce
     </div>
     <span class="pill">핵심 투자포인트 3가지</span>
     <div class="thesis-list">
-      <div class="thesis"><b>01</b><p><strong>수요보다 슬롯이 먼저입니다.</strong> 상반기 영업이익률 37.4%, 가동률 87.2%, 수주잔고 5,567억원을 감안하면 신규공장은 기존 고마진 제품의 출하 제약을 푸는 투자입니다. {q2_ir_link} · {half_year_link}</p></div>
+      <div class="thesis"><b>01</b><p><strong>전력망이 국가안보 조달로 바뀌었습니다.</strong> 행정명령은 위험 공급자 거래 제한과 사전적격 공급자 선정을 허용합니다. 이는 총수요 증가보다 공급자 자격과 납품 슬롯의 희소성을 높이는 변화입니다. {trump_grid_link}</p></div>
       <div class="thesis"><b>02</b><p><strong>마진 확대보다 절대이익 증가가 핵심입니다.</strong> 신규 부지의 물리적 매출 CAPA는 기존제품 2,936억원과 초고압 2,090억원, 합계 5,026억원입니다. 초고압 마진이 35%여도 전사 영업이익률은 약 40%를 유지합니다.</p></div>
       <div class="thesis"><b>03</b><p><strong>DCF 반영은 맞지만 전량 인정은 아직 이릅니다.</strong> 기준은 기존품목 CAPA 50%만 증분 매출로 인정하고, 회사가 3,000억원 안팎의 순증 CAPA·설비·시험동을 확인할 때 상방 가정을 기준으로 승격합니다. {disclosure_link}</p></div>
     </div>
-    <p class="footnote">목표가는 확률가중값이 아니라 기준 시나리오 DCF입니다. 하방 위험이 큰 만큼 CAPA 확인 전에는 분할 접근이 적절합니다. 현재가 기준일 {escape(market_as_of)}. {market_link}</p>
+    <p class="footnote">모든 외국산 장비의 일괄 금지로 해석하지 않습니다. 산일전기의 직접 수혜는 향후 미국 에너지부 규칙과 사전적격 공급자 인정에 달려 있으며, 행정명령 프리미엄은 목표가 산식에 별도로 더하지 않았습니다. 목표가는 확률가중값이 아닌 기준 시나리오 DCF입니다. 현재가 기준일 {escape(market_as_of)}. {market_link}</p>
   </section>
 
   <section class="page" data-page="02 / 04">
@@ -524,7 +529,7 @@ figcaption {{ margin-top:5px; color:var(--muted); font-size:8.5pt; text-align:ce
     <ol class="source-list">{_source_register(data)}</ol>
     <h3 style="margin-top:16px">최종 요약 이미지 2장</h3>
     <div class="visuals">{_visual_cards(visuals)}</div>
-    <p class="footnote">추가 원문: {half_year_link} · {q2_ir_link} · {disclosure_link} · {kis_aug12_link} · {kis_link} · {ls_link}. 상세 계산은 <a href="{escape(markdown_filename, quote=True)}" target="_blank">감사용 부속자료</a>에 보존했습니다. 본 자료는 공개자료를 바탕으로 한 조사 보고서이며 최종 투자판단은 독자에게 있습니다.</p>
+    <p class="footnote">추가 원문: {trump_grid_link} · {half_year_link} · {q2_ir_link} · {disclosure_link} · {kis_aug12_link} · {kis_link} · {ls_link}. 상세 계산은 <a href="{escape(markdown_filename, quote=True)}" target="_blank">감사용 부속자료</a>에 보존했습니다. 본 자료는 공개자료를 바탕으로 한 조사 보고서이며 최종 투자판단은 독자에게 있습니다.</p>
   </section>
 </main>
 <details class="technical"><summary>감사용 부속자료 안내</summary><p>수치 재현과 원문 연결 검토가 필요할 때만 Markdown 부속자료를 여십시오. 투자 결론과 핵심 위험은 위 4쪽에 모두 포함돼 있습니다.</p></details>
