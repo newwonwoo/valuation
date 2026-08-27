@@ -22,6 +22,7 @@ from valuation_engine.required_company_live import (
     build_real_company_runtime,
     load_acceptance_specs,
     spec_file_hash,
+    validate_official_document_evidence,
 )
 
 
@@ -126,6 +127,7 @@ def _generate_company(
     fixture_root: Path,
 ) -> tuple[Path, Path]:
     official_bytes = _download(str(row["official_source_ref"]))
+    validate_official_document_evidence(company_id, row, official_bytes)
     official_hash = sha256(official_bytes).hexdigest()
     market_price, market_as_of = _market_observation(row)
     spec = build_acceptance_spec(
