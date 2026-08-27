@@ -9,6 +9,7 @@ SOURCES = ROOT / "config" / "industry_source_registry.yaml"
 SECTORS = ROOT / "config" / "sector_adapter_registry.yaml"
 TEST = ROOT / "tests" / "test_live_company_acceptance_manifest.py"
 GENERATOR = ROOT / "scripts" / "generate_required_live_company_fixtures.py"
+FACTORY = ROOT / "src" / "valuation_engine" / "required_company_live.py"
 
 VALUATION_METRICS = (
     "normalized_ebitda",
@@ -55,6 +56,49 @@ def patch_generator_hash_helper() -> None:
             1,
         ),
         encoding="utf-8",
+    )
+
+
+def patch_factory_scanner_contract() -> None:
+    replace_once(
+        FACTORY,
+        "from .module_requirements import build_module_requirement_plan_from_repo\n",
+        """from .module_plan import build_module_requirement_plan as build_runtime_module_requirement_plan
+from .module_requirements import build_module_requirement_plan_from_repo
+""",
+    )
+    replace_once(
+        FACTORY,
+        '''    plan = build_module_requirement_plan_from_repo(
+        profile,
+        repo_root=_REPO_ROOT,
+    )
+''',
+        '''    plan = build_module_requirement_plan_from_repo(
+        profile,
+        repo_root=_REPO_ROOT,
+    )
+    runtime_plan = build_runtime_module_requirement_plan(
+        (profile,),
+        registry_path=_REPO_ROOT / "config" / "archetype_module_registry.yaml",
+        control_requirements_path=(
+            _REPO_ROOT / "config" / "archetype_control_requirements.yaml"
+        ),
+    )
+''',
+    )
+    replace_once(
+        FACTORY,
+        '''    scanners = {
+        scanner_id: _scanner_runner(spec)
+        for scanner_id in plan.mandatory_scanner_ids
+    }
+''',
+        '''    scanners = {
+        scanner_id: _scanner_runner(spec)
+        for scanner_id in runtime_plan.mandatory_scanners
+    }
+''',
     )
 
 
@@ -155,6 +199,7 @@ def patch_manifest_test() -> None:
 
 def main() -> int:
     patch_generator_hash_helper()
+    patch_factory_scanner_contract()
     patch_units()
     patch_sources()
     patch_sectors()
