@@ -259,12 +259,17 @@ def render_generic_report(
     )
     market = data.get("market_comparison")
     market_bundle = market if isinstance(market, MarketComparisonBundle) else None
+    street = data.get("street_comparison")
+    street_bundle = street if isinstance(street, StreetComparisonBundle) else None
     thesis = _korean_text_or(
         _current_thesis(data),
         "공식 근거와 결정론적 가치평가를 바탕으로 시나리오별 내재가치를 비교했습니다.",
     )
-    if len(thesis) > 420:
-        thesis = thesis[:419].rstrip() + "…"
+    thesis = re.sub(r"[.!?]\s+", " · ", thesis).rstrip(".!? ")
+    if len(thesis) > 280:
+        thesis = thesis[:279].rstrip() + "…"
+    if thesis[-1:] not in {".", "!", "?", "…"}:
+        thesis += "."
     entry_posture = (
         "실제 해결 이력 기반 확률 보정과 별도 진입 규칙이 모두 갖춰지기 전까지 "
         "구체적인 매수가는 제시하지 않습니다."
@@ -279,17 +284,76 @@ def render_generic_report(
         if values
         else "미산출"
     )
+    reference_scenario = next(
+        (
+            item
+            for scenario_id in ("Core", "Base")
+            for item in valuation.scenarios
+            if item.scenario_id == scenario_id
+        ),
+        valuation.scenarios[0] if valuation.scenarios else None,
+    )
+    reference_value = (
+        "미산출"
+        if reference_scenario is None
+        else (
+            f"주당 {_fmt_money(reference_scenario.value_per_share, valuation.reporting_unit)}"
+            f"{currency_label_ko(valuation.reporting_unit)}"
+        )
+    )
+    current_price = (
+        "미확보"
+        if market_bundle is None
+        else (
+            f"{_fmt_money(market_bundle.observation.price, market_bundle.envelope.currency)}"
+            f"{currency_label_ko(market_bundle.envelope.currency)}"
+            f" ({market_bundle.observation.as_of})"
+        )
+    )
+    street_reference = (
+        "미확보"
+        if street_bundle is None
+        else (
+            f"{_fmt_money(street_bundle.consensus.mean_target_price, street_bundle.consensus.target_price_currency)}"
+            f"{currency_label_ko(street_bundle.consensus.target_price_currency)}"
+            f" ({street_bundle.consensus.report_count}건, 내재가치 고정 후 비교)"
+        )
+    )
     lines = [
-        f"# {company} 리서치·가치평가 보고서",
+        f"# {company} 투자보고서",
         "",
         "## 투자 요약",
-        f"- **핵심 판단:** {thesis}",
-        f"- **가치평가 범위:** {value_range}",
-        f"- **현재가 해석:** {_market_interpretation(market_bundle)}",
-        f"- **매수 판단:** {entry_posture}",
+        "",
+        "| 핵심 판단 항목 | 내용 |",
+        "| --- | --- |",
+        f"| **투자판단** | 판단 유보 — {entry_posture} |",
+        f"| **현재가** | {current_price} |",
+        f"| **기준 내재가치** | {reference_value} |",
+        f"| **가치평가 범위** | {value_range} |",
+        f"| **증권사 참고값** | {street_reference} |",
+        "",
+        "### 한 문장 결론",
+        "",
+        thesis,
+        "",
+        "### 투자포인트",
+        "",
+        f"- **가치동인:** {thesis}",
+        f"- **현재가 대비:** {_market_interpretation(market_bundle)}",
+        (
+            "- **남은 제약:** 실제 해결 이력 기반 확률 보정이 없어 시나리오 기대값과 구체 매수가를 사용하지 않습니다."
+            if not calibration_applied
+            else "- **남은 제약:** 확률가중 값과 별개로 검증된 진입 규칙이 없어 구체 매수가를 사용하지 않습니다."
+        ),
+        "",
+        "### 판단 변경 조건",
+        "",
+        "- **상방 확인:** 기준·상방 가정의 핵심 동인이 공시 실적과 현금흐름으로 전환되면 판단 근거가 강화됩니다.",
+        "- **하방 훼손:** 핵심 가정이 미달하거나 하방 시나리오의 조건이 현실화되면 가치평가 신뢰도와 행동 여력이 낮아집니다.",
+        f"- **행동 가능 조건:** {entry_posture}",
         "",
         (
-            "## 부분 내재가치 — 평가 완료 사업부만 포함"
+            "## 가치평가 — 부분 내재가치 — 평가 완료 사업부만 포함"
             if partial
             else "## 가치평가"
         ),
@@ -370,7 +434,6 @@ def render_generic_report(
             )
         lines.append("- 미평가 사업부는 0원으로 합산하지 않았습니다.")
 
-    street = data.get("street_comparison")
     lines.extend(("", "## 증권사·시장 비교"))
     if isinstance(street, StreetComparisonBundle):
         lines.extend((

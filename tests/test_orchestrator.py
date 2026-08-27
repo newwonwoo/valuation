@@ -62,6 +62,22 @@ def test_canonical_reporting_contract_partitions_all_33_stages_once():
     assert contract.primary_section_order[:2] == ("투자 요약", "가치평가")
     assert contract.decision_report_precedes_audit_appendix
     assert contract.technical_identifiers_collapsed
+    assert contract.summary_is_investment_report
+    assert contract.brokerage_style_sample_count == 4
+    assert contract.brokerage_style_structural_only
+    assert contract.brokerage_style_content_copy_forbidden
+    assert (root / contract.brokerage_style_reference).exists()
+    assert contract.first_screen_required_fields == (
+        "투자판단",
+        "현재가",
+        "기준 내재가치",
+        "가치평가 범위",
+    )
+    assert contract.first_screen_required_blocks == (
+        "한 문장 결론",
+        "투자포인트",
+        "판단 변경 조건",
+    )
 
 
 def test_orchestrator_emits_one_summary_only_when_each_major_gate_completes():

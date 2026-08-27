@@ -159,6 +159,7 @@ def attest_controlled_run(
         persisted_report,
         "인공지능 인사이트 — 환경 변화 × 기업 강점",
     )
+    investment_summary = _markdown_section(persisted_report, "투자 요약")
     source_links_bound = bool(source_links) and isinstance(persisted_report, str) and all(
         item.url in persisted_report for item in source_links
     )
@@ -173,6 +174,17 @@ def attest_controlled_run(
     broker_report_structure = bool(reader_positions) and all(
         position >= 0 for position in reader_positions
     ) and tuple(sorted(reader_positions)) == reader_positions
+    first_screen_contract = (
+        isinstance(investment_summary, str)
+        and all(
+            f"**{field}**" in investment_summary
+            for field in reporting_contract.first_screen_required_fields
+        )
+        and all(
+            f"### {block}" in investment_summary
+            for block in reporting_contract.first_screen_required_blocks
+        )
+    )
 
     checks: list[ExecutionCheck] = [
         _check(
@@ -277,6 +289,12 @@ def attest_controlled_run(
             broker_report_structure,
             "투자판단·가치평가·가정과 위험·시장 비교·원문 출처 순서의 한국어 증권사형 본문을 생성했습니다",
             "한국어 증권사형 본문 순서가 누락되었거나 개발자용 정보가 본문 구조를 대신하고 있습니다",
+        ),
+        _check(
+            "investment_summary_is_report",
+            first_screen_contract,
+            "첫 화면의 투자 요약만으로 판단·현재가·내재가치·핵심 동인·판단 변경 조건을 확인할 수 있습니다",
+            "투자 요약이 독립적인 투자보고서 역할을 하지 못하거나 필수 판단 항목이 누락되었습니다",
         ),
     ]
 
@@ -507,7 +525,7 @@ def render_controlled_run_report(
         lines.append(persisted.rstrip())
     else:
         lines.extend((
-            "# 리서치·가치평가 보고서",
+            "# 투자보고서",
             "",
             "최종 투자보고서가 저장되지 않았습니다.",
         ))
@@ -628,14 +646,32 @@ def render_controlled_run_report(
 
 
 def render_report_form_template() -> str:
-    return """# {{ 기업명 }} 리서치·가치평가 보고서
+    return """# {{ 기업명 }} 투자보고서
 
 ## 투자 요약
 
-- 핵심 판단: {{ 근거에 기반한 투자논지와 결정요인 }}
-- 가치평가 범위: {{ 하방 }}원–{{ 상방 }}원
-- 현재가 해석: {{ 기준 내재가치와 현재가의 차이 및 필요한 확인사항 }}
-- 매수 판단: {{ 확률 보정 또는 진입 규칙 미충족 시 구체적 매수가 보류 }}
+| 핵심 판단 항목 | 내용 |
+| --- | --- |
+| **투자판단** | {{ 판단 또는 보류 사유 }} |
+| **현재가** | {{ 현재가와 기준일 }} |
+| **기준 내재가치** | {{ 기준 내재가치와 현재가 대비 차이 }} |
+| **가치평가 범위** | {{ 하방 }}원–{{ 상방 }}원 |
+
+### 한 문장 결론
+
+{{ 근거에 기반한 투자논지와 현재가에서 확인할 결정요인 }}
+
+### 투자포인트
+
+- {{ 핵심 가치동인 }}
+- {{ 가치평가 해석 }}
+- {{ 남은 제약 }}
+
+### 판단 변경 조건
+
+- 상방 확인: {{ 어떤 사실이 확인되면 판단이 강화되는가 }}
+- 하방 훼손: {{ 어떤 사실이 확인되면 판단이 약해지는가 }}
+- 행동 가능 조건: {{ 확률 보정·진입 규칙 등 필요한 통제 }}
 
 ## 가치평가
 

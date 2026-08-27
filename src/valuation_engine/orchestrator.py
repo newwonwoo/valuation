@@ -93,6 +93,22 @@ class ReportingContract:
     )
     decision_report_precedes_audit_appendix: bool = True
     technical_identifiers_collapsed: bool = True
+    brokerage_style_reference: str = "docs/KOREAN_BROKERAGE_REPORT_STYLE.md"
+    brokerage_style_sample_count: int = 4
+    brokerage_style_structural_only: bool = True
+    brokerage_style_content_copy_forbidden: bool = True
+    summary_is_investment_report: bool = True
+    first_screen_required_fields: tuple[str, ...] = (
+        "투자판단",
+        "현재가",
+        "기준 내재가치",
+        "가치평가 범위",
+    )
+    first_screen_required_blocks: tuple[str, ...] = (
+        "한 문장 결론",
+        "투자포인트",
+        "판단 변경 조건",
+    )
 
     def __post_init__(self) -> None:
         if not self.contract_id or not self.major_gates:
@@ -145,6 +161,21 @@ class ReportingContract:
             )
         ):
             raise ValueError("developer-facing report details must remain in the collapsed audit appendix")
+        if (
+            not self.brokerage_style_reference.endswith(".md")
+            or self.brokerage_style_sample_count < 3
+            or not self.first_screen_required_fields
+            or not self.first_screen_required_blocks
+        ):
+            raise ValueError("brokerage style basis and first-screen contract are incomplete")
+        if not all(
+            (
+                self.brokerage_style_structural_only,
+                self.brokerage_style_content_copy_forbidden,
+                self.summary_is_investment_report,
+            )
+        ):
+            raise ValueError("brokerage samples may define structure only and the summary must be the investment report")
 
 
 @dataclass(frozen=True)
@@ -315,6 +346,17 @@ def load_reporting_contract(path: str | Path) -> ReportingContract:
         isinstance(item, str) and item.strip() for item in primary_section_order
     ):
         raise ValueError("reader experience policy requires primary_section_order")
+    brokerage_style = reader_policy.get("brokerage_style_basis")
+    if not isinstance(brokerage_style, dict):
+        raise ValueError("reader experience policy requires brokerage_style_basis")
+
+    def required_text_tuple(key: str) -> tuple[str, ...]:
+        value = brokerage_style.get(key)
+        if not isinstance(value, list) or not all(
+            isinstance(item, str) and item.strip() for item in value
+        ):
+            raise ValueError(f"brokerage style basis requires {key}")
+        return tuple(item.strip() for item in value)
 
     return ReportingContract(
         contract_id=str(raw.get("contract_id") or "").strip(),
@@ -358,6 +400,27 @@ def load_reporting_contract(path: str | Path) -> ReportingContract:
         ),
         technical_identifiers_collapsed=bool(
             reader_policy.get("technical_identifiers_collapsed", False)
+        ),
+        brokerage_style_reference=str(
+            brokerage_style.get("reference_document") or ""
+        ).strip(),
+        brokerage_style_sample_count=int(
+            brokerage_style.get("reviewed_sample_count") or 0
+        ),
+        brokerage_style_structural_only=bool(
+            brokerage_style.get("structural_patterns_only", False)
+        ),
+        brokerage_style_content_copy_forbidden=bool(
+            brokerage_style.get("content_copy_forbidden", False)
+        ),
+        summary_is_investment_report=bool(
+            brokerage_style.get("summary_is_investment_report", False)
+        ),
+        first_screen_required_fields=required_text_tuple(
+            "first_screen_required_fields"
+        ),
+        first_screen_required_blocks=required_text_tuple(
+            "first_screen_required_blocks"
         ),
     )
 

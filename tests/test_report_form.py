@@ -76,7 +76,16 @@ def completed_result() -> ControlledRunResult:
         ),
         "final_report": (
             "# 영구 저장된 시험 보고서\n\n"
-            "## 투자 요약\n- 핵심 판단: 시험 보고서입니다.\n"
+            "## 투자 요약\n"
+            "| 핵심 판단 항목 | 내용 |\n"
+            "| --- | --- |\n"
+            "| **투자판단** | 판단 유보 |\n"
+            "| **현재가** | 미확보 |\n"
+            "| **기준 내재가치** | 70,000원 |\n"
+            "| **가치평가 범위** | 60,000~80,000원 |\n"
+            "\n### 한 문장 결론\n시험 보고서입니다.\n"
+            "\n### 투자포인트\n- 시험 가치동인입니다.\n"
+            "\n### 판단 변경 조건\n- 시험 조건입니다.\n"
             "\n## 가치평가\n- 내재가치: 주당 70,000원\n"
             "\n## 핵심 가정과 위험\n- 가정: 시험 가정입니다.\n"
             "\n## 증권사·시장 비교\n- 비교: 시험 비교입니다.\n"
@@ -144,8 +153,11 @@ def test_report_form_template_contains_required_execution_identities():
     assert "beta_snapshot_hash" in template
     assert "wacc_snapshot_hash" in template
     assert "freeze_token_hash" in template
-    assert "리서치·가치평가 보고서" in template
+    assert "투자보고서" in template
     assert "## 투자 요약" in template
+    assert "### 한 문장 결론" in template
+    assert "### 투자포인트" in template
+    assert "### 판단 변경 조건" in template
     assert "# 감사 부록 — 검증·추적" in template
     assert "major_gate_reporting_contract" in template
     assert "direct_source_links" in template

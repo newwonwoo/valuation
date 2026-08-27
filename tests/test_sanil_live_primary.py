@@ -263,6 +263,15 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert "**검증 상태:** 검증·고정 완료" in report
     assert "베타" in report and "가중평균자본비용" in report
     assert report.index("## 투자 요약") < report.index("# 감사 부록 — 검증·추적")
+    summary = result.data["final_report"].split("\n## 가치평가", 1)[0]
+    assert all(
+        f"**{field}**" in summary
+        for field in ("투자판단", "현재가", "기준 내재가치", "가치평가 범위")
+    )
+    assert all(
+        f"### {block}" in summary
+        for block in ("한 문장 결론", "투자포인트", "판단 변경 조건")
+    )
     assert "SANIL_SECOND_FACTORY_RAMP" in str(
         result.data["capacity_commitment_assessment"]
     )

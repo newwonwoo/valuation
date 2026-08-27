@@ -86,6 +86,21 @@ reporting_contract:
       - 정보 출처 — 원문 직접 검증
     decision_report_precedes_audit_appendix: true
     technical_identifiers_collapsed: true
+    brokerage_style_basis:
+      reference_document: docs/KOREAN_BROKERAGE_REPORT_STYLE.md
+      reviewed_sample_count: 4
+      structural_patterns_only: true
+      content_copy_forbidden: true
+      summary_is_investment_report: true
+      first_screen_required_fields:
+        - 투자판단
+        - 현재가
+        - 기준 내재가치
+        - 가치평가 범위
+      first_screen_required_blocks:
+        - 한 문장 결론
+        - 투자포인트
+        - 판단 변경 조건
 phases:
   I_OPENING:
     - COMPANY_RESOLUTION
