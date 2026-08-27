@@ -7,19 +7,21 @@ import json
 from pathlib import Path
 from typing import Iterable
 
+import FinanceDataReader as fdr
 import numpy as np
 import pandas as pd
 import yaml
-from pykrx import stock
 
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_SNAPSHOT = ROOT / "config" / "sanil_live_snapshot.yaml"
 DEFAULT_REGISTER = ROOT / "docs" / "SANIL_RISK_SOURCE_REGISTER.md"
-BENCHMARK_CODE = "1001"  # KOSPI
-BENCHMARK_ID = "KRX_KOSPI_1001"
-START_DATE = "20240729"
-END_DATE = "20260825"
+BENCHMARK_CODE = "KS11"
+BENCHMARK_ID = "FDR_KOSPI_KS11"
+START_DATE = "2024-07-29"
+END_DATE = "2026-08-26"
+PRICE_SOURCE_REF = "https://finance.naver.com/"
+PROVIDER_REF = "https://github.com/FinanceData/FinanceDataReader"
 
 PEER_CODES = {
     "LS_ELECTRIC_010120": "010120",
@@ -46,11 +48,20 @@ class OLSResult:
 
 
 def _close_series(frame: pd.DataFrame, label: str) -> pd.Series:
-    if frame.empty or "종가" not in frame.columns:
-        raise RuntimeError(f"KRX returned no close series for {label}")
-    series = frame["종가"].astype(float).replace(0.0, np.nan).dropna()
+    if frame.empty:
+        raise RuntimeError(f"price provider returned no rows for {label}")
+    close_column = next(
+        (column for column in ("Close", "Adj Close", "종가") if column in frame.columns),
+        None,
+    )
+    if close_column is None:
+        raise RuntimeError(
+            f"price provider returned no close column for {label}: {list(frame.columns)}"
+        )
+    series = frame[close_column].astype(float).replace(0.0, np.nan).dropna()
     if len(series) < 60:
-        raise RuntimeError(f"KRX close history is too short for {label}: {len(series)}")
+        raise RuntimeError(f"price history is too short for {label}: {len(series)}")
+    series.index = pd.to_datetime(series.index)
     series.name = label
     return series
 
@@ -62,7 +73,11 @@ def _returns(series: pd.Series, frequency: str) -> pd.Series:
         sampled = series
     else:
         raise ValueError(f"unsupported return frequency: {frequency}")
-    return sampled.pct_change(fill_method=None).replace([np.inf, -np.inf], np.nan).dropna()
+    return (
+        sampled.pct_change(fill_method=None)
+        .replace([np.inf, -np.inf], np.nan)
+        .dropna()
+    )
 
 
 def _ols(stock_returns: pd.Series, market_returns: pd.Series) -> OLSResult:
@@ -77,8 +92,6 @@ def _ols(stock_returns: pd.Series, market_returns: pd.Series) -> OLSResult:
     fitted = design @ coefficients
     residuals = y - fitted
     dof = len(x) - 2
-    if dof <= 0:
-        raise RuntimeError("OLS requires positive residual degrees of freedom")
     residual_variance = float((residuals @ residuals) / dof)
     centered_x = x - x.mean()
     sxx = float(centered_x @ centered_x)
@@ -88,12 +101,13 @@ def _ols(stock_returns: pd.Series, market_returns: pd.Series) -> OLSResult:
     total = float(((y - y.mean()) ** 2).sum())
     r_squared = 1.0 - float((residuals @ residuals) / total) if total > 0 else 0.0
     canonical = [
-        (index.strftime("%Y-%m-%d"), round(float(row.iloc[0]), 12), round(float(row.iloc[1]), 12))
+        (
+            index.strftime("%Y-%m-%d"),
+            round(float(row.iloc[0]), 12),
+            round(float(row.iloc[1]), 12),
+        )
         for index, row in joined.iterrows()
     ]
-    series_hash = sha256(
-        json.dumps(canonical, separators=(",", ":")).encode("utf-8")
-    ).hexdigest()
     return OLSResult(
         beta=float(beta),
         standard_error=standard_error,
@@ -102,18 +116,22 @@ def _ols(stock_returns: pd.Series, market_returns: pd.Series) -> OLSResult:
         observations=len(joined),
         start_date=joined.index.min().strftime("%Y-%m-%d"),
         end_date=joined.index.max().strftime("%Y-%m-%d"),
-        series_hash=series_hash,
+        series_hash=sha256(
+            json.dumps(canonical, separators=(",", ":")).encode("utf-8")
+        ).hexdigest(),
     )
+
+
+def _fetch_close(code: str) -> pd.Series:
+    return _close_series(fdr.DataReader(code, START_DATE, END_DATE), code)
 
 
 def _fetch_beta(code: str, market_close: pd.Series) -> tuple[OLSResult, OLSResult]:
-    close = _close_series(
-        stock.get_market_ohlcv_by_date(START_DATE, END_DATE, code, adjusted=True),
-        code,
+    close = _fetch_close(code)
+    return (
+        _ols(_returns(close, "weekly"), _returns(market_close, "weekly")),
+        _ols(_returns(close, "daily"), _returns(market_close, "daily")),
     )
-    weekly = _ols(_returns(close, "weekly"), _returns(market_close, "weekly"))
-    daily = _ols(_returns(close, "daily"), _returns(market_close, "daily"))
-    return weekly, daily
 
 
 def _refresh_snapshot(snapshot_path: Path) -> tuple[dict, list[dict]]:
@@ -121,10 +139,7 @@ def _refresh_snapshot(snapshot_path: Path) -> tuple[dict, list[dict]]:
     if not isinstance(payload, dict):
         raise RuntimeError("Sanil snapshot root must be a mapping")
     risk = payload["risk"]
-    market_close = _close_series(
-        stock.get_index_ohlcv_by_date(START_DATE, END_DATE, BENCHMARK_CODE),
-        BENCHMARK_ID,
-    )
+    market_close = _fetch_close(BENCHMARK_CODE)
     results: list[dict] = []
     for level_name, rows in risk["peers"].items():
         for row in rows:
@@ -132,16 +147,21 @@ def _refresh_snapshot(snapshot_path: Path) -> tuple[dict, list[dict]]:
             try:
                 code = PEER_CODES[peer_id]
             except KeyError as exc:
-                raise RuntimeError(f"missing KRX code for {peer_id}") from exc
+                raise RuntimeError(f"missing Korean listing code for {peer_id}") from exc
             weekly, daily = _fetch_beta(code, market_close)
-            prior_source = str(row.get("source_ref", ""))
+            capital_source = str(
+                row.get("capital_source_ref") or row.get("source_ref") or ""
+            )
             row.update(
                 {
                     "levered_beta": round(weekly.beta, 8),
                     "beta_standard_error": round(weekly.standard_error, 8),
-                    "source_ref": "https://data.krx.co.kr/",
-                    "capital_source_ref": prior_source,
-                    "estimation_method": "KRX adjusted-close weekly OLS with intercept",
+                    "source_ref": PRICE_SOURCE_REF,
+                    "provider_ref": PROVIDER_REF,
+                    "capital_source_ref": capital_source,
+                    "estimation_method": (
+                        "common KOSPI weekly OLS with intercept; daily OLS diagnostic"
+                    ),
                     "observations": weekly.observations,
                     "start_date": weekly.start_date,
                     "end_date": weekly.end_date,
@@ -158,7 +178,7 @@ def _refresh_snapshot(snapshot_path: Path) -> tuple[dict, list[dict]]:
                     "code": code,
                     "weekly": weekly,
                     "daily": daily,
-                    "capital_source_ref": prior_source,
+                    "capital_source_ref": capital_source,
                 }
             )
     risk.update(
@@ -167,10 +187,11 @@ def _refresh_snapshot(snapshot_path: Path) -> tuple[dict, list[dict]]:
             "return_frequency": "weekly",
             "estimation_window_months": 25,
             "as_of": max(item["weekly"].end_date for item in results),
-            "beta_source_ref": "https://data.krx.co.kr/",
+            "beta_source_ref": PRICE_SOURCE_REF,
+            "beta_provider_ref": PROVIDER_REF,
             "beta_methodology": (
-                "Common KOSPI benchmark; adjusted-close weekly OLS with intercept; "
-                "daily OLS retained as a non-synchronous-trading diagnostic"
+                "Common KOSPI benchmark; weekly OLS with intercept; daily OLS retained "
+                "as a frequency/non-synchronous-trading diagnostic"
             ),
         }
     )
@@ -183,12 +204,13 @@ def _render_register(payload: dict, results: Iterable[dict]) -> str:
         "# 산일전기 Beta·WACC 위험자료 원장",
         "",
         f"- 기준일: {risk['as_of']}",
-        "- Beta 원자료: 한국거래소(KRX) 조정종가",
+        "- 주가 원자료: 공개 한국 주가 시계열(네이버 금융 경로)",
+        f"- 수집기: {PROVIDER_REF}",
         f"- 공통 benchmark: {risk['benchmark_id']}",
         "- 주 추정치: 주간 수익률 OLS(상수항 포함)",
         "- 교차검증: 일간 OLS를 진단값으로 함께 보존",
-        "- 각 peer는 동일 기간·동일 benchmark·동일 빈도를 사용하며 회귀 표준오차를 저장한다.",
-        "- Debt / Equity는 각 행의 `capital_source_ref`에 표시된 외부 자본구조 스냅샷이며, Beta 원자료와 분리한다.",
+        "- 모든 peer에 동일 기간·benchmark·빈도를 적용하고 회귀 표준오차를 저장한다.",
+        "- Debt / Equity 원장은 Beta 시계열과 분리해 `capital_source_ref`로 추적한다.",
         "",
         "## L1→L4 회귀 결과",
         "",
@@ -210,7 +232,7 @@ def _render_register(payload: dict, results: Iterable[dict]) -> str:
             "",
             "| 항목 | 동결값 | 처리 |",
             "|---|---:|---|",
-            f"| 원화 무위험금리 | {float(risk['risk_free_rate']):.3%} | 동일 기준일 원화 장기국채 입력 |",
+            f"| 원화 무위험금리 | {float(risk['risk_free_rate']):.3%} | 원화 장기국채 입력 |",
             f"| Mature-market ERP | {float(risk['mature_market_erp']):.3%} | Country Risk와 분리 |",
             f"| 한국 Country Risk Premium | {float(risk['country_risk_premium']):.3%} | 노출계수와 별도 적용 |",
             f"| Country-risk lambda | {float(risk['country_risk_lambda']):.2f} | 미국 매출과 한국 생산·법인 노출을 분리한 판단값 |",
@@ -219,10 +241,10 @@ def _render_register(payload: dict, results: Iterable[dict]) -> str:
             "",
             "## 사용 규칙",
             "",
-            "1. KRX 회귀 Beta와 자본구조 입력의 출처를 분리한다.",
+            "1. 회귀 Beta와 자본구조 입력의 출처를 분리한다.",
             "2. Beta는 L1→L4 partial pooling 후 동일 목표구조로 relever한다.",
-            "3. 성장성·수주·부지매입은 FCF 경로에 반영하고 WACC에서 재보상하지 않는다.",
-            "4. 일간·주간 Beta 괴리가 크면 추정 불확실성으로 처리하며 임의 평균하지 않는다.",
+            "3. 성장성·수주·부지매입은 FCF에 반영하고 WACC에서 재보상하지 않는다.",
+            "4. 일간·주간 Beta 괴리는 추정 불확실성으로 남기며 임의 평균하지 않는다.",
             "",
         )
     )
@@ -242,7 +264,7 @@ def main() -> int:
     )
     args.register.write_text(_render_register(payload, results), encoding="utf-8")
     print(
-        f"updated {len(results)} KRX peer regressions through "
+        f"updated {len(results)} same-source peer regressions through "
         f"{payload['risk']['as_of']}"
     )
     return 0
