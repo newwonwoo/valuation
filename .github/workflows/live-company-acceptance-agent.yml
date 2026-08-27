@@ -6,6 +6,8 @@ on:
     paths:
       - 'config/live_company_fixture_specs.yaml'
       - 'src/valuation_engine/required_company_live.py'
+      - 'src/valuation_engine/live_company_artifact.py'
+      - 'tests/test_live_company_artifact_guardrails.py'
       - 'scripts/generate_required_live_company_fixtures.py'
       - 'scripts/apply_live_company_acceptance_registry.py'
       - '.github/workflows/live-company-acceptance-agent.yml'
@@ -37,7 +39,11 @@ jobs:
       - name: Validate full acceptance contract
         run: |
           PYTHONPATH=src python scripts/validate_live_company_acceptance.py
-          pytest -q tests/test_live_company_acceptance_manifest.py tests/test_live_company_capture.py
+          pytest -q \
+            tests/test_live_company_acceptance_manifest.py \
+            tests/test_live_company_capture.py \
+            tests/test_live_company_artifact.py \
+            tests/test_live_company_artifact_guardrails.py
       - name: Full regression
         run: pytest -q
       - name: OCI regression
