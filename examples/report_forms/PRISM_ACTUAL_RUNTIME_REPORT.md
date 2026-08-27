@@ -3,7 +3,7 @@
 - Run ID: `FULL-LIVE-1`
 - Execution mode: `live_primary`
 - Run status: **VERIFIED_FROZEN**
-- Attestation hash: `e36bc905636d9a25e4df68a4297e1db220d30ae139d93bc09bf81f4b94358992`
+- Attestation hash: `4e95414a6563805f7f49ad9d737d59f9d9ca810998750548e0dcc40dafc6df97`
 
 ## Execution Attestation
 
@@ -31,19 +31,19 @@
 |---|---|
 | Evidence Ledger | `3081f4574bf2b47592b44dae62d62555296ba1197312b70399f8b105d53fcbde` |
 | Assumption set | `091053e3e982493c131b3d77d7fce59e7e8b8c9f2b9da3b8fcdb7c9a2e9f0979` |
-| Scenario set | `d89824e3833bbd3609bbce68f173f02a244a5ce0a51d3bd2124cc002c2b300cd` |
+| Scenario set | `ef87d8f464c8272a2538047127ef06645348ac5552fe97a7f73f53992f8514bc` |
 | Beta | `NOT_APPLICABLE` |
 | WACC | `NOT_APPLICABLE` |
 | Capacity assessment | `a3545801a2b8a62a817dc8625fd5baccc104aa9ed22e1476e89b8c440ce55462` |
 | Capacity consumption | `NOT_APPLICABLE` |
 | Capacity scenario | `749eb5803378d1917242a7bbc628d9f735b5a3101a0593da19d5c3fa3a17ff24` |
-| Capacity valuation | `52311807d266389f4559f69892aa4d5eea01400141f637e53a36b9a60f2655b0` |
-| Capacity PER | `ac4dbe84f4237711fd5e011598439d96d483da3743367096e8c422f16cb5ef32` |
-| Capacity consistency | `29eb3ba2271b1b9a3ebed4e3e88da0aaa24250e7b1bbc75f70670d2ab7928ec7` |
-| Capacity audit | `ec0e49200cc0422c87b8c6a8b650bc9cecea86154dbfa83a04c9886badf5e6a4` |
-| Valuation | `b34eb1bc43cd86a479fcc94c21ac3c43f4cb3676ca4b0c7319e2c48a39d62374` |
-| Audit | `902151d716f0853ec520a8ad9a048bac9a19d60a14791aac85824d4bf21967fa` |
-| Intrinsic Freeze | `be1e10c38dbe6c786a95f21327a9858ab7a51a5ee3b0878a941f0634d1f14ee4` |
+| Capacity valuation | `26a1aaf558a3a1626e711265723d816d56e3f175919c8e9f19fd28856cfa4e58` |
+| Capacity PER | `d7d0730b0c54c63b2586b3e8f355b08f1e5205b7d697202fdb91ad4ac37a5e34` |
+| Capacity consistency | `dd6b3bfce8b91907a4d89c14f661e93b957449d343c920d16e7352a7805e4333` |
+| Capacity audit | `c3c87aec1adf84bd72369c1be022579ecc1491a81c9e19c31ed53076a315e4d9` |
+| Valuation | `9a85e0c4c2aa4258604a46f7c660105157c494da64aa63e9f3c726971e81b862` |
+| Audit | `469b553cdeb7496048dddcea9c4d6638db0b54feefcccdd92a490160bc4eeae9` |
+| Intrinsic Freeze | `ae680222f1feb481134d92748629befa4578e3065d9ff331f4155d0740fe5b3f` |
 
 ## Stage Trace
 
@@ -96,6 +96,12 @@
 - Base intrinsic: 70,000 KRW/share
 - Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.
 
+## Probability Calibration
+- Status: UNCALIBRATED
+- Numeric weighting: WITHHELD
+- Dataset hash: NOT_AVAILABLE
+- Snapshot hash: NOT_AVAILABLE
+
 ## Street Gap
 - 리포트 수: 2
 - 평균 목표가: 70,000 KRW
@@ -126,6 +132,8 @@
 - Valuation scope: FULL_INTRINSIC
 - Ledger snapshot: 3081f4574bf2b47592b44dae62d62555296ba1197312b70399f8b105d53fcbde
 - Assumption set: 091053e3e982493c131b3d77d7fce59e7e8b8c9f2b9da3b8fcdb7c9a2e9f0979
-- Valuation: b34eb1bc43cd86a479fcc94c21ac3c43f4cb3676ca4b0c7319e2c48a39d62374
-- Audit: 902151d716f0853ec520a8ad9a048bac9a19d60a14791aac85824d4bf21967fa
-- Freeze token: be1e10c38dbe6c786a95f21327a9858ab7a51a5ee3b0878a941f0634d1f14ee4
+- Valuation: 9a85e0c4c2aa4258604a46f7c660105157c494da64aa63e9f3c726971e81b862
+- Audit: 469b553cdeb7496048dddcea9c4d6638db0b54feefcccdd92a490160bc4eeae9
+- Freeze token: ae680222f1feb481134d92748629befa4578e3065d9ff331f4155d0740fe5b3f
+- Calibration dataset: NOT_APPLIED
+- Calibration snapshot: NOT_APPLIED
