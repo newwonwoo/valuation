@@ -1,47 +1,48 @@
 # 산일전기(062040) PRISM LIVE_PRIMARY 보고서
 
-- 데이터 기준일: **2026-08-25**
+- 데이터 기준일: **2026-08-26**
 - 검증 상태: **VERIFIED_FROZEN**
 - 투자검토 상태: **Preliminary source-backed underwrite**
-- 현재가(Freeze 후 로드): **169,300원**
+- 현재가(Freeze 후 로드): **176,900원**
 - Street 참고 목표가(Freeze 후 로드): **310,000원**
-- Down / Core / Bull: **83,265원 / 106,758원 / 126,091원**
-- Hierarchical Beta: **1.297**
-- WACC: **9.852%**
-- Core 반영 Capacity 프로젝트: **SANIL_SECOND_FACTORY_RAMP**
+- Down / Core / Bull: **119,833원 / 168,223원 / 217,104원**
+- Hierarchical Beta: **0.793**
+- WACC: **7.764%**
+- Core 반영 Capacity 프로젝트: **SANIL_SECOND_FACTORY_RAMP, SANIL_UHV_PROPERTY_ACQUISITION_20260826**
 
 ## PM 결론
 
-산일전기는 수요 검증 단계를 넘어 생산능력과 ramp가 가치의 핵심 병목이 된 회사입니다. 이번 run은 부지 통제·확정 CAPEX·ramp Evidence를 Core에서 누락하지 않고, 동일 프로젝트의 Capacity·CAPEX·ramp 경로를 Scenario와 DCF가 실제 소비한 뒤 Beta·WACC, Audit, Freeze를 통과했습니다.
+산일전기는 수요 검증 단계를 넘어 생산능력과 ramp가 가치의 핵심 병목이 된 회사입니다. 이번 run은 기존 제2공장뿐 아니라 2026년 8월 26일 체결된 초고압 변압기 생산용 부동산 양수계약을 별도 Core 프로젝트로 분리했습니다. 두 프로젝트의 Capacity·CAPEX·ramp 경로를 Scenario와 DCF가 실제 소비한 뒤 Beta·WACC, Audit, Freeze를 통과했습니다.
 
 현재가는 확률가중 기대값이 아니라 개별 Down/Core/Bull 세계관과 비교해야 합니다. 역사적 calibration cohort가 아직 충분하지 않아 Expected Value는 의도적으로 산출하지 않았습니다. 이 보고서의 FCFF 경로는 회사 가이던스가 아니라 2025 사업보고서와 2026년 2분기 IR을 기반으로 한 **PRISM analyst underwrite**입니다.
 
 ## Evidence Confidence / Underwriting Status
 
 - 회사 실적·수주·Capacity·부지·CAPEX: 회사 공시·IR 기반, **높은 증거 신뢰도**
-- Beta peer 관측: 실제 상장회사와 공개 `Beta (5Y)` 자료 기반, **중간 증거 신뢰도**
-- Beta 공급자는 benchmark·빈도·표준오차를 공개하지 않아 `beta_standard_error`를 임의 생성하지 않았습니다.
+- Beta peer 관측: 동일 KOSPI benchmark·동일 기간·주간 수익률 OLS 기반이며 회귀 표준오차와 시계열 hash를 보존, **중간~높은 증거 신뢰도**
+- 일간 OLS는 비동시거래·빈도 민감도 진단값으로 별도 보존하며 주간 Beta와 임의 평균하지 않습니다.
 - WACC 거시입력과 country-risk lambda: 출처가 명시된 외부 시장자료 및 PRISM 판단값, **중간 신뢰도**
 - Down/Core/Bull FCFF: 공시 사실에서 파생한 분석가 가정이며 회사 가이던스가 아닙니다.
-- 공식 KRX 수익률 회귀 provider가 가용해지면 현재 외부 Beta 스냅샷을 교체하는 것이 다음 품질개선 항목입니다.
+- 초고압 부동산 계약은 LAND_CONTROL과 692.5억원 현금유출을 공식 확정하지만, 정확한 생산 CAPA는 미공시이므로 증분 FCFF는 보수적 bounded underwrite입니다.
 
 ## Source Register
 
 - 2025 사업보고서: https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm
 - 2026년 2분기 IR: https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002&mode=view&page=1&s_cate=&s_keyword=&s_type=
+- 2026년 8월 26일 초고압 생산용 부동산 양수결정: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660
 - 실제 peer Beta·WACC 원장: https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md
 - PRISM underwriting assumptions: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#scenarios
 - Street 참고자료: https://www.yna.co.kr/amp/view/AKR20260811028700008
-- 현재가: https://data.krx.co.kr/
+- 현재가: https://finance.naver.com/item/main.naver?code=062040
 
 ---
 
 # PRISM Verified Controlled-Run Report
 
-- Run ID: `SANIL-062040-20260825`
+- Run ID: `SANIL-062040-20260826`
 - Execution mode: `live_primary`
 - Run status: **VERIFIED_FROZEN**
-- Attestation hash: `6b4047c5f21323baa3967a2471e7ecaf6cdd2229aab6261f7c56c61f5f244871`
+- Attestation hash: `f0445dd29a8ffb19912c3379efe528de0393e70cfae22d814b6f046c95f81117`
 
 ## Execution Attestation
 
@@ -69,21 +70,21 @@
 
 | Artifact | Hash |
 |---|---|
-| Evidence Ledger | `3dc77e6b69167052a84e618030d3f525c7cb37ed469d47916e6bce686d8a7ccd` |
-| Assumption set | `2eadbb684885cbddc817fa1a0a090e0bfeadcc055c89eee39701337b67233f65` |
-| Scenario set | `b1386b2822c9a5c962f18f5a289664b4930ebfebb1b8145a2f51160587a10d9b` |
-| Beta | `381bde9f06e4696a7312b9101b27480ccc241a5afa9ec381eb765dd64b1b08e4` |
-| WACC | `e3cde4b2f7b99b1ad5af3350d8e395bfa2828439558604c1b6283c7a0646d958` |
-| Capacity assessment | `c12b740b58356e43f623e446c44e0b1702f4b77deb353b5b4fa5d7c45c77553d` |
-| Capacity consumption | `da9cf6c223a74002008ab9cc71965841b9b613f06ff036ad9998be6b3b995e83` |
-| Capacity scenario | `d510f0f592e32fbda77b02ac638461f7387af814cdb173e35536d1afcff4a5ae` |
-| Capacity valuation | `60102044ac71025db38332ec33987e1ee05ec47db72284c8e9c846bf74143768` |
-| Capacity PER | `0bea0d594d764ed67e1176ddbb1e4a91b8f15ffbb32064adcf4de873535317b5` |
-| Capacity consistency | `c2dd9c39ebaf090884b6fa21ecc3aaa9ca3776548d0e796e9616d04250d5af80` |
-| Capacity audit | `7f7a8ee44063b3eba3105951f65f1df8132a60847ab837275e1fa8927d3f5a32` |
-| Valuation | `a417aae2e779c930ef2a8473ac2f662818fcf98766a5e8383f06e5718b4e9ce6` |
-| Audit | `77cd47509df8a7aeda2516db44b95a81cf7662d9fb87a6cfa0a0d7514f6af1f5` |
-| Intrinsic Freeze | `53606140ec9e89e14e953aab54c1f2b8eabfb4f4e3715f1252970d9deee5a221` |
+| Evidence Ledger | `b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0` |
+| Assumption set | `6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed` |
+| Scenario set | `8e75f10a05a561d7fb1c98d4ee431287c27a7cf0232aa6db52e8b50a8f34f974` |
+| Beta | `567700b4b5094f7aaa61cc030d0c8758ed146e9a38a3be4f4d56c5999f0a121e` |
+| WACC | `2beebb32d08c7f6e354a0771edba24e0f108aea78e9ba175b0b59de16257325b` |
+| Capacity assessment | `30990a2dd5985f766892ce206687c4aa4368e6a59dfef0da6f0f777939cb4543` |
+| Capacity consumption | `cc91fcc67ce9685c60520f028185caac90360ed900e1acaf0c0dc3cf60ea11b7` |
+| Capacity scenario | `d497a0b33d96c14fbef1bc813fa8a417bb56cf02fcf1df72173a50ba1530cb5d` |
+| Capacity valuation | `c4014c11bd060ce675b9eb0d5505e7571e5df6bd596b3eb5530591dae73aed52` |
+| Capacity PER | `3f41768bb057dfa6c56282eccb2d9c8c8327d7ed61b1834c2772d76ef4e49884` |
+| Capacity consistency | `bbe422353f84d98bdfe7662b34ff4e5b32f0dd7ba09a4f66b216c389433282fe` |
+| Capacity audit | `c209afaec588228ea553f88ae0f0d6cc281f8757b7dd3d23b2799a43f8f7c172` |
+| Valuation | `923c3eeeb6ab9a1431c01b08099fe2cf46ea4189d85e0242ea7df53ea7481413` |
+| Audit | `b7841249a258e400c405839518a25a8126395aded7b349626a9dc0f42d16ecda` |
+| Intrinsic Freeze | `c6bcd649751c64fde8579acf1718c9b5f7e34f834aa210c10bca22b839684260` |
 
 ## Stage Trace
 
@@ -134,7 +135,7 @@
 ### CSL:SANIL:POWER_BOTTLENECK_CAPACITY
 - 외부 환경 변화: Grid replacement, renewable interconnection and data-center power demand are increasing the scarcity of qualified transformer delivery slots.
 - 새 병목·전략적 필요: Buyers need proven manufacturers with customer qualification, backlog visibility and physically controllable expansion capacity.
-- 기업의 기존 강점: Sanil already has export customer access, a high-value specialty-transformer mix, an 88.9% utilized production base, reported backlog and a controlled second-factory site with committed CAPEX.
+- 기업의 기존 강점: Sanil already has export customer access, a high-value specialty-transformer mix, an 88.9% utilized production base, reported backlog and a controlled second-factory site with committed CAPEX and a separate signed UHV property-acquisition contract.
 - 비자명한 연결: The external power-equipment bottleneck specifically revalues Sanil's existing customer relationships and pre-invested site because those assets can convert scarce delivery slots into backlog conversion and FCFF.
 - 시장의 인식 공백: A generic small-transformer framing can separate current earnings from the option value of land-controlled capacity and overlook that the site, customer access and production know-how already exist.
 - 가치 포착 경로: land control and committed CAPEX → equipment/ramp execution → effective capacity → backlog conversion → revenue, margin and free cash flow
@@ -142,28 +143,28 @@
 - 시장 인식 트리거: official second-factory equipment or production ramp disclosure; effective-capacity growth with backlog conversion; high-value product mix and margin retention after ramp
 - 반증·철회 조건: the company cancels the program or confirms it is fully included in the frozen baseline; backlog or orders decline before capacity converts to shipments; ramp costs and margin normalization offset the added production ceiling
 - 다음 검증: next quarterly filing for factory ramp, CAPEX and utilization; orders-to-revenue conversion and customer concentration; cash conversion after expansion spending
-- Supporting Evidence: E:SANIL:orders, E:SANIL:backlog, E:SANIL:utilization, E:SANIL:expansion_land_control, E:SANIL:expansion_site_area, E:SANIL:expansion_capex_committed
+- Supporting Evidence: E:SANIL:orders, E:SANIL:backlog, E:SANIL:utilization, E:SANIL:expansion_land_control, E:SANIL:expansion_site_area, E:SANIL:expansion_capex_committed, E:SANIL:UHV:land_control, E:SANIL:UHV:capex_committed
 - Contradicting Evidence: 없음
 - LLM confidence: 78%
 
 ## Intrinsic Value
-- Down intrinsic: 83,264.96 KRW/share
-- Core intrinsic: 106,758.26 KRW/share
-- Bull intrinsic: 126,090.78 KRW/share
+- Down intrinsic: 119,832.77 KRW/share
+- Core intrinsic: 168,223.31 KRW/share
+- Bull intrinsic: 217,104.3 KRW/share
 - Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.
 
 ## Street Gap
 - 리포트 수: 1
 - 평균 목표가: 310,000 KRW
-- Down 대비: -226,735.04 (-73.1%)
-- Core 대비: -203,241.74 (-65.6%)
-- Bull 대비: -183,909.22 (-59.3%)
+- Down 대비: -190,167.23 (-61.3%)
+- Core 대비: -141,776.69 (-45.7%)
+- Bull 대비: -92,895.7 (-30.0%)
 
 ## Current Market Compare
-- 현재가: 169,300 KRW (2026-08-25)
-- Down 기대수익 간격: -86,035.04 (-50.8%)
-- Core 기대수익 간격: -62,541.74 (-36.9%)
-- Bull 기대수익 간격: -43,209.22 (-25.5%)
+- 현재가: 176,900 KRW (2026-08-26)
+- Down 기대수익 간격: -57,067.23 (-32.3%)
+- Core 기대수익 간격: -8,676.69 (-4.9%)
+- Bull 기대수익 간격: 40,204.3 (+22.7%)
 
 ## Module Impact / Research Efficiency
 - 측정 완료: DETERMINISTIC_VALUATION
@@ -184,8 +185,8 @@
 
 ## Run Integrity
 - Valuation scope: FULL_INTRINSIC
-- Ledger snapshot: 3dc77e6b69167052a84e618030d3f525c7cb37ed469d47916e6bce686d8a7ccd
-- Assumption set: 2eadbb684885cbddc817fa1a0a090e0bfeadcc055c89eee39701337b67233f65
-- Valuation: a417aae2e779c930ef2a8473ac2f662818fcf98766a5e8383f06e5718b4e9ce6
-- Audit: 77cd47509df8a7aeda2516db44b95a81cf7662d9fb87a6cfa0a0d7514f6af1f5
-- Freeze token: 53606140ec9e89e14e953aab54c1f2b8eabfb4f4e3715f1252970d9deee5a221
+- Ledger snapshot: b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0
+- Assumption set: 6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed
+- Valuation: 923c3eeeb6ab9a1431c01b08099fe2cf46ea4189d85e0242ea7df53ea7481413
+- Audit: b7841249a258e400c405839518a25a8126395aded7b349626a9dc0f42d16ecda
+- Freeze token: c6bcd649751c64fde8579acf1718c9b5f7e34f834aa210c10bca22b839684260

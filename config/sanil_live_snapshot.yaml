@@ -1,11 +1,11 @@
 version: 1
-cutoff: '2026-08-25'
+cutoff: '2026-08-26'
 company:
   target_id: KR:DART:00366438
   legal_name: 산일전기 주식회사
   ticker: '062040'
   jurisdiction: KR
-  corp_code: '00366438'
+  corp_code: 00366438
   segment_id: power_transformers
 sources:
   annual_report:
@@ -23,21 +23,27 @@ sources:
   risk_snapshot:
     source_id: PRISM_EXTERNAL_RISK_SNAPSHOT
     source_ref: https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md
-    document_id: SANIL_RISK_SOURCE_REGISTER_20260825
-    document_hash: 2be1c58a95cccd92fc546f65125f17da728d0849bc432279363221d15e229620
+    document_id: SANIL_RISK_SOURCE_REGISTER_20260825_REGRESSION
+    document_hash: 1d26ac9845f7b1397781ec641a57b5755d38612905f9caefc7f8f3fa0d9a9fbd
     published_at: '2026-08-25T18:00:00+09:00'
   underwriting:
     source_id: PRISM_UNDERWRITING_MODEL
     source_ref: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#scenarios
-    document_id: SANIL_UNDERWRITING_20260825
-    document_hash: dea034ebf103408f79fbe73cc13aadcf6e6d034dd13c15fc90cc41c6650ca2ec
-    published_at: '2026-08-25T18:00:00+09:00'
+    document_id: SANIL_UNDERWRITING_20260826
+    document_hash: 62774daa6df74c05a1c3937e9241ec875938babcfc0027272b523b9f900e11b6
+    published_at: '2026-08-26T18:00:00+09:00'
+  uhv_property_acquisition:
+    source_id: KR_OPENDART
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660
+    document_id: SANIL_UHV_PROPERTY_ACQUISITION_20260826
+    document_hash: 79e63422aca51b90f44a5a97917188cf562006e20e17a3665820ab83bc3528c8
+    published_at: '2026-08-26T00:00:00+09:00'
 facts:
   revenue_2025_krw_billion: 501.946
   operating_profit_2025_krw_billion: 178.634
   net_income_2025_krw_billion: 148.922
   cash_2025_krw_billion: 108.606
-  short_term_debt_2025_krw_billion: 0.520
+  short_term_debt_2025_krw_billion: 0.52
   new_orders_2025_krw_billion: 565.974
   backlog_2025_krw_billion: 448.807
   nameplate_capacity_2025_count: 35431
@@ -56,93 +62,228 @@ facts:
   net_income_h1_2026_krw_billion: 100.492
   new_orders_q2_2026_krw_billion: 243.5
   backlog_q2_2026_krw_billion: 556.7
+  uhv_property_contract_date: '2026-08-26'
+  uhv_property_closing_date: '2027-02-19'
+  uhv_property_amount_krw_billion: 69.25
+  uhv_property_asset_ratio: 0.1015
+  uhv_property_deposit_krw_billion: 6.925
+  uhv_property_interim_krw_billion: 20.775
+  uhv_property_balance_krw_billion: 41.55
+  uhv_property_self_funded: true
+  uhv_property_location: 경기도 안산시 단원구 성곡동 667-1 토지 및 건물
+  uhv_property_purpose: 초고압 변압기 생산설비 구축 및 기존 제품 생산능력 확대
 capacity_project:
   project_id: SANIL_SECOND_FACTORY_RAMP
   baseline_inclusion: not_in_baseline
   ramp_date: '2026-12-31'
-  rationale: >-
-    The site is controlled and the committed expansion program remains an incremental
-    ramp relative to the frozen 2025 capacity baseline. Exact incremental revenue capacity
-    is not disclosed, so the Core path is bounded rather than zero-filled.
+  rationale: The site is controlled and the committed expansion program remains an
+    incremental ramp relative to the frozen 2025 capacity baseline. Exact incremental
+    revenue capacity is not disclosed, so the Core path is bounded rather than zero-filled.
 risk:
-  benchmark_id: PROVIDER_5Y_MARKET_BETA
-  return_frequency: provider_5y
-  estimation_window_months: 60
+  benchmark_id: FDR_KOSPI_KS11
+  return_frequency: weekly
+  estimation_window_months: 25
   as_of: '2026-08-25'
   tax_rate: 0.22
   target_equity_weight: 0.98
   target_debt_weight: 0.02
   risk_free_rate: 0.04334
-  mature_market_erp: 0.04230
-  country_risk_premium: 0.00640
+  mature_market_erp: 0.0423
+  country_risk_premium: 0.0064
   country_risk_lambda: 0.25
-  pre_tax_cost_of_debt: 0.04690
+  pre_tax_cost_of_debt: 0.0469
   peers:
     L1_BROAD_SECTOR:
-      - peer_id: LS_ELECTRIC_010120
-        levered_beta: 1.83
-        debt_to_equity: 0.69
-        beta_standard_error: null
-        source_ref: https://stockanalysis.com/quote/krx/010120/statistics/
-        estimation_method: StockAnalysis Beta (5Y)
-      - peer_id: HYOSUNG_HEAVY_INDUSTRIES_298040
-        levered_beta: 2.16
-        debt_to_equity: 0.25
-        beta_standard_error: null
-        source_ref: https://stockanalysis.com/quote/krx/298040/statistics/
-        estimation_method: StockAnalysis Beta (5Y)
+    - peer_id: LS_ELECTRIC_010120
+      levered_beta: 1.13776457
+      debt_to_equity: 0.69
+      beta_standard_error: 0.18613203
+      source_ref: https://finance.naver.com/
+      estimation_method: common KOSPI weekly OLS with intercept; daily OLS diagnostic
+      provider_ref: https://github.com/FinanceData/FinanceDataReader
+      capital_source_ref: https://stockanalysis.com/quote/krx/010120/statistics/
+      observations: 108
+      start_date: '2024-08-09'
+      end_date: '2026-08-25'
+      price_series_hash: 115c31456954df4c9513fdd5e5a2c85e4b88b87987babf32b8a1b6157ca082a8
+      daily_beta_diagnostic: 1.12522732
+      daily_beta_standard_error: 0.06881182
+      r_squared: 0.26062741
+    - peer_id: HYOSUNG_HEAVY_INDUSTRIES_298040
+      levered_beta: 1.08906236
+      debt_to_equity: 0.25
+      beta_standard_error: 0.17337332
+      source_ref: https://finance.naver.com/
+      estimation_method: common KOSPI weekly OLS with intercept; daily OLS diagnostic
+      provider_ref: https://github.com/FinanceData/FinanceDataReader
+      capital_source_ref: https://stockanalysis.com/quote/krx/298040/statistics/
+      observations: 108
+      start_date: '2024-08-09'
+      end_date: '2026-08-25'
+      price_series_hash: 111cfa34ab2852774450bab8a117c8d0534d93b90139e8520bf7f0b502dab4dd
+      daily_beta_diagnostic: 1.07117194
+      daily_beta_standard_error: 0.0616674
+      r_squared: 0.27126998
     L2_INDUSTRY:
-      - peer_id: HD_HYUNDAI_ELECTRIC_267260
-        levered_beta: 1.17
-        debt_to_equity: 0.08
-        beta_standard_error: null
-        source_ref: https://stockanalysis.com/quote/krx/267260/statistics/
-        estimation_method: StockAnalysis Beta (5Y)
-      - peer_id: ILJIN_ELECTRIC_103590
-        levered_beta: 1.81
-        debt_to_equity: 0.22
-        beta_standard_error: null
-        source_ref: https://stockanalysis.com/quote/krx/103590/statistics/
-        estimation_method: StockAnalysis Beta (5Y)
+    - peer_id: HD_HYUNDAI_ELECTRIC_267260
+      levered_beta: 0.87116675
+      debt_to_equity: 0.08
+      beta_standard_error: 0.16559531
+      source_ref: https://finance.naver.com/
+      estimation_method: common KOSPI weekly OLS with intercept; daily OLS diagnostic
+      provider_ref: https://github.com/FinanceData/FinanceDataReader
+      capital_source_ref: https://stockanalysis.com/quote/krx/267260/statistics/
+      observations: 108
+      start_date: '2024-08-09'
+      end_date: '2026-08-25'
+      price_series_hash: 587c869f440e11de4fae4cf556c3a67366689eca4923c143c38be9f1b8000ae1
+      daily_beta_diagnostic: 1.00134057
+      daily_beta_standard_error: 0.05762925
+      r_squared: 0.20703913
+    - peer_id: ILJIN_ELECTRIC_103590
+      levered_beta: 1.14389717
+      debt_to_equity: 0.22
+      beta_standard_error: 0.20270588
+      source_ref: https://finance.naver.com/
+      estimation_method: common KOSPI weekly OLS with intercept; daily OLS diagnostic
+      provider_ref: https://github.com/FinanceData/FinanceDataReader
+      capital_source_ref: https://stockanalysis.com/quote/krx/103590/statistics/
+      observations: 108
+      start_date: '2024-08-09'
+      end_date: '2026-08-25'
+      price_series_hash: 24637a32eecd7c4fdf1d901f5689ca9d4dc833f2f96ee787a555ee1862b44052
+      daily_beta_diagnostic: 1.04829916
+      daily_beta_standard_error: 0.06632359
+      r_squared: 0.23102035
     L3_RISK_DRIVER_SUBINDUSTRY:
-      - peer_id: TAIHAN_CABLE_001440
-        levered_beta: 2.18
-        debt_to_equity: 0.67
-        beta_standard_error: null
-        source_ref: https://stockanalysis.com/quote/krx/001440/statistics/
-        estimation_method: StockAnalysis Beta (5Y)
-      - peer_id: CHERYONG_ELECTRIC_033100
-        levered_beta: 1.24
-        debt_to_equity: 0.08
-        beta_standard_error: null
-        source_ref: https://stockanalysis.com/quote/kosdaq/033100/statistics/
-        estimation_method: StockAnalysis Beta (5Y)
+    - peer_id: TAIHAN_CABLE_001440
+      levered_beta: 1.11196813
+      debt_to_equity: 0.67
+      beta_standard_error: 0.17821734
+      source_ref: https://finance.naver.com/
+      estimation_method: common KOSPI weekly OLS with intercept; daily OLS diagnostic
+      provider_ref: https://github.com/FinanceData/FinanceDataReader
+      capital_source_ref: https://stockanalysis.com/quote/krx/001440/statistics/
+      observations: 108
+      start_date: '2024-08-09'
+      end_date: '2026-08-25'
+      price_series_hash: 74db671e206bd55c46cdc6c3d02a27dd4d249c3d2ad7dceb5521bc14ac312185
+      daily_beta_diagnostic: 1.06552222
+      daily_beta_standard_error: 0.05901659
+      r_squared: 0.26861259
+    - peer_id: CHERYONG_ELECTRIC_033100
+      levered_beta: 0.88535957
+      debt_to_equity: 0.08
+      beta_standard_error: 0.2106909
+      source_ref: https://finance.naver.com/
+      estimation_method: common KOSPI weekly OLS with intercept; daily OLS diagnostic
+      provider_ref: https://github.com/FinanceData/FinanceDataReader
+      capital_source_ref: https://stockanalysis.com/quote/kosdaq/033100/statistics/
+      observations: 108
+      start_date: '2024-08-09'
+      end_date: '2026-08-25'
+      price_series_hash: d717b307712b482b564cc1b37793993a2320907971dfad6164ada57f83d378a9
+      daily_beta_diagnostic: 0.98569262
+      daily_beta_standard_error: 0.06554678
+      r_squared: 0.14279884
     L4_ECONOMIC_TWINS:
-      - peer_id: KWANGMYUNG_ELECTRIC_017040
-        levered_beta: 1.25
-        debt_to_equity: 0.21
-        beta_standard_error: null
-        source_ref: https://stockanalysis.com/quote/krx/017040/statistics/
-        estimation_method: StockAnalysis Beta (5Y)
-      - peer_id: CHEIL_ELECTRIC_199820
-        levered_beta: 1.58
-        debt_to_equity: 0.22
-        beta_standard_error: null
-        source_ref: https://stockanalysis.com/quote/kosdaq/199820/statistics/
-        estimation_method: StockAnalysis Beta (5Y)
+    - peer_id: KWANGMYUNG_ELECTRIC_017040
+      levered_beta: 0.3665274
+      debt_to_equity: 0.21
+      beta_standard_error: 0.16050316
+      source_ref: https://finance.naver.com/
+      estimation_method: common KOSPI weekly OLS with intercept; daily OLS diagnostic
+      provider_ref: https://github.com/FinanceData/FinanceDataReader
+      capital_source_ref: https://stockanalysis.com/quote/krx/017040/statistics/
+      observations: 108
+      start_date: '2024-08-09'
+      end_date: '2026-08-25'
+      price_series_hash: e55c9189dabbb3bcf4bb779c7833f577f542076f085cb53ce5780a66022d656e
+      daily_beta_diagnostic: 0.35768592
+      daily_beta_standard_error: 0.05781725
+      r_squared: 0.04689027
+    - peer_id: CHEIL_ELECTRIC_199820
+      levered_beta: 0.7138458
+      debt_to_equity: 0.22
+      beta_standard_error: 0.214867
+      source_ref: https://finance.naver.com/
+      estimation_method: common KOSPI weekly OLS with intercept; daily OLS diagnostic
+      provider_ref: https://github.com/FinanceData/FinanceDataReader
+      capital_source_ref: https://stockanalysis.com/quote/kosdaq/199820/statistics/
+      observations: 108
+      start_date: '2024-08-09'
+      end_date: '2026-08-25'
+      price_series_hash: 422a8119bd93f83424001ab91a87abdb2137745c3f31de84f113dc99222d7481
+      daily_beta_diagnostic: 0.96925052
+      daily_beta_standard_error: 0.07119233
+      r_squared: 0.09430712
+  beta_observation_end: '2026-08-25'
+  beta_source_ref: https://finance.naver.com/
+  beta_provider_ref: https://github.com/FinanceData/FinanceDataReader
+  beta_methodology: Common KOSPI benchmark; weekly OLS with intercept; daily OLS retained
+    as a frequency/non-synchronous-trading diagnostic
 scenarios:
   Down:
-    fcff_krw_billion: [145, 160, 180, 200, 220]
+    fcff_krw_billion:
+    - 145
+    - 160
+    - 180
+    - 200
+    - 220
     expansion_capex_krw_billion: 42.0
-    terminal_growth: 0.020
-    terminal_roic: 0.130
+    terminal_growth: 0.02
+    terminal_roic: 0.13
+    uhv_incremental_fcff_krw_billion:
+    - 0
+    - 0
+    - 3
+    - 10
+    - 18
+    uhv_property_capex_krw_billion: 69.25
+    uhv_ramp_years: 3.0
   Core:
-    fcff_krw_billion: [175, 195, 220, 245, 270]
+    fcff_krw_billion:
+    - 175
+    - 195
+    - 220
+    - 245
+    - 270
     expansion_capex_krw_billion: 42.0
     terminal_growth: 0.025
-    terminal_roic: 0.150
+    terminal_roic: 0.15
+    uhv_incremental_fcff_krw_billion:
+    - 0
+    - 0
+    - 10
+    - 25
+    - 42
+    uhv_property_capex_krw_billion: 69.25
+    uhv_ramp_years: 2.0
   Bull:
-    fcff_krw_billion: [185, 210, 240, 270, 305]
+    fcff_krw_billion:
+    - 185
+    - 210
+    - 240
+    - 270
+    - 305
     expansion_capex_krw_billion: 42.0
-    terminal_growth: 0.030
-    terminal_roic: 0.170
+    terminal_growth: 0.03
+    terminal_roic: 0.17
+    uhv_incremental_fcff_krw_billion:
+    - 0
+    - 2
+    - 18
+    - 42
+    - 68
+    uhv_property_capex_krw_billion: 69.25
+    uhv_ramp_years: 1.5
+uhv_capacity_project:
+  project_id: SANIL_UHV_PROPERTY_ACQUISITION_20260826
+  baseline_inclusion: not_in_baseline
+  contract_date: '2026-08-26'
+  closing_date: '2027-02-19'
+  ramp_boundary: '2027-02-19'
+  rationale: A signed official property-acquisition contract crosses LAND_CONTROL
+    and is incremental to the frozen operating baseline. Exact production capacity
+    is not disclosed, so the Core scenario uses a bounded incremental FCFF cohort
+    together with the full disclosed acquisition cash outflow.

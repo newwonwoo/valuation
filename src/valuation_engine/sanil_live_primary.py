@@ -93,6 +93,8 @@ TICKER = "062040"
 SEGMENT_ID = "power_transformers"
 CAPACITY_PROJECT_ID = "SANIL_SECOND_FACTORY_RAMP"
 CAPACITY_PATH_ROOT = f"capacity_project:{CAPACITY_PROJECT_ID}"
+UHV_CAPACITY_PROJECT_ID = "SANIL_UHV_PROPERTY_ACQUISITION_20260826"
+UHV_CAPACITY_PATH_ROOT = f"capacity_project:{UHV_CAPACITY_PROJECT_ID}"
 SCENARIOS = ("Down", "Core", "Bull")
 FORECAST_YEARS = 5
 
@@ -169,6 +171,10 @@ class SanilSnapshot:
     def capacity_project(self) -> Mapping[str, Any]:
         return self.payload["capacity_project"]
 
+    @property
+    def uhv_capacity_project(self) -> Mapping[str, Any]:
+        return self.payload["uhv_capacity_project"]
+
     def validate(self) -> None:
         if int(self.payload.get("version", 0)) != 1:
             raise ValueError("Sanil snapshot version must be 1")
@@ -188,6 +194,19 @@ class SanilSnapshot:
             roic = float(row["terminal_roic"])
             if not 0 <= growth < roic:
                 raise ValueError(f"{name} terminal growth/ROIC is invalid")
+            uhv_fcff = tuple(row.get("uhv_incremental_fcff_krw_billion", ()))
+            if len(uhv_fcff) != FORECAST_YEARS or any(
+                float(value) < 0 for value in uhv_fcff
+            ):
+                raise ValueError(
+                    f"{name} requires five non-negative UHV incremental FCFF values"
+                )
+            if float(row.get("uhv_property_capex_krw_billion", 0)) <= 0:
+                raise ValueError(f"{name} requires positive UHV property CAPEX")
+            if float(row.get("uhv_ramp_years", 0)) <= 0:
+                raise ValueError(f"{name} requires positive UHV ramp duration")
+        if self.uhv_capacity_project.get("project_id") != UHV_CAPACITY_PROJECT_ID:
+            raise ValueError("Sanil UHV capacity project identity drifted")
         for source in self.sources.values():
             document_hash = str(source.get("document_hash", ""))
             if len(document_hash) != 64 or any(ch not in "0123456789abcdef" for ch in document_hash):
@@ -267,6 +286,10 @@ def _evidence_id(metric: str) -> str:
     return f"E:SANIL:{metric}"
 
 
+def _uhv_evidence_id(role: str) -> str:
+    return f"E:SANIL:UHV:{role}"
+
+
 def _record(
     snapshot: SanilSnapshot,
     *,
@@ -278,10 +301,11 @@ def _record(
     effective_date: str,
     confidence: float = 1.0,
     notes: str = "",
+    evidence_id: str | None = None,
 ) -> EvidenceRecord:
     source = _source(snapshot, source_key)
     return EvidenceRecord(
-        id=_evidence_id(metric),
+        id=(evidence_id or _evidence_id(metric)),
         target=TARGET_ID,
         metric=metric,
         value=value,
@@ -346,6 +370,13 @@ def _official_records(snapshot: SanilSnapshot) -> tuple[EvidenceRecord, ...]:
         _record(snapshot, metric="expansion_baseline_inclusion", value=str(snapshot.capacity_project["baseline_inclusion"]), unit="dimensionless", source_key=q2, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2026-06-30", confidence=0.75, notes=str(snapshot.capacity_project["rationale"])),
         _record(snapshot, metric="expansion_cancelled", value=False, unit="dimensionless", source_key=q2, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2026-06-30"),
         _record(snapshot, metric="no_active_capacity_expansion", value=False, unit="dimensionless", source_key=q2, source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date="2026-06-30"),
+        _record(snapshot, metric="expansion_land_control", value=True, unit="dimensionless", source_key="uhv_property_acquisition", source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["uhv_property_contract_date"]), notes="Signed official property-acquisition contract establishes LAND_CONTROL for the separate UHV project.", evidence_id=_uhv_evidence_id("land_control")),
+        _record(snapshot, metric="expansion_capex_committed", value=f["uhv_property_amount_krw_billion"], unit="KRW_billion", source_key="uhv_property_acquisition", source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["uhv_property_contract_date"]), notes="Full disclosed property acquisition consideration; exact production capacity is not disclosed.", evidence_id=_uhv_evidence_id("capex_committed")),
+        _record(snapshot, metric="expansion_ramp_date", value=str(f["uhv_property_closing_date"]), unit="dimensionless", source_key="uhv_property_acquisition", source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["uhv_property_contract_date"]), confidence=0.80, notes="Closing/registration date is the earliest asset-control boundary, not a claimed production start.", evidence_id=_uhv_evidence_id("ramp_boundary")),
+        _record(snapshot, metric="expansion_baseline_inclusion", value="not_in_baseline", unit="dimensionless", source_key="uhv_property_acquisition", source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["uhv_property_contract_date"]), notes=str(snapshot.uhv_capacity_project["rationale"]), evidence_id=_uhv_evidence_id("baseline_inclusion")),
+        _record(snapshot, metric="uhv_property_contract_amount", value=f["uhv_property_amount_krw_billion"], unit="KRW_billion", source_key="uhv_property_acquisition", source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["uhv_property_contract_date"]), evidence_id=_uhv_evidence_id("contract_amount")),
+        _record(snapshot, metric="uhv_property_asset_ratio", value=f["uhv_property_asset_ratio"], unit="ratio", source_key="uhv_property_acquisition", source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["uhv_property_contract_date"]), evidence_id=_uhv_evidence_id("asset_ratio")),
+        _record(snapshot, metric="uhv_property_self_funded", value=f["uhv_property_self_funded"], unit="dimensionless", source_key="uhv_property_acquisition", source_layer=EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN, effective_date=str(f["uhv_property_contract_date"]), evidence_id=_uhv_evidence_id("self_funded")),
         _record(snapshot, metric="revenue_h1_2026", value=f["revenue_h1_2026_krw_billion"], unit="KRW_billion", source_key=q2, source_layer=EvidenceSourceLayer.REALIZED_OR_FILING, effective_date="2026-06-30"),
         _record(snapshot, metric="operating_profit_h1_2026", value=f["operating_profit_h1_2026_krw_billion"], unit="KRW_billion", source_key=q2, source_layer=EvidenceSourceLayer.REALIZED_OR_FILING, effective_date="2026-06-30"),
         _record(snapshot, metric="net_income_h1_2026", value=f["net_income_h1_2026_krw_billion"], unit="KRW_billion", source_key=q2, source_layer=EvidenceSourceLayer.REALIZED_OR_FILING, effective_date="2026-06-30"),
@@ -371,6 +402,57 @@ def _underwriting_records(snapshot: SanilSnapshot) -> tuple[EvidenceRecord, ...]
                     notes="PRISM bounded underwriting input derived from official facts; not company guidance.",
                 )
             )
+        for year, value in enumerate(
+            inputs["uhv_incremental_fcff_krw_billion"], start=1
+        ):
+            rows.append(
+                _record(
+                    snapshot,
+                    metric=f"model_{scenario.lower()}_uhv_fcff_year_{year}",
+                    value=value,
+                    unit="KRW_billion",
+                    source_key=source,
+                    source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
+                    effective_date=snapshot.cutoff,
+                    confidence=(0.45 if scenario != "Core" else 0.55),
+                    notes=(
+                        "Bounded incremental UHV-property FCFF cohort; official filing "
+                        "establishes land control and purpose, not exact capacity or earnings."
+                    ),
+                )
+            )
+        rows.append(
+            _record(
+                snapshot,
+                metric=f"model_{scenario.lower()}_uhv_property_capex",
+                value=inputs["uhv_property_capex_krw_billion"],
+                unit="KRW_billion",
+                source_key=source,
+                source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
+                effective_date=snapshot.cutoff,
+                confidence=0.90,
+                notes=(
+                    "DCF cash-outflow input equals the full disclosed property "
+                    "consideration and is deducted separately from incremental FCFF."
+                ),
+            )
+        )
+        rows.append(
+            _record(
+                snapshot,
+                metric=f"model_{scenario.lower()}_uhv_ramp_years",
+                value=inputs["uhv_ramp_years"],
+                unit="years",
+                source_key=source,
+                source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
+                effective_date=snapshot.cutoff,
+                confidence=(0.45 if scenario != "Core" else 0.55),
+                notes=(
+                    "Bounded duration from property closing to a stabilized UHV capacity "
+                    "contribution; not company guidance."
+                ),
+            )
+        )
         for key in ("terminal_growth", "terminal_roic"):
             rows.append(
                 _record(
@@ -492,9 +574,9 @@ def _primary_collector(snapshot: SanilSnapshot):
         "|".join(str(source["document_hash"]) for source in snapshot.sources.values()).encode("utf-8")
     ).hexdigest()
 
-    records_by_metric = {item.metric: item for item in records}
-    if len(records_by_metric) != len(records):
-        raise ValueError("Sanil collector metrics must be unique")
+    records_by_metric: dict[str, list[EvidenceRecord]] = {}
+    for item in records:
+        records_by_metric.setdefault(item.metric, []).append(item)
 
     def collect(request: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
         unknown = tuple(
@@ -508,8 +590,9 @@ def _primary_collector(snapshot: SanilSnapshot):
                 + ", ".join(unknown)
             )
         selected = tuple(
-            records_by_metric[metric]
+            item
             for metric in dict.fromkeys(request.required_metrics)
+            for item in records_by_metric[metric]
         )
         return EvidenceCollectionBatch(
             source_id="KR_OPENDART",
@@ -734,6 +817,17 @@ def _intelligence_officer(context) -> IntelligenceProposal:
             kill="official disclosure shows the program is cancelled or already fully embedded in baseline",
         ),
         _hypothesis(
+            "H:SANIL:UHV_CAPACITY",
+            "the signed UHV property contract must enter Core as a separate bounded capacity cohort with its full disclosed cash outflow",
+            (
+                _uhv_evidence_id("land_control"),
+                _uhv_evidence_id("capex_committed"),
+                _uhv_evidence_id("ramp_boundary"),
+                _uhv_evidence_id("baseline_inclusion"),
+            ),
+            kill="the acquisition is cancelled, fails to close or is proven fully embedded in the prior baseline",
+        ),
+        _hypothesis(
             "H:SANIL:CAPITAL",
             "net cash and a low long-run debt weight support the EV-to-equity bridge without lowering operating-risk Beta",
             (_evidence_id("cash"), _evidence_id("debt")),
@@ -753,7 +847,8 @@ def _intelligence_officer(context) -> IntelligenceProposal:
         company_strength=(
             "Sanil already has export customer access, a high-value specialty-transformer "
             "mix, an 88.9% utilized production base, reported backlog and a controlled "
-            "second-factory site with committed CAPEX."
+            "second-factory site with committed CAPEX and a separate signed UHV "
+            "property-acquisition contract."
         ),
         linkage_thesis=(
             "The external power-equipment bottleneck specifically revalues Sanil's "
@@ -783,8 +878,14 @@ def _intelligence_officer(context) -> IntelligenceProposal:
             _evidence_id("expansion_land_control"),
             _evidence_id("expansion_site_area"),
             _evidence_id("expansion_capex_committed"),
+            _uhv_evidence_id("land_control"),
+            _uhv_evidence_id("capex_committed"),
         ),
-        hypothesis_ids=("H:SANIL:CAPACITY", "H:SANIL:Core"),
+        hypothesis_ids=(
+            "H:SANIL:CAPACITY",
+            "H:SANIL:UHV_CAPACITY",
+            "H:SANIL:Core",
+        ),
         recognition_triggers=(
             "official second-factory equipment or production ramp disclosure",
             "effective-capacity growth with backlog conversion",
@@ -938,6 +1039,133 @@ def _bridge_analyst(context, hypotheses, red_team) -> BridgeProposalBundle:
             )
         )
 
+        for year in range(1, FORECAST_YEARS + 1):
+            metric = f"model_{scenario.lower()}_uhv_fcff_year_{year}"
+            value = float(context.ledger.get(_evidence_id(metric)).value)
+            bridge_id = f"B:SANIL:{scenario}:uhv_fcff_year_{year}"
+            path = f"sanil:{scenario.lower()}:uhv_fcff_year_{year}"
+            evidence_ids = (_evidence_id(metric),)
+            hypothesis = f"H:SANIL:{scenario}"
+            direction = Direction.UP if value > 0 else Direction.UNCHANGED
+            if scenario == "Core" and year == FORECAST_YEARS:
+                bridge_id = "B:SANIL:UHV:CAPACITY"
+                path = f"{UHV_CAPACITY_PATH_ROOT}:capacity"
+                evidence_ids = (
+                    _uhv_evidence_id("land_control"),
+                    _uhv_evidence_id("capex_committed"),
+                    _evidence_id(metric),
+                )
+                hypothesis = "H:SANIL:UHV_CAPACITY"
+            drafts.append(
+                BridgeDraft(
+                    assumption_key=f"uhv_fcff_year_{year}",
+                    scenario_id=scenario,
+                    bridge=_bridge(
+                        bridge_id=bridge_id,
+                        evidence_ids=evidence_ids,
+                        hypothesis_id=hypothesis,
+                        affected_variable=AffectedVariable.QUANTITY,
+                        direction=direction,
+                        old_value=0.0,
+                        new_value=value,
+                        unit="KRW_billion",
+                        economic_path_id=path,
+                        rationale=(
+                            "bounded incremental FCFF cohort for the separately "
+                            "land-controlled UHV property project"
+                        ),
+                    ),
+                    canonical_unit="KRW_billion",
+                    transform_id="identity_observation",
+                    input_evidence_ids=(_evidence_id(metric),),
+                    min_value="0",
+                )
+            )
+
+        uhv_ramp_metric = f"model_{scenario.lower()}_uhv_ramp_years"
+        uhv_ramp_value = float(
+            context.ledger.get(_evidence_id(uhv_ramp_metric)).value
+        )
+        uhv_ramp_bridge_id = f"B:SANIL:{scenario}:uhv_ramp_years"
+        uhv_ramp_path = f"sanil:{scenario.lower()}:uhv_ramp_years"
+        uhv_ramp_evidence_ids = (_evidence_id(uhv_ramp_metric),)
+        uhv_ramp_hypothesis = f"H:SANIL:{scenario}"
+        if scenario == "Core":
+            uhv_ramp_bridge_id = "B:SANIL:UHV:RAMP"
+            uhv_ramp_path = f"{UHV_CAPACITY_PATH_ROOT}:ramp"
+            uhv_ramp_evidence_ids = (
+                _uhv_evidence_id("ramp_boundary"),
+                _evidence_id(uhv_ramp_metric),
+            )
+            uhv_ramp_hypothesis = "H:SANIL:UHV_CAPACITY"
+        drafts.append(
+            BridgeDraft(
+                assumption_key="uhv_ramp_years",
+                scenario_id=scenario,
+                bridge=_bridge(
+                    bridge_id=uhv_ramp_bridge_id,
+                    evidence_ids=uhv_ramp_evidence_ids,
+                    hypothesis_id=uhv_ramp_hypothesis,
+                    affected_variable=AffectedVariable.QUANTITY,
+                    direction=Direction.UP,
+                    old_value=0.0,
+                    new_value=uhv_ramp_value,
+                    unit="years",
+                    economic_path_id=uhv_ramp_path,
+                    rationale=(
+                        "separate time-domain ramp assumption prevents FCFF money from "
+                        "masquerading as a Capacity ramp input"
+                    ),
+                ),
+                canonical_unit="years",
+                transform_id="identity_observation",
+                input_evidence_ids=(_evidence_id(uhv_ramp_metric),),
+                min_value="0",
+            )
+        )
+
+        uhv_capex_metric = f"model_{scenario.lower()}_uhv_property_capex"
+        uhv_capex_value = float(
+            context.ledger.get(_evidence_id(uhv_capex_metric)).value
+        )
+        uhv_capex_bridge_id = f"B:SANIL:{scenario}:uhv_property_capex"
+        uhv_capex_path = f"sanil:{scenario.lower()}:uhv_property_capex"
+        uhv_capex_evidence_ids = (_evidence_id(uhv_capex_metric),)
+        uhv_capex_hypothesis = f"H:SANIL:{scenario}"
+        if scenario == "Core":
+            uhv_capex_bridge_id = "B:SANIL:UHV:CAPEX"
+            uhv_capex_path = f"{UHV_CAPACITY_PATH_ROOT}:capex"
+            uhv_capex_evidence_ids = (
+                _uhv_evidence_id("capex_committed"),
+                _evidence_id(uhv_capex_metric),
+            )
+            uhv_capex_hypothesis = "H:SANIL:UHV_CAPACITY"
+        drafts.append(
+            BridgeDraft(
+                assumption_key="uhv_property_capex",
+                scenario_id=scenario,
+                bridge=_bridge(
+                    bridge_id=uhv_capex_bridge_id,
+                    evidence_ids=uhv_capex_evidence_ids,
+                    hypothesis_id=uhv_capex_hypothesis,
+                    affected_variable=AffectedVariable.QUANTITY,
+                    direction=Direction.UP,
+                    old_value=0.0,
+                    new_value=uhv_capex_value,
+                    unit="KRW_billion",
+                    economic_path_id=uhv_capex_path,
+                    rationale=(
+                        "full disclosed UHV property consideration is deducted "
+                        "as a separate explicit cash outflow"
+                    ),
+                ),
+                canonical_unit="KRW_billion",
+                transform_id="identity_observation",
+                input_evidence_ids=(_evidence_id(uhv_capex_metric),),
+                min_value="0",
+            )
+        )
+
         for key in ("terminal_growth", "terminal_roic"):
             metric = f"model_{scenario.lower()}_{key}"
             value = float(context.ledger.get(_evidence_id(metric)).value)
@@ -1014,7 +1242,7 @@ def _bridge_analyst(context, hypotheses, red_team) -> BridgeProposalBundle:
 
 
 def _capacity_loader(context: OrchestratorContext) -> CapacityCommitmentInput:
-    gate = ProjectGateSet(
+    second_factory_gate = ProjectGateSet(
         project_id=CAPACITY_PROJECT_ID,
         required_gates=(ProjectGate.LAND_CONTROL,),
         observations=(
@@ -1027,21 +1255,63 @@ def _capacity_loader(context: OrchestratorContext) -> CapacityCommitmentInput:
             ),
         ),
     )
-    binding = CapacityProjectBinding(
+    second_factory = CapacityProjectBinding(
         project_id=CAPACITY_PROJECT_ID,
         segment_id=SEGMENT_ID,
-        gate_set=gate,
+        gate_set=second_factory_gate,
         baseline_inclusion=BaselineInclusionStatus.NOT_IN_BASELINE,
-        baseline_inclusion_evidence_ids=(_evidence_id("expansion_baseline_inclusion"),),
+        baseline_inclusion_evidence_ids=(
+            _evidence_id("expansion_baseline_inclusion"),
+        ),
         site_area_evidence_ids=(_evidence_id("expansion_site_area"),),
-        committed_capex_evidence_ids=(_evidence_id("expansion_capex_committed"),),
+        committed_capex_evidence_ids=(
+            _evidence_id("expansion_capex_committed"),
+        ),
         ramp_date_evidence_ids=(_evidence_id("expansion_ramp_date"),),
-        equipment_commitment_evidence_ids=(_evidence_id("expansion_equipment_commitment"),),
+        equipment_commitment_evidence_ids=(
+            _evidence_id("expansion_equipment_commitment"),
+        ),
     )
-    return CapacityCommitmentInput((CapacitySegmentCommitmentInput(SEGMENT_ID, (binding,), ()),))
+    uhv_gate = ProjectGateSet(
+        project_id=UHV_CAPACITY_PROJECT_ID,
+        required_gates=(ProjectGate.LAND_CONTROL,),
+        observations=(
+            ProjectGateEvidence(
+                ProjectGate.LAND_CONTROL,
+                True,
+                (_uhv_evidence_id("land_control"),),
+                effective_at="2026-08-26",
+                note="signed official UHV property-acquisition contract",
+            ),
+        ),
+    )
+    uhv_property = CapacityProjectBinding(
+        project_id=UHV_CAPACITY_PROJECT_ID,
+        segment_id=SEGMENT_ID,
+        gate_set=uhv_gate,
+        baseline_inclusion=BaselineInclusionStatus.NOT_IN_BASELINE,
+        baseline_inclusion_evidence_ids=(
+            _uhv_evidence_id("baseline_inclusion"),
+        ),
+        committed_capex_evidence_ids=(
+            _uhv_evidence_id("capex_committed"),
+        ),
+        ramp_date_evidence_ids=(_uhv_evidence_id("ramp_boundary"),),
+    )
+    return CapacityCommitmentInput(
+        (
+            CapacitySegmentCommitmentInput(
+                SEGMENT_ID,
+                (second_factory, uhv_property),
+                (),
+            ),
+        )
+    )
 
 
-def _capacity_consumption_loader(context: OrchestratorContext) -> CapacityBridgeConsumptionContract:
+def _capacity_consumption_loader(
+    context: OrchestratorContext,
+) -> CapacityBridgeConsumptionContract:
     assessment = context.data["capacity_commitment_assessment"]
     return CapacityBridgeConsumptionContract(
         assessment.assessment_hash,
@@ -1049,6 +1319,9 @@ def _capacity_consumption_loader(context: OrchestratorContext) -> CapacityBridge
             CapacityBridgeBinding(CAPACITY_PROJECT_ID, CapacityBridgeRole.CAPACITY, "B:SANIL:CAPACITY", (_evidence_id("expansion_land_control"), _evidence_id("expansion_site_area")), CAPACITY_PATH_ROOT),
             CapacityBridgeBinding(CAPACITY_PROJECT_ID, CapacityBridgeRole.CAPEX, "B:SANIL:CAPEX", (_evidence_id("expansion_capex_committed"),), CAPACITY_PATH_ROOT),
             CapacityBridgeBinding(CAPACITY_PROJECT_ID, CapacityBridgeRole.RAMP, "B:SANIL:RAMP", (_evidence_id("expansion_ramp_date"),), CAPACITY_PATH_ROOT),
+            CapacityBridgeBinding(UHV_CAPACITY_PROJECT_ID, CapacityBridgeRole.CAPACITY, "B:SANIL:UHV:CAPACITY", (_uhv_evidence_id("land_control"), _uhv_evidence_id("capex_committed")), UHV_CAPACITY_PATH_ROOT),
+            CapacityBridgeBinding(UHV_CAPACITY_PROJECT_ID, CapacityBridgeRole.CAPEX, "B:SANIL:UHV:CAPEX", (_uhv_evidence_id("capex_committed"),), UHV_CAPACITY_PATH_ROOT),
+            CapacityBridgeBinding(UHV_CAPACITY_PROJECT_ID, CapacityBridgeRole.RAMP, "B:SANIL:UHV:RAMP", (_uhv_evidence_id("ramp_boundary"),), UHV_CAPACITY_PATH_ROOT),
         ),
     )
 
@@ -1196,7 +1469,7 @@ def _valuation_plan_inputs(context: OrchestratorContext) -> CompanyValuationPlan
 def build_sanil_live_primary_config(
     state_root: str | Path,
     *,
-    run_id: str = "SANIL-062040-20260825",
+    run_id: str = "SANIL-062040-20260826",
     snapshot_path: str | Path | None = None,
     market_snapshot_path: str | Path | None = None,
 ) -> LivePrimaryRuntimeConfig:
@@ -1293,6 +1566,9 @@ def build_sanil_live_primary_config(
                     FORECAST_YEARS,
                     expansion_capex_key="expansion_capex",
                     expansion_capex_year=2,
+                    additive_fcff_prefixes=("uhv_",),
+                    additional_expansion_capex=(("uhv_property_capex", 2),),
+                    trace_assumption_keys=("uhv_ramp_years",),
                 ),
             ),
             include_default_normalized_multiples=True,
@@ -1313,6 +1589,9 @@ def build_sanil_live_primary_config(
             (
                 *(f"fcff_year_{year}" for year in range(1, FORECAST_YEARS + 1)),
                 "expansion_capex",
+                *(f"uhv_fcff_year_{year}" for year in range(1, FORECAST_YEARS + 1)),
+                "uhv_property_capex",
+                "uhv_ramp_years",
                 "terminal_growth",
                 "terminal_roic",
                 "ownership",
@@ -1336,7 +1615,7 @@ def build_sanil_live_primary_config(
         initial_data={
             "data_cutoff": snapshot.cutoff,
             "underwriting_status": "PRELIMINARY_SOURCE_BACKED_UNDERWRITE",
-            "evidence_confidence": "official company facts high; peer-risk and forward FCFF assumptions moderate",
+            "evidence_confidence": "official company facts and signed UHV land contract high; common-source regression Beta moderate; forward FCFF assumptions moderate",
         },
     )
 
@@ -1344,7 +1623,7 @@ def build_sanil_live_primary_config(
 def run_sanil_live_primary(
     state_root: str | Path,
     *,
-    run_id: str = "SANIL-062040-20260825",
+    run_id: str = "SANIL-062040-20260826",
     snapshot_path: str | Path | None = None,
     market_snapshot_path: str | Path | None = None,
 ):

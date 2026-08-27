@@ -5,28 +5,36 @@ on:
     branches: [main]
     paths:
       - 'config/sanil_live_snapshot.yaml'
+      - 'config/sanil_market_snapshot.yaml'
       - 'docs/SANIL_RISK_SOURCE_REGISTER.md'
       - 'src/valuation_engine/sanil_live_primary.py'
+      - 'src/valuation_engine/dcf_evaluators.py'
       - 'src/valuation_engine/module_plan_adapter.py'
       - 'src/valuation_engine/records.py'
       - 'src/valuation_engine/evidence_collection.py'
       - 'tests/test_sanil_live_primary.py'
+      - 'tests/test_incremental_capacity_dcf.py'
       - 'tests/test_module_plan_evidence_extension.py'
       - 'tests/test_evidence_source_layer_contract.py'
+      - 'scripts/refresh_sanil_krx_beta.py'
       - 'scripts/run_sanil_live_primary.py'
       - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md'
       - '.github/workflows/sanil-live-primary.yml'
   pull_request:
     paths:
       - 'config/sanil_live_snapshot.yaml'
+      - 'config/sanil_market_snapshot.yaml'
       - 'docs/SANIL_RISK_SOURCE_REGISTER.md'
       - 'src/valuation_engine/sanil_live_primary.py'
+      - 'src/valuation_engine/dcf_evaluators.py'
       - 'src/valuation_engine/module_plan_adapter.py'
       - 'src/valuation_engine/records.py'
       - 'src/valuation_engine/evidence_collection.py'
       - 'tests/test_sanil_live_primary.py'
+      - 'tests/test_incremental_capacity_dcf.py'
       - 'tests/test_module_plan_evidence_extension.py'
       - 'tests/test_evidence_source_layer_contract.py'
+      - 'scripts/refresh_sanil_krx_beta.py'
       - 'scripts/run_sanil_live_primary.py'
       - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md'
       - '.github/workflows/sanil-live-primary.yml'
@@ -58,7 +66,10 @@ jobs:
           /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md
           examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md
       - name: Sanil integration regressions
-        run: pytest -q tests/test_sanil_live_primary.py
+        run: >-
+          pytest -q
+          tests/test_sanil_live_primary.py
+          tests/test_incremental_capacity_dcf.py
       - name: Full regression
         run: pytest -q
       - name: OCI regression

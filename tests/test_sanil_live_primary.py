@@ -22,11 +22,12 @@ def test_sanil_snapshot_is_explicit_and_source_backed():
 
     assert snapshot.company["target_id"] == TARGET_ID
     assert snapshot.company["ticker"] == TICKER
-    assert snapshot.cutoff == "2026-08-25"
+    assert snapshot.cutoff == "2026-08-26"
     assert tuple(snapshot.scenarios) == ("Down", "Core", "Bull")
     assert "market" not in snapshot.payload
     market = load_sanil_market_snapshot()
-    assert market.price == 169300
+    assert market.price > 0
+    assert market.as_of == snapshot.cutoff
     assert market.currency == "KRW"
     assert all(
         str(source["source_ref"]).startswith("https://")
@@ -35,7 +36,7 @@ def test_sanil_snapshot_is_explicit_and_source_backed():
     )
 
 
-def test_sanil_risk_snapshot_uses_real_sourced_companies_without_fake_precision():
+def test_sanil_risk_snapshot_uses_common_regression_contract_with_uncertainty():
     snapshot = load_sanil_snapshot(SNAPSHOT)
     peers = tuple(
         peer
@@ -54,12 +55,26 @@ def test_sanil_risk_snapshot_uses_real_sourced_companies_without_fake_precision(
         "KWANGMYUNG_ELECTRIC_017040",
         "CHEIL_ELECTRIC_199820",
     )
+    assert snapshot.risk["benchmark_id"] == "FDR_KOSPI_KS11"
+    assert snapshot.risk["return_frequency"] == "weekly"
+    assert snapshot.risk["as_of"] <= snapshot.cutoff
+    assert snapshot.risk["beta_observation_end"] <= snapshot.cutoff
     assert all(
-        str(peer["source_ref"]).startswith("https://stockanalysis.com/")
+        str(peer["source_ref"]).startswith("https://finance.naver.com/")
+        and str(peer["provider_ref"]).startswith(
+            "https://github.com/FinanceData/FinanceDataReader"
+        )
+        and str(peer["capital_source_ref"]).startswith("https://")
         for peer in peers
     )
-    assert all(peer["beta_standard_error"] is None for peer in peers)
-    assert all("Beta (5Y)" in str(peer["estimation_method"]) for peer in peers)
+    assert all(float(peer["beta_standard_error"]) > 0 for peer in peers)
+    assert all(int(peer["observations"]) >= 40 for peer in peers)
+    assert all(str(peer["end_date"]) <= snapshot.cutoff for peer in peers)
+    assert all(len(str(peer["price_series_hash"])) == 64 for peer in peers)
+    assert all(
+        "common KOSPI weekly OLS" in str(peer["estimation_method"])
+        for peer in peers
+    )
     assert not any(
         token in peer_id
         for peer_id in peer_ids
@@ -92,7 +107,11 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert len(linkage_decision.linkages) == 1
     linkage = linkage_decision.linkages[0]
     assert linkage.id == "CSL:SANIL:POWER_BOTTLENECK_CAPACITY"
-    assert linkage.hypothesis_ids == ("H:SANIL:CAPACITY", "H:SANIL:Core")
+    assert linkage.hypothesis_ids == (
+        "H:SANIL:CAPACITY",
+        "H:SANIL:UHV_CAPACITY",
+        "H:SANIL:Core",
+    )
     assert {
         "E:SANIL:orders",
         "E:SANIL:backlog",
@@ -147,7 +166,7 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         )
     )
     assert any(
-        source.startswith("https://stockanalysis.com/")
+        source.startswith("https://finance.naver.com/")
         for source in beta.source_refs
     )
     assert wacc.beta_result.snapshot_hash == beta.snapshot_hash
@@ -182,8 +201,19 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert valuation.expected_value_per_share is None
     core = next(item for item in valuation.scenarios if item.scenario_id == "Core")
     assert f"capacity_project:SANIL_SECOND_FACTORY_RAMP:capex" in core.economic_path_ids
+    assert (
+        "capacity_project:SANIL_UHV_PROPERTY_ACQUISITION_20260826:capex"
+        in core.economic_path_ids
+    )
+    assert (
+        "capacity_project:SANIL_UHV_PROPERTY_ACQUISITION_20260826:capacity"
+        in core.economic_path_ids
+    )
     compiled = result.data["compiled_assumption_set"]
     assert compiled.get("expansion_capex", "Core").measure.amount == 42
+    assert compiled.get("uhv_property_capex", "Core").measure.amount == 69.25
+    assert compiled.get("uhv_fcff_year_5", "Core").measure.amount == 42
+    assert compiled.get("uhv_ramp_years", "Core").measure.amount == 2
 
     findings = {
         item.scanner_id: item for item in result.data["scanner_findings"]
@@ -197,6 +227,7 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assessment = result.data["capacity_commitment_assessment"]
     assert assessment.core_inclusion_required_projects == (
         "SANIL_SECOND_FACTORY_RAMP",
+        "SANIL_UHV_PROPERTY_ACQUISITION_20260826",
     )
     assert result.data["capacity_audit_passed"]
 
@@ -215,11 +246,15 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert "SANIL_SECOND_FACTORY_RAMP" in str(
         result.data["capacity_commitment_assessment"]
     )
+    assert "SANIL_UHV_PROPERTY_ACQUISITION_20260826" in str(
+        result.data["capacity_commitment_assessment"]
+    )
     assert "산일전기" in result.data["final_report"]
     assert "must be classified by the typed Capacity Gate" in result.data["final_report"]
+    assert "SANIL_UHV_PROPERTY_ACQUISITION_20260826" in str(assessment)
     assert "no incremental Core capacity path is required" not in result.data["final_report"]
 
-    run_root = tmp_path / "runs" / TICKER / "SANIL-062040-20260825"
+    run_root = tmp_path / "runs" / TICKER / "SANIL-062040-20260826"
     assert (run_root / "final_report.md").exists()
     assert (tmp_path / "state" / TICKER / "current_state.json").exists()
 
@@ -242,8 +277,8 @@ def test_sanil_config_requires_driver_dcf_and_capacity_core(tmp_path):
         "street_reference",
     }.intersection(config.initial_data)
     market = config.providers.market_loader()
-    assert market.price == 169300
-    assert market.as_of == "2026-08-25"
+    assert market.price > 0
+    assert market.as_of == "2026-08-26"
 
 
 def test_sanil_collector_returns_only_requested_metrics():
