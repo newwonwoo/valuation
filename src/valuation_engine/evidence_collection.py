@@ -14,11 +14,10 @@ def _checked_at_temporal(value: str) -> date | datetime:
     text = str(value or "").strip().replace("Z", "+00:00")
     if not text:
         raise ValueError("evidence batch checked_at is required")
-    if len(text) == 10:
-        try:
-            return date.fromisoformat(text)
-        except ValueError as exc:
-            raise ValueError("evidence batch checked_at must be an ISO date/timestamp") from exc
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        pass
     try:
         parsed = datetime.fromisoformat(text)
     except ValueError as exc:
@@ -30,11 +29,10 @@ def _checked_at_temporal(value: str) -> date | datetime:
 
 def _observed_temporal(value: str) -> date | datetime:
     text = str(value or "").strip().replace("Z", "+00:00")
-    if len(text) == 10:
-        try:
-            return date.fromisoformat(text)
-        except ValueError as exc:
-            raise ValueError("evidence observed_date must be an ISO date/timestamp") from exc
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        pass
     try:
         parsed = datetime.fromisoformat(text)
     except ValueError as exc:
