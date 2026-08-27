@@ -35,7 +35,7 @@ def test_sanil_snapshot_is_explicit_and_source_backed():
     )
 
 
-def test_sanil_risk_snapshot_uses_real_sourced_companies_without_fake_precision():
+def test_sanil_risk_snapshot_uses_common_regression_contract_with_uncertainty():
     snapshot = load_sanil_snapshot(SNAPSHOT)
     peers = tuple(
         peer
@@ -54,12 +54,26 @@ def test_sanil_risk_snapshot_uses_real_sourced_companies_without_fake_precision(
         "KWANGMYUNG_ELECTRIC_017040",
         "CHEIL_ELECTRIC_199820",
     )
+    assert snapshot.risk["benchmark_id"] == "FDR_KOSPI_KS11"
+    assert snapshot.risk["return_frequency"] == "weekly"
+    assert snapshot.risk["as_of"] == snapshot.cutoff
+    assert snapshot.risk["beta_observation_end"] <= snapshot.cutoff
     assert all(
-        str(peer["source_ref"]).startswith("https://stockanalysis.com/")
+        str(peer["source_ref"]).startswith("https://finance.naver.com/")
+        and str(peer["provider_ref"]).startswith(
+            "https://github.com/FinanceData/FinanceDataReader"
+        )
+        and str(peer["capital_source_ref"]).startswith("https://")
         for peer in peers
     )
-    assert all(peer["beta_standard_error"] is None for peer in peers)
-    assert all("Beta (5Y)" in str(peer["estimation_method"]) for peer in peers)
+    assert all(float(peer["beta_standard_error"]) > 0 for peer in peers)
+    assert all(int(peer["observations"]) >= 40 for peer in peers)
+    assert all(str(peer["end_date"]) <= snapshot.cutoff for peer in peers)
+    assert all(len(str(peer["price_series_hash"])) == 64 for peer in peers)
+    assert all(
+        "common KOSPI weekly OLS" in str(peer["estimation_method"])
+        for peer in peers
+    )
     assert not any(
         token in peer_id
         for peer_id in peer_ids
@@ -147,7 +161,7 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         )
     )
     assert any(
-        source.startswith("https://stockanalysis.com/")
+        source.startswith("https://finance.naver.com/")
         for source in beta.source_refs
     )
     assert wacc.beta_result.snapshot_hash == beta.snapshot_hash
