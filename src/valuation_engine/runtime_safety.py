@@ -9,7 +9,7 @@ from .ledger import EvidenceLedger
 
 
 _AUTHORIZATION = re.compile(
-    r"(?i)\bAuthorization\b\s*[:=]\s*['\"]?(?:(?:Basic|Bearer|Token|Digest|ApiKey)\s+)?[^\s,'\";}]+['\"]?"
+    r"(?i)\bAuthorization\b['\"]?\s*[:=]\s*['\"]?(?:(?:Basic|Bearer|Token|Digest|ApiKey)\s+)?[^\s,'\";}]+['\"]?"
 )
 _FREE_BEARER = re.compile(r"(?i)\bBearer\s+[A-Za-z0-9._~+\-/=]+")
 _SENSITIVE_KV = re.compile(
