@@ -34,6 +34,7 @@ from valuation_engine.valuation_plan_compiler import (
     ValuationPlanStatus,
     compile_company_valuation_plan,
 )
+from valuation_engine.visual_reporting import render_report_visuals
 
 
 def _assumption(key: str, value: str, unit: str, *, scenario: str = "BASE") -> CompiledAssumption:
@@ -305,7 +306,21 @@ def test_partial_report_labels_subtotal_and_unvalued_not_zero():
             "doctrine_coverage": (),
         }
     )
-    assert "Partial Intrinsic — Valued Segments Only" in report
-    assert "valued subtotal" in report
-    assert "UNVALUED_NOT_ZERO" in report
-    assert "미평가 segment는 0원으로 합산하지 않았습니다" in report
+    assert "부분 내재가치 — 평가 완료 사업부만 포함" in report
+    first_screen = report.split("\n### 한 문장 결론", 1)[0]
+    assert "**평가 완료 사업부 소계**" in first_screen
+    assert "**평가 완료 사업부 범위**" in first_screen
+    assert "**기준 내재가치**" not in first_screen
+    assert "평가완료 소계" in report
+    assert "미평가 사업부 — 0원으로 간주하지 않음" in report
+    assert "미평가 사업부는 0원으로 합산하지 않았습니다" in report
+
+    summary = render_report_visuals(
+        {
+            "company": "Example",
+            "ticker": "PARTIAL",
+            "generic_valuation_result": valuation,
+        }
+    )[0].svg
+    assert "평가 완료 사업부 소계" in summary
+    assert "결정론적 가치평가 결과" not in summary

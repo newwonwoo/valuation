@@ -6,9 +6,29 @@ from .context_strength_linkage import (
     ContextStrengthLinkage,
     ContextStrengthLinkageDecision,
 )
-
-
+from .report_localization import evidence_label_ko
 _MISSING_REQUIRED = "MISSING_REQUIRED"
+_MAX_LLM_REPORT_CHARS = 1000
+
+
+def _short(value: str, limit: int) -> str:
+    compact = " ".join(value.split())
+    return compact if len(compact) <= limit else compact[: limit - 1].rstrip() + "…"
+
+
+def _bounded_llm_section(lines: list[str]) -> tuple[str, ...]:
+    rendered = "\n".join(lines)
+    if len(rendered) <= _MAX_LLM_REPORT_CHARS:
+        return tuple(lines)
+    fallback = (
+        "## 인공지능 인사이트 — 환경 변화 × 기업 강점",
+        "- 적용범위: 인공지능은 연결 가설과 반증 조건만 제시하며 가치평가 계산·가정 확정에는 관여하지 않습니다.",
+        "- 요약이 1,000자 상한을 초과해 본문 표시를 축약했습니다.",
+        "- 세부 인사이트와 근거 연결 내역은 별도 분석 기록에 보관됩니다.",
+    )
+    if len("\n".join(fallback)) > _MAX_LLM_REPORT_CHARS:
+        raise ValueError("인공지능 인사이트 보고 구역이 1,000자 상한을 초과했습니다")
+    return fallback
 
 
 def resolve_context_strength_linkage(
@@ -43,57 +63,47 @@ def render_context_strength_linkage_section(
         data
     )
     lines = [
-        "## LLM Insight Layer — Environment × Corporate Strength",
+        "## 인공지능 인사이트 — 환경 변화 × 기업 강점",
         (
-            "- Boundary: 이 영역은 외부 환경 변화와 기업의 기존 강점 사이의 "
-            "비자명한 연결을 발견·반증하는 사고 계층이며, 밸류에이션 공식을 "
-            "직접 변경하지 않습니다."
+            "- 적용범위: 인공지능은 외부 환경 변화와 기업 강점의 연결 가설·반증 조건만 "
+            "제시하며 가치평가 계산이나 가정 확정에는 관여하지 않습니다."
         ),
     ]
     if status == _MISSING_REQUIRED:
         lines.append(
-            "- Status: MISSING_REQUIRED — canonical valuation report에 필요한 "
+            "- 상태: 필수정보 누락 — 표준 가치평가 보고서에 필요한 "
             "연결 인사이트 결정이 없습니다."
         )
-        return tuple(lines)
+        return _bounded_llm_section(lines)
     if not linkages:
         lines.extend(
             (
-                "- Status: NOT_APPLICABLE",
-                f"- Reason: {not_applicable_reason}",
+                "- 상태: 해당 없음",
+                f"- 사유: {not_applicable_reason}",
             )
         )
-        return tuple(lines)
+        return _bounded_llm_section(lines)
 
-    lines.append("- Status: APPLICABLE")
-    for linkage in linkages:
-        supporting = ", ".join(linkage.supporting_evidence_ids)
-        contradicting = (
-            ", ".join(linkage.contradicting_evidence_ids) or "없음"
+    lines.append("- 상태: 적용")
+    linkage = linkages[0]
+    evidence_labels = ", ".join(
+        evidence_label_ko(item) for item in linkage.supporting_evidence_ids[:4]
+    ) or "없음"
+    lines.extend(
+        (
+            f"- 연결: {_short(linkage.external_change, 105)} → {_short(linkage.company_strength, 105)}",
+            f"- 핵심 추론: {_short(linkage.linkage_thesis, 170)}",
+            f"- 가치 포착: {_short(linkage.value_capture_path, 120)}",
+            f"- 반증 조건: {_short('; '.join(linkage.kill_conditions[:2]), 145)}",
+            f"- 다음 확인: {_short('; '.join(linkage.next_checks[:2]), 110)}",
+            f"- 핵심 근거: {_short(evidence_labels, 120)} — 원문 링크는 `정보 출처 — 원문 바로 확인` 참조",
+            f"- 인공지능 판단 신뢰도: {linkage.confidence:.0%}",
+            "- 세부 인사이트는 별도 분석 기록에 보관됩니다.",
         )
-        lines.extend(
-            (
-                "",
-                f"### {linkage.id}",
-                f"- 외부 환경 변화: {linkage.external_change}",
-                f"- 새 병목·전략적 필요: {linkage.emergent_need}",
-                f"- 기업의 기존 강점: {linkage.company_strength}",
-                f"- 비자명한 연결: {linkage.linkage_thesis}",
-                f"- 시장의 인식 공백: {linkage.market_blind_spot}",
-                f"- 가치 포착 경로: {linkage.value_capture_path}",
-                f"- 인과 경로: {' → '.join(linkage.causal_chain)}",
-                (
-                    "- 시장 인식 트리거: "
-                    + "; ".join(linkage.recognition_triggers)
-                ),
-                f"- 반증·철회 조건: {'; '.join(linkage.kill_conditions)}",
-                f"- 다음 검증: {'; '.join(linkage.next_checks)}",
-                f"- Supporting Evidence: {supporting}",
-                f"- Contradicting Evidence: {contradicting}",
-                f"- LLM confidence: {linkage.confidence:.0%}",
-            )
-        )
-    return tuple(lines)
+    )
+    if len(linkages) > 1:
+        lines.append(f"- 추가 연결 {len(linkages) - 1}건은 별도 분석 기록에 보관됩니다.")
+    return _bounded_llm_section(lines)
 
 
 def context_strength_linkage_artifact(

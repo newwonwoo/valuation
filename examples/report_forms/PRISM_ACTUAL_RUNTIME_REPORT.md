@@ -1,139 +1,148 @@
-# PRISM Verified Controlled-Run Report
+# 고정 원자재 기업 투자보고서
 
-- Run ID: `FULL-LIVE-1`
-- Execution mode: `live_primary`
-- Run status: **VERIFIED_FROZEN**
-- Attestation hash: `4e95414a6563805f7f49ad9d737d59f9d9ca810998750548e0dcc40dafc6df97`
+## 투자 요약
 
-## Execution Attestation
+| 핵심 판단 항목 | 내용 |
+| --- | --- |
+| **투자판단** | 판단 유보 — 실제 해결 이력 기반 확률 보정과 별도 진입 규칙이 모두 갖춰지기 전까지 구체적인 매수가는 제시하지 않습니다. |
+| **현재가** | 65,000원 (2026-08-23) |
+| **기준 내재가치** | 주당 70,000원 |
+| **가치평가 범위** | 주당 70,000~70,000원 |
+| **시나리오 가능성** | 미산출 |
+| **증권사 참고값** | 70,000원 (2건, 가치평가 확정 후 참고) |
 
-| Check | Result | Detail |
-|---|---:|---|
-| `live_primary_mode` | **PASS** | the report was produced by LIVE_PRIMARY |
-| `run_unblocked` | **PASS** | the controlled run has no blocking reason |
-| `canonical_stage_sequence` | **PASS** | all 33 canonical stages executed in order |
-| `terminal_stage_statuses` | **PASS** | every stage ended in a non-blocking terminal status |
-| `intrinsic_freeze_token` | **PASS** | the same run issued an IntrinsicFreezeToken |
-| `evidence_ledger_hash` | **PASS** | the frozen Evidence Ledger hash is present |
-| `assumption_set_hash` | **PASS** | the compiled assumption-set hash is present |
-| `scenario_set_hash` | **PASS** | the bound scenario-set hash is present |
-| `valuation_hash` | **PASS** | the deterministic valuation hash is present |
-| `audit_hash` | **PASS** | the generic audit passed and its hash is present |
-| `persisted_final_report` | **PASS** | the final report was emitted from the persisted run payload |
-| `selected_method_contract` | **PASS** | selected valuation methods are typed |
-| `capacity_assessment` | **PASS** | the typed Capacity Commitment assessment and hash are present |
-| `capacity_audit` | **PASS** | the Capacity omission/double-count audit passed |
-| `freeze_hash_binding` | **PASS** | Freeze is bound to the same Evidence, assumptions, valuation and audit |
+### 한 문장 결론
 
-## Immutable Run Identities
+고정된 1차 출처가 확률가중하지 않은 기준 시나리오 하나를 뒷받침합니다.
 
-| Artifact | Hash |
-|---|---|
-| Evidence Ledger | `3081f4574bf2b47592b44dae62d62555296ba1197312b70399f8b105d53fcbde` |
-| Assumption set | `091053e3e982493c131b3d77d7fce59e7e8b8c9f2b9da3b8fcdb7c9a2e9f0979` |
-| Scenario set | `ef87d8f464c8272a2538047127ef06645348ac5552fe97a7f73f53992f8514bc` |
-| Beta | `NOT_APPLICABLE` |
-| WACC | `NOT_APPLICABLE` |
-| Capacity assessment | `a3545801a2b8a62a817dc8625fd5baccc104aa9ed22e1476e89b8c440ce55462` |
-| Capacity consumption | `NOT_APPLICABLE` |
-| Capacity scenario | `749eb5803378d1917242a7bbc628d9f735b5a3101a0593da19d5c3fa3a17ff24` |
-| Capacity valuation | `26a1aaf558a3a1626e711265723d816d56e3f175919c8e9f19fd28856cfa4e58` |
-| Capacity PER | `d7d0730b0c54c63b2586b3e8f355b08f1e5205b7d697202fdb91ad4ac37a5e34` |
-| Capacity consistency | `dd6b3bfce8b91907a4d89c14f661e93b957449d343c920d16e7352a7805e4333` |
-| Capacity audit | `c3c87aec1adf84bd72369c1be022579ecc1491a81c9e19c31ed53076a315e4d9` |
-| Valuation | `9a85e0c4c2aa4258604a46f7c660105157c494da64aa63e9f3c726971e81b862` |
-| Audit | `469b553cdeb7496048dddcea9c4d6638db0b54feefcccdd92a490160bc4eeae9` |
-| Intrinsic Freeze | `ae680222f1feb481134d92748629befa4578e3065d9ff331f4155d0740fe5b3f` |
+### 투자포인트
 
-## Stage Trace
+- **가치동인:** 고정된 1차 출처가 확률가중하지 않은 기준 시나리오 하나를 뒷받침합니다.
+- **현재가 대비:** 기준 내재가치는 현재가보다 7.7% 높습니다. 하방 위험과 가정 실현 여부를 함께 점검해야 합니다.
+- **남은 제약:** 실제 해결 이력 기반 확률 보정이 없어 시나리오 기대값과 구체 매수가를 사용하지 않습니다.
 
-| # | Stage | Status | Blocking | Rationale |
-|---:|---|---|---:|---|
-| 1 | `COMPANY_RESOLUTION` | `pass` | NO | company identity resolved from a declared live resolver contract |
-| 2 | `LOAD_COMPANY_STATE` | `pass` | NO | no prior company state; first-run empty state is valid \| loaded 0 immutable module-impact learning record(s) |
-| 3 | `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT` | `pass` | NO | versioned Industry Knowledge snapshot loaded and hash-verified |
-| 4 | `SOURCE_FRESHNESS_PRECHECK` | `pass` | NO | live source-watch precheck passed |
-| 5 | `SEGMENT_DECOMPOSITION` | `pass` | NO | authoritative-lineage-backed segment decomposition completed |
-| 6 | `INDUSTRY_DNA_ROUTE` | `pass` | NO | all decomposed segments routed to evidence-backed multi-label Industry DNA profiles |
-| 7 | `MODULE_REQUIREMENT_PLAN` | `pass` | NO | compiled canonical Module Requirement Plan and non-destructive learned research loadout |
-| 8 | `PRIMARY_EVIDENCE_COLLECTION` | `pass` | NO | primary evidence collected with complete required segment/metric coverage and planned source lineage |
-| 9 | `EVIDENCE_LEDGER` | `pass` | NO | append-only EvidenceLedger validated and canonical runtime snapshot frozen |
-| 10 | `ROCKET_INSIGHT_SCAN` | `pass` | NO | live Rocket Insight scanner dispatch completed |
-| 11 | `UPSTREAM_FUNDING_SCAN` | `skipped_not_applicable` | NO | selected Industry DNA does not require a dedicated upstream funding scan |
-| 12 | `RESEARCHER_A` | `pass` | NO | LLM Intelligence Officer produced typed hypotheses and an auditable environment-change/corporate-strength linkage decision without committing assumptions |
-| 13 | `BLIND_RED_TEAM_B` | `pass` | NO | Blind Red Team completed with no unresolved blocker |
-| 14 | `RESEARCH_LOOP` | `skipped_not_applicable` | NO | Blind Red Team left no unresolved blocking issue |
-| 15 | `EVIDENCE_TO_ASSUMPTION_BRIDGE` | `pass` | NO | no capacity_manufacturing segment requires Capacity Commitment Gate \| LLM Bridge proposals validated and converted to compiler requests; no assumptions committed |
-| 16 | `SCENARIO_BUILD` | `pass` | NO | no Core-inclusion capacity project requires bridge consumption \| Bridge proposals deterministically compiled and bound into generic scenarios \| no Core-inclusion capacity project requires scenario binding |
-| 17 | `VALUATION_METHOD_INTENT` | `pass` | NO | economic valuation-method intent resolved before Beta/WACC; exact evaluator construction remains downstream |
-| 18 | `HIERARCHICAL_BETA_ESTIMATION` | `skipped_not_applicable` | NO | selected exact economic method path does not require Hierarchical Beta |
-| 19 | `WACC_VALIDATION` | `skipped_not_applicable` | NO | selected exact economic method path does not require WACC |
-| 20 | `DETERMINISTIC_VALUATION` | `pass` | NO | registered deterministic evaluators and SOTP aggregation completed \| no Warranted PER cross-check requires a DCF fingerprint \| no Core-inclusion capacity project requires valuation binding |
-| 21 | `HIERARCHICAL_WARRANTED_PER` | `skipped_not_applicable` | NO | selected Industry DNA does not route any segment to Warranted PER \| Warranted PER is not applicable; capacity PER double-count path is closed |
-| 22 | `DCF_PER_ASSUMPTION_CONSISTENCY_GATE` | `pass` | NO | DCF-PER consistency gate is not applicable \| capacity assessment, scenario, valuation and PER identities are consistent |
-| 23 | `CROSS_METHOD_DOUBLE_COUNT_AUDIT` | `pass` | NO | cross-method economic paths are unique |
-| 24 | `PROBABILITY_DISTRIBUTION_ANALYSIS` | `warning` | NO | scenario probabilities are not calibration-authorized; numeric expected value remains disabled |
-| 25 | `AUDIT_GATE` | `pass` | NO | pre-freeze Broker Research is not configured for this run \| capacity omission, baseline and double-count audit passed \| decision-impact record and run-bound generic intrinsic audit passed; run is eligible for freeze if snapshot hashes are present |
-| 26 | `INTRINSIC_VALUE_FREEZE` | `pass` | NO | audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze |
-| 27 | `STREET_REFERENCE_LOAD` | `pass` | NO | target-company Street references loaded after a valid same-run Freeze Token |
-| 28 | `STREET_GAP_ANALYZER` | `pass` | NO | Street gap preserved as scenario envelope because probability weighting is not calibrated |
-| 29 | `MARKET_PRICE_LOAD` | `pass` | NO | target-company market price loaded only after intrinsic freeze |
-| 30 | `MARKET_COMPARE` | `pass` | NO | current price compared with each intrinsic scenario; no Expected Value fabricated |
-| 31 | `THESIS_DELTA` | `pass` | NO | current thesis compared with the prior immutable successful state |
-| 32 | `SAVE_STATE` | `pass` | NO | immutable learning/run artifacts saved and audit-passed current state promoted |
-| 33 | `FINAL_REPORT` | `pass` | NO | final report emitted from the same immutable payload saved in the run state |
+### 판단 변경 조건
 
-## Persisted Research Report
+- **상방 확인:** 기준·상방 가정의 핵심 동인이 공시 실적과 현금흐름으로 전환되면 판단 근거가 강화됩니다.
+- **하방 훼손:** 핵심 가정이 미달하거나 하방 시나리오의 조건이 현실화되면 가치평가 신뢰도와 행동 여력이 낮아집니다.
+- **행동 가능 조건:** 실제 해결 이력 기반 확률 보정과 별도 진입 규칙이 모두 갖춰지기 전까지 구체적인 매수가는 제시하지 않습니다.
 
-# Frozen Commodity Co PRISM Research & Valuation Report
+## 가치평가
+- **기준 시나리오:** 내재가치 주당 70,000원
+- **확률가중 기대값:** 미산출 — 실제 해결 이력 기반 보정이 끝나지 않아 수치 가중을 보류했습니다.
 
-## LLM Insight Layer — Environment × Corporate Strength
-- Boundary: 이 영역은 외부 환경 변화와 기업의 기존 강점 사이의 비자명한 연결을 발견·반증하는 사고 계층이며, 밸류에이션 공식을 직접 변경하지 않습니다.
-- Status: NOT_APPLICABLE
-- Reason: This frozen acceptance fixture validates deterministic runtime integrity and does not assert an external-change investment thesis.
+## 핵심 가정과 위험
+- **평가방법:** 정상화 이익배수법
+- **위험 입력:** 선택된 평가방법에서 별도 베타·가중평균자본비용을 요구하지 않습니다.
+- **확률 보정:** 미보정 · 수치 가중 보류
+- **핵심 제약:** 실제 해결 전망의 누적 이력이 부족해 시나리오 확률과 기대값을 투자판단에 사용할 수 없습니다.
 
-## Intrinsic Value
-- Base intrinsic: 70,000 KRW/share
-- Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.
+## 증권사·시장 비교
+- **증권사 평균 목표가:** 70,000원 (2건)
+- 증권사 평균 목표가는 기준 내재가치와 같습니다.
 
-## Probability Calibration
-- Status: UNCALIBRATED
-- Numeric weighting: WITHHELD
-- Dataset hash: NOT_AVAILABLE
-- Snapshot hash: NOT_AVAILABLE
+### 증권사별 목표가와 PRISM의 차이
 
-## Street Gap
-- 리포트 수: 2
-- 평균 목표가: 70,000 KRW
-- Base 대비: 0 (+0.0%)
+| 증권사 | 목표가 | 적용 기준 | PRISM 기준가 대비 |
+| --- | ---: | --- | ---: |
+| 증권사 A | 65,000원 | 2027년 기준 · 현금흐름할인법 | -7.1% |
+| 증권사 B | 75,000원 | 2027년 기준 · 주가수익비율법 | +7.1% |
 
-## Current Market Compare
-- 현재가: 65,000 KRW (2026-08-23)
-- Base 기대수익 간격: 5,000 (+7.7%)
+### 왜 차이가 나는가
 
-## Module Impact / Research Efficiency
-- 측정 완료: DETERMINISTIC_VALUATION
-- 미측정(NOT_MEASURABLE): ASSUMPTION_COMPILER, BLIND_RED_TEAM_B, BROKER_RESEARCH, EVIDENCE_LEDGER, EVIDENCE_TO_ASSUMPTION_BRIDGE, INDUSTRY_DNA_ROUTER, INDUSTRY_KNOWLEDGE, KNOWLEDGE_PLACEMENT_GATE 외 7개
-- 비적용: HIERARCHICAL_BETA_ENGINE, UPSTREAM_FUNDING_SCAN, WACC_ENGINE
-- 실패: 없음
-- 조사비용: source queries 0, documents 0, LLM calls 0, elapsed 0.0s
-- 하향 검토 후보: 없음
-- 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.
+- **평가방법:** PRISM은 정상화 이익배수법을 사용하며, 증권사별 평가방법은 표와 같습니다. 현금흐름·이익·할인율·적용 배수의 기준이 다르면 목표가도 달라집니다.
+- **기준시점:** 증권사 A: 2027년 현금흐름할인법 · 증권사 B: 2027년 주가수익비율법. 평가 기준과 기준연도가 다르므로 목표가를 PRISM 기준가와 동일한 숫자로 볼 수 없습니다.
+- **증권사 간 차이:** 증권사 B 목표가는 증권사 A보다 10,000원 (15.4%) 높습니다. 두 보고서의 기준연도와 평가방법이 달라 목표가 차이를 단순 평균으로 해석하면 안 됩니다.
+- **분해 한계:** 현재 확보된 증권사 자료에는 목표가·평가방법·기준연도는 있으나 모든 세부 이익 추정치가 구조화되어 있지 않아, 차이를 이익 전망과 적용 배수로 완전히 분해할 수는 없습니다.
+- **해석:** 증권사 목표가는 각 보고서의 현금흐름·이익·할인율·배수 가정을 반영한 참고값입니다. PRISM 결과와의 차이 자체가 계산 오류를 뜻하지는 않습니다.
+- **현재가:** 65,000원 (2026-08-23)
+- **기준 대비 상승여력:** 5,000원 (7.7%)
 
-## Audit & Coverage
-- Audit: PASS (22 checks)
-- Doctrine coverage: 27/27 terminally acceptable
+## 인공지능 인사이트 — 환경 변화 × 기업 강점
+- 적용범위: 인공지능은 외부 환경 변화와 기업 강점의 연결 가설·반증 조건만 제시하며 가치평가 계산이나 가정 확정에는 관여하지 않습니다.
+- 상태: 해당 없음
+- 사유: 이 고정 인수시험 데이터는 결정론적 실행 무결성을 검증하며 외부 환경 변화에 관한 투자논지를 주장하지 않습니다.
 
-## Thesis Delta
-- 강화·신규: frozen primary evidence supports one unweighted Base scenario
-- 약화·폐기: 없음
+## 최종 요약 이미지
+![고정 원자재 기업 회사 강점·투자 결론·가치평가](PRISM_000000_01_summary.svg)
 
-## Run Integrity
-- Valuation scope: FULL_INTRINSIC
-- Ledger snapshot: 3081f4574bf2b47592b44dae62d62555296ba1197312b70399f8b105d53fcbde
-- Assumption set: 091053e3e982493c131b3d77d7fce59e7e8b8c9f2b9da3b8fcdb7c9a2e9f0979
-- Valuation: 9a85e0c4c2aa4258604a46f7c660105157c494da64aa63e9f3c726971e81b862
-- Audit: 469b553cdeb7496048dddcea9c4d6638db0b54feefcccdd92a490160bc4eeae9
-- Freeze token: ae680222f1feb481134d92748629befa4578e3065d9ff331f4155d0740fe5b3f
-- Calibration dataset: NOT_APPLIED
-- Calibration snapshot: NOT_APPLIED
+![고정 원자재 기업 가치평가 가정·위험·출처](PRISM_000000_02_assumptions.svg)
+
+## 정보 출처 — 원문 바로 확인
+- **고정 공시 시험자료 / 기업 식별정보 / 증권사: 증권사 A / 증권사: 증권사 B / 현재 시장가격** — 근거 8개: 기준 가격, 생산능력, 현금원가, 원가곡선상 위치, 재고, 생산량 외 2개 유형 (기준일 2026-06-30); 기업 식별 확인; 목표가 발표일 2026-08-01; 목표가 발표일 2026-08-05; 시장가격 기준일 2026-08-23 [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/tests/test_full_live_primary_runtime.py)
+<details>
+<summary>이 원문에 연결된 근거 8개 보기</summary>
+
+- `E:core:benchmark_price` · `E:core:capacity` · `E:core:cash_cost` · `E:core:cost_curve_position` · `E:core:inventory` · `E:core:production` · `E:core:realized_price` · `E:core:utilization`
+
+</details>
+- 전체 근거 식별자·지표·기준일 연결 내역은 별도 분석 기록에 보관됩니다.
+
+## 분석 범위와 유의사항
+- **평가범위:** 전체 기업 내재가치
+- **계산 확인:** 자동 오류 점검 22개 통과 · 분석 원칙 27/27개 충족
+- 회사 공시 사실, 분석가 가정, 인공지능 연결 인사이트를 구분해 표시했습니다.
+- 증권사 목표가와 현재가는 가치평가를 마친 뒤 참고했으며, 앞서 계산한 가정을 바꾸는 데 사용하지 않았습니다.
+
+---
+
+<details>
+<summary>작성 근거와 계산 과정 보기</summary>
+
+## 분석 절차 요약
+
+- 자동 오류 점검: 22/22개 통과
+- 분석 절차 기록: 33/33개 완료
+
+## 주요 작업 단계
+
+### 1. 증거 수집·산업 라우팅 — 통과 (9/9)
+- 결과: 증거 수집·산업 라우팅을 완료하고 근거 기록을 확정했습니다
+- 잔여위험: 없음 · 다음 단계: 인사이트 도출·반증 검토
+
+### 2. 인사이트 도출·반증 검토 — 통과 (5/5)
+- 결과: 환경 변화와 기업 강점의 연결 인사이트 및 반증 검토를 완료했습니다
+- 잔여위험: 없음 · 다음 단계: 가정·평가방법·위험
+
+### 3. 가정·평가방법·위험 — 통과 (5/5)
+- 결과: 가정·평가방법·베타·가중평균자본비용의 적용 여부를 확정했습니다
+- 잔여위험: 없음 · 다음 단계: 가치평가·오류 점검·결과 확정
+
+### 4. 가치평가·오류 점검·결과 확정 — 경고 (7/7)
+- 결과: 가치평가와 오류 점검을 마치고 결과를 확정했습니다
+- 잔여위험: 시나리오 확률 보정 점검: 실제 해결 이력 기반 확률 보정이 완료되지 않아 확률가중 기대값을 산출하지 않았습니다 · 다음 단계: 증권사·시장 비교·보고서 저장
+
+### 5. 증권사·시장 비교·보고서 저장 — 통과 (7/7)
+- 결과: 시장·증권사 비교 후 한국어 최종보고서와 요약 이미지 2장을 저장했습니다
+- 잔여위험: 없음 · 다음 단계: 최종 결과보고서
+
+## 세부 계산 기록
+
+### 33단계 진행 상태
+- **증거 수집·산업 라우팅:** 1 기업 식별=통과 · 2 기존 분석 상태 불러오기=통과 · 3 산업 지식 기준일 설정=통과 · 4 출처 최신성 사전점검=통과 · 5 사업부 분해=통과 · 6 산업 특성 분류=통과 · 7 필수 분석 모듈 확정=통과 · 8 1차 근거 수집=통과 · 9 근거 기록 확정=통과
+- **인사이트 도출·반증 검토:** 10 환경 변화 인사이트 탐색=통과 · 11 상류 자금흐름 점검=해당 없음 · 12 주 분석가 가설 도출=통과 · 13 독립 반증 검토=통과 · 14 추가 조사 반복=해당 없음
+- **가정·평가방법·위험:** 15 근거·가정 연결=통과 · 16 시나리오 구성=통과 · 17 가치평가 방법 확정=통과 · 18 계층형 베타 추정=해당 없음 · 19 가중평균자본비용 검증=해당 없음
+- **가치평가·오류 점검·결과 확정:** 20 결정론적 가치평가=통과 · 21 계층형 적정 주가수익비율=해당 없음 · 22 현금흐름·주가수익비율 가정 정합성=통과 · 23 평가방법 간 이중계상 감사=통과 · 24 시나리오 확률 보정 점검=경고 · 25 최종 감사=통과 · 26 가치평가 결과 확정=통과
+- **증권사·시장 비교·보고서 저장:** 27 증권사 자료 불러오기=통과 · 28 증권사 목표가 비교=통과 · 29 현재 시장가격 불러오기=통과 · 30 시장가격 비교=통과 · 31 투자논지 변화 점검=통과 · 32 분석 결과 저장=통과 · 33 최종보고서 생성=통과
+- 단계별 사유와 출력값 식별자는 별도 분석 기록에 보존됩니다.
+
+### 분석 모듈 점검
+- 영향 측정 완료: 결정론적 가치평가
+- 영향 미측정: 가정 컴파일러, 독립 반증 검토, 증권사 자료 검증, 근거 원장, 근거·가정 연결, 산업 특성 분류, 산업 지식, 지식 배치 검증 외 7개
+- 비적용: 계층형 베타, 상류 자금흐름 점검, 가중평균자본비용 · 실패: 없음
+
+### 실행 식별자와 해시
+
+- 실행 식별자: `FULL-LIVE-1`
+- 실행 모드: `live_primary`
+- 작성 확인 해시: `468fbef83bc55264102ded0e8b4d3d6e2718233c403e48169d32060433b595d5`
+- 증거 해시: `844702b379f405baffd8cea944854ac2c00a1b0e8141a693bfd75fd8934a786d`
+- 가정 해시: `f9a111745f4945d119f02f1708f026ff7473c9c96a6055c454370634d2a0e818`
+- 시나리오 해시: `363189a1674c763b0f3d2e60be59156f25e956d800342bf9f468dbf093c4538c`
+- 가치평가 해시: `759890294b90fb9bda449cc6b539214a0795bb59ad27d1f46e37b42b8f99da06`
+- 오류 점검 해시: `484915ff80ef965128618a753168b38ae268ebcc4f4656bfb8a9e84270a15d5a`
+- 가치평가 확정 해시: `77990c6f5d8c2fd9b152a537b6ecf4cf6e5140640e00c9f817acad2bf0105ed1`
+- 보조 결속정보: 생산능력 평가 `a3545801a2b8a62a817dc8625fd5baccc104aa9ed22e1476e89b8c440ce55462` · 생산능력 시나리오 `749eb5803378d1917242a7bbc628d9f735b5a3101a0593da19d5c3fa3a17ff24` · 생산능력 가치평가 `5e36a496bd37604aa33ffb0b4f80cd48eadf839b83218aaa9422a35649e297fe` · 생산능력 주가수익비율 `09d1f570a1c55c08e4639a4c59546ddac49c2704ed6ebdf185cba5cd4457d478` · 생산능력 정합성 `adfc3920a842875012b27720a55cf7324ede5d2ae4abf320d1c4484f3aafb1eb` · 생산능력 오류 점검 `5405620256db2ab82529b83171ef2e5f41bc1d1fd8d1785902318c52f5b0c353`
+- 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=pass · 11 `UPSTREAM_FUNDING_SCAN`=skipped_not_applicable · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=skipped_not_applicable · 19 `WACC_VALIDATION`=skipped_not_applicable · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=pass · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=pass · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
+
+</details>

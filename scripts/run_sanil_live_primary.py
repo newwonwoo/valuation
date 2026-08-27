@@ -5,11 +5,13 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from valuation_engine.report_form import attest_controlled_run, render_controlled_run_report
+from valuation_engine.report_localization import identifier_label_ko
 from valuation_engine.sanil_live_primary import (
     load_sanil_market_snapshot,
     load_sanil_snapshot,
     run_sanil_live_primary,
 )
+from valuation_engine.visual_reporting import render_report_visuals
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,23 +21,7 @@ DEFAULT_OUTPUT = (
     / "report_forms"
     / "SANIL_062040_LIVE_PRIMARY_REPORT.md"
 )
-STREET_SOURCE_REFS = (
-    (
-        "미래에셋증권",
-        "https://securities.miraeasset.com/bbs/board/message/view.do?categoryId=1800&messageId=2341906",
-    ),
-    (
-        "IBK투자증권",
-        "https://www.yna.co.kr/view/AKR20260810017900008",
-    ),
-    (
-        "신한투자증권",
-        "https://www.yna.co.kr/amp/view/AKR20260811028700008",
-    ),
-)
-
-
-def render_report(state_root: Path) -> str:
+def render_report(state_root: Path) -> tuple[str, tuple]:
     snapshot = load_sanil_snapshot()
     result = run_sanil_live_primary(state_root)
     attestation = attest_controlled_run(result)
@@ -55,7 +41,13 @@ def render_report(state_root: Path) -> str:
     }
     beta = result.data["live_beta_result"]
     wacc = result.data["live_wacc_result"]
-    assessment = result.data["capacity_commitment_assessment"]
+    capacity_assessment = result.data["capacity_commitment_assessment"]
+    probability_assessment = result.data["scenario_probability_assessment"]
+    probability_labels = {"Down": "하방", "Core": "기준", "Bull": "상방"}
+    probability_summary = " · ".join(
+        f"{probability_labels[item.scenario_id]} {item.displayed_probability * 100:.0f}%"
+        for item in probability_assessment.rows
+    )
     market_snapshot = load_sanil_market_snapshot()
     market = result.data.get("market_comparison")
     street = result.data.get("street_comparison")
@@ -69,56 +61,70 @@ def render_report(state_root: Path) -> str:
         if street is not None
         else None
     )
-    street_line = (
-        f"- Street 참고 목표가(Freeze 후 로드): **{float(street_target):,.0f}원**\n"
-        if street_target is not None
-        else "- Street 참고 목표가: **미확보**\n"
-    )
-    street_sources = "\n".join(
-        f"- Street 참고자료({broker}): {source_ref}"
-        for broker, source_ref in STREET_SOURCE_REFS
+    street_reference = (
+        f"{float(street_target):,.0f}원 ({street.consensus.report_count}건, 가치평가 확정 후 참고)"
+        if street_target is not None and street is not None
+        else "미확보"
     )
 
-    header = f"""# 산일전기(062040) PRISM LIVE_PRIMARY 보고서
+    valuation_marker = "## 가치평가"
+    if valuation_marker not in controlled:
+        raise RuntimeError("Sanil report is missing the investor-facing valuation section")
+    controlled_body = controlled[controlled.index(valuation_marker):]
+    evidence_note = """## 핵심 가정과 위험
+- **근거 신뢰도:** 회사 실적·수주·생산능력·부지·자본적지출은 회사 공시·기업설명자료에 기반해 신뢰도가 높습니다.
+- **분석가 추정:** 하방·기준·상방 기업잉여현금흐름은 회사 가이던스가 아니라 공시 사실에서 파생한 분석가 가정입니다.
+- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 현금유출을 확정하지만 정확한 생산능력은 미공시입니다.
+"""
+    controlled_body = controlled_body.replace(
+        "## 핵심 가정과 위험\n",
+        evidence_note,
+        1,
+    )
+    project_names = ", ".join(
+        identifier_label_ko(item)
+        for item in capacity_assessment.core_inclusion_required_projects
+    )
+    market_gaps = {
+        item.scenario_id: item.gap_pct_of_reference
+        for item in market.envelope.scenario_gaps
+    } if market is not None else {}
+    core_gap = market_gaps.get("Core", 0)
+    bull_gap = market_gaps.get("Bull", 0)
+    header = f"""# 산일전기(062040) 투자보고서
 
-- 데이터 기준일: **{snapshot.cutoff}**
-- 검증 상태: **VERIFIED_FROZEN**
-- 투자검토 상태: **Preliminary source-backed underwrite**
-- 현재가(Freeze 후 로드): **{float(current_price):,.0f}원**
-{street_line}- Down / Core / Bull: **{values['Down']:,.0f}원 / {values['Core']:,.0f}원 / {values['Bull']:,.0f}원**
-- Hierarchical Beta: **{beta.target_levered_beta:.3f}**
-- WACC: **{wacc.wacc_result.wacc:.3%}**
-- Core 반영 Capacity 프로젝트: **{', '.join(assessment.core_inclusion_required_projects)}**
+## 투자 요약
 
-## PM 결론
+### 생산능력 확장이 잉여현금흐름으로 전환되는지가 핵심
 
-산일전기는 수요 검증 단계를 넘어 생산능력과 ramp가 가치의 핵심 병목이 된 회사입니다. 이번 run은 기존 제2공장뿐 아니라 2026년 8월 26일 체결된 초고압 변압기 생산용 부동산 양수계약을 별도 Core 프로젝트로 분리했습니다. 두 프로젝트의 Capacity·CAPEX·ramp 경로를 Scenario와 DCF가 실제 소비한 뒤 Beta·WACC, Audit, Freeze를 통과했습니다.
+| 핵심 판단 항목 | 내용 |
+| --- | --- |
+| **투자판단** | 판단 유보 — 확률 보정과 진입 규칙이 없어 구체 매수가는 산출하지 않음 |
+| **현재가** | {float(current_price):,.0f}원 ({snapshot.cutoff}) |
+| **기준 내재가치** | {values['Core']:,.0f}원 · 현재가 대비 {core_gap:+.1%} |
+| **가치평가 범위** | 하방 {values['Down']:,.0f}원 · 기준 {values['Core']:,.0f}원 · 상방 {values['Bull']:,.0f}원 |
+| **시나리오 가능성** | {probability_summary} · 미보정 분석가 사전확률, 기대값 미적용 |
+| **증권사 참고값** | {street_reference} |
+| **보고서 성격** | 공시·원문 기반 예비 투자분석 |
 
-현재가는 확률가중 기대값이 아니라 개별 Down/Core/Bull 세계관과 비교해야 합니다. 역사적 calibration cohort가 아직 충분하지 않아 Expected Value는 의도적으로 산출하지 않았습니다. 이 보고서의 FCFF 경로는 회사 가이던스가 아니라 2025 사업보고서와 2026년 2분기 IR을 기반으로 한 **PRISM analyst underwrite**입니다.
+### 한 문장 결론
 
-## Evidence Confidence / Underwriting Status
+산일전기의 핵심은 수요의 존재보다 제2공장과 초고압 변압기 부지가 실제 출하·마진·잉여현금흐름으로 전환되는 속도이며, 기준 가치는 현재가 대비 {core_gap:+.1%}이고 상방 가치는 {bull_gap:+.1%}인 만큼 지금은 상승여력보다 전환 증거를 먼저 확인할 구간입니다.
 
-- 회사 실적·수주·Capacity·부지·CAPEX: 회사 공시·IR 기반, **높은 증거 신뢰도**
-- Beta peer 관측: 동일 KOSPI benchmark·동일 기간·주간 수익률 OLS 기반이며 회귀 표준오차와 시계열 hash를 보존, **중간~높은 증거 신뢰도**
-- 일간 OLS는 비동시거래·빈도 민감도 진단값으로 별도 보존하며 주간 Beta와 임의 평균하지 않습니다.
-- WACC 거시입력과 country-risk lambda: 출처가 명시된 외부 시장자료 및 PRISM 판단값, **중간 신뢰도**
-- Down/Core/Bull FCFF: 공시 사실에서 파생한 분석가 가정이며 회사 가이던스가 아닙니다.
-- 초고압 부동산 계약은 LAND_CONTROL과 692.5억원 현금유출을 공식 확정하지만, 정확한 생산 CAPA는 미공시이므로 증분 FCFF는 보수적 bounded underwrite입니다.
+### 투자포인트
 
-## Source Register
+- **가치동인:** {project_names}을 각각 생산능력·자본적지출·가동 정상화 경로로 반영했습니다.
+- **가치평가:** 현금흐름할인법 기준 하방–상방 범위는 {values['Down']:,.0f}–{values['Bull']:,.0f}원이며, 계층형 베타 {beta.target_levered_beta:.3f} · 가중평균자본비용 {wacc.wacc_result.wacc:.3%}를 적용했습니다.
+- **남은 제약:** 상대점수 정규화로 {probability_summary}를 산출했지만 실제 해결 이력으로 보정되지 않아 기대값에는 적용하지 않았습니다.
 
-- 2025 사업보고서: {snapshot.sources['annual_report']['source_ref']}
-- 2026년 2분기 IR: {snapshot.sources['q2_ir']['source_ref']}
-- 2026년 8월 26일 초고압 생산용 부동산 양수결정: {snapshot.sources['uhv_property_acquisition']['source_ref']}
-- 실제 peer Beta·WACC 원장: {snapshot.sources['risk_snapshot']['source_ref']}
-- PRISM underwriting assumptions: {snapshot.sources['underwriting']['source_ref']}
-{street_sources}
-- 현재가: {market_snapshot.source_ref}
+### 판단 변경 조건
 
----
+- **상방 확인:** 제2공장·초고압 설비의 일정 준수, 가동률 정상화, 수주잔고의 매출 전환이 공시로 확인될 때.
+- **하방 훼손:** 증설 지연·취소, 수주잔고 또는 신규수주 감소, 출하 전환 전 마진 둔화가 확인될 때.
+- **행동 가능 조건:** 실제 해결 전망 이력이 누적되어 시나리오 확률을 보정하고 별도 진입 규칙이 승인될 때.
 
 """
-    return header + controlled
+    return header + controlled_body, render_report_visuals(result.data)
 
 
 def main() -> int:
@@ -130,10 +136,10 @@ def main() -> int:
 
     if args.state_root is not None:
         args.state_root.mkdir(parents=True, exist_ok=True)
-        expected = render_report(args.state_root)
+        expected, visuals = render_report(args.state_root)
     else:
         with TemporaryDirectory(prefix="sanil-prism-") as temporary:
-            expected = render_report(Path(temporary))
+            expected, visuals = render_report(Path(temporary))
 
     target = args.output
     if args.check:
@@ -141,11 +147,17 @@ def main() -> int:
             raise SystemExit(f"Sanil report is missing: {target}")
         if target.read_text(encoding="utf-8") != expected:
             raise SystemExit(f"Sanil report is stale: {target}")
+        for visual in visuals:
+            visual_target = target.parent / visual.filename
+            if not visual_target.exists() or visual_target.read_text(encoding="utf-8") != visual.svg:
+                raise SystemExit(f"Sanil report visual is stale: {visual_target}")
         print(f"Sanil report synchronized: {target}")
         return 0
 
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(expected, encoding="utf-8")
+    for visual in visuals:
+        (target.parent / visual.filename).write_text(visual.svg, encoding="utf-8")
     print(f"Sanil report written: {target}")
     return 0
 

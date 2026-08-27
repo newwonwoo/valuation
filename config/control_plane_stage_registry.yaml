@@ -35,6 +35,78 @@ coverage_rule:
     - not_implemented
     - recovered
     - awaiting_user_decision
+reporting_contract:
+  contract_id: prism_major_gate_reporting/v1
+  major_gates:
+    - gate_id: G1_EVIDENCE_ROUTING
+      title: 증거 수집·산업 라우팅
+      terminal_stage: EVIDENCE_LEDGER
+    - gate_id: G2_INSIGHT_CHALLENGE
+      title: 인사이트 도출·반증 검토
+      terminal_stage: RESEARCH_LOOP
+    - gate_id: G3_ASSUMPTIONS_METHOD_RISK
+      title: 가정·평가방법·위험
+      terminal_stage: WACC_VALIDATION
+    - gate_id: G4_VALUATION_AUDIT_FREEZE
+      title: 가치평가·오류 점검·결과 확정
+      terminal_stage: INTRINSIC_VALUE_FREEZE
+    - gate_id: G5_POST_FREEZE_PERSISTENCE
+      title: 증권사·시장 비교·보고서 저장
+      terminal_stage: FINAL_REPORT
+  summary_fields:
+    - status
+    - decisive_result
+    - residual_risk
+    - next_action
+  final_report_page_policy:
+    main_body_target_pages: [3, 4]
+    audit_appendix_target_pages: [1, 2]
+    total_page_cap: 6
+    visual_pages_included_in_main_body: 2
+  typography_policy:
+    body_min_pt: 13
+    primary_heading_min_pt: 22
+    section_heading_min_pt: 18
+    dense_wide_tables_forbidden: true
+  source_link_policy:
+    direct_http_links_required: true
+    claim_source_mapping_required: true
+    non_http_source_refs_forbidden_in_live_reports: true
+  llm_insight_policy:
+    separate_section_required: true
+    max_chars: 1000
+    deterministic_outputs_separated: true
+  probability_reporting_policy:
+    uncalibrated_prior_display_allowed: true
+    uncalibrated_prior_weighting_forbidden: true
+    declared_forecast_history_capture_required: true
+    append_only_history_required: true
+  reader_experience_policy:
+    visible_language: ko
+    primary_section_order:
+      - 투자 요약
+      - 가치평가
+      - 핵심 가정과 위험
+      - 증권사·시장 비교
+      - 정보 출처 — 원문 바로 확인
+    decision_report_precedes_audit_appendix: true
+    technical_identifiers_collapsed: true
+    brokerage_style_basis:
+      reference_document: docs/KOREAN_BROKERAGE_REPORT_STYLE.md
+      reviewed_sample_count: 4
+      structural_patterns_only: true
+      content_copy_forbidden: true
+      summary_is_investment_report: true
+      first_screen_required_fields:
+        - 투자판단
+        - 현재가
+        - 기준 내재가치
+        - 가치평가 범위
+        - 시나리오 가능성
+      first_screen_required_blocks:
+        - 한 문장 결론
+        - 투자포인트
+        - 판단 변경 조건
 phases:
   I_OPENING:
     - COMPANY_RESOLUTION

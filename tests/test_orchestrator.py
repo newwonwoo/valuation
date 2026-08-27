@@ -4,7 +4,10 @@ import pytest
 
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.orchestrator import (
+    MajorGateDefinition,
+    ReportingContract,
     StageExecutionResult,
+    load_reporting_contract,
     load_stage_sequence,
     run_controlled_workflow,
 )
@@ -16,6 +19,176 @@ def test_canonical_stage_registry_loads_unique_freeze_boundary():
     assert len(sequence) == len(set(sequence))
     assert sequence.index("AUDIT_GATE") < sequence.index("INTRINSIC_VALUE_FREEZE")
     assert sequence.index("INTRINSIC_VALUE_FREEZE") < sequence.index("MARKET_PRICE_LOAD")
+
+
+def reporting_contract(*gates):
+    return ReportingContract(
+        contract_id="test-major-gates/v1",
+        major_gates=tuple(gates),
+        main_body_target_pages=(6, 8),
+        audit_appendix_target_pages=(3, 4),
+        total_page_cap=12,
+        visual_pages_included_in_main_body=2,
+        body_min_pt=13,
+        primary_heading_min_pt=22,
+        section_heading_min_pt=18,
+        dense_wide_tables_forbidden=True,
+        direct_http_links_required=True,
+        claim_source_mapping_required=True,
+        non_http_source_refs_forbidden_in_live_reports=True,
+        llm_insight_separate_section_required=True,
+        llm_insight_max_chars=1000,
+        deterministic_outputs_separated_from_llm=True,
+    )
+
+
+def test_canonical_reporting_contract_partitions_all_33_stages_once():
+    root = Path(__file__).resolve().parents[1]
+    contract = load_reporting_contract(
+        root / "config" / "control_plane_stage_registry.yaml"
+    )
+
+    assert [len(item.stages) for item in contract.major_gates] == [9, 5, 5, 7, 7]
+    assert tuple(stage for gate in contract.major_gates for stage in gate.stages) == (
+        load_stage_sequence(root / "config" / "control_plane_stage_registry.yaml")
+    )
+    assert contract.main_body_target_pages == (3, 4)
+    assert contract.audit_appendix_target_pages == (1, 2)
+    assert contract.total_page_cap == 6
+    assert contract.visual_pages_included_in_main_body == 2
+    assert contract.body_min_pt == 13
+    assert contract.llm_insight_max_chars == 1000
+    assert contract.visible_language == "ko"
+    assert contract.primary_section_order[:2] == ("투자 요약", "가치평가")
+    assert contract.decision_report_precedes_audit_appendix
+    assert contract.technical_identifiers_collapsed
+    assert contract.summary_is_investment_report
+    assert contract.brokerage_style_sample_count == 4
+    assert contract.brokerage_style_structural_only
+    assert contract.brokerage_style_content_copy_forbidden
+    assert (root / contract.brokerage_style_reference).exists()
+    assert contract.first_screen_required_fields == (
+        "투자판단",
+        "현재가",
+        "기준 내재가치",
+        "가치평가 범위",
+        "시나리오 가능성",
+    )
+    assert contract.uncalibrated_prior_display_allowed
+    assert contract.uncalibrated_prior_weighting_forbidden
+    assert contract.declared_forecast_history_capture_required
+    assert contract.append_only_probability_history_required
+    assert contract.first_screen_required_blocks == (
+        "한 문장 결론",
+        "투자포인트",
+        "판단 변경 조건",
+    )
+
+
+def test_orchestrator_emits_one_summary_only_when_each_major_gate_completes():
+    seen = []
+    contract = reporting_contract(
+        MajorGateDefinition("G1", "First", ("A", "B")),
+        MajorGateDefinition("G2", "Second", ("C",)),
+    )
+    result = run_controlled_workflow(
+        run_id="REPORTING-1",
+        execution_mode=ExecutionMode.PRIMARY_SHADOW,
+        stage_sequence=("A", "B", "C"),
+        adapters={
+            stage: (lambda _, stage=stage: StageExecutionResult(StageStatus.PASS, stage))
+            for stage in ("A", "B", "C")
+        },
+        required_stages=("A", "B", "C"),
+        reporting_contract=contract,
+        major_gate_reporter=seen.append,
+    )
+
+    assert tuple(item.gate_id for item in seen) == ("G1", "G2")
+    assert result.major_gate_summaries == tuple(seen)
+    assert result.major_gate_summaries[0].completed_stage_count == 2
+    assert result.major_gate_summaries[-1].next_action == "FINAL_RESULT_REPORT"
+
+
+def test_blocked_gate_emits_partial_summary_and_never_fabricates_later_gate():
+    seen = []
+    contract = reporting_contract(
+        MajorGateDefinition("G1", "First", ("A", "B", "C")),
+        MajorGateDefinition("G2", "Second", ("D",)),
+    )
+    result = run_controlled_workflow(
+        run_id="REPORTING-BLOCKED",
+        execution_mode=ExecutionMode.PRIMARY_SHADOW,
+        stage_sequence=("A", "B", "C", "D"),
+        adapters={
+            "A": lambda _: StageExecutionResult(StageStatus.PASS, "a"),
+            "B": lambda _: StageExecutionResult(
+                StageStatus.BLOCKED,
+                "material evidence gap",
+                blocking=True,
+            ),
+        },
+        required_stages=("A", "B", "C", "D"),
+        reporting_contract=contract,
+        major_gate_reporter=seen.append,
+    )
+
+    assert len(seen) == 1
+    assert seen[0].gate_id == "G1"
+    assert seen[0].status is StageStatus.BLOCKED
+    assert seen[0].completed_stage_count == 2
+    assert seen[0].expected_stage_count == 3
+    assert seen[0].next_action == "RESOLVE_G1"
+    assert seen[0].decisive_result == "B 단계가 blocked 상태로 종료되었습니다"
+    assert seen[0].residual_risk == "B:BLOCKED"
+    assert "material evidence gap" not in seen[0].decisive_result
+    assert tuple(item.gate_id for item in result.major_gate_summaries) == ("G1",)
+
+
+def test_reporting_contract_must_match_executed_stage_sequence_exactly():
+    contract = reporting_contract(
+        MajorGateDefinition("G1", "First", ("A", "B")),
+    )
+    with pytest.raises(ValueError, match="partition"):
+        run_controlled_workflow(
+            run_id="REPORTING-MISMATCH",
+            execution_mode=ExecutionMode.PRIMARY_SHADOW,
+            stage_sequence=("A",),
+            adapters={},
+            required_stages=("A",),
+            reporting_contract=contract,
+        )
+
+
+def test_reporter_failure_is_visible_but_cannot_block_valuation_state():
+    contract = reporting_contract(
+        MajorGateDefinition("G1", "First", ("A",)),
+    )
+
+    def fail(_):
+        raise RuntimeError("delivery failed")
+
+    result = run_controlled_workflow(
+        run_id="REPORTING-DELIVERY",
+        execution_mode=ExecutionMode.PRIMARY_SHADOW,
+        stage_sequence=("A",),
+        adapters={
+            "A": lambda _: StageExecutionResult(
+                StageStatus.PASS,
+                "authoritative computation completed",
+                {"authoritative_value": 1},
+            )
+        },
+        required_stages=("A",),
+        reporting_contract=contract,
+        major_gate_reporter=fail,
+    )
+
+    assert result.blocked_reasons == ()
+    assert result.data["authoritative_value"] == 1
+    assert result.reporting_warnings == (
+        "G1: major-gate reporter failed (RuntimeError)",
+    )
 
 
 def test_legacy_regression_cannot_enter_new_orchestrator():

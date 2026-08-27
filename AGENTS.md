@@ -68,6 +68,17 @@ Before reporting/publishing model changes run the full pytest suite plus current
 - Migrate live valuation through `LEGACY_REGRESSION → PRIMARY_SHADOW → LIVE_PRIMARY`; never mix modes key-by-key.
 - Label unimplemented live Funding/Street/calibration adapters `CONTRACT_ONLY` or `NOT_IMPLEMENTED`; never fabricate completed scans.
 
+## Reporting and delivery
+- The Control Plane owns the canonical five-gate progress contract in `config/control_plane_stage_registry.yaml`; individual adapters and agents may not invent parallel progress groupings.
+- Emit one compact summary when each major gate completes or terminates blocked: status, decisive result, residual risk and next action. Do not stream all 33 stage traces as routine progress.
+- Keep all 33 stage identities/statuses in the compact audit appendix and the exact rationales/output keys in the immutable `control_plane_trace.json` artifact.
+- Editorial targets are 3–4 pages for the decision-facing body, 1–2 pages for the audit appendix and 6 pages maximum combined. Use body text of at least 13pt, primary headings of at least 22pt and section headings of at least 18pt; dense wide tables are forbidden. These are presentation targets, never grounds to omit a material blocker, uncertainty or integrity record.
+- Source provenance is never shortened away. Every active Evidence claim and every reported identity/Beta/WACC/PER/Street/market reference must map to a directly clickable HTTP(S) original-source link; non-HTTP, credential-bearing or missing source references block a `LIVE_PRIMARY` final report. Group repeated claims by source URL to stay compact.
+- The user-facing final report is Korean by default. Technical IDs, status enums and original-source titles may remain unchanged, but headings, conclusions, explanations and gate summaries must not fall back to English.
+- The decision-facing body must use a Korean brokerage-report order—투자 요약 → 가치평가 → 핵심 가정과 위험 → 증권사·시장 비교 → 원문 출처—and appear before the audit appendix. Raw stage IDs, enums and hashes are collapsed technical detail or immutable machine artifacts; visible stage names and statuses are Korean.
+- Separate LLM-authored linkage insight from deterministic assumptions, calculations, Audit and Freeze outputs. The displayed `인공지능 인사이트` section is capped at 1,000 Korean characters; the complete typed artifact remains in `context_strength_linkages.json`.
+- A final report is incomplete without two deterministic Korean SVG cards generated from the same immutable run data: `회사 강점·투자 결론·가치평가` and `가치평가 가정·위험·출처`. If calibration or an entry rule is unavailable, the card must withhold a specific buy price rather than fabricate one.
+
 ## Methodology description
 The v0.4 finance-calibration system is **academically grounded engineering synthesis**. v0.5.2 adds repository-specific evidence-governed Industry Knowledge and Signal Intelligence operating contracts. Established finance/accounting components and repository-specific orchestration must be distinguished explicitly; see `docs/V04_ROCKETSLA_EXTENSION.md`.
 

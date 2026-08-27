@@ -341,11 +341,11 @@ def test_full_canonical_primary_shadow_sequence_reaches_final_report_and_persist
     assert result.data["decision_impact_completed"]
     assert result.data["decision_impact_result"].not_measurable_modules
     assert result.data["market_comparison"].envelope.get("Base").gap_per_share == Decimal("5000")
-    assert "LLM Insight Layer — Environment × Corporate Strength" in result.data[
+    assert "인공지능 인사이트 — 환경 변화 × 기업 강점" in result.data[
         "final_report"
     ]
-    assert "Status: NOT_APPLICABLE" in result.data["final_report"]
-    assert "Expected Value: 미산출" in result.data["final_report"]
+    assert "상태: 해당 없음" in result.data["final_report"]
+    assert "**확률가중 기대값:** 미산출" in result.data["final_report"]
     assert (Path(tmp_path) / "state" / "EXM" / "current_state.json").exists()
     assert (Path(tmp_path) / "runs" / "EXM" / "FULL-SHADOW-1" / "final_report.md").exists()
     assert (

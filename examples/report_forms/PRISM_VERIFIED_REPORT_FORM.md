@@ -1,46 +1,94 @@
-# PRISM Verified Controlled-Run Report
+# {{ 기업명 }} 투자보고서
 
-- Run ID: `{{ run_id }}`
-- Execution mode: `LIVE_PRIMARY`
-- Run status: **{{ VERIFIED_FROZEN | INCOMPLETE | BLOCKED }}**
-- Attestation hash: `{{ attestation_hash }}`
+## 투자 요약
 
-## Execution Attestation
+| 핵심 판단 항목 | 내용 |
+| --- | --- |
+| **투자판단** | {{ 판단 또는 보류 사유 }} |
+| **현재가** | {{ 현재가와 기준일 }} |
+| **기준 내재가치** | {{ 기준 내재가치와 현재가 대비 차이 }} |
+| **가치평가 범위** | {{ 하방 }}원–{{ 상방 }}원 |
+| **시나리오 가능성** | {{ 미보정 사전확률 또는 보정 상태 · 기대값 적용 여부 }} |
 
-| Check | Result | Detail |
-|---|---:|---|
-| `canonical_stage_sequence` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
-| `beta_wacc_same_run_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
-| `capacity_core_consumption_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
-| `broker_research_primary_verification_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
-| `freeze_hash_binding` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
+### 한 문장 결론
 
-## Immutable Run Identities
+{{ 근거에 기반한 투자논지와 현재가에서 확인할 결정요인 }}
 
-| Artifact | Hash |
-|---|---|
-| Evidence Ledger | `{{ ledger_snapshot_hash }}` |
-| Assumption set | `{{ assumption_set_hash }}` |
-| Scenario set | `{{ scenario_set_hash }}` |
-| Beta | `{{ beta_snapshot_hash_or_not_applicable }}` |
-| WACC | `{{ wacc_snapshot_hash_or_not_applicable }}` |
-| Capacity assessment | `{{ capacity_commitment_assessment_hash }}` |
-| Capacity consumption | `{{ capacity_bridge_consumption_hash_or_not_applicable }}` |
-| Capacity scenario | `{{ capacity_scenario_binding_hash_or_not_applicable }}` |
-| Capacity valuation | `{{ capacity_valuation_binding_hash_or_not_applicable }}` |
-| Capacity audit | `{{ capacity_audit_hash }}` |
-| Broker pre-freeze | `{{ broker_research_snapshot_hash_or_not_applicable }}` |
-| Broker audit | `{{ broker_research_audit_hash_or_not_applicable }}` |
-| Valuation | `{{ valuation_hash }}` |
-| Audit | `{{ audit_hash }}` |
-| Intrinsic Freeze | `{{ freeze_token_hash }}` |
+### 투자포인트
 
-## Stage Trace
+- {{ 핵심 가치동인 }}
+- {{ 가치평가 해석 }}
+- {{ 남은 제약 }}
 
-| # | Stage | Status | Blocking | Rationale |
-|---:|---|---|---:|---|
-| 1 | `{{ stage }}` | `{{ status }}` | `{{ YES_OR_NO }}` | `{{ rationale }}` |
+### 판단 변경 조건
 
-## Persisted Research Report
+- 상방 확인: {{ 어떤 사실이 확인되면 판단이 강화되는가 }}
+- 하방 훼손: {{ 어떤 사실이 확인되면 판단이 약해지는가 }}
+- 행동 가능 조건: {{ 확률 보정·진입 규칙 등 필요한 통제 }}
 
-{{ immutable_saved_final_report }}
+## 가치평가
+
+- 하방 시나리오: 주당 {{ down_value }}원
+- 기준 시나리오: 주당 {{ core_value }}원
+- 상방 시나리오: 주당 {{ bull_value }}원
+- 확률가중 기대값: {{ 보정 완료 시 산출 | 미보정 시 보류 }}
+
+## 핵심 가정과 위험
+
+- 평가방법: {{ 한국어 평가방법명 }}
+- 위험 입력: {{ 계층형 베타와 가중평균자본비용 }}
+- 시나리오 가정: {{ 기업잉여현금흐름·영구성장률·영구 투하자본이익률 }}
+- 핵심 위험: {{ 실적·생산능력·자본적지출·확률 보정 제약 }}
+
+## 증권사·시장 비교
+
+{{ 가치평가 확정 후 참고한 증권사 목표가와 현재가 }}
+
+## 인공지능 인사이트 — 환경 변화 × 기업 강점
+
+{{ 가치평가 계산과 분리한 1,000자 이하 연결 인사이트 }}
+
+## 최종 요약 이미지
+
+{{ 회사 강점·투자 결론·가치평가 이미지 1장 }}
+
+{{ 가치평가 가정·위험·출처 이미지 1장 }}
+
+## 정보 출처 — 원문 바로 확인
+
+{{ 모든 핵심 주장과 입력값의 직접 원문 링크 }}
+
+## 분석 범위와 유의사항
+
+{{ 사실·분석가 가정·인공지능 인사이트의 구분 및 평가 제약 }}
+
+<details>
+<summary>작성 근거와 계산 과정 보기</summary>
+
+## 분석 절차 요약
+
+- 자동 오류 점검: {{ passed_checks }}/{{ total_checks }}개 통과
+- 분석 절차 기록: {{ terminal_stage_count }}/33개 완료
+
+## 주요 작업 단계
+
+### {{ 순번 }}. {{ 한국어 게이트명 }} — {{ 상태 }}
+
+- 결과: {{ 한국어 요약 }}
+- 잔여위험: {{ 한국어 위험 요약 }} · 다음 단계: {{ 한국어 단계명 }}
+
+## 세부 계산 기록
+
+### 분석 절차별 기록
+
+{{ 33개 단계의 한국어 이름과 상태 }}
+
+### 실행 식별자와 해시
+
+- 실행 식별자: `{{ run_id }}`
+- 작성 확인 해시: `{{ attestation_hash }}`
+- 계산 기준 해시: `{{ ledger_snapshot_hash | assumption_set_hash | scenario_set_hash | valuation_hash | audit_hash | freeze_token_hash }}`
+- 보조 결속정보: `{{ beta_snapshot_hash | wacc_snapshot_hash | capacity_audit_hash | broker_research_snapshot_hash | broker_research_audit_hash | 해당 없음 }}`
+- 실패 점검 기술 식별자: `{{ canonical_stage_sequence | beta_wacc_same_run_chain | capacity_core_consumption_chain | broker_research_primary_verification_chain | freeze_hash_binding | probability_reporting_and_history_contract | major_gate_reporting_contract | major_gate_delivery | direct_source_links | 없음 }}`
+
+</details>

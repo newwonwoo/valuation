@@ -137,6 +137,7 @@ A Street-discovered fact may create a verification request, but cannot mutate th
 The orchestrator:
 
 - loads or accepts the canonical V05 stage order;
+- loads the same registry's five-gate reporting partition, emits one compact summary only when a gate completes or terminates blocked, and records reporter-delivery failures without allowing them to mutate valuation state;
 - records an explicit terminal trace for every attempted stage;
 - fails closed when a required stage adapter is absent;
 - records unsupported optional capability as `NOT_IMPLEMENTED`, never as a silent success;
@@ -147,3 +148,9 @@ The orchestrator:
 `LEGACY_REGRESSION` remains isolated in `workflow.py`; it is not routed through the canonical Control Plane. `PRIMARY_SHADOW` remains a regression/integration mode. `LIVE_PRIMARY` uses the same shell with typed source/provider contracts and fails closed for any required provider or exact evaluator that is unavailable for the selected route.
 
 A missing live adapter or source is a visible capability state, not permission to fall back to the old keyword router, a generic DCF, fabricated evidence, or a market-anchored estimate.
+
+Routine operator output is therefore five major-gate summaries rather than 33 progress lines. The compact appendix retains all 33 stage identities/statuses while the immutable trace artifact retains exact rationales/output keys. The verified final result report targets 3–4 pages for the decision-facing body, 1–2 pages for the appendix and 6 pages maximum combined, with body text at least 13pt and section headings at least 18pt.
+
+The user-facing layer is Korean-first. The Control Plane requires a separate LLM insight section capped at 1,000 characters and keeps deterministic assumptions, calculations, Audit and Freeze results outside that boundary. `SAVE_STATE` also writes two deterministic Korean SVG report cards from the same immutable payload; the two cards count inside the 3–4 page main-body target, their filenames are recorded in current state and their source buttons resolve to the report's accepted HTTP(S) provenance set.
+
+The decision-facing report precedes audit material and follows a brokerage-research reading order: 투자 요약 → 가치평가 → 핵심 가정과 위험 → 증권사·시장 비교 → 원문 출처. The first-screen 투자 요약 is itself the primary investment report and carries the decision, current price, reference intrinsic value, valuation range, one-sentence conclusion, investment points and decision-change conditions. Visible stage names/statuses are Korean. Raw stage IDs, enums and hash chains are confined to collapsed technical detail and immutable machine artifacts so developer diagnostics cannot displace the investment conclusion.

@@ -35,7 +35,7 @@ Execute in this order; unavailable live modules must be labelled `CONTRACT_ONLY`
 20. `HIERARCHICAL_WARRANTED_PER` when PER is allowed
 21. `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`
 22. `CROSS_METHOD_DOUBLE_COUNT_AUDIT`
-23. `PROBABILITY_DISTRIBUTION_ANALYSIS` when calibrated
+23. `PROBABILITY_DISTRIBUTION_ANALYSIS` when likelihood/forecast inputs are declared or calibrated
 24. `AUDIT_GATE`
 25. `INTRINSIC_VALUE_FREEZE`
 26. `STREET_REFERENCE_LOAD`
@@ -82,6 +82,7 @@ If a blocking issue remains after round three or a blocking audit fails, return 
 - Never double count the same evidence/economic path across operating value, option/SOTP, funding, WACC or PER premium.
 - Never deduct gross CAPEX again when expansion economics already include the same investment through future EBITDA/funding gap/terminal debt.
 - Mark uncalibrated probabilities `UNCALIBRATED`.
+- An uncalibrated analyst prior may be displayed only as a clearly labelled 5% band; never bind it into scenario weights or expected value. Declared binary forecasts from an audit-passed live run must be captured append-only before resolution. Resolve them only with explicit first-seen primary Evidence and a directly verifiable source link; synthetic or post-hoc history is forbidden.
 - Red Team input excludes price, Street target, intrinsic value, market gap, position data and market/Street loader access.
 - Blocked runs are saved but never promoted to current state.
 
@@ -201,3 +202,11 @@ The v0.4 finance-calibration architecture remains **academically grounded engine
 ## Report contract
 
 Lead with conclusion, thesis delta, frozen industry-knowledge/source-freshness status, known vs underappreciated evidence, strongest Red Team objection, funded-demand constraints when material, scenario worldviews, Core/Expected/Verified Bull values, Beta/WACC/PER audit summary, frozen intrinsic value, Street Gap/Consensus Lag or reverse-check, current-market comparison, kill conditions, next verification events, data quality and limitations. Clearly label fixture, stale, uncalibrated, contract-only or missing evidence.
+
+The Control Plane owns five major progress gates: Evidence and Routing; Insight and Challenge; Assumptions, Method and Risk; Valuation, Audit and Freeze; and Post-Freeze Comparison and Persistence. At completion or blocking termination of each gate, emit only status, decisive result, residual risk and next action. Preserve all 33 stage identities/statuses in the compact verified audit appendix and exact rationales/output keys in the immutable trace artifact instead of streaming them as routine progress. Target 3–4 pages for the decision-facing body, 1–2 pages for the audit appendix and 6 pages maximum combined. Use body text of at least 13pt, primary headings of at least 22pt and section headings of at least 18pt; dense wide tables are forbidden. Never shorten by hiding a material blocker, uncertainty or integrity record.
+
+Source provenance is mandatory and exempt from omission. Every active Evidence claim and each reported identity, Beta, WACC, PER, Street and market reference must map to a directly clickable HTTP(S) original-source link. Group claims that share one document into one compact source entry with covered metrics and effective dates; when a source covers many records, show the count and representative metrics while retaining every exact Evidence ID/metric/date mapping in the immutable Evidence Ledger. A missing, non-HTTP or credential-bearing source reference blocks a `LIVE_PRIMARY` final report.
+
+The user-facing final report is Korean by default. Keep technical IDs and original-source names intact, but render headings, conclusions, explanations and gate summaries in Korean. The decision-facing body must use a Korean brokerage-report order—투자 요약 → 가치평가 → 핵심 가정과 위험 → 증권사·시장 비교 → 원문 출처—and appear before the audit appendix. The first-screen `투자 요약` is the primary investment report, not a preface: it must show 투자판단, 현재가, 기준 내재가치, 가치평가 범위, a one-sentence conclusion, no more than three investment points, and the conditions that strengthen, weaken, or unlock action. Raw stage IDs, enums and hashes belong only in collapsed technical detail or immutable machine artifacts; visible stage names and statuses use Korean labels. Put LLM-authored environment-change/company-strength reasoning in a separate `인공지능 인사이트` section capped at 1,000 characters; deterministic assumptions, calculations, Audit and Freeze results stay outside it. Save the complete typed insight in `context_strength_linkages.json`.
+
+Every successful final report includes two deterministic SVG cards generated from the same immutable run payload: `회사 강점·투자 결론·가치평가` and `가치평가 가정·위험·출처`. Count both cards inside the 3–4 page main-body target, not in addition to the six-page cap. The cards must preserve direct source access. When probability calibration or a governed entry rule is unavailable, show scenario values and current price but explicitly withhold a specific buy price.

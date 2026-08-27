@@ -150,9 +150,9 @@ A partial subtotal is never presented as full-company fair value and whole-compa
 
 ## 10. Probability calibration — `PARTIAL_LIVE`
 
-The probability layer has append-only forecast/outcome revision chains, `first_seen_at` knowledge-time boundaries, deterministic historical replay, Brier/Brier-Skill/log-loss/ECE metrics and hash-bound `CalibrationCertificate` gating.
+The probability layer has append-only forecast/outcome revision chains, `first_seen_at` knowledge-time boundaries, deterministic historical replay, Brier/Brier-Skill/log-loss/ECE metrics and hash-bound `CalibrationCertificate` gating. Declared binary events from an audit-passed `LIVE_PRIMARY` run now persist their raw pre-resolution probability and Evidence snapshot into production history. Outcome ingestion rejects non-primary or non-verifiable Evidence and preserves the direct source URL.
 
-What remains is production evidence, not missing arithmetic: historical cohorts, predeclared base rates and validated mapping datasets by forecast class/horizon must be populated before broad numeric probability weighting can be promoted.
+What remains is elapsed-time production evidence, not missing arithmetic or capture wiring: the declared events must resolve from real primary sources, and the required historical cohorts, predeclared base rates and validated mapping datasets by forecast class/horizon must be populated before broad numeric probability weighting can be promoted.
 
 ## 11. Audit, Freeze and post-freeze references
 

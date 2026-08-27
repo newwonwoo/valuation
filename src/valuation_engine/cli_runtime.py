@@ -15,7 +15,12 @@ from .live_runtime import (
     LivePrimaryRuntimeConfig,
     run_prism,
 )
-from .orchestrator import ControlledRunResult
+from .orchestrator import ControlledRunResult, MajorGateReporter, MajorGateSummary
+from .report_localization import (
+    localize_stage_references,
+    next_action_label_ko,
+    status_label_ko,
+)
 from .runtime_resources import runtime_registry_path
 
 
@@ -302,6 +307,7 @@ def execute_live_analysis(
     run_id: str | None = None,
     jurisdiction: str | None = None,
     runner: LiveRuntimeRunner = run_prism,
+    major_gate_reporter: MajorGateReporter | None = None,
 ) -> ControlledRunResult:
     company_query = parse_analysis_command(command)
     request = LiveAnalysisRequest(
@@ -312,6 +318,8 @@ def execute_live_analysis(
         jurisdiction=jurisdiction,
     )
     config = build_live_runtime_config(request, provider_factory)
+    if major_gate_reporter is not None:
+        config = replace(config, major_gate_reporter=major_gate_reporter)
     try:
         result = runner(config)
     except Exception as exc:
@@ -368,12 +376,36 @@ def _blocked_codes(result: ControlledRunResult) -> tuple[str, ...]:
     return codes or ("LIVE_PRIMARY:BLOCKED",)
 
 
-def render_controlled_run(result: ControlledRunResult) -> str:
-    total = len(result.stage_traces)
-    lines = [
-        f"[{index:02d}/{total:02d}] {trace.stage}: {trace.status.value}"
-        for index, trace in enumerate(result.stage_traces, start=1)
-    ]
+def render_major_gate_summary(summary: MajorGateSummary) -> str:
+    return "\n".join(
+        (
+            f"## 대형 게이트 {summary.ordinal}/{summary.gate_count} — {summary.title}",
+            f"- 상태: {status_label_ko(summary.status)} "
+            f"({summary.completed_stage_count}/{summary.expected_stage_count})",
+            f"- 핵심 결과: {localize_stage_references(summary.decisive_result)}",
+            f"- 잔여위험: {localize_stage_references(summary.residual_risk)}",
+            f"- 다음 단계: {next_action_label_ko(summary.next_action)}",
+        )
+    )
+
+
+def render_controlled_run(
+    result: ControlledRunResult,
+    *,
+    include_gate_summaries: bool = True,
+) -> str:
+    lines: list[str] = []
+    if include_gate_summaries and result.major_gate_summaries:
+        for summary in result.major_gate_summaries:
+            if lines:
+                lines.append("")
+            lines.append(render_major_gate_summary(summary))
+    elif include_gate_summaries:
+        total = len(result.stage_traces)
+        lines.extend(
+            f"[{index:02d}/{total:02d}] {trace.stage}: {trace.status.value}"
+            for index, trace in enumerate(result.stage_traces, start=1)
+        )
     if result.blocked_reasons:
         lines.extend(("", "# VALUATION BLOCKED", "", "## 차단 코드"))
         lines.extend(f"- {code}" for code in _blocked_codes(result))
@@ -385,6 +417,10 @@ def render_controlled_run(result: ControlledRunResult) -> str:
             )
         )
         return "\n".join(lines) + "\n"
+
+    if result.reporting_warnings:
+        lines.extend(("", "## Reporting warnings"))
+        lines.extend(f"- {item}" for item in result.reporting_warnings)
 
     report = result.data.get("final_report")
     if not isinstance(report, str) or not report.strip():

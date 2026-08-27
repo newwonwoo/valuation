@@ -1,3 +1,4 @@
+from dataclasses import replace
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
@@ -229,6 +230,32 @@ def test_revisions_do_not_inflate_effective_sample_count():
     )
     assert snapshot.raw_sample_count == 2
     assert snapshot.effective_sample_count == 1
+
+
+def test_revision_cannot_redefine_event_or_resolution_contract():
+    ledger = ProbabilityCalibrationLedger()
+    first = forecast(
+        "F1",
+        event_key="EVENT-1",
+        company_id="C1",
+        issued_at=datetime(2025, 1, 1, tzinfo=timezone.utc),
+        probability=Decimal("0.4"),
+        band="P40",
+    )
+    redefined = replace(
+        first,
+        forecast_id="F2",
+        event_definition="a different event is achieved",
+        issued_at=datetime(2025, 1, 15, tzinfo=timezone.utc),
+        probability=Decimal("0.6"),
+        displayed_band="P60",
+        supersedes_id="F1",
+        first_seen_at=datetime(2025, 1, 15, tzinfo=timezone.utc),
+    )
+    ledger.append_forecast(first)
+
+    with pytest.raises(ValueError, match="preserve hypothesis, company, event definition"):
+        ledger.append_forecast(redefined)
 
 
 def test_insufficient_history_cannot_issue_certificate():

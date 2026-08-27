@@ -1,6 +1,6 @@
 # PRISM Probability Calibration Runtime v1.0
 
-Status: `PARTIAL_LIVE` runtime contract. The scoring/promotion machinery is implemented; production cohort histories and mapping tables are not yet populated.
+Status: `PARTIAL_LIVE` runtime contract. Scoring/promotion and production forecast capture are implemented; enough real resolved cohort history and validated mapping tables do not yet exist.
 
 ## 1. Purpose
 
@@ -25,6 +25,10 @@ A forecast fixes before resolution:
 - resolution rule and primary-source policy.
 
 Forecasts and outcomes are immutable. A revision creates a new forecast with `supersedes_id`; revisions of one event are not independent samples. Only the terminal revision is resolved/scored.
+
+An audit-passed `LIVE_PRIMARY` run may also persist declared binary forecasts through `ProbabilityForecastHistoryStore`. The run record fixes the raw pre-resolution probability, Evidence snapshot, event definition, deadline and resolver contract. A later run may change the probability only by creating a superseding revision; it may not redefine the company, hypothesis, event, deadline or resolution contract.
+
+Production outcome ingestion requires an explicit `first_seen_at` and active primary Evidence with a directly verifiable HTTP(S) source. Analyst assertions, market-comparison Evidence and synthetic outcomes are rejected. The outcome record preserves the source identity and URL alongside the immutable resolution.
 
 `AMBIGUOUS` and `CENSORED` outcomes are not silently converted to success/failure. They are excluded from the binary scoring numerator and retained in the censoring/ambiguity rate.
 
@@ -85,4 +89,4 @@ The certificate snapshot hash enters the `BoundScenarioSet` hash chain so a late
 
 `src/valuation_engine/probability_calibration.py` is the scoring/promotion source of truth. `src/valuation_engine/probability_adapter.py` loads a snapshot/certificate into a pre-Scenario runtime context. `src/valuation_engine/scenario_binding.py` enforces certificate consumption.
 
-Remaining `PARTIAL_LIVE` work is data, not permission logic: build resolved historical cohorts by forecast class/horizon, predeclare base rates, version mappings, run chronological holdouts and collect forward validation before any cohort is promoted for production weighting.
+Remaining `PARTIAL_LIVE` work is real elapsed-time evidence, not permission or writer logic: allow the newly captured forecasts to reach their declared deadlines, resolve them only from qualifying primary Evidence, accumulate the required forecast-class/horizon cohorts, predeclare cohort base rates, version mappings, run chronological holdouts and collect forward validation before any cohort is promoted for production weighting.

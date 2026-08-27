@@ -209,7 +209,7 @@ def test_save_run_removes_partial_directory_created_by_failed_write(tmp_path):
     assert not (tmp_path / "runs" / "TEST" / "PARTIAL").exists()
 
 
-def test_final_report_distinguishes_measured_from_not_measurable_and_shows_cost():
+def test_investor_report_keeps_module_diagnostics_out_of_decision_body():
     data = {
         "company": "Example",
         "generic_valuation_result": _valuation(),
@@ -225,10 +225,9 @@ def test_final_report_distinguishes_measured_from_not_measurable_and_shows_cost(
 
     report = render_generic_report(data)
 
-    assert "## Module Impact / Research Efficiency" in report
-    assert "측정 완료: MEASURED_MODULE" in report
-    assert "미측정(NOT_MEASURABLE): UNMEASURED_MODULE" in report
-    assert "source queries 2, documents 4, LLM calls 1, elapsed 4.5s" in report
-    assert "미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE" in report
-    assert "## Probability Calibration" in report
-    assert "Numeric weighting: WITHHELD" in report
+    assert "## 투자 요약" in report
+    assert "## 핵심 가정과 위험" in report
+    assert "## 모듈 영향·조사 효율성" not in report
+    assert "MEASURED_MODULE" not in report
+    assert "UNMEASURED_MODULE" not in report
+    assert "확률 보정:** 미보정 · 수치 가중 보류" in report

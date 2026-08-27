@@ -277,6 +277,59 @@ scenarios:
     - 68
     uhv_property_capex_krw_billion: 69.25
     uhv_ramp_years: 1.5
+scenario_likelihood:
+  forecast_class: intrinsic_scenario_path
+  horizon: 5y
+  method_version: analyst_relative_score/v1
+  rows:
+  - scenario_id: Down
+    relative_score: 3
+    rationale: 현재 고마진 정상화와 수주잔고 전환 지연 위험을 반영한 하방 상대점수입니다.
+    supporting_evidence_ids:
+    - E:SANIL:model_down_fcff_year_1
+    - E:SANIL:model_down_terminal_growth
+    contradicting_evidence_ids:
+    - E:SANIL:backlog
+    - E:SANIL:utilization
+  - scenario_id: Core
+    relative_score: 5
+    rationale: 수주잔고·가동 기반과 부지 통제·확정 자본적지출을 함께 반영한 기준 상대점수입니다.
+    supporting_evidence_ids:
+    - E:SANIL:backlog
+    - E:SANIL:utilization
+    - E:SANIL:expansion_land_control
+    - E:SANIL:expansion_capex_committed
+    - E:SANIL:UHV:land_control
+  - scenario_id: Bull
+    relative_score: 2
+    rationale: 빠른 초고압 설비 가동과 높은 마진 지속이 동시에 필요해 기준보다 낮게 둔 상방 상대점수입니다.
+    supporting_evidence_ids:
+    - E:SANIL:orders
+    - E:SANIL:backlog
+    - E:SANIL:UHV:land_control
+    contradicting_evidence_ids:
+    - E:SANIL:expansion_equipment_commitment
+probability_forecasts:
+- hypothesis_id: H:SANIL:CAPACITY
+  event_key: SANIL_SECOND_FACTORY_COMMERCIAL_RAMP_2027
+  forecast_class: capacity_ramp
+  horizon: 18m
+  probability: 0.70
+  event_definition: 2027-12-31까지 제2공장이 기존 기준 생산능력을 초과하는 상업 생산을 시작한다.
+  evaluation_deadline: '2027-12-31'
+  model_version: sanil-underwrite/2026-08-26
+  resolution_rule: 회사 공시 또는 공식 IR에서 추가 생산능력의 상업 가동과 출하가 확인되면 occurred, 취소·기한 미달이면 not_occurred로 해소한다.
+  resolution_source_policy: 회사 공시·공식 IR 원문만 허용하며 계획 발표만으로 발생 처리하지 않는다.
+- hypothesis_id: H:SANIL:UHV_CAPACITY
+  event_key: SANIL_UHV_PROPERTY_CLOSE_20270219
+  forecast_class: property_transaction_close
+  horizon: 6m
+  probability: 0.85
+  event_definition: 2027-02-19까지 공시된 초고압 생산용 부동산 취득 거래가 종결된다.
+  evaluation_deadline: '2027-02-19'
+  model_version: sanil-underwrite/2026-08-26
+  resolution_rule: 회사 정정·완료 공시로 소유권 이전 또는 거래 종결이 확인되면 occurred, 취소·기한 미달이면 not_occurred로 해소한다.
+  resolution_source_policy: 금융감독원 전자공시 원문만 해소 근거로 허용한다.
 uhv_capacity_project:
   project_id: SANIL_UHV_PROPERTY_ACQUISITION_20260826
   baseline_inclusion: not_in_baseline

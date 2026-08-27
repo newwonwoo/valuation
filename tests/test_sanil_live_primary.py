@@ -1,7 +1,10 @@
 from pathlib import Path
+from decimal import Decimal
+import json
 
 from valuation_engine.control_plane import StageStatus
 from valuation_engine.records import EvidenceSourceLayer
+from valuation_engine.probability_forecasting import ProbabilityForecastHistoryStore
 from valuation_engine.report_form import attest_controlled_run, render_controlled_run_report
 from valuation_engine.sanil_live_primary import (
     TARGET_ID,
@@ -201,6 +204,19 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     }
     assert values["Down"] < values["Core"] < values["Bull"]
     assert valuation.expected_value_per_share is None
+    assert all(
+        scenario.probability is None
+        for scenario in result.data["bound_scenario_set"].scenarios
+    )
+    probability_assessment = result.data["scenario_probability_assessment"]
+    assert tuple(
+        item.displayed_probability for item in probability_assessment.rows
+    ) == (Decimal("0.30"), Decimal("0.50"), Decimal("0.20"))
+    assert not probability_assessment.numeric_weighting_allowed
+    assert result.data["probability_distribution_status"] == (
+        "UNCALIBRATED_PRIOR_CAPTURED"
+    )
+    assert result.data["probability_forecast_count"] == 2
     core = next(item for item in valuation.scenarios if item.scenario_id == "Core")
     assert f"capacity_project:SANIL_SECOND_FACTORY_RAMP:capex" in core.economic_path_ids
     assert (
@@ -286,8 +302,27 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     attestation = attest_controlled_run(result)
     report = render_controlled_run_report(result)
     assert attestation.passed
-    assert "Run status: **VERIFIED_FROZEN**" in report
-    assert "Beta" in report and "WACC" in report
+    assert "검증 상태" not in report
+    assert "작성 근거와 계산 과정 보기" in report
+    assert "베타" in report and "가중평균자본비용" in report
+    assert report.index("## 투자 요약") < report.index(
+        "<summary>작성 근거와 계산 과정 보기</summary>"
+    )
+    summary = result.data["final_report"].split("\n## 가치평가", 1)[0]
+    assert all(
+        f"**{field}**" in summary
+        for field in (
+            "투자판단",
+            "현재가",
+            "기준 내재가치",
+            "가치평가 범위",
+            "시나리오 가능성",
+        )
+    )
+    assert all(
+        f"### {block}" in summary
+        for block in ("한 문장 결론", "투자포인트", "판단 변경 조건")
+    )
     assert "SANIL_SECOND_FACTORY_RAMP" in str(
         result.data["capacity_commitment_assessment"]
     )
@@ -295,12 +330,71 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
         result.data["capacity_commitment_assessment"]
     )
     assert "산일전기" in result.data["final_report"]
-    assert "must be classified by the typed Capacity Gate" in result.data["final_report"]
+    assert "하방 30% · 기준 50% · 상방 20%" in result.data["final_report"]
+    assert "시나리오 발생 가능성 — 미보정 분석가 사전확률" in result.data[
+        "final_report"
+    ]
+    assert "사전에 기록한 사건 예측 — 보정 이력 적립용" in result.data[
+        "final_report"
+    ]
+    assert "증권사별 목표가와 PRISM의 차이" in result.data["final_report"]
+    assert "미래에셋증권" in result.data["final_report"]
+    assert "신한투자증권" in result.data["final_report"]
+    assert "PRISM 기준 내재가치는 증권사 평균 목표가보다 35.3% 낮습니다" in result.data[
+        "final_report"
+    ]
+    assert "증설 처리" in result.data["final_report"]
+    assert "신한투자증권 목표가는 IBK투자증권보다 90,000원 (40.9%) 높습니다" in result.data[
+        "final_report"
+    ]
+    assert "생산능력 게이트에서 분류" in result.data["final_report"]
+    llm_start = result.data["final_report"].index(
+        "## 인공지능 인사이트 — 환경 변화 × 기업 강점"
+    )
+    llm_end = result.data["final_report"].index("\n## ", llm_start + 3)
+    assert len(result.data["final_report"][llm_start:llm_end]) <= 1000
+    run_root = tmp_path / "runs" / TICKER / "SANIL-062040-20260826"
+    assert len(result.data["saved_report_visuals"]) == 2
+    for filename in result.data["saved_report_visuals"]:
+        assert (run_root / filename).exists()
+        assert filename in result.data["final_report"]
+    summary_svg = (run_root / result.data["saved_report_visuals"][0]).read_text(
+        encoding="utf-8"
+    )
+    assumptions_svg = (run_root / result.data["saved_report_visuals"][1]).read_text(
+        encoding="utf-8"
+    )
+    assert "회사 강점 · 투자 결론 · 가치평가" in summary_svg
+    assert "특정 매수가는 만들지 않고" in summary_svg
+    assert ">현재가<" in summary_svg
+    assert "현재가 비교" not in summary_svg
+    assert "가치평가 가정 · 위험 · 출처" in assumptions_svg
+    assert "href=\"https://" in summary_svg and "href=\"https://" in assumptions_svg
     assert "SANIL_UHV_PROPERTY_ACQUISITION_20260826" in str(assessment)
     assert "no incremental Core capacity path is required" not in result.data["final_report"]
 
-    run_root = tmp_path / "runs" / TICKER / "SANIL-062040-20260826"
     assert (run_root / "final_report.md").exists()
+    persisted_report = (run_root / "final_report.md").read_text(encoding="utf-8")
+    persisted_trace = json.loads(
+        (run_root / "control_plane_trace.json").read_text(encoding="utf-8")
+    )
+    assert persisted_report == result.data["final_report"]
+    assert "<summary>작성 근거와 계산 과정 보기</summary>" in persisted_report
+    assert len(persisted_trace) == 33
+    assert (run_root / "scenario_probability_assessment.json").exists()
+    assert (run_root / "probability_forecast_drafts.json").exists()
+    history_store = ProbabilityForecastHistoryStore(tmp_path)
+    assert history_store.forecast_run_count(TICKER) == 1
+    history = history_store.load_ledger(TICKER)
+    assert len(history.forecasts) == 2
+    assert all(item.first_seen_at is not None for item in history.forecasts)
+    assert result.data["probability_forecast_record_hash"]
+    assert len(result.data["probability_forecast_ids"]) == 2
+    assert next(
+        item
+        for item in attestation.checks
+        if item.check_id == "probability_reporting_and_history_contract"
+    ).passed
     assert (tmp_path / "state" / TICKER / "current_state.json").exists()
 
 

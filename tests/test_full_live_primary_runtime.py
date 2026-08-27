@@ -1,5 +1,6 @@
 from dataclasses import replace
 from decimal import Decimal
+import json
 from pathlib import Path
 
 from valuation_engine.collection_plan import CollectorCapability
@@ -56,6 +57,10 @@ SEGMENT_ID = "core"
 COLLECTOR_ID = "dart-fixture"
 SOURCE_ID = "KR_OPENDART"
 AS_OF = "2026-08-23"
+FIXTURE_SOURCE_URL = (
+    "https://github.com/newwonwoo/valuation/blob/main/"
+    "tests/test_full_live_primary_runtime.py"
+)
 
 COLLECTOR_METRICS = (
     "realized_price",
@@ -113,14 +118,14 @@ MANDATORY_SCANNERS = (
 def identity() -> ResolvedCompanyIdentity:
     return ResolvedCompanyIdentity(
         target_id=TARGET_ID,
-        legal_name="Frozen Commodity Co",
+        legal_name="고정 원자재 기업",
         ticker="000000",
         jurisdiction="KR",
         external_ids=(
             ("opendart_corp_code", "00000000"),
             ("krx_stock_code", "000000"),
         ),
-        source_refs=("fixture://company-resolution",),
+        source_refs=(FIXTURE_SOURCE_URL,),
     )
 
 
@@ -234,7 +239,7 @@ def _evidence(metric: str) -> EvidenceRecord:
         effective_date="2026-06-30",
         observed_date=AS_OF,
         source_name="frozen filing fixture",
-        source_ref=f"fixture://filing/{metric}",
+        source_ref=FIXTURE_SOURCE_URL,
         source_grade="A",
         confidence=1.0,
         segment=SEGMENT_ID,
@@ -279,11 +284,11 @@ def intelligence_officer(context) -> IntelligenceProposal:
         )
     return IntelligenceProposal(
         hypotheses=tuple(hypotheses),
-        rationale="frozen primary evidence supports one unweighted Base scenario",
+        rationale="고정된 1차 출처가 확률가중하지 않은 기준 시나리오 하나를 뒷받침합니다",
         context_strength_linkage_decision=ContextStrengthLinkageDecision(
             not_applicable_reason=(
-                "This frozen acceptance fixture validates deterministic runtime "
-                "integrity and does not assert an external-change investment thesis."
+                "이 고정 인수시험 데이터는 결정론적 실행 무결성을 검증하며 "
+                "외부 환경 변화에 관한 투자논지를 주장하지 않습니다."
             ),
         ),
     )
@@ -370,7 +375,7 @@ def street_reports() -> tuple[StreetResearchReport, ...]:
             valuation_method="DCF",
             base_year="2027",
             estimates=(),
-            source_ref="fixture://street/a",
+            source_ref=FIXTURE_SOURCE_URL,
         ),
         StreetResearchReport(
             broker="BrokerB",
@@ -381,7 +386,7 @@ def street_reports() -> tuple[StreetResearchReport, ...]:
             valuation_method="PER",
             base_year="2027",
             estimates=(),
-            source_ref="fixture://street/b",
+            source_ref=FIXTURE_SOURCE_URL,
         ),
     )
 
@@ -414,7 +419,7 @@ def runtime_config(tmp_path: Path) -> LivePrimaryRuntimeConfig:
         market_loader=lambda: MarketObservation(
             65_000,
             AS_OF,
-            "fixture://market",
+            FIXTURE_SOURCE_URL,
         ),
     )
     return LivePrimaryRuntimeConfig(
@@ -473,15 +478,37 @@ def test_frozen_provider_live_primary_run_reaches_final_report(tmp_path):
     assert valuation.scenarios[0].value_per_share == Decimal("70000")
     assert result.data["market_comparison"].envelope.get("Base").gap_per_share == Decimal("5000")
     assert result.data["decision_impact_completed"]
-    assert "LLM Insight Layer — Environment × Corporate Strength" in result.data[
+    assert "인공지능 인사이트 — 환경 변화 × 기업 강점" in result.data[
         "final_report"
     ]
-    assert "Status: NOT_APPLICABLE" in result.data["final_report"]
-    assert "Expected Value: 미산출" in result.data["final_report"]
+    assert "상태: 해당 없음" in result.data["final_report"]
+    assert "**확률가중 기대값:** 미산출" in result.data["final_report"]
+    assert "## 정보 출처 — 원문 바로 확인" in result.data["final_report"]
+    assert "## 최종 요약 이미지" in result.data["final_report"]
+    assert FIXTURE_SOURCE_URL in result.data["final_report"]
 
     state_root = Path(tmp_path)
     assert (state_root / "state" / "000000" / "current_state.json").exists()
     assert (state_root / "runs" / "000000" / "FULL-LIVE-1" / "final_report.md").exists()
+    persisted_report = (
+        state_root / "runs" / "000000" / "FULL-LIVE-1" / "final_report.md"
+    ).read_text(encoding="utf-8")
+    persisted_trace = json.loads(
+        (
+            state_root
+            / "runs"
+            / "000000"
+            / "FULL-LIVE-1"
+            / "control_plane_trace.json"
+        ).read_text(encoding="utf-8")
+    )
+    assert persisted_report == result.data["final_report"]
+    assert "<summary>작성 근거와 계산 과정 보기</summary>" in persisted_report
+    assert len(persisted_trace) == 33
+    assert persisted_trace[-1]["stage"] == "FINAL_REPORT"
+    assert len(result.data["saved_report_visuals"]) == 2
+    for filename in result.data["saved_report_visuals"]:
+        assert (state_root / "runs" / "000000" / "FULL-LIVE-1" / filename).exists()
     assert (
         state_root
         / "runs"
@@ -513,6 +540,41 @@ def test_post_freeze_provider_gap_redacts_intrinsic_outputs(tmp_path):
         "intrinsic_freeze_token",
     ):
         assert key not in result.data
+
+
+def test_live_final_report_blocks_when_evidence_source_is_not_clickable(tmp_path):
+    config = runtime_config(tmp_path)
+    original_provider = config.providers.collectors[0]
+
+    def non_http_collector(request):
+        batch = collector(request)
+        return replace(
+            batch,
+            records=tuple(
+                replace(record, source_ref="fixture://non-verifiable")
+                for record in batch.records
+            ),
+        )
+
+    config = replace(
+        config,
+        providers=replace(
+            config.providers,
+            collectors=(
+                LiveCollectorProvider(
+                    original_provider.capability,
+                    non_http_collector,
+                ),
+            ),
+        ),
+    )
+
+    result = run_prism(config)
+
+    assert result.blocked_reasons
+    assert result.stage_traces[-1].stage == "SAVE_STATE"
+    assert result.stage_traces[-1].status is StageStatus.BLOCKED
+    assert "final_report" not in result.data
 
 
 def test_reserved_save_state_output_blocks_before_persistence(tmp_path):

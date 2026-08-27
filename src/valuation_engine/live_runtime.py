@@ -46,7 +46,12 @@ from .evidence_collection import (
     EvidenceCollector,
 )
 from .funding_adapter import FundingScanner, live_upstream_funding_adapter
-from .generic_reporting import final_report_adapter, save_state_adapter, thesis_delta_adapter
+from .generic_reporting import (
+    final_report_adapter,
+    finalize_live_primary_run_artifacts,
+    save_state_adapter,
+    thesis_delta_adapter,
+)
 from .impact_adapter import GenericDecisionImpactConfig
 from .live_primary_adapters import (
     CompanyResolutionRequest,
@@ -75,9 +80,11 @@ from .method_capabilities import (
 from .module_plan import ModuleRequirementPlan
 from .orchestrator import (
     ControlledRunResult,
+    MajorGateReporter,
     OrchestratorContext,
     StageAdapter,
     StageExecutionResult,
+    load_reporting_contract,
     load_stage_sequence,
     run_controlled_workflow,
 )
@@ -95,6 +102,7 @@ from .probability_adapter import (
     CalibrationSnapshotLoader,
     probability_calibration_load_adapter,
 )
+from .probability_forecasting import ProbabilityForecastHistoryStore
 from .research_learning import ResearchLearningStore
 from .risk_adapters import (
     BetaUniverseLoader,
@@ -272,6 +280,7 @@ class LivePrimaryRuntimeConfig:
     )
     capability_registry: MethodCapabilityRegistry | None = None
     impact_config: GenericDecisionImpactConfig | None = None
+    major_gate_reporter: MajorGateReporter | None = None
     initial_data: Mapping[str, object] = field(default_factory=dict)
 
     def validate(self) -> None:
@@ -298,6 +307,8 @@ class LivePrimaryRuntimeConfig:
             )
         if self.providers.market_loader is not None and not self.market_currency:
             raise ValueError("LIVE_PRIMARY market_loader requires market_currency")
+        if self.major_gate_reporter is not None and not callable(self.major_gate_reporter):
+            raise TypeError("major_gate_reporter must be callable")
         prohibited = {
             "current_market_price",
             "market_price",
@@ -458,6 +469,7 @@ def build_live_primary_adapters(
     )
     state_root = Path(config.state_root)
     learning_store = ResearchLearningStore(state_root)
+    probability_history_store = ProbabilityForecastHistoryStore(state_root)
     effective_unit_contract_registry = (
         unit_contract_registry
         if unit_contract_registry is not None
@@ -639,6 +651,7 @@ def build_live_primary_adapters(
         "SAVE_STATE": save_state_adapter(
             state_root=state_root,
             learning_store=learning_store,
+            probability_history_store=probability_history_store,
         ),
         "FINAL_REPORT": final_report_adapter(),
     }
@@ -652,6 +665,7 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> ControlledRunResult:
     """
     config.validate()
     sequence = load_stage_sequence(config.stage_registry_path)
+    reporting_contract = load_reporting_contract(config.stage_registry_path)
     initial = dict(config.initial_data)
     initial["scenario_binding_spec"] = config.scenario_binding_spec
     initial.setdefault("prior_hypotheses", ())
@@ -672,9 +686,15 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> ControlledRunResult:
         required_stages=sequence,
         initial_data=initial,
         unit_contract_registry=unit_contract_registry,
+        reporting_contract=reporting_contract,
+        major_gate_reporter=getattr(config, "major_gate_reporter", None),
     )
     if not result.blocked_reasons:
-        return result
+        return finalize_live_primary_run_artifacts(
+            result,
+            state_root=config.state_root,
+            stage_registry_path=config.stage_registry_path,
+        )
     return ControlledRunResult(
         run_id=result.run_id,
         execution_mode=result.execution_mode,
@@ -686,4 +706,6 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> ControlledRunResult:
         },
         blocked_reasons=result.blocked_reasons,
         freeze_token=None,
+        major_gate_summaries=result.major_gate_summaries,
+        reporting_warnings=result.reporting_warnings,
     )

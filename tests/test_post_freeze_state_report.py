@@ -119,7 +119,7 @@ def test_post_freeze_scenario_envelope_state_and_report(tmp_path):
     assert street.envelope.get("Base").gap_per_share == Decimal("0")
     assert market.envelope.get("Base").gap_per_share == Decimal("5")
     assert market.envelope.expected_gap is None
-    assert "Expected Value: 미산출" in result.data["final_report"]
+    assert "**확률가중 기대값:** 미산출" in result.data["final_report"]
     assert result.data["saved_current_state"]["expected_value_per_share"] is None
     assert (tmp_path / "state" / "EXM" / "current_state.json").exists()
     assert (tmp_path / "runs" / "EXM" / "POST-FREEZE-1" / "final_report.md").exists()
@@ -130,7 +130,7 @@ def test_calibrated_expected_value_gets_post_freeze_comparisons(tmp_path):
     assert result.blocked_reasons == ()
     assert result.data["street_comparison"].envelope.expected_gap.gap_per_share == Decimal("2")
     assert result.data["market_comparison"].envelope.expected_gap.gap_per_share == Decimal("7")
-    assert "Expected Value: 72 KRW/share" in result.data["final_report"]
+    assert "**확률가중 기대값:** 주당 72원" in result.data["final_report"]
 
 
 def test_post_freeze_stage_cannot_run_without_token():

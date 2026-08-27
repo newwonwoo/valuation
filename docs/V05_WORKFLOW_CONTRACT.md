@@ -28,7 +28,7 @@ Status: canonical runtime contract, merged into repository `SKILL.md` as v0.5.2.
 21 HIERARCHICAL_WARRANTED_PER when allowed
 22 DCF_PER_ASSUMPTION_CONSISTENCY_GATE
 23 CROSS_METHOD_DOUBLE_COUNT_AUDIT
-24 PROBABILITY_DISTRIBUTION_ANALYSIS when calibrated
+24 PROBABILITY_DISTRIBUTION_ANALYSIS when likelihood or forecast inputs are declared, or calibrated
 25 AUDIT_GATE
 26 INTRINSIC_VALUE_FREEZE
 27 STREET_REFERENCE_LOAD
@@ -39,6 +39,30 @@ Status: canonical runtime contract, merged into repository `SKILL.md` as v0.5.2.
 ```
 
 The Control Plane groups these stages into operational phases but may not reorder or bypass them. `None`, a failed method, or missing data enters the canonical recovery ladder before `VALUATION BLOCKED`, unless a non-recoverable audit/safety invariant is violated.
+
+## Major-gate reporting contract
+
+The same 33 stages are partitioned once, by `config/control_plane_stage_registry.yaml`, into five contiguous reporting gates:
+
+1. `G1_EVIDENCE_ROUTING` — stages 1–9;
+2. `G2_INSIGHT_CHALLENGE` — stages 10–14;
+3. `G3_ASSUMPTIONS_METHOD_RISK` — stages 15–19;
+4. `G4_VALUATION_AUDIT_FREEZE` — stages 20–26;
+5. `G5_POST_FREEZE_PERSISTENCE` — stages 27–33.
+
+The orchestrator emits a four-field summary when a gate reaches its terminal stage or terminates blocked: status, decisive result, residual risk and next action. A blocked gate never causes later-gate summaries to be fabricated. Routine output uses these five summaries; the compact verified appendix retains every stage identity/status and the immutable trace artifact retains exact rationale/output-key detail.
+
+The final result report has an editorial target of 3–4 pages for the decision-facing body and 1–2 pages for the compact audit appendix, capped at 6 pages combined. Body text is at least 13pt, primary headings at least 22pt and section headings at least 18pt; dense wide tables are forbidden. The appendix preserves all 33 stage identities/statuses, while exact rationales/output keys remain in the immutable trace artifact. Page limits do not authorize omission of material blockers, uncertainty labels, source lineage, frozen identities or audit evidence.
+
+The reader-facing order is Korean brokerage-research style: 투자 요약 → 가치평가 → 핵심 가정과 위험 → 증권사·시장 비교 → 원문 출처, followed by the audit appendix. `투자 요약` is the primary investment report rather than a preface and must independently expose the decision, current price, reference intrinsic value, valuation range, scenario likelihood status, one-sentence conclusion, investment points and decision-change conditions. Stage names and statuses are Korean in the visible appendix. Raw technical IDs, enums and hashes are collapsed or retained in immutable machine artifacts so the user sees the investment case before execution diagnostics.
+
+Uncalibrated scenario likelihood may be shown only as an explicitly labelled analyst prior. Deterministic code normalizes declared relative scores and rounds the displayed distribution to 5% bands, but it leaves bound scenario probabilities and expected intrinsic value empty. Declared binary events are captured before resolution and saved after a successful audit as immutable production forecast revisions. Only primary-source outcomes with explicit first-seen time and direct source links may enter calibration history.
+
+The user-facing report and all five major-gate summaries are Korean by default. LLM-authored environment-change/company-strength reasoning is isolated in one `인공지능 인사이트` section capped at 1,000 characters; it must not be presented as a deterministic assumption, calculation, Audit finding or Freeze authorization. The full typed insight remains in the immutable `context_strength_linkages.json` artifact.
+
+Each successful report also persists two deterministic Korean SVG cards from the same frozen run payload: one for company strengths, investment conclusion and valuation; one for valuation assumptions, risks and source access. These two visual pages are included inside the 3–4 page main-body target rather than added on top of the six-page cap. The visual layer may not invent an entry price. Without authorized calibration and an explicit entry rule it displays scenario values/current price and marks the specific buy price as withheld.
+
+Source links are a hard exception to omission. Every active Evidence record and each reported identity/Beta/WACC/PER/Street/market reference must resolve to a credential-free HTTP(S) original-source link. Repeated claims from one document are grouped under that link with covered metrics/effective dates; high-volume groups show counts and representative metrics while the immutable Evidence Ledger retains every exact ID/metric/date mapping. A `LIVE_PRIMARY` run with a missing, non-HTTP or credential-bearing reference is blocked during final-report persistence; a verified wrapper also checks that every accepted link is actually embedded in the persisted report.
 
 ## New v0.5 gates
 

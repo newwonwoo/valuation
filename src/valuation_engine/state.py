@@ -53,6 +53,49 @@ class StateStore:
         )
         os.replace(temporary, target)
 
+    def finalize_completed_run_artifacts(
+        self,
+        *,
+        ticker: str,
+        run_id: str,
+        final_report: str,
+        control_plane_trace: object,
+    ) -> None:
+        """Atomically replace completion-dependent artifacts before the run is returned."""
+        run_dir = self._run_dir(ticker, run_id)
+        manifest_path = run_dir / "manifest.json"
+        if not manifest_path.is_file():
+            raise FileNotFoundError(f"completed run manifest is missing: {run_id}")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if (
+            manifest.get("run_id") != run_id
+            or manifest.get("ticker") != ticker
+            or manifest.get("status") != RunStatus.COMPLETED.value
+            or manifest.get("audit_passed") is not True
+        ):
+            raise ValueError("only the matching completed audit-passed run may be finalized")
+        updates = {
+            "final_report.md": final_report,
+            "control_plane_trace.json": json.dumps(
+                _jsonable(control_plane_trace),
+                ensure_ascii=False,
+                indent=2,
+                sort_keys=True,
+            ),
+        }
+        temporaries: list[tuple[Path, Path]] = []
+        try:
+            for filename, content in updates.items():
+                target = run_dir / filename
+                temporary = run_dir / f".{filename}.{run_id}.finalizing"
+                temporary.write_text(content, encoding="utf-8")
+                temporaries.append((temporary, target))
+            for temporary, target in temporaries:
+                os.replace(temporary, target)
+        finally:
+            for temporary, _ in temporaries:
+                temporary.unlink(missing_ok=True)
+
     def _state_dir(self, ticker: str) -> Path:
         return self.root / "state" / self._safe(ticker)
 

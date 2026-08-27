@@ -1,205 +1,219 @@
-# 산일전기(062040) PRISM LIVE_PRIMARY 보고서
+# 산일전기(062040) 투자보고서
 
-- 데이터 기준일: **2026-08-26**
-- 검증 상태: **VERIFIED_FROZEN**
-- 투자검토 상태: **Preliminary source-backed underwrite**
-- 현재가(Freeze 후 로드): **176,900원**
-- Street 참고 목표가(Freeze 후 로드): **260,000원**
-- Down / Core / Bull: **119,833원 / 168,223원 / 217,104원**
-- Hierarchical Beta: **0.793**
-- WACC: **7.764%**
-- Core 반영 Capacity 프로젝트: **SANIL_SECOND_FACTORY_RAMP, SANIL_UHV_PROPERTY_ACQUISITION_20260826**
+## 투자 요약
 
-## PM 결론
+### 생산능력 확장이 잉여현금흐름으로 전환되는지가 핵심
 
-산일전기는 수요 검증 단계를 넘어 생산능력과 ramp가 가치의 핵심 병목이 된 회사입니다. 이번 run은 기존 제2공장뿐 아니라 2026년 8월 26일 체결된 초고압 변압기 생산용 부동산 양수계약을 별도 Core 프로젝트로 분리했습니다. 두 프로젝트의 Capacity·CAPEX·ramp 경로를 Scenario와 DCF가 실제 소비한 뒤 Beta·WACC, Audit, Freeze를 통과했습니다.
+| 핵심 판단 항목 | 내용 |
+| --- | --- |
+| **투자판단** | 판단 유보 — 확률 보정과 진입 규칙이 없어 구체 매수가는 산출하지 않음 |
+| **현재가** | 176,900원 (2026-08-26) |
+| **기준 내재가치** | 168,223원 · 현재가 대비 -4.9% |
+| **가치평가 범위** | 하방 119,833원 · 기준 168,223원 · 상방 217,104원 |
+| **시나리오 가능성** | 하방 30% · 기준 50% · 상방 20% · 미보정 분석가 사전확률, 기대값 미적용 |
+| **증권사 참고값** | 260,000원 (3건, 가치평가 확정 후 참고) |
+| **보고서 성격** | 공시·원문 기반 예비 투자분석 |
 
-현재가는 확률가중 기대값이 아니라 개별 Down/Core/Bull 세계관과 비교해야 합니다. 역사적 calibration cohort가 아직 충분하지 않아 Expected Value는 의도적으로 산출하지 않았습니다. 이 보고서의 FCFF 경로는 회사 가이던스가 아니라 2025 사업보고서와 2026년 2분기 IR을 기반으로 한 **PRISM analyst underwrite**입니다.
+### 한 문장 결론
 
-## Evidence Confidence / Underwriting Status
+산일전기의 핵심은 수요의 존재보다 제2공장과 초고압 변압기 부지가 실제 출하·마진·잉여현금흐름으로 전환되는 속도이며, 기준 가치는 현재가 대비 -4.9%이고 상방 가치는 +22.7%인 만큼 지금은 상승여력보다 전환 증거를 먼저 확인할 구간입니다.
 
-- 회사 실적·수주·Capacity·부지·CAPEX: 회사 공시·IR 기반, **높은 증거 신뢰도**
-- Beta peer 관측: 동일 KOSPI benchmark·동일 기간·주간 수익률 OLS 기반이며 회귀 표준오차와 시계열 hash를 보존, **중간~높은 증거 신뢰도**
-- 일간 OLS는 비동시거래·빈도 민감도 진단값으로 별도 보존하며 주간 Beta와 임의 평균하지 않습니다.
-- WACC 거시입력과 country-risk lambda: 출처가 명시된 외부 시장자료 및 PRISM 판단값, **중간 신뢰도**
-- Down/Core/Bull FCFF: 공시 사실에서 파생한 분석가 가정이며 회사 가이던스가 아닙니다.
-- 초고압 부동산 계약은 LAND_CONTROL과 692.5억원 현금유출을 공식 확정하지만, 정확한 생산 CAPA는 미공시이므로 증분 FCFF는 보수적 bounded underwrite입니다.
+### 투자포인트
 
-## Source Register
+- **가치동인:** 제2공장 가동 정상화, 초고압 변압기 생산용 부동산 양수계약을 각각 생산능력·자본적지출·가동 정상화 경로로 반영했습니다.
+- **가치평가:** 현금흐름할인법 기준 하방–상방 범위는 119,833–217,104원이며, 계층형 베타 0.793 · 가중평균자본비용 7.764%를 적용했습니다.
+- **남은 제약:** 상대점수 정규화로 하방 30% · 기준 50% · 상방 20%를 산출했지만 실제 해결 이력으로 보정되지 않아 기대값에는 적용하지 않았습니다.
 
-- 2025 사업보고서: https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm
-- 2026년 2분기 IR: https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002&mode=view&page=1&s_cate=&s_keyword=&s_type=
-- 2026년 8월 26일 초고압 생산용 부동산 양수결정: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660
-- 실제 peer Beta·WACC 원장: https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md
-- PRISM underwriting assumptions: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#scenarios
-- Street 참고자료(미래에셋증권): https://securities.miraeasset.com/bbs/board/message/view.do?categoryId=1800&messageId=2341906
-- Street 참고자료(IBK투자증권): https://www.yna.co.kr/view/AKR20260810017900008
-- Street 참고자료(신한투자증권): https://www.yna.co.kr/amp/view/AKR20260811028700008
-- 현재가: https://finance.naver.com/item/main.naver?code=062040
+### 판단 변경 조건
+
+- **상방 확인:** 제2공장·초고압 설비의 일정 준수, 가동률 정상화, 수주잔고의 매출 전환이 공시로 확인될 때.
+- **하방 훼손:** 증설 지연·취소, 수주잔고 또는 신규수주 감소, 출하 전환 전 마진 둔화가 확인될 때.
+- **행동 가능 조건:** 실제 해결 전망 이력이 누적되어 시나리오 확률을 보정하고 별도 진입 규칙이 승인될 때.
+
+## 가치평가
+- **하방 시나리오:** 내재가치 주당 119,833원
+- **기준 시나리오:** 내재가치 주당 168,223원
+- **상방 시나리오:** 내재가치 주당 217,104원
+
+### 시나리오 발생 가능성 — 미보정 분석가 사전확률
+
+| 시나리오 | 상대점수 | 표시 확률 | 판단 근거 |
+| --- | ---: | ---: | --- |
+| 하방 | 3 | 30% | 현재 고마진 정상화와 수주잔고 전환 지연 위험을 반영한 하방 상대점수입니다. |
+| 기준 | 5 | 50% | 수주잔고·가동 기반과 부지 통제·확정 자본적지출을 함께 반영한 기준 상대점수입니다. |
+| 상방 | 2 | 20% | 빠른 초고압 설비 가동과 높은 마진 지속이 동시에 필요해 기준보다 낮게 둔 상방 상대점수입니다. |
+
+- **산출식:** 각 시나리오의 명시적 상대점수를 전체 점수로 나눠 정규화하고, 표시는 5% 단위로 반올림했습니다.
+- **사용 제한:** 분석가 사전확률이며 실제 해소 이력으로 보정되지 않았으므로 기대가치·매수판단에는 사용하지 않습니다.
+- **기준일·기간:** 2026-08-26 · 5y
+- **확률가중 기대값:** 미산출 — 실제 해결 이력 기반 보정이 끝나지 않아 수치 가중을 보류했습니다.
+
+## 핵심 가정과 위험
+- **근거 신뢰도:** 회사 실적·수주·생산능력·부지·자본적지출은 회사 공시·기업설명자료에 기반해 신뢰도가 높습니다.
+- **분석가 추정:** 하방·기준·상방 기업잉여현금흐름은 회사 가이던스가 아니라 공시 사실에서 파생한 분석가 가정입니다.
+- **생산능력 불확실성:** 초고압 부동산 계약은 부지 통제와 692.5억원 현금유출을 확정하지만 정확한 생산능력은 미공시입니다.
+- **평가방법:** 핵심동인 현금흐름할인법
+- **위험 입력:** 계층형 베타 0.793 · 가중평균자본비용 7.764%
+- **확률 보정:** 미보정 · 수치 가중 보류
+- **하방 가정:** 1년차 기업잉여현금흐름 1,450억원 · 5년차 기업잉여현금흐름 2,200억원 · 영구성장률 2.0% · 영구 투하자본이익률 13.0%
+- **기준 가정:** 1년차 기업잉여현금흐름 1,750억원 · 5년차 기업잉여현금흐름 2,700억원 · 영구성장률 2.5% · 영구 투하자본이익률 15.0%
+- **상방 가정:** 1년차 기업잉여현금흐름 1,850억원 · 5년차 기업잉여현금흐름 3,050억원 · 영구성장률 3.0% · 영구 투하자본이익률 17.0%
+- **기준 시나리오 생산능력:** 제2공장 가동 정상화, 초고압 변압기 생산용 부동산 양수계약
+- **핵심 제약:** 실제 해결 전망의 누적 이력이 부족해 시나리오 확률과 기대값을 투자판단에 사용할 수 없습니다.
+
+### 사전에 기록한 사건 예측 — 보정 이력 적립용
+
+| 사건 | 미보정 확률 | 해소기한 | 해소 기준 |
+| --- | ---: | --- | --- |
+| 2027-12-31까지 제2공장이 기존 기준 생산능력을 초과하는 상업 생산을 시작한다. | 70% | 2027-12-31 | 회사 공시 또는 공식 IR에서 추가 생산능력의 상업 가동과 출하가 확인되면 occurred, 취소·기한 미달이면 not_occurred로 해소한다. |
+| 2027-02-19까지 공시된 초고압 생산용 부동산 취득 거래가 종결된다. | 85% | 2027-02-19 | 회사 정정·완료 공시로 소유권 이전 또는 거래 종결이 확인되면 occurred, 취소·기한 미달이면 not_occurred로 해소한다. |
+- 위 예측은 분석 당시 값과 이후 변경 이력을 함께 저장하며, 사후 공시를 보고 과거 확률을 다시 쓰지 않습니다.
+
+## 증권사·시장 비교
+- **증권사 평균 목표가:** 260,000원 (3건)
+- PRISM 기준 내재가치는 증권사 평균 목표가보다 35.3% 낮습니다.
+
+### 증권사별 목표가와 PRISM의 차이
+
+| 증권사 | 목표가 | 적용 기준 | PRISM 기준가 대비 |
+| --- | ---: | --- | ---: |
+| 미래에셋증권 | 250,000원 | 2028년 기준 · 주가수익비율 기반 목표가 | +48.6% |
+| IBK투자증권 | 220,000원 | 2027년 기준 · 증권사 목표가 산정 방식 | +30.8% |
+| 신한투자증권 | 310,000원 | 2027년 기준 · 예상 주가수익비율 35배 | +84.3% |
+
+### 왜 차이가 나는가
+
+- **평가방법:** PRISM은 핵심동인 현금흐름할인법을 사용하며, 증권사별 평가방법은 표와 같습니다. 현금흐름·이익·할인율·적용 배수의 기준이 다르면 목표가도 달라집니다.
+- **기준시점:** 미래에셋증권: 2028년 주가수익비율 기반 목표가 · IBK투자증권: 2027년 증권사 목표가 산정 방식 · 신한투자증권: 2027년 예상 주가수익비율 35배. 평가 기준과 기준연도가 다르므로 목표가를 PRISM 기준가와 동일한 숫자로 볼 수 없습니다.
+- **증권사 간 차이:** 신한투자증권 목표가는 IBK투자증권보다 90,000원 (40.9%) 높습니다. 두 보고서의 기준연도와 평가방법이 달라 목표가 차이를 단순 평균으로 해석하면 안 됩니다.
+- **증설 처리:** PRISM은 공시된 자본적지출과 가동 정상화 경로를 현금흐름에 직접 반영하고, 정확한 추가 생산능력이 미공시된 부분은 확정 이익으로 앞당기지 않았습니다.
+- **분해 한계:** 현재 확보된 증권사 자료에는 목표가·평가방법·기준연도는 있으나 모든 세부 이익 추정치가 구조화되어 있지 않아, 차이를 이익 전망과 적용 배수로 완전히 분해할 수는 없습니다.
+- **해석:** 증권사 목표가를 지지하려면 PRISM보다 낙관적인 미래 이익·현금흐름이 실현되거나 목표 배수가 유지되어야 합니다. 차이 자체가 계산 오류를 뜻하지는 않습니다.
+- **현재가:** 176,900원 (2026-08-26)
+- **하방 대비 하락위험:** 57,067원 (32.3%)
+- **기준 대비 하락위험:** 8,677원 (4.9%)
+- **상방 대비 상승여력:** 40,204원 (22.7%)
+
+## 인공지능 인사이트 — 환경 변화 × 기업 강점
+- 적용범위: 인공지능은 외부 환경 변화와 기업 강점의 연결 가설·반증 조건만 제시하며 가치평가 계산이나 가정 확정에는 관여하지 않습니다.
+- 상태: 적용
+- 연결: 전력망 교체, 재생에너지 계통연계, 데이터센터 전력 수요가 늘면서 납품 실적이 있는 변압기 생산 슬롯의 희소성이 커지고 있습니다. → 산일전기는 수출 고객 접근성, 고부가 특수변압기 제품 구성, 88.9%의 설비가동률, 공시된 수주잔고를 확보했습니다. 확정된 자본적지출이 있는 제2공장 부지와 별도로 계약이 체결된 초고압…
+- 핵심 추론: 전력기기 공급 병목은 산일전기의 기존 고객관계와 선투자 부지를 재평가하게 합니다. 이 자산들이 희소한 납품 슬롯을 수주잔고 전환과 잉여현금흐름으로 바꿀 수 있기 때문입니다.
+- 가치 포착: 부지 통제와 확정 자본적지출 → 설비 구축·가동 정상화 → 유효 생산능력 → 수주잔고 전환 → 매출·마진·잉여현금흐름
+- 반증 조건: 회사가 증설을 취소하거나 기존 기준 생산능력에 이미 전부 포함됐다고 확인; 생산능력이 출하로 전환되기 전에 수주잔고 또는 신규수주 감소
+- 다음 확인: 다음 분기 공시의 공장 정상화·자본적지출·가동률; 수주에서 매출로의 전환과 고객 집중도
+- 핵심 근거: 수주, 수주잔고, 설비가동률, 증설 부지 통제 — 원문 링크는 `정보 출처 — 원문 바로 확인` 참조
+- 인공지능 판단 신뢰도: 78%
+- 세부 인사이트는 별도 분석 기록에 보관됩니다.
+
+## 최종 요약 이미지
+![산일전기 주식회사 회사 강점·투자 결론·가치평가](PRISM_062040_01_summary.svg)
+
+![산일전기 주식회사 가치평가 가정·위험·출처](PRISM_062040_02_assumptions.svg)
+
+## 정보 출처 — 원문 바로 확인
+- **초고압 변압기 생산용 부동산 양수계약** — 근거 7개: 초고압 부동산 자산 비율, 기존 생산능력 포함 여부, 확정 증설 자본적지출, 초고압 부동산 계약금액, 증설 부지 통제, 증설 가동 시점 외 1개 유형 (기준일 2026-08-26) [원문 바로 열기](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660)
+<details>
+<summary>이 원문에 연결된 근거 7개 보기</summary>
+
+- `E:SANIL:UHV:asset_ratio` · `E:SANIL:UHV:baseline_inclusion` · `E:SANIL:UHV:capex_committed` · `E:SANIL:UHV:contract_amount` · `E:SANIL:UHV:land_control` · `E:SANIL:UHV:ramp_boundary` · `E:SANIL:UHV:self_funded`
+
+</details>
+- **베타 입력값** — 베타 입력 출처 [원문 바로 열기](https://finance.naver.com/)
+- **현재 시장가격** — 시장가격 기준일 2026-08-26 [원문 바로 열기](https://finance.naver.com/item/main.naver?code=062040)
+- **산일전기 분석가 가치평가 가정** — 근거 54개: 가치평가 모형 입력값 (기준일 2026-08-26) [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml)
+<details>
+<summary>이 원문에 연결된 근거 54개 보기</summary>
+
+- `E:SANIL:model_bull_diluted_shares` · `E:SANIL:model_bull_ev_adjustment` · `E:SANIL:model_bull_expansion_capex` · `E:SANIL:model_bull_fcff_year_1` · `E:SANIL:model_bull_fcff_year_2` · `E:SANIL:model_bull_fcff_year_3` · `E:SANIL:model_bull_fcff_year_4` · `E:SANIL:model_bull_fcff_year_5` · `E:SANIL:model_bull_ownership` · `E:SANIL:model_bull_terminal_growth` · `E:SANIL:model_bull_terminal_roic` · `E:SANIL:model_bull_uhv_fcff_year_1` · `E:SANIL:model_bull_uhv_fcff_year_2` · `E:SANIL:model_bull_uhv_fcff_year_3` · `E:SANIL:model_bull_uhv_fcff_year_4` · `E:SANIL:model_bull_uhv_fcff_year_5` · `E:SANIL:model_bull_uhv_property_capex` · `E:SANIL:model_bull_uhv_ramp_years` · `E:SANIL:model_core_diluted_shares` · `E:SANIL:model_core_ev_adjustment` · `E:SANIL:model_core_expansion_capex` · `E:SANIL:model_core_fcff_year_1` · `E:SANIL:model_core_fcff_year_2` · `E:SANIL:model_core_fcff_year_3` · `E:SANIL:model_core_fcff_year_4` · `E:SANIL:model_core_fcff_year_5` · `E:SANIL:model_core_ownership` · `E:SANIL:model_core_terminal_growth` · `E:SANIL:model_core_terminal_roic` · `E:SANIL:model_core_uhv_fcff_year_1` · `E:SANIL:model_core_uhv_fcff_year_2` · `E:SANIL:model_core_uhv_fcff_year_3` · `E:SANIL:model_core_uhv_fcff_year_4` · `E:SANIL:model_core_uhv_fcff_year_5` · `E:SANIL:model_core_uhv_property_capex` · `E:SANIL:model_core_uhv_ramp_years` · `E:SANIL:model_down_diluted_shares` · `E:SANIL:model_down_ev_adjustment` · `E:SANIL:model_down_expansion_capex` · `E:SANIL:model_down_fcff_year_1` · `E:SANIL:model_down_fcff_year_2` · `E:SANIL:model_down_fcff_year_3` · `E:SANIL:model_down_fcff_year_4` · `E:SANIL:model_down_fcff_year_5` · `E:SANIL:model_down_ownership` · `E:SANIL:model_down_terminal_growth` · `E:SANIL:model_down_terminal_roic` · `E:SANIL:model_down_uhv_fcff_year_1` · `E:SANIL:model_down_uhv_fcff_year_2` · `E:SANIL:model_down_uhv_fcff_year_3` · `E:SANIL:model_down_uhv_fcff_year_4` · `E:SANIL:model_down_uhv_fcff_year_5` · `E:SANIL:model_down_uhv_property_capex` · `E:SANIL:model_down_uhv_ramp_years`
+
+</details>
+- **산일전기 위험 입력 출처 등록부 / 가중평균자본비용 입력값 / 베타 입력값** — 가중평균자본비용 입력 출처; 근거 E:SANIL:beta_selection_L1_BROAD_SECTOR · 베타 비교군 선정 근거 (기준일 2026-08-26); 근거 E:SANIL:beta_selection_L2_INDUSTRY · 베타 비교군 선정 근거 (기준일 2026-08-26); 근거 E:SANIL:beta_selection_L3_RISK_DRIVER_SUBINDUSTRY · 베타 비교군 선정 근거 (기준일 2026-08-26); 근거 E:SANIL:beta_selection_L4_ECONOMIC_TWINS · 베타 비교군 선정 근거 (기준일 2026-08-26); 베타 입력 출처 [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md)
+- **산일전기 2025년 사업보고서 / 가중평균자본비용 입력값 / 기업 식별정보 / 베타 입력값** — 근거 26개: 평균판매가격, 수주잔고의 매출 전환, 수주·매출 비율, 수주 취소율, 수주 취소 조건, 현금 외 20개 유형 (기준일 2024-01-01, 2025-12-31); 가중평균자본비용 입력 출처; 기업 식별 확인; 베타 입력 출처 [원문 바로 열기](https://kind.krx.co.kr/external/2026/03/18/000706/20260318003527/11011.htm)
+<details>
+<summary>이 원문에 연결된 근거 26개 보기</summary>
+
+- `E:SANIL:asp` · `E:SANIL:backlog_conversion` · `E:SANIL:book_to_bill` · `E:SANIL:cancellation_rate` · `E:SANIL:cancellation_terms` · `E:SANIL:cash` · `E:SANIL:contract_liabilities` · `E:SANIL:debt` · `E:SANIL:effective_capacity` · `E:SANIL:expansion_capacity_committed` · `E:SANIL:expansion_capex` · `E:SANIL:expansion_capex_committed` · `E:SANIL:expansion_equipment_commitment` · `E:SANIL:expansion_land_control` · `E:SANIL:expansion_site_area` · `E:SANIL:lead_time` · `E:SANIL:mix` · `E:SANIL:nameplate_capacity` · `E:SANIL:net_income` · `E:SANIL:operating_profit` · `E:SANIL:orders` · `E:SANIL:revenue` · `E:SANIL:revenue_recognition` · `E:SANIL:unit_cost` · `E:SANIL:utilization` · `E:SANIL:yield`
+
+</details>
+- **증권사 자료 탐색** — 가치평가 입력과 분리한 사실 탐색·교차확인 자료 [원문 바로 열기](https://securities.miraeasset.com/bbs/board/message/list.do?categoryId=1800&searchStartYear=2026&searchStartMonth=07&searchStartDay=16&searchEndYear=2026&searchEndMonth=07&searchEndDay=16)
+- **증권사 자료 탐색 / 증권사: 미래에셋증권** — 가치평가 입력과 분리한 사실 탐색·교차확인 자료; 목표가 발표일 2026-08-07 [원문 바로 열기](https://securities.miraeasset.com/bbs/board/message/view.do?categoryId=1800&messageId=2341906)
+- **산일전기 2026년 2분기 기업설명자료** — 근거 8개: 수주잔고, 기존 생산능력 포함 여부, 증설 취소 여부, 증설 가동 시점, 2026년 상반기 순이익, 진행 중 증설 부재 여부 외 2개 유형 (기준일 2026-06-30) [원문 바로 열기](https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002&mode=view&page=1&s_cate=&s_keyword=&s_type=)
+<details>
+<summary>이 원문에 연결된 근거 8개 보기</summary>
+
+- `E:SANIL:backlog` · `E:SANIL:expansion_baseline_inclusion` · `E:SANIL:expansion_cancelled` · `E:SANIL:expansion_ramp_date` · `E:SANIL:net_income_h1_2026` · `E:SANIL:no_active_capacity_expansion` · `E:SANIL:operating_profit_h1_2026` · `E:SANIL:revenue_h1_2026`
+
+</details>
+- **증권사 자료 탐색 / 증권사: 신한투자증권** — 가치평가 입력과 분리한 사실 탐색·교차확인 자료; 목표가 발표일 2026-08-11 [원문 바로 열기](https://www.yna.co.kr/amp/view/AKR20260811028700008)
+- **증권사 자료 탐색 / 증권사: IBK투자증권** — 가치평가 입력과 분리한 사실 탐색·교차확인 자료; 목표가 발표일 2026-08-10 [원문 바로 열기](https://www.yna.co.kr/view/AKR20260810017900008)
+- 전체 근거 식별자·지표·기준일 연결 내역은 별도 분석 기록에 보관됩니다.
+
+## 분석 범위와 유의사항
+- **평가범위:** 전체 기업 내재가치
+- **계산 확인:** 자동 오류 점검 31개 통과 · 분석 원칙 27/27개 충족
+- 회사 공시 사실, 분석가 가정, 인공지능 연결 인사이트를 구분해 표시했습니다.
+- 증권사 목표가와 현재가는 가치평가를 마친 뒤 참고했으며, 앞서 계산한 가정을 바꾸는 데 사용하지 않았습니다.
 
 ---
 
-# PRISM Verified Controlled-Run Report
+<details>
+<summary>작성 근거와 계산 과정 보기</summary>
 
-- Run ID: `SANIL-062040-20260826`
-- Execution mode: `live_primary`
-- Run status: **VERIFIED_FROZEN**
-- Attestation hash: `6df2cf905cd554a6869efbc233e0b3be2c65e0c5314fecd11e5c8d10477521bb`
+## 분석 절차 요약
 
-## Execution Attestation
+- 자동 오류 점검: 25/25개 통과
+- 분석 절차 기록: 33/33개 완료
 
-| Check | Result | Detail |
-|---|---:|---|
-| `live_primary_mode` | **PASS** | the report was produced by LIVE_PRIMARY |
-| `run_unblocked` | **PASS** | the controlled run has no blocking reason |
-| `canonical_stage_sequence` | **PASS** | all 33 canonical stages executed in order |
-| `terminal_stage_statuses` | **PASS** | every stage ended in a non-blocking terminal status |
-| `intrinsic_freeze_token` | **PASS** | the same run issued an IntrinsicFreezeToken |
-| `evidence_ledger_hash` | **PASS** | the frozen Evidence Ledger hash is present |
-| `assumption_set_hash` | **PASS** | the compiled assumption-set hash is present |
-| `scenario_set_hash` | **PASS** | the bound scenario-set hash is present |
-| `valuation_hash` | **PASS** | the deterministic valuation hash is present |
-| `audit_hash` | **PASS** | the generic audit passed and its hash is present |
-| `persisted_final_report` | **PASS** | the final report was emitted from the persisted run payload |
-| `selected_method_contract` | **PASS** | selected valuation methods are typed |
-| `beta_wacc_same_run_chain` | **PASS** | Beta and WACC snapshots are executed and bound to one risk chain |
-| `broker_research_primary_verification_chain` | **PASS** | pre-freeze Broker Research was partitioned, primary-verified and audit-bound |
-| `capacity_assessment` | **PASS** | the typed Capacity Commitment assessment and hash are present |
-| `capacity_audit` | **PASS** | the Capacity omission/double-count audit passed |
-| `capacity_core_consumption_chain` | **PASS** | Core Capacity, CAPEX and ramp paths are bound through valuation |
-| `freeze_hash_binding` | **PASS** | Freeze is bound to the same Evidence, assumptions, valuation and audit |
+## 주요 작업 단계
 
-## Immutable Run Identities
+### 1. 증거 수집·산업 라우팅 — 통과 (9/9)
+- 결과: 증거 수집·산업 라우팅을 완료하고 근거 기록을 확정했습니다
+- 잔여위험: 없음 · 다음 단계: 인사이트 도출·반증 검토
 
-| Artifact | Hash |
-|---|---|
-| Evidence Ledger | `b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0` |
-| Assumption set | `6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed` |
-| Scenario set | `16bdd1d42c1cef90abae55d0fe1872fd729bdc49b86d873f968bc3ba55717694` |
-| Beta | `567700b4b5094f7aaa61cc030d0c8758ed146e9a38a3be4f4d56c5999f0a121e` |
-| WACC | `2beebb32d08c7f6e354a0771edba24e0f108aea78e9ba175b0b59de16257325b` |
-| Capacity assessment | `30990a2dd5985f766892ce206687c4aa4368e6a59dfef0da6f0f777939cb4543` |
-| Capacity consumption | `cc91fcc67ce9685c60520f028185caac90360ed900e1acaf0c0dc3cf60ea11b7` |
-| Capacity scenario | `28e27a5c5fd1659ccd718165d846e0ef53c67022a135fe1ac84e86c9123d7683` |
-| Capacity valuation | `7356323a77f47efb13c2dc00feb918515da43180f9096aaff252ea1402f72b2d` |
-| Capacity PER | `2fde85da7644231967ea95f2d6af39a66cff72e96b70f0d3cb0dfedd3695c9e0` |
-| Capacity consistency | `e6fffcfc4c0f4b7a442ac18e72d5eec96e201be11331abd7a6ebed9b793af6fb` |
-| Capacity audit | `c57b0531cf5655cd0828cdd3a7288391b72a642a1d838678961d526711999bcd` |
-| Broker pre-freeze | `417db8265b01cc7c16da4ae303db11c8403af2a3389cab70cece2a36571e6ed5` |
-| Broker audit | `8685e012d2049a35d5eeec7e21185a36af163a0da06db11b05edd3c1af2baed2` |
-| Valuation | `f3c586a7786ca8691ae343dd02a70d9d093b8c0853622634a48b7ca8d7c08492` |
-| Audit | `3e336ef39dbe0e5a69ad722d1cdf7ade3815ccd5ab184ba33e6b0332d5d9d0f7` |
-| Intrinsic Freeze | `7b48eb1a792a21aef688fc176a3676048afd43b4d7b330ababf0d5f7cd19f276` |
+### 2. 인사이트 도출·반증 검토 — 경고 (5/5)
+- 결과: 환경 변화와 기업 강점의 연결 인사이트 및 반증 검토를 완료했습니다
+- 잔여위험: 환경 변화 인사이트 탐색: 로켓슬라 인사이트 스캐너가 확인 필요 경고를 남겼습니다 · 다음 단계: 가정·평가방법·위험
 
-## Stage Trace
+### 3. 가정·평가방법·위험 — 통과 (5/5)
+- 결과: 가정·평가방법·베타·가중평균자본비용의 적용 여부를 확정했습니다
+- 잔여위험: 없음 · 다음 단계: 가치평가·오류 점검·결과 확정
 
-| # | Stage | Status | Blocking | Rationale |
-|---:|---|---|---:|---|
-| 1 | `COMPANY_RESOLUTION` | `pass` | NO | company identity resolved from a declared live resolver contract |
-| 2 | `LOAD_COMPANY_STATE` | `pass` | NO | no prior company state; first-run empty state is valid \| loaded 0 immutable module-impact learning record(s) |
-| 3 | `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT` | `pass` | NO | versioned Industry Knowledge snapshot loaded and hash-verified |
-| 4 | `SOURCE_FRESHNESS_PRECHECK` | `pass` | NO | live source-watch precheck passed |
-| 5 | `SEGMENT_DECOMPOSITION` | `pass` | NO | authoritative-lineage-backed segment decomposition completed |
-| 6 | `INDUSTRY_DNA_ROUTE` | `pass` | NO | all decomposed segments routed to evidence-backed multi-label Industry DNA profiles |
-| 7 | `MODULE_REQUIREMENT_PLAN` | `pass` | NO | Broker Research discovery produced only pre-freeze-safe context and metric-backed primary verification requirements \| compiled canonical Module Requirement Plan and non-destructive learned research loadout |
-| 8 | `PRIMARY_EVIDENCE_COLLECTION` | `pass` | NO | primary evidence collected with complete required segment/metric coverage and planned source lineage |
-| 9 | `EVIDENCE_LEDGER` | `pass` | NO | append-only EvidenceLedger validated and canonical runtime snapshot frozen |
-| 10 | `ROCKET_INSIGHT_SCAN` | `warning` | NO | live Rocket Insight scanner dispatch completed with warnings \| Broker Research context/verification leads connected to Rocket Insight |
-| 11 | `UPSTREAM_FUNDING_SCAN` | `pass` | NO | live upstream funding scan completed; result is evidence/hypothesis input only and does not directly change WACC |
-| 12 | `RESEARCHER_A` | `pass` | NO | LLM Intelligence Officer produced typed hypotheses and an auditable environment-change/corporate-strength linkage decision without committing assumptions |
-| 13 | `BLIND_RED_TEAM_B` | `pass` | NO | Blind Red Team completed with no unresolved blocker |
-| 14 | `RESEARCH_LOOP` | `skipped_not_applicable` | NO | Blind Red Team left no unresolved blocking issue |
-| 15 | `EVIDENCE_TO_ASSUMPTION_BRIDGE` | `pass` | NO | canonical project gates were classified and Core capacity obligations frozen \| LLM Bridge proposals validated and converted to compiler requests; no assumptions committed |
-| 16 | `SCENARIO_BUILD` | `pass` | NO | every Core-inclusion capacity project consumed explicit capacity, CAPEX and ramp bridge paths \| Bridge proposals deterministically compiled and bound into generic scenarios \| every required capacity, CAPEX and ramp path compiled into the Core scenario |
-| 17 | `VALUATION_METHOD_INTENT` | `pass` | NO | economic valuation-method intent resolved before Beta/WACC; exact evaluator construction remains downstream |
-| 18 | `HIERARCHICAL_BETA_ESTIMATION` | `pass` | NO | live L1→L4 Economic-Twin Beta estimated and relevered with one target structure |
-| 19 | `WACC_VALIDATION` | `pass` | NO | currency-consistent WACC computed from live Beta and independent marginal financing inputs |
-| 20 | `DETERMINISTIC_VALUATION` | `pass` | NO | registered deterministic evaluators and SOTP aggregation completed \| driver-specific DCF economic fingerprint bound for cross-method consistency \| deterministic valuation consumed every Core capacity economic path |
-| 21 | `HIERARCHICAL_WARRANTED_PER` | `skipped_not_applicable` | NO | No authorized same-as-of Economic-Twin residual PER pack is included; PER is withheld rather than approximated. \| Warranted PER is not applicable; capacity PER double-count path is closed |
-| 22 | `DCF_PER_ASSUMPTION_CONSISTENCY_GATE` | `pass` | NO | DCF-PER consistency gate is not applicable \| capacity assessment, scenario, valuation and PER identities are consistent |
-| 23 | `CROSS_METHOD_DOUBLE_COUNT_AUDIT` | `pass` | NO | cross-method economic paths are unique |
-| 24 | `PROBABILITY_DISTRIBUTION_ANALYSIS` | `warning` | NO | scenario probabilities are not calibration-authorized; numeric expected value remains disabled |
-| 25 | `AUDIT_GATE` | `pass` | NO | Broker Research cutoff, blind-lock, Rocket connection and company-primary verification audit passed \| capacity omission, baseline and double-count audit passed \| decision-impact record and run-bound generic intrinsic audit passed; run is eligible for freeze if snapshot hashes are present |
-| 26 | `INTRINSIC_VALUE_FREEZE` | `pass` | NO | audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze |
-| 27 | `STREET_REFERENCE_LOAD` | `pass` | NO | target-company Street references loaded after a valid same-run Freeze Token |
-| 28 | `STREET_GAP_ANALYZER` | `pass` | NO | Street gap preserved as scenario envelope because probability weighting is not calibrated |
-| 29 | `MARKET_PRICE_LOAD` | `pass` | NO | target-company market price loaded only after intrinsic freeze |
-| 30 | `MARKET_COMPARE` | `pass` | NO | current price compared with each intrinsic scenario; no Expected Value fabricated |
-| 31 | `THESIS_DELTA` | `pass` | NO | current thesis compared with the prior immutable successful state |
-| 32 | `SAVE_STATE` | `pass` | NO | immutable learning/run artifacts saved and audit-passed current state promoted |
-| 33 | `FINAL_REPORT` | `pass` | NO | final report emitted from the same immutable payload saved in the run state |
+### 4. 가치평가·오류 점검·결과 확정 — 경고 (7/7)
+- 결과: 가치평가와 오류 점검을 마치고 결과를 확정했습니다
+- 잔여위험: 시나리오 확률 보정 점검: 실제 해결 이력 기반 확률 보정이 완료되지 않아 확률가중 기대값을 산출하지 않았습니다 · 다음 단계: 증권사·시장 비교·보고서 저장
 
-## Persisted Research Report
+### 5. 증권사·시장 비교·보고서 저장 — 통과 (7/7)
+- 결과: 시장·증권사 비교 후 한국어 최종보고서와 요약 이미지 2장을 저장했습니다
+- 잔여위험: 없음 · 다음 단계: 최종 결과보고서
 
-# 산일전기 주식회사 PRISM Research & Valuation Report
+## 세부 계산 기록
 
-## LLM Insight Layer — Environment × Corporate Strength
-- Boundary: 이 영역은 외부 환경 변화와 기업의 기존 강점 사이의 비자명한 연결을 발견·반증하는 사고 계층이며, 밸류에이션 공식을 직접 변경하지 않습니다.
-- Status: APPLICABLE
+### 33단계 진행 상태
+- **증거 수집·산업 라우팅:** 1 기업 식별=통과 · 2 기존 분석 상태 불러오기=통과 · 3 산업 지식 기준일 설정=통과 · 4 출처 최신성 사전점검=통과 · 5 사업부 분해=통과 · 6 산업 특성 분류=통과 · 7 필수 분석 모듈 확정=통과 · 8 1차 근거 수집=통과 · 9 근거 기록 확정=통과
+- **인사이트 도출·반증 검토:** 10 환경 변화 인사이트 탐색=경고 · 11 상류 자금흐름 점검=통과 · 12 주 분석가 가설 도출=통과 · 13 독립 반증 검토=통과 · 14 추가 조사 반복=해당 없음
+- **가정·평가방법·위험:** 15 근거·가정 연결=통과 · 16 시나리오 구성=통과 · 17 가치평가 방법 확정=통과 · 18 계층형 베타 추정=통과 · 19 가중평균자본비용 검증=통과
+- **가치평가·오류 점검·결과 확정:** 20 결정론적 가치평가=통과 · 21 계층형 적정 주가수익비율=해당 없음 · 22 현금흐름·주가수익비율 가정 정합성=통과 · 23 평가방법 간 이중계상 감사=통과 · 24 시나리오 확률 보정 점검=경고 · 25 최종 감사=통과 · 26 가치평가 결과 확정=통과
+- **증권사·시장 비교·보고서 저장:** 27 증권사 자료 불러오기=통과 · 28 증권사 목표가 비교=통과 · 29 현재 시장가격 불러오기=통과 · 30 시장가격 비교=통과 · 31 투자논지 변화 점검=통과 · 32 분석 결과 저장=통과 · 33 최종보고서 생성=통과
+- 단계별 사유와 출력값 식별자는 별도 분석 기록에 보존됩니다.
 
-### CSL:SANIL:POWER_BOTTLENECK_CAPACITY
-- 외부 환경 변화: Grid replacement, renewable interconnection and data-center power demand are increasing the scarcity of qualified transformer delivery slots.
-- 새 병목·전략적 필요: Buyers need proven manufacturers with customer qualification, backlog visibility and physically controllable expansion capacity.
-- 기업의 기존 강점: Sanil already has export customer access, a high-value specialty-transformer mix, an 88.9% utilized production base, reported backlog and a controlled second-factory site with committed CAPEX and a separate signed UHV property-acquisition contract.
-- 비자명한 연결: The external power-equipment bottleneck specifically revalues Sanil's existing customer relationships and pre-invested site because those assets can convert scarce delivery slots into backlog conversion and FCFF.
-- 시장의 인식 공백: A generic small-transformer framing can separate current earnings from the option value of land-controlled capacity and overlook that the site, customer access and production know-how already exist.
-- 가치 포착 경로: land control and committed CAPEX → equipment/ramp execution → effective capacity → backlog conversion → revenue, margin and free cash flow
-- 인과 경로: power-infrastructure demand and transformer-slot scarcity rise → qualified delivery capacity becomes the binding buyer constraint → Sanil's existing customer access, operating base and controlled site absorb the need → capacity, CAPEX and ramp are consumed together in the Core scenario → incremental shipments convert backlog into revenue and FCFF
-- 시장 인식 트리거: official second-factory equipment or production ramp disclosure; effective-capacity growth with backlog conversion; high-value product mix and margin retention after ramp
-- 반증·철회 조건: the company cancels the program or confirms it is fully included in the frozen baseline; backlog or orders decline before capacity converts to shipments; ramp costs and margin normalization offset the added production ceiling
-- 다음 검증: next quarterly filing for factory ramp, CAPEX and utilization; orders-to-revenue conversion and customer concentration; cash conversion after expansion spending
-- Supporting Evidence: E:SANIL:orders, E:SANIL:backlog, E:SANIL:utilization, E:SANIL:expansion_land_control, E:SANIL:expansion_site_area, E:SANIL:expansion_capex_committed, E:SANIL:UHV:land_control, E:SANIL:UHV:capex_committed
-- Contradicting Evidence: 없음
-- LLM confidence: 78%
+### 분석 모듈 점검
+- 영향 측정 완료: 결정론적 가치평가
+- 영향 미측정: 가정 컴파일러, 독립 반증 검토, 증권사 자료 검증, 근거 원장, 근거·가정 연결, 계층형 베타, 산업 특성 분류, 산업 지식 외 10개
+- 비적용: 없음 · 실패: 없음
 
-## Intrinsic Value
-- Down intrinsic: 119,832.77 KRW/share
-- Core intrinsic: 168,223.31 KRW/share
-- Bull intrinsic: 217,104.3 KRW/share
-- Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.
+### 실행 식별자와 해시
 
-## Probability Calibration
-- Status: UNCALIBRATED
-- Numeric weighting: WITHHELD
-- Dataset hash: NOT_AVAILABLE
-- Snapshot hash: NOT_AVAILABLE
+- 실행 식별자: `SANIL-062040-20260826`
+- 실행 모드: `live_primary`
+- 작성 확인 해시: `81af92d6bd97586e54190f2ee04e3257a8fb336aa75e79d43dc4e2525815c457`
+- 증거 해시: `b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0`
+- 가정 해시: `6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed`
+- 시나리오 해시: `16bdd1d42c1cef90abae55d0fe1872fd729bdc49b86d873f968bc3ba55717694`
+- 가치평가 해시: `f3c586a7786ca8691ae343dd02a70d9d093b8c0853622634a48b7ca8d7c08492`
+- 오류 점검 해시: `3e336ef39dbe0e5a69ad722d1cdf7ade3815ccd5ab184ba33e6b0332d5d9d0f7`
+- 가치평가 확정 해시: `7b48eb1a792a21aef688fc176a3676048afd43b4d7b330ababf0d5f7cd19f276`
+- 보조 결속정보: 베타 `567700b4b5094f7aaa61cc030d0c8758ed146e9a38a3be4f4d56c5999f0a121e` · 가중평균자본비용 `2beebb32d08c7f6e354a0771edba24e0f108aea78e9ba175b0b59de16257325b` · 생산능력 평가 `30990a2dd5985f766892ce206687c4aa4368e6a59dfef0da6f0f777939cb4543` · 생산능력 반영 `cc91fcc67ce9685c60520f028185caac90360ed900e1acaf0c0dc3cf60ea11b7` · 생산능력 시나리오 `28e27a5c5fd1659ccd718165d846e0ef53c67022a135fe1ac84e86c9123d7683` · 생산능력 가치평가 `7356323a77f47efb13c2dc00feb918515da43180f9096aaff252ea1402f72b2d` · 생산능력 주가수익비율 `2fde85da7644231967ea95f2d6af39a66cff72e96b70f0d3cb0dfedd3695c9e0` · 생산능력 정합성 `e6fffcfc4c0f4b7a442ac18e72d5eec96e201be11331abd7a6ebed9b793af6fb` · 생산능력 오류 점검 `c57b0531cf5655cd0828cdd3a7288391b72a642a1d838678961d526711999bcd` · 사전 증권사 조사자료 `417db8265b01cc7c16da4ae303db11c8403af2a3389cab70cece2a36571e6ed5` · 증권사 자료 확인 `8685e012d2049a35d5eeec7e21185a36af163a0da06db11b05edd3c1af2baed2`
+- 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=warning · 11 `UPSTREAM_FUNDING_SCAN`=pass · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=pass · 19 `WACC_VALIDATION`=pass · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=pass · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=pass · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
 
-## Street Gap
-- 리포트 수: 3
-- 평균 목표가: 260,000 KRW
-- Down 대비: -140,167.23 (-53.9%)
-- Core 대비: -91,776.69 (-35.3%)
-- Bull 대비: -42,895.7 (-16.5%)
-
-## Current Market Compare
-- 현재가: 176,900 KRW (2026-08-26)
-- Down 기대수익 간격: -57,067.23 (-32.3%)
-- Core 기대수익 간격: -8,676.69 (-4.9%)
-- Bull 기대수익 간격: 40,204.3 (+22.7%)
-
-## Module Impact / Research Efficiency
-- 측정 완료: DETERMINISTIC_VALUATION
-- 미측정(NOT_MEASURABLE): ASSUMPTION_COMPILER, BLIND_RED_TEAM_B, BROKER_RESEARCH, EVIDENCE_LEDGER, EVIDENCE_TO_ASSUMPTION_BRIDGE, HIERARCHICAL_BETA_ENGINE, INDUSTRY_DNA_ROUTER, INDUSTRY_KNOWLEDGE 외 10개
-- 비적용: 없음
-- 실패: 없음
-- 조사비용: source queries 0, documents 0, LLM calls 0, elapsed 0.0s
-- 하향 검토 후보: 없음
-- 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.
-
-## Audit & Coverage
-- Audit: PASS (31 checks)
-- Doctrine coverage: 27/27 terminally acceptable
-
-## Thesis Delta
-- 강화·신규: Broker Research factual leads were converted to primary-source verification and target forecasts/targets were quarantined before intrinsic valuation. Sanil is routed as contracted-backlog plus capacity-manufacturing; the declared land-controlled second-factory project must be classified by the typed Capacity Gate and, when confirmed incremental, consumed as one Core capacity, CAPEX and ramp path.
-- 약화·폐기: 없음
-
-## Run Integrity
-- Valuation scope: FULL_INTRINSIC
-- Ledger snapshot: b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0
-- Assumption set: 6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed
-- Valuation: f3c586a7786ca8691ae343dd02a70d9d093b8c0853622634a48b7ca8d7c08492
-- Audit: 3e336ef39dbe0e5a69ad722d1cdf7ade3815ccd5ab184ba33e6b0332d5d9d0f7
-- Freeze token: 7b48eb1a792a21aef688fc176a3676048afd43b4d7b330ababf0d5f7cd19f276
-- Calibration dataset: NOT_APPLIED
-- Calibration snapshot: NOT_APPLIED
+</details>
