@@ -24,7 +24,9 @@ VALUATION_METRICS = (
 def replace_once(path: Path, old: str, new: str) -> None:
     text = path.read_text(encoding="utf-8")
     if old not in text:
-        raise RuntimeError(f"patch target not found in {path.relative_to(ROOT)}: {old[:80]!r}")
+        raise RuntimeError(
+            f"patch target not found in {path.relative_to(ROOT)}: {old[:80]!r}"
+        )
     path.write_text(text.replace(old, new, 1), encoding="utf-8")
 
 
@@ -35,7 +37,9 @@ def add_metrics_before_next_adapter(path: Path, anchor: str) -> None:
         raise RuntimeError(f"sector anchor not found: {anchor!r}")
     boundary = anchor.rfind("\n  ")
     if boundary < 0:
-        raise RuntimeError(f"sector anchor has no next-adapter boundary: {anchor!r}")
+        raise RuntimeError(
+            f"sector anchor has no next-adapter boundary: {anchor!r}"
+        )
     replacement = anchor[: boundary + 1] + block + anchor[boundary + 1 :]
     path.write_text(text.replace(anchor, replacement, 1), encoding="utf-8")
 
@@ -102,6 +106,31 @@ from .module_requirements import build_module_requirement_plan_from_repo
     )
 
 
+def patch_factory_evidence_contract() -> None:
+    replace_once(
+        FACTORY,
+        '''def _scanner_runner(spec: AcceptanceCompanySpec):
+    preferred = next(iter(spec.payload.get("official_metrics", {"revenue": None})))
+''',
+        '''def _scanner_runner(spec: AcceptanceCompanySpec):
+    # normalized_ebitda is always part of the declared additional Evidence contract,
+    # so every scanner leaves a valid ledger trace even when a route does not request revenue.
+    preferred = "normalized_ebitda"
+''',
+    )
+    replace_once(
+        FACTORY,
+        '''def _funding_scanner(spec: AcceptanceCompanySpec):
+    preferred = next(iter(spec.payload.get("official_metrics", {"revenue": None})))
+''',
+        '''def _funding_scanner(spec: AcceptanceCompanySpec):
+    # Reuse an always-collected, explicitly labelled underwriting record rather than
+    # guessing which official KPI the active Industry DNA happened to request.
+    preferred = "normalized_ebitda"
+''',
+    )
+
+
 def patch_units() -> None:
     replace_once(
         UNITS,
@@ -143,7 +172,10 @@ def patch_sources() -> None:
     marker = "phase2_candidates_to_verify:\n"
     if marker not in text:
         raise RuntimeError("industry source registry insertion marker missing")
-    SOURCES.write_text(text.replace(marker, descriptor + marker, 1), encoding="utf-8")
+    SOURCES.write_text(
+        text.replace(marker, descriptor + marker, 1),
+        encoding="utf-8",
+    )
 
 
 def patch_sectors() -> None:
@@ -165,10 +197,22 @@ def patch_sectors() -> None:
     - contracted_backlog
 ''',
     )
-    add_metrics_before_next_adapter(SECTORS, "    - capex\n  software.marketplace:\n")
-    add_metrics_before_next_adapter(SECTORS, "    - lead_time\n  power.project_developer:\n")
-    add_metrics_before_next_adapter(SECTORS, "    - fuel_or_input_economics\n  financials.asset_manager:\n")
-    add_metrics_before_next_adapter(SECTORS, "    - price\n  real_assets.midstream:\n")
+    add_metrics_before_next_adapter(
+        SECTORS,
+        "    - capex\n  software.marketplace:\n",
+    )
+    add_metrics_before_next_adapter(
+        SECTORS,
+        "    - lead_time\n  power.project_developer:\n",
+    )
+    add_metrics_before_next_adapter(
+        SECTORS,
+        "    - fuel_or_input_economics\n  financials.asset_manager:\n",
+    )
+    add_metrics_before_next_adapter(
+        SECTORS,
+        "    - price\n  real_assets.midstream:\n",
+    )
 
 
 def patch_manifest_test() -> None:
@@ -200,6 +244,7 @@ def patch_manifest_test() -> None:
 def main() -> int:
     patch_generator_hash_helper()
     patch_factory_scanner_contract()
+    patch_factory_evidence_contract()
     patch_units()
     patch_sources()
     patch_sectors()
