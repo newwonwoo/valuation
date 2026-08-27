@@ -475,7 +475,11 @@ def test_sanil_brokerage_report_integrates_august_27_update(tmp_path):
     assert "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660" in report
     assert len(visuals) == 2
     assert '<html lang="ko">' in html_report
-    assert "부지가 아니라 5,026억원의 생산 슬롯을 샀다" in html_report
+    assert "트럼프가 전력망을 국가안보로 묶었다" in html_report
+    assert "산일전기의 5,026억원 생산 슬롯이 중요해진 이유" in html_report
+    assert "모든 외국산 장비의 일괄 금지로 해석하지 않습니다" in html_report
+    assert "행정명령 프리미엄은 목표가 산식에 별도로 더하지 않았습니다" in html_report
+    assert "declaring-a-national-emergency-to-secure-the-united-states" in html_report
     assert "기준 목표가 237,906원" in html_report
     assert "전량가동 초고압 마진 민감도" in html_report
     assert "신규공장 제품별 물리적 매출 생산능력" in html_report
