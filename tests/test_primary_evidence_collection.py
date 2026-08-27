@@ -167,6 +167,56 @@ def test_observed_timestamp_before_checkpoint_remains_supported():
     assert result.ledger.active()[0].observed_date.startswith("2026-08-22")
 
 
+def test_cross_offset_earlier_instant_is_not_rejected_by_local_date():
+    timestamped = static_evidence_collector(
+        source_id="DART",
+        checked_at="2026-08-23T23:00:00+00:00",
+        records=(
+            evidence(
+                "E-OFFSET-EARLY",
+                "revenue",
+                100,
+                "KRW_billion",
+                observed_date="2026-08-24T00:30:00+09:00",
+            ),
+        ),
+        source_fingerprint="FP:DART",
+    )
+    result = collect_primary_evidence(
+        target_id="T",
+        required_metrics=("revenue",),
+        collectors=(timestamped,),
+    )
+    assert result.coverage_complete
+
+
+def test_cross_offset_later_instant_is_rejected_even_with_earlier_local_date():
+    future_known = static_evidence_collector(
+        source_id="DART",
+        checked_at="2026-08-24T00:00:00+09:00",
+        records=(
+            evidence(
+                "E-OFFSET-LATE",
+                "revenue",
+                100,
+                "KRW_billion",
+                observed_date="2026-08-23T23:30:00-10:00",
+            ),
+        ),
+        source_fingerprint="FP:DART",
+    )
+    try:
+        collect_primary_evidence(
+            target_id="T",
+            required_metrics=("revenue",),
+            collectors=(future_known,),
+        )
+    except ValueError as exc:
+        assert "observed after source batch checked_at" in str(exc)
+    else:
+        raise AssertionError("later cross-offset observation must fail closed")
+
+
 def test_control_plane_collection_and_ledger_stages_pass():
     result = run_controlled_workflow(
         run_id="COLLECT",
