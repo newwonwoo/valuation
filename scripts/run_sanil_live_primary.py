@@ -35,6 +35,19 @@ KOREA_INVESTMENT_REPORT_URL = (
     "https://securities.koreainvestment.com/main/research/research/StrategyDetail.jsp"
     "?id=158730&jkGubun=6"
 )
+HALF_YEAR_REPORT_URL = (
+    "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003544"
+)
+Q2_IR_URL = (
+    "https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002"
+    "&mode=view&page=1&s_cate=&s_keyword=&s_type="
+)
+LS_CAPACITY_REPORT_URL = (
+    "https://file.alphasquare.co.kr/media/pdfs/company-report/"
+    "_%EC%82%B0%EC%9D%BC%EC%A0%84%EA%B8%B0_2Q25%20Review_250807%E2%98%86_"
+    "%EC%84%B1%EC%A2%85%ED%99%94_1976_Online%20report%20_%206_10p_"
+    "%EC%82%B0%EC%9D%BC%EC%A0%84%EA%B8%B0.pdf"
+)
 
 
 def _core_terminal_value_share(compiled: object, wacc: Decimal) -> Decimal:
@@ -175,6 +188,45 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
     }
     core_mature = capacity_scenarios["Core"]["years"][-1]
     bull_mature = capacity_scenarios["Bull"]["years"][-1]
+    operating = result.data["sanil_operating_facts"]
+    h1_operating_profit = Decimal(
+        str(operating["operating_profit_h1_2026_krw_billion"])
+    )
+    h1_operating_cash_flow = Decimal(
+        str(operating["operating_cash_flow_h1_2026_krw_billion"])
+    )
+    h1_simple_fcff = (
+        h1_operating_cash_flow
+        - Decimal(str(operating["ppe_capex_h1_2026_krw_billion"]))
+        - Decimal(str(operating["intangible_capex_h1_2026_krw_billion"]))
+    )
+    product_rows = (
+        (
+            "특수변압기",
+            physical["specialty_transformer_effective_capacity"],
+        ),
+        (
+            "일반 전력망 변압기",
+            physical["grid_transformer_effective_capacity"],
+        ),
+        ("기타 기존제품", physical["other_product_effective_capacity"]),
+        ("154kV 초고압", physical["uhv_effective_capacity"]),
+    )
+    product_table = "\n".join(
+        f"| {label} | {value * 10:,.0f}억원 | "
+        f"{value / physical['total_effective_capacity']:.1%} |"
+        for label, value in product_rows
+    )
+    checkpoint_table = "\n".join(
+        f"| {int(row['year'])}년 {row['label']} | "
+        f"{row['existing_capacity_realization']:.0%} | "
+        f"{row['total_revenue'] * 10:,.0f}억원 | "
+        f"{row['operating_profit'] * 10:,.0f}억원 | "
+        f"{row['operating_margin']:.1%} | "
+        f"{row['fcff'] * 10:,.0f}억원 | "
+        f"{row['normalized_fcff'] * 10:,.0f}억원 |"
+        for row in capacity["checkpoints"]
+    )
     investment_view = "매수" if core_gap >= 0.15 else "관망"
     header = f"""# 산일전기(062040) 투자보고서 — 2026.08.27
 
@@ -202,6 +254,22 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
 - **가치평가:** 현금흐름할인법 기준 하방–상방 범위는 {values['Down']:,.0f}–{values['Bull']:,.0f}원이며, 계층형 베타 {beta.target_levered_beta:.3f} · 가중평균자본비용 {wacc.wacc_result.wacc:.3%}를 적용했습니다.
 - **현금창출력:** 성숙기 기준은 매출 {core_mature['total_revenue'] * 10:,.0f}억원 · 영업이익 {core_mature['total_operating_profit'] * 10:,.0f}억원 · 잉여현금흐름 {core_mature['total_fcff'] * 10:,.0f}억원, 전량가동 상방은 매출 {bull_mature['total_revenue'] * 10:,.0f}억원 · 잉여현금흐름 {bull_mature['total_fcff'] * 10:,.0f}억원입니다.
 - **남은 제약:** 기준 DCF 기업가치의 {terminal_share:.1%}가 영구가치에 있어 가동·마진 정상화 지연에 민감하며, {probability_summary}는 실제 해결 이력으로 보정되지 않아 기대값에는 적용하지 않았습니다.
+
+### 공시 → 제품 구성 → 영업이익 → 현금흐름 연결
+
+- **현재 현금전환:** 2026년 상반기 영업현금흐름 {h1_operating_cash_flow * 10:,.0f}억원, 단순 잉여현금흐름 {h1_simple_fcff * 10:,.0f}억원으로 영업이익 대비 각각 {h1_operating_cash_flow / h1_operating_profit:.1%}, {h1_simple_fcff / h1_operating_profit:.1%}입니다. 매출채권+재고−매입채무 증감은 {operating['net_working_capital_change_h1_2026_krw_billion'] * 10:,.1f}억원으로 사실상 제자리입니다. [2026년 반기보고서]({HALF_YEAR_REPORT_URL})
+- **물리 CAPA 출발점:** 기존제품 명목 3,090억원에 95% 가동을 적용한 2,936억원과 초고압 2,090억원을 합쳐 5,026억원입니다. [부지 취득 공시]({DART_UHV_URL}) · [LS증권 CAPA 참고자료]({LS_CAPACITY_REPORT_URL}) · [회사 2분기 IR]({Q2_IR_URL})
+
+| 신규공장 제품 | 유효 연매출 CAPA | 신규공장 믹스 |
+| --- | ---: | ---: |
+{product_table}
+| **합계** | **{physical['total_effective_capacity'] * 10:,.0f}억원** | **100.0%** |
+
+| 연도·단계 | 기존품목 CAPA 인정 | 매출 | 영업이익 | 영업이익률 | 보수적 FCF | 정상화 FCF |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+{checkpoint_table}
+
+보수적 FCF는 세후영업이익 + 감가상각 1.0% − 유지투자 1.5% − 신규공장 증분매출의 운전자본 5%입니다. 정상화 FCF는 램프업 이후 추가 운전자본 투입이 멈춘 상태이며, 이 표는 회사 가이던스가 아니라 공시와 증권사 CAPA를 연결한 분석가 추론입니다.
 
 ### 판단 변경 조건
 

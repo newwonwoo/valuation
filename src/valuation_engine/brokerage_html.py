@@ -18,6 +18,10 @@ def _billion(value: object) -> str:
     return f"{Decimal(str(value)) * 10:,.0f}억원"
 
 
+def _billion_one_decimal(value: object) -> str:
+    return f"{Decimal(str(value)) * 10:,.1f}억원"
+
+
 def _pct(value: object, *, signed: bool = False) -> str:
     number = Decimal(str(value)) * 100
     return f"{number:+.1f}%" if signed else f"{number:.1f}%"
@@ -136,6 +140,7 @@ def render_sanil_brokerage_html(
     capacity_scenarios = {
         row["scenario_id"]: row for row in capacity["scenarios"]
     }
+    capacity_checkpoints = capacity.get("checkpoints", [])
     operating = data["sanil_operating_facts"]
 
     scenario_rows: list[str] = []
@@ -197,11 +202,67 @@ def render_sanil_brokerage_html(
     ) * Decimal("0.771")
     core_payback = core_project_capex / core_incremental_nopat
     physical_total = Decimal(str(physical["total_effective_capacity"]))
-    physical_existing = Decimal(
-        str(physical["existing_product_effective_capacity"])
-    )
     physical_uhv = Decimal(str(physical["uhv_effective_capacity"]))
-    margin_rows: list[str] = []
+    h1_operating_profit = Decimal(
+        str(operating["operating_profit_h1_2026_krw_billion"])
+    )
+    h1_operating_cash_flow = Decimal(
+        str(operating["operating_cash_flow_h1_2026_krw_billion"])
+    )
+    h1_simple_fcff = (
+        h1_operating_cash_flow
+        - Decimal(str(operating["ppe_capex_h1_2026_krw_billion"]))
+        - Decimal(str(operating["intangible_capex_h1_2026_krw_billion"]))
+    )
+    h1_working_capital_change = Decimal(
+        str(operating["net_working_capital_change_h1_2026_krw_billion"])
+    )
+    product_mix_rows: list[str] = []
+    for label, calculation, capacity_key in (
+        (
+            "특수변압기",
+            "기존제품 유효 CAPA × 76%",
+            "specialty_transformer_effective_capacity",
+        ),
+        (
+            "일반 전력망 변압기",
+            "기존제품 유효 CAPA × 21%",
+            "grid_transformer_effective_capacity",
+        ),
+        (
+            "기타 기존제품",
+            "기존제품 유효 CAPA × 3%",
+            "other_product_effective_capacity",
+        ),
+        (
+            "154kV 초고압",
+            "2,200억원 × 95%",
+            "uhv_effective_capacity",
+        ),
+    ):
+        product_capacity = Decimal(str(physical[capacity_key]))
+        product_mix_rows.append(
+            "<tr>"
+            f"<th>{escape(label)}</th>"
+            f"<td>{escape(calculation)}</td>"
+            f"<td>{_billion(product_capacity)}</td>"
+            f"<td>{_pct(product_capacity / physical_total)}</td>"
+            "</tr>"
+        )
+    checkpoint_rows: list[str] = []
+    for row in capacity_checkpoints:
+        checkpoint_rows.append(
+            "<tr>"
+            f"<th>{int(row['year'])}년 · {escape(str(row['label']))}<br>"
+            f"<small>기존 CAPA {_pct(row['existing_capacity_realization'])}</small></th>"
+            f"<td>{_billion(row['total_revenue'])}</td>"
+            f"<td>{_billion(row['operating_profit'])}<br>"
+            f"<small>{_pct(row['operating_margin'])}</small></td>"
+            f"<td><strong>{_billion(row['fcff'])}</strong></td>"
+            f"<td>{_billion(row['normalized_fcff'])}</td>"
+            "</tr>"
+        )
+    margin_points: list[str] = []
     bull_base_op = Decimal(str(bull_mature["base_operating_profit"]))
     bull_existing_revenue = Decimal(
         str(bull_mature["existing_product_incremental_revenue"])
@@ -214,28 +275,12 @@ def render_sanil_brokerage_html(
             + physical_uhv * margin
         )
         total_revenue = Decimal(str(bull_mature["total_revenue"]))
-        margin_rows.append(
-            "<tr>"
-            f"<th>{_pct(margin)}</th><td>{_billion(op)}</td>"
-            f"<td>{_pct(op / total_revenue)}</td>"
-            "</tr>"
+        margin_points.append(
+            f"초고압 {_pct(margin)} → 영업이익 {_billion(op)}·전사 마진 "
+            f"{_pct(op / total_revenue)}"
         )
-    capacity_rows: list[str] = []
-    for scenario_id in ("Down", "Core", "Bull"):
-        row = capacity_scenarios[scenario_id]
-        mature = row["years"][-1]
-        total_revenue = Decimal(str(mature["total_revenue"]))
-        total_op = Decimal(str(mature["total_operating_profit"]))
-        capacity_rows.append(
-            "<tr>"
-            f"<th>{_scenario_label(scenario_id)}</th>"
-            f"<td>{_pct(row['existing_capacity_realization'])}</td>"
-            f"<td>{_billion(total_revenue)}</td>"
-            f"<td>{_billion(total_op)}</td>"
-            f"<td>{_pct(total_op / total_revenue)}</td>"
-            f"<td><strong>{_billion(mature['total_fcff'])}</strong></td>"
-            "</tr>"
-        )
+    if len(checkpoint_rows) != 2:
+        raise ValueError("산일전기 보고서는 2029·2030 CAPA 연결표가 필요합니다")
     price_low = min(down_value, core_value, bull_value, market_price) * Decimal("0.95")
     price_high = max(down_value, core_value, bull_value, market_price) * Decimal("1.05")
 
@@ -411,43 +456,29 @@ figcaption {{ margin-top:5px; color:var(--muted); font-size:8.5pt; text-align:ce
   <section class="page" data-page="02 / 04">
     <header class="masthead"><span>산일전기(062040) · 기업분석</span><span>생산능력과 현금흐름</span></header>
     <div class="section-head" style="margin-top:20px"><div><div class="eyebrow">생산능력·수익성</div><h2>부지 3.27만㎡가 5,026억원 매출 슬롯으로 연결된다</h2></div><p>단위: 억원<br>95% 유효가동 기준</p></div>
-    <div class="two-col">
-      <div class="box">
-        <h3>현재 현금창출력</h3>
-        <p>상반기 매출 {_billion(operating['revenue_h1_2026_krw_billion'])}, 영업이익 {_billion(operating['operating_profit_h1_2026_krw_billion'])}, 영업이익률 {_pct(Decimal(str(operating['operating_profit_h1_2026_krw_billion'])) / Decimal(str(operating['revenue_h1_2026_krw_billion'])))}입니다. 영업현금흐름에서 유·무형자산 취득을 뺀 단순 잉여현금흐름은 약 805억원입니다. {half_year_link}</p>
-      </div>
-      <div class="box">
-        <h3>현재 제품 구성</h3>
-        <p>특수변압기 76% · 전력망 일반변압기 21% · 기타 3%입니다. 높은 특수변압기 비중과 87.2% 가동률은 신규 부지의 경제성이 판매율보다 생산 슬롯에 좌우됨을 뜻합니다. {q2_ir_link}</p>
-      </div>
+    <div class="box">
+      <h3>현재 현금창출력</h3>
+      <p>상반기 영업현금흐름 {_billion(h1_operating_cash_flow)}, 단순 잉여현금흐름 {_billion(h1_simple_fcff)}입니다. 영업현금흐름/영업이익은 {_pct(h1_operating_cash_flow / h1_operating_profit)}, 잉여현금흐름/영업이익은 {_pct(h1_simple_fcff / h1_operating_profit)}입니다. 매출채권+재고−매입채무 증감은 {_billion_one_decimal(h1_working_capital_change)}으로 사실상 제자리입니다. {half_year_link}</p>
     </div>
-    <h3 style="margin-top:16px">신규공장 물리적 매출 생산능력(CAPA) 계산</h3>
+    <h3 style="margin-top:16px">신규공장 제품별 물리적 매출 생산능력(CAPA)</h3>
     <div class="table-wrap"><table>
       <thead><tr><th>구분</th><th>계산</th><th>연매출 CAPA</th><th>신규공장 믹스</th></tr></thead>
       <tbody>
-        <tr><th>기존제품 명목</th><td>7,000억원 × 32,703㎡ / 37,040㎡ × 50%</td><td>{_billion(physical['existing_product_nameplate_capacity'])}</td><td>—</td></tr>
-        <tr><th>기존제품 유효</th><td>명목 CAPA × 95%</td><td>{_billion(physical_existing)}</td><td>{_pct(physical['existing_product_mix'])}</td></tr>
-        <tr><th>154kV 초고압</th><td>2,200억원 × 95%</td><td>{_billion(physical_uhv)}</td><td>{_pct(physical['uhv_mix'])}</td></tr>
+        {''.join(product_mix_rows)}
         <tr><th>합계</th><td>기존제품 + 초고압</td><td><strong>{_billion(physical_total)}</strong></td><td>100.0%</td></tr>
       </tbody>
     </table></div>
-    <p class="caption">37,040㎡·연 7,000억원은 증권사 추정, 32,703㎡는 공시에서 추출한 부지면적, 2,200억원은 분석가 중심값입니다. 면적 비례는 생산라인 밀도·시험설비·물류 공간이 같다는 가정이므로 물리적 상한으로 사용합니다. {ls_link}</p>
-    <h3 style="margin-top:14px">성숙기 전사 실적과 정상화 잉여현금흐름</h3>
+    <p class="caption">상반기 실제 제품 구성 76%·21%·3%를 기존제품 증분에 적용했습니다. 기존제품 명목 CAPA = 7,000억원 × 32,703㎡ / 37,040㎡ × 50% = 3,090억원, 유효 CAPA는 95% 가동을 적용한 2,936억원입니다. 37,040㎡·연 7,000억원은 증권사 추정, 32,703㎡는 공시 부지면적, 초고압 2,200억원은 분석가 중심값입니다. {q2_ir_link} · {ls_link}</p>
+    <h3 style="margin-top:14px">2029년 램프업 → 2030년 전량가동 연결</h3>
     <div class="table-wrap"><table>
-      <thead><tr><th>시나리오</th><th>기존제품 CAPA 인정</th><th>매출</th><th>영업이익</th><th>영업이익률</th><th>FCF</th></tr></thead>
-      <tbody>{''.join(capacity_rows)}</tbody>
+      <thead><tr><th>연도·단계</th><th>매출</th><th>영업이익·률</th><th>보수적 FCF</th><th>정상화 FCF</th></tr></thead>
+      <tbody>{''.join(checkpoint_rows)}</tbody>
     </table></div>
-    <div class="two-col">
-      <div>
-        <h3>전량가동 초고압 마진 민감도</h3>
-        <table><thead><tr><th>초고압 마진</th><th>전사 영업이익</th><th>전사 마진</th></tr></thead><tbody>{''.join(margin_rows)}</tbody></table>
-      </div>
-      <div class="box warn">
-        <h3>마진보다 절대금액</h3>
-        <p>초고압 마진이 30~40%여도 전사 마진은 39.4~40.6%입니다. 기업잉여현금흐름은 세후영업이익 + 감가상각 1.0% − 유지투자 1.5% − 연간 증분매출의 운전자본 5%로 계산했습니다.</p>
-      </div>
+    <div class="box warn">
+      <h3>전량가동 초고압 마진 민감도 · 마진보다 절대금액</h3>
+      <p>{' / '.join(margin_points)}입니다. 초고압 초기 마진이 낮아도 전사 마진은 39.4~40.6%를 유지합니다. 보수적 FCF는 세후영업이익 + 감가상각 1.0% − 유지투자 1.5% − 신규공장 증분매출의 운전자본 5%이며, 정상화 FCF는 추가 운전자본 투입이 멈춘 상태입니다.</p>
     </div>
-    <p class="footnote">성숙기 수치는 회사 가이던스가 아닌 분석가 시나리오입니다. 기준은 기존품목 CAPA 50%, 상방은 100%를 매출로 인정합니다.</p>
+    <p class="footnote">2029·2030 수치는 회사 가이던스가 아니라 공시 부지와 증권사 CAPA를 연결한 분석가 추론입니다. 3쪽 DCF는 연도별 램프·투자비를 별도로 반영하며, 기준은 기존품목 CAPA 50%, 전량은 상방으로 분리합니다.</p>
   </section>
 
   <section class="page" data-page="03 / 04">

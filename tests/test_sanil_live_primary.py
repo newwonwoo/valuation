@@ -478,7 +478,17 @@ def test_sanil_brokerage_report_integrates_august_27_update(tmp_path):
     assert "부지가 아니라 5,026억원의 생산 슬롯을 샀다" in html_report
     assert "기준 목표가 237,906원" in html_report
     assert "전량가동 초고압 마진 민감도" in html_report
-    assert "기존제품 CAPA 인정" in html_report
+    assert "신규공장 제품별 물리적 매출 생산능력" in html_report
+    assert "특수변압기" in html_report and "2,231억원" in html_report
+    assert "영업현금흐름/영업이익은 76.7%" in html_report
+    assert "잉여현금흐름/영업이익은 68.5%" in html_report
+    assert "-1.7억원으로 사실상 제자리" in html_report
+    assert "2029년 · 램프업" in html_report
+    assert "2030년 · 전량가동" in html_report
+    assert "4,338억원" in html_report
+    assert "4,814억원" in html_report
+    assert "5,066억원" in html_report
+    assert "기존 CAPA" in html_report
     assert "중복 방지" in html_report
     assert "가능성 산식: 하방·기준·상방 상대점수 3:5:2" in html_report
     assert "증권사 목표가와의 차이" in html_report

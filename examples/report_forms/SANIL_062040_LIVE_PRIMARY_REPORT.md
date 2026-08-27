@@ -25,6 +25,26 @@
 - **현금창출력:** 성숙기 기준은 매출 15,234억원 · 영업이익 6,081억원 · 잉여현금흐름 4,516억원, 전량가동 상방은 매출 16,702억원 · 잉여현금흐름 4,992억원입니다.
 - **남은 제약:** 기준 DCF 기업가치의 84.8%가 영구가치에 있어 가동·마진 정상화 지연에 민감하며, 하방 30% · 기준 50% · 상방 20%는 실제 해결 이력으로 보정되지 않아 기대값에는 적용하지 않았습니다.
 
+### 공시 → 제품 구성 → 영업이익 → 현금흐름 연결
+
+- **현재 현금전환:** 2026년 상반기 영업현금흐름 901억원, 단순 잉여현금흐름 805억원으로 영업이익 대비 각각 76.7%, 68.5%입니다. 매출채권+재고−매입채무 증감은 -1.7억원으로 사실상 제자리입니다. [2026년 반기보고서](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003544)
+- **물리 CAPA 출발점:** 기존제품 명목 3,090억원에 95% 가동을 적용한 2,936억원과 초고압 2,090억원을 합쳐 5,026억원입니다. [부지 취득 공시](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660) · [LS증권 CAPA 참고자료](https://file.alphasquare.co.kr/media/pdfs/company-report/_%EC%82%B0%EC%9D%BC%EC%A0%84%EA%B8%B0_2Q25%20Review_250807%E2%98%86_%EC%84%B1%EC%A2%85%ED%99%94_1976_Online%20report%20_%206_10p_%EC%82%B0%EC%9D%BC%EC%A0%84%EA%B8%B0.pdf) · [회사 2분기 IR](https://www.sanil.co.kr/kr/sub/reference/ir.php?bid=1&idx=1002&mode=view&page=1&s_cate=&s_keyword=&s_type=)
+
+| 신규공장 제품 | 유효 연매출 CAPA | 신규공장 믹스 |
+| --- | ---: | ---: |
+| 특수변압기 | 2,231억원 | 44.4% |
+| 일반 전력망 변압기 | 616억원 | 12.3% |
+| 기타 기존제품 | 88억원 | 1.8% |
+| 154kV 초고압 | 2,090억원 | 41.6% |
+| **합계** | **5,026억원** | **100.0%** |
+
+| 연도·단계 | 기존품목 CAPA 인정 | 매출 | 영업이익 | 영업이익률 | 보수적 FCF | 정상화 FCF |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 2029년 램프업 | 50% | 15,144억원 | 5,950억원 | 39.3% | 4,338억원 | 4,511억원 |
+| 2030년 전량가동 | 100% | 16,702억원 | 6,678억원 | 40.0% | 4,814억원 | 5,066억원 |
+
+보수적 FCF는 세후영업이익 + 감가상각 1.0% − 유지투자 1.5% − 신규공장 증분매출의 운전자본 5%입니다. 정상화 FCF는 램프업 이후 추가 운전자본 투입이 멈춘 상태이며, 이 표는 회사 가이던스가 아니라 공시와 증권사 CAPA를 연결한 분석가 추론입니다.
+
 ### 판단 변경 조건
 
 - **상방 확인:** 회사가 초고압 2,000억원 이상과 기존제품 약 3,000억원의 순증 CAPA, 생산·시험설비, 고객 인증 일정을 확인할 때.
@@ -231,13 +251,13 @@
 
 - 실행 식별자: `SANIL-062040-20260826`
 - 실행 모드: `live_primary`
-- 작성 확인 해시: `21e5860e58a0bd36d13ce0d441ab1f9c1f05ef84fe62f46bd6a3d4ce6936182c`
+- 작성 확인 해시: `567a3a4d3362b85569b1814f41aac618fafe6e6bb5cefa3c9961f1df5a99e7d1`
 - 증거 해시: `1a41c0e6c255bae3a77467d9a668329e1013dd44bb49fcd9d4df3ad5d5e4440d`
 - 가정 해시: `c1f5171f0ccf5bf5f0092ee7b43032e3de95bd5e7fafcaffa4eaed4f67e6a5bd`
 - 시나리오 해시: `a18aefe8b65bf7e50e85bab0c9d6f5c8b08d0dce734cba9a6474ec4635a841b4`
 - 가치평가 해시: `223215e57921edc7ef93a7a5e85cb35e98d54938c7afe27d662e04090bd56bf5`
 - 오류 점검 해시: `d986eef275faaa1609a1265ebfaa3ba446505187ba8c76656ad34bfb19251e8a`
-- 가치평가 확정 해시: `4c4b751c722329617272bbe2a19b76b334241bb02b3d9cdc79e36643dc33bbbf`
+- 가치평가 확정 해시: `107d64e78e3f712557d33fc87469584a420fb3ed968fc9d8a201fe51237bcc06`
 - 보조 결속정보: 베타 `567700b4b5094f7aaa61cc030d0c8758ed146e9a38a3be4f4d56c5999f0a121e` · 가중평균자본비용 `2beebb32d08c7f6e354a0771edba24e0f108aea78e9ba175b0b59de16257325b` · 생산능력 평가 `30990a2dd5985f766892ce206687c4aa4368e6a59dfef0da6f0f777939cb4543` · 생산능력 반영 `c5e83190e41b8c8cac0f1bdd043d54dbca067e144d68edd4d5422be56b9a1e88` · 생산능력 시나리오 `6258246799e4479bdceddd725001e06ebe81e90231b98c90986d63c577c3be48` · 생산능력 가치평가 `9181b61fa7f3788da109b083e0bc27d032c2dbd394e8aa863929f8aaf0c094fa` · 생산능력 주가수익비율 `f82690736218e9b0b3b051d8bba5384581f39d7249b380bc6e7c9c3de3ce12eb` · 생산능력 정합성 `c5cfd3a2e8af87b81f7a4eaa374dff1fdd454160f132eef0f62b16fd40c7a2ce` · 생산능력 오류 점검 `0a46cfed0f60c2856fcf956e36219d28409b72ae727ed6ad89efcdaab259345f` · 사전 증권사 조사자료 `417db8265b01cc7c16da4ae303db11c8403af2a3389cab70cece2a36571e6ed5` · 증권사 자료 확인 `8685e012d2049a35d5eeec7e21185a36af163a0da06db11b05edd3c1af2baed2`
 - 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=warning · 11 `UPSTREAM_FUNDING_SCAN`=pass · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=pass · 19 `WACC_VALIDATION`=pass · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=pass · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=pass · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
 

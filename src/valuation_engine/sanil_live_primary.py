@@ -2085,6 +2085,11 @@ def build_sanil_live_primary_config(
                 "intangible_capex_h1_2026_krw_billion": float(
                     snapshot.facts["intangible_capex_h1_2026_krw_billion"]
                 ),
+                "net_working_capital_change_h1_2026_krw_billion": float(
+                    snapshot.facts[
+                        "net_working_capital_change_h1_2026_krw_billion"
+                    ]
+                ),
                 "utilization_h1_2026_ratio": float(
                     snapshot.facts["utilization_h1_2026_ratio"]
                 ),
