@@ -50,6 +50,22 @@ from .module_requirements import build_module_requirement_plan_from_repo
     )
     replace_once(
         FACTORY,
+        "from .records import (\n",
+        """from .risk import BETA_LEVEL_ORDER
+from .risk_adapters import (
+    LiveBetaLevelObservation,
+    LiveBetaUniverse,
+    LiveCapitalStructureObservation,
+    LivePeerBetaObservation,
+    LiveWACCInputs,
+    RateObservation,
+    TargetCapitalStructureMethod,
+)
+from .records import (
+""",
+    )
+    replace_once(
+        FACTORY,
         '''    plan = build_module_requirement_plan_from_repo(
         profile,
         repo_root=_REPO_ROOT,
@@ -99,6 +115,133 @@ from .module_requirements import build_module_requirement_plan_from_repo
         '''def _funding_scanner(spec: AcceptanceCompanySpec):
     # Use an always-collected, explicitly labelled underwriting record.
     preferred = "normalized_ebitda"
+''',
+    )
+    replace_once(
+        FACTORY,
+        '''def _valuation_registry_loader(spec: AcceptanceCompanySpec):
+''',
+        '''def _risk_structure(spec: AcceptanceCompanySpec) -> LiveCapitalStructureObservation:
+    tax_rate = 0.21 if spec.jurisdiction == "US" else 0.24
+    return LiveCapitalStructureObservation(
+        equity_weight=0.90,
+        debt_weight=0.10,
+        tax_rate=tax_rate,
+        method=TargetCapitalStructureMethod.LONG_RUN_POLICY,
+        as_of=spec.as_of,
+        source_refs=(spec.underwriting_source_ref,),
+        rationale=(
+            "explicit acceptance-underwriting capital structure; not issuer guidance or "
+            "an investment recommendation"
+        ),
+    )
+
+
+def _beta_loader(spec: AcceptanceCompanySpec):
+    def load(context) -> LiveBetaUniverse:
+        selection_evidence_id = _evidence_id(spec, "normalized_ebitda")
+        structure = _risk_structure(spec)
+        beta_by_level = (0.85, 0.95, 1.05, 1.10)
+        levels = []
+        for index, (level, beta) in enumerate(
+            zip(BETA_LEVEL_ORDER, beta_by_level, strict=True),
+            start=1,
+        ):
+            levels.append(
+                LiveBetaLevelObservation(
+                    level=level,
+                    peers=(
+                        LivePeerBetaObservation(
+                            peer_id=f"{spec.company_id}:QA_PEER_L{index}",
+                            levered_beta=beta,
+                            debt=10.0,
+                            equity=90.0,
+                            tax_rate=structure.tax_rate,
+                            benchmark_id="QA_GLOBAL_EQUITY_BENCHMARK",
+                            return_frequency="weekly",
+                            estimation_window_months=60,
+                            as_of=spec.as_of,
+                            source_ref=spec.underwriting_source_ref,
+                            beta_standard_error=0.15,
+                            estimation_method=(
+                                "explicit acceptance-underwriting Beta observation"
+                            ),
+                        ),
+                    ),
+                    selection_rationale=(
+                        "deterministic acceptance hierarchy used only to prove the typed "
+                        "Beta/WACC execution boundary"
+                    ),
+                    selection_evidence_ids=(selection_evidence_id,),
+                    risk_driver_features=(
+                        "operating leverage",
+                        "contract duration",
+                        "capital intensity",
+                    ),
+                )
+            )
+        return LiveBetaUniverse(
+            levels=tuple(levels),
+            target_capital_structure=structure,
+            universe_rationale=(
+                "explicit source-traceable acceptance universe; production investment "
+                "research must replace it with issuer-specific economic twins"
+            ),
+            source_refs=(spec.underwriting_source_ref,),
+        )
+
+    return load
+
+
+def _wacc_loader(spec: AcceptanceCompanySpec):
+    currency = str(spec.payload["market_currency"])
+    risk_free = 0.040 if currency == "USD" else 0.035
+    erp = 0.045 if currency == "USD" else 0.050
+    debt_cost = 0.050 if currency == "USD" else 0.045
+
+    def load(context) -> LiveWACCInputs:
+        source = spec.underwriting_source_ref
+        return LiveWACCInputs(
+            cash_flow_currency=currency,
+            risk_free_rate=RateObservation(
+                risk_free,
+                currency,
+                spec.as_of,
+                source,
+                "explicit acceptance-underwriting risk-free observation",
+            ),
+            equity_risk_premium=RateObservation(
+                erp,
+                currency,
+                spec.as_of,
+                source,
+                "explicit acceptance-underwriting market ERP",
+            ),
+            marginal_pre_tax_cost_of_debt=RateObservation(
+                debt_cost,
+                currency,
+                spec.as_of,
+                source,
+                "explicit acceptance-underwriting marginal debt cost",
+            ),
+            target_capital_structure=_risk_structure(spec),
+        )
+
+    return load
+
+
+def _valuation_registry_loader(spec: AcceptanceCompanySpec):
+''',
+    )
+    replace_once(
+        FACTORY,
+        '''        funding_scanner=_funding_scanner(spec),
+        street_loader=street_loader,
+''',
+        '''        funding_scanner=_funding_scanner(spec),
+        beta_loader=_beta_loader(spec),
+        wacc_loader=_wacc_loader(spec),
+        street_loader=street_loader,
 ''',
     )
     replace_once(
