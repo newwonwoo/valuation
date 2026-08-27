@@ -246,12 +246,16 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert tuple(item.claim_id for item in broker_result.context_claims) == (
         "B:SANIL:MIRAE:POWER_SOLUTION_CONTEXT",
     )
-    assert tuple(item.claim_id for item in broker_result.quarantined_claims) == (
-        "B:SANIL:MIRAE:FORWARD_FORECAST",
-        "B:SANIL:MIRAE:TARGET_PRICE",
-        "B:SANIL:IBK:TARGET_PRICE",
-        "B:SANIL:SHINHAN:TARGET_PRICE",
-    )
+    # Street forecasts/targets are not merely quarantined from the LLM; they are
+    # absent from the entire pre-Freeze orchestrator state and enter only through
+    # STREET_REFERENCE_LOAD after Intrinsic Freeze.
+    assert broker_result.quarantined_claims == ()
+    prefreeze_text = repr(broker_result)
+    assert "250000" not in prefreeze_text
+    assert "220000" not in prefreeze_text
+    assert "310000" not in prefreeze_text
+    assert result.data["broker_research_rocket_connected"]
+    assert "BROKER_RESEARCH" in findings
     primary_broker_families = {
         item.broker_family for item in broker_result.primary_verification_claims
     }
