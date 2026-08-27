@@ -233,31 +233,38 @@ def _derive_oos_brier_skill_windows(
     base_rate: Decimal,
     required_windows: int,
 ) -> tuple[Decimal, ...]:
-    """Derive chronological issuance-quarter scores from hash-bound history."""
+    """Derive recent fully matured issuance-quarter scores from hash-bound history."""
 
     windows: dict[str, list[tuple[Decimal, Decimal] | None]] = {}
+    open_quarters: set[str] = set()
     for forecast in ledger.terminal_forecasts(
         forecast_class=forecast_class,
         horizon=horizon,
         cutoff=cutoff,
     ):
-        if forecast.evaluation_deadline > cutoff.date():
-            continue
         quarter = f"{forecast.issued_at.year}Q{((forecast.issued_at.month - 1) // 3) + 1}"
+        windows.setdefault(quarter, [])
+        if forecast.evaluation_deadline > cutoff.date():
+            open_quarters.add(quarter)
+            continue
         outcome = ledger.outcome_for(forecast.forecast_id, cutoff=cutoff)
         if (
             outcome is None
             or outcome.observed_at < forecast.issued_at
             or outcome.outcome.value not in {"occurred", "not_occurred"}
         ):
-            windows.setdefault(quarter, []).append(None)
+            windows[quarter].append(None)
             continue
         observed = Decimal("1") if outcome.outcome.value == "occurred" else Decimal("0")
-        windows.setdefault(quarter, []).append((forecast.probability, observed))
+        windows[quarter].append((forecast.probability, observed))
 
     result: list[Decimal] = []
     for quarter in sorted(windows):
+        if quarter in open_quarters:
+            continue
         window = windows[quarter]
+        if not window:
+            continue
         if any(sample is None for sample in window):
             result.append(Decimal("0"))
             continue
