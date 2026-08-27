@@ -6,6 +6,7 @@ on:
     paths:
       - 'scripts/apply_sanil_uhv_capacity.py'
       - 'scripts/patch_sanil_uhv_ramp_trace.py'
+      - 'scripts/normalize_dcf_trace_fields.py'
       - 'src/valuation_engine/dcf_evaluators.py'
       - 'tests/test_incremental_capacity_dcf.py'
       - '.github/workflows/sanil-uhv-integration-agent.yml'
@@ -39,6 +40,7 @@ jobs:
           PY
           python scripts/apply_sanil_uhv_capacity.py
           python scripts/patch_sanil_uhv_ramp_trace.py
+          python scripts/normalize_dcf_trace_fields.py
       - name: Install repository
         run: python -m pip install -e '.[dev]'
       - name: Focused valuation and Sanil regressions
