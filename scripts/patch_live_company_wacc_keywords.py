@@ -34,7 +34,16 @@ def main() -> int:
                 observed_at=spec.as_of,
             )''',
         )
-    print("acceptance WACC observations normalized to keyword fields")
+    replace_once(
+        '''            target_capital_structure=_risk_structure(spec),
+        )''',
+        '''            target_capital_structure=_risk_structure(spec),
+            funding_credit_evidence_ids=(
+                _evidence_id(spec, "normalized_ebitda"),
+            ),
+        )''',
+    )
+    print("acceptance WACC observations and Evidence trace normalized")
     return 0
 
 
