@@ -145,6 +145,30 @@ class BrokerResearchPreFreezeResult:
 
 
 @dataclass(frozen=True)
+class BrokerResearchLLMContext:
+    context_claims: tuple[BrokerClaim, ...]
+    primary_verification_claims: tuple[BrokerClaim, ...]
+    verification_requests: tuple[str, ...]
+    primary_source_hints: tuple[str, ...]
+    source_refs: tuple[str, ...]
+    snapshot_hash: str
+
+    def __post_init__(self) -> None:
+        if not self.source_refs or not self.snapshot_hash:
+            raise ValueError("BrokerResearchLLMContext requires source refs and hash")
+        if any(
+            pre_freeze_use(item) is not BrokerPreFreezeUse.CONTEXT
+            for item in self.context_claims
+        ):
+            raise ValueError("LLM broker context contains a non-context claim")
+        if any(
+            pre_freeze_use(item) is not BrokerPreFreezeUse.PRIMARY_VERIFICATION_ONLY
+            for item in self.primary_verification_claims
+        ):
+            raise ValueError("LLM broker context contains a non-verification claim")
+
+
+@dataclass(frozen=True)
 class BrokerResearchAuditResult:
     report: AuditReport
     audit_hash: str
@@ -326,6 +350,14 @@ def broker_aware_module_requirement_plan_adapter(
             "broker_primary_verification_requests": result.verification_requests,
             "broker_primary_source_hints": result.primary_source_hints,
             "broker_additional_required_evidence": result.additional_required_evidence,
+            "broker_research_llm_context": BrokerResearchLLMContext(
+                context_claims=result.context_claims,
+                primary_verification_claims=result.primary_verification_claims,
+                verification_requests=result.verification_requests,
+                primary_source_hints=result.primary_source_hints,
+                source_refs=result.source_refs,
+                snapshot_hash=result.snapshot_hash,
+            ),
             **plan_stage.outputs,
         }
         return StageExecutionResult(
@@ -472,6 +504,10 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
         no_direct_broker_evidence = not claim_ids.intersection(
             hypothesis_evidence_ids | bridge_evidence_ids
         )
+        broker_source_refs = set(result.source_refs)
+        no_broker_sources_in_ledger = not broker_source_refs.intersection(
+            item.source_ref for item in ledger.active()
+        )
 
         findings = (
             AuditFinding(
@@ -509,6 +545,12 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
                 no_direct_broker_evidence,
                 True,
                 "broker claim IDs never became Hypothesis or Bridge Evidence IDs",
+            ),
+            AuditFinding(
+                "broker_sources_not_in_primary_ledger",
+                no_broker_sources_in_ledger,
+                True,
+                "broker report sources never entered the primary EvidenceLedger",
             ),
         )
         report = AuditReport(findings)

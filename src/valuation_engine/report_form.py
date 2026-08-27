@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from .broker_runtime import BrokerResearchPreFreezeResult
 from .capacity_commitment import CapacityCommitmentAssessment
 from .control_plane import ExecutionMode, StageStatus
 from .orchestrator import ControlledRunResult, load_stage_sequence
@@ -191,6 +192,26 @@ def attest_controlled_run(
             )
         )
 
+    broker_required = bool(data.get("broker_research_required", False))
+    broker_result = data.get("broker_research_prefreeze_result")
+    broker_configured = broker_required or broker_result is not None
+    if broker_configured:
+        broker_runtime_ok = (
+            isinstance(broker_result, BrokerResearchPreFreezeResult)
+            and _string_hash(data, "broker_research_snapshot_hash")
+            == broker_result.snapshot_hash
+            and bool(data.get("broker_research_audit_passed"))
+            and _string_hash(data, "broker_research_audit_hash") is not None
+        )
+        checks.append(
+            _check(
+                "broker_research_primary_verification_chain",
+                broker_runtime_ok,
+                "pre-freeze Broker Research was partitioned, primary-verified and audit-bound",
+                "Broker Research discovery, primary verification or audit binding is missing",
+            )
+        )
+
     capacity = data.get("capacity_commitment_assessment")
     capacity_typed = isinstance(capacity, CapacityCommitmentAssessment)
     checks.append(
@@ -293,6 +314,11 @@ def attest_controlled_run(
         },
         "freeze_token_hash": getattr(token, "token_hash", None),
     }
+    if broker_configured:
+        payload["broker_research"] = {
+            "snapshot_hash": data.get("broker_research_snapshot_hash"),
+            "audit_hash": data.get("broker_research_audit_hash"),
+        }
     return RunAttestation(result.run_id, tuple(checks), _stable_hash(payload))
 
 
@@ -311,6 +337,9 @@ def render_controlled_run_report(
         else ("VERIFIED_FROZEN" if attestation.passed else "INCOMPLETE")
     )
     data = result.data
+    broker_configured = bool(data.get("broker_research_required", False)) or (
+        data.get("broker_research_prefreeze_result") is not None
+    )
     lines = [
         "# PRISM Verified Controlled-Run Report",
         "",
@@ -351,6 +380,14 @@ def render_controlled_run_report(
         ("Capacity PER", "capacity_per_binding_hash"),
         ("Capacity consistency", "capacity_consistency_hash"),
         ("Capacity audit", "capacity_audit_hash"),
+        *(
+            (
+                ("Broker pre-freeze", "broker_research_snapshot_hash"),
+                ("Broker audit", "broker_research_audit_hash"),
+            )
+            if broker_configured
+            else ()
+        ),
         ("Valuation", "valuation_hash"),
         ("Audit", "audit_hash"),
     ):
@@ -400,6 +437,7 @@ def render_report_form_template() -> str:
 | `canonical_stage_sequence` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
 | `beta_wacc_same_run_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
 | `capacity_core_consumption_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
+| `broker_research_primary_verification_chain` | `{{ PASS_OR_FAIL_OR_NOT_APPLICABLE }}` | `{{ detail }}` |
 | `freeze_hash_binding` | `{{ PASS_OR_FAIL }}` | `{{ detail }}` |
 
 ## Immutable Run Identities
@@ -416,6 +454,8 @@ def render_report_form_template() -> str:
 | Capacity scenario | `{{ capacity_scenario_binding_hash_or_not_applicable }}` |
 | Capacity valuation | `{{ capacity_valuation_binding_hash_or_not_applicable }}` |
 | Capacity audit | `{{ capacity_audit_hash }}` |
+| Broker pre-freeze | `{{ broker_research_snapshot_hash_or_not_applicable }}` |
+| Broker audit | `{{ broker_research_audit_hash_or_not_applicable }}` |
 | Valuation | `{{ valuation_hash }}` |
 | Audit | `{{ audit_hash }}` |
 | Intrinsic Freeze | `{{ freeze_token_hash }}` |

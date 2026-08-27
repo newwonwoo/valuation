@@ -102,3 +102,11 @@ def test_report_form_template_contains_required_execution_identities():
     assert "wacc_snapshot_hash" in template
     assert "freeze_token_hash" in template
     assert "immutable_saved_final_report" in template
+
+
+def test_report_template_exposes_broker_research_audit_identity():
+    template = render_report_form_template()
+
+    assert "broker_research_primary_verification_chain" in template
+    assert "broker_research_snapshot_hash" in template
+    assert "broker_research_audit_hash" in template

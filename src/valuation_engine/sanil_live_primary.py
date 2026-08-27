@@ -9,6 +9,15 @@ from typing import Any, Mapping
 
 import yaml
 
+from .broker_research import (
+    BrokerClaim,
+    BrokerFieldClass,
+    BrokerReportType,
+)
+from .broker_runtime import (
+    BrokerResearchBatch,
+    BrokerResearchObservation,
+)
 from .capacity_commitment import (
     BaselineInclusionStatus,
     CapacityCommitmentInput,
@@ -87,6 +96,10 @@ from .valuation_plan_compiler import (
 
 _DEFAULT_SNAPSHOT_FILENAME = "sanil_live_snapshot.yaml"
 _DEFAULT_MARKET_SNAPSHOT_FILENAME = "sanil_market_snapshot.yaml"
+_MIRAE_2Q26_REPORT_URL = (
+    "https://securities.miraeasset.com/bbs/board/message/view.do"
+    "?categoryId=1800&messageId=2341906"
+)
 
 TARGET_ID = "KR:DART:00366438"
 TICKER = "062040"
@@ -801,6 +814,11 @@ def _hypothesis(
 
 
 def _intelligence_officer(context) -> IntelligenceProposal:
+    broker_context = context.broker_research_context
+    if broker_context is None:
+        raise ValueError(
+            "Sanil LIVE_PRIMARY requires the pre-freeze Broker Research context"
+        )
     hypotheses = tuple(
         _hypothesis(
             f"H:SANIL:{scenario}",
@@ -905,7 +923,10 @@ def _intelligence_officer(context) -> IntelligenceProposal:
     )
     return IntelligenceProposal(
         hypotheses=hypotheses,
+        requested_evidence=broker_context.verification_requests,
         rationale=(
+            "Broker Research factual leads were converted to primary-source verification "
+            "and target forecasts/targets were quarantined before intrinsic valuation. "
             "Sanil is routed as contracted-backlog plus capacity-manufacturing; "
             "the declared land-controlled second-factory project must be classified "
             "by the typed Capacity Gate and, when confirmed incremental, consumed "
@@ -1435,8 +1456,116 @@ def _per_loader(context: OrchestratorContext) -> LivePERInputs:
     )
 
 
+def _broker_research_loader(snapshot: SanilSnapshot):
+    def load(_context: OrchestratorContext) -> BrokerResearchBatch:
+        return BrokerResearchBatch(
+            checked_at=snapshot.cutoff,
+            observations=(
+                BrokerResearchObservation(
+                    claim=BrokerClaim(
+                        claim_id="B:SANIL:MIRAE:2Q26_PRIMARY_LEADS",
+                        source_id="KR_MIRAE_INDUSTRY_RESEARCH",
+                        broker_family="MiraeAssetSecurities",
+                        report_type=BrokerReportType.EARNINGS_REVIEW,
+                        field_class=BrokerFieldClass.UNDERLYING_DATA_REFERENCE,
+                        industry_node="power_transformers",
+                        statement=(
+                            "Mirae identifies order/backlog, specialty-transformer mix "
+                            "and capacity utilization as key Sanil operating signals; "
+                            "the runtime must verify them in company primary sources."
+                        ),
+                        target_company_specific=True,
+                        underlying_data_families=("company_ir", "company_filing"),
+                        report_date="2026-08-07",
+                    ),
+                    segment_id=SEGMENT_ID,
+                    source_ref=_MIRAE_2Q26_REPORT_URL,
+                    verification_metrics=("orders", "backlog", "mix", "utilization"),
+                    verification_requests=(
+                        "verify orders, backlog, mix and utilization in official filing/IR",
+                    ),
+                    primary_source_hints=("2025 annual report", "2Q26 company IR"),
+                ),
+                BrokerResearchObservation(
+                    claim=BrokerClaim(
+                        claim_id="B:SANIL:MIRAE:UHV_PRIMARY_LEADS",
+                        source_id="KR_MIRAE_INDUSTRY_RESEARCH",
+                        broker_family="MiraeAssetSecurities",
+                        report_type=BrokerReportType.COMPANY_UPDATE,
+                        field_class=BrokerFieldClass.UNDERLYING_DATA_REFERENCE,
+                        industry_node="power_transformers",
+                        statement=(
+                            "Mirae flags a separate UHV expansion path; exact future "
+                            "capacity and timing are not accepted until company primary "
+                            "evidence establishes land control, committed spend and ramp boundaries."
+                        ),
+                        target_company_specific=True,
+                        underlying_data_families=("company_filing",),
+                        report_date="2026-08-07",
+                    ),
+                    segment_id=SEGMENT_ID,
+                    source_ref=_MIRAE_2Q26_REPORT_URL,
+                    verification_metrics=(
+                        "expansion_land_control",
+                        "expansion_site_area",
+                        "expansion_capex_committed",
+                        "expansion_ramp_date",
+                    ),
+                    verification_requests=(
+                        "verify UHV land control, disclosed consideration and ramp boundary in company filing",
+                    ),
+                    primary_source_hints=("company property-acquisition filing",),
+                ),
+                BrokerResearchObservation(
+                    claim=BrokerClaim(
+                        claim_id="B:SANIL:MIRAE:FORWARD_FORECAST",
+                        source_id="KR_MIRAE_INDUSTRY_RESEARCH",
+                        broker_family="MiraeAssetSecurities",
+                        report_type=BrokerReportType.EARNINGS_REVIEW,
+                        field_class=BrokerFieldClass.TARGET_COMPANY_FORECAST,
+                        industry_node="power_transformers",
+                        statement="Mirae publishes a target-company forward earnings path.",
+                        target_company_specific=True,
+                        report_date="2026-08-07",
+                    ),
+                    segment_id=SEGMENT_ID,
+                    source_ref=_MIRAE_2Q26_REPORT_URL,
+                ),
+                BrokerResearchObservation(
+                    claim=BrokerClaim(
+                        claim_id="B:SANIL:MIRAE:TARGET_PRICE",
+                        source_id="KR_MIRAE_INDUSTRY_RESEARCH",
+                        broker_family="MiraeAssetSecurities",
+                        report_type=BrokerReportType.VALUATION_CHANGE,
+                        field_class=BrokerFieldClass.TARGET_PRICE,
+                        industry_node="power_transformers",
+                        statement="Mirae target price is KRW 250,000.",
+                        target_company_specific=True,
+                        report_date="2026-08-07",
+                    ),
+                    segment_id=SEGMENT_ID,
+                    source_ref=_MIRAE_2Q26_REPORT_URL,
+                ),
+            ),
+            source_refs=(_MIRAE_2Q26_REPORT_URL,),
+        )
+
+    return load
+
+
 def _street_reports() -> tuple[StreetResearchReport, ...]:
     return (
+        StreetResearchReport(
+            broker="Mirae Asset Securities",
+            analyst="Kim Tae-hyung",
+            published_date="2026-08-07",
+            target_price=250000.0,
+            target_price_currency="KRW",
+            valuation_method="PER-based target framework",
+            base_year="2028",
+            estimates=(),
+            source_ref=_MIRAE_2Q26_REPORT_URL,
+        ),
         StreetResearchReport(
             broker="Shinhan Securities",
             analyst="Choi Seung-hwan / Lee Byung-hwa",
@@ -1574,6 +1703,7 @@ def build_sanil_live_primary_config(
             include_default_normalized_multiples=True,
         ),
         valuation_plan_inputs_loader=_valuation_plan_inputs,
+        broker_research_loader=_broker_research_loader(snapshot),
         capacity_commitment_loader=_capacity_loader,
         capacity_bridge_consumption_loader=_capacity_consumption_loader,
         funding_scanner=_funding_scanner,
@@ -1609,6 +1739,7 @@ def build_sanil_live_primary_config(
         additional_required_evidence={
             SEGMENT_ID: tuple(item.metric for item in records)
         },
+        require_broker_research=True,
         method_choices=(SegmentMethodChoice(SEGMENT_ID, "capacity_manufacturing", "driver_dcf", "1"),),
         capacity_core_scenario_id="Core",
         market_currency="KRW",

@@ -5,6 +5,11 @@ from pathlib import Path
 from typing import Callable, Mapping
 
 from .audit_adapter import generic_audit_adapter
+from .broker_runtime import (
+    BrokerResearchLoader,
+    broker_aware_module_requirement_plan_adapter,
+    broker_research_audit_adapter,
+)
 from .capacity_commitment import (
     CapacityCommitmentLoader,
     capacity_commitment_gate_adapter,
@@ -67,7 +72,6 @@ from .method_capabilities import (
     load_default_method_capability_registry,
 )
 from .module_plan import ModuleRequirementPlan
-from .module_plan_adapter import module_requirement_plan_adapter
 from .orchestrator import (
     ControlledRunResult,
     OrchestratorContext,
@@ -194,6 +198,7 @@ class LivePrimaryProviders:
     bridge_analyst: BridgeAnalyst
     evaluator_registry_loader: RegistryLoader
     valuation_plan_inputs_loader: ValuationPlanInputsLoader
+    broker_research_loader: BrokerResearchLoader | None = None
     capacity_commitment_loader: CapacityCommitmentLoader | None = None
     capacity_bridge_consumption_loader: CapacityBridgeConsumptionLoader | None = None
     funding_scanner: FundingScanner | None = None
@@ -246,6 +251,7 @@ class LivePrimaryRuntimeConfig:
     additional_required_evidence: Mapping[str, tuple[str, ...]] = field(
         default_factory=dict
     )
+    require_broker_research: bool = False
     capacity_core_scenario_id: str | None = None
     market_currency: str | None = None
     stage_registry_path: str | Path = (
@@ -282,6 +288,12 @@ class LivePrimaryRuntimeConfig:
         ):
             raise TypeError(
                 "additional_required_evidence must be a segment_id→tuple[str, ...] mapping"
+            )
+        if not isinstance(self.require_broker_research, bool):
+            raise TypeError("require_broker_research must be bool")
+        if self.require_broker_research and self.providers.broker_research_loader is None:
+            raise ValueError(
+                "require_broker_research=True requires broker_research_loader"
             )
         if self.providers.market_loader is not None and not self.market_currency:
             raise ValueError("LIVE_PRIMARY market_loader requires market_currency")
@@ -568,9 +580,13 @@ def build_live_primary_adapters(
         "INDUSTRY_DNA_ROUTE": live_industry_dna_route_adapter(
             router=providers.industry_dna_router
         ),
-        "MODULE_REQUIREMENT_PLAN": module_requirement_plan_adapter(
+        "MODULE_REQUIREMENT_PLAN": broker_aware_module_requirement_plan_adapter(
             registry_path=config.archetype_registry_path,
             control_requirements_path=config.archetype_control_requirements_path,
+            loader=getattr(providers, "broker_research_loader", None),
+            require_broker_research=bool(
+                getattr(config, "require_broker_research", False)
+            ),
             additional_required_evidence=config.additional_required_evidence,
         ),
         "PRIMARY_EVIDENCE_COLLECTION": primary_evidence_collection_adapter(
@@ -602,6 +618,9 @@ def build_live_primary_adapters(
         "CROSS_METHOD_DOUBLE_COUNT_AUDIT": cross_method_double_count_adapter(),
         "PROBABILITY_DISTRIBUTION_ANALYSIS": probability_distribution_adapter(),
         "AUDIT_GATE": chain_stage_adapters(
+            broker_research_audit_adapter(
+                required=bool(getattr(config, "require_broker_research", False))
+            ),
             capacity_audit_adapter(),
             generic_audit_adapter(
                 impact_config=config.impact_config,

@@ -4,7 +4,7 @@
 - 검증 상태: **VERIFIED_FROZEN**
 - 투자검토 상태: **Preliminary source-backed underwrite**
 - 현재가(Freeze 후 로드): **176,900원**
-- Street 참고 목표가(Freeze 후 로드): **310,000원**
+- Street 참고 목표가(Freeze 후 로드): **280,000원**
 - Down / Core / Bull: **119,833원 / 168,223원 / 217,104원**
 - Hierarchical Beta: **0.793**
 - WACC: **7.764%**
@@ -42,7 +42,7 @@
 - Run ID: `SANIL-062040-20260826`
 - Execution mode: `live_primary`
 - Run status: **VERIFIED_FROZEN**
-- Attestation hash: `f0445dd29a8ffb19912c3379efe528de0393e70cfae22d814b6f046c95f81117`
+- Attestation hash: `a98a5e0e38e682525ed5a77defef6d35024bbca3d8c51c0b3a0bb388209c3acb`
 
 ## Execution Attestation
 
@@ -61,6 +61,7 @@
 | `persisted_final_report` | **PASS** | the final report was emitted from the persisted run payload |
 | `selected_method_contract` | **PASS** | selected valuation methods are typed |
 | `beta_wacc_same_run_chain` | **PASS** | Beta and WACC snapshots are executed and bound to one risk chain |
+| `broker_research_primary_verification_chain` | **PASS** | pre-freeze Broker Research was partitioned, primary-verified and audit-bound |
 | `capacity_assessment` | **PASS** | the typed Capacity Commitment assessment and hash are present |
 | `capacity_audit` | **PASS** | the Capacity omission/double-count audit passed |
 | `capacity_core_consumption_chain` | **PASS** | Core Capacity, CAPEX and ramp paths are bound through valuation |
@@ -82,9 +83,11 @@
 | Capacity PER | `3f41768bb057dfa6c56282eccb2d9c8c8327d7ed61b1834c2772d76ef4e49884` |
 | Capacity consistency | `bbe422353f84d98bdfe7662b34ff4e5b32f0dd7ba09a4f66b216c389433282fe` |
 | Capacity audit | `c209afaec588228ea553f88ae0f0d6cc281f8757b7dd3d23b2799a43f8f7c172` |
+| Broker pre-freeze | `ce7d809ba2f9e2a91a5fbb3604dbb80fbe7af2b2694f3195ce549cdef95991eb` |
+| Broker audit | `a7c344017374899fdbefb684ba0facfde4b5ed7a6caaa2ac29f330f6233ab9f6` |
 | Valuation | `923c3eeeb6ab9a1431c01b08099fe2cf46ea4189d85e0242ea7df53ea7481413` |
-| Audit | `b7841249a258e400c405839518a25a8126395aded7b349626a9dc0f42d16ecda` |
-| Intrinsic Freeze | `c6bcd649751c64fde8579acf1718c9b5f7e34f834aa210c10bca22b839684260` |
+| Audit | `c5d02475b452156306cbd73ea49a168b7bc981e2c7687b542ef1d1f1307e22b3` |
+| Intrinsic Freeze | `0b034f4976138e59056b622e4cc04d594099a0a729e0078cac9e8613f0e56ffa` |
 
 ## Stage Trace
 
@@ -96,7 +99,7 @@
 | 4 | `SOURCE_FRESHNESS_PRECHECK` | `pass` | NO | live source-watch precheck passed |
 | 5 | `SEGMENT_DECOMPOSITION` | `pass` | NO | authoritative-lineage-backed segment decomposition completed |
 | 6 | `INDUSTRY_DNA_ROUTE` | `pass` | NO | all decomposed segments routed to evidence-backed multi-label Industry DNA profiles |
-| 7 | `MODULE_REQUIREMENT_PLAN` | `pass` | NO | compiled canonical Module Requirement Plan and non-destructive learned research loadout |
+| 7 | `MODULE_REQUIREMENT_PLAN` | `pass` | NO | Broker Research discovery partitioned context, primary-verification-only and quarantined claims; primary verification metrics were compiled into the Module Requirement Plan \| compiled canonical Module Requirement Plan and non-destructive learned research loadout |
 | 8 | `PRIMARY_EVIDENCE_COLLECTION` | `pass` | NO | primary evidence collected with complete required segment/metric coverage and planned source lineage |
 | 9 | `EVIDENCE_LEDGER` | `pass` | NO | append-only EvidenceLedger validated and canonical runtime snapshot frozen |
 | 10 | `ROCKET_INSIGHT_SCAN` | `warning` | NO | live Rocket Insight scanner dispatch completed with warnings |
@@ -114,7 +117,7 @@
 | 22 | `DCF_PER_ASSUMPTION_CONSISTENCY_GATE` | `pass` | NO | DCF-PER consistency gate is not applicable \| capacity assessment, scenario, valuation and PER identities are consistent |
 | 23 | `CROSS_METHOD_DOUBLE_COUNT_AUDIT` | `pass` | NO | cross-method economic paths are unique |
 | 24 | `PROBABILITY_DISTRIBUTION_ANALYSIS` | `warning` | NO | scenario probabilities are not calibration-authorized; numeric expected value remains disabled |
-| 25 | `AUDIT_GATE` | `pass` | NO | capacity omission, baseline and double-count audit passed \| decision-impact record and run-bound generic intrinsic audit passed; run is eligible for freeze if snapshot hashes are present |
+| 25 | `AUDIT_GATE` | `pass` | NO | Broker Research pre-freeze placement, primary verification and quarantine audit passed \| capacity omission, baseline and double-count audit passed \| decision-impact record and run-bound generic intrinsic audit passed; run is eligible for freeze if snapshot hashes are present |
 | 26 | `INTRINSIC_VALUE_FREEZE` | `pass` | NO | audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze |
 | 27 | `STREET_REFERENCE_LOAD` | `pass` | NO | target-company Street references loaded after a valid same-run Freeze Token |
 | 28 | `STREET_GAP_ANALYZER` | `pass` | NO | Street gap preserved as scenario envelope because probability weighting is not calibrated |
@@ -154,11 +157,11 @@
 - Expected Value: 미산출 — 시나리오 확률이 CALIBRATED 상태가 아니므로 숫자 가중을 보류했습니다.
 
 ## Street Gap
-- 리포트 수: 1
-- 평균 목표가: 310,000 KRW
-- Down 대비: -190,167.23 (-61.3%)
-- Core 대비: -141,776.69 (-45.7%)
-- Bull 대비: -92,895.7 (-30.0%)
+- 리포트 수: 2
+- 평균 목표가: 280,000 KRW
+- Down 대비: -160,167.23 (-57.2%)
+- Core 대비: -111,776.69 (-39.9%)
+- Bull 대비: -62,895.7 (-22.5%)
 
 ## Current Market Compare
 - 현재가: 176,900 KRW (2026-08-26)
@@ -176,11 +179,11 @@
 - 미측정 모듈은 0 영향이 아니라 NOT_MEASURABLE로 유지합니다.
 
 ## Audit & Coverage
-- Audit: PASS (22 checks)
+- Audit: PASS (29 checks)
 - Doctrine coverage: 27/27 terminally acceptable
 
 ## Thesis Delta
-- 강화·신규: Sanil is routed as contracted-backlog plus capacity-manufacturing; the declared land-controlled second-factory project must be classified by the typed Capacity Gate and, when confirmed incremental, consumed as one Core capacity, CAPEX and ramp path.
+- 강화·신규: Broker Research factual leads were converted to primary-source verification and target forecasts/targets were quarantined before intrinsic valuation. Sanil is routed as contracted-backlog plus capacity-manufacturing; the declared land-controlled second-factory project must be classified by the typed Capacity Gate and, when confirmed incremental, consumed as one Core capacity, CAPEX and ramp path.
 - 약화·폐기: 없음
 
 ## Run Integrity
@@ -188,5 +191,5 @@
 - Ledger snapshot: b97bc8f5ed1722ae45ec174d1ba36c55b9bcc7f023ac375d27314651194b3be0
 - Assumption set: 6d58f3ab92c3784a4c25ae932051c20e5c444427220da2ed5b1a0b2ec8e718ed
 - Valuation: 923c3eeeb6ab9a1431c01b08099fe2cf46ea4189d85e0242ea7df53ea7481413
-- Audit: b7841249a258e400c405839518a25a8126395aded7b349626a9dc0f42d16ecda
-- Freeze token: c6bcd649751c64fde8579acf1718c9b5f7e34f834aa210c10bca22b839684260
+- Audit: c5d02475b452156306cbd73ea49a168b7bc981e2c7687b542ef1d1f1307e22b3
+- Freeze token: 0b034f4976138e59056b622e4cc04d594099a0a729e0078cac9e8613f0e56ffa
