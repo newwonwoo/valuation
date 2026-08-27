@@ -32,7 +32,9 @@
 - 2026년 8월 26일 초고압 생산용 부동산 양수결정: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660
 - 실제 peer Beta·WACC 원장: https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md
 - PRISM underwriting assumptions: https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml#scenarios
-- Street 참고자료: https://www.yna.co.kr/amp/view/AKR20260811028700008
+- Street 참고자료(미래에셋증권): https://securities.miraeasset.com/bbs/board/message/view.do?categoryId=1800&messageId=2341906
+- Street 참고자료(IBK투자증권): https://www.yna.co.kr/view/AKR20260810017900008
+- Street 참고자료(신한투자증권): https://www.yna.co.kr/amp/view/AKR20260811028700008
 - 현재가: https://finance.naver.com/item/main.naver?code=062040
 
 ---
