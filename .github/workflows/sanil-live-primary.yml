@@ -27,6 +27,8 @@ on:
       - 'tests/test_report_form.py'
       - 'scripts/refresh_sanil_krx_beta.py'
       - 'scripts/run_sanil_live_primary.py'
+      - 'src/valuation_engine/brokerage_html.py'
+      - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.html'
       - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md'
       - 'examples/report_forms/PRISM_VERIFIED_REPORT_FORM.md'
       - '.github/workflows/sanil-live-primary.yml'
@@ -55,6 +57,8 @@ on:
       - 'tests/test_report_form.py'
       - 'scripts/refresh_sanil_krx_beta.py'
       - 'scripts/run_sanil_live_primary.py'
+      - 'src/valuation_engine/brokerage_html.py'
+      - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.html'
       - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md'
       - 'examples/report_forms/PRISM_VERIFIED_REPORT_FORM.md'
       - '.github/workflows/sanil-live-primary.yml'
@@ -74,17 +78,23 @@ jobs:
         run: >-
           PYTHONPATH=src
           python scripts/run_sanil_live_primary.py
-          --output /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md
+          --output /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.html
+          --markdown-output /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md
       - name: Upload verified Sanil report
         uses: actions/upload-artifact@v4
         with:
           name: SANIL_062040_LIVE_PRIMARY_REPORT
-          path: /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md
+          path: |
+            /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.html
+            /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md
       - name: Verify tracked Sanil LIVE_PRIMARY report
-        run: >-
-          cmp
-          /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md
-          examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md
+        run: |
+          cmp \
+            /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.html \
+            examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.html
+          cmp \
+            /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md \
+            examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md
       - name: Sanil integration regressions
         run: >-
           pytest -q
