@@ -22,11 +22,11 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="70" y="560" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">시나리오별 핵심 가정</text>
 <rect x="70" y="600" width="1060" height="390" rx="22" fill="#FFFFFF"/>
 <text x="100" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">구분</text>
-<text x="270" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">1년차 FCFF</text>
-<text x="470" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">5년차 FCFF</text>
+<text x="270" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">1년 DCF FCFF</text>
+<text x="470" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">5년 DCF FCFF</text>
 <text x="675" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">영구성장률</text>
 <text x="855" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">영구 ROIC</text>
-<text x="1015" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">UHV 정상화</text>
+<text x="1015" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">UHV 5년 증분</text>
 <line x1="95" y1="668" x2="1105" y2="668" stroke="#D6DFE3" stroke-width="2"/>
 <text x="100" y="725" font-size="21" font-weight="700" fill="#142A3A" text-anchor="start">기준(Base)</text>
 <text x="270" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
