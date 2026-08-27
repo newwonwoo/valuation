@@ -19,7 +19,7 @@ DEFAULT_REGISTER = ROOT / "docs" / "SANIL_RISK_SOURCE_REGISTER.md"
 BENCHMARK_CODE = "KS11"
 BENCHMARK_ID = "FDR_KOSPI_KS11"
 START_DATE = "2024-07-29"
-END_DATE = "2026-08-26"
+END_DATE = "2026-08-25"
 PRICE_SOURCE_REF = "https://finance.naver.com/"
 PROVIDER_REF = "https://github.com/FinanceData/FinanceDataReader"
 
@@ -59,9 +59,14 @@ def _close_series(frame: pd.DataFrame, label: str) -> pd.Series:
             f"price provider returned no close column for {label}: {list(frame.columns)}"
         )
     series = frame[close_column].astype(float).replace(0.0, np.nan).dropna()
+    series.index = pd.to_datetime(series.index).tz_localize(None)
+    start = pd.Timestamp(START_DATE)
+    cutoff = pd.Timestamp(END_DATE)
+    series = series.loc[(series.index >= start) & (series.index <= cutoff)]
     if len(series) < 60:
         raise RuntimeError(f"price history is too short for {label}: {len(series)}")
-    series.index = pd.to_datetime(series.index)
+    if series.index.max() > cutoff:
+        raise RuntimeError(f"price series for {label} exceeds the frozen cutoff")
     series.name = label
     return series
 
@@ -138,6 +143,10 @@ def _refresh_snapshot(snapshot_path: Path) -> tuple[dict, list[dict]]:
     payload = yaml.safe_load(snapshot_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise RuntimeError("Sanil snapshot root must be a mapping")
+    if str(payload.get("cutoff")) != END_DATE:
+        raise RuntimeError(
+            f"Beta cutoff {END_DATE} must equal Sanil snapshot cutoff {payload.get('cutoff')}"
+        )
     risk = payload["risk"]
     market_close = _fetch_close(BENCHMARK_CODE)
     results: list[dict] = []
@@ -181,12 +190,16 @@ def _refresh_snapshot(snapshot_path: Path) -> tuple[dict, list[dict]]:
                     "capital_source_ref": capital_source,
                 }
             )
+    latest = max(item["weekly"].end_date for item in results)
+    if latest > END_DATE:
+        raise RuntimeError(f"computed Beta end date exceeds cutoff: {latest}")
     risk.update(
         {
             "benchmark_id": BENCHMARK_ID,
             "return_frequency": "weekly",
             "estimation_window_months": 25,
-            "as_of": max(item["weekly"].end_date for item in results),
+            "as_of": END_DATE,
+            "beta_observation_end": latest,
             "beta_source_ref": PRICE_SOURCE_REF,
             "beta_provider_ref": PROVIDER_REF,
             "beta_methodology": (
@@ -203,7 +216,8 @@ def _render_register(payload: dict, results: Iterable[dict]) -> str:
     lines = [
         "# 산일전기 Beta·WACC 위험자료 원장",
         "",
-        f"- 기준일: {risk['as_of']}",
+        f"- 가치평가 기준일: {risk['as_of']}",
+        f"- 회귀 관측 종료일: {risk['beta_observation_end']}",
         "- 주가 원자료: 공개 한국 주가 시계열(네이버 금융 경로)",
         f"- 수집기: {PROVIDER_REF}",
         f"- 공통 benchmark: {risk['benchmark_id']}",
@@ -265,7 +279,7 @@ def main() -> int:
     args.register.write_text(_render_register(payload, results), encoding="utf-8")
     print(
         f"updated {len(results)} same-source peer regressions through "
-        f"{payload['risk']['as_of']}"
+        f"{payload['risk']['beta_observation_end']}"
     )
     return 0
 
