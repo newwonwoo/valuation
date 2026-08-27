@@ -69,6 +69,15 @@ Before reporting/publishing model changes run the full pytest suite plus current
 - Migrate live valuation through `LEGACY_REGRESSION → PRIMARY_SHADOW → LIVE_PRIMARY`; never mix modes key-by-key.
 - Label unimplemented live Funding/Street/calibration adapters `CONTRACT_ONLY` or `NOT_IMPLEMENTED`; never fabricate completed scans.
 
+## Revision request orchestration
+
+- Split every user correction into atomic clauses with a desired outcome, affected unit/output, file read/write set and observable acceptance criteria before assigning work.
+- Use `revision_orchestration.py` to select only the required Unit Contract path. The Unit Contract consumer graph may scope impact but, because it permits feedback cycles, it must never be used as the execution DAG.
+- Parallelize only tasks with no dependency and disjoint write sets. If two tasks can write the same file or generated artifact, give them one owner or add an explicit sequential dependency; unordered overlap fails closed.
+- Preserve hard barriers: Evidence before Bridge, Bridge before Compiler/model, model before report/artifact regeneration, targeted checks before full regression, and full regression before publish/merge.
+- On failure or a changed clause, invalidate only that task and its descendants. Reuse completed independent tasks only when the base revision and `plan_hash` still match; scope expansion requires a new plan.
+- A revision is merge-ready only when every clause maps to a task and validator, actual writes remain inside declared write sets, generated artifacts match upstream model outputs, and the latest immutable artifact manifest points to the exact version delivered to the user.
+
 ## Reporting and delivery
 - The Control Plane owns the canonical five-gate progress contract in `config/control_plane_stage_registry.yaml`; individual adapters and agents may not invent parallel progress groupings.
 - Emit one compact summary when each major gate completes or terminates blocked: status, decisive result, residual risk and next action. Do not stream all 33 stage traces as routine progress.
@@ -79,6 +88,7 @@ Before reporting/publishing model changes run the full pytest suite plus current
 - The decision-facing body must use a Korean brokerage-report order—투자 요약 → 가치평가 → 핵심 가정과 위험 → 증권사·시장 비교 → 원문 출처—and appear before the audit appendix. Raw stage IDs, enums and hashes are collapsed technical detail or immutable machine artifacts; visible stage names and statuses are Korean.
 - Separate LLM-authored linkage insight from deterministic assumptions, calculations, Audit and Freeze outputs. The displayed `인공지능 인사이트` section is capped at 1,000 Korean characters; the complete typed artifact remains in `context_strength_linkages.json`.
 - A final report is incomplete without two deterministic Korean SVG cards generated from the same immutable run data: `회사 강점·투자 결론·가치평가` and `가치평가 가정·위험·출처`. If calibration or an entry rule is unavailable, the card must withhold a specific buy price rather than fabricate one.
+- Publish each downloadable report under an immutable filename containing its as-of date, reference intrinsic value and artifact hash. Keep a mutable latest alias only for repository automation; user delivery must use the versioned filename and its hash-bound latest manifest so an older same-named download cannot be mistaken for the current report.
 
 ## Methodology description
 The v0.4 finance-calibration system is **academically grounded engineering synthesis**. v0.5.2 adds repository-specific evidence-governed Industry Knowledge and Signal Intelligence operating contracts. Established finance/accounting components and repository-specific orchestration must be distinguished explicitly; see `docs/V04_ROCKETSLA_EXTENSION.md`.

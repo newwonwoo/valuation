@@ -40,6 +40,7 @@ def test_registry_loads_and_has_core_units():
         "AUDIT_GATE",
         "INTRINSIC_FREEZE",
         "DECISION_IMPACT",
+        "REVISION_REQUEST_ORCHESTRATOR",
     }:
         assert required in ids
 

@@ -47,6 +47,10 @@ def test_canonical_reporting_contract_partitions_all_33_stages_once():
     contract = load_reporting_contract(
         root / "config" / "control_plane_stage_registry.yaml"
     )
+    assert contract.immutable_versioned_report_required
+    assert contract.latest_manifest_required
+    assert contract.visible_artifact_id_required
+    assert contract.user_delivery_must_use_versioned_filename
 
     assert [len(item.stages) for item in contract.major_gates] == [9, 5, 5, 7, 7]
     assert tuple(stage for gate in contract.major_gates for stage in gate.stages) == (

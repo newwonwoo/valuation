@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 from decimal import Decimal
+import hashlib
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -11,6 +13,10 @@ from valuation_engine.report_claim_sync import (
     ClaimValuationImpact,
     ClaimValuationTreatment,
     audit_claim_to_value_sync,
+)
+from valuation_engine.report_artifact import (
+    build_report_artifact_bundle,
+    versioned_asset_filename,
 )
 from valuation_engine.sanil_live_primary import (
     load_sanil_market_snapshot,
@@ -33,6 +39,7 @@ DEFAULT_MARKDOWN_OUTPUT = (
     / "report_forms"
     / "SANIL_062040_LIVE_PRIMARY_REPORT.md"
 )
+LATEST_MANIFEST_FILENAME = "SANIL_062040_LATEST_REPORT.json"
 
 DART_UHV_URL = "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660"
 ANNUAL_REPORT_URL = (
@@ -354,7 +361,35 @@ def render_report(state_root: Path) -> tuple[str, str, tuple]:
         markdown_filename=DEFAULT_MARKDOWN_OUTPUT.name,
         claim_sync_audit=claim_sync_audit,
     )
-    return markdown_report, html_report, visuals
+    artifact = build_report_artifact_bundle(
+        company_key="SANIL_062040",
+        as_of=market_date,
+        run_id=result.run_id,
+        valuation_hash=str(result.data["valuation_hash"]),
+        reference_value_per_share=Decimal(str(values["Core"])),
+        html=html_report,
+        markdown=markdown_report,
+        markdown_link_alias=DEFAULT_MARKDOWN_OUTPUT.name,
+        asset_filenames=tuple(visual.filename for visual in visuals),
+    )
+    return artifact.markdown, artifact.html, visuals
+
+
+def report_artifact_bundle(
+    markdown_report: str,
+    html_report: str,
+) -> tuple[str, str, str]:
+    marker = 'name="prism-report-artifact-id" content="'
+    start = html_report.find(marker)
+    if start == -1:
+        raise ValueError("Sanil report artifact identity is missing")
+    start += len(marker)
+    end = html_report.find('"', start)
+    artifact_id = html_report[start:end]
+    if not artifact_id or f"`{artifact_id}`" not in markdown_report:
+        raise ValueError("Sanil HTML and Markdown artifact identities do not match")
+    filename_base = artifact_id.replace("-", "_")
+    return artifact_id, f"{filename_base}.html", f"{filename_base}.md"
 
 
 def main() -> int:
@@ -378,6 +413,35 @@ def main() -> int:
 
     target = args.output
     markdown_target = args.markdown_output
+    artifact_id, versioned_html_name, versioned_markdown_name = report_artifact_bundle(
+        expected_markdown,
+        expected_html,
+    )
+    versioned_html_target = target.parent / versioned_html_name
+    versioned_markdown_target = markdown_target.parent / versioned_markdown_name
+    manifest_target = target.parent / LATEST_MANIFEST_FILENAME
+    artifact = {
+        "artifact_id": artifact_id,
+        "html_filename": versioned_html_name,
+        "html_sha256": hashlib.sha256(expected_html.encode("utf-8")).hexdigest(),
+        "markdown_filename": versioned_markdown_name,
+        "markdown_sha256": hashlib.sha256(
+            expected_markdown.encode("utf-8")
+        ).hexdigest(),
+        "visuals": [
+            {
+                "filename": versioned_asset_filename(visual.filename, artifact_id),
+                "sha256": hashlib.sha256(visual.svg.encode("utf-8")).hexdigest(),
+            }
+            for visual in visuals
+        ],
+    }
+    manifest = json.dumps(
+        artifact,
+        ensure_ascii=False,
+        indent=2,
+        sort_keys=True,
+    ) + "\n"
     if args.check:
         if not target.exists():
             raise SystemExit(f"Sanil report is missing: {target}")
@@ -387,10 +451,45 @@ def main() -> int:
             raise SystemExit(f"Sanil report appendix is missing: {markdown_target}")
         if markdown_target.read_text(encoding="utf-8") != expected_markdown:
             raise SystemExit(f"Sanil report appendix is stale: {markdown_target}")
+        if (
+            not versioned_html_target.exists()
+            or versioned_html_target.read_text(encoding="utf-8") != expected_html
+        ):
+            raise SystemExit(
+                f"Sanil versioned report is missing or stale: {versioned_html_target}"
+            )
+        if (
+            not versioned_markdown_target.exists()
+            or versioned_markdown_target.read_text(encoding="utf-8")
+            != expected_markdown
+        ):
+            raise SystemExit(
+                "Sanil versioned report appendix is missing or stale: "
+                f"{versioned_markdown_target}"
+            )
+        if (
+            not manifest_target.exists()
+            or manifest_target.read_text(encoding="utf-8") != manifest
+        ):
+            raise SystemExit(
+                f"Sanil latest-report pointer is missing or stale: {manifest_target}"
+            )
         for visual in visuals:
             visual_target = target.parent / visual.filename
             if not visual_target.exists() or visual_target.read_text(encoding="utf-8") != visual.svg:
                 raise SystemExit(f"Sanil report visual is stale: {visual_target}")
+            versioned_visual_target = target.parent / versioned_asset_filename(
+                visual.filename,
+                artifact_id,
+            )
+            if (
+                not versioned_visual_target.exists()
+                or versioned_visual_target.read_text(encoding="utf-8") != visual.svg
+            ):
+                raise SystemExit(
+                    "Sanil versioned report visual is missing or stale: "
+                    f"{versioned_visual_target}"
+                )
         print(f"Sanil report synchronized: {target}")
         return 0
 
@@ -398,10 +497,35 @@ def main() -> int:
     markdown_target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(expected_html, encoding="utf-8")
     markdown_target.write_text(expected_markdown, encoding="utf-8")
+    if versioned_html_target.exists() and versioned_html_target.read_text(
+        encoding="utf-8"
+    ) != expected_html:
+        raise SystemExit(f"refusing to overwrite immutable report: {versioned_html_target}")
+    if versioned_markdown_target.exists() and versioned_markdown_target.read_text(
+        encoding="utf-8"
+    ) != expected_markdown:
+        raise SystemExit(
+            f"refusing to overwrite immutable appendix: {versioned_markdown_target}"
+        )
+    versioned_html_target.write_text(expected_html, encoding="utf-8")
+    versioned_markdown_target.write_text(expected_markdown, encoding="utf-8")
+    manifest_target.write_text(manifest, encoding="utf-8")
     for visual in visuals:
         (target.parent / visual.filename).write_text(visual.svg, encoding="utf-8")
+        versioned_visual_target = target.parent / versioned_asset_filename(
+            visual.filename,
+            artifact_id,
+        )
+        if versioned_visual_target.exists() and versioned_visual_target.read_text(
+            encoding="utf-8"
+        ) != visual.svg:
+            raise SystemExit(
+                f"refusing to overwrite immutable visual: {versioned_visual_target}"
+            )
+        versioned_visual_target.write_text(visual.svg, encoding="utf-8")
     print(f"Sanil brokerage report written: {target}")
     print(f"Sanil audit appendix written: {markdown_target}")
+    print(f"Sanil immutable report written: {versioned_html_target}")
     return 0
 
 

@@ -28,8 +28,13 @@ on:
       - 'scripts/refresh_sanil_krx_beta.py'
       - 'scripts/run_sanil_live_primary.py'
       - 'src/valuation_engine/brokerage_html.py'
+      - 'src/valuation_engine/report_artifact.py'
+      - 'src/valuation_engine/revision_orchestration.py'
       - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.html'
       - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md'
+      - 'examples/report_forms/SANIL_062040_20260827_TP*.html'
+      - 'examples/report_forms/SANIL_062040_20260827_TP*.md'
+      - 'examples/report_forms/SANIL_062040_LATEST_REPORT.json'
       - 'examples/report_forms/PRISM_VERIFIED_REPORT_FORM.md'
       - '.github/workflows/sanil-live-primary.yml'
   pull_request:
@@ -58,8 +63,13 @@ on:
       - 'scripts/refresh_sanil_krx_beta.py'
       - 'scripts/run_sanil_live_primary.py'
       - 'src/valuation_engine/brokerage_html.py'
+      - 'src/valuation_engine/report_artifact.py'
+      - 'src/valuation_engine/revision_orchestration.py'
       - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.html'
       - 'examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md'
+      - 'examples/report_forms/SANIL_062040_20260827_TP*.html'
+      - 'examples/report_forms/SANIL_062040_20260827_TP*.md'
+      - 'examples/report_forms/SANIL_062040_LATEST_REPORT.json'
       - 'examples/report_forms/PRISM_VERIFIED_REPORT_FORM.md'
       - '.github/workflows/sanil-live-primary.yml'
   workflow_dispatch:
@@ -87,6 +97,10 @@ jobs:
           path: |
             /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.html
             /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md
+            /tmp/SANIL_062040_20260827_TP*.html
+            /tmp/SANIL_062040_20260827_TP*.md
+            /tmp/SANIL_062040_LATEST_REPORT.json
+            /tmp/PRISM_062040_*_*.svg
       - name: Verify tracked Sanil LIVE_PRIMARY report
         run: |
           cmp \
@@ -95,6 +109,7 @@ jobs:
           cmp \
             /tmp/SANIL_062040_LIVE_PRIMARY_REPORT.md \
             examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md
+          PYTHONPATH=src python scripts/run_sanil_live_primary.py --check
       - name: Sanil integration regressions
         run: >-
           pytest -q
