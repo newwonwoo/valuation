@@ -10,7 +10,6 @@ from urllib.request import Request, urlopen
 
 import yaml
 
-from valuation_engine.live_company_acceptance import sha256_file
 from valuation_engine.live_company_artifact import (
     SourceDocumentLineage,
     serialize_live_company_blocked,
@@ -39,6 +38,10 @@ USER_AGENT = (
     "newwonwoo-valuation-live-acceptance/1.0 "
     "research-automation contact: repository-owner"
 )
+
+
+def sha256_file(path: Path) -> str:
+    return sha256(path.read_bytes()).hexdigest()
 
 
 def _download(url: str) -> bytes:
@@ -91,19 +94,13 @@ def _market_observation(row: dict) -> tuple[float, str]:
 def _source_documents(spec) -> tuple[SourceDocumentLineage, ...]:
     return (
         SourceDocumentLineage(
-            source_id=spec.official_source_id,
             source_ref=spec.official_source_ref,
-            document_id=spec.official_document_id,
             document_hash=spec.official_document_hash,
-            published_at=str(spec.payload["published_at"]),
             first_seen_at=str(spec.payload["first_seen_at"]),
         ),
         SourceDocumentLineage(
-            source_id=spec.official_source_id,
             source_ref=spec.underwriting_source_ref,
-            document_id=f"{spec.company_id}_UNDERWRITING_SPEC",
             document_hash=spec.underwriting_document_hash,
-            published_at=str(spec.payload["first_seen_at"]),
             first_seen_at=str(spec.payload["first_seen_at"]),
         ),
     )
@@ -156,12 +153,6 @@ def _generate_company(
         company_id=company_id,
         result=success_result,
         source_documents=source_documents,
-        fixture_identity=(
-            success_result.run_id,
-            str(success_result.data["source_snapshot_hash"]),
-            str(success_result.data["valuation_hash"]),
-        ),
-        synthetic=False,
     )
     _write_json(success_path, success_artifact)
 
@@ -181,14 +172,8 @@ def _generate_company(
     blocked_artifact = serialize_live_company_blocked(
         company_id=company_id,
         result=blocked_result,
+        adversarial_case_id=f"{company_id}:MISSING_STREET_PROVIDER",
         expected_reason_contains="Street reference provider is not configured",
-        fixture_identity=(
-            blocked_result.run_id,
-            str(blocked_result.data.get("source_snapshot_hash", "NO_SOURCE_HASH")),
-            blocked_result.stage_traces[-1].stage,
-        ),
-        source_documents=source_documents,
-        synthetic=False,
     )
     _write_json(blocked_path, blocked_artifact)
     return success_path, blocked_path
