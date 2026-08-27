@@ -1,12 +1,31 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date, datetime
 from hashlib import sha256
 import json
 from typing import Protocol
 
 from .ledger import EvidenceLedger
 from .records import EvidenceRecord, EvidenceSourceLayer
+
+
+def _checked_at_date(value: str) -> date:
+    text = str(value or "").strip().replace("Z", "+00:00")
+    if not text:
+        raise ValueError("evidence batch checked_at is required")
+    if len(text) == 10:
+        try:
+            return date.fromisoformat(text)
+        except ValueError as exc:
+            raise ValueError("evidence batch checked_at must be an ISO date/timestamp") from exc
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise ValueError("evidence batch checked_at must be an ISO date/timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("evidence batch checked_at timestamp must be timezone-aware")
+    return parsed.date()
 
 
 @dataclass(frozen=True)
@@ -38,6 +57,7 @@ class EvidenceCollectionBatch:
             raise ValueError(
                 "evidence batch requires source_id, checked_at and source_fingerprint"
             )
+        checked_date = _checked_at_date(self.checked_at)
         ids = tuple(item.id for item in self.records)
         if len(ids) != len(set(ids)):
             raise ValueError(
@@ -46,6 +66,10 @@ class EvidenceCollectionBatch:
         for item in self.records:
             if item.target == "":
                 raise ValueError("evidence target cannot be blank")
+            if date.fromisoformat(item.observed_date[:10]) > checked_date:
+                raise ValueError(
+                    f"evidence {item.id} observed after source batch checked_at"
+                )
             if item.source_layer not in {
                 EvidenceSourceLayer.REALIZED_OR_FILING,
                 EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
