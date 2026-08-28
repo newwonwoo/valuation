@@ -14,6 +14,10 @@ from .kr_opendart_provider import (
 from .live_runtime import (
     LivePrimaryProviders,
     LivePrimaryRuntimeConfig,
+    run_prism as run_prism_legacy,
+)
+from .strict_live_runtime import (
+    require_canonical_live_result,
     run_prism,
 )
 from .router import IndustryModel, route_industry
@@ -29,6 +33,8 @@ __all__ = [
     "IndustryModel",
     "run_analysis_command",
     "run_prism",
+    "run_prism_legacy",
+    "require_canonical_live_result",
     "LivePrimaryRuntimeConfig",
     "LivePrimaryProviders",
     "LiveAnalysisRequest",
