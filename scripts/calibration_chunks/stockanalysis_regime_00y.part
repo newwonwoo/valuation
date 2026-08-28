@@ -1,0 +1,28 @@
+
+# Re-header StockAnalysis tables whose fiscal-period labels are emitted as the
+# first data row instead of HTML column names.
+def table_rows(tables):
+    rows={}
+    for df in tables:
+        df=df.copy()
+        # pandas.read_html can return integer columns while the first row is
+        # `Fiscal Quarter | Q2 2026 | ...` or `Fiscal Year | FY 2025 | ...`.
+        first0=df.columns[0]
+        fiscal_idx=None
+        for idx in df.index:
+            lead=clean_label(df.loc[idx,first0])
+            if lead in {'Fiscal Quarter','Fiscal Year'}:
+                fiscal_idx=idx; break
+        if fiscal_idx is not None:
+            header=[clean_label(x) for x in df.loc[fiscal_idx].tolist()]
+            df=df.loc[df.index>fiscal_idx].copy()
+            df.columns=header
+        else:
+            df.columns=[flatcol(c) for c in df.columns]
+        if df.empty: continue
+        first=df.columns[0]
+        for _,r in df.iterrows():
+            label=clean_label(r[first])
+            if label and label not in rows:
+                rows[label]={clean_label(c):r[c] for c in df.columns[1:]}
+    return rows
