@@ -24,11 +24,9 @@ def main():
                  "origin_fcf":ofcf,"outcome_fcf":tfcf,"fcf_ratio_12m":ratio,"label":label,
                  "source_url":d['url']+'?p=quarterly'}
             for f in FEATURES: row[f]=d['q'].get(f,{}).get(origin)
-            # FCF growth may not be published for the oldest displayed quarter; derive if prior-year FCF exists.
             if row['fcf_growth'] is None:
                 prior=d['q']['fcf'].get(shift(origin,-4))
                 if prior not in (None,0) and ofcf is not None: row['fcf_growth']=100.0*(ofcf/prior-1.0)
-            # revenue growth can likewise be reconstructed when the hidden-year comparison is present in displayed data.
             if row['revenue_growth'] is None:
                 orev=d['q']['revenue'].get(origin); prev=d['q']['revenue'].get(shift(origin,-4))
                 if prev not in (None,0) and orev is not None: row['revenue_growth']=100.0*(orev/prev-1.0)
@@ -42,10 +40,9 @@ def main():
     Xtr=pd.DataFrame([{f:r[f] for f in FEATURES} for r in train]); ytr=np.array([CLASSES.index(r['label']) for r in train])
     Xh=pd.DataFrame([{f:r[f] for f in FEATURES} for r in hold]); yh=np.array([CLASSES.index(r['label']) for r in hold])
     pipe=Pipeline([('impute',SimpleImputer(strategy='median')),('scale',StandardScaler()),
-                   ('model',LogisticRegression(max_iter=3000,multi_class='multinomial',C=0.5,class_weight=None))])
+                   ('model',LogisticRegression(max_iter=3000,C=0.5,class_weight=None))])
     pipe.fit(Xtr,ytr)
     ph_raw=pipe.predict_proba(Xh)
-    # Expand to fixed Down/Core/Bull columns even if a class is absent in training.
     ph=np.zeros((len(hold),3)); model_classes=pipe.named_steps['model'].classes_
     for j,c in enumerate(model_classes): ph[:,int(c)]=ph_raw[:,j]
     counts=Counter(ytr); base=np.array([counts[i]/len(ytr) for i in range(3)])
@@ -53,7 +50,6 @@ def main():
     model_brier=brier(ph,yh); base_brier=brier(pb,yh); bss=1-model_brier/base_brier if base_brier>0 else 0.0
     acc=float(np.mean(np.argmax(ph,axis=1)==yh)); ll=float(log_loss(yh,np.clip(ph,1e-9,1),labels=[0,1,2]))
 
-    # Refit on all resolved history for current-state inference, but use holdout BSS only as trust strength.
     allcases=train+hold
     Xa=pd.DataFrame([{f:r[f] for f in FEATURES} for r in allcases]); ya=np.array([CLASSES.index(r['label']) for r in allcases])
     pipe.fit(Xa,ya)
@@ -70,8 +66,6 @@ def main():
     for j,c in enumerate(pipe.named_steps['model'].classes_): pc[int(c)]=pc_raw[j]
     acount=Counter(ya); hist_base=np.array([acount[i]/len(ya) for i in range(3)])
 
-    # Bayesian relative-likelihood update of analyst prior. Historical model only changes odds to the
-    # extent that it beats the chronological base-rate forecast out of sample.
     trust=max(0.0,min(1.0,bss/0.25))
     prior=np.array([PRIOR[c] for c in CLASSES])
     lr=np.divide(pc,hist_base,out=np.ones_like(pc),where=hist_base>0)
