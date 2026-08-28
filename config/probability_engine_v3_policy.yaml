@@ -1,8 +1,11 @@
-version: "3.1"
+version: "3.2"
 purpose: >-
   Dynamic hierarchical Bayesian probability estimation for investment valuation.
-  Statistical weakness widens uncertainty and reduces likelihood weight; only
-  provenance/data-integrity violations may hard-block probability weighting.
+  Historical calibration estimates continuous financial-driver distributions;
+  Monte Carlo generates continuous financial paths and assigns each path to the
+  nearest predeclared economic scenario. Statistical weakness widens uncertainty
+  and reduces likelihood weight; only provenance/data-integrity violations may
+  hard-block probability estimation.
 
 probability_value_isolation:
   probability_contract: evidence_only
@@ -38,30 +41,50 @@ continuous_predictive_weight:
   confidence_interval_crosses_zero_action: reduce_weight_not_block
   missing_oos_action: low_positive_weight_not_block
 
-hierarchical_posterior:
-  family: beta_binomial
+hierarchical_calibration:
   hierarchy:
-    - GLOBAL_EVENT
+    - GLOBAL
     - ECONOMIC_ARCHETYPE
     - INDUSTRY_FAMILY
     - SUB_INDUSTRY
-    - COMPANY_EVIDENCE_UPDATE
-  parent_strength: empirical_bayes_from_between_group_dispersion
+    - COMPANY_CONDITIONING
+  binary_event_posteriors_role: diagnostics_and_tail_risk_only
+  scenario_probability_source: continuous_driver_posterior_predictive
   sparse_leaf_action: inherit_parent_with_wide_interval
-  local_likelihood: fractional_count_weighted_by_predictive_evidence
+  local_evidence_action: partial_pool_continuous_distribution
   default_credible_level: 0.90
 
+continuous_financial_path_model:
+  required_driver_families:
+    - revenue_growth
+    - operating_margin
+    - cash_conversion
+    - capex_intensity
+  optional_driver_families:
+    - utilization
+    - selling_price
+    - working_capital
+    - fcff_index
+  predictive_distribution: hierarchical_posterior_predictive
+  tail_model: student_t
+  cross_driver_dependence: explicit_versioned_correlation_or_copula
+  current_company_conditioning: allowed_without_market_price
+
 scenario_assembly:
+  default_method: continuous_financial_path_monte_carlo
   direct_historical_down_core_bull_frequency: forbidden
+  binary_event_state_to_scenario_mapping: forbidden
+  bull_requires_all_risk_events_inactive: forbidden
   naive_independent_factor_multiplication: forbidden
-  method: posterior_monte_carlo
-  dependence_contract: explicit_versioned_correlation_or_copula
-  dependence_fallback: inherit_parent_dependence
-  each_joint_state_maps_to_exactly_one_scenario: required
+  path_assignment: nearest_predeclared_economic_scenario_path
+  path_distance: predictive_scale_normalized_weighted_distance
+  scenario_intrinsic_value_in_assignment: forbidden
+  current_market_price_in_assignment: forbidden
+  each_simulated_path_maps_to_exactly_one_scenario: required
   emit_probability_credible_intervals: required
 
 valuation_binding:
-  numeric_weighting_allowed_when: integrity_passed_and_posterior_estimated
+  numeric_weighting_allowed_when: integrity_passed_and_probability_snapshot_frozen
   weak_predictive_skill_action: reduce_weight_and_widen_interval
   no_minimum_leaf_sample_for_probability_existence: true
   target_price_or_market_price_tuning: forbidden
@@ -70,4 +93,5 @@ valuation_binding:
 legacy_compatibility:
   v1_probability_calibration: preserved
   v2_hierarchical_promotion_gate: preserved_for_replay
-  v3_default_for_new_investment_probability_work: true
+  v3_boolean_event_scenario_assembly: legacy_replay_only
+  v3_default_for_new_investment_probability_work: continuous_financial_path_monte_carlo
