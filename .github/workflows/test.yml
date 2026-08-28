@@ -29,6 +29,8 @@ jobs:
         run: PYTHONPATH=src python scripts/validate_calibration_hierarchy.py
       - name: Semiconductor calibration migration seed
         run: PYTHONPATH=src python scripts/validate_semiconductor_calibration_seed.py
+      - name: Semiconductor hierarchical research result
+        run: PYTHONPATH=src python scripts/validate_semiconductor_hierarchical_research_result.py
       - name: PM project portfolio integrity
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
