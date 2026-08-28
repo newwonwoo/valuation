@@ -35,8 +35,9 @@ jobs:
           mkdir -p artifacts/calibration_hierarchical_v2
           python scripts/run_semiconductor_hierarchical_v2_research.py 2>&1 | tee artifacts/calibration_hierarchical_v2/run.log
       - name: Upload results
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: semiconductor-hierarchical-v2-research
           path: artifacts/calibration_hierarchical_v2/
-          if-no-files-found: error
+          if-no-files-found: warn
