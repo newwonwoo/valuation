@@ -12,6 +12,11 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from valuation_engine.continuous_financial_path_probability import (
+    ContinuousDriverDependence,
+    ContinuousDriverPosterior,
+    ScenarioFinancialPath,
+)
 from valuation_engine.continuous_predictive_weight import ContinuousWeightPolicy
 from valuation_engine.probability_engine_v3 import ProbabilityEngineV3Result, ProbabilityEngineV3Spec
 
@@ -32,7 +37,7 @@ FORBIDDEN_FIELD_TOKENS = (
 def main() -> int:
     path = ROOT / "config" / "probability_engine_v3_policy.yaml"
     payload = yaml.safe_load(path.read_text(encoding="utf-8"))
-    if payload.get("version") != "3.1":
+    if payload.get("version") != "3.2":
         raise ValueError("probability engine v3 policy version drift")
 
     isolation = payload.get("probability_value_isolation") or {}
@@ -55,7 +60,13 @@ def main() -> int:
     if forbidden_domains != required_forbidden_domains:
         raise ValueError("probability forbidden input domains drifted")
 
-    for cls in (ProbabilityEngineV3Spec, ProbabilityEngineV3Result):
+    for cls in (
+        ProbabilityEngineV3Spec,
+        ProbabilityEngineV3Result,
+        ContinuousDriverPosterior,
+        ContinuousDriverDependence,
+        ScenarioFinancialPath,
+    ):
         for item in fields(cls):
             lowered = item.name.lower()
             if any(token in lowered for token in FORBIDDEN_FIELD_TOKENS):
@@ -79,8 +90,8 @@ def main() -> int:
         "confidence_interval_crosses_zero_action",
         "missing_oos_action",
     ):
-        value = str(continuous.get(key, "")).lower()
-        if "block" in value and "not_block" not in value:
+        action = str(continuous.get(key, "")).lower()
+        if "block" in action and "not_block" not in action:
             raise ValueError(f"{key} must not become a hard statistical gate")
     policy = ContinuousWeightPolicy(
         minimum_weight=__import__("decimal").Decimal(str(continuous["minimum_weight"])),
@@ -94,12 +105,35 @@ def main() -> int:
     )
     policy.validate()
 
-    hierarchy = payload.get("hierarchical_posterior") or {}
+    hierarchy = payload.get("hierarchical_calibration") or {}
+    if hierarchy.get("binary_event_posteriors_role") != "diagnostics_and_tail_risk_only":
+        raise ValueError("binary event posteriors must not directly define scenarios")
+    if hierarchy.get("scenario_probability_source") != "continuous_driver_posterior_predictive":
+        raise ValueError("scenario probability must come from continuous driver posterior predictive")
     if hierarchy.get("sparse_leaf_action") != "inherit_parent_with_wide_interval":
         raise ValueError("sparse leaf must inherit parent rather than become unavailable")
+
+    path_model = payload.get("continuous_financial_path_model") or {}
+    required_drivers = set(path_model.get("required_driver_families") or ())
+    if required_drivers != {"revenue_growth", "operating_margin", "cash_conversion", "capex_intensity"}:
+        raise ValueError("continuous financial path required drivers drifted")
+    if path_model.get("tail_model") != "student_t":
+        raise ValueError("continuous financial path model must retain fat-tail predictive sampling")
+
     assembly = payload.get("scenario_assembly") or {}
-    if assembly.get("naive_independent_factor_multiplication") != "forbidden":
-        raise ValueError("naive independent scenario multiplication must remain forbidden")
+    if assembly.get("default_method") != "continuous_financial_path_monte_carlo":
+        raise ValueError("continuous financial path Monte Carlo must remain the default scenario assembler")
+    if assembly.get("binary_event_state_to_scenario_mapping") != "forbidden":
+        raise ValueError("binary event state to scenario mapping must remain forbidden")
+    if assembly.get("bull_requires_all_risk_events_inactive") != "forbidden":
+        raise ValueError("Bull cannot require every risk event to be inactive")
+    if assembly.get("scenario_intrinsic_value_in_assignment") != "forbidden":
+        raise ValueError("scenario intrinsic values cannot classify probability paths")
+    if assembly.get("current_market_price_in_assignment") != "forbidden":
+        raise ValueError("current market price cannot classify probability paths")
+    if assembly.get("path_assignment") != "nearest_predeclared_economic_scenario_path":
+        raise ValueError("continuous path assignment contract drifted")
+
     binding = payload.get("valuation_binding") or {}
     if not binding.get("no_minimum_leaf_sample_for_probability_existence"):
         raise ValueError("v3 must calculate probabilities for sparse leaves")
@@ -108,9 +142,13 @@ def main() -> int:
     if binding.get("intrinsic_value_consumption") != "after_probability_snapshot_hash_is_frozen":
         raise ValueError("intrinsic values must be consumed only after probability freeze")
 
+    legacy = payload.get("legacy_compatibility") or {}
+    if legacy.get("v3_boolean_event_scenario_assembly") != "legacy_replay_only":
+        raise ValueError("boolean event scenario assembly cannot remain a live default")
+
     print(
         "probability engine v3 policy: PASS "
-        "integrity_only_hard_gates=true sparse_leaf_probability=true price_isolation=true"
+        "continuous_paths=true boolean_scenario_mapping=false price_isolation=true"
     )
     return 0
 
