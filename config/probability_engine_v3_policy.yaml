@@ -1,0 +1,59 @@
+version: "3.0"
+purpose: >-
+  Dynamic hierarchical Bayesian probability estimation for investment valuation.
+  Statistical weakness widens uncertainty and reduces likelihood weight; only
+  provenance/data-integrity violations may hard-block probability weighting.
+
+hard_integrity_gates:
+  first_seen_at: required
+  publication_timestamp_cutoff: required
+  duplicate_event_identity: forbidden
+  outcome_leakage: forbidden
+  source_traceability: required
+  period_unit_consistency: required
+
+continuous_predictive_weight:
+  minimum_weight: 0.05
+  skill_temperature: 0.08
+  target_resolved_events: 100
+  target_companies: 20
+  target_quarters: 8
+  target_oos_windows: 4
+  ece_soft_scale: 0.10
+  uncertainty_inflation_max: 3.0
+  brier_skill_zero_action: neutral_not_blocked
+  confidence_interval_crosses_zero_action: reduce_weight_not_block
+  missing_oos_action: low_positive_weight_not_block
+
+hierarchical_posterior:
+  family: beta_binomial
+  hierarchy:
+    - GLOBAL_EVENT
+    - ECONOMIC_ARCHETYPE
+    - INDUSTRY_FAMILY
+    - SUB_INDUSTRY
+    - COMPANY_EVIDENCE_UPDATE
+  parent_strength: empirical_bayes_from_between_group_dispersion
+  sparse_leaf_action: inherit_parent_with_wide_interval
+  local_likelihood: fractional_count_weighted_by_predictive_evidence
+  default_credible_level: 0.90
+
+scenario_assembly:
+  direct_historical_down_core_bull_frequency: forbidden
+  naive_independent_factor_multiplication: forbidden
+  method: posterior_monte_carlo
+  dependence_contract: explicit_versioned_correlation_or_copula
+  dependence_fallback: inherit_parent_dependence
+  each_joint_state_maps_to_exactly_one_scenario: required
+  emit_probability_credible_intervals: required
+
+valuation_binding:
+  numeric_weighting_allowed_when: integrity_passed_and_posterior_estimated
+  weak_predictive_skill_action: reduce_weight_and_widen_interval
+  no_minimum_leaf_sample_for_probability_existence: true
+  target_price_or_market_price_tuning: forbidden
+
+legacy_compatibility:
+  v1_probability_calibration: preserved
+  v2_hierarchical_promotion_gate: preserved_for_replay
+  v3_default_for_new_investment_probability_work: true

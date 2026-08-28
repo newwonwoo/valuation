@@ -27,6 +27,8 @@ jobs:
         run: PYTHONPATH=src python scripts/validate_probability_calibration_policy.py
       - name: Hierarchical calibration registry
         run: PYTHONPATH=src python scripts/validate_calibration_hierarchy.py
+      - name: Probability engine v3 policy
+        run: PYTHONPATH=src python scripts/validate_probability_engine_v3_policy.py
       - name: Semiconductor calibration migration seed
         run: PYTHONPATH=src python scripts/validate_semiconductor_calibration_seed.py
       - name: PM project portfolio integrity
