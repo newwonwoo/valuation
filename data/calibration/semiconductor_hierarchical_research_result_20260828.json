@@ -1,0 +1,82 @@
+{
+  "schema_version": "semiconductor_hierarchical_research_calibration_v2_2",
+  "as_of": "2026-08-28",
+  "metadata_universe_records": 1777,
+  "total_rows": 178,
+  "training_rows": 120,
+  "holdout_rows": 58,
+  "parent_training_rows": 112,
+  "parent_holdout_rows": 56,
+  "events": {
+    "revenue_growth_miss": {"all_train_valid": 109, "all_holdout_valid": 56, "parent_train_valid": 101, "parent_holdout_valid": 54},
+    "margin_compression": {"all_train_valid": 109, "all_holdout_valid": 56, "parent_train_valid": 101, "parent_holdout_valid": 54},
+    "cash_conversion_miss": {"all_train_valid": 108, "all_holdout_valid": 54, "parent_train_valid": 101, "parent_holdout_valid": 52}
+  },
+  "joint_train": 108,
+  "joint_holdout": 54,
+  "parent_joint_train": 101,
+  "parent_joint_holdout": 52,
+  "companies_fetched": 30,
+  "failures": [],
+  "event_definitions": {
+    "revenue_growth_miss": {"outcome_metric": "revenue", "rule": "relative_change_at_most", "threshold": -0.15, "explanation": "same-quarter revenue 12 months later falls at least 15 percent"},
+    "margin_compression": {"outcome_metric": "operating_margin", "rule": "delta_at_most", "threshold": -5.0, "explanation": "operating margin 12 months later falls by at least 5 percentage points"},
+    "cash_conversion_miss": {"outcome_metric": "fcf_margin", "rule": "delta_at_most", "threshold": -10.0, "explanation": "FCF margin 12 months later falls by at least 10 percentage points"}
+  },
+  "event_holdout_metrics": {
+    "revenue_growth_miss": {"event": "revenue_growth_miss", "train_n": 101, "holdout_n": 54, "training_base_rate": 0.33663366336633666, "model_brier": 0.12988146454923533, "base_brier": 0.14357524861397028, "brier_skill_score": 0.09537705277845854, "bss_bootstrap_90pct_interval": [-0.1326619477834118, 0.2844974329802688], "parent_scope": "leave_memory_child_out", "gate_passed": false},
+    "margin_compression": {"event": "margin_compression", "train_n": 101, "holdout_n": 54, "training_base_rate": 0.44554455445544555, "model_brier": 0.1942808687791583, "base_brier": 0.2186786335399216, "brier_skill_score": 0.11156903793396578, "bss_bootstrap_90pct_interval": [-0.06828279478103662, 0.27398811553849994], "parent_scope": "leave_memory_child_out", "gate_passed": false},
+    "cash_conversion_miss": {"event": "cash_conversion_miss", "train_n": 101, "holdout_n": 52, "training_base_rate": 0.31683168316831684, "model_brier": 0.1833744564313037, "base_brier": 0.2412810207144096, "brier_skill_score": 0.2399963499476676, "bss_bootstrap_90pct_interval": [0.0747695960489565, 0.39404355495342663], "parent_scope": "leave_memory_child_out", "gate_passed": true}
+  },
+  "scenario_holdout": {
+    "train_n": 101,
+    "holdout_n": 52,
+    "model_brier": 0.589216201737356,
+    "base_brier": 0.6857510198849283,
+    "brier_skill_score": 0.14077240186062168,
+    "bss_bootstrap_90pct_interval": [0.05308528218236558, 0.22154556181502644],
+    "gate_passed": false,
+    "training_scenario_base_rate": {"Down": 0.37623762376237624, "Core": 0.22772277227722773, "Bull": 0.39603960396039606},
+    "parent_scope": "leave_memory_child_out",
+    "scenario_gate_passed": true,
+    "factor_gate_passed": false,
+    "factor_gate_results": {"revenue_growth_miss": false, "margin_compression": false, "cash_conversion_miss": true},
+    "authorization_gate_failures": ["FACTOR_OOS_GATE:revenue_growth_miss", "FACTOR_OOS_GATE:margin_compression"]
+  },
+  "current_skhynix_2026Q2_features": {"fcf_margin": 69.01, "fcf_growth": 1032.26, "revenue_growth": 256.78, "operating_margin": 76.33},
+  "global_current_event_probability": {"revenue_growth_miss": 0.9218846004144922, "margin_compression": 0.950794332511433, "cash_conversion_miss": 0.9305910977363661},
+  "memory_hierarchical_event_probability": {
+    "revenue_growth_miss": {"n": 10, "successes": 5, "companies": 2, "quarters": 6, "empirical_rate": 0.5, "parent_probability": 0.9218846004144922, "posterior_probability": 0.8375076803315937, "state": "UNCALIBRATED", "gate_failures": ["MIN_RESOLVED_EVENTS", "MIN_COMPANIES", "PARENT_OOS_GATE"], "parent_child_overlap": 0, "parent_authorized": false, "authorizable": false},
+    "margin_compression": {"n": 10, "successes": 8, "companies": 2, "quarters": 6, "empirical_rate": 0.8, "parent_probability": 0.950794332511433, "posterior_probability": 0.9206354660091464, "state": "UNCALIBRATED", "gate_failures": ["MIN_RESOLVED_EVENTS", "MIN_COMPANIES", "PARENT_OOS_GATE"], "parent_child_overlap": 0, "parent_authorized": false, "authorizable": false},
+    "cash_conversion_miss": {"n": 9, "successes": 4, "companies": 2, "quarters": 6, "empirical_rate": 0.4444444444444444, "parent_probability": 0.9305910977363661, "posterior_probability": 0.8412988552949927, "state": "SHRUNK", "gate_failures": ["MIN_RESOLVED_EVENTS", "MIN_COMPANIES"], "parent_child_overlap": 0, "parent_authorized": true, "authorizable": true}
+  },
+  "current_global_joint_scenario_probability": {"Down": 0.9486818704454258, "Core": 0.04875354685009349, "Bull": 0.0025645827044808067},
+  "current_hierarchical_joint_scenario_probability": {"Down": 0.8772036788756855, "Core": 0.11188970193804, "Bull": 0.010906619186274455},
+  "holdout_trust": 0.0,
+  "analyst_prior": {"Down": 0.2, "Core": 0.6, "Bull": 0.2},
+  "final_research_calibrated_probability": {"Down": 0.2, "Core": 0.6, "Bull": 0.2},
+  "scenario_values_krw": {"Down": 972467, "Core": 3437793, "Bull": 4848104},
+  "probability_weighted_value_krw": 3226790,
+  "current_price_krw": 1674000,
+  "expected_value_upside_pct": 92.8,
+  "decision": "NO_PROBABILITY_UPDATE",
+  "production_certificate_status": "NOT_CALIBRATED",
+  "dependence_contract": "conditional_mutually_exclusive_state_table_v1",
+  "limitations": [
+    "Historical migration-only calibration; not a prospective production forecast cohort.",
+    "DART frozen metadata controls issuer/date/sample identity; standardized quarterly numeric fallback is used because the runner has no DART_API_KEY.",
+    "Parent likelihood excludes every memory-labelled company; memory observations are consumed only by child shrinkage.",
+    "Memory child cannot promote locally unless it reaches all predeclared child breadth gates."
+  ],
+  "provenance": {
+    "workflow_run_id": 33183761982,
+    "workflow_run_number": 9,
+    "head_sha": "bdcb64132eabae6f5280df88900cd2a11e427ee3",
+    "artifact_id": 9690812502,
+    "artifact_zip_sha256": "9037d3d701e94e6fbbcbc9a78c90bd695b7bdb96fe61315d380c6d7d3069da2e",
+    "result_json_sha256": "250b4cea6fa45a830bebb3cb8428ecee558e583ddda40d62715ab8307385ed58",
+    "event_cases_csv_sha256": "0dd8e7cc4e51f5c3316e35e6215ad0c961f072647b49a69e1722d5a44a387061",
+    "holdout_predictions_csv_sha256": "0e94b0a88417663a0c15b7d22b914b607387ec92cbf9b69b8fca441fa2bc09fc",
+    "diagnostics_json_sha256": "cc9235a724b3841c62dd702fd0c707dcd3d25fc93d7b79c766d8c4c5859b16e7"
+  }
+}
