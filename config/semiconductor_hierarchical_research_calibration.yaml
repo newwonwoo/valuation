@@ -1,4 +1,4 @@
-version: semiconductor-hierarchical-research-v2.1
+version: semiconductor-hierarchical-research-v2.2
 status: RESEARCH_MIGRATION_ONLY
 as_of: 2026-08-28
 horizon: 12m
@@ -54,6 +54,8 @@ validation:
   bootstrap_draws: 5000
   one_sided_confidence: 0.95
   probability_update_requires:
+    - every_active_factor_brier_skill_score_positive
+    - every_active_factor_bss_bootstrap_5pct_gt_zero
     - scenario_brier_skill_score_positive
     - scenario_bss_bootstrap_5pct_gt_zero
   trust_scaling_bss_full_weight: 0.25
