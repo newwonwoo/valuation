@@ -1,0 +1,100 @@
+version: "1.0"
+purpose: >-
+  Make the Control Plane the sole LIVE_PRIMARY execution authority. LLMs may
+  observe, reason and propose, but cannot commit assumptions, choose canonical
+  scanner routing, execute probability or valuation decisions, authorize
+  recovery, audit, freeze, or publish an attested LIVE result.
+
+canonical_execution:
+  entrypoint: valuation_engine.strict_live_runtime.run_prism
+  attestation_required: true
+  stage_receipts_required: true
+  intrinsic_freeze_lineage_required: true
+  unattested_live_result_status: non_canonical
+  legacy_live_runtime_entrypoint: regression_only
+
+rocket_context_engine:
+  decision_owner: orchestrator
+  scanner_plan_source: typed_module_requirement_plan
+  mandatory_scanner_silent_skip: forbidden
+  undeclared_optional_activation: forbidden
+  plan_hash_required: true
+  llm_scanner_selection: forbidden
+  llm_consumes_findings_after_dispatch_only: true
+
+llm_authority:
+  actor: proposal_only
+  allowed:
+    - observe
+    - reason
+    - propose_hypothesis
+    - propose_counter_thesis
+    - request_evidence
+    - propose_bridge_candidate
+    - propose_recovery_candidate
+  forbidden:
+    - commit_assumption
+    - execute_probability_engine
+    - execute_monte_carlo_probability
+    - bind_probability_to_assumptions
+    - execute_valuation_math
+    - choose_canonical_scanner_loadout
+    - authorize_recovery_resolution
+    - authorize_audit
+    - issue_freeze_token
+    - load_pre_freeze_target_market_data
+    - publish_canonical_live_result
+
+stage_authority:
+  llm_proposal_stages:
+    - RESEARCHER_A
+    - BLIND_RED_TEAM_B
+    - RESEARCH_LOOP
+  llm_forbidden_output_domains:
+    - compiled_assumption
+    - assumption_set
+    - bound_scenario
+    - generic_valuation
+    - valuation_hash
+    - expected_value
+    - scenario_probability_assessment
+    - probability_weighting_allowed
+    - audit_hash
+    - intrinsic_freeze
+    - execution_attestation
+    - market_comparison
+    - street_comparison
+  pre_freeze_market_output_domains:
+    - current_market_price
+    - market_observation
+    - market_comparison
+    - street_reference
+    - street_reports
+    - street_comparison
+    - target_price
+    - target_multiple
+
+recovery_authority:
+  llm_role: propose_recovery_only
+  resolution_owner: deterministic_readjudication
+  original_blocker_retention_required: true
+  silent_blocker_drop: forbidden
+  resolved_flag_alone_is_sufficient: false
+  resolution_must_be_revalidated_against_current_evidence: true
+
+probability_and_valuation:
+  current_market_price_probability_input: forbidden
+  target_price_probability_input: forbidden
+  scenario_intrinsic_value_probability_input: forbidden
+  probability_freeze_before_value_binding: required
+  valuation_math_owner: deterministic_engine
+  probability_math_owner: deterministic_engine
+
+canonical_result:
+  required_proofs:
+    - canonical_entrypoint_id
+    - execution_attestation_hash
+    - stage_receipt_hash_chain
+    - intrinsic_freeze_token_hash
+    - audit_pass
+  report_without_proofs: non_canonical
