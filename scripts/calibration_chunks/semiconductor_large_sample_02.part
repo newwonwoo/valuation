@@ -1,0 +1,121 @@
+    if len(training) < 30 or len(holdout) < 10:
+        raise SystemExit(f"insufficient resolved cohort: training={len(training)} holdout={len(holdout)}")
+
+    stats = mean_std(training)
+    base_counts = {k: sum(1 for r in training if r["label"] == k) for k in ("Down", "Core", "Bull")}
+    base_total = len(training)
+    base_prob = {k: base_counts[k] / base_total for k in base_counts}
+
+    hold_preds = []
+    model_briers, base_briers, log_losses = [], [], []
+    correct = 0
+    for r in holdout:
+        p, neigh = knn_predict(training, r, stats, k=15)
+        model_briers.append(brier(p, r["label"]))
+        base_briers.append(brier(base_prob, r["label"]))
+        log_losses.append(-math.log(max(p[r["label"]], 1e-12)))
+        pred_label = max(p, key=p.get)
+        correct += int(pred_label == r["label"])
+        hold_preds.append({
+            "case_key": r["case_key"],
+            "actual": r["label"],
+            "predicted": pred_label,
+            "p_down": p["Down"],
+            "p_core": p["Core"],
+            "p_bull": p["Bull"],
+        })
+    model_brier = statistics.mean(model_briers)
+    base_brier = statistics.mean(base_briers)
+    bss = 1.0 - model_brier / base_brier if base_brier > 0 else 0.0
+
+    current = feature_row(qvals["000660"], "2026Q2")
+    if current is None:
+        raise SystemExit("SK hynix 2026Q2 current feature extraction failed")
+
+    all_resolved = training + holdout
+    all_stats = mean_std(all_resolved)
+    current_pred, neighbors = knn_predict(all_resolved, current, all_stats, k=15)
+
+    # Validation-aware shrinkage: use holdout Brier skill to determine how much
+    # conditional KNN probability may override the broad empirical base rate.
+    all_counts = {k: sum(1 for r in all_resolved if r["label"] == k) for k in ("Down", "Core", "Bull")}
+    all_total = len(all_resolved)
+    all_base = {k: all_counts[k] / all_total for k in all_counts}
+    trust = max(0.0, min(0.75, bss))
+    empirical = {k: (1.0 - trust) * all_base[k] + trust * current_pred[k] for k in all_base}
+
+    # Blend the validated empirical estimate with the original analyst prior;
+    # strength is tied to resolved sample breadth, capped so history cannot erase
+    # forward-looking company-specific evidence.
+    prior = {"Down": 0.20, "Core": 0.60, "Bull": 0.20}
+    breadth = min(1.0, len(all_resolved) / 200.0)
+    empirical_weight = 0.65 * breadth
+    final = {k: (1.0 - empirical_weight) * prior[k] + empirical_weight * empirical[k] for k in prior}
+    s = sum(final.values())
+    final = {k: v / s for k, v in final.items()}
+
+    result = {
+        "schema_version": "large_sample_research_calibration_v1",
+        "as_of": "2026-08-28",
+        "source_index_records": 1777,
+        "planned_cases": 240,
+        "eligible_case_index": len(cases),
+        "resolved_scored_cases": len(scored),
+        "training_cases": len(training),
+        "holdout_cases": len(holdout),
+        "excluded_cases": len(excluded),
+        "api_fetch_jobs": len(jobs),
+        "api_fetch_failures": len(failures),
+        "scenario_anchor_ratios": SCENARIO_ANCHORS,
+        "classification_boundaries": {
+            "down_core": DOWN_CORE_BOUNDARY,
+            "core_bull": CORE_BULL_BOUNDARY,
+            "minimum_origin_fcf_margin": MIN_ORIGIN_FCF_MARGIN,
+        },
+        "training_base_rate": base_prob,
+        "all_resolved_base_rate": all_base,
+        "holdout_validation": {
+            "model_brier": model_brier,
+            "base_brier": base_brier,
+            "brier_skill_score": bss,
+            "accuracy": correct / len(holdout),
+            "log_loss": statistics.mean(log_losses),
+        },
+        "current_skhynix_features_2026Q2": current,
+        "current_knn_probability": current_pred,
+        "validation_trust_weight": trust,
+        "empirical_probability_after_validation_shrinkage": empirical,
+        "analyst_prior": prior,
+        "empirical_weight_vs_prior": empirical_weight,
+        "final_research_calibrated_probability": final,
+        "nearest_historical_cases": neighbors,
+        "production_certificate_status": "NOT_CALIBRATED",
+        "note": "Historical regime calibration only. It does not fabricate pre-resolution forecast outcomes or satisfy the production calibration certificate gate.",
+    }
+
+    # Detailed CSVs.
+    fieldnames = sorted({k for r in scored for k in r.keys()})
+    with (OUT_DIR / "semiconductor_large_sample_scored_cases.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        w.writerows(scored)
+    if excluded:
+        fieldnames2 = sorted({k for r in excluded for k in r.keys()})
+        with (OUT_DIR / "semiconductor_large_sample_excluded_cases.csv").open("w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=fieldnames2)
+            w.writeheader()
+            w.writerows(excluded)
+    with (OUT_DIR / "semiconductor_holdout_predictions.csv").open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=list(hold_preds[0].keys()))
+        w.writeheader()
+        w.writerows(hold_preds)
+    (OUT_DIR / "semiconductor_large_sample_calibration_result.json").write_text(
+        json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    (OUT_DIR / "opendart_fetch_failures.json").write_text(
+        json.dumps(failures, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+if __name__ == "__main__":
+    main()
