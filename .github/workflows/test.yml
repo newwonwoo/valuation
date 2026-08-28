@@ -25,6 +25,8 @@ jobs:
         run: PYTHONPATH=src python scripts/validate_live_primary_readiness.py
       - name: Probability calibration policy
         run: PYTHONPATH=src python scripts/validate_probability_calibration_policy.py
+      - name: Hierarchical calibration registry
+        run: PYTHONPATH=src python scripts/validate_calibration_hierarchy.py
       - name: PM project portfolio integrity
         env:
           GITHUB_REPOSITORY: ${{ github.repository }}
