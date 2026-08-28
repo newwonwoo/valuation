@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .control_plane import ExecutionMode
+from .control_plane import ExecutionMode, StageStatus
 from .orchestrator import (
     ControlledRunResult,
     MajorGateReporter,
@@ -19,6 +19,47 @@ from .runtime_authority import (
     orchestrator_stage_scope,
 )
 from .unit_contracts import UnitContractRegistry
+
+
+_LLM_PROPOSAL_STAGES = frozenset(
+    {"RESEARCHER_A", "BLIND_RED_TEAM_B", "RESEARCH_LOOP"}
+)
+_LLM_FORBIDDEN_OUTPUT_TOKENS = (
+    "compiled_assumption",
+    "assumption_set",
+    "bound_scenario",
+    "generic_valuation",
+    "valuation_hash",
+    "expected_value",
+    "scenario_probability_assessment",
+    "probability_weighting_allowed",
+    "audit_hash",
+    "intrinsic_freeze",
+    "execution_attestation",
+    "market_comparison",
+    "street_comparison",
+)
+_PREFREEZE_MARKET_OUTPUT_TOKENS = (
+    "current_market_price",
+    "market_observation",
+    "market_comparison",
+    "street_reference",
+    "street_reports",
+    "street_comparison",
+    "target_price",
+    "target_multiple",
+)
+_POST_FREEZE_STAGES = frozenset(
+    {
+        "STREET_REFERENCE_LOAD",
+        "STREET_GAP_ANALYZER",
+        "MARKET_PRICE_LOAD",
+        "MARKET_COMPARE",
+        "THESIS_DELTA",
+        "SAVE_STATE",
+        "FINAL_REPORT",
+    }
+)
 
 
 @dataclass(frozen=True)
@@ -48,6 +89,34 @@ class AuthorityControlledResult:
         self.execution_attestation.validate()
 
 
+def _authority_validate_stage_result(
+    *,
+    stage: str,
+    result: StageExecutionResult,
+) -> StageExecutionResult:
+    """Fail closed when a stage emits a decision outside its authority domain."""
+    keys = tuple(result.outputs)
+    violations: list[str] = []
+    if stage in _LLM_PROPOSAL_STAGES:
+        for key in keys:
+            lowered = key.casefold()
+            if any(token in lowered for token in _LLM_FORBIDDEN_OUTPUT_TOKENS):
+                violations.append(key)
+    if stage not in _POST_FREEZE_STAGES:
+        for key in keys:
+            lowered = key.casefold()
+            if any(token in lowered for token in _PREFREEZE_MARKET_OUTPUT_TOKENS):
+                violations.append(key)
+    if violations:
+        return StageExecutionResult(
+            StageStatus.BLOCKED,
+            f"stage authority output violation at {stage}: "
+            + ", ".join(sorted(set(violations))),
+            blocking=True,
+        )
+    return result
+
+
 def authority_wrap_adapters(
     *,
     run_id: str,
@@ -57,6 +126,7 @@ def authority_wrap_adapters(
 
     Nested LLM callbacks may narrow the actor to LLM proposal-only, while
     deterministic compiler/model calls remain under the owning stage scope.
+    Stage outputs are also checked before the base orchestrator can commit them.
     """
 
     wrapped: dict[str, StageAdapter] = {}
@@ -66,7 +136,13 @@ def authority_wrap_adapters(
                 if context.run_id != run_id:
                     raise PermissionError("adapter run_id does not match authority owner")
                 with orchestrator_stage_scope(run_id=run_id, stage=stage_name):
-                    return inner(context)
+                    result = inner(context)
+                if not isinstance(result, StageExecutionResult):
+                    return result  # type: ignore[return-value]
+                return _authority_validate_stage_result(
+                    stage=stage_name,
+                    result=result,
+                )
 
             return run
 

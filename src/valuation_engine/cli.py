@@ -10,12 +10,12 @@ from typing import Mapping, Sequence
 from .audit import audit_model, gate_report
 from .cli_runtime import (
     LiveCLIError,
-    execute_live_analysis,
     load_live_runtime_config_factory,
     render_controlled_run,
     render_major_gate_summary,
     resolve_provider_factory_spec,
 )
+from .strict_cli_runtime import execute_live_analysis
 from .config import load_intrinsic_company_config, load_market_comparison
 from .engine import compare_to_market, run_valuation
 from .provenance import build_oci_legacy_trace

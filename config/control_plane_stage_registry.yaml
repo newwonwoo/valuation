@@ -1,5 +1,35 @@
 version: 1.0
-principle: Control Plane commands; LLM advises; Compiler commits assumptions; deterministic engines calculate; Audit alone authorizes intrinsic freeze.
+principle: Control Plane is the sole LIVE_PRIMARY execution authority; RocketTesla Context Engine owns scanner routing; LLM advises only; Compiler commits assumptions; deterministic engines calculate; Audit alone authorizes intrinsic freeze.
+authority_contract:
+  canonical_live_entrypoint: valuation_engine.strict_live_runtime.run_prism
+  legacy_live_entrypoint: regression_only
+  canonical_live_result_requires_execution_attestation: true
+  stage_authority_receipts_required: true
+  rocket_context_engine:
+    routing_owner: orchestrator
+    scanner_plan_source: typed_module_requirement_plan
+    llm_scanner_selection: forbidden
+    silent_mandatory_scanner_skip: forbidden
+  llm:
+    role: proposal_only
+    forbidden_decisions:
+      - commit_assumption
+      - execute_probability_engine
+      - execute_monte_carlo_probability
+      - execute_valuation_math
+      - authorize_recovery_resolution
+      - authorize_audit
+      - issue_freeze_token
+      - load_pre_freeze_target_market_data
+      - publish_canonical_live_result
+  recovery:
+    provider_role: proposal_only
+    resolution_owner: deterministic_readjudication
+    resolved_flag_alone_is_sufficient: false
+    evidence_receipt_required: true
+  final_result:
+    unattested_live_output: non_canonical
+    requires_same_run_freeze_lineage: true
 llm_contract:
   allowed_actions: [observe, reason, propose, recover, design, ask]
   forbidden_actions:
