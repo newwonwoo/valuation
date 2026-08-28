@@ -6,6 +6,7 @@ on:
       - work/skhynix-calibration-redo-20260828
     paths:
       - scripts/diagnose_skhynix_calibration_data.py
+      - scripts/collect_krx_semiconductor_cohort.py
       - .github/workflows/skhynix-calibration-data-diagnostic.yml
   workflow_dispatch:
 
@@ -15,7 +16,7 @@ permissions:
 jobs:
   diagnose:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,16 +27,21 @@ jobs:
           python-version: '3.12'
 
       - name: Install diagnostic dependencies
-        run: python -m pip install --disable-pip-version-check pandas pykrx
+        run: python -m pip install --disable-pip-version-check pandas pykrx requests
 
-      - name: Inspect public DART cache and historical KRX index members
+      - name: Inspect public DART cache
         run: python scripts/diagnose_skhynix_calibration_data.py
+
+      - name: Reconstruct historical KRX semiconductor constituents
+        run: python scripts/collect_krx_semiconductor_cohort.py
 
       - name: Upload diagnostic outputs
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: skhynix-calibration-data-diagnostic
-          path: artifacts/skhynix_calibration_diagnostic
+          path: |
+            artifacts/skhynix_calibration_diagnostic
+            artifacts/skhynix_calibration_cohort
           if-no-files-found: error
           retention-days: 7
