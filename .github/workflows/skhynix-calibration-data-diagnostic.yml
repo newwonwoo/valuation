@@ -8,6 +8,7 @@ on:
       - scripts/diagnose_skhynix_calibration_data.py
       - scripts/collect_krx_semiconductor_cohort.py
       - scripts/inspect_samsungfund_kodex_pdf.py
+      - scripts/collect_kodex_semiconductor_cohort.py
       - .github/workflows/skhynix-calibration-data-diagnostic.yml
   workflow_dispatch:
 
@@ -40,7 +41,10 @@ jobs:
       - name: Inspect KODEX historical PDF endpoints
         run: python scripts/inspect_samsungfund_kodex_pdf.py
 
-      - name: Reconstruct historical KRX semiconductor constituents
+      - name: Reconstruct point-in-time semiconductor cohort from KODEX PDF
+        run: python scripts/collect_kodex_semiconductor_cohort.py
+
+      - name: Probe direct KRX historical constituents
         continue-on-error: true
         run: python scripts/collect_krx_semiconductor_cohort.py
 
@@ -53,5 +57,6 @@ jobs:
             artifacts/skhynix_calibration_diagnostic
             artifacts/skhynix_calibration_cohort
             artifacts/kodex_pdf_diagnostic
+            artifacts/kodex_semiconductor_cohort
           if-no-files-found: error
           retention-days: 7
