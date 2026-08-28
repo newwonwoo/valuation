@@ -25,9 +25,11 @@ jobs:
           cat scripts/calibration_chunks/stockanalysis_regime_*.part > scripts/run_semiconductor_public_quarterly_calibration.py
           python -m py_compile scripts/run_semiconductor_public_quarterly_calibration.py
       - name: Run historical regime calibration
+        shell: bash
         run: |
+          set -euo pipefail
           mkdir -p artifacts/calibration
-          python scripts/run_semiconductor_public_quarterly_calibration.py | tee artifacts/calibration/public_quarterly_run.log
+          python scripts/run_semiconductor_public_quarterly_calibration.py 2>&1 | tee artifacts/calibration/public_quarterly_run.log
       - name: Upload results
         uses: actions/upload-artifact@v4
         with:
