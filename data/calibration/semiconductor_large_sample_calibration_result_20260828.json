@@ -1,0 +1,57 @@
+{
+  "schema_version": "semiconductor_large_sample_research_calibration_v3",
+  "as_of": "2026-08-28",
+  "metadata_universe_records": 1777,
+  "predeclared_max_cases": 240,
+  "predeclared_expected_eligible": 238,
+  "public_quarterly_case_window": "2021Q3-2024Q3 origins; 12m outcome",
+  "candidate_cases_attempted": 178,
+  "resolved_positive_origin_cases": 107,
+  "training_cases": 74,
+  "holdout_cases": 33,
+  "excluded_cases": 71,
+  "companies_fetched": 30,
+  "company_fetch_failures": [],
+  "classification": {
+    "down_anchor": 0.4643962848297214,
+    "core_anchor": 1.0,
+    "bull_anchor": 1.2770897832817338,
+    "down_core_boundary": 0.7321981424148607,
+    "core_bull_boundary": 1.138544891640867,
+    "rule": "same-quarter FCF at t+12m divided by origin-quarter FCF; nonpositive origins excluded"
+  },
+  "features": ["fcf_margin", "fcf_growth", "revenue_growth", "operating_margin"],
+  "training_base_rate": {"Down": 0.5, "Core": 0.20270270270270271, "Bull": 0.2972972972972973},
+  "holdout": {
+    "n": 33,
+    "model_brier": 0.5856908039573644,
+    "base_brier": 0.5858622750514642,
+    "brier_skill_score": 0.000292681576202658,
+    "bss_bootstrap_90pct_interval": [-0.17055253661699604, 0.14813288941398492],
+    "accuracy": 0.6060606060606061,
+    "log_loss": 1.144339590900227,
+    "probability_update_gate_passed": false
+  },
+  "current_skhynix_2026Q2_features": {
+    "fcf_margin": 69.01,
+    "fcf_growth": 1032.26,
+    "revenue_growth": 256.78,
+    "operating_margin": 76.33
+  },
+  "historical_all_base_rate": {"Down": 0.5233644859813084, "Core": 0.19626168224299065, "Bull": 0.2803738317757009},
+  "current_conditional_history_probability": {"Down": 0.606211864950612, "Core": 0.3318445703700517, "Bull": 0.06194356467933633},
+  "holdout_trust": 0.0,
+  "analyst_prior": {"Down": 0.2, "Core": 0.6, "Bull": 0.2},
+  "final_research_calibrated_probability": {"Down": 0.2, "Core": 0.6, "Bull": 0.2},
+  "scenario_values_krw": {"Down": 972467, "Core": 3437793, "Bull": 4848104},
+  "probability_weighted_value_krw": 3226790,
+  "current_price_krw": 1674000,
+  "expected_value_upside_pct": 92.8,
+  "production_certificate_status": "NOT_CALIBRATED",
+  "decision": "NO_PROBABILITY_UPDATE",
+  "limitations": [
+    "The 1,777 DART records control issuer/date/sample identity; numeric fallback uses S&P Global Market Intelligence standardized quarterly financials because the GitHub runner has no DART_API_KEY secret.",
+    "StockAnalysis exposes the most recent 20 quarters, so 2021Q1 and 2021Q2 predeclared origins cannot be reconstructed from this fallback and are not silently imputed.",
+    "This is historical regime calibration, not retroactive fabrication of pre-resolution probability forecasts."
+  ]
+}
