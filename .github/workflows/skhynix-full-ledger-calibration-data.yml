@@ -1,0 +1,44 @@
+name: skhynix-full-ledger-calibration-data
+
+on:
+  push:
+    branches:
+      - work/skhynix-full-ledger-calibration-20260828
+    paths:
+      - scripts/export_semiconductor_quarterly_fact_panel.py
+      - config/semiconductor_calibration_seed.yaml
+      - .github/workflows/skhynix-full-ledger-calibration-data.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export-panel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: >-
+          python -m pip install --disable-pip-version-check
+          pandas lxml beautifulsoup4 html5lib requests pyyaml
+
+      - name: Export full quarterly fact panel
+        run: python scripts/export_semiconductor_quarterly_fact_panel.py
+
+      - name: Upload source and fact artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: skhynix-full-ledger-quarterly-panel
+          path: artifacts/skhynix_full_ledger_calibration
+          if-no-files-found: error
+          retention-days: 14
