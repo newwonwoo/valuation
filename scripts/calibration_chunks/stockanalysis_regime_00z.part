@@ -1,0 +1,9 @@
+
+_orig_fetch_company = fetch_company
+def fetch_company(name,ticker,exchange):
+    d = _orig_fetch_company(name,ticker,exchange)
+    if ticker == '000660':
+        print('DEBUG_SKH_PARSED_FCF', d['q'].get('fcf'), flush=True)
+        print('DEBUG_SKH_PARSED_MARGIN', d['q'].get('fcf_margin'), flush=True)
+        print('DEBUG_SKH_PARSED_REVENUE', d['q'].get('revenue'), flush=True)
+    return d
