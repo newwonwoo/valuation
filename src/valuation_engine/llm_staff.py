@@ -14,6 +14,7 @@ from .context_strength_linkage import (
 from .control_plane import LLMAction, validate_llm_authority
 from .ledger import EvidenceLedger
 from .records import BridgeRecord, CriticalIssue, HypothesisRecord
+from .runtime_authority import llm_proposal_scope
 
 
 @dataclass(frozen=True)
@@ -87,6 +88,8 @@ class RedTeamProposal:
 
 @dataclass(frozen=True)
 class BridgeDraft:
+    """LLM proposal only; deterministic compiler remains the committing owner."""
+
     assumption_key: str
     scenario_id: str
     bridge: BridgeRecord
@@ -204,7 +207,8 @@ def run_intelligence_officer(
     validate_llm_authority(LLMAction.REASON)
     validate_llm_authority(LLMAction.PROPOSE)
     context.context_strength_linkage_doctrine.validate()
-    proposal = officer(context)
+    with llm_proposal_scope():
+        proposal = officer(context)
     active_hypotheses = merge_hypothesis_context(
         context.prior_hypotheses,
         proposal.hypotheses,
@@ -233,7 +237,8 @@ def run_red_team(
         raise PermissionError(
             "Blind Red Team context contains market-comparison Evidence"
         )
-    proposal = officer(context, hypotheses)
+    with llm_proposal_scope():
+        proposal = officer(context, hypotheses)
     proposal.validate()
     return proposal
 
@@ -245,7 +250,8 @@ def run_bridge_analyst(
     analyst: BridgeAnalyst,
 ) -> BridgeProposalBundle:
     validate_llm_authority(LLMAction.PROPOSE)
-    bundle = analyst(context, hypotheses, red_team)
+    with llm_proposal_scope():
+        bundle = analyst(context, hypotheses, red_team)
     bundle.validate(context.ledger, hypotheses)
     return bundle
 
@@ -257,7 +263,7 @@ def materialize_bridge_bundle(
     tuple[AssumptionSpec, ...],
     dict[str, tuple[str, ...]],
 ]:
-    """Turn validated LLM proposals into compiler requests, not committed assumptions."""
+    """Turn validated LLM proposals into compiler requests, never committed assumptions."""
     from decimal import Decimal
 
     bridges: list[BridgeRecord] = []

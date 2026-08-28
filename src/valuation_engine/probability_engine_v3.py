@@ -23,6 +23,7 @@ from .dynamic_hierarchical_posterior import (
     build_dynamic_hierarchical_posterior,
 )
 from .records import CalibrationStatus
+from .runtime_authority import DecisionDomain, forbid_llm_decision
 from .scenario_posterior_monte_carlo import (
     CorrelationDependence,
     PosteriorEventFactor,
@@ -168,6 +169,7 @@ def run_probability_engine_v3(
     *,
     weight_policy: ContinuousWeightPolicy = ContinuousWeightPolicy(),
 ) -> ProbabilityEngineV3Result:
+    forbid_llm_decision(DecisionDomain.PROBABILITY)
     if not spec.cohort_key or not spec.horizon or not spec.events:
         raise ValueError("probability-engine-v3 spec identity/events are required")
     event_ids = tuple(event.event_id for event in spec.events)
@@ -266,6 +268,7 @@ def apply_v3_probabilities_to_compiled_assumptions(
     *,
     probability_key: str = "scenario_probability",
 ) -> CompiledAssumptionSet:
+    forbid_llm_decision(DecisionDomain.ASSUMPTION_COMPILE)
     if not result.numeric_weighting_allowed:
         raise PermissionError("cannot bind blocked v3 probabilities into assumptions")
     probability_map = dict(result.scenario_probabilities)

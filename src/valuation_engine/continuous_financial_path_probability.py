@@ -7,6 +7,8 @@ import json
 import math
 import random
 
+from .runtime_authority import DecisionDomain, forbid_llm_decision
+
 
 @dataclass(frozen=True)
 class ContinuousDriverPosterior:
@@ -110,14 +112,13 @@ def simulate_continuous_financial_paths(
     inner_draws: int = 200,
     seed: int = 20260829,
 ) -> ContinuousFinancialPathSimulation:
-    """Estimate Down/Core/Bull probabilities from continuous financial paths.
+    """Estimate scenario probabilities from continuous financial paths.
 
-    The simulation contains no market-price, target-price, intrinsic-value, or
-    return inputs. Each draw generates continuous financial-driver paths, then
-    assigns the draw to the nearest predeclared economic scenario path using a
-    scale-normalized weighted distance. Binary risk-event AND/OR rules are not
-    used for scenario assignment.
+    LLM callbacks may propose evidence/hypotheses, but cannot execute this
+    probability decision. The simulation contains no market-price, target-price,
+    intrinsic-value, or return inputs.
     """
+    forbid_llm_decision(DecisionDomain.PROBABILITY)
     if not drivers or len(scenarios) < 2:
         raise ValueError("continuous financial path simulation requires drivers and at least two scenarios")
     if outer_draws < 10 or inner_draws < 10:
