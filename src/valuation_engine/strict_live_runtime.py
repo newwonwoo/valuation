@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, replace
 import json
 from pathlib import Path
 
@@ -17,6 +17,10 @@ from .live_runtime import (
     build_live_primary_adapters,
 )
 from .orchestrator import ControlledRunResult, load_reporting_contract, load_stage_sequence
+from .recovery_authority import (
+    deterministic_recovery_readjudication_adapter,
+    proposal_only_recovery_adapter,
+)
 from .rocket_context_engine import strict_rocket_insight_dispatch_adapter
 from .unit_contracts import load_unit_contract_registry
 
@@ -33,10 +37,19 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
     treated as a canonical investment result.
     """
     config.validate()
-    sequence = load_stage_sequence(config.stage_registry_path)
-    reporting_contract = load_reporting_contract(config.stage_registry_path)
-    initial = dict(config.initial_data)
-    initial["scenario_binding_spec"] = config.scenario_binding_spec
+    strict_providers = replace(
+        config.providers,
+        research_recovery_adapter=proposal_only_recovery_adapter(
+            config.providers.research_recovery_adapter
+        ),
+    )
+    strict_config = replace(config, providers=strict_providers)
+    strict_config.validate()
+
+    sequence = load_stage_sequence(strict_config.stage_registry_path)
+    reporting_contract = load_reporting_contract(strict_config.stage_registry_path)
+    initial = dict(strict_config.initial_data)
+    initial["scenario_binding_spec"] = strict_config.scenario_binding_spec
     initial.setdefault("prior_hypotheses", ())
     initial.setdefault("optional_research_units", ())
     initial.setdefault("research_trigger_state", {})
@@ -44,23 +57,28 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
     initial["canonical_entrypoint_id"] = CANONICAL_ENTRYPOINT_ID
 
     unit_contract_registry = load_unit_contract_registry(
-        config.unit_contract_registry_path
+        strict_config.unit_contract_registry_path
     )
     adapters = build_live_primary_adapters(
-        config,
+        strict_config,
         unit_contract_registry=unit_contract_registry,
     )
-    # Replace the generic scanner dispatch with the canonical RocketTesla
-    # Context Engine while preserving the broker-research wrapper contract.
+    # RocketTesla Context Engine owns scanner routing. The LLM only receives
+    # scanner findings after this deterministic dispatch completes.
     adapters["ROCKET_INSIGHT_SCAN"] = broker_aware_rocket_insight_adapter(
         strict_rocket_insight_dispatch_adapter(
-            runners=config.providers.scanner_runners
+            runners=strict_config.providers.scanner_runners
         ),
-        required=bool(getattr(config, "require_broker_research", False)),
+        required=bool(getattr(strict_config, "require_broker_research", False)),
+    )
+    # The recovery provider itself runs as proposal-only; this outer gate is the
+    # authority that decides whether the proposed recovery is evidence-backed.
+    adapters["RESEARCH_LOOP"] = deterministic_recovery_readjudication_adapter(
+        adapters["RESEARCH_LOOP"]
     )
 
     authority_result = run_authority_controlled_workflow(
-        run_id=config.run_id,
+        run_id=strict_config.run_id,
         execution_mode=ExecutionMode.LIVE_PRIMARY,
         stage_sequence=sequence,
         adapters=adapters,
@@ -68,7 +86,7 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
         initial_data=initial,
         unit_contract_registry=unit_contract_registry,
         reporting_contract=reporting_contract,
-        major_gate_reporter=getattr(config, "major_gate_reporter", None),
+        major_gate_reporter=getattr(strict_config, "major_gate_reporter", None),
     )
     base = authority_result.result
     if base.blocked_reasons:
@@ -95,8 +113,8 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
     authority_result.validate_canonical()
     finalized = finalize_live_primary_run_artifacts(
         base,
-        state_root=config.state_root,
-        stage_registry_path=config.stage_registry_path,
+        state_root=strict_config.state_root,
+        stage_registry_path=strict_config.stage_registry_path,
     )
     data = dict(finalized.data)
     attestation = authority_result.execution_attestation
@@ -115,7 +133,7 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
         major_gate_summaries=finalized.major_gate_summaries,
         reporting_warnings=finalized.reporting_warnings,
     )
-    _persist_execution_attestation(finalized, state_root=config.state_root)
+    _persist_execution_attestation(finalized, state_root=strict_config.state_root)
     result = AuthorityControlledResult(
         finalized,
         authority_result.stage_receipts,
