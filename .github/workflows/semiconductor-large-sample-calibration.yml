@@ -1,0 +1,40 @@
+name: semiconductor-large-sample-calibration
+
+on:
+  push:
+    branches:
+      - work/semiconductor-large-sample-calibration-20260828
+    paths:
+      - scripts/calibration_chunks/**
+      - .github/workflows/semiconductor-large-sample-calibration.yml
+  workflow_dispatch:
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Assemble calibration runner
+        run: |
+          cat scripts/calibration_chunks/semiconductor_large_sample_*.part > scripts/run_semiconductor_large_sample_calibration.py
+          python -m py_compile scripts/run_semiconductor_large_sample_calibration.py
+      - name: Verify OpenDART credential
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: test -n "$DART_API_KEY"
+      - name: Run 1,777-record / 238-case calibration
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+        run: |
+          mkdir -p artifacts/calibration
+          python scripts/run_semiconductor_large_sample_calibration.py | tee artifacts/calibration/run_summary.json
+      - name: Upload calibration artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: semiconductor-large-sample-calibration
+          path: artifacts/calibration/
+          if-no-files-found: error
