@@ -92,9 +92,14 @@ def ycanon(c):
 
 def extract_series(rows,label,period_kind):
     key=None
-    for candidate in rows:
-        if clean_label(candidate)==label:
-            key=candidate; break
+    # StockAnalysis overview rows sometimes combine value and growth labels,
+    # e.g. "Free Cash Flow Free Cash Flow Growth" and "Revenue Revenue Growth".
+    if label in rows:
+        key=label
+    else:
+        fallbacks=[candidate for candidate in rows if clean_label(candidate).startswith(label+' ') and clean_label(candidate)!=label+' Growth']
+        if fallbacks:
+            key=min(fallbacks,key=len)
     if key is None: return {}
     out={}
     for c,v in rows[key].items():
