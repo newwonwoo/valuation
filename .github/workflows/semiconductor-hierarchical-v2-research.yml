@@ -27,6 +27,13 @@ jobs:
       - name: Assemble runner
         run: |
           cat scripts/calibration_chunks/hierarchical_v2_*.part > scripts/run_semiconductor_hierarchical_v2_research.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/run_semiconductor_hierarchical_v2_research.py')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace("\nif __name__=='__main__': main()\n", "\n")
+          path.write_text(text, encoding='utf-8')
+          PY
           python -m py_compile scripts/run_semiconductor_hierarchical_v2_research.py
       - name: Run hierarchical historical calibration
         shell: bash
