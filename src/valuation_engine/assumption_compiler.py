@@ -17,6 +17,7 @@ from .records import (
     EvidenceSourceLayer,
     HypothesisRecord,
 )
+from .runtime_authority import DecisionDomain, forbid_llm_decision
 
 
 class CompilationStatus(str, Enum):
@@ -246,6 +247,9 @@ def compile_assumptions(
     specs: tuple[AssumptionSpec, ...],
     bridge_input_map: dict[str, tuple[str, ...]],
 ) -> CompilationResult:
+    # An LLM may propose BridgeDraft objects, but it may never invoke the
+    # committing compiler from inside its callback scope.
+    forbid_llm_decision(DecisionDomain.ASSUMPTION_COMPILE)
     findings: list[CompilationFinding] = []
     if not target_id:
         findings.append(CompilationFinding("MISSING_TARGET", "target_id is required"))
