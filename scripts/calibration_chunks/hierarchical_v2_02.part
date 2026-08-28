@@ -1,0 +1,53 @@
+
+# Authorization hardening: a scenario assembly cannot become numerically
+# authoritative when any active factor fails its own out-of-sample gate.
+_FACTOR_GATE_RESULTS = {}
+_original_fit_binary_event = fit_binary_event
+
+def fit_binary_event(train, hold, event):
+    result = _original_fit_binary_event(train, hold, event)
+    passed = bool(
+        result is not None
+        and result.get('brier_skill_score', 0) > 0
+        and result.get('bss_bootstrap_90pct_interval', [None])[0] is not None
+        and result['bss_bootstrap_90pct_interval'][0] > 0
+    )
+    _FACTOR_GATE_RESULTS[event] = passed
+    return result
+
+_original_fit_joint_state = fit_joint_state
+
+def fit_joint_state(train, hold):
+    result = _original_fit_joint_state(train, hold)
+    if result is None:
+        return None
+    scenario_gate = bool(result.get('gate_passed'))
+    factor_gate = all(_FACTOR_GATE_RESULTS.get(event, False) for event in EVENTS)
+    failures = []
+    if not scenario_gate:
+        failures.append('SCENARIO_OOS_GATE')
+    for event in EVENTS:
+        if not _FACTOR_GATE_RESULTS.get(event, False):
+            failures.append(f'FACTOR_OOS_GATE:{event}')
+    result['scenario_gate_passed'] = scenario_gate
+    result['factor_gate_passed'] = factor_gate
+    result['factor_gate_results'] = dict(_FACTOR_GATE_RESULTS)
+    result['authorization_gate_failures'] = failures
+    result['gate_passed'] = bool(scenario_gate and factor_gate)
+    return result
+
+_original_hierarchical_shrink = hierarchical_shrink
+
+def hierarchical_shrink(parent_p, rows, event):
+    result = _original_hierarchical_shrink(parent_p, rows, event)
+    parent_authorized = bool(_FACTOR_GATE_RESULTS.get(event, False))
+    result['parent_authorized'] = parent_authorized
+    result['authorizable'] = bool(parent_authorized and result['state'] in {'INHERITED', 'SHRUNK', 'CALIBRATED_LOCAL'})
+    if not parent_authorized:
+        result['state'] = 'UNCALIBRATED'
+        if 'PARENT_OOS_GATE' not in result['gate_failures']:
+            result['gate_failures'].append('PARENT_OOS_GATE')
+    return result
+
+if __name__ == '__main__':
+    raise SystemExit(main())
