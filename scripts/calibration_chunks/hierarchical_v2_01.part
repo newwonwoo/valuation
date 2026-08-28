@@ -1,9 +1,15 @@
 
 
-def fit_binary_event(train, hold, event):
-    tr=[r for r in train if r[f'event_{event}'] is not None]; ho=[r for r in hold if r[f'event_{event}'] is not None]
+def _parent_rows(rows):
+    # Leave-child-out: memory-labelled companies never contribute to the parent likelihood.
+    return [r for r in rows if 'memory' not in r['subindustries']]
+
+def fit_binary_event(train,hold,event):
+    tr=[r for r in _parent_rows(train) if r[f'event_{event}'] is not None]
+    ho=[r for r in _parent_rows(hold) if r[f'event_{event}'] is not None]
     if len(tr)<20 or len(ho)<10: return None
-    Xtr=pd.DataFrame([{f:r[f] for f in FEATURES} for r in tr]); ytr=np.array([int(r[f'event_{event}']) for r in tr]); Xh=pd.DataFrame([{f:r[f] for f in FEATURES} for r in ho]); yh=np.array([int(r[f'event_{event}']) for r in ho])
+    Xtr=pd.DataFrame([{f:r[f] for f in FEATURES} for r in tr]); ytr=np.array([int(r[f'event_{event}']) for r in tr])
+    Xh=pd.DataFrame([{f:r[f] for f in FEATURES} for r in ho]); yh=np.array([int(r[f'event_{event}']) for r in ho])
     if len(set(ytr.tolist()))<2: return None
     pipe=make_pipe(); pipe.fit(Xtr,ytr); classes=list(pipe.named_steps['model'].classes_); ph=pipe.predict_proba(Xh)[:,classes.index(1)]
     base=float(ytr.mean()); model_brier=brier_binary(ph,yh); base_brier=brier_binary(np.full(len(yh),base),yh); bss=1-model_brier/base_brier if base_brier>0 else 0.0
@@ -12,8 +18,9 @@ def fit_binary_event(train, hold, event):
         idx=rng.integers(0,len(yh),len(yh)); mb=float(ml[idx].mean()); bb=float(bl[idx].mean())
         if bb>0: boot.append(1-mb/bb)
     ci=[float(np.quantile(boot,0.05)),float(np.quantile(boot,0.95))] if boot else [None,None]
-    allrows=tr+ho; final=make_pipe(); final.fit(pd.DataFrame([{f:r[f] for f in FEATURES} for r in allrows]),np.array([int(r[f'event_{event}']) for r in allrows]))
-    return {'event':event,'train_n':len(tr),'holdout_n':len(ho),'training_base_rate':base,'model_brier':model_brier,'base_brier':base_brier,'brier_skill_score':bss,'bss_bootstrap_90pct_interval':ci,'pipe':final,'allrows':allrows}
+    allrows=tr+ho
+    final=make_pipe(); final.fit(pd.DataFrame([{f:r[f] for f in FEATURES} for r in allrows]),np.array([int(r[f'event_{event}']) for r in allrows]))
+    return {'event':event,'train_n':len(tr),'holdout_n':len(ho),'training_base_rate':base,'model_brier':model_brier,'base_brier':base_brier,'brier_skill_score':bss,'bss_bootstrap_90pct_interval':ci,'pipe':final,'allrows':allrows,'parent_scope':'leave_memory_child_out'}
 
 def state_index(bits): return int(bits[0])*4+int(bits[1])*2+int(bits[2])
 def bits_from_state(s): return (bool(s&4),bool(s&2),bool(s&1))
@@ -24,8 +31,9 @@ def scenario_probs_from_state_matrix(P,classes):
     return out
 
 def fit_joint_state(train,hold):
-    tr=[r for r in train if r['state'] is not None]; ho=[r for r in hold if r['state'] is not None]
-    print(f"JOINT_COUNTS training={len(tr)} holdout={len(ho)} required_holdout={CFG['validation']['min_holdout_cases']}",flush=True)
+    tr=[r for r in _parent_rows(train) if r['state'] is not None]
+    ho=[r for r in _parent_rows(hold) if r['state'] is not None]
+    print(f"PARENT_JOINT_COUNTS training={len(tr)} holdout={len(ho)} required_holdout={CFG['validation']['min_holdout_cases']}",flush=True)
     if len(tr)<30 or len(ho)<int(CFG['validation']['min_holdout_cases']): return None
     Xtr=pd.DataFrame([{f:r[f] for f in FEATURES} for r in tr]); ytr=np.array([int(r['state']) for r in tr]); Xh=pd.DataFrame([{f:r[f] for f in FEATURES} for r in ho]); yh=np.array([scenario_index(r['scenario']) for r in ho])
     pipe=make_pipe(); pipe.fit(Xtr,ytr); raw=pipe.predict_proba(Xh); classes=pipe.named_steps['model'].classes_; ph=scenario_probs_from_state_matrix(raw,classes)
@@ -37,7 +45,7 @@ def fit_joint_state(train,hold):
         if b>0: boot.append(1-m/b)
     ci=[float(np.quantile(boot,0.05)),float(np.quantile(boot,0.95))]; passed=bool(bss>0 and ci[0]>0)
     allrows=tr+ho; final=make_pipe(); final.fit(pd.DataFrame([{f:r[f] for f in FEATURES} for r in allrows]),np.array([int(r['state']) for r in allrows]))
-    return {'train_n':len(tr),'holdout_n':len(ho),'model_brier':mb,'base_brier':bb,'brier_skill_score':bss,'bss_bootstrap_90pct_interval':ci,'gate_passed':passed,'training_scenario_base_rate':{SCENARIOS[i]:float(base[i]) for i in range(3)},'pipe':final,'holdout_probs':ph,'holdout_rows':ho}
+    return {'train_n':len(tr),'holdout_n':len(ho),'model_brier':mb,'base_brier':bb,'brier_skill_score':bss,'bss_bootstrap_90pct_interval':ci,'gate_passed':passed,'training_scenario_base_rate':{SCENARIOS[i]:float(base[i]) for i in range(3)},'pipe':final,'holdout_probs':ph,'holdout_rows':ho,'parent_scope':'leave_memory_child_out'}
 
 def predict_state8(pipe,current):
     raw=pipe.predict_proba(pd.DataFrame([current]))[0]; classes=pipe.named_steps['model'].classes_; p=np.full(8,1e-8)
@@ -57,11 +65,19 @@ def scenario_from_state_vector(p):
     out={s:0.0 for s in SCENARIOS}
     for state,prob in enumerate(p): out[scenario_from_bits(bits_from_state(state))]+=float(prob)
     return out
+
 def hierarchical_shrink(parent_p,rows,event):
-    memory=[r for r in rows if 'memory' in r['subindustries'] and r[f'event_{event}'] is not None]; n=len(memory); s=sum(int(r[f'event_{event}']) for r in memory); strength=int(CFG['hierarchy']['parent_strength']); post=(s+strength*parent_p)/(n+strength) if n else parent_p; promoted=n>=int(CFG['hierarchy']['child_local_promotion_min_events'])
+    memory=[r for r in rows if 'memory' in r['subindustries'] and r[f'event_{event}'] is not None]
+    n=len(memory); s=sum(int(r[f'event_{event}']) for r in memory); strength=int(CFG['hierarchy']['parent_strength'])
+    companies=len({r['ticker'] for r in memory}); quarters=len({r['origin'] for r in memory}); post=(s+strength*parent_p)/(n+strength) if n else parent_p
+    failures=[]
+    if n<int(CFG['hierarchy']['child_local_promotion_min_events']): failures.append('MIN_RESOLVED_EVENTS')
+    if companies<5: failures.append('MIN_COMPANIES')
+    if quarters<4: failures.append('MIN_QUARTERS')
+    promoted=not failures
     if not promoted:
         cap=float(CFG['hierarchy']['child_shift_cap']); post=max(parent_p-cap,min(parent_p+cap,post))
-    return {'n':n,'successes':s,'empirical_rate':s/n if n else None,'parent_probability':parent_p,'posterior_probability':post,'state':'CALIBRATED_LOCAL' if promoted else ('SHRUNK' if n else 'INHERITED')}
+    return {'n':n,'successes':s,'companies':companies,'quarters':quarters,'empirical_rate':s/n if n else None,'parent_probability':parent_p,'posterior_probability':post,'state':'CALIBRATED_LOCAL' if promoted else ('SHRUNK' if n else 'INHERITED'),'gate_failures':failures,'parent_child_overlap':0}
 
 def main():
     raw={}; failures=[]
@@ -79,16 +95,16 @@ def main():
             for event in EVENTS:
                 val,m=event_value(d,event,origin,outcome); row[f'event_{event}']=val; measured[event]=m; bits.append(val)
             row['measured_outcomes']=measured; row['state']=state_index(tuple(bits)) if all(v is not None for v in bits) else None; row['scenario']=scenario_from_bits(tuple(bits)) if row['state'] is not None else None; rows.append(row)
-    train=[r for r in rows if r['split']=='TRAINING']; hold=[r for r in rows if r['split']=='HOLDOUT']
-    diagnostics={'total_rows':len(rows),'training_rows':len(train),'holdout_rows':len(hold),'events':{e:{'train_valid':sum(r[f'event_{e}'] is not None for r in train),'holdout_valid':sum(r[f'event_{e}'] is not None for r in hold)} for e in EVENTS},'joint_train':sum(r['state'] is not None for r in train),'joint_holdout':sum(r['state'] is not None for r in hold),'companies_fetched':len(raw),'failures':failures}
-    print('DIAGNOSTICS '+json.dumps(diagnostics,ensure_ascii=False),flush=True); (OUT/'diagnostics.json').write_text(json.dumps(diagnostics,ensure_ascii=False,indent=2),encoding='utf-8')
+    train=[r for r in rows if r['split']=='TRAINING']; hold=[r for r in rows if r['split']=='HOLDOUT']; parent_train=_parent_rows(train); parent_hold=_parent_rows(hold)
+    diagnostics={'total_rows':len(rows),'training_rows':len(train),'holdout_rows':len(hold),'parent_training_rows':len(parent_train),'parent_holdout_rows':len(parent_hold),'events':{e:{'all_train_valid':sum(r[f'event_{e}'] is not None for r in train),'all_holdout_valid':sum(r[f'event_{e}'] is not None for r in hold),'parent_train_valid':sum(r[f'event_{e}'] is not None for r in parent_train),'parent_holdout_valid':sum(r[f'event_{e}'] is not None for r in parent_hold)} for e in EVENTS},'joint_train':sum(r['state'] is not None for r in train),'joint_holdout':sum(r['state'] is not None for r in hold),'parent_joint_train':sum(r['state'] is not None for r in parent_train),'parent_joint_holdout':sum(r['state'] is not None for r in parent_hold),'companies_fetched':len(raw),'failures':failures}
+    print('DIAGNOSTICS '+json.dumps(diagnostics,ensure_ascii=False,default=str),flush=True); (OUT/'diagnostics.json').write_text(json.dumps(diagnostics,ensure_ascii=False,indent=2,default=str),encoding='utf-8')
     event_models={}; event_metrics={}
     for event in EVENTS:
         m=fit_binary_event(train,hold,event)
         if m is None: event_metrics[event]={'gate_passed':False,'reason':'INSUFFICIENT_EVENT_DATA'}; continue
         event_models[event]=m['pipe']; event_metrics[event]={k:v for k,v in m.items() if k not in {'pipe','allrows'}}; event_metrics[event]['gate_passed']=bool(m['brier_skill_score']>0 and m['bss_bootstrap_90pct_interval'][0]>0)
     joint=fit_joint_state(train,hold)
-    if joint is None: raise SystemExit('insufficient joint-state cases')
+    if joint is None: raise SystemExit('insufficient leave-child-out joint-state cases')
     skh=raw['000660']; current=feature_row(skh,'2026Q2'); global_event_p={}; all_eligible=train+hold
     for event in EVENTS:
         pipe=event_models.get(event)
@@ -96,7 +112,7 @@ def main():
         classes=list(pipe.named_steps['model'].classes_); pr=pipe.predict_proba(pd.DataFrame([current]))[0]; global_event_p[event]=float(pr[classes.index(1)]) if 1 in classes else 0.0
     hierarchical={e:hierarchical_shrink(global_event_p[e],all_eligible,e) for e in EVENTS if global_event_p[e] is not None}; state_global=predict_state8(joint['pipe'],current); state_hier=ipf_to_marginals(state_global,[hierarchical[e]['posterior_probability'] for e in EVENTS]); scenario_raw=scenario_from_state_vector(state_global); scenario_hier=scenario_from_state_vector(state_hier)
     base=np.array([joint['training_scenario_base_rate'][s] for s in SCENARIOS]); model=np.array([scenario_hier[s] for s in SCENARIOS]); gate=bool(joint['gate_passed']); trust=max(0,min(1,float(joint['brier_skill_score'])/float(CFG['validation']['trust_scaling_bss_full_weight']))) if gate else 0.0; lr=np.divide(model,base,out=np.ones_like(model),where=base>0); post=PRIOR*np.power(np.maximum(lr,1e-9),trust); post/=post.sum(); values=np.array([float(CFG['scenario_values_krw'][s]) for s in SCENARIOS]); expected=float(np.dot(post,values)); px=float(CFG['current_price_krw'])
-    result={'schema_version':'semiconductor_hierarchical_research_calibration_v2_1','as_of':CFG['as_of'],'metadata_universe_records':1777,**diagnostics,'event_definitions':CFG['events'],'event_holdout_metrics':event_metrics,'scenario_holdout':{k:v for k,v in joint.items() if k not in {'pipe','holdout_probs','holdout_rows'}},'current_skhynix_2026Q2_features':current,'global_current_event_probability':global_event_p,'memory_hierarchical_event_probability':hierarchical,'current_global_joint_scenario_probability':scenario_raw,'current_hierarchical_joint_scenario_probability':scenario_hier,'holdout_trust':trust,'analyst_prior':{SCENARIOS[i]:float(PRIOR[i]) for i in range(3)},'final_research_calibrated_probability':{SCENARIOS[i]:float(post[i]) for i in range(3)},'scenario_values_krw':CFG['scenario_values_krw'],'probability_weighted_value_krw':round(expected),'current_price_krw':int(px),'expected_value_upside_pct':round((expected/px-1)*100,1),'decision':'PROBABILITY_UPDATE_AUTHORIZED' if gate else 'NO_PROBABILITY_UPDATE','production_certificate_status':'NOT_CALIBRATED','dependence_contract':CFG['model']['dependence_contract'],'limitations':['Historical migration-only calibration; not a prospective production forecast cohort.','DART frozen metadata controls issuer/date/sample identity; standardized quarterly numeric fallback is used because the runner has no DART_API_KEY.','Memory child remains SHRUNK/INHERITED unless it meets the predeclared child promotion threshold.']}
-    pd.DataFrame([{**r,'subindustries':'|'.join(r['subindustries']),'measured_outcomes':json.dumps(r['measured_outcomes'],ensure_ascii=False)} for r in rows]).to_csv(OUT/'hierarchical_event_cases.csv',index=False,encoding='utf-8-sig'); pd.DataFrame([{**r,'p_down':float(joint['holdout_probs'][i,0]),'p_core':float(joint['holdout_probs'][i,1]),'p_bull':float(joint['holdout_probs'][i,2])} for i,r in enumerate(joint['holdout_rows'])]).to_csv(OUT/'hierarchical_holdout_predictions.csv',index=False,encoding='utf-8-sig'); (OUT/'semiconductor_hierarchical_research_result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8'); print(json.dumps(result,ensure_ascii=False,indent=2))
+    result={'schema_version':'semiconductor_hierarchical_research_calibration_v2_2','as_of':str(CFG['as_of']),'metadata_universe_records':1777,**diagnostics,'event_definitions':CFG['events'],'event_holdout_metrics':event_metrics,'scenario_holdout':{k:v for k,v in joint.items() if k not in {'pipe','holdout_probs','holdout_rows'}},'current_skhynix_2026Q2_features':current,'global_current_event_probability':global_event_p,'memory_hierarchical_event_probability':hierarchical,'current_global_joint_scenario_probability':scenario_raw,'current_hierarchical_joint_scenario_probability':scenario_hier,'holdout_trust':trust,'analyst_prior':{SCENARIOS[i]:float(PRIOR[i]) for i in range(3)},'final_research_calibrated_probability':{SCENARIOS[i]:float(post[i]) for i in range(3)},'scenario_values_krw':CFG['scenario_values_krw'],'probability_weighted_value_krw':round(expected),'current_price_krw':int(px),'expected_value_upside_pct':round((expected/px-1)*100,1),'decision':'PROBABILITY_UPDATE_AUTHORIZED' if gate else 'NO_PROBABILITY_UPDATE','production_certificate_status':'NOT_CALIBRATED','dependence_contract':CFG['model']['dependence_contract'],'limitations':['Historical migration-only calibration; not a prospective production forecast cohort.','DART frozen metadata controls issuer/date/sample identity; standardized quarterly numeric fallback is used because the runner has no DART_API_KEY.','Parent likelihood excludes every memory-labelled company; memory observations are consumed only by child shrinkage.','Memory child cannot promote locally unless it reaches all predeclared child breadth gates.']}
+    pd.DataFrame([{**r,'subindustries':'|'.join(r['subindustries']),'measured_outcomes':json.dumps(r['measured_outcomes'],ensure_ascii=False,default=str)} for r in rows]).to_csv(OUT/'hierarchical_event_cases.csv',index=False,encoding='utf-8-sig'); pd.DataFrame([{**r,'p_down':float(joint['holdout_probs'][i,0]),'p_core':float(joint['holdout_probs'][i,1]),'p_bull':float(joint['holdout_probs'][i,2])} for i,r in enumerate(joint['holdout_rows'])]).to_csv(OUT/'hierarchical_holdout_predictions.csv',index=False,encoding='utf-8-sig'); (OUT/'semiconductor_hierarchical_research_result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2,default=str),encoding='utf-8'); print(json.dumps(result,ensure_ascii=False,indent=2,default=str))
 
 if __name__=='__main__': main()
