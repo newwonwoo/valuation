@@ -50,6 +50,19 @@ def main():
     model_brier=brier(ph,yh); base_brier=brier(pb,yh); bss=1-model_brier/base_brier if base_brier>0 else 0.0
     acc=float(np.mean(np.argmax(ph,axis=1)==yh)); ll=float(log_loss(yh,np.clip(ph,1e-9,1),labels=[0,1,2]))
 
+    # Paired bootstrap: a historical model may alter the analyst prior only if its
+    # out-of-sample Brier improvement is positive with one-sided 95% confidence.
+    onehot=np.eye(3)[yh]
+    model_loss=np.sum((ph-onehot)**2,axis=1)
+    base_loss=np.sum((pb-onehot)**2,axis=1)
+    rng=np.random.default_rng(20260828)
+    boot=[]
+    for _ in range(5000):
+        idx=rng.integers(0,len(yh),len(yh))
+        mb=float(model_loss[idx].mean()); bb=float(base_loss[idx].mean())
+        if bb>0: boot.append(1.0-mb/bb)
+    bss_ci_low=float(np.quantile(boot,0.05)); bss_ci_high=float(np.quantile(boot,0.95))
+
     allcases=train+hold
     Xa=pd.DataFrame([{f:r[f] for f in FEATURES} for r in allcases]); ya=np.array([CLASSES.index(r['label']) for r in allcases])
     pipe.fit(Xa,ya)
@@ -66,7 +79,8 @@ def main():
     for j,c in enumerate(pipe.named_steps['model'].classes_): pc[int(c)]=pc_raw[j]
     acount=Counter(ya); hist_base=np.array([acount[i]/len(ya) for i in range(3)])
 
-    trust=max(0.0,min(1.0,bss/0.25))
+    statistical_gate_passed = bool(bss > 0 and bss_ci_low > 0)
+    trust=max(0.0,min(1.0,bss/0.25)) if statistical_gate_passed else 0.0
     prior=np.array([PRIOR[c] for c in CLASSES])
     lr=np.divide(pc,hist_base,out=np.ones_like(pc),where=hist_base>0)
     post=prior*np.power(np.maximum(lr,1e-9),trust); post=post/post.sum()
@@ -78,7 +92,7 @@ def main():
         hold_rows.append({**r,"p_down":float(ph[i,0]),"p_core":float(ph[i,1]),"p_bull":float(ph[i,2]),"predicted":CLASSES[int(np.argmax(ph[i]))]})
 
     result={
-      "schema_version":"semiconductor_large_sample_research_calibration_v2",
+      "schema_version":"semiconductor_large_sample_research_calibration_v3",
       "as_of":"2026-08-28","metadata_universe_records":1777,"predeclared_max_cases":240,"predeclared_expected_eligible":238,
       "public_quarterly_case_window":"2021Q3-2024Q3 origins; 12m outcome", "candidate_cases_attempted":178,
       "resolved_positive_origin_cases":len(cases),"training_cases":len(train),"holdout_cases":len(hold),"excluded_cases":len(excluded),
@@ -86,13 +100,14 @@ def main():
       "classification":{"down_anchor":DOWN_ANCHOR,"core_anchor":1.0,"bull_anchor":BULL_ANCHOR,"down_core_boundary":LOW,"core_bull_boundary":HIGH,
         "rule":"same-quarter FCF at t+12m divided by origin-quarter FCF; nonpositive origins excluded"},
       "features":FEATURES,"training_base_rate":{CLASSES[i]:float(base[i]) for i in range(3)},
-      "holdout":{"n":len(hold),"model_brier":model_brier,"base_brier":base_brier,"brier_skill_score":bss,"accuracy":acc,"log_loss":ll},
+      "holdout":{"n":len(hold),"model_brier":model_brier,"base_brier":base_brier,"brier_skill_score":bss,"bss_bootstrap_90pct_interval":[bss_ci_low,bss_ci_high],"accuracy":acc,"log_loss":ll,"probability_update_gate_passed":statistical_gate_passed},
       "current_skhynix_2026Q2_features":current,"historical_all_base_rate":{CLASSES[i]:float(hist_base[i]) for i in range(3)},
       "current_conditional_history_probability":{CLASSES[i]:float(pc[i]) for i in range(3)},"holdout_trust":trust,
       "analyst_prior":PRIOR,"final_research_calibrated_probability":{CLASSES[i]:float(post[i]) for i in range(3)},
       "scenario_values_krw":{"Down":972467,"Core":3437793,"Bull":4848104},"probability_weighted_value_krw":round(expected),
       "current_price_krw":int(current_price),"expected_value_upside_pct":round((expected/current_price-1)*100,1),
       "production_certificate_status":"NOT_CALIBRATED",
+      "decision":"NO_PROBABILITY_UPDATE" if not statistical_gate_passed else "PROBABILITY_UPDATE_AUTHORIZED",
       "limitations":["The 1,777 DART records control issuer/date/sample identity; numeric fallback uses S&P Global Market Intelligence standardized quarterly financials because the GitHub runner has no DART_API_KEY secret.",
                      "StockAnalysis exposes the most recent 20 quarters, so 2021Q1 and 2021Q2 predeclared origins cannot be reconstructed from this fallback and are not silently imputed.",
                      "This is historical regime calibration, not retroactive fabrication of pre-resolution probability forecasts."]}
