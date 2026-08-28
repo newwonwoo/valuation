@@ -1,0 +1,94 @@
+version: "2.0-design"
+purpose: >-
+  Hierarchical partial-pooling policy for reusable probability calibration.
+  Root event classes retain the strict production gate; child nodes may inherit
+  or specialize with shrinkage without requiring 200 observations per leaf.
+
+hierarchy_levels:
+  - GLOBAL_EVENT
+  - ECONOMIC_ARCHETYPE
+  - INDUSTRY_FAMILY
+  - SUB_INDUSTRY
+  - COMPANY_EVIDENCE_UPDATE
+
+root_gate:
+  min_resolved_events: 200
+  min_companies: 20
+  min_quarters: 8
+  min_per_displayed_band: 30
+  min_oos_windows: 2
+  max_ece: 0.08
+  max_ambiguous_censored_rate: 0.10
+
+child_specialization_gate:
+  min_resolved_events: 30
+  min_companies: 5
+  min_quarters: 4
+  min_effective_sample_size: 50
+  min_oos_windows: 2
+  max_oos_brier_skill_delta_vs_parent: 0.02
+  max_posterior_shift_without_local_promotion: 0.10
+
+shrinkage:
+  method: beta_binomial_empirical_bayes
+  parent_strength_source: training_oos_only
+  parent_strength_default: 40
+  parent_strength_min: 10
+  parent_strength_max: 200
+  target_price_or_market_price_tuning: forbidden
+
+node_states:
+  - UNCALIBRATED
+  - INHERITED
+  - SHRUNK
+  - CALIBRATED_LOCAL
+  - DEGRADED
+
+canonical_event_classes:
+  revenue_growth_miss:
+    default_horizons: ["12m"]
+  margin_compression:
+    default_horizons: ["12m"]
+  cash_conversion_miss:
+    default_horizons: ["12m"]
+  capex_overrun:
+    default_horizons: ["12m", "24m"]
+  working_capital_deterioration:
+    default_horizons: ["12m"]
+  utilization_drop:
+    default_horizons: ["12m"]
+  price_decline:
+    default_horizons: ["12m"]
+  capacity_ramp_delay:
+    default_horizons: ["12m", "24m"]
+  qualification_delay:
+    default_horizons: ["12m", "24m"]
+  backlog_conversion_miss:
+    default_horizons: ["12m"]
+
+scenario_assembly:
+  direct_historical_down_core_bull_frequency: forbidden
+  dependence_methods:
+    - mutually_exclusive_state_table
+    - versioned_correlation_or_copula
+    - frechet_bounds
+  naive_independent_factor_multiplication: forbidden
+
+semiconductor_seed_hierarchy:
+  economic_archetype: capacity_manufacturing
+  industry_family: semiconductor
+  sub_industries:
+    - memory
+    - foundry
+    - equipment
+    - materials_parts
+    - osat_test
+
+lineage_requirements:
+  first_seen_at: required
+  publication_timestamp_cutoff: required
+  hierarchy_mapping_version: required
+  ancestor_snapshot_hashes: required
+  node_dataset_hashes: required
+  shrinkage_parameter_version: required
+  target_company_holdout_contamination_exclusion: required
