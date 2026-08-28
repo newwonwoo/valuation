@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import json, math, re, statistics, time
+from collections import Counter
+from io import StringIO
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import requests
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import log_loss
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+
+ROOT = Path(__file__).resolve().parents[1]
+OUT = ROOT / "artifacts" / "calibration"
+OUT.mkdir(parents=True, exist_ok=True)
+
+COMPANIES = [
+("삼성전자","005930","krx"),("SK하이닉스","000660","krx"),("DB하이텍","000990","krx"),("한미반도체","042700","krx"),
+("원익IPS","240810","kosdaq"),("주성엔지니어링","036930","kosdaq"),("유진테크","084370","kosdaq"),("테스","095610","kosdaq"),
+("케이씨텍","281820","krx"),("엘오티베큠","083310","kosdaq"),("이오테크닉스","039030","kosdaq"),("테크윙","089030","kosdaq"),
+("넥스틴","348210","kosdaq"),("파크시스템스","140860","kosdaq"),("하나마이크론","067310","kosdaq"),("SFA반도체","036540","kosdaq"),
+("LB세미콘","061970","kosdaq"),("네패스","033640","kosdaq"),("솔브레인","357780","kosdaq"),("동진쎄미켐","005290","kosdaq"),
+("티씨케이","064760","kosdaq"),("하나머티리얼즈","166090","kosdaq"),("ISC","095340","kosdaq"),("두산테스나","131970","kosdaq"),
+("코미코","183300","kosdaq"),("피에스케이","319660","kosdaq"),("원익QnC","074600","kosdaq"),("에스앤에스텍","101490","kosdaq"),
+("고영","098460","kosdaq"),("GST","083450","kosdaq")]
+TRAIN = ["2021Q3","2021Q4","2022Q1","2022Q2"]
+HOLDOUT = ["2023Q3","2024Q3"]
+EXCLUDE = {("000660","2023Q3"),("000660","2024Q3")}
+CLASSES = ["Down","Core","Bull"]
+PRIOR = {"Down":0.20,"Core":0.60,"Bull":0.20}
+DOWN_ANCHOR = 120.0/258.4
+BULL_ANCHOR = 330.0/258.4
+LOW = (DOWN_ANCHOR+1.0)/2.0
+HIGH = (1.0+BULL_ANCHOR)/2.0
+FEATURES = ["fcf_margin","fcf_growth","revenue_growth","operating_margin"]
+UA = "Mozilla/5.0 (compatible; PRISM-research-calibration/1.0; +https://github.com/newwonwoo/valuation)"
+
+S = requests.Session(); S.headers.update({"User-Agent":UA})
+
+def flatcol(c):
+    if isinstance(c, tuple):
+        parts=[str(x) for x in c if str(x)!='nan' and not str(x).startswith('Unnamed')]
+        return parts[-1] if parts else str(c[-1])
+    return str(c)
+
+def clean_label(x):
+    return re.sub(r"\s+"," ",str(x)).strip()
+
+def num(x):
+    if x is None or (isinstance(x,float) and math.isnan(x)): return None
+    s=str(x).strip().replace(',','').replace('%','')
+    if s in {'','-','—','nan','None'}: return None
+    neg=s.startswith('(') and s.endswith(')')
+    if neg: s=s[1:-1]
+    try: v=float(s)
+    except: return None
+    return -v if neg else v
+
+def fetch_tables(url):
+    for attempt in range(4):
+        r=S.get(url,timeout=35)
+        if r.status_code==200 and 'Free Cash Flow' in r.text:
+            return pd.read_html(StringIO(r.text))
+        time.sleep(1.0+attempt)
+    raise RuntimeError(f"fetch failed {r.status_code}: {url}")
+
+def table_rows(tables):
+    rows={}
+    for df in tables:
+        df=df.copy(); df.columns=[flatcol(c) for c in df.columns]
+        if df.empty: continue
+        first=df.columns[0]
+        for _,r in df.iterrows():
+            label=clean_label(r[first])
+            if label and label not in rows:
+                rows[label]={clean_label(c):r[c] for c in df.columns[1:]}
+    return rows
+
+def qcanon(c):
+    m=re.search(r"Q([1-4])\s*(20\d{2})",c)
+    return f"{m.group(2)}Q{m.group(1)}" if m else None
+
+def ycanon(c):
+    m=re.search(r"FY\s*(20\d{2})",c)
+    return int(m.group(1)) if m else None
+
+def extract_series(rows,label,period_kind):
+    key=None
+    for candidate in rows:
+        if clean_label(candidate)==label:
+            key=candidate; break
+    if key is None: return {}
+    out={}
+    for c,v in rows[key].items():
+        p=qcanon(c) if period_kind=='q' else ycanon(c)
+        if p is not None: out[p]=num(v)
+    return out
+
+def fetch_company(name,ticker,exchange):
+    base=f"https://stockanalysis.com/quote/{exchange}/{ticker}/financials/"
+    qrows=table_rows(fetch_tables(base+'?p=quarterly'))
+    arows=table_rows(fetch_tables(base))
+    out={"name":name,"ticker":ticker,"url":base,"q":{},"annual":{}}
+    qlabels={
+        "revenue":"Revenue","fcf":"Free Cash Flow","fcf_margin":"FCF Margin",
+        "fcf_growth":"Free Cash Flow Growth","revenue_growth":"Revenue Growth","operating_margin":"Operating Margin"}
+    for k,l in qlabels.items(): out['q'][k]=extract_series(qrows,l,'q')
+    for k,l in {"revenue":"Revenue","fcf":"Free Cash Flow"}.items(): out['annual'][k]=extract_series(arows,l,'y')
+    # reconstruct missing Q4 from annual minus Q1-Q3; information is available at annual filing cutoff
+    for y in range(2021,2026):
+        q4=f"{y}Q4"
+        for metric in ("revenue","fcf"):
+            if out['q'][metric].get(q4) is None and out['annual'][metric].get(y) is not None:
+                prior=[out['q'][metric].get(f"{y}Q{i}") for i in (1,2,3)]
+                if all(v is not None for v in prior): out['q'][metric][q4]=out['annual'][metric][y]-sum(prior)
+        rev=out['q']['revenue'].get(q4); fcf=out['q']['fcf'].get(q4)
+        if rev not in (None,0) and fcf is not None and out['q']['fcf_margin'].get(q4) is None:
+            out['q']['fcf_margin'][q4]=100.0*fcf/rev
+    return out
+
+def shift(q,n=4):
+    y=int(q[:4]); qq=int(q[-1])+n
+    while qq>4: y+=1; qq-=4
+    while qq<1: y-=1; qq+=4
+    return f"{y}Q{qq}"
+
+def classify(origin_fcf,outcome_fcf):
+    if origin_fcf is None or outcome_fcf is None or origin_fcf<=0: return None,None
+    ratio=outcome_fcf/origin_fcf
+    if ratio<LOW: return 'Down',ratio
+    if ratio>HIGH: return 'Bull',ratio
+    return 'Core',ratio
+
+def brier(P,y):
+    return np.mean(np.sum((P-np.eye(3)[y])**2,axis=1))
