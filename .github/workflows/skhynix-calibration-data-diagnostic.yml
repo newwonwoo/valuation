@@ -7,6 +7,7 @@ on:
     paths:
       - scripts/diagnose_skhynix_calibration_data.py
       - scripts/collect_krx_semiconductor_cohort.py
+      - scripts/inspect_samsungfund_kodex_pdf.py
       - .github/workflows/skhynix-calibration-data-diagnostic.yml
   workflow_dispatch:
 
@@ -36,7 +37,11 @@ jobs:
       - name: Inspect public DART cache
         run: python scripts/diagnose_skhynix_calibration_data.py
 
+      - name: Inspect KODEX historical PDF endpoints
+        run: python scripts/inspect_samsungfund_kodex_pdf.py
+
       - name: Reconstruct historical KRX semiconductor constituents
+        continue-on-error: true
         run: python scripts/collect_krx_semiconductor_cohort.py
 
       - name: Upload diagnostic outputs
@@ -47,5 +52,6 @@ jobs:
           path: |
             artifacts/skhynix_calibration_diagnostic
             artifacts/skhynix_calibration_cohort
+            artifacts/kodex_pdf_diagnostic
           if-no-files-found: error
           retention-days: 7
