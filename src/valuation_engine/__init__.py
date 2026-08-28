@@ -2,8 +2,8 @@ from .audit import audit_model
 from .cli_runtime import (
     LiveAnalysisRequest,
     LiveCLIError,
-    execute_live_analysis,
 )
+from .strict_cli_runtime import execute_live_analysis
 from .engine import compare_to_market, run_valuation, value_scenario
 from .kr_opendart_provider import (
     KRLiveProviderExtensions,
