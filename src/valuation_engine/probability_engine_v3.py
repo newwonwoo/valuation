@@ -57,12 +57,19 @@ class ProbabilityEventInput:
 
 @dataclass(frozen=True)
 class ProbabilityEngineV3Spec:
+    """Pure probability input contract.
+
+    This contract intentionally contains no market price, target price, scenario
+    valuation, intrinsic value, expected value, or return target fields. The
+    probability engine may consume only event evidence, hierarchy metadata,
+    dependence assumptions, and simulation controls.
+    """
+
     cohort_key: str
     horizon: str
     events: tuple[ProbabilityEventInput, ...]
     scenario_rules: tuple[PosteriorScenarioRule, ...]
     dependence: CorrelationDependence
-    scenario_values: tuple[tuple[str, Decimal], ...] = ()
     credible_level: Decimal = Decimal("0.90")
     outer_draws: int = 300
     inner_draws: int = 200
@@ -111,7 +118,7 @@ class ProbabilityEngineV3Certificate:
     @property
     def lineage_hash(self) -> str:
         payload = {
-            "contract": "probability_engine_v3_certificate/v1",
+            "contract": "probability_engine_v3_certificate/v2-price-isolated",
             "cohort_key": self.cohort_key,
             "snapshot_hash": self.snapshot_hash,
             "dataset_hash": self.dataset_hash,
@@ -125,12 +132,13 @@ class ProbabilityEngineV3Certificate:
 
 @dataclass(frozen=True)
 class ProbabilityEngineV3Result:
+    """Pure probability output contract; no valuation or market-price fields."""
+
     status: ProbabilityEngineV3Status
     event_results: tuple[ProbabilityEventResult, ...]
     scenario_simulation: ScenarioPosteriorSimulation | None
     scenario_probabilities: tuple[tuple[str, Decimal], ...]
     scenario_intervals: tuple[tuple[str, Decimal, Decimal], ...]
-    expected_value: Decimal | None
     integrity_violations: tuple[str, ...]
     snapshot_hash: str
     dataset_hash: str
@@ -206,13 +214,12 @@ def run_probability_engine_v3(
             scenario_simulation=None,
             probabilities=(),
             intervals=(),
-            expected_value=None,
             violations=tuple(sorted(violations)),
             dataset_hash=dataset_hash,
             spec=spec,
         )
 
-    factors = []
+    factors: list[PosteriorEventFactor] = []
     for event_result in event_results:
         posterior = event_result.posterior.final_posterior
         if posterior is None:
@@ -241,19 +248,12 @@ def run_probability_engine_v3(
         (item.scenario_id, item.lower_probability, item.upper_probability)
         for item in simulation.estimates
     )
-    value_map = dict(spec.scenario_values)
-    expected_value = (
-        sum((probability * value_map[scenario_id] for scenario_id, probability in probabilities), Decimal("0"))
-        if value_map and all(scenario_id in value_map for scenario_id, _ in probabilities)
-        else None
-    )
     return _result(
         status=ProbabilityEngineV3Status.ESTIMATED,
         event_results=tuple(event_results),
         scenario_simulation=simulation,
         probabilities=probabilities,
         intervals=intervals,
-        expected_value=expected_value,
         violations=(),
         dataset_hash=dataset_hash,
         spec=spec,
@@ -298,7 +298,7 @@ def apply_v3_probabilities_to_compiled_assumptions(
 
 def _combined_dataset_hash(event_results: tuple[ProbabilityEventResult, ...], spec: ProbabilityEngineV3Spec) -> str:
     payload = {
-        "contract": "probability_engine_v3_dataset/v1",
+        "contract": "probability_engine_v3_dataset/v2-price-isolated",
         "event_dataset_hashes": [(item.event_id, item.posterior.dataset_hash) for item in event_results],
         "dependence_version": spec.dependence.version,
         "cohort_key": spec.cohort_key,
@@ -314,13 +314,12 @@ def _result(
     scenario_simulation: ScenarioPosteriorSimulation | None,
     probabilities: tuple[tuple[str, Decimal], ...],
     intervals: tuple[tuple[str, Decimal, Decimal], ...],
-    expected_value: Decimal | None,
     violations: tuple[str, ...],
     dataset_hash: str,
     spec: ProbabilityEngineV3Spec,
 ) -> ProbabilityEngineV3Result:
     payload = {
-        "contract": "probability_engine_v3_result/v1",
+        "contract": "probability_engine_v3_result/v2-price-isolated",
         "status": status.value,
         "cohort_key": spec.cohort_key,
         "horizon": spec.horizon,
@@ -328,7 +327,6 @@ def _result(
         "scenario_simulation_hash": scenario_simulation.simulation_hash if scenario_simulation else None,
         "scenario_probabilities": [(key, str(value)) for key, value in probabilities],
         "scenario_intervals": [(key, str(lower), str(upper)) for key, lower, upper in intervals],
-        "expected_value": str(expected_value) if expected_value is not None else None,
         "violations": violations,
         "dataset_hash": dataset_hash,
     }
@@ -339,7 +337,6 @@ def _result(
         scenario_simulation=scenario_simulation,
         scenario_probabilities=probabilities,
         scenario_intervals=intervals,
-        expected_value=expected_value,
         integrity_violations=violations,
         snapshot_hash=snapshot_hash,
         dataset_hash=dataset_hash,
