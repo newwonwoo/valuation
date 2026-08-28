@@ -1,0 +1,42 @@
+name: semiconductor-hierarchical-v2-research
+
+on:
+  push:
+    branches:
+      - research/semiconductor-hierarchical-v2-calibration-20260828
+    paths:
+      - scripts/calibration_chunks/hierarchical_v2_*.part
+      - config/semiconductor_hierarchical_research_calibration.yaml
+      - .github/workflows/semiconductor-hierarchical-v2-research.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install research dependencies
+        run: python -m pip install --disable-pip-version-check pandas numpy requests lxml scikit-learn PyYAML
+      - name: Assemble runner
+        run: |
+          cat scripts/calibration_chunks/hierarchical_v2_*.part > scripts/run_semiconductor_hierarchical_v2_research.py
+          python -m py_compile scripts/run_semiconductor_hierarchical_v2_research.py
+      - name: Run hierarchical historical calibration
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/calibration_hierarchical_v2
+          python scripts/run_semiconductor_hierarchical_v2_research.py 2>&1 | tee artifacts/calibration_hierarchical_v2/run.log
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: semiconductor-hierarchical-v2-research
+          path: artifacts/calibration_hierarchical_v2/
+          if-no-files-found: error
