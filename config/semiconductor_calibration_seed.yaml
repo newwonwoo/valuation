@@ -1,0 +1,48 @@
+version: 1
+status: MIGRATION_ONLY_NOT_PRODUCTION_CALIBRATION
+mapping_version: semiconductor-seed-v1
+hierarchy_mapping_version: calibration-hierarchy-v2.0
+classification_mode: STATIC_TAXONOMY
+may_authorize_production_weighting: false
+purpose: Reuse previously collected semiconductor filings through shared hierarchical event calibration without treating post-hoc historical labels as prospective production forecasts.
+allowed_event_classes:
+  - revenue_growth_miss
+  - margin_compression
+  - cash_conversion_miss
+  - capex_overrun
+  - working_capital_deterioration
+  - utilization_drop
+  - price_decline
+  - capacity_ramp_delay
+  - qualification_delay
+companies:
+  - {name: "삼성전자", ticker: "005930", corp_code: "00126380", sub_industries: [memory, foundry]}
+  - {name: "SK하이닉스", ticker: "000660", corp_code: "00164779", sub_industries: [memory]}
+  - {name: "DB하이텍", ticker: "000990", corp_code: "00160843", sub_industries: [foundry]}
+  - {name: "한미반도체", ticker: "042700", corp_code: "00161383", sub_industries: [equipment]}
+  - {name: "원익IPS", ticker: "240810", corp_code: "01135941", sub_industries: [equipment]}
+  - {name: "주성엔지니어링", ticker: "036930", corp_code: "00252135", sub_industries: [equipment]}
+  - {name: "유진테크", ticker: "084370", corp_code: "00531014", sub_industries: [equipment]}
+  - {name: "테스", ticker: "095610", corp_code: "00524421", sub_industries: [equipment]}
+  - {name: "케이씨텍", ticker: "281820", corp_code: "01261893", sub_industries: [equipment, materials_parts]}
+  - {name: "엘오티베큠", ticker: "083310", corp_code: "00484682", sub_industries: [equipment]}
+  - {name: "이오테크닉스", ticker: "039030", corp_code: "00246417", sub_industries: [equipment]}
+  - {name: "테크윙", ticker: "089030", corp_code: "00535676", sub_industries: [equipment]}
+  - {name: "넥스틴", ticker: "348210", corp_code: "01080252", sub_industries: [equipment]}
+  - {name: "파크시스템스", ticker: "140860", corp_code: "00244747", sub_industries: [equipment]}
+  - {name: "하나마이크론", ticker: "067310", corp_code: "00445054", sub_industries: [osat_test]}
+  - {name: "SFA반도체", ticker: "036540", corp_code: "00301246", sub_industries: [osat_test]}
+  - {name: "LB세미콘", ticker: "061970", corp_code: "00412348", sub_industries: [osat_test]}
+  - {name: "네패스", ticker: "033640", corp_code: "00227333", sub_industries: [osat_test]}
+  - {name: "솔브레인", ticker: "357780", corp_code: "01489648", sub_industries: [materials_parts]}
+  - {name: "동진쎄미켐", ticker: "005290", corp_code: "00118804", sub_industries: [materials_parts]}
+  - {name: "티씨케이", ticker: "064760", corp_code: "00245472", sub_industries: [materials_parts]}
+  - {name: "하나머티리얼즈", ticker: "166090", corp_code: "00660750", sub_industries: [materials_parts]}
+  - {name: "ISC", ticker: "095340", corp_code: "00572905", sub_industries: [materials_parts]}
+  - {name: "두산테스나", ticker: "131970", corp_code: "00563545", sub_industries: [osat_test]}
+  - {name: "코미코", ticker: "183300", corp_code: "00997812", sub_industries: [materials_parts]}
+  - {name: "피에스케이", ticker: "319660", corp_code: "01365825", sub_industries: [equipment]}
+  - {name: "원익QnC", ticker: "074600", corp_code: "00468374", sub_industries: [materials_parts]}
+  - {name: "에스앤에스텍", ticker: "101490", corp_code: "00411048", sub_industries: [materials_parts]}
+  - {name: "고영", ticker: "098460", corp_code: "00579999", sub_industries: [equipment]}
+  - {name: "GST", ticker: "083450", corp_code: "00540863", sub_industries: [equipment]}

@@ -1,0 +1,54 @@
+version: 1
+mapping_version: calibration-hierarchy-v2.0
+knowledge_policy:
+  default: AS_KNOWN
+  static_taxonomy_requires_predeclared_mapping: true
+
+event_classes:
+  - revenue_growth_miss
+  - margin_compression
+  - cash_conversion_miss
+  - capex_overrun
+  - working_capital_deterioration
+  - utilization_drop
+  - price_decline
+  - capacity_ramp_delay
+  - qualification_delay
+  - backlog_conversion_miss
+
+nodes:
+  - node_id: global_event
+    level: GLOBAL_EVENT
+    label: Global reusable event
+    parent_id: null
+
+  - node_id: archetype_capacity_manufacturing
+    level: ECONOMIC_ARCHETYPE
+    label: capacity_manufacturing
+    parent_id: global_event
+
+  - node_id: industry_semiconductor
+    level: INDUSTRY_FAMILY
+    label: semiconductor
+    parent_id: archetype_capacity_manufacturing
+
+  - node_id: semiconductor_memory
+    level: SUB_INDUSTRY
+    label: memory
+    parent_id: industry_semiconductor
+  - node_id: semiconductor_foundry
+    level: SUB_INDUSTRY
+    label: foundry
+    parent_id: industry_semiconductor
+  - node_id: semiconductor_equipment
+    level: SUB_INDUSTRY
+    label: equipment
+    parent_id: industry_semiconductor
+  - node_id: semiconductor_materials_parts
+    level: SUB_INDUSTRY
+    label: materials_parts
+    parent_id: industry_semiconductor
+  - node_id: semiconductor_osat_test
+    level: SUB_INDUSTRY
+    label: osat_test
+    parent_id: industry_semiconductor
