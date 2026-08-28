@@ -1,0 +1,94 @@
+name: skhynix-kodex-cohort
+
+on:
+  push:
+    branches:
+      - work/skhynix-calibration-redo-20260828
+    paths:
+      - scripts/collect_kodex_semiconductor_cohort.py
+      - scripts/combine_kodex_semiconductor_cohort.py
+      - .github/workflows/skhynix-kodex-cohort.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - chunk: c1
+            start: 2015Q1
+            end: 2017Q2
+          - chunk: c2
+            start: 2017Q3
+            end: 2019Q4
+          - chunk: c3
+            start: 2020Q1
+            end: 2022Q2
+          - chunk: c4
+            start: 2022Q3
+            end: 2024Q2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check pandas requests
+
+      - name: Collect KODEX historical PDF chunk
+        env:
+          KODEX_CHUNK: ${{ matrix.chunk }}
+          KODEX_PERIOD_START: ${{ matrix.start }}
+          KODEX_PERIOD_END: ${{ matrix.end }}
+        run: python scripts/collect_kodex_semiconductor_cohort.py
+
+      - name: Upload chunk
+        uses: actions/upload-artifact@v4
+        with:
+          name: kodex-cohort-${{ matrix.chunk }}
+          path: artifacts/kodex_semiconductor_chunks/${{ matrix.chunk }}
+          if-no-files-found: error
+          retention-days: 7
+
+  combine:
+    needs: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check pandas
+
+      - name: Download all chunks
+        uses: actions/download-artifact@v4
+        with:
+          pattern: kodex-cohort-*
+          path: artifacts/kodex_semiconductor_downloads
+
+      - name: Combine and validate 38 snapshots
+        run: python scripts/combine_kodex_semiconductor_cohort.py
+
+      - name: Upload combined cohort
+        uses: actions/upload-artifact@v4
+        with:
+          name: kodex-semiconductor-cohort-combined
+          path: artifacts/kodex_semiconductor_cohort
+          if-no-files-found: error
+          retention-days: 7
