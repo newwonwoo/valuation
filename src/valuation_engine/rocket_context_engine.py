@@ -5,6 +5,7 @@ from hashlib import sha256
 import json
 from typing import Mapping
 
+from .control_plane import StageStatus
 from .module_plan import ModuleRequirementPlan
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .scanner_runtime import ScannerRunner, live_rocket_insight_dispatch_adapter
@@ -109,28 +110,32 @@ def strict_rocket_insight_dispatch_adapter(
         active_optional = context.data.get("active_optional_scanners", ())
         if not isinstance(target_id, str) or not target_id:
             return StageExecutionResult(
-                status=__import__("valuation_engine.control_plane", fromlist=["StageStatus"]).StageStatus.RECOVERY_REQUIRED,
-                rationale="target_id missing before RocketTesla Context Engine",
+                StageStatus.RECOVERY_REQUIRED,
+                "target_id missing before RocketTesla Context Engine",
                 blocking=True,
             )
         if not isinstance(module_plan, ModuleRequirementPlan):
             return StageExecutionResult(
-                status=__import__("valuation_engine.control_plane", fromlist=["StageStatus"]).StageStatus.RECOVERY_REQUIRED,
-                rationale="ModuleRequirementPlan missing before RocketTesla Context Engine",
+                StageStatus.RECOVERY_REQUIRED,
+                "ModuleRequirementPlan missing before RocketTesla Context Engine",
+                blocking=True,
+            )
+        if not isinstance(active_optional, tuple):
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "active_optional_scanners must be a typed tuple before RocketTesla routing",
                 blocking=True,
             )
         try:
             plan = build_rocket_context_plan(
                 target_id=target_id,
                 module_plan=module_plan,
-                active_optional_scanners=(
-                    active_optional if isinstance(active_optional, tuple) else ()
-                ),
+                active_optional_scanners=active_optional,
             )
         except Exception as exc:
             return StageExecutionResult(
-                status=__import__("valuation_engine.control_plane", fromlist=["StageStatus"]).StageStatus.BLOCKED,
-                rationale=f"RocketTesla Context Engine plan failed: {type(exc).__name__}: {exc}",
+                StageStatus.BLOCKED,
+                f"RocketTesla Context Engine plan failed: {type(exc).__name__}: {exc}",
                 blocking=True,
             )
         data = dict(context.data)
