@@ -1,3 +1,4 @@
+from dataclasses import fields
 from decimal import Decimal
 
 from valuation_engine.actual_units import Measure
@@ -5,6 +6,7 @@ from valuation_engine.assumption_compiler import CompiledAssumption, CompiledAss
 from valuation_engine.continuous_predictive_weight import PredictiveEvidenceProfile
 from valuation_engine.dynamic_hierarchical_posterior import DataIntegrityAssessment
 from valuation_engine.probability_engine_v3 import (
+    ProbabilityEngineV3Result,
     ProbabilityEngineV3Spec,
     ProbabilityEngineV3Status,
     ProbabilityEventInput,
@@ -12,12 +14,13 @@ from valuation_engine.probability_engine_v3 import (
     apply_v3_probabilities_to_compiled_assumptions,
     run_probability_engine_v3,
 )
+from valuation_engine.probability_value_binding import (
+    ScenarioIntrinsicValue,
+    bind_frozen_probabilities_to_intrinsic_values,
+)
 from valuation_engine.records import CalibrationStatus
 from valuation_engine.scenario_binding import ScenarioBindingSpec, bind_scenarios
-from valuation_engine.scenario_posterior_monte_carlo import (
-    CorrelationDependence,
-    PosteriorScenarioRule,
-)
+from valuation_engine.scenario_posterior_monte_carlo import CorrelationDependence, PosteriorScenarioRule
 
 
 def _profile(*, bss: str = "-0.02", resolved: int = 8) -> PredictiveEvidenceProfile:
@@ -69,7 +72,6 @@ def _spec(*, integrity: DataIntegrityAssessment = DataIntegrityAssessment()) -> 
         events=events,
         scenario_rules=rules,
         dependence=dependence,
-        scenario_values=(("Down", Decimal("100")), ("Core", Decimal("200")), ("Bull", Decimal("300"))),
         outer_draws=40,
         inner_draws=50,
         seed=17,
@@ -97,14 +99,51 @@ def test_v3_computes_probabilities_even_when_oos_skill_is_weak():
     assert result.numeric_weighting_allowed
     assert abs(sum(value for _, value in result.scenario_probabilities) - Decimal("1")) < Decimal("1e-12")
     assert all(lower <= dict(result.scenario_probabilities)[scenario] <= upper for scenario, lower, upper in result.scenario_intervals)
-    assert Decimal("100") <= result.expected_value <= Decimal("300")
     assert all(weight.likelihood_weight > 0 for event in result.event_results for _, weight in event.level_weights)
 
 
-def test_v3_hard_blocks_only_integrity_failure():
-    result = run_probability_engine_v3(
-        _spec(integrity=DataIntegrityAssessment(no_outcome_leakage=False))
+def test_v3_probability_contract_cannot_accept_market_or_valuation_inputs():
+    forbidden_tokens = {
+        "price",
+        "market",
+        "target",
+        "value",
+        "valuation",
+        "intrinsic",
+        "return",
+        "entry",
+        "upside",
+    }
+    spec_names = {item.name.lower() for item in fields(ProbabilityEngineV3Spec)}
+    result_names = {item.name.lower() for item in fields(ProbabilityEngineV3Result)}
+    for name in spec_names | result_names:
+        assert not any(token in name for token in forbidden_tokens), name
+
+
+def test_v3_value_binding_occurs_only_after_probability_snapshot_is_frozen():
+    result = run_probability_engine_v3(_spec())
+    frozen_probabilities = result.scenario_probabilities
+    frozen_snapshot_hash = result.snapshot_hash
+    low_values = (
+        ScenarioIntrinsicValue("Down", Decimal("100")),
+        ScenarioIntrinsicValue("Core", Decimal("200")),
+        ScenarioIntrinsicValue("Bull", Decimal("300")),
     )
+    high_values = (
+        ScenarioIntrinsicValue("Down", Decimal("1000000")),
+        ScenarioIntrinsicValue("Core", Decimal("9000000")),
+        ScenarioIntrinsicValue("Bull", Decimal("50000000")),
+    )
+    low = bind_frozen_probabilities_to_intrinsic_values(result, low_values)
+    high = bind_frozen_probabilities_to_intrinsic_values(result, high_values)
+    assert low.intrinsic_value != high.intrinsic_value
+    assert result.scenario_probabilities == frozen_probabilities
+    assert result.snapshot_hash == frozen_snapshot_hash
+    assert low.probability_snapshot_hash == high.probability_snapshot_hash == frozen_snapshot_hash
+
+
+def test_v3_hard_blocks_only_integrity_failure():
+    result = run_probability_engine_v3(_spec(integrity=DataIntegrityAssessment(no_outcome_leakage=False)))
     assert result.status is ProbabilityEngineV3Status.DATA_BLOCKED
     assert not result.numeric_weighting_allowed
     assert result.scenario_probabilities == ()
@@ -163,7 +202,6 @@ def test_v3_sparse_leaf_inherits_strength_instead_of_becoming_unavailable():
         events=sparse_events,
         scenario_rules=spec.scenario_rules,
         dependence=spec.dependence,
-        scenario_values=spec.scenario_values,
         outer_draws=30,
         inner_draws=40,
         seed=19,
