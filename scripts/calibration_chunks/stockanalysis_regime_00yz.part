@@ -1,0 +1,34 @@
+
+# Parse the rendered HTML table cells directly. pandas.read_html normalizes the
+# StockAnalysis tables in a way that can drop the fiscal-period header row.
+from lxml import html as _LH
+
+def fetch_tables(url):
+    last_status = None
+    for attempt in range(4):
+        r = S.get(url, timeout=35)
+        last_status = r.status_code
+        if r.status_code == 200 and 'Free Cash Flow' in r.text:
+            return r.text
+        time.sleep(1.0 + attempt)
+    raise RuntimeError(f"fetch failed {last_status}: {url}")
+
+def table_rows(payload):
+    doc = _LH.fromstring(payload)
+    rows = {}
+    for table in doc.xpath('//table'):
+        headers = None
+        for tr in table.xpath('.//tr'):
+            cells = [clean_label(' '.join(c.text_content().split())) for c in tr.xpath('./th|./td')]
+            if not cells:
+                continue
+            if cells[0] in {'Fiscal Quarter', 'Fiscal Year'}:
+                headers = cells[1:]
+                continue
+            if headers is None or len(cells) < 2:
+                continue
+            label = cells[0]
+            values = cells[1:]
+            if label and label not in rows:
+                rows[label] = {headers[i]: values[i] for i in range(min(len(headers), len(values)))}
+    return rows
