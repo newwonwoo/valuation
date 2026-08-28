@@ -1,6 +1,6 @@
 
-# Parse the rendered HTML table cells directly. pandas.read_html normalizes the
-# StockAnalysis tables in a way that can drop the fiscal-period header row.
+# Parse the public quarterly page. StockAnalysis renders visible tables from an
+# embedded payload, so keep the raw HTML available for payload parsing.
 from lxml import html as _LH
 
 def fetch_tables(url):
@@ -9,6 +9,10 @@ def fetch_tables(url):
         r = S.get(url, timeout=35)
         last_status = r.status_code
         if r.status_code == 200 and 'Free Cash Flow' in r.text:
+            if '000660' in url:
+                pos=r.text.find('Free Cash Flow')
+                print('DEBUG_RAW_TABLE_COUNT', r.text.count('<table'), flush=True)
+                print('DEBUG_RAW_FCF_SNIPPET', r.text[max(0,pos-500):pos+1400].replace('\n',' ')[:1900], flush=True)
             return r.text
         time.sleep(1.0 + attempt)
     raise RuntimeError(f"fetch failed {last_status}: {url}")
