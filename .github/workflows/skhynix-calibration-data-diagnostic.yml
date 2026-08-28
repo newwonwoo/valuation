@@ -17,6 +17,10 @@ jobs:
   diagnose:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      KRX_ID: ${{ secrets.KRX_ID }}
+      KRX_PW: ${{ secrets.KRX_PW }}
+      DART_API_KEY: ${{ secrets.DART_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
