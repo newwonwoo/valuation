@@ -1,0 +1,211 @@
+            except Exception as exc:
+                if attempt == 2:
+                    last_status = type(exc).__name__
+                else:
+                    time.sleep(0.4 * (attempt + 1))
+    return {"period": period, "fs_div": None, "status": last_status or "NO_DATA", "raw": None}
+
+def quarterize(company_periods):
+    # Convert cumulative/YTD OpenDART flow values to standalone quarters.
+    qvals = {}
+    for period in sorted(company_periods, key=qparse):
+        y, q = qparse(period)
+        fetched = company_periods[period]
+        if not fetched.get("raw"):
+            qvals[period] = None
+            continue
+        metrics = {}
+        for metric, item in fetched["raw"].items():
+            if not item or item.get("ytd") is None:
+                metrics[metric] = None
+                continue
+            ytd = item["ytd"]
+            if q == 1:
+                val = ytd
+            else:
+                prev = company_periods.get(qfmt(y, q - 1))
+                prev_item = prev.get("raw", {}).get(metric) if prev and prev.get("raw") else None
+                prev_ytd = prev_item.get("ytd") if prev_item else None
+                if prev_ytd is None:
+                    val = None
+                else:
+                    val = ytd - prev_ytd
+            if metric == "capex" and val is not None:
+                val = abs(val)
+            metrics[metric] = val
+        qvals[period] = metrics
+    return qvals
+
+def ttm(qvals, end_period, metric):
+    vals = []
+    for d in (-3, -2, -1, 0):
+        p = qshift(end_period, d)
+        m = qvals.get(p)
+        if not m or m.get(metric) is None:
+            return None
+        vals.append(m[metric])
+    return sum(vals)
+
+def feature_row(qvals, end_period):
+    revenue = ttm(qvals, end_period, "revenue")
+    cfo = ttm(qvals, end_period, "cfo")
+    capex = ttm(qvals, end_period, "capex")
+    opi = ttm(qvals, end_period, "op_income")
+    prev_revenue = ttm(qvals, qshift(end_period, -4), "revenue")
+    if revenue is None or revenue <= 0 or cfo is None or capex is None:
+        return None
+    fcf = cfo - capex
+    rev_growth = None
+    if prev_revenue is not None and prev_revenue > 0:
+        rev_growth = revenue / prev_revenue - 1.0
+    if rev_growth is None:
+        return None
+    return {
+        "revenue_ttm": revenue,
+        "cfo_ttm": cfo,
+        "capex_ttm": capex,
+        "fcf_ttm": fcf,
+        "op_income_ttm": opi,
+        "fcf_margin": fcf / revenue,
+        "cfo_margin": cfo / revenue,
+        "capex_intensity": capex / revenue,
+        "revenue_growth_yoy": rev_growth,
+        "op_margin": (opi / revenue) if opi is not None else None,
+    }
+
+def label_case(origin, outcome):
+    if origin["revenue_ttm"] <= 0:
+        return None, None, "NONPOSITIVE_REVENUE"
+    if origin["fcf_margin"] < MIN_ORIGIN_FCF_MARGIN:
+        return None, None, "LOW_OR_NEGATIVE_ORIGIN_FCF_MARGIN"
+    if origin["fcf_ttm"] <= 0:
+        return None, None, "NONPOSITIVE_ORIGIN_FCF"
+    ratio = outcome["fcf_ttm"] / origin["fcf_ttm"]
+    if ratio < DOWN_CORE_BOUNDARY:
+        label = "Down"
+    elif ratio > CORE_BULL_BOUNDARY:
+        label = "Bull"
+    else:
+        label = "Core"
+    return label, ratio, None
+
+def mean_std(rows):
+    stats = {}
+    for f in FEATURES:
+        vals = [r[f] for r in rows if r.get(f) is not None and math.isfinite(r[f])]
+        stats[f] = (statistics.mean(vals), statistics.pstdev(vals) or 1.0)
+    return stats
+
+def dist(a, b, stats):
+    s = 0.0
+    for f in FEATURES:
+        av, bv = a.get(f), b.get(f)
+        if av is None or bv is None:
+            continue
+        mu, sd = stats[f]
+        z = (av - bv) / sd
+        s += z * z
+    return math.sqrt(s)
+
+def knn_predict(train, query, stats, k=15, exclude_key=None):
+    cand = []
+    for r in train:
+        if exclude_key is not None and r.get("case_key") == exclude_key:
+            continue
+        d = dist(r, query, stats)
+        cand.append((d, r))
+    cand.sort(key=lambda x: x[0])
+    nearest = cand[: min(k, len(cand))]
+    scores = {"Down": 0.0, "Core": 0.0, "Bull": 0.0}
+    total = 0.0
+    for d, r in nearest:
+        w = 1.0 / max(d, 0.15)
+        scores[r["label"]] += w
+        total += w
+    if total <= 0:
+        return {k: 1.0 / 3 for k in scores}, []
+    return {k: v / total for k, v in scores.items()}, [
+        {"case_key": r["case_key"], "distance": round(d, 6), "label": r["label"]}
+        for d, r in nearest
+    ]
+
+def brier(pred, label):
+    return sum((pred[k] - (1.0 if k == label else 0.0)) ** 2 for k in ("Down", "Core", "Bull"))
+
+def main():
+    api_key = os.environ.get("DART_API_KEY", "").strip()
+    if not api_key:
+        raise SystemExit("DART_API_KEY is not configured")
+
+    cases = []
+    for name, ticker, corp_code in COMPANIES:
+        for origin in TRAINING_ORIGINS + HOLDOUT_ORIGINS:
+            if (ticker, origin) in EXCLUSIONS:
+                continue
+            cases.append({
+                "company": name,
+                "ticker": ticker,
+                "corp_code": corp_code,
+                "origin_id": origin,
+                "outcome_id": qshift(origin, 4),
+                "split": "TRAINING" if origin in TRAINING_ORIGINS else "HOLDOUT",
+            })
+    if len(cases) != 238:
+        raise SystemExit(f"declared case count drifted: {len(cases)}")
+
+    companies = {ticker: (name, corp) for name, ticker, corp in COMPANIES}
+
+    required = defaultdict(set)
+    for r in cases:
+        for end in (r["origin_id"], r["outcome_id"]):
+            for d in range(-7, 1):
+                required[r["ticker"]].add(qshift(end, d))
+    # Current SK hynix features as of 2026Q2.
+    for d in range(-7, 1):
+        required["000660"].add(qshift("2026Q2", d))
+
+    jobs = []
+    for ticker, periods in required.items():
+        name, corp = companies[ticker]
+        for p in sorted(periods, key=qparse):
+            jobs.append((ticker, name, corp, p))
+
+    fetched = defaultdict(dict)
+    failures = []
+    with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
+        futs = {ex.submit(fetch_period, api_key, corp, p): (ticker, name, corp, p) for ticker, name, corp, p in jobs}
+        for fut in as_completed(futs):
+            ticker, name, corp, p = futs[fut]
+            res = fut.result()
+            fetched[ticker][p] = res
+            if not res.get("raw"):
+                failures.append({"ticker": ticker, "company": name, "period": p, "status": res.get("status")})
+
+    qvals = {ticker: quarterize(periods) for ticker, periods in fetched.items()}
+
+    scored = []
+    excluded = []
+    for r in cases:
+        ticker = r["ticker"]
+        origin = feature_row(qvals[ticker], r["origin_id"])
+        outcome = feature_row(qvals[ticker], r["outcome_id"])
+        key = f'{ticker}|{r["origin_id"]}'
+        if origin is None or outcome is None:
+            excluded.append({**r, "case_key": key, "reason": "MISSING_TTM_FEATURES"})
+            continue
+        label, ratio, reason = label_case(origin, outcome)
+        if reason:
+            excluded.append({**r, "case_key": key, "reason": reason, "origin_fcf_margin": origin["fcf_margin"]})
+            continue
+        scored.append({
+            **r,
+            **{f"origin_{k}": v for k, v in origin.items()},
+            **{f"outcome_{k}": v for k, v in outcome.items()},
+            "case_key": key,
+            "fcf_ratio_12m": ratio,
+            "label": label,
+            **{f: origin[f] for f in FEATURES},
+        })
+
+    training = [r for r in scored if r["split"] == "TRAINING"]
+    holdout = [r for r in scored if r["split"] == "HOLDOUT"]
