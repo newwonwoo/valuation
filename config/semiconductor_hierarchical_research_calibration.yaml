@@ -1,0 +1,62 @@
+version: semiconductor-hierarchical-research-v2.1
+status: RESEARCH_MIGRATION_ONLY
+as_of: 2026-08-28
+horizon: 12m
+source_policy:
+  identity_control: frozen_dart_periodic_metadata_1777
+  numeric_fallback: S&P_Global_Market_Intelligence_via_StockAnalysis
+  numeric_fallback_reason: GitHub runner has no DART_API_KEY secret
+  production_weighting_authorized: false
+training_origins: [2021Q3, 2021Q4, 2022Q1, 2022Q2]
+holdout_origins: [2023Q3, 2024Q3]
+exclusions:
+  - {ticker: '000660', origin: 2023Q3, reason: prior_result_exposure}
+  - {ticker: '000660', origin: 2024Q3, reason: prior_result_exposure}
+features: [fcf_margin, fcf_growth, revenue_growth, operating_margin]
+events:
+  revenue_growth_miss:
+    outcome_metric: revenue
+    rule: relative_change_at_most
+    threshold: -0.15
+    explanation: same-quarter revenue 12 months later falls at least 15 percent
+  margin_compression:
+    outcome_metric: operating_margin
+    rule: delta_at_most
+    threshold: -5.0
+    explanation: operating margin 12 months later falls by at least 5 percentage points
+  cash_conversion_miss:
+    outcome_metric: fcf_margin
+    rule: delta_at_most
+    threshold: -10.0
+    explanation: FCF margin 12 months later falls by at least 10 percentage points
+scenario_state_mapping:
+  Bull: {risk_event_count: [0]}
+  Core: {risk_event_count: [1]}
+  Down: {risk_event_count: [2, 3]}
+hierarchy:
+  root_node: global_event
+  archetype_node: archetype_capacity_manufacturing
+  industry_node: industry_semiconductor
+  target_subindustry_node: semiconductor_memory
+  parent_strength: 40
+  child_shift_cap: 0.10
+  child_local_promotion_min_events: 30
+model:
+  event_model: logistic_regression_standardized
+  joint_state_model: multinomial_logistic_regression
+  regularization_C: 0.5
+  max_iter: 3000
+  random_seed: 20260828
+  dependence_contract: conditional_mutually_exclusive_state_table_v1
+validation:
+  comparison: training_base_rate
+  min_holdout_cases: 20
+  bootstrap_draws: 5000
+  one_sided_confidence: 0.95
+  probability_update_requires:
+    - scenario_brier_skill_score_positive
+    - scenario_bss_bootstrap_5pct_gt_zero
+  trust_scaling_bss_full_weight: 0.25
+analyst_prior: {Down: 0.20, Core: 0.60, Bull: 0.20}
+scenario_values_krw: {Down: 972467, Core: 3437793, Bull: 4848104}
+current_price_krw: 1674000
