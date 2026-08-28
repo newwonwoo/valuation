@@ -1,0 +1,112 @@
+
+def main():
+    raw={}; failures=[]
+    for i,(name,ticker,exchange) in enumerate(COMPANIES,1):
+        try:
+            raw[ticker]=fetch_company(name,ticker,exchange)
+            print(f"[{i:02d}/30] {ticker} {name} OK",flush=True)
+        except Exception as e:
+            failures.append({"ticker":ticker,"name":name,"error":f"{type(e).__name__}: {e}"})
+            print(f"[{i:02d}/30] {ticker} {name} FAIL {e}",flush=True)
+        time.sleep(0.35)
+
+    cases=[]; excluded=[]
+    for name,ticker,_ in COMPANIES:
+        d=raw.get(ticker)
+        if not d: continue
+        for origin in TRAIN+HOLDOUT:
+            if (ticker,origin) in EXCLUDE: continue
+            outcome=shift(origin,4)
+            ofcf=d['q']['fcf'].get(origin); tfcf=d['q']['fcf'].get(outcome)
+            label,ratio=classify(ofcf,tfcf)
+            row={"company":name,"ticker":ticker,"origin":origin,"outcome":outcome,
+                 "split":"TRAINING" if origin in TRAIN else "HOLDOUT",
+                 "origin_fcf":ofcf,"outcome_fcf":tfcf,"fcf_ratio_12m":ratio,"label":label,
+                 "source_url":d['url']+'?p=quarterly'}
+            for f in FEATURES: row[f]=d['q'].get(f,{}).get(origin)
+            # FCF growth may not be published for the oldest displayed quarter; derive if prior-year FCF exists.
+            if row['fcf_growth'] is None:
+                prior=d['q']['fcf'].get(shift(origin,-4))
+                if prior not in (None,0) and ofcf is not None: row['fcf_growth']=100.0*(ofcf/prior-1.0)
+            # revenue growth can likewise be reconstructed when the hidden-year comparison is present in displayed data.
+            if row['revenue_growth'] is None:
+                orev=d['q']['revenue'].get(origin); prev=d['q']['revenue'].get(shift(origin,-4))
+                if prev not in (None,0) and orev is not None: row['revenue_growth']=100.0*(orev/prev-1.0)
+            if label is None:
+                row['exclude_reason']='MISSING_OR_NONPOSITIVE_ORIGIN_FCF'
+                excluded.append(row)
+            else: cases.append(row)
+
+    train=[r for r in cases if r['split']=='TRAINING']; hold=[r for r in cases if r['split']=='HOLDOUT']
+    if len(train)<30 or len(hold)<10: raise SystemExit(f"insufficient cases train={len(train)} holdout={len(hold)}")
+    Xtr=pd.DataFrame([{f:r[f] for f in FEATURES} for r in train]); ytr=np.array([CLASSES.index(r['label']) for r in train])
+    Xh=pd.DataFrame([{f:r[f] for f in FEATURES} for r in hold]); yh=np.array([CLASSES.index(r['label']) for r in hold])
+    pipe=Pipeline([('impute',SimpleImputer(strategy='median')),('scale',StandardScaler()),
+                   ('model',LogisticRegression(max_iter=3000,multi_class='multinomial',C=0.5,class_weight=None))])
+    pipe.fit(Xtr,ytr)
+    ph_raw=pipe.predict_proba(Xh)
+    # Expand to fixed Down/Core/Bull columns even if a class is absent in training.
+    ph=np.zeros((len(hold),3)); model_classes=pipe.named_steps['model'].classes_
+    for j,c in enumerate(model_classes): ph[:,int(c)]=ph_raw[:,j]
+    counts=Counter(ytr); base=np.array([counts[i]/len(ytr) for i in range(3)])
+    pb=np.tile(base,(len(hold),1))
+    model_brier=brier(ph,yh); base_brier=brier(pb,yh); bss=1-model_brier/base_brier if base_brier>0 else 0.0
+    acc=float(np.mean(np.argmax(ph,axis=1)==yh)); ll=float(log_loss(yh,np.clip(ph,1e-9,1),labels=[0,1,2]))
+
+    # Refit on all resolved history for current-state inference, but use holdout BSS only as trust strength.
+    allcases=train+hold
+    Xa=pd.DataFrame([{f:r[f] for f in FEATURES} for r in allcases]); ya=np.array([CLASSES.index(r['label']) for r in allcases])
+    pipe.fit(Xa,ya)
+    skh=raw.get('000660'); current_period='2026Q2'
+    current={f:skh['q'].get(f,{}).get(current_period) for f in FEATURES}
+    if current['fcf_growth'] is None:
+        cur=skh['q']['fcf'].get(current_period); prev=skh['q']['fcf'].get(shift(current_period,-4))
+        if prev not in (None,0) and cur is not None: current['fcf_growth']=100.0*(cur/prev-1.0)
+    if current['revenue_growth'] is None:
+        cur=skh['q']['revenue'].get(current_period); prev=skh['q']['revenue'].get(shift(current_period,-4))
+        if prev not in (None,0) and cur is not None: current['revenue_growth']=100.0*(cur/prev-1.0)
+    pc_raw=pipe.predict_proba(pd.DataFrame([current]))[0]
+    pc=np.zeros(3)
+    for j,c in enumerate(pipe.named_steps['model'].classes_): pc[int(c)]=pc_raw[j]
+    acount=Counter(ya); hist_base=np.array([acount[i]/len(ya) for i in range(3)])
+
+    # Bayesian relative-likelihood update of analyst prior. Historical model only changes odds to the
+    # extent that it beats the chronological base-rate forecast out of sample.
+    trust=max(0.0,min(1.0,bss/0.25))
+    prior=np.array([PRIOR[c] for c in CLASSES])
+    lr=np.divide(pc,hist_base,out=np.ones_like(pc),where=hist_base>0)
+    post=prior*np.power(np.maximum(lr,1e-9),trust); post=post/post.sum()
+
+    values=np.array([972467,3437793,4848104],dtype=float)
+    expected=float(np.dot(post,values)); current_price=1674000.0
+    hold_rows=[]
+    for i,r in enumerate(hold):
+        hold_rows.append({**r,"p_down":float(ph[i,0]),"p_core":float(ph[i,1]),"p_bull":float(ph[i,2]),"predicted":CLASSES[int(np.argmax(ph[i]))]})
+
+    result={
+      "schema_version":"semiconductor_large_sample_research_calibration_v2",
+      "as_of":"2026-08-28","metadata_universe_records":1777,"predeclared_max_cases":240,"predeclared_expected_eligible":238,
+      "public_quarterly_case_window":"2021Q3-2024Q3 origins; 12m outcome", "candidate_cases_attempted":178,
+      "resolved_positive_origin_cases":len(cases),"training_cases":len(train),"holdout_cases":len(hold),"excluded_cases":len(excluded),
+      "companies_fetched":len(raw),"company_fetch_failures":failures,
+      "classification":{"down_anchor":DOWN_ANCHOR,"core_anchor":1.0,"bull_anchor":BULL_ANCHOR,"down_core_boundary":LOW,"core_bull_boundary":HIGH,
+        "rule":"same-quarter FCF at t+12m divided by origin-quarter FCF; nonpositive origins excluded"},
+      "features":FEATURES,"training_base_rate":{CLASSES[i]:float(base[i]) for i in range(3)},
+      "holdout":{"n":len(hold),"model_brier":model_brier,"base_brier":base_brier,"brier_skill_score":bss,"accuracy":acc,"log_loss":ll},
+      "current_skhynix_2026Q2_features":current,"historical_all_base_rate":{CLASSES[i]:float(hist_base[i]) for i in range(3)},
+      "current_conditional_history_probability":{CLASSES[i]:float(pc[i]) for i in range(3)},"holdout_trust":trust,
+      "analyst_prior":PRIOR,"final_research_calibrated_probability":{CLASSES[i]:float(post[i]) for i in range(3)},
+      "scenario_values_krw":{"Down":972467,"Core":3437793,"Bull":4848104},"probability_weighted_value_krw":round(expected),
+      "current_price_krw":int(current_price),"expected_value_upside_pct":round((expected/current_price-1)*100,1),
+      "production_certificate_status":"NOT_CALIBRATED",
+      "limitations":["The 1,777 DART records control issuer/date/sample identity; numeric fallback uses S&P Global Market Intelligence standardized quarterly financials because the GitHub runner has no DART_API_KEY secret.",
+                     "StockAnalysis exposes the most recent 20 quarters, so 2021Q1 and 2021Q2 predeclared origins cannot be reconstructed from this fallback and are not silently imputed.",
+                     "This is historical regime calibration, not retroactive fabrication of pre-resolution probability forecasts."]}
+
+    pd.DataFrame(cases).to_csv(OUT/'semiconductor_quarterly_scored_cases.csv',index=False,encoding='utf-8-sig')
+    pd.DataFrame(hold_rows).to_csv(OUT/'semiconductor_holdout_predictions.csv',index=False,encoding='utf-8-sig')
+    pd.DataFrame(excluded).to_csv(OUT/'semiconductor_quarterly_excluded_cases.csv',index=False,encoding='utf-8-sig')
+    (OUT/'semiconductor_large_sample_calibration_result.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
+    print(json.dumps(result,ensure_ascii=False,indent=2))
+
+if __name__=='__main__': main()
