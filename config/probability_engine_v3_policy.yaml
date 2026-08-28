@@ -1,8 +1,21 @@
-version: "3.0"
+version: "3.1"
 purpose: >-
   Dynamic hierarchical Bayesian probability estimation for investment valuation.
   Statistical weakness widens uncertainty and reduces likelihood weight; only
   provenance/data-integrity violations may hard-block probability weighting.
+
+probability_value_isolation:
+  probability_contract: evidence_only
+  forbidden_input_domains:
+    - current_market_price
+    - target_price
+    - scenario_intrinsic_value
+    - expected_value
+    - valuation_gap
+    - return_target
+    - entry_price
+  valuation_binding_stage: post_probability_freeze_only
+  probability_hash_depends_on_valuation_inputs: false
 
 hard_integrity_gates:
   first_seen_at: required
@@ -52,6 +65,7 @@ valuation_binding:
   weak_predictive_skill_action: reduce_weight_and_widen_interval
   no_minimum_leaf_sample_for_probability_existence: true
   target_price_or_market_price_tuning: forbidden
+  intrinsic_value_consumption: after_probability_snapshot_hash_is_frozen
 
 legacy_compatibility:
   v1_probability_calibration: preserved
