@@ -6,6 +6,7 @@ on:
       - work/skhynix-full-ledger-calibration-20260828
     paths:
       - scripts/export_semiconductor_quarterly_fact_panel.py
+      - scripts/run_semiconductor_quarterly_fact_panel_export.py
       - config/semiconductor_calibration_seed.yaml
       - .github/workflows/skhynix-full-ledger-calibration-data.yml
   workflow_dispatch:
@@ -32,7 +33,7 @@ jobs:
           pandas lxml beautifulsoup4 html5lib requests pyyaml
 
       - name: Export full quarterly fact panel
-        run: python scripts/export_semiconductor_quarterly_fact_panel.py
+        run: python scripts/run_semiconductor_quarterly_fact_panel_export.py
 
       - name: Upload source and fact artifacts
         if: always()
