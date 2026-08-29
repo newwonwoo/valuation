@@ -106,9 +106,16 @@ def main() -> int:
     if cold.config_blocked_reason:
         print(f"cold start: BLOCKED — {cold.config_blocked_reason}")
     elif cold.probed and cold.blocking_stage is None:
+        skipped = (
+            f"; {len(cold.route_skipped)} stage(s) were not required by the probe's "
+            f"method path and stayed unexercised: {', '.join(cold.route_skipped)}"
+            if cold.route_skipped
+            else ""
+        )
         print(
-            f"cold start: COMPLETED — all {len(cold.reached)}/{len(report.stages)} stages "
+            f"cold start: COMPLETED — {len(cold.reached)}/{len(report.stages)} stages "
             "executed to an attested freeze and final report for an unseen company"
+            + skipped
         )
     elif cold.probed:
         print(

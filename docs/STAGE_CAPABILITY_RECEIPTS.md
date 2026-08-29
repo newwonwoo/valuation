@@ -64,7 +64,7 @@ Status is then derived:
 | Derived | Contract | Implementation | Cold execution | Counts as ready |
 |---|---|---|---|---|
 | `COLD_PROVEN` | ✓ | ✓ | ran | ✓ |
-| `IMPLEMENTED` | ✓ | ✓ | not proven | ✓ |
+| `IMPLEMENTED` | ✓ | ✓ | not proven, **or route-skipped** | ✓ |
 | `PROVIDER_REQUIRED` | ✓ | — | — | ✗ |
 | `UNDECLARED` | — | — | — | ✗ |
 
@@ -145,6 +145,38 @@ Closing any one of them is a symbol change in
 `config/stage_capability_declarations.yaml` that the probe will verify, and the
 status follows automatically.
 
+## A completed run is not one proof per stage
+
+A cold run takes *one* method path, and a stage the path does not need is passed
+as `SKIPPED_NOT_APPLICABLE` — never executed. Counting those as reached made the
+probe report `33/33` for a run that exercised 28 providers, which is the same
+species of overclaim as `gaps: 0`, arrived at from the other side.
+
+`ColdStartOutcome` therefore records `route_skipped` apart from `reached`, and
+`AxisOutcome.ROUTE_SKIPPED` never derives `COLD_PROVEN`. The probe's own words:
+
+```
+cold start: COMPLETED — 28/33 stages executed to an attested freeze and final
+report for an unseen company; 5 stage(s) were not required by the probe's method
+path and stayed unexercised: UPSTREAM_FUNDING_SCAN, RESEARCH_LOOP,
+HIERARCHICAL_BETA_ESTIMATION, WACC_VALIDATION, HIERARCHICAL_WARRANTED_PER
+```
+
+The run genuinely completes and genuinely produces an attested value. It proves
+28 providers, not 33.
+
+Two of the five matter for coverage, not just bookkeeping. The probe values a
+steelmaker with `normalized_multiple`, which needs no discount rate, so
+`HIERARCHICAL_BETA_ESTIMATION` and `WACC_VALIDATION` never run. Nine of the
+fourteen execution families **do** require beta and WACC, and
+`GenericKRRuntimeSpec` exposes no risk-provider slot — so today a cold start can
+complete only on the five beta-free families (`normalized_multiple`,
+`normalized_ebitda_multiple`, `ffo_multiple`, `net_asset_value`, `sotp`).
+Wiring `AuthorizedKRRiskProviderPack` into the generic spec is the single change
+that would unlock the other nine. `tests/test_new_archetype_cold_run.py` pins
+this boundary by cold-running a shipbuilder on `contracted_backlog` /
+`backlog_burn_dcf` and asserting it stops exactly there.
+
 ## Tests
 
 `tests/test_stage_capability.py` — every declared symbol imports; a missing
@@ -155,3 +187,9 @@ filled.
 
 `tests/test_live_readiness.py` — readiness and the capability probe must agree in
 both directions, so the registry cannot drift back into optimism.
+
+`tests/test_new_archetype_cold_run.py` — a company sharing no KSIC, archetype,
+method, evaluator or KPI set with any fixture here: routing works with zero
+company code, the missing contract-structure evidence is named rather than
+invented, and the beta/WACC boundary above is pinned so the five-of-fourteen
+split cannot quietly become "any method".

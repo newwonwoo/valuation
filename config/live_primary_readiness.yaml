@@ -97,10 +97,21 @@ stages:
     reason: exact Industry-DNA method intent resolves and hashes segment method/version choices before Beta/WACC, and stage 19 verifies the same module, capability, evaluator and method-choice contracts.
   HIERARCHICAL_BETA_ESTIMATION:
     status: LIVE_READY
-    reason: typed L1→L4 peer-universe and target-relevering contracts are implemented, and AuthorizedKRRiskProviderPack composes authorized KRX regression Beta plus Evidence-backed peer capital observations into a validated LiveBetaUniverse; other jurisdictions remain injectable under the same contract.
+    reason: >-
+      typed L1→L4 peer-universe and target-relevering contracts are implemented, and AuthorizedKRRiskProviderPack composes authorized KRX regression Beta plus Evidence-backed peer capital observations into a validated LiveBetaUniverse; other jurisdictions remain injectable under the same contract.
+      Scope caveat - the pack is implemented but GenericKRRuntimeSpec exposes no
+      risk-provider slot, so a cold start on an unseen company cannot yet satisfy
+      this stage. The nine beta/WACC-bound execution families fail closed here;
+      only the five beta-free families (normalized_multiple,
+      normalized_ebitda_multiple, ffo_multiple, net_asset_value, sotp) complete a
+      cold run today, pinned by tests/test_new_archetype_cold_run.py.
   WACC_VALIDATION:
     status: LIVE_READY
-    reason: typed currency-consistent WACC validation is implemented, and AuthorizedKRRiskProviderPack composes Bank of Korea ECOS rates, separated Damodaran ERP/CRP, an authorized marginal-debt benchmark, and peer-normalized target capital structure into validated KRW LiveWACCInputs; other currencies remain injectable under the same contract.
+    reason: >-
+      typed currency-consistent WACC validation is implemented, and AuthorizedKRRiskProviderPack composes Bank of Korea ECOS rates, separated Damodaran ERP/CRP, an authorized marginal-debt benchmark, and peer-normalized target capital structure into validated KRW LiveWACCInputs; other currencies remain injectable under the same contract.
+      Same scope caveat as HIERARCHICAL_BETA_ESTIMATION - no generic cold-start
+      wiring supplies this pack, so a discount-rate-bound method cannot run on an
+      unseen company yet.
   DETERMINISTIC_VALUATION:
     status: PARTIAL_LIVE
     reason: >-

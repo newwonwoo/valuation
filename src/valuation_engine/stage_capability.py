@@ -53,6 +53,10 @@ class AxisOutcome(str, Enum):
     ABSENT = "absent"
     #: cold execution
     PROVEN = "proven"
+    #: The cold run passed this stage without executing it: the route it took
+    #: does not require the stage. Honest as a run outcome, but it proves
+    #: nothing about the provider, so it must never count as COLD_PROVEN.
+    ROUTE_SKIPPED = "route_skipped"
     BLOCKED = "blocked"
     UNREACHED = "unreached"
     NOT_PROBED = "not_probed"
@@ -135,14 +139,19 @@ def resolve_symbol(
 class ColdStartOutcome:
     """What a run for a company with no hand-written module actually did.
 
-    ``reached`` is the stages that executed. ``blocking_stage`` is where it
-    stopped, and ``blocking_reason`` is the engine's own words, never a summary
-    written by hand. ``config_blocked_reason`` is set when the run never started
-    because the providers could not be assembled at all — the honest answer today.
+    ``reached`` is the stages that executed. ``route_skipped`` is the stages the
+    run passed as SKIPPED_NOT_APPLICABLE — the method path it took did not need
+    them, so the run says nothing about whether their providers work; counting
+    those as proven is exactly the "gaps: 0" overclaim this module exists to
+    prevent. ``blocking_stage`` is where it stopped, and ``blocking_reason`` is
+    the engine's own words, never a summary written by hand.
+    ``config_blocked_reason`` is set when the run never started because the
+    providers could not be assembled at all.
     """
 
     probed: bool = False
     reached: tuple[str, ...] = ()
+    route_skipped: tuple[str, ...] = ()
     blocking_stage: str | None = None
     blocking_reason: str = ""
     config_blocked_reason: str = ""
@@ -153,6 +162,12 @@ class ColdStartOutcome:
             return AxisOutcome.NOT_PROBED, "cold-start probe was not run"
         if self.config_blocked_reason:
             return AxisOutcome.UNREACHED, self.config_blocked_reason
+        if stage in self.route_skipped:
+            return (
+                AxisOutcome.ROUTE_SKIPPED,
+                "cold-start run did not require this stage on its method path, "
+                "so its provider is unexercised",
+            )
         if stage in self.reached:
             return AxisOutcome.PROVEN, "executed in a cold-start run"
         if stage == self.blocking_stage:

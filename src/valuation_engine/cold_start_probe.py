@@ -459,10 +459,17 @@ def execute_cold_start_probe(state_root: str | None = None) -> ColdStartOutcome:
         )
         result = run_prism(factory(request)).result
         reached: list[str] = []
+        route_skipped: list[str] = []
         blocking_stage: str | None = None
         blocking_reason = ""
         for trace in result.stage_traces:
-            if trace.status in _PASSING_STATUSES:
+            if trace.status is StageStatus.SKIPPED_NOT_APPLICABLE:
+                # The probe's method path (normalized_multiple) needs neither a
+                # Beta nor a WACC, so those stages are passed without running.
+                # Recording them apart from `reached` keeps the report from
+                # claiming a provider was proven by a run that never used it.
+                route_skipped.append(trace.stage)
+            elif trace.status in _PASSING_STATUSES:
                 reached.append(trace.stage)
             else:
                 blocking_stage = trace.stage
@@ -471,6 +478,7 @@ def execute_cold_start_probe(state_root: str | None = None) -> ColdStartOutcome:
         return ColdStartOutcome(
             probed=True,
             reached=tuple(reached),
+            route_skipped=tuple(route_skipped),
             blocking_stage=blocking_stage,
             blocking_reason=blocking_reason,
         )

@@ -231,7 +231,7 @@ def test_cold_execution_reflects_the_assembly_probe_only_here(report):
         assert stage.cold_execution is AxisOutcome.NOT_PROBED
 
 
-def test_the_executed_probe_upgrades_every_stage_to_cold_proven():
+def test_the_executed_probe_proves_only_the_stages_its_route_actually_ran():
     from valuation_engine.cold_start_probe import execute_cold_start_probe
 
     declarations, company_bound = load_stage_capability_declarations(DECLARATIONS)
@@ -244,10 +244,20 @@ def test_the_executed_probe_upgrades_every_stage_to_cold_proven():
         cold_start=executed,
     )
     assert executed.blocking_stage is None
-    assert report.cold_proven_count == len(executed.reached) == 33
+    # The run finished, but a completed run is not a proof of every provider:
+    # stages its method path never needed stay unexercised, and calling them
+    # proven is the "gaps: 0" overclaim this report exists to prevent.
+    assert len(executed.reached) + len(executed.route_skipped) == 33
+    assert report.cold_proven_count == len(executed.reached) == 28
     for stage in ("COMPANY_RESOLUTION", "RESEARCHER_A", "DETERMINISTIC_VALUATION",
                   "INTRINSIC_VALUE_FREEZE", "FINAL_REPORT"):
         assert report.by_stage(stage).derived is DerivedCapability.COLD_PROVEN
+    # normalized_multiple needs no discount rate, so the risk stages never ran.
+    # Their providers are implemented, but this run proves nothing about them.
+    for stage in ("HIERARCHICAL_BETA_ESTIMATION", "WACC_VALIDATION"):
+        assert stage in executed.route_skipped
+        assert report.by_stage(stage).cold_execution is AxisOutcome.ROUTE_SKIPPED
+        assert report.by_stage(stage).derived is DerivedCapability.IMPLEMENTED
 
 
 def test_cold_start_reports_not_probed_once_every_slot_is_filled():

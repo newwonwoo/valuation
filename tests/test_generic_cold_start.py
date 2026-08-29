@@ -191,14 +191,23 @@ def test_the_underwriting_share_is_disclosed_not_hidden(cold_run):
 
 
 def test_the_probe_module_reports_completion():
-    """The executed probe's own verdict: 33/33, no blocking stage.
+    """The executed probe's own verdict: 28 executed + 5 unexercised, no blocker.
 
     History of this assertion: collector absence, then nine missing metrics,
-    then five company-realized metrics, now completion — each move earned by a
-    collector or a declared-input door, never by relaxing a check.
+    then five company-realized metrics, then completion — each move earned by a
+    collector or a declared-input door, never by relaxing a check. The latest
+    move is in the other direction and just as earned: the probe's method path
+    (normalized_multiple) requires neither a Beta nor a WACC, so five stages are
+    passed without executing. They used to be counted as reached, which read as
+    33/33 proven. The run really does complete; it simply proves 28 providers,
+    not 33.
     """
     outcome = execute_cold_start_probe()
     assert outcome.probed
-    assert len(outcome.reached) == 33
+    assert len(outcome.reached) == 28
+    assert len(outcome.route_skipped) == 5
+    assert len(outcome.reached) + len(outcome.route_skipped) == 33
+    assert "HIERARCHICAL_BETA_ESTIMATION" in outcome.route_skipped
+    assert "WACC_VALIDATION" in outcome.route_skipped
     assert outcome.blocking_stage is None
     assert outcome.blocking_reason == ""
