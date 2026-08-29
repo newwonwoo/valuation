@@ -48,17 +48,52 @@ def _readiness_metrics() -> dict[str, int]:
         raise ValueError("live_primary_readiness.yaml has no stages")
     counts = Counter(str(row.get("status")) for row in stages.values())
     ready = counts["LIVE_READY"] + counts["RUNTIME_READY"]
+    # PROVIDER_REQUIRED is a gap, not readiness: the typed contract exists but
+    # nothing in this repository implements the provider, so the stage cannot run
+    # for a company without hand-written code. Counting it as ready is what made
+    # "Explicit runtime gaps: 0" true while nine required provider slots were empty.
     gaps = (
         counts["ADAPTER_REQUIRED"]
         + counts["SHADOW_ONLY"]
         + counts["CONDITIONAL_NOT_IMPLEMENTED"]
+        + counts["PROVIDER_REQUIRED"]
     )
     return {
         "mapped": len(stages),
         "ready": ready,
         "partial": counts["PARTIAL_LIVE"],
         "gaps": gaps,
+        "provider_required": counts["PROVIDER_REQUIRED"],
     }
+
+
+def _cold_start_line() -> str:
+    """Report the cold-start probe verdict, computed rather than declared."""
+    from valuation_engine.orchestrator import load_stage_sequence
+    from valuation_engine.stage_capability import (
+        build_stage_capability_report,
+        load_stage_capability_declarations,
+        probe_cold_start,
+    )
+
+    declarations, company_bound = load_stage_capability_declarations(
+        REPO_ROOT / "config" / "stage_capability_declarations.yaml"
+    )
+    canonical = load_stage_sequence(
+        REPO_ROOT / "config" / "control_plane_stage_registry.yaml"
+    )
+    base = build_stage_capability_report(
+        declarations=declarations,
+        company_bound_modules=company_bound,
+        canonical_stages=canonical,
+    )
+    cold = probe_cold_start(base.stages)
+    if cold.missing_provider_slots:
+        return (
+            f"0/{len(canonical)} — cold start blocked; no company-neutral provider for "
+            + ", ".join(f"`{slot}`" for slot in cold.missing_provider_slots)
+        )
+    return f"0/{len(canonical)} — providers assemble; an executed cold run is still required"
 
 
 def _method_metrics() -> dict[str, int]:
@@ -198,13 +233,23 @@ def render(portfolio: dict) -> str:
     lines.append(f"- `PARTIAL_LIVE`: **{readiness['partial']}/{readiness['mapped']}**")
     lines.append(f"- Explicit runtime gaps: **{readiness['gaps']}**")
     lines.append(
+        f"- `PROVIDER_REQUIRED` (typed contract, no company-neutral implementation): "
+        f"**{readiness['provider_required']}/{readiness['mapped']}**"
+    )
+    lines.append(
+        f"- Cold-start proven stages (ran for a company with no hand-written module): "
+        f"**{_cold_start_line()}**"
+    )
+    lines.append(
         f"- Executable method bindings: **{methods['executable']}/{methods['total']}** "
         f"({methods['gaps']} explicit `NOT_IMPLEMENTED`)"
     )
     lines.append("")
     lines.append(
         "These registry metrics measure typed runtime readiness, not full live source/provider coverage. "
-        "The design-progress score above includes product, acceptance, source and release gaps."
+        "The design-progress score above includes product, acceptance, source and release gaps. "
+        "Every stage status is probe-derived: `scripts/validate_stage_capability.py` imports the symbols "
+        "declared in `config/stage_capability_declarations.yaml` and fails any claim the repository cannot back."
     )
 
     lines.extend(["", "## Accepted handoffs", "", "| Handoff | To | Head | Validation evidence | Closes | Residual work |", "|---|---|---|---|---|---|"])

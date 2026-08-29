@@ -1,0 +1,227 @@
+version: 1
+purpose: >-
+  Machine-checked capability receipts for the 33 canonical stages. Every symbol
+  named here is imported by scripts/validate_stage_capability.py, so a
+  declaration can understate what exists but cannot overstate it. Status is
+  derived from these probes, never written by hand.
+
+# A hand-written per-company module is the work this probe exists to make
+# visible, so a symbol living in one never satisfies an axis.
+company_bound_modules:
+  - valuation_engine.sanil_live_primary
+  - valuation_engine.skhynix_live_primary
+  - valuation_engine.skhynix_continuous_live_primary
+  - valuation_engine.skhynix_continuous_probability
+  - valuation_engine.skhynix_public_report
+  # Spec-bound: required_company_live derives its hypotheses and underwriting
+  # observations from config/live_company_fixture_specs.yaml, whose rows carry
+  # the valuation answer (normalized_multiple, ev_adjustment). Its own
+  # hypothesis text says "fixture-only deterministic valuation".
+  - valuation_engine.required_company_live
+
+stages:
+  COMPANY_RESOLUTION:
+    provider_slot: company_resolver
+    contract: valuation_engine.live_runtime:CompanyResolver
+    generic_implementation: valuation_engine.live_primary_adapters:live_opendart_company_resolver
+    note: OpenDART corpCode resolution works from a company query alone.
+
+  LOAD_COMPANY_STATE:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.shadow_adapters:load_company_state_adapter
+    note: Deterministic state load owned by the engine.
+
+  LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT:
+    provider_slot: industry_snapshot_loader
+    contract: valuation_engine.live_runtime:IndustrySnapshotLoader
+    generic_implementation: null
+    note: Only the stage adapter exists; no loader builds a snapshot for an unseen company.
+
+  SOURCE_FRESHNESS_PRECHECK:
+    provider_slot: freshness_loader
+    contract: valuation_engine.live_runtime:FreshnessLoader
+    generic_implementation: null
+    note: Only the stage adapter exists; freshness assessments are hand-supplied per company.
+
+  SEGMENT_DECOMPOSITION:
+    provider_slot: segment_decomposer
+    contract: valuation_engine.live_runtime:SegmentDecomposer
+    generic_implementation: null
+    note: kr_opendart_provider only wraps an injected decomposer to a single segment.
+
+  INDUSTRY_DNA_ROUTE:
+    provider_slot: industry_dna_router
+    contract: valuation_engine.live_runtime:IndustryDNARouter
+    generic_implementation: null
+    note: compose_modules turns an archetype into requirements, but nothing chooses the archetype.
+
+  MODULE_REQUIREMENT_PLAN:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.broker_runtime_v2:broker_aware_module_requirement_plan_adapter
+    note: Deterministic plan compiled from the archetype registry.
+
+  PRIMARY_EVIDENCE_COLLECTION:
+    provider_slot: collectors
+    contract: valuation_engine.live_runtime:LiveCollectorProvider
+    generic_implementation: valuation_engine.kr_opendart_provider:request_scoped_opendart_fact_collector
+    note: OpenDART standard financial facts collect from a corpCode alone.
+
+  EVIDENCE_LEDGER:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.evidence_adapter:evidence_ledger_adapter
+    note: Append-only ledger owned by the engine.
+
+  ROCKET_INSIGHT_SCAN:
+    provider_slot: scanner_runners
+    contract: valuation_engine.live_runtime:ScannerRunner
+    generic_implementation: null
+    note: The dispatcher exists; no runner in this repository produces findings for an unseen company.
+
+  UPSTREAM_FUNDING_SCAN:
+    provider_slot: funding_scanner
+    contract: valuation_engine.live_runtime:FundingScanner
+    generic_implementation: null
+    note: Typed contract only; funding ladders are hand-written per company.
+
+  RESEARCHER_A:
+    provider_slot: intelligence_officer
+    contract: valuation_engine.live_runtime:IntelligenceOfficer
+    generic_implementation: null
+    note: >-
+      IntelligenceOfficer is a Callable type alias. No model call exists anywhere
+      in the package, so hypotheses are hand-written per company.
+
+  BLIND_RED_TEAM_B:
+    provider_slot: red_team_officer
+    contract: valuation_engine.live_runtime:RedTeamOfficer
+    generic_implementation: null
+    note: Typed blind contract only; no model provider is connected.
+
+  RESEARCH_LOOP:
+    provider_slot: research_recovery_adapter
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.runtime_support_adapters:research_loop_recovery_adapter
+    note: Bounded loop semantics owned by the engine.
+
+  EVIDENCE_TO_ASSUMPTION_BRIDGE:
+    provider_slot: bridge_analyst
+    contract: valuation_engine.live_runtime:BridgeAnalyst
+    generic_implementation: null
+    note: Typed bridge proposals only; the analyst that produces them is hand-written per company.
+
+  SCENARIO_BUILD:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.shadow_adapters:scenario_build_adapter
+    note: Deterministic assumption compilation and scenario binding.
+
+  VALUATION_METHOD_INTENT:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.valuation_method_intent:valuation_method_intent_adapter
+    note: Method choice resolved against the capability registry.
+
+  HIERARCHICAL_BETA_ESTIMATION:
+    provider_slot: beta_loader
+    contract: valuation_engine.live_runtime:BetaUniverseLoader
+    generic_implementation: valuation_engine.authorized_risk_providers:AuthorizedKRRiskProviderPack
+    note: >-
+      Company-neutral pack composing L1-L4 peer observations; the peer universe
+      itself is still assembled by the caller.
+
+  WACC_VALIDATION:
+    provider_slot: wacc_loader
+    contract: valuation_engine.live_runtime:WACCInputsLoader
+    generic_implementation: valuation_engine.authorized_risk_providers:AuthorizedKRRiskProviderPack
+    note: ECOS rates, Damodaran ERP/CRP and marginal debt compose into validated KRW inputs.
+
+  DETERMINISTIC_VALUATION:
+    provider_slot: valuation_plan_inputs_loader
+    contract: valuation_engine.live_runtime:ValuationPlanInputsLoader
+    generic_implementation: null
+    note: >-
+      Evaluator registries are generic, but nothing builds a CompanyValuationPlan
+      for an unseen company; the plan is hand-written per company.
+
+  HIERARCHICAL_WARRANTED_PER:
+    provider_slot: per_loader
+    contract: valuation_engine.live_runtime:PERInputsLoader
+    generic_implementation: valuation_engine.authorized_per_providers:AuthorizedPERProviderPack
+    note: Company-neutral pack for normalized forward EPS and peer residual levels.
+
+  DCF_PER_ASSUMPTION_CONSISTENCY_GATE:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.runtime_support_adapters:dcf_per_consistency_gate_adapter
+    note: Deterministic gate owned by the engine.
+
+  CROSS_METHOD_DOUBLE_COUNT_AUDIT:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.runtime_support_adapters:cross_method_double_count_adapter
+    note: Economic-path duplicate protection owned by the engine.
+
+  PROBABILITY_DISTRIBUTION_ANALYSIS:
+    provider_slot: calibration_loader
+    contract: valuation_engine.live_runtime:CalibrationSnapshotLoader
+    generic_implementation: valuation_engine.binary_event_probability:binary_event_probability_loader
+    note: >-
+      Both routes are company-neutral assemblers; the cohort binding and the
+      resolved-outcome history are still supplied by the caller.
+
+  AUDIT_GATE:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.audit_adapter:generic_audit_adapter
+    note: Doctrine coverage and the Evidence-to-Freeze replay chain.
+
+  INTRINSIC_VALUE_FREEZE:
+    provider_slot: null
+    contract: valuation_engine.control_plane:IntrinsicFreezeToken
+    generic_implementation: valuation_engine.orchestrator:run_controlled_workflow
+    note: The freeze token is minted by the orchestrator loop itself.
+
+  STREET_REFERENCE_LOAD:
+    provider_slot: street_loader
+    contract: valuation_engine.live_runtime:StreetLoader
+    generic_implementation: valuation_engine.official_market_data:street_loader_from_authorized_export
+    note: Reads only a caller-authorized licensed export; entitlement stays with the caller.
+
+  STREET_GAP_ANALYZER:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.post_freeze_adapters:street_gap_analyzer_adapter
+    note: Post-freeze scenario-envelope comparison owned by the engine.
+
+  MARKET_PRICE_LOAD:
+    provider_slot: market_loader
+    contract: valuation_engine.live_runtime:MarketLoader
+    generic_implementation: valuation_engine.workflow:market_loader_from_config
+    note: Company-neutral loader; the price source file is supplied by the caller.
+
+  MARKET_COMPARE:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.post_freeze_adapters:market_compare_adapter
+    note: Post-freeze comparison and reverse-DCF expectations.
+
+  THESIS_DELTA:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.generic_reporting:thesis_delta_adapter
+    note: Deterministic thesis delta owned by the engine.
+
+  SAVE_STATE:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.generic_reporting:save_state_adapter
+    note: Last-good state, learning store and probability history writes.
+
+  FINAL_REPORT:
+    provider_slot: null
+    contract: valuation_engine.orchestrator:StageAdapter
+    generic_implementation: valuation_engine.generic_reporting:final_report_adapter
+    note: Canonical report rendering owned by the engine.

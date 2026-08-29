@@ -23,6 +23,10 @@ class LiveReadinessStatus(str, Enum):
     ADAPTER_REQUIRED = "ADAPTER_REQUIRED"
     SHADOW_ONLY = "SHADOW_ONLY"
     CONDITIONAL_NOT_IMPLEMENTED = "CONDITIONAL_NOT_IMPLEMENTED"
+    #: The typed contract exists but this repository has no company-neutral
+    #: implementation of the provider the stage needs, so the stage cannot run
+    #: for a company without hand-written code. Counted as an unresolved gap.
+    PROVIDER_REQUIRED = "PROVIDER_REQUIRED"
 
 
 @dataclass(frozen=True)
@@ -56,6 +60,7 @@ class LivePrimaryReadinessReport:
                 LiveReadinessStatus.ADAPTER_REQUIRED,
                 LiveReadinessStatus.SHADOW_ONLY,
                 LiveReadinessStatus.CONDITIONAL_NOT_IMPLEMENTED,
+                LiveReadinessStatus.PROVIDER_REQUIRED,
             }
         )
 
