@@ -117,6 +117,31 @@ the numbers. Deployment declarations it would pass (method, as_of, underwriting
 file) are the operator's, reviewed as configuration — and every one still passes
 through the same in-run checks.
 
+## Deeper surfaces (round 3) — CONFIRMED CONTAINED
+
+A third pass checked the surfaces below the staff seats, framed against the new
+model-controlled fields. None yielded an escape:
+
+- **Attestation / freeze-token forgery.** Every field of the execution
+  attestation is bound into its hash; changing the attestation hash or the
+  freeze-token lineage is refused with a mismatch. Stage receipts are pinned by
+  hash and cross-checked against the stage traces.
+- **Recovery loop.** An LLM/provider `resolved` flag is not sufficient to clear
+  a blocker: deterministic re-adjudication requires resolution Evidence already
+  present in the canonical ledger, and market-comparison evidence cannot resolve
+  a pre-freeze blocker.
+- **Scanner injection.** A scanner finding that cites an evidence id not in the
+  ledger is refused; the model cannot conjure evidence through a hypothesis
+  candidate.
+- **SOTP double-count.** Aggregation refuses two segments sharing an economic
+  value path; the scenario-level cross-method audit refuses duplicate paths
+  within a scenario. (Two distinct paths for the same economic effect remain a
+  modelling judgment, but each segment's bridge must cite real, metric-matched
+  evidence, so it is not a cheap escape.)
+- **Calibration certificate.** Weighting requires a CALIBRATED certificate whose
+  cohort matches the binding spec; a reused or cohort-mismatched certificate is
+  refused at binding.
+
 ## Cross-target operator underwriting — SAFE BY DESIGN
 
 A declared-underwriting file is bound to one `target_id`; reusing it for another

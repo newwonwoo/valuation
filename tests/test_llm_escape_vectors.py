@@ -269,3 +269,89 @@ def test_operator_underwriting_is_bound_to_one_target():
                 target_id="KR:DART:BBB", required_metrics=("normalized_ebitda",)
             )
         )
+
+
+# ------------------------------------ round 3: deeper surfaces stay contained
+
+
+def test_a_scanner_cannot_cite_evidence_absent_from_the_ledger():
+    from valuation_engine.ledger import EvidenceLedger
+    from valuation_engine.records import EvidenceRecord, EvidenceSourceLayer
+    from valuation_engine.scanner_runtime import ScannerFinding, ScannerFindingStatus
+
+    ledger = EvidenceLedger((
+        EvidenceRecord(
+            id="E1", target="T", metric="orders", value=1.0, unit="dimensionless",
+            source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
+            effective_date="2026-08-27", observed_date="2026-08-27",
+            source_name="s", source_ref="https://x", source_grade="A",
+            confidence=0.9, segment="core",
+        ),
+    ))
+    finding = ScannerFinding(
+        scanner_id="BACKLOG_QUALITY", status=ScannerFindingStatus.PASS, summary="s",
+        evidence_ids=("E_FABRICATED",), hypothesis_candidates=("h",),
+        economic_path_ids=("p",),
+    )
+    with pytest.raises((KeyError, ValueError)):
+        finding.validate(ledger)
+
+
+def test_recovery_needs_new_evidence_not_a_resolved_flag():
+    from valuation_engine.control_plane import ExecutionMode, StageStatus
+    from valuation_engine.ledger import EvidenceLedger
+    from valuation_engine.orchestrator import OrchestratorContext, StageExecutionResult
+    from valuation_engine.records import CriticalIssue
+    from valuation_engine.recovery_authority import (
+        deterministic_recovery_readjudication_adapter,
+    )
+    from valuation_engine.llm_staff import RedTeamProposal
+
+    original = RedTeamProposal(
+        issues=(CriticalIssue("R1", "blocker", blocking=True, resolved=False),),
+        counter_thesis="ct",
+    )
+    recovered = RedTeamProposal(
+        issues=(CriticalIssue("R1", "blocker", blocking=True, resolved=True),),
+        counter_thesis="ct",
+    )
+
+    def inner(_ctx):
+        return StageExecutionResult(
+            StageStatus.RECOVERED, "recovered",
+            {"recovered_red_team_proposal": recovered}, blocking=False,
+        )
+
+    adapter = deterministic_recovery_readjudication_adapter(inner)
+    context = OrchestratorContext(
+        "R", ExecutionMode.LIVE_PRIMARY,
+        {"red_team_proposal": original, "evidence_ledger": EvidenceLedger(())},
+    )
+    result = adapter(context)
+    assert result.blocking
+    assert "resolved flags are insufficient" in result.rationale
+
+
+def test_a_tampered_attestation_hash_is_refused():
+    import dataclasses
+
+    from valuation_engine.runtime_authority import (
+        build_execution_attestation,
+        make_stage_receipt,
+    )
+
+    receipt = make_stage_receipt(
+        run_id="R", stage="S1", status="pass", output_keys=("a",)
+    )
+    attestation = build_execution_attestation(
+        run_id="R", execution_mode="live_primary", receipts=(receipt,),
+        freeze_token_hash="F" * 64, final_stage="S1",
+    )
+    attestation.validate()  # genuine
+    for field, value in (
+        ("attestation_hash", "0" * 64),
+        ("freeze_token_hash", "9" * 64),
+    ):
+        forged = dataclasses.replace(attestation, **{field: value})
+        with pytest.raises(PermissionError, match="attestation hash mismatch"):
+            forged.validate()
