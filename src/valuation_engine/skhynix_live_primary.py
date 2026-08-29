@@ -612,7 +612,7 @@ def _wacc_loader(snapshot: SKHynixSnapshot):
 
 def _valuation_plan_inputs(context) -> CompanyValuationPlanInputs:
     return CompanyValuationPlanInputs(
-        reporting_unit="KRW_billion",
+        reporting_unit="KRW",
         diluted_shares_key="diluted_shares",
         segment_bindings=(
             SegmentValueBinding(
