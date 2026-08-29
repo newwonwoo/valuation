@@ -14,6 +14,7 @@ sources:
   pnt7_filing: 'https://www.sec.gov/Archives/edgar/data/2120882/000119312526311230/d121520d6k.htm'
   treasury_filing: 'https://www.sec.gov/Archives/edgar/data/2120882/000119312526356141/d436722d6k.htm'
   underwriting: 'https://github.com/newwonwoo/valuation/blob/main/config/skhynix_live_snapshot.yaml'
+  probability_numeric_snapshot: 'https://stockanalysis.com/quote/krx/000660/financials/?p=quarterly'
   beta_intc: 'https://stockanalysis.com/stocks/intc/statistics/'
   beta_avgo: 'https://stockanalysis.com/stocks/avgo/statistics/'
   beta_mrvl: 'https://stockanalysis.com/stocks/mrvl/statistics/'
@@ -23,6 +24,14 @@ sources:
   debt_cost: 'https://english.mofe.go.kr/?boardCd=P0002&seq=2052'
   market: 'https://kr.investing.com/equities/sk-hynix-inc-historical-data'
   street: 'https://stockanalysis.com/quote/krx/000660/forecast/'
+probability_conditioning:
+  reference_period: '2026Q2'
+  revenue_growth: 2.5678
+  operating_margin: 0.7633
+  cash_conversion: 0.6901
+  capex_intensity: 0.13453859948819666
+  first_seen_at: '2026-08-28T14:59:00.214081+00:00'
+  source_hash: '03f154c3addaac70e84ed0d677e36a515af4bb74dc41ffec2855d57ab8d7d32b'
 official_facts:
   realized_price: ['NOT_DISCLOSED', status]
   benchmark_price: ['NOT_DISCLOSED', status]
