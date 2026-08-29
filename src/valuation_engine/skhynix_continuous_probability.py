@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date, datetime, time, timezone
 from decimal import Decimal
 from hashlib import sha256
 import json
@@ -23,8 +24,14 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_ARTIFACT_PATH = (
     _REPO_ROOT / "config" / "skhynix_continuous_calibration_artifact.json"
 )
+DEFAULT_PROVENANCE_PATH = (
+    _REPO_ROOT / "config" / "skhynix_continuous_calibration_provenance.json"
+)
 EXPECTED_ARTIFACT_SHA256 = (
     "e64a1b587908bd269c436688666c0817f6a1cac8742c620b3fcaa3575dc66006"
+)
+EXPECTED_PROVENANCE_ARTIFACT_SHA256 = (
+    "97c142dcad407cbdbb6c7b31f8c90a420b5684e56efce8079a164671acfda8d0"
 )
 EXPECTED_DATASET_SHA256 = (
     "7d80665881a571c862722a6f0b7eada6184a5a3b6ca8131eea7954865b7e28e2"
@@ -93,6 +100,10 @@ class CurrentConditioning:
             raise ValueError(
                 "current continuous conditioning requires first-seen time and source hash"
             )
+        _parse_timestamp(
+            self.first_seen_at,
+            label="current conditioning first_seen_at",
+        )
         if any(not value.is_finite() for value in self.as_map().values()):
             raise ValueError(
                 "current continuous conditioning contains non-finite values"
@@ -110,6 +121,28 @@ def _stable_hash(value: Any) -> str:
             separators=(",", ":"),
         ).encode("utf-8")
     ).hexdigest()
+
+
+def _parse_timestamp(value: str, *, label: str) -> datetime:
+    text = str(value or "").strip().replace("Z", "+00:00")
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise ValueError(f"{label} must be an ISO timestamp") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError(f"{label} must be timezone-aware")
+    return parsed.astimezone(timezone.utc)
+
+
+def _snapshot_cutoff(value: str) -> datetime:
+    text = str(value or "").strip().replace("Z", "+00:00")
+    if len(text) == 10:
+        try:
+            day = date.fromisoformat(text)
+        except ValueError as exc:
+            raise ValueError("continuous probability as_of_date must be ISO date/timestamp") from exc
+        return datetime.combine(day, time.max, tzinfo=timezone.utc)
+    return _parse_timestamp(text, label="continuous probability as_of_date")
 
 
 def _find_forbidden_keys(value: Any) -> tuple[str, ...]:
@@ -176,8 +209,64 @@ def _load_artifact(
     return payload, artifact_hash
 
 
+def _load_provenance(
+    path: str | Path = DEFAULT_PROVENANCE_PATH,
+) -> tuple[dict[str, Any], str]:
+    raw = Path(path).read_text(encoding="utf-8")
+    payload = json.loads(raw)
+    if not isinstance(payload, dict):
+        raise ValueError("continuous calibration provenance must be a mapping")
+    provenance_artifact_hash = _stable_hash(payload)
+    if provenance_artifact_hash != EXPECTED_PROVENANCE_ARTIFACT_SHA256:
+        raise ValueError("continuous calibration provenance artifact hash mismatch")
+    if payload.get("version") != "1.0":
+        raise ValueError("continuous calibration provenance version drift")
+    if payload.get("source_dataset_sha256") != EXPECTED_DATASET_SHA256:
+        raise ValueError("continuous calibration provenance dataset hash mismatch")
+    if payload.get("source_provenance_hash") != EXPECTED_PROVENANCE_HASH:
+        raise ValueError("continuous calibration provenance lineage hash mismatch")
+    if str(payload.get("target_ticker_excluded") or "") != "000660":
+        raise ValueError("continuous calibration provenance lost target exclusion")
+    _parse_timestamp(
+        str(payload.get("training_latest_publication_at") or ""),
+        label="training latest publication",
+    )
+    _parse_timestamp(
+        str(payload.get("current_conditioning_first_seen_at") or ""),
+        label="frozen conditioning first_seen_at",
+    )
+    return payload, provenance_artifact_hash
+
+
+def _validate_knowledge_cutoff(
+    *,
+    as_of_date: str,
+    current: CurrentConditioning,
+    provenance: dict[str, Any],
+) -> None:
+    cutoff = _snapshot_cutoff(as_of_date)
+    training_latest = _parse_timestamp(
+        str(provenance["training_latest_publication_at"]),
+        label="training latest publication",
+    )
+    conditioning_first_seen = _parse_timestamp(
+        current.first_seen_at,
+        label="current conditioning first_seen_at",
+    )
+    if training_latest > cutoff:
+        raise PermissionError(
+            "continuous calibration contains training Evidence first published after the requested snapshot cutoff"
+        )
+    if conditioning_first_seen > cutoff:
+        raise PermissionError(
+            "current conditioning was first seen after the requested snapshot cutoff"
+        )
+
+
 def _validate_conditioning(
-    payload: dict[str, Any], current: CurrentConditioning
+    payload: dict[str, Any],
+    current: CurrentConditioning,
+    provenance: dict[str, Any],
 ) -> None:
     current.validate()
     row = payload.get("current_conditioning")
@@ -194,10 +283,20 @@ def _validate_conditioning(
         raise ValueError("continuous artifact conditioning source hash mismatch")
     if str(row.get("first_seen_at") or "") != current.first_seen_at:
         raise ValueError("continuous artifact conditioning first-seen mismatch")
+    if str(provenance.get("current_conditioning_source_ref") or "") != current.source_ref:
+        raise ValueError("continuous conditioning source URL differs from frozen provenance")
+    if str(provenance.get("current_conditioning_source_hash") or "") != current.source_hash:
+        raise ValueError("continuous conditioning source hash differs from frozen provenance")
+    if str(provenance.get("current_conditioning_first_seen_at") or "") != current.first_seen_at:
+        raise ValueError("continuous conditioning first-seen differs from frozen provenance")
 
 
 def _driver_objects(
-    payload: dict[str, Any], artifact_hash: str
+    payload: dict[str, Any],
+    artifact_hash: str,
+    *,
+    current: CurrentConditioning,
+    provenance_artifact_hash: str,
 ) -> tuple[
     tuple[ContinuousDriverPosterior, ...],
     tuple[ContinuousOOSDriverDiagnostic, ...],
@@ -205,6 +304,12 @@ def _driver_objects(
     rows = payload.get("drivers")
     if not isinstance(rows, dict) or set(rows) != set(DRIVER_IDS):
         raise ValueError("continuous artifact driver coverage mismatch")
+    conditioning_provenance = {
+        "source_ref": current.source_ref,
+        "first_seen_at": current.first_seen_at,
+        "source_hash": current.source_hash,
+        "provenance_artifact_hash": provenance_artifact_hash,
+    }
     drivers: list[ContinuousDriverPosterior] = []
     diagnostics: list[ContinuousOOSDriverDiagnostic] = []
     for driver_id in DRIVER_IDS:
@@ -223,6 +328,7 @@ def _driver_objects(
                 "artifact_hash": artifact_hash,
                 "driver_id": driver_id,
                 "driver": row,
+                "conditioning_provenance": conditioning_provenance,
             }
         )
         drivers.append(
@@ -339,18 +445,32 @@ def build_skhynix_continuous_probability_snapshot(
     current: CurrentConditioning,
     as_of_date: str,
     artifact_path: str | Path = DEFAULT_ARTIFACT_PATH,
+    provenance_path: str | Path = DEFAULT_PROVENANCE_PATH,
 ) -> ContinuousProbabilityCalibrationSnapshot:
-    """Run v3.2 continuous financial-path Monte Carlo from a frozen calibration artifact.
+    """Run v3.2 continuous financial-path Monte Carlo from frozen calibration artifacts.
 
-    The artifact was calibrated from 418 target-excluded 12-month financial
+    The calibration was built from 418 target-excluded 12-month financial
     transitions. It contains hierarchical Bayesian partially pooled posterior paths,
     chronological OOS skill weights, and a versioned cross-driver residual
-    correlation matrix. No current price, Street target, intrinsic value, return
+    correlation matrix. Knowledge-time provenance is separately hash-frozen and
+    every requested snapshot must be at or after both training and conditioning
+    first-seen timestamps. No current price, Street target, intrinsic value, return
     target, entry price, or legacy binary risk-event state is accepted.
     """
     payload, artifact_hash = _load_artifact(artifact_path)
-    _validate_conditioning(payload, current)
-    drivers, diagnostics = _driver_objects(payload, artifact_hash)
+    provenance, provenance_artifact_hash = _load_provenance(provenance_path)
+    _validate_knowledge_cutoff(
+        as_of_date=as_of_date,
+        current=current,
+        provenance=provenance,
+    )
+    _validate_conditioning(payload, current, provenance)
+    drivers, diagnostics = _driver_objects(
+        payload,
+        artifact_hash,
+        current=current,
+        provenance_artifact_hash=provenance_artifact_hash,
+    )
     scenarios = _scenario_objects(payload)
     dependence, dependence_hash = _dependence_object(payload)
     simulation = simulate_continuous_financial_paths(
