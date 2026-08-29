@@ -290,6 +290,11 @@ def _stage_risk_ko(trace: StageTrace) -> str:
         )
     if trace.stage == "ROCKET_INSIGHT_SCAN":
         return "환경 변화 인사이트 탐색: 로켓슬라 인사이트 스캐너가 확인 필요 경고를 남겼습니다"
+    if trace.stage == "MARKET_COMPARE":
+        return (
+            "시장 함의 기대치 역산: 현재 시장가격이 요구하는 영구성장률·현금흐름 "
+            "수준이 확정된 가정과 달라 확인이 필요합니다"
+        )
     return "확인 필요 상태가 기록되었습니다. 상세 사유는 분석 기록을 확인하십시오"
 
 

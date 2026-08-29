@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from hashlib import sha256
 from typing import Callable
 
@@ -7,6 +8,7 @@ from .control_plane import StageStatus, authorize_post_freeze
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .post_freeze import compare_generic_to_market, compare_generic_to_street
 from .records import MarketObservation
+from .reverse_dcf import ReverseDCFPolicy, build_reverse_dcf_result
 from .street import StreetGapDriver, StreetResearchReport
 from .valuation_execution import GenericValuationResult, IntrinsicValuationScope
 
@@ -165,5 +167,90 @@ def market_compare_adapter() -> StageAdapter:
             else "current price compared with each intrinsic scenario; no Expected Value fabricated"
         )
         return StageExecutionResult(StageStatus.PASS, rationale, {"market_comparison": bundle})
+
+    return run
+
+
+def reverse_dcf_expectations_adapter(
+    *,
+    policy: ReverseDCFPolicy | None = None,
+) -> StageAdapter:
+    """Derive market-implied expectations from the already-frozen intrinsic model.
+
+    Doctrine keeps this strictly post-freeze and strictly read-only: the adapter is
+    never blocking, because a frozen intrinsic result is final and a market
+    observation may not retroactively invalidate it. Requirements the market is
+    carrying are reported as non-blocking findings instead.
+    """
+
+    def run(context: OrchestratorContext) -> StageExecutionResult:
+        try:
+            _require_post_freeze(context)
+        except Exception as exc:
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                f"Reverse DCF requires a valid same-run Freeze Token: {type(exc).__name__}: {exc}",
+                blocking=True,
+            )
+
+        valuation = context.data.get("generic_valuation_result")
+        observation = context.data.get("market_observation")
+        currency = context.data.get("market_currency")
+        if context.data.get("market_comparison") is None:
+            return StageExecutionResult(
+                StageStatus.SKIPPED_NOT_APPLICABLE,
+                "전사 시장 비교가 성립하지 않아 시장 함의 기대치를 산출하지 않습니다",
+                {
+                    "reverse_dcf_withheld_reason": (
+                        "market comparison is unavailable for this valuation scope"
+                    )
+                },
+            )
+        if not isinstance(valuation, GenericValuationResult):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "GenericValuationResult is missing before reverse DCF",
+                blocking=True,
+            )
+        if not isinstance(observation, MarketObservation) or not isinstance(currency, str):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "MarketObservation and market currency are required before reverse DCF",
+                blocking=True,
+            )
+
+        try:
+            result = build_reverse_dcf_result(
+                valuation=valuation,
+                market_price=Decimal(str(observation.price)),
+                market_as_of=observation.as_of,
+                market_currency=currency,
+                policy=policy,
+            )
+        except Exception as exc:
+            # A reverse-DCF failure must never retract a frozen intrinsic result.
+            return StageExecutionResult(
+                StageStatus.WARNING,
+                f"시장 함의 기대치 산출에 실패했습니다: {type(exc).__name__}: {exc}",
+                {"reverse_dcf_withheld_reason": type(exc).__name__},
+            )
+
+        outputs = {
+            "reverse_dcf_context": result,
+            "reverse_dcf_result_hash": result.result_hash,
+            "reverse_dcf_findings": result.findings,
+        }
+        if result.passed:
+            return StageExecutionResult(
+                StageStatus.PASS,
+                "동결 모델을 고정한 채 시장 함의 영구성장률·현금흐름 배율·시나리오 위치를 역산했습니다",
+                outputs,
+            )
+        return StageExecutionResult(
+            StageStatus.WARNING,
+            "시장 함의 기대치가 동결 가정과 다른 요구조건을 담고 있습니다: "
+            + ", ".join(item.check for item in result.warnings),
+            outputs,
+        )
 
     return run

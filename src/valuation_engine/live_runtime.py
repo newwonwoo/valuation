@@ -95,6 +95,7 @@ from .post_freeze_adapters import (
     StreetLoader,
     market_compare_adapter,
     market_price_load_adapter,
+    reverse_dcf_expectations_adapter,
     street_gap_analyzer_adapter,
     street_reference_load_adapter,
 )
@@ -646,7 +647,13 @@ def build_live_primary_adapters(
         "STREET_REFERENCE_LOAD": street_load,
         "STREET_GAP_ANALYZER": street_gap_analyzer_adapter(),
         "MARKET_PRICE_LOAD": market_load,
-        "MARKET_COMPARE": market_compare_adapter(),
+        # Reverse DCF is a post-freeze market-comparison tool (references/methods/
+        # reverse-dcf.md) and shares the MARKET_COMPARE unit contract, which already
+        # declares reverse_dcf_context as an owned output.
+        "MARKET_COMPARE": chain_stage_adapters(
+            market_compare_adapter(),
+            reverse_dcf_expectations_adapter(),
+        ),
         "THESIS_DELTA": thesis_delta_adapter(),
         "SAVE_STATE": save_state_adapter(
             state_root=state_root,

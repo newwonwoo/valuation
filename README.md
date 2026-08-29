@@ -142,6 +142,7 @@ COMPANY_RESOLUTION
 - Decision Impact / ablation tracking
 - hash-bound Intrinsic Freeze Token
 - post-freeze Street/Market comparison
+- post-freeze Reverse DCF (시장 함의 영구성장률·현금흐름 배율·시나리오 위치)
 - blocked result intrinsic redaction
 - immutable run history와 atomic last-good state
 - OCI regression preservation

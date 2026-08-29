@@ -5,7 +5,11 @@ from decimal import Decimal
 from hashlib import sha256
 
 from .actual_units import Measure
-from .evaluator_registry import SegmentValuation, ValueKind
+from .evaluator_registry import (
+    SegmentValuation,
+    SegmentValuationDiagnostics,
+    ValueKind,
+)
 from .scenario_binding import BoundScenarioSet
 
 
@@ -44,6 +48,8 @@ class AggregationComponent:
     contribution_id: str
     attributable_equity_value: Measure
     economic_path_ids: tuple[str, ...]
+    ownership_ratio: Decimal | None = None
+    diagnostics: SegmentValuationDiagnostics | None = None
 
 
 @dataclass(frozen=True)
@@ -112,6 +118,8 @@ def aggregate_sotp(
                 contribution_id=valuation.contribution_id,
                 attributable_equity_value=component_measure,
                 economic_path_ids=valuation.economic_path_ids,
+                ownership_ratio=item.ownership_ratio,
+                diagnostics=valuation.diagnostics,
             )
         )
         total += attributable
