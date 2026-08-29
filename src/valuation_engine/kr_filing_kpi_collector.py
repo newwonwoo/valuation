@@ -85,6 +85,7 @@ class FilingKPIPattern:
     source_unit_map: tuple[tuple[str, str], ...]
     anchor_terms: tuple[str, ...] = ()
     critical: bool = False
+    require_current_period: bool = False
 
     def locator_task(self) -> FilingLocatorTask:
         if not self.anchor_terms:
@@ -99,6 +100,7 @@ class FilingKPIPattern:
             canonical_unit=self.canonical_unit,
             source_unit_map=self.source_unit_map,
             critical=self.critical,
+            require_current_period_marker=self.require_current_period,
         )
 
     def to_spec(self, *, segment: str, effective_date: str) -> DartKPIExtractionSpec:
@@ -141,6 +143,7 @@ def load_filing_kpi_patterns(
                 str(item) for item in (row.get("anchor_terms") or ())
             ),
             critical=bool(row.get("critical", False)),
+            require_current_period=bool(row.get("require_current_period", False)),
         )
         # Validate eagerly through the extractor's own spec contract, with a
         # placeholder effective date: a bad regex or unit map fails at load

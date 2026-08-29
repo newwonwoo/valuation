@@ -10,6 +10,7 @@ verifier, and the batch degrades to a named gap instead of carrying a lie.
 
 from __future__ import annotations
 
+import dataclasses
 from datetime import date
 from io import BytesIO
 import json
@@ -20,6 +21,7 @@ import pytest
 from valuation_engine.dart_documents import parse_opendart_original_document_archive
 from valuation_engine.evidence_collection import EvidenceCollectionRequest
 from valuation_engine.kr_filing_kpi_collector import (
+    FilingKPIPattern,
     load_filing_kpi_patterns,
     request_scoped_filing_kpi_collector,
 )
@@ -208,3 +210,133 @@ def test_without_a_transport_the_static_miss_stays_a_named_gap():
         EvidenceCollectionRequest(target_id=TARGET, required_metrics=("backlog",))
     )
     assert not batch.records
+
+
+# ------------------------------------------------- 엉뚱한 열 (wrong-column) 강화
+#
+# A quote can satisfy the anchor, occur once, and carry no disqualifying word
+# yet still be a bare, unlabelled cell in a multi-period table. The opt-in
+# ``require_current_period_marker`` forces the quote to name its period.
+
+# One table, two anchor-bearing cells: the current one labelled, the other bare.
+# Neither carries a *disqualifying* word, so today both would pass the verifier.
+MULTI_COLUMN_BODY = """
+<BODY>
+<P>II. 사업의 내용</P>
+<P>수주 현황</P>
+<P>당기말 수주잔고 1,080,000 백만원</P>
+<P>수주잔고 900,000 백만원</P>
+</BODY>
+"""
+
+CURRENT_QUOTE = "당기말 수주잔고 1,080,000 백만원"
+BARE_QUOTE = "수주잔고 900,000 백만원"
+
+
+def _backlog_task(*, require_current_period: bool):
+    base = {p.metric: p for p in load_filing_kpi_patterns()}["backlog"].locator_task()
+    return (dataclasses.replace(
+        base, require_current_period_marker=require_current_period
+    ),)
+
+
+def _run_multi(*responses, require_current_period, effective_date="2025-12-31"):
+    return propose_and_verify_filing_kpis(
+        transport=ScriptedTransport({ROLE_FILING_LOCATOR: tuple(responses)}),
+        filing=_filing(MULTI_COLUMN_BODY),
+        tasks=_backlog_task(require_current_period=require_current_period),
+        segment="core",
+        effective_date=effective_date,
+    )
+
+
+def test_bare_cell_passes_when_the_marker_is_not_required():
+    # Default (opt-out): a legitimate scalar disclosure with no period word is
+    # still evidence — the guard must not turn ordinary figures into gaps.
+    obs = _run_multi(
+        _proposal(quote=BARE_QUOTE, value_text="900,000"),
+        require_current_period=False,
+    )
+    assert len(obs) == 1
+    assert str(obs[0].measure.amount) == "900000"
+
+
+def test_bare_cell_becomes_a_gap_when_the_marker_is_required():
+    # Same bare cell, flag on: the model pointed at a column that does not state
+    # its period, so it cannot be assumed current. Repair also fails → gap.
+    bare = _proposal(quote=BARE_QUOTE, value_text="900,000")
+    assert _run_multi(bare, bare, require_current_period=True) == ()
+
+
+def test_current_period_labelled_cell_passes_when_the_marker_is_required():
+    obs = _run_multi(
+        _proposal(quote=CURRENT_QUOTE, value_text="1,080,000"),
+        require_current_period=True,
+    )
+    assert len(obs) == 1
+    assert str(obs[0].measure.amount) == "1080000"
+
+
+def test_the_fiscal_year_string_satisfies_the_marker_requirement():
+    # A value cell tagged with the reporting year is anchored to the period as
+    # surely as a "당기" word — no explicit affirming term needed.
+    body = """
+<BODY>
+<P>II. 사업의 내용</P>
+<P>2025년 수주잔고 1,080,000 백만원</P>
+</BODY>
+"""
+    obs = propose_and_verify_filing_kpis(
+        transport=ScriptedTransport({ROLE_FILING_LOCATOR: (
+            _proposal(quote="2025년 수주잔고 1,080,000 백만원", value_text="1,080,000"),
+        )}),
+        filing=_filing(body),
+        tasks=_backlog_task(require_current_period=True),
+        segment="core",
+        effective_date="2025-12-31",
+    )
+    assert len(obs) == 1
+    assert str(obs[0].measure.amount) == "1080000"
+
+
+def test_the_wrong_fiscal_year_does_not_satisfy_the_marker_requirement():
+    # The year must be the fiscal period's own; a stale year in the quote is not
+    # a current-period marker.
+    stale = _proposal(quote="2024년 수주잔고 1,080,000 백만원", value_text="1,080,000")
+    body = """
+<BODY>
+<P>II. 사업의 내용</P>
+<P>2024년 수주잔고 1,080,000 백만원</P>
+</BODY>
+"""
+    result = propose_and_verify_filing_kpis(
+        transport=ScriptedTransport({ROLE_FILING_LOCATOR: (stale, stale)}),
+        filing=_filing(body),
+        tasks=_backlog_task(require_current_period=True),
+        segment="core",
+        effective_date="2025-12-31",
+    )
+    assert result == ()
+
+
+def test_the_config_flag_threads_into_the_locator_task():
+    # The collector-side pattern carries the opt-in and hands it to the task.
+    pattern = FilingKPIPattern(
+        metric="backlog",
+        locator_label="수주잔고",
+        value_pattern=r"수주잔고[^0-9]{0,20}(?P<value>[0-9,]+)\s*(?P<unit>백만원)",
+        canonical_unit="KRW_million",
+        source_unit_map=(("백만원", "KRW_million"),),
+        anchor_terms=("수주잔고",),
+        require_current_period=True,
+    )
+    assert pattern.locator_task().require_current_period_marker is True
+    # Default stays off.
+    assert FilingKPIPattern(
+        metric="backlog",
+        locator_label="수주잔고",
+        value_pattern=r"수주잔고[^0-9]{0,20}(?P<value>[0-9,]+)\s*(?P<unit>백만원)",
+        canonical_unit="KRW_million",
+        source_unit_map=(("백만원", "KRW_million"),),
+        anchor_terms=("수주잔고",),
+    ).locator_task().require_current_period_marker is False

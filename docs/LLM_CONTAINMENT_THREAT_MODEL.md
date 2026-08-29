@@ -54,11 +54,24 @@ is refused. The current-period disclosure still extracts. A metric the model
 cannot locate on a current-period basis becomes a named coverage gap, exactly
 as if undisclosed.
 
-Residual, stated: a genuinely current-period quote that is nonetheless the wrong
-column (two adjacent current figures under one label) is not distinguishable by
-vocabulary. The full extraction receipt — member SHA-256, normalized-text span,
-matched text — exists so the operator can reopen the filing at the span. That
-review is the operator's, not the model's, and is the documented boundary.
+Narrowed (this pass): the harder wrong-column case is a table where the current
+and prior cells sit under one anchor and the wrong cell carries **no period word
+at all** — a bare "수주잔고 900,000 백만원" that the blacklist cannot catch
+because it names no period. A metric may now opt into
+`require_current_period_marker` (config: `require_current_period: true` per
+pattern): the quote must then carry an explicit current affirmation
+(당기/당분기/당반기/당기말/보고기간말…) **or** the fiscal period's own year string
+(derived from `effective_date`), or it becomes a named gap. This is opt-in and
+defaults off: a legitimate scalar disclosure that never states a period word
+must not be turned into a gap, so it is enabled only for metrics whose tables
+reliably label the current column.
+
+Residual, stated: for a metric left opt-out, or a table where two genuinely
+current figures sit under one label with no distinguishing word, vocabulary
+cannot separate the columns. The full extraction receipt — member SHA-256,
+normalized-text span, matched text — exists so the operator can reopen the
+filing at the span. That review is the operator's, not the model's, and is the
+documented boundary.
 
 ### Bridge semantic laundering — CONTAINED (round 2 finding)
 

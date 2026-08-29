@@ -14,6 +14,12 @@ purpose: >-
   anchor_terms gate the LLM locator path: a proposed quote must contain one of
   the metric's anchor terms, so the model can only point at spans that carry
   the metric's own disclosure vocabulary.
+  require_current_period (optional, default false) is the wrong-column guard:
+  when true, an LLM-proposed quote for that metric must carry an explicit
+  current-period affirmation (당기/당분기/보고기간말…) or the filing's fiscal
+  year, else it becomes a named gap. Leave it off for scalar disclosures that
+  never state a period word; enable it only for metrics whose tables reliably
+  label the current column, so a legitimate figure is never turned into a gap.
 patterns:
   orders:
     anchor_terms: [수주총액, 신규수주]

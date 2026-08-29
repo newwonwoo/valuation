@@ -84,6 +84,23 @@ _PERIOD_DISQUALIFYING_TERMS = (
     "임의", "가상", "라면", "한다면", "라고 가정",
 )
 
+#: Terms that affirmatively mark a quote as the CURRENT reporting period's
+#: figure. The disqualifying list above is a blacklist: it catches a quote that
+#: *names* a wrong period, but a filing's right and wrong columns often sit in
+#: one table where the value cells carry no period word at all — a bare
+#: "수주잔고 1,080,000 백만원" could be either column. When a task opts into
+#: ``require_current_period_marker`` the quote must carry one of these
+#: affirmations (or the fiscal-period year string, checked separately), so the
+#: model cannot satisfy the anchor by pointing at an unlabelled or prior-period
+#: cell. This is opt-in: for a scalar disclosure that never states a period
+#: word, requiring one would turn a legitimate figure into a gap, so the
+#: default stays off and only metrics whose tables reliably label the current
+#: column should enable it.
+_CURRENT_PERIOD_AFFIRMING_TERMS = (
+    "당기", "당분기", "당반기", "당기말", "당분기말", "당반기말",
+    "보고기간말", "보고기간 말", "기말 현재", "당기 말", "당 반기",
+)
+
 
 @dataclass(frozen=True)
 class FilingLocatorTask:
@@ -93,6 +110,7 @@ class FilingLocatorTask:
     canonical_unit: str
     source_unit_map: tuple[tuple[str, str], ...]
     critical: bool = False
+    require_current_period_marker: bool = False
 
     def validate(self) -> None:
         if not self.metric or not self.definition:
@@ -210,6 +228,26 @@ def _verify_and_extract(
             "figure cannot enter as a current realized value. Quote the "
             "current-period disclosure, or report the metric in not_found"
         )
+    if task.require_current_period_marker:
+        # A quote may satisfy the anchor and carry no disqualifying word yet
+        # still be an unlabelled or prior-period cell in a multi-column table.
+        # Require an explicit current-period affirmation, OR the fiscal period's
+        # own year string (e.g. "2025") appearing in the quote — a value cell
+        # tagged with the reporting year is anchored to this period as surely as
+        # a "당기" word is.
+        period_year = effective_date[:4]
+        has_affirming = any(
+            term in quote for term in _CURRENT_PERIOD_AFFIRMING_TERMS
+        )
+        has_period_year = bool(period_year) and period_year in quote
+        if not (has_affirming or has_period_year):
+            raise ProposalParseError(
+                f"locator quote for {metric} carries no current-period marker "
+                f"(one of {', '.join(_CURRENT_PERIOD_AFFIRMING_TERMS)}, or the "
+                f"fiscal year {period_year!r}); in a multi-period table an "
+                "unlabelled cell cannot be assumed to be the current column. "
+                "Quote the cell that states its period, or report not_found"
+            )
     registered = {token for token, _ in task.source_unit_map}
     if unit_token not in registered:
         raise ProposalParseError(
