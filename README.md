@@ -126,6 +126,7 @@ COMPANY_RESOLUTION
 
 - exact `(archetype, method, version)` Evaluator Registry
 - no generic DCF/NPV fallback
+- contracted-backlog driver DCF (수주잔고 소진 항등식 → 매출 → FCFF)
 - normalized multiple
 - explicit FCFF DCF discounting kernel
 - finite-life `project_npv`, `reserve_npv`, `cohort_npv`

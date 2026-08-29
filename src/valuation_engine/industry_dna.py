@@ -65,7 +65,14 @@ def compose_modules(profile: IndustryDNAProfile, overlays: tuple[str, ...] = ())
 
     methods: set[str] = set()
     if EconomicArchetype.CONTRACTED_BACKLOG in profile.archetypes:
-        methods.update(("normalized_dcf", "normalized_ebitda", "warranted_per"))
+        methods.update(
+            (
+                "backlog_burn_dcf",
+                "normalized_dcf",
+                "normalized_ebitda",
+                "warranted_per",
+            )
+        )
     if EconomicArchetype.CAPACITY_MANUFACTURING in profile.archetypes:
         methods.update(("driver_dcf", "warranted_per"))
     if EconomicArchetype.RECURRING_SUBSCRIPTION in profile.archetypes:
