@@ -1,6 +1,9 @@
 from dataclasses import fields
 from decimal import Decimal
+import json
 from pathlib import Path
+
+import pytest
 
 from valuation_engine.continuous_probability_snapshot import ContinuousProbabilityCalibrationSnapshot
 from valuation_engine.records import CalibrationStatus
@@ -9,10 +12,29 @@ from valuation_engine.skhynix_continuous_live_primary import (
     build_skhynix_live_primary_config,
     run_skhynix_live_primary,
 )
-from valuation_engine.skhynix_continuous_probability import EXPECTED_DATASET_SHA256
+from valuation_engine.skhynix_continuous_probability import (
+    DEFAULT_PROVENANCE_PATH,
+    EXPECTED_DATASET_SHA256,
+    CurrentConditioning,
+    build_skhynix_continuous_probability_snapshot,
+)
 from valuation_engine.skhynix_live_primary import load_skhynix_snapshot
 from valuation_engine.street import summarize_street_reports
 from valuation_engine.strict_live_runtime import CANONICAL_ENTRYPOINT_ID, require_canonical_live_result
+
+
+def _current_conditioning() -> CurrentConditioning:
+    snapshot = load_skhynix_snapshot()
+    row = snapshot.payload["probability_conditioning"]
+    return CurrentConditioning(
+        revenue_growth=Decimal(str(row["revenue_growth"])),
+        operating_margin=Decimal(str(row["operating_margin"])),
+        cash_conversion=Decimal(str(row["cash_conversion"])),
+        capex_intensity=Decimal(str(row["capex_intensity"])),
+        source_ref=snapshot.sources["probability_numeric_snapshot"],
+        first_seen_at=str(row["first_seen_at"]),
+        source_hash=str(row["source_hash"]),
+    )
 
 
 def test_skhynix_config_is_price_isolated_before_runtime(tmp_path: Path):
@@ -55,6 +77,30 @@ def test_skhynix_continuous_probability_snapshot_replaces_legacy_boolean_mapping
     assert all(len(item.skill_windows) == 3 for item in snapshot.oos_diagnostics)
     rounded = tuple(round(float(item.probability), 3) for item in snapshot.estimates)
     assert rounded != (0.710, 0.286, 0.004)
+
+
+def test_skhynix_continuous_probability_rejects_lookahead_replay():
+    with pytest.raises(PermissionError, match="after the requested snapshot cutoff"):
+        build_skhynix_continuous_probability_snapshot(
+            current=_current_conditioning(),
+            as_of_date="2026-08-01",
+        )
+
+
+def test_skhynix_continuous_probability_freezes_conditioning_provenance(tmp_path: Path):
+    payload = json.loads(DEFAULT_PROVENANCE_PATH.read_text(encoding="utf-8"))
+    payload["current_conditioning_source_ref"] = "https://example.com/different-source"
+    mutated = tmp_path / "provenance.json"
+    mutated.write_text(
+        json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="provenance artifact hash mismatch"):
+        build_skhynix_continuous_probability_snapshot(
+            current=_current_conditioning(),
+            as_of_date="2026-08-29",
+            provenance_path=mutated,
+        )
 
 
 def test_skhynix_wacc_inputs_use_original_public_sources(tmp_path: Path):
