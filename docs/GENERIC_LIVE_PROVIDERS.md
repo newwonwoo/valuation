@@ -152,6 +152,28 @@ value. When source breadth grows, the probe reaches further and the scripted
 transport starts failing loudly at RESEARCHER_A — the demand for the next
 honest fixture, not a free pass.
 
+## 실행법 — the one line
+
+```bash
+export DART_API_KEY=...                                   # OpenDART key (caller's)
+export VALUATION_LLM_TRANSPORT=my_deploy.transport:build  # the model seat (caller's)
+export VALUATION_METHOD=commodity_price_taker/normalized_multiple
+export VALUATION_UNDERWRITING_PATH=runs/<company>/underwriting.yaml   # declared judgments
+# optional post-freeze inputs:
+#   VALUATION_MARKET_CONFIG / VALUATION_STREET_EXPORT / VALUATION_MARKET_CURRENCY
+
+PYTHONPATH=src python -m valuation_engine.cli "분석시작 <회사명|종목코드>"     --provider-factory valuation_engine.generic_kr_cli:factory
+```
+
+A chat front end ("ㅇㅇ 분석해줘") is a thin dispatcher over exactly this call,
+with one rule that keeps the last mile honest: the conversational LLM launches
+the run and hands back the engine's own report artifact — hashes intact — and
+never paraphrases the numbers. The transport builder is the caller's ten lines
+(their vendor, their key, outside this repository); the engine imports no model
+SDK. A run with no underwriting file does not fail at configuration — it fails
+closed later at evidence coverage with the missing judgments named, which is
+the correct first-run experience: the engine hands back a work order.
+
 ## What this does and does not claim
 
 - It claims the pipeline **runs** for an unseen KR company: providers assemble,

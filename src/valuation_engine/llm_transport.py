@@ -60,3 +60,13 @@ class ScriptedTransport:
             )
         self._cursor[role] = index + 1
         return script[index]
+
+
+def empty_scripted_transport() -> ScriptedTransport:
+    """A transport with no scripts: every staff call fails loudly.
+
+    Useful for dry runs that should exercise collection and fail closed at the
+    first LLM seat rather than silently skipping it — and as the safe default
+    when no live transport has been configured.
+    """
+    return ScriptedTransport({})
