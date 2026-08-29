@@ -1,10 +1,16 @@
+from dataclasses import fields
+from decimal import Decimal
 from pathlib import Path
 
-from valuation_engine.skhynix_live_primary import (
+from valuation_engine.continuous_probability_snapshot import ContinuousProbabilityCalibrationSnapshot
+from valuation_engine.records import CalibrationStatus
+from valuation_engine.skhynix_continuous_live_primary import (
+    EXTERNAL_PROBABILITY_SOURCE,
     build_skhynix_live_primary_config,
-    load_skhynix_snapshot,
     run_skhynix_live_primary,
 )
+from valuation_engine.skhynix_continuous_probability import EXPECTED_DATASET_SHA256
+from valuation_engine.skhynix_live_primary import load_skhynix_snapshot
 from valuation_engine.street import summarize_street_reports
 from valuation_engine.strict_live_runtime import CANONICAL_ENTRYPOINT_ID, require_canonical_live_result
 
@@ -21,7 +27,34 @@ def test_skhynix_config_is_price_isolated_before_runtime(tmp_path: Path):
     }
     assert forbidden.isdisjoint(config.initial_data)
     assert config.scenario_binding_spec.probability_key is None
-    assert config.providers.calibration_loader is None
+    assert config.scenario_binding_spec.external_probability_source == EXTERNAL_PROBABILITY_SOURCE
+    assert config.providers.calibration_loader is not None
+    snapshot = config.providers.calibration_loader(None)
+    field_names = {item.name for item in fields(ContinuousProbabilityCalibrationSnapshot)}
+    forbidden_tokens = {
+        "market_price",
+        "target_price",
+        "intrinsic_value",
+        "expected_value",
+        "valuation_gap",
+        "return_target",
+        "entry_price",
+    }
+    assert not field_names.intersection(forbidden_tokens)
+    assert snapshot.dataset_hash == EXPECTED_DATASET_SHA256
+    assert not snapshot.integrity_findings
+
+
+def test_skhynix_continuous_probability_snapshot_replaces_legacy_boolean_mapping(tmp_path: Path):
+    config = build_skhynix_live_primary_config(tmp_path)
+    snapshot = config.providers.calibration_loader(None)
+    assert snapshot.status is CalibrationStatus.CALIBRATED
+    assert snapshot.probability_source == "continuous_financial_path_monte_carlo"
+    assert len(snapshot.estimates) == 3
+    assert sum((item.probability for item in snapshot.estimates), Decimal("0")) == Decimal("1")
+    assert all(len(item.skill_windows) == 3 for item in snapshot.oos_diagnostics)
+    rounded = tuple(round(float(item.probability), 3) for item in snapshot.estimates)
+    assert rounded != (0.710, 0.286, 0.004)
 
 
 def test_skhynix_wacc_inputs_use_original_public_sources(tmp_path: Path):
@@ -46,7 +79,7 @@ def test_skhynix_street_loader_preserves_aggregate_consensus(tmp_path: Path):
     assert consensus.max_target_price == 5300000
 
 
-def test_skhynix_strict_live_run_freezes_without_uncalibrated_weighting(tmp_path: Path):
+def test_skhynix_strict_live_run_freezes_continuous_probability_weighting(tmp_path: Path):
     authority = run_skhynix_live_primary(tmp_path)
     result = require_canonical_live_result(authority)
 
@@ -60,9 +93,12 @@ def test_skhynix_strict_live_run_freezes_without_uncalibrated_weighting(tmp_path
     valuation = result.data["generic_valuation_result"]
     assert valuation.reporting_unit == "KRW"
     assert {item.scenario_id for item in valuation.scenarios} == {"Down", "Core", "Bull"}
-    assert valuation.expected_value_per_share is None
-    assert result.data["bound_scenario_set"].numeric_weighting_allowed is False
-    assert result.data["probability_distribution_status"] == "DESCRIPTIVE_ONLY"
+    assert valuation.expected_value_per_share is not None
+    assert result.data["bound_scenario_set"].numeric_weighting_allowed is True
+    assert result.data["bound_scenario_set"].calibration_status is CalibrationStatus.CALIBRATED
+    assert result.data["probability_distribution_status"] == "CALIBRATED"
+    assert result.data.get("probability_calibration_snapshot_hash")
+    assert result.data.get("probability_calibration_dataset_hash") == EXPECTED_DATASET_SHA256
     assert result.data["street_comparison"].consensus.report_count == 39
     assert result.data["market_comparison"].observation.price == 1653000
     assert result.data.get("final_report")
