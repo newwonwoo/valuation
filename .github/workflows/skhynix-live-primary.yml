@@ -6,6 +6,7 @@ on:
     paths:
       - 'config/skhynix_live_snapshot.yaml'
       - 'config/skhynix_continuous_calibration_artifact.json'
+      - 'config/skhynix_continuous_calibration_provenance.json'
       - 'src/valuation_engine/skhynix_live_primary.py'
       - 'src/valuation_engine/skhynix_continuous_live_primary.py'
       - 'src/valuation_engine/skhynix_continuous_probability.py'
@@ -26,6 +27,7 @@ on:
     paths:
       - 'config/skhynix_live_snapshot.yaml'
       - 'config/skhynix_continuous_calibration_artifact.json'
+      - 'config/skhynix_continuous_calibration_provenance.json'
       - 'src/valuation_engine/skhynix_live_primary.py'
       - 'src/valuation_engine/skhynix_continuous_live_primary.py'
       - 'src/valuation_engine/skhynix_continuous_probability.py'
