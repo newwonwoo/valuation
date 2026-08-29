@@ -72,3 +72,47 @@ def test_no_matching_evidence_is_an_explicit_warning_not_a_silent_pass():
 def test_screen_config_rows_are_validated():
     screens = load_scanner_screens()
     assert all(screen.metric_keywords for screen in screens)
+
+
+# --------------------------------------------------------------------- funding
+
+
+def test_funding_scanner_reports_unknown_never_funded():
+    from valuation_engine.funding_adapter import FundedDemandState, FundingScanContext
+    from valuation_engine.generic_funding import generic_ledger_funding_scanner
+
+    ledger = EvidenceLedger(
+        (_record("E1", "contract_liabilities"), _record("E2", "revenue"))
+    )
+    result = generic_ledger_funding_scanner(
+        FundingScanContext(
+            company="한빛중전기", ticker="900990", target_id="KR:DART:00999901",
+            required_scan_ids=("customer_advances_and_buyer_finance",),
+            ledger=ledger, module_requirement_plan=None,
+        )
+    )
+    assert result.state is FundedDemandState.UNKNOWN
+    assert result.evidence_ids == ("E1",)
+    assert result.verification_requests
+    result.validate(ledger)
+    result.impact_trace().validate()
+
+
+def test_a_required_funding_scan_with_no_evidence_fails_closed():
+    import pytest as _pytest
+
+    from valuation_engine.funding_adapter import FundingScanContext
+    from valuation_engine.generic_funding import (
+        GenericFundingScanError,
+        generic_ledger_funding_scanner,
+    )
+
+    ledger = EvidenceLedger((_record("E1", "revenue"),))
+    with _pytest.raises(GenericFundingScanError, match="no funding-related Evidence"):
+        generic_ledger_funding_scanner(
+            FundingScanContext(
+                company="한빛중전기", ticker="900990", target_id="KR:DART:00999901",
+                required_scan_ids=("customer_advances_and_buyer_finance",),
+                ledger=ledger, module_requirement_plan=None,
+            )
+        )

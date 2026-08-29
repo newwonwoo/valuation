@@ -93,12 +93,14 @@ def test_provider_required_stages_are_declared_as_such(report):
             assert declared[stage.stage] is LiveReadinessStatus.PROVIDER_REQUIRED
 
 
-def test_provider_required_counts_as_an_unresolved_gap():
-    readiness = load_live_primary_readiness(
-        readiness_path=READINESS, stage_registry_path=STAGE_REGISTRY
+def test_provider_required_would_count_as_an_unresolved_gap():
+    """No stage carries PROVIDER_REQUIRED today; the accounting must still treat it as a gap."""
+    from valuation_engine.live_readiness import LivePrimaryReadinessReport, StageReadiness
+
+    report = LivePrimaryReadinessReport(
+        (StageReadiness("X", LiveReadinessStatus.PROVIDER_REQUIRED, "r"),)
     )
-    unresolved = {item.stage for item in readiness.unresolved_live_stages}
-    assert "UPSTREAM_FUNDING_SCAN" in unresolved
+    assert {item.stage for item in report.unresolved_live_stages} == {"X"}
 
 
 # --------------------------------------------------------------- symbol probing

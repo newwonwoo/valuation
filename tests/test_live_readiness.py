@@ -35,8 +35,9 @@ def test_live_readiness_records_the_provider_gaps_it_used_to_hide():
     History of this assertion set: it once pinned every stage as ready with zero
     unresolved gaps while nine required provider slots were empty; then it pinned
     the ten PROVIDER_REQUIRED gaps; now the generic providers exist and the
-    remaining honest gap is the funding scanner, with breadth limits carried as
-    PARTIAL_LIVE reasons rather than hidden.
+    breadth limits are carried as PARTIAL_LIVE reasons rather than hidden. The
+    difference from the original "0 gaps" is that every one of these words is now
+    backed by an import probe and an executed cold run.
     """
     report = load_report()
     by_stage = {item.stage: item for item in report.stages}
@@ -48,12 +49,9 @@ def test_live_readiness_records_the_provider_gaps_it_used_to_hide():
     assert by_stage["VALUATION_METHOD_INTENT"].status is LiveReadinessStatus.RUNTIME_READY
     assert by_stage["INTRINSIC_VALUE_FREEZE"].status is LiveReadinessStatus.RUNTIME_READY
 
-    # The one provider still missing a company-neutral implementation.
-    assert by_stage["UPSTREAM_FUNDING_SCAN"].status is LiveReadinessStatus.PROVIDER_REQUIRED
-    assert "PROVIDER GAP:" in by_stage["UPSTREAM_FUNDING_SCAN"].reason
-
     # Generic implementations exist but with explicitly limited breadth.
     for stage in (
+        "UPSTREAM_FUNDING_SCAN",
         "SEGMENT_DECOMPOSITION",
         "INDUSTRY_DNA_ROUTE",
         "ROCKET_INSIGHT_SCAN",
@@ -67,10 +65,9 @@ def test_live_readiness_records_the_provider_gaps_it_used_to_hide():
     assert by_stage["PRIMARY_EVIDENCE_COLLECTION"].status is LiveReadinessStatus.PARTIAL_LIVE
     assert by_stage["STREET_REFERENCE_LOAD"].status is LiveReadinessStatus.PARTIAL_LIVE
 
-    unresolved = {item.stage for item in report.unresolved_live_stages}
-    assert unresolved == {"UPSTREAM_FUNDING_SCAN"}
+    assert not report.unresolved_live_stages
     assert report.canonical_live_ready_count == 22
-    assert len(report.partial_live_stages) == 10
+    assert len(report.partial_live_stages) == 11
 
     coverage = report.deterministic_method_coverage
     assert coverage is not None

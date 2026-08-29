@@ -88,8 +88,9 @@ stages:
   UPSTREAM_FUNDING_SCAN:
     provider_slot: funding_scanner
     contract: valuation_engine.live_runtime:FundingScanner
-    generic_implementation: null
-    note: Typed contract only; funding ladders are hand-written per company.
+    generic_implementation: valuation_engine.generic_funding:generic_ledger_funding_scanner
+    note: >-
+      Ledger screen for funding-related Evidence reporting UNKNOWN funded-demand state with verification requests; a route-required scan with nothing to observe fails closed. Provider-grade funded/conditional adjudication remains external.
 
   RESEARCHER_A:
     provider_slot: intelligence_officer

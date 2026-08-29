@@ -54,9 +54,12 @@ stages:
       generic ledger-screen runners cover all 61 declared scanner ids: matching Evidence is cited and connected, a miss emits an explicit verification request; external scan sources (news, dockets, feeds) remain provider work.
 
   UPSTREAM_FUNDING_SCAN:
-    status: PROVIDER_REQUIRED
+    status: PARTIAL_LIVE
     reason: >-
-      route-required funding scans execute through a typed live FundingScanner contract; funding evidence and credit-improvement candidates are exposed downstream without directly mutating WACC or intrinsic value. PROVIDER GAP: no company-neutral FundingScanner exists; funding ladders are hand-written per company.
+      generic_ledger_funding_scanner screens collected Evidence for funding items and reports
+      an UNKNOWN funded-demand state with explicit verification requests, failing closed when a
+      route-required scan has nothing to observe; provider-grade FUNDED/CONDITIONAL adjudication
+      from primary financing sources remains external work.
 
   RESEARCHER_A:
     status: PARTIAL_LIVE

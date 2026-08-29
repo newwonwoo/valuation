@@ -57,9 +57,9 @@ flowchart TB
 
 - Canonical stages mapped: **33/33**
 - `LIVE_READY` or `RUNTIME_READY`: **22/33**
-- `PARTIAL_LIVE`: **10/33**
-- Explicit runtime gaps: **1**
-- `PROVIDER_REQUIRED` (typed contract, no company-neutral implementation): **1/33**
+- `PARTIAL_LIVE`: **11/33**
+- Explicit runtime gaps: **0**
+- `PROVIDER_REQUIRED` (typed contract, no company-neutral implementation): **0/33**
 - Cold-start proven stages (ran for a company with no hand-written module): **7/33 — canonical runtime executed for an unseen company and stopped at `PRIMARY_EVIDENCE_COLLECTION` (not_implemented: no runnable collector is available for the compiled CompanyCollectionPlan)**
 - Executable method bindings: **42/42** (0 explicit `NOT_IMPLEMENTED`)
 

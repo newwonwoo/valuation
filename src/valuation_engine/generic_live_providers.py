@@ -24,6 +24,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
+from .generic_funding import generic_ledger_funding_scanner
 from .generic_kr_industry import (
     CachedCompanyProfileFetcher,
     DEFAULT_CLASSIFICATION_MAP_PATH,
@@ -176,6 +177,7 @@ def build_generic_kr_runtime_factory(
             classification=classification,
         ),
         scanner_runners=generic_scanner_runners(),
+        funding_scanner=generic_ledger_funding_scanner,
         intelligence_officer=GenericIntelligenceOfficer(transport=transport),
         red_team_officer=GenericRedTeamOfficer(transport=transport),
         bridge_analyst=GenericBridgeAnalyst(
