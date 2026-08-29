@@ -12,6 +12,25 @@ from valuation_engine.strict_live_runtime import require_canonical_live_result
 def run_and_render(output: Path | None = None) -> dict[str, object]:
     with TemporaryDirectory(prefix="skhynix-prism-") as state_root:
         authority = run_skhynix_live_primary(state_root)
+        if authority.result.blocked_reasons:
+            print(
+                json.dumps(
+                    {
+                        "blocked_reasons": list(authority.result.blocked_reasons),
+                        "stage_traces": [
+                            {
+                                "stage": item.stage_id,
+                                "status": item.status.value,
+                                "rationale": item.rationale,
+                            }
+                            for item in authority.result.stage_traces
+                        ],
+                    },
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            )
+            raise RuntimeError("SK hynix canonical run blocked")
         result = require_canonical_live_result(authority)
         valuation = result.data["generic_valuation_result"]
         report = result.data["final_report"]
