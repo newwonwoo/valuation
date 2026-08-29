@@ -9,7 +9,10 @@ import shutil
 from tempfile import TemporaryDirectory
 
 from valuation_engine.report_artifact import versioned_asset_filename
-from valuation_engine.skhynix_continuous_live_primary import run_skhynix_live_primary
+from valuation_engine.skhynix_continuous_live_primary import (
+    render_calibrated_probability_summary,
+    run_skhynix_live_primary,
+)
 from valuation_engine.strict_live_runtime import require_canonical_live_result
 
 
@@ -69,7 +72,11 @@ def run_and_render(output: Path | None = None) -> dict[str, object]:
         result = require_canonical_live_result(authority)
         valuation = result.data["generic_valuation_result"]
         probability_snapshot = result.data["continuous_probability_calibration_snapshot"]
-        report = str(result.data["final_report"])
+        report = render_calibrated_probability_summary(
+            str(result.data["final_report"]),
+            probability_snapshot,
+            result.data.get("probability_distribution_status"),
+        )
         run_dir = Path(str(result.data["saved_run_dir"]))
         visual_names = tuple(str(name) for name in result.data.get("saved_report_visuals", ()))
         if len(visual_names) != 2:

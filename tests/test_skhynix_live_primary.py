@@ -10,6 +10,7 @@ from valuation_engine.records import CalibrationStatus
 from valuation_engine.skhynix_continuous_live_primary import (
     EXTERNAL_PROBABILITY_SOURCE,
     build_skhynix_live_primary_config,
+    render_calibrated_probability_summary,
     run_skhynix_live_primary,
 )
 from valuation_engine.skhynix_continuous_probability import (
@@ -77,6 +78,21 @@ def test_skhynix_continuous_probability_snapshot_replaces_legacy_boolean_mapping
     assert all(len(item.skill_windows) == 3 for item in snapshot.oos_diagnostics)
     rounded = tuple(round(float(item.probability), 3) for item in snapshot.estimates)
     assert rounded != (0.710, 0.286, 0.004)
+
+
+def test_skhynix_report_artifact_renders_frozen_calibrated_probabilities(tmp_path: Path):
+    config = build_skhynix_live_primary_config(tmp_path)
+    snapshot = config.providers.calibration_loader(None)
+    rendered = render_calibrated_probability_summary(
+        "| **시나리오 가능성** | 미산출 |",
+        snapshot,
+        "CALIBRATED",
+    )
+    assert "미산출" not in rendered
+    assert "하방 15.7%" in rendered
+    assert "기준 43.9%" in rendered
+    assert "상방 40.4%" in rendered
+    assert "보정 완료·수치 가중 적용" in rendered
 
 
 def test_skhynix_continuous_probability_rejects_lookahead_replay():
