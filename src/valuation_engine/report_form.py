@@ -22,7 +22,14 @@ from .report_localization import (
     module_label_ko,
     stage_label_ko,
 )
+from .evidence_composition import EvidenceCompositionReport
 from .source_reporting import build_source_link_index
+from .valuation_sensitivity import (
+    DISCOUNT_RATE,
+    FCFF_LEVEL,
+    TERMINAL_GROWTH,
+    ValuationSensitivityReport,
+)
 from .visual_reporting import render_report_visuals
 
 
@@ -130,6 +137,67 @@ def _markdown_section(report: object, heading: str) -> str | None:
         return None
     next_heading = report.find("\n## ", start + len(marker))
     return report[start:] if next_heading < 0 else report[start:next_heading]
+
+
+def _evidence_composition_lines(data: dict[str, Any]) -> list[str]:
+    """Render how much of the committed model is filing versus judgement."""
+    report = data.get("evidence_composition_report")
+    if not isinstance(report, EvidenceCompositionReport):
+        return []
+    lines = ["", "### 근거 구성", "", f"- {report.summary_ko}"]
+    if report.ledger_layers:
+        lines.append(
+            f"- 수집 근거 {report.ledger_active_count}건 — "
+            + " · ".join(
+                f"{item.label} {item.count}건({item.share * 100:.1f}%)"
+                for item in report.ledger_layers
+            )
+        )
+    detail = (
+        f"- 공시·회사 공식계획 직접 인용 {report.valuation_primary_backed_share * 100:.1f}% · "
+        f"분석가 추정 {report.valuation_underwriting_share * 100:.1f}%"
+    )
+    if report.valuation_mean_confidence is not None:
+        detail += f" · 평균 신뢰도 {report.valuation_mean_confidence:.2f}"
+    lines.append(detail)
+    lines.extend(f"- 확인 필요: {item.detail}" for item in report.warnings)
+    return lines
+
+
+def _sensitivity_delta_ko(variable: str, base_input, high_input) -> str:
+    delta = high_input - base_input
+    if variable in {DISCOUNT_RATE, TERMINAL_GROWTH}:
+        return f"±{delta * 100:.1f}%p"
+    if variable == FCFF_LEVEL:
+        return f"±{delta * 100:.0f}%"
+    return f"±{delta}"
+
+
+def _valuation_sensitivity_lines(data: dict[str, Any]) -> list[str]:
+    """Render which single kernel variable the frozen value actually hangs on."""
+    report = data.get("valuation_sensitivity_report")
+    if not isinstance(report, ValuationSensitivityReport):
+        return []
+    lines = ["", "### 가치 민감도", ""]
+    measured = False
+    for scenario in report.scenarios:
+        if not scenario.measured or scenario.base_value_per_share is None:
+            lines.append(f"- {scenario.scenario_id}: {scenario.rationale}")
+            continue
+        measured = True
+        moves = " · ".join(
+            f"{item.label} {_sensitivity_delta_ko(item.variable, item.base_input, item.high_input)}"
+            f" → {item.low_value_pct * 100:+.1f}%/{item.high_value_pct * 100:+.1f}%"
+            for item in scenario.variables
+        )
+        lines.append(
+            f"- {scenario.scenario_id} 기준 "
+            f"{scenario.base_value_per_share:,.0f}원 — {moves}"
+        )
+    if measured:
+        lines.append(f"- {report.summary_ko}")
+    lines.extend(f"- 확인 필요: {item.detail}" for item in report.warnings)
+    return lines
 
 
 def attest_controlled_run(
@@ -658,6 +726,8 @@ def render_controlled_run_report(
         "## 세부 계산 기록",
         *technical_stage_lines,
         *technical_module_lines,
+        *_evidence_composition_lines(data),
+        *_valuation_sensitivity_lines(data),
         "",
         "### 실행 식별자와 해시",
         "",

@@ -143,6 +143,8 @@ COMPANY_RESOLUTION
 - hash-bound Intrinsic Freeze Token
 - post-freeze Street/Market comparison
 - post-freeze Reverse DCF (시장 함의 영구성장률·현금흐름 배율·시나리오 위치)
+- 가치 투입 근거의 출처 계층 구성 공개 (공시 인용 대 분석가 추정 비중)
+- 커널 변수 3점 가치 민감도 (할인율·영구성장률·현금흐름 수준)
 - blocked result intrinsic redaction
 - immutable run history와 atomic last-good state
 - OCI regression preservation

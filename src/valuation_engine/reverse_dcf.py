@@ -274,7 +274,7 @@ def solve_scenario_probability_requirement(
     return result
 
 
-def _reconstructible_component(
+def reconstructible_dcf_component(
     company_value: CompanyScenarioEquityValue,
 ) -> tuple[SegmentValuationDiagnostics, Decimal] | None:
     """Return the single DCF contribution a scenario can be reversed against.
@@ -307,7 +307,7 @@ def _scenario_reverse_dcf(
     market_equity_value: Decimal,
     company_value: CompanyScenarioEquityValue,
 ) -> ScenarioReverseDCF:
-    reconstructible = _reconstructible_component(company_value)
+    reconstructible = reconstructible_dcf_component(company_value)
     if reconstructible is None:
         return ScenarioReverseDCF(
             scenario_id=scenario_id,

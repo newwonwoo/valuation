@@ -158,9 +158,9 @@
 - 세부 인사이트는 별도 분석 기록에 보관됩니다.
 
 ## 최종 요약 이미지
-![산일전기 주식회사 회사 강점·투자 결론·가치평가](PRISM_062040_01_summary_5B69158CFF23.svg)
+![산일전기 주식회사 회사 강점·투자 결론·가치평가](PRISM_062040_01_summary_B2A89633D570.svg)
 
-![산일전기 주식회사 가치평가 가정·위험·출처](PRISM_062040_02_assumptions_5B69158CFF23.svg)
+![산일전기 주식회사 가치평가 가정·위험·출처](PRISM_062040_02_assumptions_B2A89633D570.svg)
 
 ## 정보 출처 — 원문 바로 확인
 - **현재 시장가격** — 시장가격 기준일 2026-08-27 [원문 바로 열기](https://alphasquare.co.kr/home/stock-summary?code=062040)
@@ -204,7 +204,7 @@
 
 ## 분석 범위와 유의사항
 - **평가범위:** 전체 기업 내재가치
-- **계산 확인:** 자동 오류 점검 31개 통과 · 분석 원칙 28/28개 충족
+- **계산 확인:** 자동 오류 점검 37개 통과 · 분석 원칙 28/28개 충족
 - 회사 공시 사실, 분석가 가정, 인공지능 연결 인사이트를 구분해 표시했습니다.
 - 증권사 목표가와 현재가는 가치평가를 마친 뒤 참고했으며, 앞서 계산한 가정을 바꾸는 데 사용하지 않았습니다.
 
@@ -234,7 +234,7 @@
 
 ### 4. 가치평가·오류 점검·결과 확정 — 경고 (7/7)
 - 결과: 가치평가와 오류 점검을 마치고 결과를 확정했습니다
-- 잔여위험: 시나리오 확률 보정 점검: 실제 해결 이력 기반 확률 보정이 완료되지 않아 확률가중 기대값을 산출하지 않았습니다 · 다음 단계: 증권사·시장 비교·보고서 저장
+- 잔여위험: 시나리오 확률 보정 점검: 실제 해결 이력 기반 확률 보정이 완료되지 않아 확률가중 기대값을 산출하지 않았습니다 | 가정 타당성 점검: 근거 구성 또는 가치 민감도에서 확인 필요 항목이 기록되었습니다 · 다음 단계: 증권사·시장 비교·보고서 저장
 
 ### 5. 증권사·시장 비교·보고서 저장 — 경고 (7/7)
 - 결과: 시장·증권사 비교 후 한국어 최종보고서와 요약 이미지 2장을 저장했습니다
@@ -246,7 +246,7 @@
 - **증거 수집·산업 라우팅:** 1 기업 식별=통과 · 2 기존 분석 상태 불러오기=통과 · 3 산업 지식 기준일 설정=통과 · 4 출처 최신성 사전점검=통과 · 5 사업부 분해=통과 · 6 산업 특성 분류=통과 · 7 필수 분석 모듈 확정=통과 · 8 1차 근거 수집=통과 · 9 근거 기록 확정=통과
 - **인사이트 도출·반증 검토:** 10 환경 변화 인사이트 탐색=경고 · 11 상류 자금흐름 점검=통과 · 12 주 분석가 가설 도출=통과 · 13 독립 반증 검토=통과 · 14 추가 조사 반복=해당 없음
 - **가정·평가방법·위험:** 15 근거·가정 연결=통과 · 16 시나리오 구성=통과 · 17 가치평가 방법 확정=통과 · 18 계층형 베타 추정=통과 · 19 가중평균자본비용 검증=통과
-- **가치평가·오류 점검·결과 확정:** 20 결정론적 가치평가=통과 · 21 계층형 적정 주가수익비율=해당 없음 · 22 현금흐름·주가수익비율 가정 정합성=통과 · 23 평가방법 간 이중계상 감사=통과 · 24 시나리오 확률 보정 점검=경고 · 25 최종 감사=통과 · 26 가치평가 결과 확정=통과
+- **가치평가·오류 점검·결과 확정:** 20 결정론적 가치평가=통과 · 21 계층형 적정 주가수익비율=해당 없음 · 22 현금흐름·주가수익비율 가정 정합성=통과 · 23 평가방법 간 이중계상 감사=통과 · 24 시나리오 확률 보정 점검=경고 · 25 최종 감사=경고 · 26 가치평가 결과 확정=통과
 - **증권사·시장 비교·보고서 저장:** 27 증권사 자료 불러오기=통과 · 28 증권사 목표가 비교=통과 · 29 현재 시장가격 불러오기=통과 · 30 시장가격 비교=경고 · 31 투자논지 변화 점검=통과 · 32 분석 결과 저장=통과 · 33 최종보고서 생성=통과
 - 단계별 사유와 출력값 식별자는 별도 분석 기록에 보존됩니다.
 
@@ -255,21 +255,36 @@
 - 영향 미측정: 가정 컴파일러, 독립 반증 검토, 증권사 자료 검증, 근거 원장, 근거·가정 연결, 계층형 베타, 산업 특성 분류, 산업 지식 외 10개
 - 비적용: 없음 · 실패: 없음
 
+### 근거 구성
+
+- 가치 투입 근거 63건 — 분석가 추정 63건(100%)
+- 수집 근거 113건 — 공시·실적 원문 26건(23.0%) · 회사 공식 계획 17건(15.0%) · 정책 원문 3건(2.7%) · 인가 시장데이터 4건(3.5%) · 분석가 추정 63건(55.8%)
+- 공시·회사 공식계획 직접 인용 0.0% · 분석가 추정 100.0% · 평균 신뢰도 0.63
+- 확인 필요: 가치 투입 근거 중 공시·회사 공식계획 직접 인용이 0.0%로 기준(20%)에 미달합니다
+- 확인 필요: 가치 투입 근거의 100.0%가 분석가 추정입니다. 이 결과는 공시 사실의 정리가 아니라 추정 위에 세워진 모델입니다
+
+### 가치 민감도
+
+- Down 기준 151,821원 — 가중평균자본비용 ±0.5%p → +10.0%/-8.4% · 영구성장률 ±0.5%p → -6.8%/+8.1% · 전 기간 현금흐름 수준 ±10% → -9.8%/+9.8%
+- Core 기준 242,038원 — 가중평균자본비용 ±0.5%p → +11.2%/-9.2% · 영구성장률 ±0.5%p → -7.6%/+9.2% · 전 기간 현금흐름 수준 ±10% → -9.9%/+9.9%
+- Bull 기준 287,875원 — 가중평균자본비용 ±0.5%p → +12.4%/-10.0% · 영구성장률 ±0.5%p → -8.4%/+10.4% · 전 기간 현금흐름 수준 ±10% → -9.9%/+9.9%
+- 지배 변수 — Down: 가중평균자본비용 최대 10.0% · Core: 가중평균자본비용 최대 11.2% · Bull: 가중평균자본비용 최대 12.4%
+
 ### 실행 식별자와 해시
 
 - 실행 식별자: `SANIL-062040-20260827-POLICY`
 - 실행 모드: `live_primary`
-- 작성 확인 해시: `0398766495079a3024afce9a5aa5a4dd155e233e404d59bf211451412b65634c`
+- 작성 확인 해시: `dc69a3ecd8e4e2526437c66919ea413c92b562eddc2e0c62bd38b3888cdac86a`
 - 증거 해시: `4a9e4750e0d8b68668757c170360f289755773f85c0a0cf3bfd81e89ce73040c`
 - 가정 해시: `5e3b6aa039bb198dbe2837bec5b0827522d8fee6a6d5732cc406c9b68936b7cf`
 - 시나리오 해시: `bc60d594eefdb171fb842849a9b91fddff10f646e8128d832e3f208234acce83`
 - 가치평가 해시: `fe72b6ab611fdc0f355b9fa1630baf1e9ad147f132f51ba10488d893dbe19115`
-- 오류 점검 해시: `fd027803704fd5c40d17f8100dd3a93fa73097bed4e62c1336cb0bcc54470155`
-- 가치평가 확정 해시: `0b5fb8273b7d26ee8cf7b09e718004c34f1f12131baea01c18f59c06645da06a`
+- 오류 점검 해시: `7402f21efbd85f85ff49c7b1dd0e33d3b3a918f2aecf6b756b9eaaf9a80b6a99`
+- 가치평가 확정 해시: `8c689acb78772ef531f846bf0cbc13da497b4682cf9463bf166ff43ec8b08a59`
 - 보조 결속정보: 베타 `567700b4b5094f7aaa61cc030d0c8758ed146e9a38a3be4f4d56c5999f0a121e` · 가중평균자본비용 `2beebb32d08c7f6e354a0771edba24e0f108aea78e9ba175b0b59de16257325b` · 생산능력 평가 `7dc9a1ca1e6475fd1c713a30825e71357bbafcf3f534fd785e77a892aac11086` · 생산능력 반영 `cb10c66669a6f7518ce9efc2a9a98d57d6a5e50267ac1be39aed065f3aef7602` · 생산능력 시나리오 `9bfd09371780785e50f9676b67652812b8031ea8a38aad20604cf725ddf9ff6e` · 생산능력 가치평가 `e859e337bf35779237e5886c2a396229aac26484ac54da8f47a98388ec3344fe` · 생산능력 주가수익비율 `58a36a8e4cb4d0b0f051a366d80023b5a5b0e8ca73fdc1ed0ab543816ef81c17` · 생산능력 정합성 `36867fb34f3a888c9652f07193b96dddc10c860c93544d6a2384d64d04b57250` · 생산능력 오류 점검 `f4f1e8901431ca246994a048dec89b0b3086dab3e75804b2ab1e46827b321b6a` · 사전 증권사 조사자료 `0a1f7098de7649a87b5a6637d4f64cdfbe40fa913d1073065bf1f5b8eabaa098` · 증권사 자료 확인 `8562adc356ac42fdb115dc85525871bf3eb52012f722fe5d949dc7e8434339b3`
-- 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=warning · 11 `UPSTREAM_FUNDING_SCAN`=pass · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=pass · 19 `WACC_VALIDATION`=pass · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=pass · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=warning · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
+- 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=warning · 11 `UPSTREAM_FUNDING_SCAN`=pass · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=pass · 19 `WACC_VALIDATION`=pass · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=warning · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=warning · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
 
 </details>
 
 ---
-보고서 ID `SANIL_062040-20260827-TP242038-5B69158CFF23` · 기준 목표가 242,038원
+보고서 ID `SANIL_062040-20260827-TP242038-B2A89633D570` · 기준 목표가 242,038원

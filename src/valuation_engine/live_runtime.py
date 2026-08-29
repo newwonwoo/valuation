@@ -34,6 +34,7 @@ from .collection_plan import (
 )
 from .control_plane import ExecutionMode, StageStatus
 from .dcf_evaluators import RegistryLoader
+from .evidence_composition import evidence_composition_audit_adapter
 from .evidence_adapter import (
     EvidenceCollectorSelection,
     SelectedEvidenceCollector,
@@ -132,6 +133,7 @@ from .state_learning_adapter import load_research_learning_adapter
 from .unit_contracts import UnitContractRegistry, load_unit_contract_registry
 from .valuation_adapter import deterministic_valuation_adapter
 from .valuation_method_intent import valuation_method_intent_adapter
+from .valuation_sensitivity import valuation_sensitivity_adapter
 from .valuation_plan_compiler import (
     CompanyValuationPlanInputs,
     SegmentMethodChoice,
@@ -639,6 +641,10 @@ def build_live_primary_adapters(
                 required=bool(getattr(config, "require_broker_research", False))
             ),
             capacity_audit_adapter(),
+            # Assumption-plausibility guardrails. Both are non-blocking disclosures
+            # whose findings are bound into audit_hash by generic_audit_adapter.
+            evidence_composition_audit_adapter(),
+            valuation_sensitivity_adapter(),
             generic_audit_adapter(
                 impact_config=config.impact_config,
                 unit_contract_registry=effective_unit_contract_registry,
