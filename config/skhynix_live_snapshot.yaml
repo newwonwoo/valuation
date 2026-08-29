@@ -1,0 +1,97 @@
+version: 1
+as_of: '2026-08-29'
+cutoff: '2026-08-29T00:00:00+00:00'
+identity:
+  legal_name: SK hynix Inc.
+  ticker: '000660'
+  target_id: 'KR:DART:00164779'
+  dart_corp_code: '00164779'
+  sec_cik: '0002120882'
+  source_ref: 'https://www.sec.gov/Archives/edgar/data/2120882/000119312526354777/d147827d6k.htm'
+sources:
+  half_year_filing: 'https://www.sec.gov/Archives/edgar/data/2120882/000119312526354777/d147827d6k.htm'
+  q2_results: 'https://news.skhynix.com/en/q2-2026-business-results/'
+  pnt7_filing: 'https://www.sec.gov/Archives/edgar/data/2120882/000119312526311230/d121520d6k.htm'
+  treasury_filing: 'https://www.sec.gov/Archives/edgar/data/2120882/000119312526356141/d436722d6k.htm'
+  underwriting: 'https://github.com/newwonwoo/valuation/blob/main/config/skhynix_live_snapshot.yaml'
+  beta_intc: 'https://stockanalysis.com/stocks/intc/statistics/'
+  beta_avgo: 'https://stockanalysis.com/stocks/avgo/statistics/'
+  beta_mrvl: 'https://stockanalysis.com/stocks/mrvl/statistics/'
+  beta_mu: 'https://stockanalysis.com/stocks/mu/statistics/'
+  market: 'https://kr.investing.com/equities/sk-hynix-inc-historical-data'
+  street: 'https://www.investing.com/equities/sk-hynix-inc-consensus-estimates'
+official_facts:
+  realized_price: ['NOT_DISCLOSED', status]
+  benchmark_price: ['NOT_DISCLOSED', status]
+  production: [24152765, KRW_million_cost_basis]
+  inventory: ['NOT_DISCLOSED', status]
+  cash_cost: ['NOT_DISCLOSED', status]
+  capacity: [24152765, KRW_million_cost_basis]
+  utilization: [1.0, ratio]
+  cost_curve_position: ['NOT_DISCLOSED', status]
+  hbm4_mass_shipments_started: [true, boolean]
+  long_term_agreements_customer_count_approx: [10, count]
+  revenue_h1_2026: [131895033, KRW_million]
+  operating_profit_h1_2026: [98152891, KRW_million]
+  operating_cash_flow_h1_2026: [91742501, KRW_million]
+  cash_and_short_term_financial_assets_q2_2026: [87957923, KRW_million]
+  borrowings_q2_2026: [18586634, KRW_million]
+  pnt7_board_approved_investment: [7093.1, KRW_billion]
+  issued_common_shares_pre_buyback: [730492365, shares]
+  planned_buyback_shares: [24070000, shares]
+  planned_buyback_cash: [40004.34, KRW_billion]
+scenarios:
+  Down:
+    fcff_krw_billion: [120000, 100000, 85000, 75000, 65000, 60000, 55000, 50000, 45000]
+    terminal_growth: 0.005
+  Core:
+    fcff_krw_billion: [258400, 289400, 312700, 344600, 362700, 364500, 363100, 300000, 220000]
+    terminal_growth: 0.020
+  Bull:
+    fcff_krw_billion: [330000, 390000, 430000, 480000, 520000, 540000, 530000, 450000, 320000]
+    terminal_growth: 0.025
+terminal_roic: 0.10
+valuation_adjustments:
+  broad_cash_q2_2026: [87957.923, KRW_billion]
+  borrowings_q2_2026: [18586.634, KRW_billion]
+  negative_one: [-1.0, ratio]
+  h2_2026_fcff_underwrite: [95000, KRW_billion]
+  ads_issue_proceeds: [39890.53479, KRW_billion]
+  kioxia_remaining_stake_underwrite: [31922.714, KRW_billion]
+  diluted_shares: [730492365, shares]
+risk:
+  as_of: '2026-08-28'
+  target_equity_weight: 0.90
+  target_debt_weight: 0.10
+  tax_rate: 0.24
+  risk_free_rate: 0.035
+  equity_risk_premium: 0.060
+  pre_tax_cost_of_debt: 0.045
+  beta_levels:
+    L1_BROAD_SECTOR:
+      peer_id: INTC
+      levered_beta: 2.24
+      debt_to_equity: 0.49
+      source_key: beta_intc
+    L2_INDUSTRY:
+      peer_id: AVGO
+      levered_beta: 1.47
+      debt_to_equity: 0.74
+      source_key: beta_avgo
+    L3_RISK_DRIVER_SUBINDUSTRY:
+      peer_id: MRVL
+      levered_beta: 2.25
+      debt_to_equity: 0.29
+      source_key: beta_mrvl
+    L4_ECONOMIC_TWINS:
+      peer_id: MU
+      levered_beta: 2.21
+      debt_to_equity: 0.06
+      source_key: beta_mu
+market:
+  price: 1674000
+  as_of: '2026-08-28'
+street:
+  consensus_target_price: 3164000
+  report_count: 39
+  as_of: '2026-08-28'
