@@ -18,8 +18,11 @@ sources:
   beta_avgo: 'https://stockanalysis.com/stocks/avgo/statistics/'
   beta_mrvl: 'https://stockanalysis.com/stocks/mrvl/statistics/'
   beta_mu: 'https://stockanalysis.com/stocks/mu/statistics/'
+  risk_free: 'https://english.mofe.go.kr/?boardCd=P0002&seq=2052'
+  equity_risk_premium: 'https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctrypremtable.htm'
+  debt_cost: 'https://english.mofe.go.kr/?boardCd=P0002&seq=2052'
   market: 'https://kr.investing.com/equities/sk-hynix-inc-historical-data'
-  street: 'https://www.investing.com/equities/sk-hynix-inc-consensus-estimates'
+  street: 'https://stockanalysis.com/quote/krx/000660/forecast/'
 official_facts:
   realized_price: ['NOT_DISCLOSED', status]
   benchmark_price: ['NOT_DISCLOSED', status]
@@ -64,9 +67,9 @@ risk:
   target_equity_weight: 0.90
   target_debt_weight: 0.10
   tax_rate: 0.24
-  risk_free_rate: 0.035
-  equity_risk_premium: 0.060
-  pre_tax_cost_of_debt: 0.045
+  risk_free_rate: 0.04021
+  equity_risk_premium: 0.0532
+  pre_tax_cost_of_debt: 0.04476
   beta_levels:
     L1_BROAD_SECTOR:
       peer_id: INTC
@@ -89,9 +92,12 @@ risk:
       debt_to_equity: 0.06
       source_key: beta_mu
 market:
-  price: 1674000
+  price: 1653000
   as_of: '2026-08-28'
 street:
-  consensus_target_price: 3164000
+  consensus_target_price: 3164332
   report_count: 39
+  median_target_price: 3150000
+  min_target_price: 1200000
+  max_target_price: 5300000
   as_of: '2026-08-28'
