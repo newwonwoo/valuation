@@ -14,10 +14,54 @@ from valuation_engine.strict_live_runtime import require_canonical_live_result
 
 
 LATEST_MANIFEST_FILENAME = "SKHYNIX_000660_LATEST_REPORT.json"
+_SCENARIO_LABELS = {
+    "Down": "하방",
+    "Core": "기준",
+    "Bull": "상방",
+}
 
 
 def _sha256_text(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _render_calibrated_probability_summary(
+    report: str,
+    probability_snapshot,
+    probability_distribution_status: object,
+) -> str:
+    """Render only the already-frozen canonical probability snapshot into the report artifact."""
+    if str(probability_distribution_status) != "CALIBRATED":
+        return report
+
+    estimates = tuple(probability_snapshot.estimates)
+    by_id = {item.scenario_id: item for item in estimates}
+    if set(by_id) != set(_SCENARIO_LABELS):
+        raise RuntimeError("calibrated probability snapshot must cover Down/Core/Bull")
+    total = sum((Decimal(str(item.probability)) for item in estimates), Decimal("0"))
+    if abs(total - Decimal("1")) > Decimal("1e-12"):
+        raise RuntimeError("calibrated probability snapshot must sum to one")
+
+    probability_summary = " · ".join(
+        f"{_SCENARIO_LABELS[scenario_id]} "
+        f"{Decimal(str(by_id[scenario_id].probability)) * 100:.1f}%"
+        for scenario_id in ("Down", "Core", "Bull")
+    )
+    replacement = (
+        f"| **시나리오 가능성** | {probability_summary} "
+        "(보정 완료·수치 가중 적용) |"
+    )
+    probability_rows = tuple(
+        line for line in report.splitlines() if line.startswith("| **시나리오 가능성** |")
+    )
+    if len(probability_rows) != 1:
+        raise RuntimeError("canonical report must contain exactly one scenario probability row")
+    existing = probability_rows[0]
+    if existing == replacement:
+        return report
+    if "미산출" not in existing:
+        raise RuntimeError("refusing to overwrite an unexpected scenario probability rendering")
+    return report.replace(existing, replacement, 1)
 
 
 def _artifact_identity(result, report: str, visual_payloads: tuple[tuple[str, str], ...]) -> tuple[str, str]:
@@ -69,7 +113,11 @@ def run_and_render(output: Path | None = None) -> dict[str, object]:
         result = require_canonical_live_result(authority)
         valuation = result.data["generic_valuation_result"]
         probability_snapshot = result.data["continuous_probability_calibration_snapshot"]
-        report = str(result.data["final_report"])
+        report = _render_calibrated_probability_summary(
+            str(result.data["final_report"]),
+            probability_snapshot,
+            result.data.get("probability_distribution_status"),
+        )
         run_dir = Path(str(result.data["saved_run_dir"]))
         visual_names = tuple(str(name) for name in result.data.get("saved_report_visuals", ()))
         if len(visual_names) != 2:
