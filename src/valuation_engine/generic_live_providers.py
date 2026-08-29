@@ -24,6 +24,13 @@ from __future__ import annotations
 from dataclasses import dataclass, replace
 from pathlib import Path
 
+from .declared_risk_pack import (
+    BETA_SELECTION_METRICS,
+    declared_risk_beta_loader,
+    declared_risk_provider,
+    declared_risk_wacc_loader,
+    load_declared_risk_pack,
+)
 from .generic_funding import generic_ledger_funding_scanner
 from .generic_underwriting import declared_underwriting_provider
 from .generic_kr_industry import (
@@ -48,6 +55,8 @@ from .generic_valuation_plan import (
     GenericValuationPlanError,
     composed_generic_registry_loader,
     conventional_valuation_plan_inputs_loader,
+    generic_backlog_dcf_fingerprint_loader,
+    withheld_per_loader,
 )
 from .industry_series_collector import (
     DEFAULT_SERIES_REGISTRY_PATH,
@@ -137,6 +146,11 @@ class GenericKRRuntimeSpec:
     #: required); market/street paths feed the post-freeze comparison stages
     #: and never exist pre-freeze in the providers that build intrinsic value.
     declared_underwriting_path: str | Path | None = None
+    #: Operator-declared risk pack (L1→L4 Beta peers, ECOS risk-free rate,
+    #: Damodaran ERP/CRP, marginal-debt benchmark). Required for any method
+    #: whose execution family needs a Beta/WACC; without it those stages stay
+    #: honestly NOT_IMPLEMENTED and only the beta-free families can complete.
+    declared_risk_path: str | Path | None = None
     market_config_path: str | Path | None = None
     street_export_path: str | Path | None = None
     market_currency: str | None = None
@@ -231,7 +245,27 @@ def build_generic_kr_runtime_factory(
         valuation_plan_inputs_loader=conventional_valuation_plan_inputs_loader(
             reporting_unit=spec.reporting_unit,
         ),
+        # An archetype that registers a Warranted-PER cross-check makes the
+        # method intent demand a DCF fingerprint and a PER applicability
+        # answer. The generic run answers honestly: the fingerprint is derived
+        # deterministically from the compiled scenario (backlog family), and
+        # PER itself is withheld — NOT_APPLICABLE with its reason — because no
+        # authorized Economic-Twin residual PER pack exists in a cold start.
+        per_loader=withheld_per_loader(),
     )
+    method_registry = capability_registry or load_default_method_capability_registry()
+    families = {
+        method_registry.get(choice.archetype, choice.method).execution_family
+        for choice in spec.method_choices
+    }
+    if "contracted_backlog_dcf" in families:
+        extensions = replace(
+            extensions,
+            dcf_fingerprint_loader=generic_backlog_dcf_fingerprint_loader(
+                scenario_id=spec.scenario_ids[0],
+                forecast_years=spec.forecast_years,
+            ),
+        )
     if spec.market_config_path is not None:
         from .workflow import market_loader_from_config
 
@@ -248,11 +282,31 @@ def build_generic_kr_runtime_factory(
                 spec.street_export_path
             ),
         )
+    if spec.declared_risk_path is not None:
+        declared_risk = load_declared_risk_pack(spec.declared_risk_path)
+        extensions = replace(
+            extensions,
+            additional_collectors=(
+                *extensions.additional_collectors,
+                declared_risk_provider(
+                    declared_risk, segment_id=spec.filing.segment_id
+                ),
+            ),
+            beta_loader=declared_risk_beta_loader(declared_risk),
+            wacc_loader=declared_risk_wacc_loader(declared_risk),
+        )
     # The valuation assumption keys must exist as Evidence before the Bridge can
     # cite them. Keys the filing/series collectors do not produce arrive as the
     # operator's declared underwriting, so they are declared here as additional
-    # required evidence for the core segment.
-    additional_required = {spec.filing.segment_id: keys}
+    # required evidence for the core segment. A declared risk pack additionally
+    # requires its four peer-selection judgments in the ledger, so the Beta
+    # stage's evidence-ID validation has real records to bind to.
+    required_evidence_keys = keys
+    if spec.declared_risk_path is not None:
+        required_evidence_keys = tuple(
+            dict.fromkeys((*keys, *BETA_SELECTION_METRICS))
+        )
+    additional_required = {spec.filing.segment_id: required_evidence_keys}
     return KRLiveRuntimeFactory(
         network=network,
         filing=spec.filing,

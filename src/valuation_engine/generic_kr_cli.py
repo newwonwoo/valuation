@@ -137,6 +137,7 @@ def factory(request: LiveAnalysisRequest):
         filing=_filing_selection(as_of, segment_id),
         forecast_years=int(os.environ.get("VALUATION_FORECAST_YEARS", "5")),
         declared_underwriting_path=_optional("VALUATION_UNDERWRITING_PATH"),
+        declared_risk_path=_optional("VALUATION_RISK_PACK_PATH"),
         market_config_path=_optional("VALUATION_MARKET_CONFIG"),
         street_export_path=_optional("VALUATION_STREET_EXPORT"),
         market_currency=_optional("VALUATION_MARKET_CURRENCY")

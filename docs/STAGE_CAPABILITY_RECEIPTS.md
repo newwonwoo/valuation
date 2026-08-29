@@ -167,15 +167,17 @@ The run genuinely completes and genuinely produces an attested value. It proves
 
 Two of the five matter for coverage, not just bookkeeping. The probe values a
 steelmaker with `normalized_multiple`, which needs no discount rate, so
-`HIERARCHICAL_BETA_ESTIMATION` and `WACC_VALIDATION` never run. Nine of the
-fourteen execution families **do** require beta and WACC, and
-`GenericKRRuntimeSpec` exposes no risk-provider slot — so today a cold start can
-complete only on the five beta-free families (`normalized_multiple`,
-`normalized_ebitda_multiple`, `ffo_multiple`, `net_asset_value`, `sotp`).
-Wiring `AuthorizedKRRiskProviderPack` into the generic spec is the single change
-that would unlock the other nine. `tests/test_new_archetype_cold_run.py` pins
-this boundary by cold-running a shipbuilder on `contracted_backlog` /
-`backlog_burn_dcf` and asserting it stops exactly there.
+`HIERARCHICAL_BETA_ESTIMATION` and `WACC_VALIDATION` never run on that route.
+Nine of the fourteen execution families **do** require beta and WACC. Their
+entrance is `GenericKRRuntimeSpec.declared_risk_path` — an operator-declared
+risk pack (`declared_risk_pack.py`: L1→L4 peer selections entering Evidence at
+`ANALYST_UNDERWRITING`, ECOS risk-free, Damodaran ERP/CRP, marginal-debt
+benchmark, file SHA-256 bound into the hash chain, and the target refused as
+its own peer). `tests/test_new_archetype_cold_run.py` proves both sides on a
+shipbuilder running `contracted_backlog`/`backlog_burn_dcf`: without a declared
+pack the run stops at `HIERARCHICAL_BETA_ESTIMATION`; with one it completes all
+33 stages to an attested, deterministic value — so a completed discount-rate
+run is now provable, but never by an invented rate.
 
 ## Tests
 

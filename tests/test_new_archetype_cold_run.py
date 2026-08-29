@@ -19,11 +19,13 @@ places the run honestly ends rather than inventing a number:
    The filing collector supplies orders and backlog from the disclosed 수주 table;
    the four *contract-structure* items have no collector, so collection fails
    closed and NAMES them. That is the honest boundary, not a defect to paper over.
-2. Given those four, the run reaches VALUATION_METHOD_INTENT and stops at
-   HIERARCHICAL_BETA_ESTIMATION: 9 of the 14 execution families require beta and
-   WACC, and the generic cold-start factory wires no risk-provider pack. The
-   steel probe completed 33/33 only because normalized_multiple is one of the
-   five families needing neither — a narrower claim than "33/33" sounds.
+2. Given those four, the run reaches VALUATION_METHOD_INTENT — and what happens
+   next depends on the operator's declared risk pack. Without one, it stops at
+   HIERARCHICAL_BETA_ESTIMATION: 9 of the 14 execution families require beta
+   and WACC, and the engine refuses to invent a discount rate. WITH a declared
+   risk pack (L1→L4 peers, ECOS risk-free, Damodaran ERP/CRP, marginal debt —
+   ``declared_risk_pack``), the same run completes all 33 stages to an attested
+   value: the full drive-to-value proof for a discount-rate-bound family.
 """
 
 from __future__ import annotations
@@ -36,6 +38,8 @@ from zipfile import ZipFile
 
 import pytest
 import yaml
+
+from valuation_engine.declared_risk_pack import BETA_SELECTION_METRICS
 
 from valuation_engine.cli_runtime import LiveAnalysisRequest
 from valuation_engine.control_plane import StageStatus
@@ -304,7 +308,93 @@ def _tmpfile(name: str, content: str) -> str:
     return str(path)
 
 
-def _execute(underwriting_rows: dict):
+def _risk_peer(peer_id: str, beta: float, debt: float, equity: float) -> dict:
+    return {
+        "peer_id": peer_id,
+        "beta": {"benchmark": "코스피", "beta": beta, "observations": 250,
+                 "start_date": "2025-08-20", "end_date": "2026-08-20"},
+        "capital": {"debt": debt, "equity_market_value": equity, "tax_rate": 0.24,
+                    "as_of": "2026-06-30",
+                    "source_ref": f"https://probe.invalid/capital/{peer_id}"},
+        "beta_source_ref": f"https://probe.invalid/krx/beta/{peer_id}",
+    }
+
+
+def _risk_pack_yaml() -> str:
+    payload = {
+        "target_id": TARGET,
+        "as_of": AS_OF,
+        "source_ref": "https://probe.invalid/risk-pack/daeyang",
+        "cash_flow_currency": "KRW",
+        "risk_free_rate": {"time": "20260820", "value": 3.10, "unit": "연%",
+                           "name": "국고채 10년",
+                           "source_ref": "https://ecos.bok.or.kr/api/rf-10y"},
+        "country_risk": {"country": "Korea", "as_of": "2026-08-01",
+                         "mature_market_erp": 0.0508,
+                         "country_risk_premium": 0.0057,
+                         "total_equity_risk_premium": 0.0565,
+                         "adjusted_default_spread": 0.0030,
+                         "corporate_tax_rate": 0.24, "rating": "AA"},
+        "marginal_debt": {
+            "series": {"time": "20260820", "value": 4.35, "unit": "연%",
+                       "name": "회사채 AA- 3년",
+                       "source_ref": "https://ecos.bok.or.kr/api/corp-aa-minus-3y"},
+            "credit_rating": "AA-", "maturity": "3Y",
+            "rating_source_ref": "https://probe.invalid/rating/issuer"},
+        "beta_levels": {
+            "L1_BROAD_SECTOR": {
+                "selection_rationale": "KOSPI 대형 산업재 상장사 — 광의 섹터 사전확률로 사용.",
+                "risk_driver_features": ["industrial cyclicality"],
+                "peers": [_risk_peer("PEER-IND-1", 1.02, 4200, 9800),
+                          _risk_peer("PEER-IND-2", 0.96, 3100, 11200)]},
+            "L2_INDUSTRY": {
+                "selection_rationale": "국내 상장 조선업 동종사 — 수주-인도 사이클 공유.",
+                "risk_driver_features": ["order cycle"],
+                "peers": [_risk_peer("PEER-SHIP-1", 1.24, 5200, 7400),
+                          _risk_peer("PEER-SHIP-2", 1.18, 4800, 8100)]},
+            "L3_RISK_DRIVER_SUBINDUSTRY": {
+                "selection_rationale": "상선 중심 야드 — 잔고 회전이 유사한 하위군.",
+                "risk_driver_features": ["backlog duration", "operating leverage"],
+                "peers": [_risk_peer("PEER-YARD-1", 1.31, 6100, 6900)]},
+            "L4_ECONOMIC_TWINS": {
+                "selection_rationale": "수주잔고 3년치 이상 — 경제적 쌍둥이 조건 일치.",
+                "risk_driver_features": ["capacity intensity", "lead time"],
+                "peers": [_risk_peer("PEER-TWIN-1", 1.27, 5600, 7200)]},
+        },
+    }
+    return yaml.safe_dump(payload, allow_unicode=True, sort_keys=False)
+
+
+_MARKET_YAML = """
+market_comparison:
+  price: 28500
+  as_of: "2026-08-27"
+  source_ref: https://probe.invalid/market/close-daeyang-20260827
+"""
+
+_STREET_JSON = json.dumps({
+    "authorization_basis": "explicit_permission",
+    "reports": [{
+        "broker": "Probe Research", "analyst": "Probe Analyst",
+        "published_date": "2026-08-19", "target_price": 34000,
+        "target_price_currency": "KRW", "valuation_method": "DCF",
+        "base_year": "2026E",
+        "estimates": [{"metric": "ebitda", "period": "2026E", "value": 320,
+                       "unit": "KRW_billion"}],
+        "source_ref": "https://probe.invalid/street/daeyang-export",
+    }],
+})
+
+
+def _execute(underwriting_rows: dict, *, with_risk_pack: bool = False):
+    extras = {}
+    if with_risk_pack:
+        extras = {
+            "declared_risk_path": _tmpfile("risk_pack.yaml", _risk_pack_yaml()),
+            "market_config_path": _tmpfile("market.yaml", _MARKET_YAML),
+            "street_export_path": _tmpfile("street.json", _STREET_JSON),
+            "market_currency": "KRW",
+        }
     spec = GenericKRRuntimeSpec(
         as_of=AS_OF,
         forecast_years=YEARS,
@@ -318,6 +408,7 @@ def _execute(underwriting_rows: dict):
         filing=OpenDartFilingSelection(
             business_year="2025", report_code="11011",
             fiscal_period_end="2025-12-31", checked_at=AS_OF, segment_id=SEG),
+        **extras,
     )
     factory = build_generic_kr_runtime_factory(
         network=OpenDartNetwork(fetch_text=_fetch_text, fetch_bytes=_fetch_bytes,
@@ -340,7 +431,7 @@ def _execute(underwriting_rows: dict):
             stop_stage = trace.stage
             stop_reason = trace.rationale
             break
-    return tuple(reached), stop_stage, stop_reason
+    return tuple(reached), stop_stage, stop_reason, result.data
 
 
 @pytest.fixture(scope="module")
@@ -353,8 +444,15 @@ def diagnostic_run():
     return _execute({**_UW, **_DIAGNOSTIC_CONTRACT_STUBS})
 
 
+@pytest.fixture(scope="module")
+def full_run():
+    return _execute(
+        {**_UW, **_DIAGNOSTIC_CONTRACT_STUBS}, with_risk_pack=True
+    )
+
+
 def test_the_engine_routes_an_unseen_shipbuilder_without_company_code(cold_run):
-    reached, _, _ = cold_run
+    reached, _, _, _ = cold_run
     # Resolution, classification, archetype routing and module planning all work
     # on a KSIC and archetype no fixture in this repository has ever used.
     assert reached[:7] == (
@@ -369,7 +467,7 @@ def test_the_engine_routes_an_unseen_shipbuilder_without_company_code(cold_run):
 
 
 def test_the_cold_run_fails_closed_and_names_the_uncollected_contract_evidence(cold_run):
-    _, stop_stage, stop_reason = cold_run
+    _, stop_stage, stop_reason, _ = cold_run
     assert stop_stage == "PRIMARY_EVIDENCE_COLLECTION"
     for metric in UNCOLLECTED_CONTRACT_EVIDENCE:
         assert metric in stop_reason, metric
@@ -392,16 +490,17 @@ def test_the_backlog_route_demands_a_twenty_key_roll_forward():
     assert "normalized_multiple" not in keys
 
 
-def test_diagnostic_run_reaches_the_beta_gate_the_generic_factory_cannot_serve(
+def test_without_a_declared_risk_pack_the_run_stops_at_the_beta_gate(
     diagnostic_run,
 ):
-    """With the four contract facts present, the whole LLM-staffed middle works.
+    """With the four contract facts present, the whole LLM-staffed middle works —
+    and without a declared risk pack the engine refuses to invent a discount
+    rate, stopping exactly at the Beta stage.
 
     This is a DIAGNOSTIC: those four entered as declared underwriting, which is
-    not their honest layer. It exists to prove the next boundary is the discount
-    rate, not something further upstream.
+    not their honest layer. It exists to isolate the discount-rate boundary.
     """
-    reached, stop_stage, stop_reason = diagnostic_run
+    reached, stop_stage, stop_reason, _ = diagnostic_run
     for stage in (
         "PRIMARY_EVIDENCE_COLLECTION",
         "EVIDENCE_LEDGER",
@@ -417,13 +516,60 @@ def test_diagnostic_run_reaches_the_beta_gate_the_generic_factory_cannot_serve(
     assert "LIVE_PRIMARY provider" in stop_reason
 
 
-def test_only_the_beta_free_families_can_cold_start_today():
-    """The honest scope of the steel probe's 33/33: five of fourteen families.
+def test_with_a_declared_risk_pack_the_backlog_dcf_completes_all_33_stages(full_run):
+    """The drive-to-value proof for a discount-rate-bound family.
 
-    Nine families require beta and WACC, and ``GenericKRRuntimeSpec`` has no
-    risk-provider slot to satisfy them. Pinning the split here keeps the
-    capability accounting from drifting back into an unqualified '33/33'.
+    Same shipbuilder, same evidence — plus the operator's declared risk pack.
+    The run executes Beta and WACC from the pack, prices the 3-year order-book
+    roll-forward at the derived WACC, survives the audit's hash-bound
+    Beta→WACC path check, freezes, and reports. The number asserted here is the
+    deterministic product of the declared inputs; change any peer Beta or the
+    risk-free print and the run (and this pin) moves with it.
     """
+    reached, stop_stage, stop_reason, data = full_run
+    assert stop_stage is None, stop_reason
+    assert len(reached) == 33
+    for stage in (
+        "HIERARCHICAL_BETA_ESTIMATION",
+        "WACC_VALIDATION",
+        "DETERMINISTIC_VALUATION",
+        "AUDIT_GATE",
+        "INTRINSIC_VALUE_FREEZE",
+        "FINAL_REPORT",
+    ):
+        assert stage in reached, stage
+    wacc = data["live_wacc_result"]
+    assert 0.05 < wacc.wacc_result.wacc < 0.10
+    assert 1.0 < wacc.beta_result.target_levered_beta < 1.4
+    valuation = data["generic_valuation_result"]
+    (scenario,) = valuation.scenarios
+    assert scenario.scenario_id == "Base"
+    assert float(scenario.value_per_share) == pytest.approx(19658.33, abs=0.01)
+    # The audit's risk-consumption check demanded these; prove they are there.
+    beta_prefix = f"beta:{wacc.beta_result.snapshot_hash}:"
+    wacc_prefix = f"wacc:{wacc.snapshot_hash}:"
+    assert any(path.startswith(beta_prefix) for path in scenario.economic_path_ids)
+    assert any(path.startswith(wacc_prefix) for path in scenario.economic_path_ids)
+
+
+def test_warranted_per_is_withheld_not_approximated(full_run):
+    """contracted_backlog registers a Warranted-PER cross-check; the generic run
+    answers it honestly — fingerprint bound, PER withheld with its reason —
+    instead of fabricating a peer PER table."""
+    reached, _, _, data = full_run
+    assert "DCF_PER_ASSUMPTION_CONSISTENCY_GATE" in reached
+    fingerprint = data["dcf_assumption_fingerprint"]
+    assert fingerprint.growth_duration_years == YEARS
+    assert len(fingerprint.margin_path) == YEARS
+    assert fingerprint.margin_path == (0.055, 0.062, 0.068)
+
+
+def test_the_beta_wacc_split_of_the_families_and_the_declared_door():
+    """Nine of fourteen families require beta and WACC. They no longer dead-end:
+    ``GenericKRRuntimeSpec.declared_risk_path`` is the operator's declared door
+    to the discount rate, and without it those stages still refuse to run —
+    the split is between families that need the door and families that don't,
+    never a silent default rate."""
     registry = yaml.safe_load(
         Path("config/valuation_method_capability_registry.yaml").read_text(
             encoding="utf-8"
@@ -440,8 +586,4 @@ def test_only_the_beta_free_families_can_cold_start_today():
         "sotp",
     }
     assert len(registry) - len(beta_free) == 9
-    # The generic cold-start spec exposes no beta/WACC provider slot at all.
-    assert not any(
-        "beta" in field or "wacc" in field
-        for field in GenericKRRuntimeSpec.__dataclass_fields__
-    )
+    assert "declared_risk_path" in GenericKRRuntimeSpec.__dataclass_fields__

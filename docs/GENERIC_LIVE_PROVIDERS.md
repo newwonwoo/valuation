@@ -159,6 +159,8 @@ export DART_API_KEY=...                                   # OpenDART key (caller
 export VALUATION_LLM_TRANSPORT=my_deploy.transport:build  # the model seat (caller's)
 export VALUATION_METHOD=commodity_price_taker/normalized_multiple
 export VALUATION_UNDERWRITING_PATH=runs/<company>/underwriting.yaml   # declared judgments
+# required for any beta/WACC-bound method (DCF, NPV, DDM, residual income …):
+#   VALUATION_RISK_PACK_PATH=runs/<company>/risk_pack.yaml
 # optional post-freeze inputs:
 #   VALUATION_MARKET_CONFIG / VALUATION_STREET_EXPORT / VALUATION_MARKET_CURRENCY
 
@@ -173,6 +175,38 @@ never paraphrases the numbers. The transport builder is the caller's ten lines
 SDK. A run with no underwriting file does not fail at configuration — it fails
 closed later at evidence coverage with the missing judgments named, which is
 the correct first-run experience: the engine hands back a work order.
+
+## The declared risk pack — the discount rate's front door
+
+Nine of the fourteen execution families require a Beta and a WACC. Their
+entrance is `VALUATION_RISK_PACK_PATH` → `GenericKRRuntimeSpec.declared_risk_path`
+→ `declared_risk_pack.load_declared_risk_pack`, an operator-owned YAML bound to
+one `target_id`:
+
+- **L1→L4 Beta levels**, each with peers (regression Beta + window + benchmark,
+  capital observation, HTTP source refs), a selection rationale of substance and
+  named risk-driver features. Each level's peer selection enters the run's
+  Evidence ledger at `ANALYST_UNDERWRITING` through a collector, and the Beta
+  stage's evidence-ID validation binds the universe to those records.
+- **Rates**: ECOS risk-free print, Damodaran ERP/CRP separation, marginal-debt
+  benchmark with rating and maturity. Implicit units are refused — `연%` or
+  `ratio`, nothing else.
+- **The target may not be its own peer** — by target_id, ticker, or any external
+  id. The peer-normalized capital structure exists so the target's market cap
+  never shapes its own discount rate; a peer row that smuggles it back in fails
+  the bind.
+- The file's SHA-256 is the collection batch fingerprint, so the attested hash
+  chain binds the exact declaration that produced the discount rate. A broken
+  pack fails at load, not mid-run.
+
+With the pack declared, `tests/test_new_archetype_cold_run.py` proves a
+`contracted_backlog/backlog_burn_dcf` cold run completing **all 33 stages** to a
+deterministic attested value; without it the same run stops at
+`HIERARCHICAL_BETA_ESTIMATION`, because the engine does not invent rates. The
+Warranted-PER cross-check that archetype registers is answered honestly: the DCF
+fingerprint is derived deterministically from the compiled scenario, and PER
+itself is withheld (`NOT_APPLICABLE`, reason recorded) until an authorized
+Economic-Twin residual PER pack becomes a declared input.
 
 ## Multi-segment boundary (verified)
 

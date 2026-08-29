@@ -99,19 +99,20 @@ stages:
     status: LIVE_READY
     reason: >-
       typed L1→L4 peer-universe and target-relevering contracts are implemented, and AuthorizedKRRiskProviderPack composes authorized KRX regression Beta plus Evidence-backed peer capital observations into a validated LiveBetaUniverse; other jurisdictions remain injectable under the same contract.
-      Scope caveat - the pack is implemented but GenericKRRuntimeSpec exposes no
-      risk-provider slot, so a cold start on an unseen company cannot yet satisfy
-      this stage. The nine beta/WACC-bound execution families fail closed here;
-      only the five beta-free families (normalized_multiple,
-      normalized_ebitda_multiple, ffo_multiple, net_asset_value, sotp) complete a
-      cold run today, pinned by tests/test_new_archetype_cold_run.py.
+      Cold-start entrance - GenericKRRuntimeSpec.declared_risk_path loads an
+      operator-declared risk pack (declared_risk_pack.py) into this stage: L1-L4
+      peer selections enter Evidence at ANALYST_UNDERWRITING, the target may not
+      appear among its own peers, and the file SHA-256 binds into the hash chain.
+      Without a declared pack the stage still refuses to run and the nine
+      beta/WACC-bound families stop here; with one, a backlog-burn DCF cold run
+      completes all 33 stages (tests/test_new_archetype_cold_run.py).
   WACC_VALIDATION:
     status: LIVE_READY
     reason: >-
       typed currency-consistent WACC validation is implemented, and AuthorizedKRRiskProviderPack composes Bank of Korea ECOS rates, separated Damodaran ERP/CRP, an authorized marginal-debt benchmark, and peer-normalized target capital structure into validated KRW LiveWACCInputs; other currencies remain injectable under the same contract.
-      Same scope caveat as HIERARCHICAL_BETA_ESTIMATION - no generic cold-start
-      wiring supplies this pack, so a discount-rate-bound method cannot run on an
-      unseen company yet.
+      Same cold-start entrance as HIERARCHICAL_BETA_ESTIMATION - the declared
+      risk pack supplies validated KRW LiveWACCInputs; without one a
+      discount-rate-bound method still refuses to run on an unseen company.
   DETERMINISTIC_VALUATION:
     status: PARTIAL_LIVE
     reason: >-
