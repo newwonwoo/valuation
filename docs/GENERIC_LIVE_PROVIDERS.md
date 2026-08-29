@@ -176,6 +176,21 @@ SDK. A run with no underwriting file does not fail at configuration — it fails
 closed later at evidence coverage with the missing judgments named, which is
 the correct first-run experience: the engine hands back a work order.
 
+## Contract-structure evidence — two from the filing, two by declared policy
+
+`contracted_backlog` demands six evidence items. Four are numeric and come from
+the filing itself via the KPI collector: 수주총액/수주잔고 (수주상황 table),
+계약부채 (`contract_liabilities`, notes/statements, current-period marker
+required on the locator path) and 제작기간/납기 (`lead_time`, canonical unit
+`months`; a `년` disclosure converts through the TIME dimension). The remaining
+two — `revenue_recognition` and `cancellation_terms` — are CATEGORICAL policy
+facts no table extractor can read; until a note-scoped categorical reader
+exists, their honest entrance is the declared-underwriting door: the operator
+reads the filing's notes and declares the classification (a string value) with
+rationale and provenance, at `ANALYST_UNDERWRITING` where the composition report
+discloses it. `backlog_cold_start_probe` runs exactly this split, and a run
+without the two declarations fails closed naming exactly those two.
+
 ## The declared risk pack — the discount rate's front door
 
 Nine of the fourteen execution families require a Beta and a WACC. Their

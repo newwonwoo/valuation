@@ -89,6 +89,29 @@ patterns:
     source_unit_map:
       '%': '%'
     critical: false
+  contract_liabilities:
+    # 계약부채 (customer advances) sits in the statements/notes with the current
+    # period labelled, so the locator path demands the marker like the 수주 rows.
+    require_current_period: true
+    anchor_terms: [계약부채]
+    locator_label: 계약부채 (재무제표 주석 계약부채)
+    value_pattern: '계약부채[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원|원)'
+    canonical_unit: KRW_million
+    source_unit_map:
+      백만원: KRW_million
+      억원: KRW_hundred_million
+      천원: KRW_thousand
+      원: KRW
+    critical: false
+  lead_time:
+    anchor_terms: [제작기간, 납품기간, 리드타임]
+    locator_label: 평균 제작기간/납기 (사업의 내용 수주·생산 서술)
+    value_pattern: '(?:평균\s*)?(?:제작|납품)기간[^0-9]{0,40}?(?P<value>[0-9]+(?:\.[0-9]+)?)\s*(?P<unit>개월|년)'
+    canonical_unit: months
+    source_unit_map:
+      개월: months
+      년: years
+    critical: false
   realized_price:
     anchor_terms: [판매단가, 판매가격, 평균판매단가]
     locator_label: 판매단가 (사업의 내용 주요 제품 가격변동추이 표)

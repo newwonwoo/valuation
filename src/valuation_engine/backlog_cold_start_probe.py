@@ -122,6 +122,9 @@ _FILING_BODY = """
 <TR><TD>생산실적</TD><TD>3,800,000 백만원</TD></TR>
 <TR><TD>평균가동률</TD><TD>95.0 %</TD></TR>
 </TABLE>
+<P>수주에서 인도까지의 평균 제작기간은 28개월입니다.</P>
+<P>III. 재무에 관한 사항</P>
+<P>당기말 계약부채는 2,450,000 백만원입니다.</P>
 </BODY>
 """
 
@@ -174,15 +177,23 @@ UNDERWRITING: dict[str, tuple[float | int, str, str]] = {
     "diluted_shares": (71000000, "shares", "diluted share count declared for this synthetic shipbuilder."),
 }
 
-#: DIAGNOSTIC ONLY. These four are filing/contract facts, not analyst judgments;
-#: routing them through the underwriting file is exactly the layer laundering the
-#: engine exists to prevent. They exist here solely so the SECOND boundary (beta)
-#: can be reached and pinned, and the test that uses them says so in its name.
-DIAGNOSTIC_CONTRACT_STUBS: dict[str, tuple[float | int, str, str]] = {
-    "revenue_recognition": (1.0, "ratio", "DIAGNOSTIC stub standing in for the percentage-of-completion policy note."),
-    "cancellation_terms": (0.03, "ratio", "DIAGNOSTIC stub standing in for the contractual cancellation ceiling."),
-    "contract_liabilities": (2450, "KRW_billion", "DIAGNOSTIC stub standing in for customer advances held as contract liabilities."),
-    "lead_time": (28, "months", "DIAGNOSTIC stub standing in for average contracted delivery lead time."),
+#: The two contract-structure items that are CATEGORICAL policy facts, not
+#: numbers a table extractor can read: how revenue is recognised, and what the
+#: cancellation terms are. Until a note-scoped categorical reader exists, their
+#: honest generic entrance is the declared-underwriting door — the operator
+#: reads the filing's own notes and declares the classification with a
+#: rationale and provenance, at ANALYST_UNDERWRITING where the composition
+#: report discloses it. The numeric two (계약부채, 제작기간) now come from the
+#: filing itself via the KPI collector and are NOT declared here.
+DIAGNOSTIC_CONTRACT_STUBS: dict[str, tuple[float | int | str, str, str]] = {
+    "revenue_recognition": (
+        "percentage_of_completion", "dimensionless",
+        "revenue-recognition policy read from the filing's accounting notes and declared as the operator's classification.",
+    ),
+    "cancellation_terms": (
+        "contract_specific", "dimensionless",
+        "cancellation clauses are contract-specific per the order note; no normalized rate is disclosed.",
+    ),
 }
 
 

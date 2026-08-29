@@ -58,6 +58,7 @@ _UNIT_DEFS = {
     "count": UnitDef("count", Dimension.COUNT, "count", Decimal("1")),
     "shares": UnitDef("shares", Dimension.SHARES, "shares", Decimal("1")),
     "days": UnitDef("days", Dimension.TIME, "days", Decimal("1")),
+    "months": UnitDef("months", Dimension.TIME, "days", Decimal("30.4375")),
     "years": UnitDef("years", Dimension.TIME, "days", Decimal("365.25")),
     "ratio": UnitDef("ratio", Dimension.RATIO, "ratio", Decimal("1")),
     "%": UnitDef("%", Dimension.RATIO, "ratio", Decimal("0.01")),

@@ -147,7 +147,7 @@ def test_the_provider_declares_exactly_the_configured_metrics():
     assert provider.capability.collector_id == COLLECTOR_ID
     assert set(provider.capability.supported_metrics) == {
         "orders", "backlog", "nameplate_capacity", "capacity", "production",
-        "utilization", "realized_price",
+        "utilization", "realized_price", "contract_liabilities", "lead_time",
     }
 
 

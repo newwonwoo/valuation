@@ -19,7 +19,7 @@ places the run honestly ends rather than inventing a number:
    The filing collector supplies orders and backlog from the disclosed 수주 table;
    the four *contract-structure* items have no collector, so collection fails
    closed and NAMES them. That is the honest boundary, not a defect to paper over.
-2. Given those four, the run reaches VALUATION_METHOD_INTENT — and what happens
+2. Given the two categorical policy declarations, the run reaches VALUATION_METHOD_INTENT — and what happens
    next depends on the operator's declared risk pack. Without one, it stops at
    HIERARCHICAL_BETA_ESTIMATION: 9 of the 14 execution families require beta
    and WACC, and the engine refuses to invent a discount rate. WITH a declared
@@ -53,9 +53,11 @@ from valuation_engine.valuation_plan_compiler import SegmentMethodChoice
 
 SEG = "core"
 
-#: The four contract-structure items ``contracted_backlog`` requires and no
-#: collector in this repository produces (see DIAGNOSTIC_CONTRACT_STUBS).
+#: The contract-structure items still without a collector: the two CATEGORICAL
+#: policy facts. The numeric two (계약부채 → contract_liabilities, 제작기간 →
+#: lead_time) are now read from the filing by the KPI collector.
 UNCOLLECTED_CONTRACT_EVIDENCE = tuple(DIAGNOSTIC_CONTRACT_STUBS)
+COLLECTED_FROM_FILING = ("orders", "backlog", "contract_liabilities", "lead_time")
 
 
 def _execute(underwriting_rows: dict, *, with_risk_pack: bool = False):
@@ -102,12 +104,16 @@ def test_the_engine_routes_an_unseen_shipbuilder_without_company_code(cold_run):
 def test_the_cold_run_fails_closed_and_names_the_uncollected_contract_evidence(cold_run):
     _, stop_stage, stop_reason, _ = cold_run
     assert stop_stage == "PRIMARY_EVIDENCE_COLLECTION"
+    assert UNCOLLECTED_CONTRACT_EVIDENCE == (
+        "revenue_recognition", "cancellation_terms",
+    )
     for metric in UNCOLLECTED_CONTRACT_EVIDENCE:
         assert metric in stop_reason, metric
-    # orders and backlog came from the filing's own 수주 table, so they are NOT
-    # among the gaps — the filing KPI collector really did the work.
-    assert "core:required_evidence:orders" not in stop_reason
-    assert "core:required_evidence:backlog" not in stop_reason
+    # Everything numeric came from the filing itself — 수주총액/수주잔고 from
+    # the 수주 table, 계약부채 from the notes, 제작기간 from the narrative —
+    # so none of them appears among the gaps.
+    for metric in COLLECTED_FROM_FILING:
+        assert f"core:required_evidence:{metric}" not in stop_reason, metric
 
 
 def test_the_backlog_route_demands_a_twenty_key_roll_forward():
