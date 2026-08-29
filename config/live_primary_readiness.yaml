@@ -45,12 +45,14 @@ stages:
   PRIMARY_EVIDENCE_COLLECTION:
     status: PARTIAL_LIVE
     reason: >-
-      typed collector core plus two company-neutral collectors: OpenDART standard financial
-      facts and the filing-KPI collector reading the statutory operating tables (수주총액,
-      수주잔고, 생산능력, 생산실적, 가동률) with exact member-hash/span receipts. Market-side
-      industry evidence (realized/benchmark prices, cash cost, inventory and process-spread
-      inputs) still lacks collectors - the executed cold-start probe names those metrics as
-      its current boundary.
+      three company-neutral collectors: OpenDART standard financial facts, the filing-KPI
+      collector over the statutory operating tables (exact member-hash/span receipts), and the
+      industry-series collector serving definition-gated industry observables (benchmark/input/
+      output prices, industry inventory) from operator-verified series - the default series
+      registry ships with zero verified rows, so production coverage requires operator
+      verification. The executed cold-start probe's boundary is now company-realized quantities
+      only (realized_price, cash_cost, product_yield, plant_runs, turnaround), which need
+      filing/IR extraction rather than more industry feeds.
   EVIDENCE_LEDGER:
     status: RUNTIME_READY
     reason: append-only ledger, supersession and snapshot hashing are implemented.

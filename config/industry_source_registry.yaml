@@ -165,6 +165,9 @@ sources:
   - construction
   - services
   - demographics
+  - benchmark_price
+  - input_price
+  - output_price
   url: https://kosis.kr/openapi/devGuide/devGuide_0201List.do
   public_fulltext_allowed: true
 - id: KR_OPENDART

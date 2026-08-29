@@ -48,6 +48,10 @@ from .generic_valuation_plan import (
     composed_generic_registry_loader,
     conventional_valuation_plan_inputs_loader,
 )
+from .industry_series_collector import (
+    DEFAULT_SERIES_REGISTRY_PATH,
+    industry_series_collector_providers,
+)
 from .kr_filing_kpi_collector import filing_kpi_collector_provider
 from .kr_opendart_provider import (
     KRLiveProviderExtensions,
@@ -125,6 +129,7 @@ class GenericKRRuntimeSpec:
     reporting_unit: str = "KRW"
     forecast_years: int = 5
     classification_map_path: str | Path = DEFAULT_CLASSIFICATION_MAP_PATH
+    industry_series_registry_path: str | Path = DEFAULT_SERIES_REGISTRY_PATH
     freshness_max_age_days: int = 120
 
     def validate(self) -> None:
@@ -165,6 +170,12 @@ def build_generic_kr_runtime_factory(
                 network,
                 as_of=spec.as_of,
                 segment_id=spec.filing.segment_id,
+            ),
+            *industry_series_collector_providers(
+                network.fetch_text,
+                as_of=spec.as_of,
+                segment_id=spec.filing.segment_id,
+                registry_path=spec.industry_series_registry_path,
             ),
         ),
         industry_snapshot_loader=opendart_filing_snapshot_loader(

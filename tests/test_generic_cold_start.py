@@ -173,19 +173,22 @@ def test_a_blocked_cold_run_publishes_no_intrinsic_value(cold_run):
 
 
 def test_the_probe_module_reports_the_same_boundary():
-    """The boundary is now evidence breadth by name, no longer collector absence.
+    """Only company-realized quantities remain uncollected, by name.
 
-    The filing-KPI collector extracts production/capacity/utilization from the
-    statutory tables; what remains missing is exactly the market-side evidence
-    (realized/benchmark prices, cash cost, inventory) that needs the industry
-    source indexers — and the engine names every one of those metrics itself.
+    The filing-KPI collector reads the statutory operating tables; the industry
+    series collector serves benchmark/input/output prices and industry
+    inventory through the definition gate. What remains is exactly the set an
+    industry average may never impersonate — realized price, cash cost, yield,
+    runs, turnaround — which need company filings/IR extraction, not more
+    industry feeds.
     """
     outcome = execute_cold_start_probe()
     assert outcome.probed
     assert outcome.reached == EXPECTED_REACHED
     assert outcome.blocking_stage == "PRIMARY_EVIDENCE_COLLECTION"
     assert "required primary evidence missing" in outcome.blocking_reason
-    for metric in ("realized_price", "benchmark_price", "cash_cost", "inventory"):
+    for metric in ("realized_price", "cash_cost", "product_yield", "plant_runs", "turnaround"):
         assert metric in outcome.blocking_reason
-    # Collector absence is no longer the story.
-    assert "no runnable collector" not in outcome.blocking_reason
+    # Served by the industry-series collector now; must no longer be missing.
+    for metric in ("benchmark_price", "input_price", "output_price", "inventory"):
+        assert metric not in outcome.blocking_reason

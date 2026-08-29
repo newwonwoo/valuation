@@ -27,6 +27,7 @@ from __future__ import annotations
 from dataclasses import replace
 from io import BytesIO
 import json
+from pathlib import Path
 import tempfile
 from zipfile import ZipFile
 
@@ -89,7 +90,93 @@ def _fact_rows() -> list[dict]:
     ]
 
 
+#: Synthetic industry series the probe's registry declares as verified. The
+#: values are fixture data proving the collection plumbing; a production
+#: registry ships with zero verified rows until an operator checks real series.
+_PROBE_SERIES = {
+    "PROBE_KOSIS_STEEL_PPI": [
+        {"PRD_DE": "202606", "DT": "112.4"},
+        {"PRD_DE": "202607", "DT": "113.1"},
+    ],
+    "PROBE_KOSIS_IRON_ORE_INPUT": [
+        {"PRD_DE": "202607", "DT": "98.7"},
+    ],
+    "PROBE_KOSIS_STEEL_OUTPUT": [
+        {"PRD_DE": "202607", "DT": "104.2"},
+    ],
+    "PROBE_KOSIS_STEEL_INVENTORY": [
+        {"PRD_DE": "202606", "DT": "121.9"},
+        # Published after the probe cutoff: must never be selected.
+        {"PRD_DE": "202612", "DT": "999.0"},
+    ],
+}
+
+_PROBE_SERIES_ROWS = """
+series:
+  - series_id: PROBE_KOSIS_STEEL_PPI
+    source_id: KR_KOSIS_API
+    metric: benchmark_price
+    layer: authorized_market_data
+    unit: dimensionless
+    geography: KR
+    definition_id: DEF_PROBE_STEEL_PPI
+    definition: >-
+      Synthetic producer-price index for basic steel used only by the cold-start
+      probe; index level, not a company-realized price.
+    url_template: https://probe.invalid/kosis/PROBE_KOSIS_STEEL_PPI.json
+    api_key_env: ""
+    verified: true
+  - series_id: PROBE_KOSIS_IRON_ORE_INPUT
+    source_id: KR_KOSIS_API
+    metric: input_price
+    layer: authorized_market_data
+    unit: dimensionless
+    geography: KR
+    definition_id: DEF_PROBE_IRON_ORE
+    definition: >-
+      Synthetic iron-ore input price index used only by the cold-start probe.
+    url_template: https://probe.invalid/kosis/PROBE_KOSIS_IRON_ORE_INPUT.json
+    api_key_env: ""
+    verified: true
+  - series_id: PROBE_KOSIS_STEEL_OUTPUT
+    source_id: KR_KOSIS_API
+    metric: output_price
+    layer: authorized_market_data
+    unit: dimensionless
+    geography: KR
+    definition_id: DEF_PROBE_STEEL_OUTPUT
+    definition: >-
+      Synthetic steel product output price index used only by the cold-start probe.
+    url_template: https://probe.invalid/kosis/PROBE_KOSIS_STEEL_OUTPUT.json
+    api_key_env: ""
+    verified: true
+  - series_id: PROBE_KOSIS_STEEL_INVENTORY
+    source_id: KR_KOSIS_API
+    metric: inventory
+    layer: realized_or_filing
+    unit: dimensionless
+    geography: KR
+    definition_id: DEF_PROBE_STEEL_INVENTORY
+    definition: >-
+      Synthetic industry inventory index used only by the cold-start probe.
+    url_template: https://probe.invalid/kosis/PROBE_KOSIS_STEEL_INVENTORY.json
+    api_key_env: ""
+    verified: true
+"""
+
+
+def _probe_series_registry_path() -> str:
+    directory = tempfile.mkdtemp(prefix="cold-start-series-")
+    path = Path(directory) / "series_registry.yaml"
+    path.write_text("version: 1\npurpose: cold-start probe fixture\n" + _PROBE_SERIES_ROWS,
+                    encoding="utf-8")
+    return str(path)
+
+
 def probe_fetch_text(url: str) -> str:
+    if "probe.invalid/kosis/" in url:
+        series_id = url.rsplit("/", 1)[-1].removesuffix(".json")
+        return json.dumps(_PROBE_SERIES[series_id])
     if "list.json" in url:
         return json.dumps({"status": "000", "list": _FILING_ROWS})
     if "company.json" in url:
@@ -145,6 +232,7 @@ def probe_runtime_spec():
 
     return GenericKRRuntimeSpec(
         as_of=PROBE_AS_OF,
+        industry_series_registry_path=_probe_series_registry_path(),
         scenario_ids=("Base",),
         method_choices=(
             SegmentMethodChoice("core", "commodity_price_taker", "normalized_multiple"),

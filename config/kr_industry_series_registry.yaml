@@ -1,0 +1,30 @@
+version: 1
+purpose: >-
+  Operator-verified industry data series that the generic industry-series
+  collector may turn into Evidence. Three structural rules, enforced at load:
+  (1) a series may only serve an industry-observable metric - company-realized
+  quantities (realized_price, cash_cost, production, utilization, ...) are
+  refused, because an industry average wearing a company metric's name is the
+  exact conflation the definition-normalization gate forbids; (2) every row
+  carries a definition_id and a real definition that rides into the Evidence
+  notes; (3) a row collects only after an operator sets verified: true, having
+  checked the series against the source catalog - a guessed table identity is a
+  fabricated source, so this file ships with ZERO verified rows and the cold
+  run's coverage gap stays truthful until real series are verified.
+  url_template renders {api_key} from api_key_env at fetch time; the Evidence
+  source_ref always carries the redacted form.
+series: []
+# Operator template (copy, fill from the KOSIS/KEEI catalog, verify, then set verified: true):
+#  - series_id: KR_KOSIS_PPI_STEEL_V1
+#    source_id: KR_KOSIS_API
+#    metric: output_price
+#    layer: authorized_market_data
+#    unit: dimensionless          # index level; declare the exact unit the table publishes
+#    geography: KR
+#    definition_id: DEF_PPI_STEEL_BASIC
+#    definition: >-
+#      Producer price index for basic steel products as published in the named
+#      KOSIS table; index base year per catalog; not a company-realized price.
+#    url_template: https://kosis.kr/openapi/Param/statisticsParameterData.do?method=getList&apiKey={api_key}&orgId=...&tblId=...&format=json&jsonVD=Y
+#    api_key_env: KOSIS_API_KEY
+#    verified: false
