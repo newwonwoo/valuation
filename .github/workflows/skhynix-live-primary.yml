@@ -10,6 +10,7 @@ on:
       - 'src/valuation_engine/skhynix_live_primary.py'
       - 'src/valuation_engine/skhynix_continuous_live_primary.py'
       - 'src/valuation_engine/skhynix_continuous_probability.py'
+      - 'src/valuation_engine/skhynix_public_report.py'
       - 'src/valuation_engine/continuous_probability_snapshot.py'
       - 'src/valuation_engine/probability_adapter.py'
       - 'src/valuation_engine/scenario_binding.py'
@@ -17,6 +18,7 @@ on:
       - 'src/valuation_engine/street.py'
       - 'scripts/run_skhynix_live_primary.py'
       - 'tests/test_skhynix_live_primary.py'
+      - 'tests/test_skhynix_public_report.py'
       - 'src/valuation_engine/strict_live_runtime.py'
       - 'src/valuation_engine/live_runtime.py'
       - 'src/valuation_engine/assumption_compiler.py'
@@ -31,6 +33,7 @@ on:
       - 'src/valuation_engine/skhynix_live_primary.py'
       - 'src/valuation_engine/skhynix_continuous_live_primary.py'
       - 'src/valuation_engine/skhynix_continuous_probability.py'
+      - 'src/valuation_engine/skhynix_public_report.py'
       - 'src/valuation_engine/continuous_probability_snapshot.py'
       - 'src/valuation_engine/probability_adapter.py'
       - 'src/valuation_engine/scenario_binding.py'
@@ -38,6 +41,7 @@ on:
       - 'src/valuation_engine/street.py'
       - 'scripts/run_skhynix_live_primary.py'
       - 'tests/test_skhynix_live_primary.py'
+      - 'tests/test_skhynix_public_report.py'
       - 'src/valuation_engine/strict_live_runtime.py'
       - 'src/valuation_engine/live_runtime.py'
       - 'src/valuation_engine/assumption_compiler.py'
@@ -77,6 +81,9 @@ jobs:
             /tmp/SKHYNIX_000660_LATEST_REPORT.json
             /tmp/PRISM_000660_*.svg
       - name: SK hynix canonical regressions
-        run: pytest -q tests/test_skhynix_live_primary.py
+        run: >-
+          pytest -q
+          tests/test_skhynix_live_primary.py
+          tests/test_skhynix_public_report.py
       - name: Full regression
         run: pytest -q

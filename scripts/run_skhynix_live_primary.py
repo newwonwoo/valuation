@@ -5,13 +5,16 @@ from decimal import Decimal
 import hashlib
 import json
 from pathlib import Path
-import shutil
 from tempfile import TemporaryDirectory
 
 from valuation_engine.report_artifact import versioned_asset_filename
 from valuation_engine.skhynix_continuous_live_primary import (
     render_calibrated_probability_summary,
     run_skhynix_live_primary,
+)
+from valuation_engine.skhynix_public_report import (
+    render_skhynix_public_report,
+    render_skhynix_public_visual,
 )
 from valuation_engine.strict_live_runtime import require_canonical_live_result
 
@@ -32,7 +35,7 @@ def _artifact_identity(result, report: str, visual_payloads: tuple[tuple[str, st
     date_token = str(as_of)[:10].replace("-", "")
     seed = "|".join(
         (
-            "prism-skhynix-report/v2-continuous-probability",
+            "prism-skhynix-report/v3-korean-standard",
             result.run_id,
             str(result.data["valuation_hash"]),
             str(result.data["execution_attestation_hash"]),
@@ -51,9 +54,9 @@ def _blocked_diagnostic(authority) -> None:
     print(
         json.dumps(
             {
-                "blocked_reasons": list(authority.result.blocked_reasons),
-                "stage_traces": [
-                    {"stage": item.stage, "status": item.status.value, "rationale": item.rationale}
+                "차단사유": list(authority.result.blocked_reasons),
+                "단계기록": [
+                    {"단계": item.stage, "상태": item.status.value, "사유": item.rationale}
                     for item in authority.result.stage_traces
                 ],
             },
@@ -68,7 +71,7 @@ def run_and_render(output: Path | None = None) -> dict[str, object]:
         authority = run_skhynix_live_primary(state_root)
         if authority.result.blocked_reasons:
             _blocked_diagnostic(authority)
-            raise RuntimeError("SK hynix canonical run blocked")
+            raise RuntimeError("SK하이닉스 표준 가치평가 실행이 차단되었습니다")
         result = require_canonical_live_result(authority)
         valuation = result.data["generic_valuation_result"]
         probability_snapshot = result.data["continuous_probability_calibration_snapshot"]
@@ -77,11 +80,21 @@ def run_and_render(output: Path | None = None) -> dict[str, object]:
             probability_snapshot,
             result.data.get("probability_distribution_status"),
         )
+        report = render_skhynix_public_report(report)
         run_dir = Path(str(result.data["saved_run_dir"]))
         visual_names = tuple(str(name) for name in result.data.get("saved_report_visuals", ()))
         if len(visual_names) != 2:
-            raise RuntimeError("canonical SK hynix report requires exactly two deterministic SVG cards")
-        visual_payloads = tuple((name, (run_dir / name).read_text(encoding="utf-8")) for name in visual_names)
+            raise RuntimeError("SK하이닉스 최종보고서는 표준 요약 이미지 2장이 필요합니다")
+        visual_payloads = tuple(
+            (
+                name,
+                render_skhynix_public_visual(
+                    (run_dir / name).read_text(encoding="utf-8"),
+                    card_number=index,
+                ),
+            )
+            for index, name in enumerate(visual_names, start=1)
+        )
         artifact_id, filename_base = _artifact_identity(result, report, visual_payloads)
         versioned_visuals = tuple(
             (name, versioned_asset_filename(name, artifact_id), svg)
@@ -90,7 +103,7 @@ def run_and_render(output: Path | None = None) -> dict[str, object]:
         stamped_report = report
         for original, versioned, _ in versioned_visuals:
             stamped_report = stamped_report.replace(original, versioned)
-        stamped_report = stamped_report.rstrip() + f"\n\n---\n보고서 ID `{artifact_id}`\n"
+        stamped_report = stamped_report.rstrip() + f"\n\n---\n보고서 식별번호 `{artifact_id}`\n"
         report_sha = _sha256_text(stamped_report)
         versioned_report_name = f"{filename_base}.md"
         versioned_manifest_name = f"{filename_base}.json"
@@ -134,23 +147,19 @@ def run_and_render(output: Path | None = None) -> dict[str, object]:
             versioned_manifest = output.parent / versioned_manifest_name
             latest_manifest = output.parent / LATEST_MANIFEST_FILENAME
             if versioned_report.exists() and versioned_report.read_text(encoding="utf-8") != stamped_report:
-                raise FileExistsError(f"refusing to overwrite immutable report: {versioned_report}")
+                raise FileExistsError(f"기존 확정 보고서를 덮어쓸 수 없습니다: {versioned_report}")
             if versioned_manifest.exists() and versioned_manifest.read_text(encoding="utf-8") != manifest:
-                raise FileExistsError(f"refusing to overwrite immutable manifest: {versioned_manifest}")
+                raise FileExistsError(f"기존 확정 검증파일을 덮어쓸 수 없습니다: {versioned_manifest}")
             versioned_report.write_text(stamped_report, encoding="utf-8")
             versioned_manifest.write_text(manifest, encoding="utf-8")
             latest_manifest.write_text(manifest, encoding="utf-8")
             output.write_text(stamped_report, encoding="utf-8")
             output.with_suffix(".json").write_text(manifest, encoding="utf-8")
-            for original, versioned, svg in versioned_visuals:
-                source = run_dir / original
+            for _, versioned, svg in versioned_visuals:
                 target = output.parent / versioned
                 if target.exists() and target.read_text(encoding="utf-8") != svg:
-                    raise FileExistsError(f"refusing to overwrite immutable visual: {target}")
-                if source.exists():
-                    shutil.copy2(source, target)
-                else:
-                    target.write_text(svg, encoding="utf-8")
+                    raise FileExistsError(f"기존 확정 이미지를 덮어쓸 수 없습니다: {target}")
+                target.write_text(svg, encoding="utf-8")
 
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         return summary
