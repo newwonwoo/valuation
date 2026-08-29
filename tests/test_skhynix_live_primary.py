@@ -5,12 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from scripts.run_skhynix_live_primary import _render_calibrated_probability_summary
 from valuation_engine.continuous_probability_snapshot import ContinuousProbabilityCalibrationSnapshot
 from valuation_engine.records import CalibrationStatus
 from valuation_engine.skhynix_continuous_live_primary import (
     EXTERNAL_PROBABILITY_SOURCE,
     build_skhynix_live_primary_config,
+    render_calibrated_probability_summary,
     run_skhynix_live_primary,
 )
 from valuation_engine.skhynix_continuous_probability import (
@@ -83,7 +83,7 @@ def test_skhynix_continuous_probability_snapshot_replaces_legacy_boolean_mapping
 def test_skhynix_report_artifact_renders_frozen_calibrated_probabilities(tmp_path: Path):
     config = build_skhynix_live_primary_config(tmp_path)
     snapshot = config.providers.calibration_loader(None)
-    rendered = _render_calibrated_probability_summary(
+    rendered = render_calibrated_probability_summary(
         "| **시나리오 가능성** | 미산출 |",
         snapshot,
         "CALIBRATED",
