@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Callable
 
+from .continuous_probability_snapshot import ContinuousProbabilityCalibrationSnapshot
 from .control_plane import StageStatus
 from .hierarchical_calibration_certificate import HierarchicalCalibrationSnapshot
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
@@ -9,7 +10,11 @@ from .probability_calibration import CalibrationSnapshot
 from .records import CalibrationStatus
 
 
-CalibrationSnapshotType = CalibrationSnapshot | HierarchicalCalibrationSnapshot
+CalibrationSnapshotType = (
+    CalibrationSnapshot
+    | HierarchicalCalibrationSnapshot
+    | ContinuousProbabilityCalibrationSnapshot
+)
 CalibrationSnapshotLoader = Callable[[OrchestratorContext], CalibrationSnapshotType]
 
 
@@ -18,10 +23,11 @@ def probability_calibration_load_adapter(
     loader: CalibrationSnapshotLoader,
     expected_cohort_key: str,
 ) -> StageAdapter:
-    """Load a versioned calibration snapshot without creating a new canonical workflow stage.
+    """Load a versioned calibration snapshot inside the canonical SCENARIO_BUILD stage.
 
-    Both the original single-cohort snapshot and the hierarchical v2 snapshot satisfy this
-    boundary. Non-calibrated snapshots remain monitoring artifacts and never emit a certificate.
+    Single-cohort v1, hierarchical v2, and continuous financial-path v3 snapshots
+    share the same certificate boundary. Non-calibrated snapshots remain monitoring
+    artifacts and never authorize intrinsic probability weighting.
     """
     if not expected_cohort_key:
         raise ValueError("expected_cohort_key is required")
@@ -30,7 +36,12 @@ def probability_calibration_load_adapter(
         try:
             snapshot = loader(context)
             if not isinstance(
-                snapshot, (CalibrationSnapshot, HierarchicalCalibrationSnapshot)
+                snapshot,
+                (
+                    CalibrationSnapshot,
+                    HierarchicalCalibrationSnapshot,
+                    ContinuousProbabilityCalibrationSnapshot,
+                ),
             ):
                 raise TypeError(
                     "calibration loader must return a supported typed calibration snapshot"
@@ -39,6 +50,8 @@ def probability_calibration_load_adapter(
                 raise ValueError(
                     f"calibration cohort {snapshot.cohort_key} does not match {expected_cohort_key}"
                 )
+            if isinstance(snapshot, ContinuousProbabilityCalibrationSnapshot):
+                snapshot.validate()
         except Exception as exc:
             return StageExecutionResult(
                 StageStatus.BLOCKED,
@@ -46,7 +59,9 @@ def probability_calibration_load_adapter(
                 blocking=True,
             )
 
-        outputs = {"probability_calibration_snapshot": snapshot}
+        outputs: dict[str, object] = {"probability_calibration_snapshot": snapshot}
+        if isinstance(snapshot, ContinuousProbabilityCalibrationSnapshot):
+            outputs["continuous_probability_calibration_snapshot"] = snapshot
         if snapshot.status is CalibrationStatus.CALIBRATED:
             try:
                 certificate = snapshot.certificate()
