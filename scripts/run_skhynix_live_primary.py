@@ -9,7 +9,7 @@ import shutil
 from tempfile import TemporaryDirectory
 
 from valuation_engine.report_artifact import versioned_asset_filename
-from valuation_engine.skhynix_live_primary import run_skhynix_live_primary
+from valuation_engine.skhynix_continuous_live_primary import run_skhynix_live_primary
 from valuation_engine.strict_live_runtime import require_canonical_live_result
 
 
@@ -29,10 +29,11 @@ def _artifact_identity(result, report: str, visual_payloads: tuple[tuple[str, st
     date_token = str(as_of)[:10].replace("-", "")
     seed = "|".join(
         (
-            "prism-skhynix-report/v1",
+            "prism-skhynix-report/v2-continuous-probability",
             result.run_id,
             str(result.data["valuation_hash"]),
             str(result.data["execution_attestation_hash"]),
+            str(result.data.get("probability_calibration_snapshot_hash") or "NO_PROBABILITY_HASH"),
             core_token,
             _sha256_text(report),
             ",".join(f"{name}:{_sha256_text(svg)}" for name, svg in visual_payloads),
@@ -67,6 +68,7 @@ def run_and_render(output: Path | None = None) -> dict[str, object]:
             raise RuntimeError("SK hynix canonical run blocked")
         result = require_canonical_live_result(authority)
         valuation = result.data["generic_valuation_result"]
+        probability_snapshot = result.data["continuous_probability_calibration_snapshot"]
         report = str(result.data["final_report"])
         run_dir = Path(str(result.data["saved_run_dir"]))
         visual_names = tuple(str(name) for name in result.data.get("saved_report_visuals", ()))
@@ -93,7 +95,17 @@ def run_and_render(output: Path | None = None) -> dict[str, object]:
             "freeze_token_present": result.freeze_token is not None,
             "execution_attestation_hash": result.data.get("execution_attestation_hash"),
             "valuation_hash": result.data.get("valuation_hash"),
+            "probability_calibration_snapshot_hash": result.data.get("probability_calibration_snapshot_hash"),
+            "probability_calibration_dataset_hash": result.data.get("probability_calibration_dataset_hash"),
             "probability_distribution_status": result.data.get("probability_distribution_status"),
+            "scenario_probabilities": {
+                item.scenario_id: {
+                    "probability": str(item.probability),
+                    "lower": str(item.lower_probability),
+                    "upper": str(item.upper_probability),
+                }
+                for item in probability_snapshot.estimates
+            },
             "expected_value_per_share": (
                 str(valuation.expected_value_per_share)
                 if valuation.expected_value_per_share is not None

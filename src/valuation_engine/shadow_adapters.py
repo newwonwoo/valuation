@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from .assumption_compiler import AssumptionSpec, compile_assumptions
+from .continuous_probability_snapshot import ContinuousProbabilityCalibrationSnapshot
 from .control_plane import ExecutionMode, StageStatus
 from .industry_dna import IndustryDNAProfile, compose_modules
 from .ledger import EvidenceLedger
@@ -10,7 +11,11 @@ from .module_plan import build_module_requirement_plan
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .probability_calibration import CalibrationCertificate
 from .records import BridgeRecord, HypothesisRecord
-from .scenario_binding import ScenarioBindingSpec, bind_scenarios
+from .scenario_binding import (
+    ScenarioBindingSpec,
+    bind_external_calibrated_probabilities,
+    bind_scenarios,
+)
 from .state import StateStore
 
 
@@ -42,7 +47,9 @@ def load_company_state_adapter(*, state_root: str | Path) -> StageAdapter:
         state = store.load_current(ticker)
         return StageExecutionResult(
             StageStatus.PASS,
-            "prior company state loaded" if state is not None else "no prior company state; first-run empty state is valid",
+            "prior company state loaded"
+            if state is not None
+            else "no prior company state; first-run empty state is valid",
             {"company_state": state or {}},
         )
 
@@ -91,7 +98,14 @@ def module_requirement_plan_adapter(
         )
         expected_modules = tuple(
             dict.fromkeys(
-                (*plan.common_core_modules, *(archetype for segment in plan.segments for archetype in segment.archetypes))
+                (
+                    *plan.common_core_modules,
+                    *(
+                        archetype
+                        for segment in plan.segments
+                        for archetype in segment.archetypes
+                    ),
+                )
             )
         )
         return StageExecutionResult(
@@ -112,11 +126,11 @@ def module_requirement_plan_adapter(
 
 
 def scenario_build_adapter() -> StageAdapter:
-    """Compile Bridge proposals and bind scenarios inside the canonical SCENARIO_BUILD stage.
+    """Compile Bridge proposals and bind scenarios in canonical SCENARIO_BUILD.
 
-    LIVE_PRIMARY additionally requires a real CalibrationCertificate before any CALIBRATED
-    probability assumptions may enable numeric scenario weighting. PRIMARY_SHADOW keeps the
-    historical compatibility path so regression fixtures do not masquerade as live evidence.
+    Probability arithmetic remains deterministic. LIVE_PRIMARY may bind either a
+    calibrated probability assumption path or a frozen continuous financial-path
+    snapshot, but never both. The LLM remains proposal-only in either route.
     """
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
@@ -127,26 +141,75 @@ def scenario_build_adapter() -> StageAdapter:
         specs = context.data.get("assumption_specs")
         bridge_input_map = context.data.get("bridge_input_map", {})
         binding_spec = context.data.get("scenario_binding_spec")
-        calibration_certificate = context.data.get("probability_calibration_certificate")
+        calibration_certificate = context.data.get(
+            "probability_calibration_certificate"
+        )
+        continuous_snapshot = context.data.get(
+            "continuous_probability_calibration_snapshot"
+        )
 
         if not isinstance(target_id, str) or not target_id:
-            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "target_id missing for compilation", blocking=True)
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "target_id missing for compilation",
+                blocking=True,
+            )
         if not isinstance(ledger, EvidenceLedger):
-            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "EvidenceLedger missing for compilation", blocking=True)
-        if not isinstance(hypotheses, tuple) or not all(isinstance(item, HypothesisRecord) for item in hypotheses):
-            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "Hypothesis records missing for compilation", blocking=True)
-        if not isinstance(bridges, tuple) or not all(isinstance(item, BridgeRecord) for item in bridges):
-            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "Bridge proposals missing for compilation", blocking=True)
-        if not isinstance(specs, tuple) or not specs or not all(isinstance(item, AssumptionSpec) for item in specs):
-            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "Assumption specs missing for compilation", blocking=True)
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "EvidenceLedger missing for compilation",
+                blocking=True,
+            )
+        if not isinstance(hypotheses, tuple) or not all(
+            isinstance(item, HypothesisRecord) for item in hypotheses
+        ):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "Hypothesis records missing for compilation",
+                blocking=True,
+            )
+        if not isinstance(bridges, tuple) or not all(
+            isinstance(item, BridgeRecord) for item in bridges
+        ):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "Bridge proposals missing for compilation",
+                blocking=True,
+            )
+        if not isinstance(specs, tuple) or not specs or not all(
+            isinstance(item, AssumptionSpec) for item in specs
+        ):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "Assumption specs missing for compilation",
+                blocking=True,
+            )
         if not isinstance(bridge_input_map, dict):
-            return StageExecutionResult(StageStatus.BLOCKED, "bridge_input_map must be a dict", blocking=True)
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "bridge_input_map must be a dict",
+                blocking=True,
+            )
         if not isinstance(binding_spec, ScenarioBindingSpec):
-            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "ScenarioBindingSpec missing", blocking=True)
-        if calibration_certificate is not None and not isinstance(calibration_certificate, CalibrationCertificate):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "ScenarioBindingSpec missing",
+                blocking=True,
+            )
+        if calibration_certificate is not None and not isinstance(
+            calibration_certificate, CalibrationCertificate
+        ):
             return StageExecutionResult(
                 StageStatus.BLOCKED,
                 "probability_calibration_certificate must be a typed CalibrationCertificate",
+                blocking=True,
+            )
+        if continuous_snapshot is not None and not isinstance(
+            continuous_snapshot, ContinuousProbabilityCalibrationSnapshot
+        ):
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "continuous_probability_calibration_snapshot has invalid type",
                 blocking=True,
             )
 
@@ -160,8 +223,17 @@ def scenario_build_adapter() -> StageAdapter:
         )
         if not compilation.passed:
             codes = tuple(item.code for item in compilation.findings)
-            recoverable = {"MISSING_BRIDGE", "MISSING_TRANSFORM_INPUT", "UNKNOWN_HYPOTHESIS", "EMPTY_COMPILED_SET"}
-            status = StageStatus.RECOVERY_REQUIRED if codes and set(codes).issubset(recoverable) else StageStatus.BLOCKED
+            recoverable = {
+                "MISSING_BRIDGE",
+                "MISSING_TRANSFORM_INPUT",
+                "UNKNOWN_HYPOTHESIS",
+                "EMPTY_COMPILED_SET",
+            }
+            status = (
+                StageStatus.RECOVERY_REQUIRED
+                if codes and set(codes).issubset(recoverable)
+                else StageStatus.BLOCKED
+            )
             return StageExecutionResult(
                 status,
                 "assumption compilation failed: " + ", ".join(codes),
@@ -181,14 +253,56 @@ def scenario_build_adapter() -> StageAdapter:
         )
         if not bound.passed:
             codes = tuple(item.code for item in bound.findings)
-            recoverable = {"MISSING_REQUIRED_ASSUMPTION", "MISSING_SCENARIO_PROBABILITY"}
-            status = StageStatus.RECOVERY_REQUIRED if codes and set(codes).issubset(recoverable) else StageStatus.BLOCKED
+            recoverable = {
+                "MISSING_REQUIRED_ASSUMPTION",
+                "MISSING_SCENARIO_PROBABILITY",
+            }
+            status = (
+                StageStatus.RECOVERY_REQUIRED
+                if codes and set(codes).issubset(recoverable)
+                else StageStatus.BLOCKED
+            )
             return StageExecutionResult(
                 status,
                 "scenario binding failed: " + ", ".join(codes),
                 {"scenario_binding_findings": bound.findings},
                 blocking=True,
             )
+
+        binding_findings = list(bound.findings)
+        if binding_spec.external_probability_source is not None:
+            if continuous_snapshot is None or calibration_certificate is None:
+                return StageExecutionResult(
+                    StageStatus.RECOVERY_REQUIRED,
+                    "external continuous probability binding requires a frozen snapshot and certificate",
+                    blocking=True,
+                )
+            try:
+                continuous_snapshot.validate()
+            except Exception as exc:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    f"continuous probability snapshot validation failed: {type(exc).__name__}: {exc}",
+                    blocking=True,
+                )
+            rebound = bind_external_calibrated_probabilities(
+                compilation.assumption_set,
+                bound.scenario_set,
+                binding_spec,
+                probabilities=continuous_snapshot.probabilities,
+                calibration_certificate=calibration_certificate,
+                probability_source=continuous_snapshot.probability_source,
+            )
+            if not rebound.passed:
+                return StageExecutionResult(
+                    StageStatus.BLOCKED,
+                    "external continuous probability binding failed: "
+                    + ", ".join(item.code for item in rebound.findings),
+                    {"scenario_binding_findings": rebound.findings},
+                    blocking=True,
+                )
+            bound = rebound
+            binding_findings.extend(rebound.findings)
 
         scenario_set = bound.scenario_set
         outputs = {
@@ -198,12 +312,16 @@ def scenario_build_adapter() -> StageAdapter:
             "scenario_set_hash": scenario_set.scenario_set_hash,
             "probability_calibration_status": scenario_set.calibration_status,
             "probability_weighting_allowed": scenario_set.numeric_weighting_allowed,
-            "scenario_binding_findings": bound.findings,
+            "scenario_binding_findings": tuple(binding_findings),
         }
         if scenario_set.calibration_snapshot_hash is not None:
-            outputs["probability_calibration_snapshot_hash"] = scenario_set.calibration_snapshot_hash
+            outputs["probability_calibration_snapshot_hash"] = (
+                scenario_set.calibration_snapshot_hash
+            )
         if scenario_set.calibration_dataset_hash is not None:
-            outputs["probability_calibration_dataset_hash"] = scenario_set.calibration_dataset_hash
+            outputs["probability_calibration_dataset_hash"] = (
+                scenario_set.calibration_dataset_hash
+            )
         return StageExecutionResult(
             StageStatus.PASS,
             "Bridge proposals deterministically compiled and bound into generic scenarios",

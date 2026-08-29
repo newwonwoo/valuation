@@ -2,31 +2,45 @@ name: skhynix-live-primary
 
 on:
   push:
-    branches: [main, feat/skhynix-canonical-live-20260829]
+    branches: [main, feat/skhynix-canonical-live-20260829, feat/skhynix-continuous-probability-20260829]
     paths:
       - 'config/skhynix_live_snapshot.yaml'
+      - 'config/skhynix_continuous_calibration_artifact.json'
+      - 'config/skhynix_continuous_calibration_provenance.json'
       - 'src/valuation_engine/skhynix_live_primary.py'
+      - 'src/valuation_engine/skhynix_continuous_live_primary.py'
+      - 'src/valuation_engine/skhynix_continuous_probability.py'
+      - 'src/valuation_engine/continuous_probability_snapshot.py'
+      - 'src/valuation_engine/probability_adapter.py'
+      - 'src/valuation_engine/scenario_binding.py'
+      - 'src/valuation_engine/shadow_adapters.py'
       - 'src/valuation_engine/street.py'
       - 'scripts/run_skhynix_live_primary.py'
       - 'tests/test_skhynix_live_primary.py'
       - 'src/valuation_engine/strict_live_runtime.py'
       - 'src/valuation_engine/live_runtime.py'
       - 'src/valuation_engine/assumption_compiler.py'
-      - 'src/valuation_engine/scenario_binding.py'
       - 'src/valuation_engine/valuation_execution.py'
       - 'src/valuation_engine/generic_audit.py'
       - '.github/workflows/skhynix-live-primary.yml'
   pull_request:
     paths:
       - 'config/skhynix_live_snapshot.yaml'
+      - 'config/skhynix_continuous_calibration_artifact.json'
+      - 'config/skhynix_continuous_calibration_provenance.json'
       - 'src/valuation_engine/skhynix_live_primary.py'
+      - 'src/valuation_engine/skhynix_continuous_live_primary.py'
+      - 'src/valuation_engine/skhynix_continuous_probability.py'
+      - 'src/valuation_engine/continuous_probability_snapshot.py'
+      - 'src/valuation_engine/probability_adapter.py'
+      - 'src/valuation_engine/scenario_binding.py'
+      - 'src/valuation_engine/shadow_adapters.py'
       - 'src/valuation_engine/street.py'
       - 'scripts/run_skhynix_live_primary.py'
       - 'tests/test_skhynix_live_primary.py'
       - 'src/valuation_engine/strict_live_runtime.py'
       - 'src/valuation_engine/live_runtime.py'
       - 'src/valuation_engine/assumption_compiler.py'
-      - 'src/valuation_engine/scenario_binding.py'
       - 'src/valuation_engine/valuation_execution.py'
       - 'src/valuation_engine/generic_audit.py'
       - '.github/workflows/skhynix-live-primary.yml'
