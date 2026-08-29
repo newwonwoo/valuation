@@ -469,8 +469,14 @@ def load_authorized_street_export(path: str | Path):
             "Street export requires authorization_basis=licensed_export or explicit_permission"
         )
     rows = payload.get("reports")
-    if not isinstance(rows, list) or not rows:
-        raise DataCollectionError("Street export requires non-empty reports")
+    if not isinstance(rows, list):
+        raise DataCollectionError("Street export requires a reports list")
+    # An authorized export whose reports list is EMPTY is a declaration, not an
+    # omission: this covered-universe query returned no sell-side coverage
+    # (the normal state of a small cap). The Street stages then record the
+    # withholding instead of blocking the report on a reference nobody wrote.
+    if not rows:
+        return ()
     reports = []
     for row in rows:
         if not isinstance(row, Mapping):

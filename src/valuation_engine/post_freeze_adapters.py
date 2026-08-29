@@ -28,8 +28,18 @@ def street_reference_load_adapter(*, loader: StreetLoader) -> StageAdapter:
         try:
             _require_post_freeze(context)
             reports = loader()
-            if not isinstance(reports, tuple) or not reports:
-                raise ValueError("Street loader must return a non-empty tuple")
+            if not isinstance(reports, tuple):
+                raise ValueError("Street loader must return a tuple")
+            if not reports:
+                # A declared-empty authorized export: no coverage exists for
+                # this target. Withhold the Street reference honestly rather
+                # than blocking the run on a report nobody has written.
+                return StageExecutionResult(
+                    StageStatus.SKIPPED_NOT_APPLICABLE,
+                    "authorized Street export declares no sell-side coverage; "
+                    "Street reference withheld",
+                    {"street_reports": ()},
+                )
             if not all(isinstance(item, StreetResearchReport) for item in reports):
                 raise ValueError("Street loader returned an invalid report object")
             payload = "\n".join(
@@ -64,8 +74,14 @@ def street_gap_analyzer_adapter(*, drivers: tuple[StreetGapDriver, ...] = ()) ->
             reports = context.data.get("street_reports")
             if not isinstance(valuation, GenericValuationResult):
                 raise ValueError("GenericValuationResult is missing")
-            if not isinstance(reports, tuple) or not reports:
+            if not isinstance(reports, tuple):
                 raise ValueError("Street reports are missing")
+            if not reports:
+                return StageExecutionResult(
+                    StageStatus.SKIPPED_NOT_APPLICABLE,
+                    "no sell-side coverage was declared for this target; "
+                    "there is no Street target to gap against",
+                )
             if valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC:
                 reason = (
                     "PARTIAL_INTRINSIC is a valued-segment subtotal; whole-company Street target-price gap is withheld"

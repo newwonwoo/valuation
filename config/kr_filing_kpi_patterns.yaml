@@ -113,12 +113,17 @@ patterns:
       년: years
     critical: false
   realized_price:
-    anchor_terms: [판매단가, 판매가격, 평균판매단가]
+    # 실공시 어휘: 표 제목이 "주요 제품등의 가격변동"이고 단위가 "원/Ton"(영문 T)
+    # 인 layout이 실재한다 (한국철강 반기보고서 2025.06). 앵커는 제품 한정형
+    # "제품등의 가격변동"만 추가한다 — "가격변동" 단독은 바로 옆 원재료 표
+    # ("원재료등의 가격변동")까지 열어 매입단가를 판매단가로 세탁할 통로가 된다.
+    anchor_terms: [판매단가, 판매가격, 평균판매단가, 제품등의 가격변동]
     locator_label: 판매단가 (사업의 내용 주요 제품 가격변동추이 표)
     value_pattern: '(?:평균)?판매단가[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>원/톤|천원/톤|원/kg)'
     canonical_unit: KRW_per_ton
     source_unit_map:
       원/톤: KRW_per_ton
+      원/Ton: KRW_per_ton
       천원/톤: KRW_thousand_per_ton
       원/kg: KRW_per_kg
     critical: false
