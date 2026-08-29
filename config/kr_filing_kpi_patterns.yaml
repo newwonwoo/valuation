@@ -22,6 +22,10 @@ purpose: >-
   label the current column, so a legitimate figure is never turned into a gap.
 patterns:
   orders:
+    # 수주상황 statutory tables label the current column (당기/당기말/보고기간말),
+    # so the LLM locator path demands the marker: a bare unlabelled cell in a
+    # multi-period 수주 table must not be assumed current.
+    require_current_period: true
     anchor_terms: [수주총액, 신규수주]
     locator_label: 수주총액 (사업의 내용 수주상황 표)
     value_pattern: '수주총액[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원|원)'
@@ -33,6 +37,10 @@ patterns:
       원: KRW
     critical: false
   backlog:
+    # 수주상황 statutory tables label the current column (당기/당기말/보고기간말),
+    # so the LLM locator path demands the marker: a bare unlabelled cell in a
+    # multi-period 수주 table must not be assumed current.
+    require_current_period: true
     anchor_terms: [수주잔고, 수주잔액]
     locator_label: 수주잔고 (사업의 내용 수주상황 표)
     value_pattern: '수주잔고[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원|원)'

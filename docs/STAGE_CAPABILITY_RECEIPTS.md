@@ -153,17 +153,24 @@ probe report `33/33` for a run that exercised 28 providers, which is the same
 species of overclaim as `gaps: 0`, arrived at from the other side.
 
 `ColdStartOutcome` therefore records `route_skipped` apart from `reached`, and
-`AxisOutcome.ROUTE_SKIPPED` never derives `COLD_PROVEN`. The probe's own words:
+`AxisOutcome.ROUTE_SKIPPED` never derives `COLD_PROVEN`. The honest answer to a
+route-shaped blind spot is a second route, not a softer count: the validator
+runs both executed probes — the steel multiple route (no discount rate) and the
+shipbuilder backlog-DCF route (`backlog_cold_start_probe`, through Beta, WACC
+and the audit's hash-bound risk paths) — and merges them per stage, proven when
+EITHER ran it. Its own words:
 
 ```
-cold start: COMPLETED — 28/33 stages executed to an attested freeze and final
-report for an unseen company; 5 stage(s) were not required by the probe's method
-path and stayed unexercised: UPSTREAM_FUNDING_SCAN, RESEARCH_LOOP,
-HIERARCHICAL_BETA_ESTIMATION, WACC_VALIDATION, HIERARCHICAL_WARRANTED_PER
+cold start: COMPLETED — 31/33 stages executed to an attested freeze and final
+report across the two unseen-company routes (steel multiple, shipbuilder
+backlog DCF); 2 stage(s) were not required by the probe's method path and
+stayed unexercised: RESEARCH_LOOP, HIERARCHICAL_WARRANTED_PER
 ```
 
-The run genuinely completes and genuinely produces an attested value. It proves
-28 providers, not 33.
+The two that remain are named and real: `RESEARCH_LOOP` fires only when a run
+needs a recovery round neither fixture provokes, and `HIERARCHICAL_WARRANTED_PER`
+executes only once an authorized Economic-Twin residual PER pack becomes a
+declared input (today it is honestly withheld).
 
 Two of the five matter for coverage, not just bookkeeping. The probe values a
 steelmaker with `normalized_multiple`, which needs no discount rate, so

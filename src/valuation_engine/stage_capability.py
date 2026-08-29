@@ -157,6 +157,31 @@ class ColdStartOutcome:
     config_blocked_reason: str = ""
     missing_provider_slots: tuple[str, ...] = ()
 
+    def merge(self, other: "ColdStartOutcome") -> "ColdStartOutcome":
+        """Combine two probe routes: a stage is proven when EITHER executed it.
+
+        Different method paths exercise different stages (the steel route needs
+        no discount rate; the shipbuilder route needs no price-taker series), so
+        the honest union is per-stage: reached wins over skipped, and a stage
+        stays route-skipped only when no route ran it. Blocking states do not
+        merge — merge completed routes only.
+        """
+        if not (self.probed and other.probed):
+            raise StageCapabilityError("merge requires two executed probes")
+        if self.blocking_stage or other.blocking_stage or (
+            self.config_blocked_reason or other.config_blocked_reason
+        ):
+            raise StageCapabilityError("merge requires two completed probes")
+        reached = tuple(dict.fromkeys((*self.reached, *other.reached)))
+        skipped = tuple(
+            stage
+            for stage in dict.fromkeys((*self.route_skipped, *other.route_skipped))
+            if stage not in reached
+        )
+        return ColdStartOutcome(
+            probed=True, reached=reached, route_skipped=skipped
+        )
+
     def outcome_for(self, stage: str) -> tuple[AxisOutcome, str]:
         if not self.probed:
             return AxisOutcome.NOT_PROBED, "cold-start probe was not run"

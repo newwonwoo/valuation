@@ -58,11 +58,29 @@ def main() -> int:
     cold = probe_cold_start(base.stages)
     if not cold.missing_provider_slots:
         # Every required slot has a company-neutral implementation, so the
-        # stronger claim is testable: actually run the canonical runtime on a
-        # company this repository has never seen and record what executed.
+        # stronger claim is testable: actually run the canonical runtime on
+        # companies this repository has never seen and record what executed.
+        # Two routes, because one method path cannot exercise every stage:
+        # the steel route (normalized_multiple, no discount rate) and the
+        # shipbuilder route (backlog-burn DCF through Beta/WACC). A stage is
+        # proven when EITHER route ran it.
+        from valuation_engine.backlog_cold_start_probe import (
+            execute_backlog_cold_start_probe,
+        )
         from valuation_engine.cold_start_probe import execute_cold_start_probe
 
-        cold = execute_cold_start_probe()
+        steel = execute_cold_start_probe()
+        cold = steel
+        if steel.probed and steel.blocking_stage is None:
+            backlog = execute_backlog_cold_start_probe()
+            if backlog.probed and backlog.blocking_stage is None:
+                cold = steel.merge(backlog)
+            else:
+                print(
+                    "WARNING: backlog probe route did not complete: "
+                    f"{backlog.blocking_stage}: {backlog.blocking_reason}",
+                    file=sys.stderr,
+                )
     report = build_stage_capability_report(
         declarations=declarations,
         company_bound_modules=company_bound,
@@ -114,7 +132,8 @@ def main() -> int:
         )
         print(
             f"cold start: COMPLETED — {len(cold.reached)}/{len(report.stages)} stages "
-            "executed to an attested freeze and final report for an unseen company"
+            "executed to an attested freeze and final report across the two "
+            "unseen-company routes (steel multiple, shipbuilder backlog DCF)"
             + skipped
         )
     elif cold.probed:

@@ -67,7 +67,9 @@ def _tasks(metrics=("backlog",)):
     return tuple(patterns[m].locator_task() for m in metrics)
 
 
-GOOD_QUOTE = "수주잔액은 원화 기준으로 합계 1,080,000 백만원"
+# backlog now requires a current-period marker (config opt-in), so the good
+# quote carries the filing's own 보고기간말 affirmation.
+GOOD_QUOTE = "보고기간말 현재 당사가 수행 중인 계약의 수주잔액은 원화 기준으로 합계 1,080,000 백만원"
 
 
 def _proposal(quote=GOOD_QUOTE, value_text="1,080,000", unit="백만원", metric="backlog"):

@@ -300,3 +300,28 @@ def test_the_company_bound_list_names_the_modules_that_exist():
     for name in modules:
         path = ROOT / "src" / Path(*name.split(".")).with_suffix(".py")
         assert path.exists(), f"{name} is listed as company-bound but does not exist"
+
+
+def test_two_completed_probe_routes_merge_per_stage():
+    """A stage is proven when EITHER route ran it; route-skipped survives only
+    when NO route ran the stage. Blocking or config-blocked outcomes refuse to
+    merge — a union of an incomplete run would launder its gap."""
+    steel = ColdStartOutcome(
+        probed=True,
+        reached=("A", "B"),
+        route_skipped=("C", "D"),
+    )
+    ship = ColdStartOutcome(
+        probed=True,
+        reached=("B", "C"),
+        route_skipped=("D",),
+    )
+    merged = steel.merge(ship)
+    assert merged.reached == ("A", "B", "C")
+    assert merged.route_skipped == ("D",)
+    blocked = ColdStartOutcome(probed=True, reached=("A",), blocking_stage="B",
+                               blocking_reason="boom")
+    with pytest.raises(StageCapabilityError, match="completed"):
+        steel.merge(blocked)
+    with pytest.raises(StageCapabilityError, match="executed"):
+        steel.merge(ColdStartOutcome(probed=False))
