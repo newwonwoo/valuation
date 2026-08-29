@@ -75,3 +75,13 @@ patterns:
     source_unit_map:
       '%': '%'
     critical: false
+  realized_price:
+    anchor_terms: [판매단가, 판매가격, 평균판매단가]
+    locator_label: 판매단가 (사업의 내용 주요 제품 가격변동추이 표)
+    value_pattern: '(?:평균)?판매단가[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>원/톤|천원/톤|원/kg)'
+    canonical_unit: KRW_per_ton
+    source_unit_map:
+      원/톤: KRW_per_ton
+      천원/톤: KRW_thousand_per_ton
+      원/kg: KRW_per_kg
+    critical: false

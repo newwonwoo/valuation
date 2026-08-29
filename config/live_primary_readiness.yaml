@@ -52,9 +52,9 @@ stages:
       industry-series collector serving definition-gated industry observables (benchmark/input/
       output prices, industry inventory) from operator-verified series - the default series
       registry ships with zero verified rows, so production coverage requires operator
-      verification. The executed cold-start probe's boundary is now company-realized quantities
-      only (realized_price, cash_cost, product_yield, plant_runs, turnaround), which need
-      filing/IR extraction rather than more industry feeds.
+      verification. With a per-run declared-underwriting file for judgment inputs, the
+      executed cold-start probe completes all 33 stages to an attested freeze; live-source
+      breadth (verified series, live model proposals) remains the production gap.
   EVIDENCE_LEDGER:
     status: RUNTIME_READY
     reason: append-only ledger, supersession and snapshot hashing are implemented.

@@ -231,7 +231,7 @@ def test_cold_execution_reflects_the_assembly_probe_only_here(report):
         assert stage.cold_execution is AxisOutcome.NOT_PROBED
 
 
-def test_the_executed_probe_upgrades_reached_stages_to_cold_proven():
+def test_the_executed_probe_upgrades_every_stage_to_cold_proven():
     from valuation_engine.cold_start_probe import execute_cold_start_probe
 
     declarations, company_bound = load_stage_capability_declarations(DECLARATIONS)
@@ -243,11 +243,11 @@ def test_the_executed_probe_upgrades_reached_stages_to_cold_proven():
         canonical_stages=canonical,
         cold_start=executed,
     )
-    assert report.cold_proven_count == len(executed.reached) == 7
-    assert report.by_stage("COMPANY_RESOLUTION").derived is DerivedCapability.COLD_PROVEN
-    blocked = report.by_stage(executed.blocking_stage)
-    assert blocked.cold_execution is AxisOutcome.BLOCKED
-    assert "required primary evidence missing" in blocked.cold_execution_detail
+    assert executed.blocking_stage is None
+    assert report.cold_proven_count == len(executed.reached) == 33
+    for stage in ("COMPANY_RESOLUTION", "RESEARCHER_A", "DETERMINISTIC_VALUATION",
+                  "INTRINSIC_VALUE_FREEZE", "FINAL_REPORT"):
+        assert report.by_stage(stage).derived is DerivedCapability.COLD_PROVEN
 
 
 def test_cold_start_reports_not_probed_once_every_slot_is_filled():

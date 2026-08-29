@@ -105,6 +105,11 @@ def main() -> int:
     )
     if cold.config_blocked_reason:
         print(f"cold start: BLOCKED — {cold.config_blocked_reason}")
+    elif cold.probed and cold.blocking_stage is None:
+        print(
+            f"cold start: COMPLETED — all {len(cold.reached)}/{len(report.stages)} stages "
+            "executed to an attested freeze and final report for an unseen company"
+        )
     elif cold.probed:
         print(
             f"cold start: EXECUTED — reached {len(cold.reached)}/{len(report.stages)} stages; "

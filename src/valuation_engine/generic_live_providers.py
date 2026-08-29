@@ -21,10 +21,11 @@ bridges, plan, evaluators — is derived by the providers at run time.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from .generic_funding import generic_ledger_funding_scanner
+from .generic_underwriting import declared_underwriting_provider
 from .generic_kr_industry import (
     CachedCompanyProfileFetcher,
     DEFAULT_CLASSIFICATION_MAP_PATH,
@@ -131,11 +132,23 @@ class GenericKRRuntimeSpec:
     classification_map_path: str | Path = DEFAULT_CLASSIFICATION_MAP_PATH
     industry_series_registry_path: str | Path = DEFAULT_SERIES_REGISTRY_PATH
     freshness_max_age_days: int = 120
+    #: Optional per-run operator inputs. The underwriting file carries the
+    #: analyst's declared judgments (ANALYST_UNDERWRITING layer, rationale
+    #: required); market/street paths feed the post-freeze comparison stages
+    #: and never exist pre-freeze in the providers that build intrinsic value.
+    declared_underwriting_path: str | Path | None = None
+    market_config_path: str | Path | None = None
+    street_export_path: str | Path | None = None
+    market_currency: str | None = None
 
     def validate(self) -> None:
         if not self.as_of or not self.scenario_ids or not self.method_choices:
             raise GenericValuationPlanError(
                 "generic runtime spec requires as_of, scenario_ids and method_choices"
+            )
+        if self.market_config_path is not None and not self.market_currency:
+            raise GenericValuationPlanError(
+                "market_currency is required with a market config"
             )
         if len(self.scenario_ids) != len(set(self.scenario_ids)):
             raise GenericValuationPlanError("scenario_ids must be unique")
@@ -178,6 +191,11 @@ def build_generic_kr_runtime_factory(
                 segment_id=spec.filing.segment_id,
                 registry_path=spec.industry_series_registry_path,
             ),
+            *(
+                (declared_underwriting_provider(spec.declared_underwriting_path),)
+                if spec.declared_underwriting_path is not None
+                else ()
+            ),
         ),
         industry_snapshot_loader=opendart_filing_snapshot_loader(
             fetch_text=network.fetch_text,
@@ -214,10 +232,33 @@ def build_generic_kr_runtime_factory(
             reporting_unit=spec.reporting_unit,
         ),
     )
+    if spec.market_config_path is not None:
+        from .workflow import market_loader_from_config
+
+        extensions = replace(
+            extensions,
+            market_loader=market_loader_from_config(spec.market_config_path),
+        )
+    if spec.street_export_path is not None:
+        from .official_market_data import street_loader_from_authorized_export
+
+        extensions = replace(
+            extensions,
+            street_loader=street_loader_from_authorized_export(
+                spec.street_export_path
+            ),
+        )
+    # The valuation assumption keys must exist as Evidence before the Bridge can
+    # cite them. Keys the filing/series collectors do not produce arrive as the
+    # operator's declared underwriting, so they are declared here as additional
+    # required evidence for the core segment.
+    additional_required = {spec.filing.segment_id: keys}
     return KRLiveRuntimeFactory(
         network=network,
         filing=spec.filing,
         extensions=extensions,
+        additional_required_evidence=additional_required,
+        market_currency=spec.market_currency,
         scenario_binding_spec=ScenarioBindingSpec(
             scenario_ids=spec.scenario_ids,
             required_keys=keys,

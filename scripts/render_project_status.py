@@ -96,6 +96,12 @@ def _cold_start_line() -> str:
     from valuation_engine.cold_start_probe import execute_cold_start_probe
 
     executed = execute_cold_start_probe()
+    if executed.blocking_stage is None:
+        return (
+            f"{len(executed.reached)}/{len(canonical)} — canonical runtime completed for an "
+            "unseen company: attested freeze and final report (scripted staff proposals; "
+            "proposal quality with a live model remains unproven)"
+        )
     # The status page carries the headline; the full metric list stays in
     # scripts/validate_stage_capability.py output and the probe itself.
     reason = executed.blocking_reason.split("; segment requirements", 1)[0]

@@ -700,6 +700,19 @@ sources:
   - filings
   url: https://www.sec.gov/edgar/search/
   public_fulltext_allowed: true
+- id: OPERATOR_UNDERWRITING
+  family: OPERATOR
+  authority: analyst_declared
+  roles:
+  - company_primary
+  access: declared_file
+  cadence: per_run
+  industries:
+  - listed_companies
+  metrics:
+  - declared_judgments
+  url: docs/GENERIC_LIVE_PROVIDERS.md
+  public_fulltext_allowed: true
 phase2_candidates_to_verify:
 - id: KR_MSIT_TELECOM
   industries:

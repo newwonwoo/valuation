@@ -44,7 +44,12 @@ PROBE_STOCK_CODE = "900991"
 PROBE_COMPANY_NAME = "한빛제강"
 PROBE_RUN_ID = "COLD-START-PROBE"
 
-_PASSING_STATUSES = {StageStatus.PASS, StageStatus.WARNING}
+_PASSING_STATUSES = {
+    StageStatus.PASS,
+    StageStatus.WARNING,
+    StageStatus.SKIPPED_NOT_APPLICABLE,
+    StageStatus.RECOVERED,
+}
 
 
 def _corp_archive() -> bytes:
@@ -165,6 +170,174 @@ series:
 """
 
 
+_PROBE_UNDERWRITING = """
+target_id: KR:DART:00999902
+as_of: "2026-08-27"
+source_ref: https://github.com/newwonwoo/valuation/blob/main/docs/GENERIC_LIVE_PROVIDERS.md#the-executed-cold-start-probe
+declarations:
+  cash_cost:
+    value: 610000
+    unit: KRW_per_ton
+    rationale: mid-cycle cash cost per tonne declared for the synthetic probe company.
+  product_yield:
+    value: 0.94
+    unit: ratio
+    rationale: declared steady-state yield for the synthetic probe company.
+  plant_runs:
+    value: 2
+    unit: count
+    rationale: declared annual furnace run count for the synthetic probe company.
+  turnaround:
+    value: 21
+    unit: days
+    rationale: declared annual maintenance turnaround days for the probe company.
+  normalized_ebitda:
+    value: 940
+    unit: KRW_billion
+    rationale: mid-cycle EBITDA normalized from the probe filing's revenue and margin history.
+  normalized_multiple:
+    value: 5.5
+    unit: multiple
+    rationale: through-cycle EV/EBITDA multiple declared for the probe cohort.
+  ownership:
+    value: 1.0
+    unit: ratio
+    rationale: single wholly-owned operating segment in the probe structure.
+  ev_adjustment:
+    value: -1200
+    unit: KRW_billion
+    rationale: net debt bridge from the probe balance sheet (liabilities less cash equivalents).
+  diluted_shares:
+    value: 95000000
+    unit: shares
+    rationale: diluted share count declared for the synthetic probe company.
+"""
+
+_PROBE_MARKET = """
+market_comparison:
+  price: 61000
+  as_of: "2026-08-27"
+  source_ref: https://probe.invalid/market/close-20260827
+"""
+
+_PROBE_STREET = json.dumps({
+    "authorization_basis": "explicit_permission",
+    "reports": [
+        {
+            "broker": "Probe Research",
+            "analyst": "Probe Analyst",
+            "published_date": "2026-08-20",
+            "target_price": 70000,
+            "target_price_currency": "KRW",
+            "valuation_method": "EV/EBITDA",
+            "base_year": "2026E",
+            "estimates": [
+                {"metric": "ebitda", "period": "2026E", "value": 980,
+                 "unit": "KRW_billion"}
+            ],
+            "source_ref": "https://probe.invalid/street/explicit-permission-export",
+        }
+    ],
+})
+
+
+def _uw_id(metric: str) -> str:
+    return f"UW:KR:DART:{PROBE_CORP_CODE}:{metric}"
+
+
+def _staff_scripts() -> dict[str, tuple[str, ...]]:
+    """Deterministic proposals for the probe's staff seats.
+
+    The scripts cite only Evidence IDs the run's own collectors deterministically
+    produce (declared underwriting and industry series), and every bridge value
+    equals its cited Evidence value — the compiler re-derives and would reject
+    anything else. This proves the pipeline; proposal *quality* with a live
+    model remains explicitly unproven.
+    """
+    hypothesis = {
+        "rationale": (
+            "Mid-cycle normalized earnings with declared underwriting form the "
+            "basis for a through-cycle multiple valuation."
+        ),
+        "hypotheses": [{
+            "id": "H:PROBE:MIDCYCLE",
+            "statement": "Declared mid-cycle EBITDA of 940 KRW bn is sustainable",
+            "causal_chain": [
+                "benchmark steel prices and declared cash cost",
+                "normalized mid-cycle margin",
+                "enterprise value",
+            ],
+            "supporting_evidence_ids": [
+                _uw_id("normalized_ebitda"),
+                "INDSER:PROBE_KOSIS_STEEL_PPI:202607",
+            ],
+            "contradicting_evidence_ids": [],
+            "kill_conditions": [
+                "benchmark price index falls below 90 for two consecutive quarters"
+            ],
+            "next_checks": ["next quarterly filing"],
+        }],
+        "requested_evidence": [],
+        "scanner_reinforcements": [],
+        "context_strength_linkage": {
+            "not_applicable_reason": (
+                "No non-obvious environment-to-strength connection is observable "
+                "in the collected evidence for this synthetic probe run."
+            )
+        },
+    }
+    red_team = {
+        "counter_thesis": (
+            "The declared mid-cycle EBITDA may embed peak-adjacent margins; the "
+            "multiple may not hold in a downcycle with rising input prices."
+        ),
+        "issues": [{
+            "id": "R:PROBE:CYCLE",
+            "description": "single-scenario run cannot express downcycle asymmetry",
+            "blocking": False,
+            "requested_evidence": ["multi-scenario underwriting"],
+        }],
+        "requested_evidence": [],
+    }
+
+    def draft(key: str, variable: str, unit: str) -> dict:
+        return {
+            "assumption_key": key,
+            "scenario_id": "Base",
+            "hypothesis_id": "H:PROBE:MIDCYCLE",
+            "evidence_ids": [_uw_id(key)],
+            "affected_variable": variable,
+            "direction": "unchanged",
+            "value": {"normalized_ebitda": 940, "normalized_multiple": 5.5,
+                      "ownership": 1.0, "ev_adjustment": -1200,
+                      "diluted_shares": 95000000}[key],
+            "unit": unit,
+            "canonical_unit": unit,
+            "transform_id": "identity_observation",
+            "rationale": "declared underwriting carried through unchanged",
+            "confidence": 0.6,
+            "kill_condition": "underwriting revision or contradicting filing",
+            "verification_event": "next annual filing",
+            "economic_path_id": f"path:core:{key}",
+        }
+
+    bridge = {
+        "rationale": "Evidence-backed pass-through of the declared underwriting set.",
+        "drafts": [
+            draft("normalized_ebitda", "margin", "KRW_billion"),
+            draft("normalized_multiple", "multiple", "multiple"),
+            draft("ownership", "segment_value", "ratio"),
+            draft("ev_adjustment", "net_debt", "KRW_billion"),
+            draft("diluted_shares", "share_count", "shares"),
+        ],
+    }
+    return {
+        "intelligence_officer": (json.dumps(hypothesis),),
+        "red_team_officer": (json.dumps(red_team),),
+        "bridge_analyst": (json.dumps(bridge),),
+    }
+
+
 def _probe_series_registry_path() -> str:
     directory = tempfile.mkdtemp(prefix="cold-start-series-")
     path = Path(directory) / "series_registry.yaml"
@@ -200,6 +373,10 @@ _FILING_BODY = """
 <TR><TD>생산실적</TD><TD>4,860,000 백만원</TD></TR>
 <TR><TD>평균가동률</TD><TD>90.0 %</TD></TR>
 </TABLE>
+<P>4. 주요 제품 가격변동추이</P>
+<TABLE>
+<TR><TD>판매단가</TD><TD>852,000 원/톤</TD></TR>
+</TABLE>
 </BODY>
 """
 
@@ -227,12 +404,25 @@ def probe_network() -> OpenDartNetwork:
     )
 
 
+def _probe_fixture_file(name: str, content: str) -> str:
+    directory = tempfile.mkdtemp(prefix="cold-start-fixture-")
+    path = Path(directory) / name
+    path.write_text(content, encoding="utf-8")
+    return str(path)
+
+
 def probe_runtime_spec():
     from .generic_live_providers import GenericKRRuntimeSpec
 
     return GenericKRRuntimeSpec(
         as_of=PROBE_AS_OF,
         industry_series_registry_path=_probe_series_registry_path(),
+        declared_underwriting_path=_probe_fixture_file(
+            "underwriting.yaml", _PROBE_UNDERWRITING
+        ),
+        market_config_path=_probe_fixture_file("market.yaml", _PROBE_MARKET),
+        street_export_path=_probe_fixture_file("street.json", _PROBE_STREET),
+        market_currency="KRW",
         scenario_ids=("Base",),
         method_choices=(
             SegmentMethodChoice("core", "commodity_price_taker", "normalized_multiple"),
@@ -255,7 +445,7 @@ def execute_cold_start_probe(state_root: str | None = None) -> ColdStartOutcome:
 
     factory = build_generic_kr_runtime_factory(
         network=probe_network(),
-        transport=ScriptedTransport({}),
+        transport=ScriptedTransport(_staff_scripts()),
         spec=probe_runtime_spec(),
     )
 

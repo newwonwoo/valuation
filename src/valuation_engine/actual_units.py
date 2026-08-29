@@ -15,6 +15,11 @@ class Dimension(str, Enum):
     TIME = "time"
     RATIO = "ratio"
     MULTIPLE = "multiple"
+    # Unit prices convert only within one denominator dimension: a price per
+    # tonne can rescale to a price per kilogram, never to a price per unit —
+    # that distinction is exactly what separates ASP concepts across archetypes.
+    PRICE_PER_MASS = "price_per_mass"
+    PRICE_PER_COUNT = "price_per_count"
     DIMENSIONLESS = "dimensionless"
 
 
@@ -57,6 +62,22 @@ _UNIT_DEFS = {
     "ratio": UnitDef("ratio", Dimension.RATIO, "ratio", Decimal("1")),
     "%": UnitDef("%", Dimension.RATIO, "ratio", Decimal("0.01")),
     "multiple": UnitDef("multiple", Dimension.MULTIPLE, "multiple", Decimal("1")),
+    # Realized-price disclosures (판매단가/가격변동추이) quote KRW per tonne or
+    # per kilogram, occasionally in 천원; per-count prices (원/대) are a
+    # separate dimension by design.
+    "KRW_per_kg": UnitDef("KRW_per_kg", Dimension.PRICE_PER_MASS, "KRW_per_kg", Decimal("1")),
+    "KRW_per_ton": UnitDef(
+        "KRW_per_ton", Dimension.PRICE_PER_MASS, "KRW_per_kg", Decimal("0.001")
+    ),
+    "KRW_thousand_per_ton": UnitDef(
+        "KRW_thousand_per_ton", Dimension.PRICE_PER_MASS, "KRW_per_kg", Decimal("1")
+    ),
+    "KRW_per_unit": UnitDef(
+        "KRW_per_unit", Dimension.PRICE_PER_COUNT, "KRW_per_unit", Decimal("1")
+    ),
+    "KRW_thousand_per_unit": UnitDef(
+        "KRW_thousand_per_unit", Dimension.PRICE_PER_COUNT, "KRW_per_unit", Decimal("1000")
+    ),
     "dimensionless": UnitDef("dimensionless", Dimension.DIMENSIONLESS, "dimensionless", Decimal("1")),
 }
 
