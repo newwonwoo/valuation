@@ -1,0 +1,9 @@
+version: 1
+purpose: SK hynix strict-resume primary-source capture registry.
+sources:
+  - id: KR_SKHYNIX_PRIMARY
+    authority: issuer filing and issuer investor-relations primary sources
+    roles: [company_primary, observed_state]
+    access: frozen_primary_source_excerpt_manifest
+    industries: [listed_companies, memory_semiconductors]
+    metrics: []
