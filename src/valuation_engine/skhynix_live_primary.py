@@ -10,6 +10,7 @@ import yaml
 from .collection_plan import CollectorCapability
 from .context_strength_linkage import ContextStrengthLinkage, ContextStrengthLinkageDecision
 from .dcf_evaluators import LiveDCFRegistration, live_fcff_dcf_registry_loader
+from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequest
 from .industry_dna import EconomicArchetype, IndustryDNAProfile
 from .live_primary_adapters import (
     AuthoritativeEvidenceLineage,
@@ -40,13 +41,12 @@ from .risk_adapters import (
     RateObservation,
     TargetCapitalStructureMethod,
 )
-from .scenario_binding import ScenarioBindingSpec
 from .scanner_runtime import ScannerFinding, ScannerFindingStatus
+from .scenario_binding import ScenarioBindingSpec
 from .source_watch import WatchFinding, WatchStatus
 from .street import StreetResearchReport
 from .valuation_execution import ParentAdjustmentPlan
 from .valuation_plan_compiler import CompanyValuationPlanInputs, SegmentMethodChoice, SegmentValueBinding
-from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequest
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -56,12 +56,7 @@ TARGET_ID = "KR:DART:00164779"
 SEGMENT_ID = "memory"
 SCENARIOS = ("Down", "Core", "Bull")
 FORECAST_YEARS = 9
-MANDATORY_SCANNERS = (
-    "CYCLE_NORMALIZATION",
-    "COST_CURVE",
-    "INVENTORY",
-    "TRADE_FLOW",
-)
+MANDATORY_SCANNERS = ("CYCLE_NORMALIZATION", "COST_CURVE", "INVENTORY", "TRADE_FLOW")
 
 
 @dataclass(frozen=True)
@@ -131,13 +126,12 @@ def _eid(metric: str) -> str:
 
 
 def _industry_snapshot(snapshot: SKHynixSnapshot) -> IndustryKnowledgeSnapshot:
-    source_id = "KR_OPENDART"
     ids = ("E:SKHYNIX:SEGMENT", "E:SKHYNIX:INDUSTRY")
     lineages = tuple(
         AuthoritativeEvidenceLineage(
             evidence_id=eid,
             target_id=TARGET_ID,
-            source_id=source_id,
+            source_id="KR_OPENDART",
             observed_date=snapshot.as_of,
             content_hash=snapshot.raw_hash,
             event_date=snapshot.as_of,
@@ -151,7 +145,7 @@ def _industry_snapshot(snapshot: SKHynixSnapshot) -> IndustryKnowledgeSnapshot:
     )
     return IndustryKnowledgeSnapshot.build(
         as_of=snapshot.cutoff,
-        source_ids=(source_id,),
+        source_ids=("KR_OPENDART",),
         document_ids=("SKHYNIX_2026H1_SOURCE_PACK",),
         evidence_ids=ids,
         content_hashes=(snapshot.raw_hash,),
@@ -181,7 +175,7 @@ def _record(
     metric: str,
     value: Any,
     unit: str,
-    source_layer: EvidenceSourceLayer,
+    layer: EvidenceSourceLayer,
     source_ref: str,
     notes: str,
     confidence: float,
@@ -192,12 +186,12 @@ def _record(
         metric=metric,
         value=value,
         unit=unit,
-        source_layer=source_layer,
+        source_layer=layer,
         effective_date=snapshot.as_of,
         observed_date=snapshot.as_of,
         source_name="SK hynix frozen LIVE source pack",
         source_ref=source_ref,
-        source_grade="A" if source_layer is not EvidenceSourceLayer.ANALYST_UNDERWRITING else "B",
+        source_grade="B" if layer is EvidenceSourceLayer.ANALYST_UNDERWRITING else "A",
         confidence=confidence,
         segment=SEGMENT_ID,
         notes=notes,
@@ -205,127 +199,114 @@ def _record(
 
 
 def _all_records(snapshot: SKHynixSnapshot) -> tuple[EvidenceRecord, ...]:
-    records: list[EvidenceRecord] = []
-    official_ref = snapshot.sources["half_year_filing"]
-    q2_ref = snapshot.sources["q2_results"]
-    pnt7_ref = snapshot.sources["pnt7_filing"]
-    treasury_ref = snapshot.sources["treasury_filing"]
-    underwrite_ref = snapshot.sources["underwriting"]
-
+    sources = snapshot.sources
+    rows: list[EvidenceRecord] = []
     q2_metrics = {"hbm4_mass_shipments_started", "long_term_agreements_customer_count_approx"}
     pnt7_metrics = {"pnt7_board_approved_investment"}
     treasury_metrics = {"issued_common_shares_pre_buyback", "planned_buyback_shares", "planned_buyback_cash"}
-    for metric, pair in snapshot.official_facts.items():
-        value, unit = pair
-        source_ref = q2_ref if metric in q2_metrics else pnt7_ref if metric in pnt7_metrics else treasury_ref if metric in treasury_metrics else official_ref
-        records.append(
+    for metric, (value, unit) in snapshot.official_facts.items():
+        source_ref = (
+            sources["q2_results"] if metric in q2_metrics
+            else sources["pnt7_filing"] if metric in pnt7_metrics
+            else sources["treasury_filing"] if metric in treasury_metrics
+            else sources["half_year_filing"]
+        )
+        rows.append(
             _record(
                 snapshot,
                 metric=metric,
                 value=value,
                 unit=str(unit),
-                source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
+                layer=EvidenceSourceLayer.REALIZED_OR_FILING,
                 source_ref=source_ref,
-                notes="official company filing/result observation; NOT_DISCLOSED remains an explicit status rather than an invented value",
+                notes="official filing/result observation; NOT_DISCLOSED remains an explicit status and is never imputed",
                 confidence=1.0,
             )
         )
 
+    official_adjustments = {"broad_cash_q2_2026", "borrowings_q2_2026", "ads_issue_proceeds", "diluted_shares"}
     for scenario in SCENARIOS:
-        row = snapshot.scenarios[scenario]
-        for year, value in enumerate(row["fcff_krw_billion"], start=1):
-            records.append(
+        lower = scenario.lower()
+        scenario_row = snapshot.scenarios[scenario]
+        for year, value in enumerate(scenario_row["fcff_krw_billion"], start=1):
+            rows.append(
                 _record(
                     snapshot,
-                    metric=f"model_{scenario.lower()}_fcff_year_{year}",
+                    metric=f"model_{lower}_fcff_year_{year}",
                     value=value,
                     unit="KRW_billion",
-                    source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
-                    source_ref=underwrite_ref,
-                    notes="pre-existing analyst FCFF path quarantined from market price; deterministic compiler must independently bind it",
+                    layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
+                    source_ref=sources["underwriting"],
+                    notes="price-isolated analyst FCFF proposal; deterministic Assumption Compiler must rebind it",
                     confidence=0.60,
                 )
             )
-        records.append(
-            _record(
-                snapshot,
-                metric=f"model_{scenario.lower()}_terminal_growth",
-                value=row["terminal_growth"],
-                unit="ratio",
-                source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
-                source_ref=underwrite_ref,
-                notes="analyst terminal-growth proposal; deterministic terminal consistency gate applies",
-                confidence=0.55,
-            )
-        )
-        records.append(
-            _record(
-                snapshot,
-                metric=f"model_{scenario.lower()}_terminal_roic",
-                value=snapshot.payload["terminal_roic"],
-                unit="ratio",
-                source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
-                source_ref=underwrite_ref,
-                notes="common terminal ROIC proposal used only for reinvestment consistency validation",
-                confidence=0.50,
-            )
-        )
-        records.append(
-            _record(
-                snapshot,
-                metric=f"model_{scenario.lower()}_ownership",
-                value=1.0,
-                unit="ratio",
-                source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
-                source_ref=underwrite_ref,
-                notes="100% parent ownership of the consolidated operating segment",
-                confidence=0.95,
-            )
-        )
-        for metric, pair in snapshot.adjustments.items():
-            value, unit = pair
-            layer = EvidenceSourceLayer.REALIZED_OR_FILING if metric in {"broad_cash_q2_2026", "borrowings_q2_2026", "ads_issue_proceeds", "diluted_shares"} else EvidenceSourceLayer.ANALYST_UNDERWRITING
-            records.append(
+        for metric, value, unit, confidence in (
+            ("terminal_growth", scenario_row["terminal_growth"], "ratio", 0.55),
+            ("terminal_roic", snapshot.payload["terminal_roic"], "ratio", 0.50),
+            ("ownership", 1.0, "ratio", 0.95),
+        ):
+            rows.append(
                 _record(
                     snapshot,
-                    metric=f"model_{scenario.lower()}_{metric}",
+                    metric=f"model_{lower}_{metric}",
+                    value=value,
+                    unit=unit,
+                    layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
+                    source_ref=sources["underwriting"],
+                    notes="analyst proposal subject to deterministic scenario/terminal consistency checks",
+                    confidence=confidence,
+                )
+            )
+        for metric, (value, unit) in snapshot.adjustments.items():
+            layer = EvidenceSourceLayer.REALIZED_OR_FILING if metric in official_adjustments else EvidenceSourceLayer.ANALYST_UNDERWRITING
+            if metric in {"broad_cash_q2_2026", "borrowings_q2_2026", "ads_issue_proceeds"}:
+                source_ref = sources["half_year_filing"]
+            elif metric == "diluted_shares":
+                source_ref = sources["treasury_filing"]
+            else:
+                source_ref = sources["underwriting"]
+            rows.append(
+                _record(
+                    snapshot,
+                    metric=f"model_{lower}_{metric}",
                     value=value,
                     unit=str(unit),
-                    source_layer=layer,
-                    source_ref=(official_ref if metric in {"broad_cash_q2_2026", "borrowings_q2_2026"} else official_ref if metric == "ads_issue_proceeds" else treasury_ref if metric == "diluted_shares" else underwrite_ref),
+                    layer=layer,
+                    source_ref=source_ref,
                     notes=(
-                        "official/derived balance-sheet or financing observation" if layer is EvidenceSourceLayer.REALIZED_OR_FILING
-                        else "analyst underwriting adjustment; planned buyback is intentionally excluded until settlement evidence exists"
+                        "official/derived balance-sheet or financing observation"
+                        if layer is EvidenceSourceLayer.REALIZED_OR_FILING
+                        else "analyst underwriting adjustment; unsettled announced buyback is excluded"
                     ),
                     confidence=0.95 if layer is EvidenceSourceLayer.REALIZED_OR_FILING else 0.60,
                 )
             )
 
     for level_name, peer in snapshot.risk["beta_levels"].items():
-        records.append(
+        rows.append(
             _record(
                 snapshot,
                 metric=f"beta_selection_{level_name}",
                 value=str(peer["peer_id"]),
                 unit="identifier",
-                source_layer=EvidenceSourceLayer.AUTHORIZED_MARKET_DATA,
-                source_ref=snapshot.sources[str(peer["source_key"])],
-                notes="public 5Y beta and debt/equity peer observation used only by the hierarchical Beta stage",
+                layer=EvidenceSourceLayer.AUTHORIZED_MARKET_DATA,
+                source_ref=sources[str(peer["source_key"])],
+                notes="public 5Y Beta/debt-equity peer observation used only by the hierarchical Beta stage",
                 confidence=0.75,
             )
         )
-    return tuple(records)
+    return tuple(rows)
 
 
 def _primary_collector(snapshot: SKHynixSnapshot):
     by_metric = {record.metric: record for record in _all_records(snapshot)}
 
     def collect(request: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
-        rows = tuple(by_metric[metric] for metric in request.required_metrics)
         return EvidenceCollectionBatch(
             source_id="KR_OPENDART",
             checked_at=snapshot.as_of,
-            records=rows,
+            records=tuple(by_metric[metric] for metric in request.required_metrics),
             source_fingerprint=snapshot.raw_hash,
             document_ids=("SKHYNIX_2026H1_SOURCE_PACK",),
         )
@@ -344,26 +325,30 @@ def _scanner_runner(context) -> ScannerFinding:
     return ScannerFinding(
         scanner_id=context.scanner_id,
         status=ScannerFindingStatus.WARNING,
-        summary=(
-            f"{context.scanner_id} completed as a context-only check; unavailable cycle fields remain explicit NOT_DISCLOSED statuses and are not imputed"
-        ),
+        summary=f"{context.scanner_id}: missing cycle variables stay explicit NOT_DISCLOSED and are not imputed",
         evidence_ids=(evidence_id,),
-        verification_requests=(f"refresh {context.ledger.get(evidence_id).metric} when a primary source discloses it",),
+        verification_requests=(f"refresh {context.ledger.get(evidence_id).metric} when primary disclosure appears",),
         context_only=True,
     )
 
 
-def _hypothesis(snapshot: SKHynixSnapshot, scenario: str) -> HypothesisRecord:
-    support = tuple(_eid(f"model_{scenario.lower()}_fcff_year_{year}") for year in range(1, FORECAST_YEARS + 1))
-    if scenario == "Down":
-        statement = "Memory-cycle normalization can compress SK hynix FCFF materially from the current HBM-led peak state."
-        kill = "sustained HBM pricing, mix and cash conversion remain above the down-cycle path across subsequent filings"
-    elif scenario == "Core":
-        statement = "HBM leadership persists while medium-term memory economics normalize toward a lower but still high cash-flow plateau."
-        kill = "HBM qualification, pricing or utilization deteriorates enough to break the compiled medium-term FCFF path"
-    else:
-        statement = "A prolonged AI-memory shortage and execution of advanced-memory capacity can sustain exceptional FCFF through the forecast horizon."
-        kill = "supply additions, qualification losses or pricing normalization invalidate the prolonged shortage path"
+def _hypothesis(scenario: str) -> HypothesisRecord:
+    lower = scenario.lower()
+    support = tuple(_eid(f"model_{lower}_fcff_year_{year}") for year in range(1, FORECAST_YEARS + 1))
+    statement, kill = {
+        "Down": (
+            "Memory-cycle normalization can compress SK hynix FCFF materially from the current HBM-led peak state.",
+            "sustained HBM pricing, mix and cash conversion remain above the down-cycle path",
+        ),
+        "Core": (
+            "HBM leadership persists while medium-term memory economics normalize toward a lower but still high cash-flow plateau.",
+            "HBM qualification, pricing or utilization deteriorates enough to break the compiled path",
+        ),
+        "Bull": (
+            "A prolonged AI-memory shortage and advanced-memory execution can sustain exceptional FCFF through the forecast horizon.",
+            "supply additions, qualification losses or pricing normalization invalidate the prolonged shortage path",
+        ),
+    }[scenario]
     return HypothesisRecord(
         id=f"H:SKHYNIX:{scenario}",
         statement=statement,
@@ -379,19 +364,19 @@ def _hypothesis(snapshot: SKHynixSnapshot, scenario: str) -> HypothesisRecord:
 
 
 def _intelligence_officer(context, snapshot: SKHynixSnapshot) -> IntelligenceProposal:
-    hypotheses = tuple(_hypothesis(snapshot, scenario) for scenario in SCENARIOS)
+    hypotheses = tuple(_hypothesis(scenario) for scenario in SCENARIOS)
     linkage = ContextStrengthLinkage(
         id="CSL:SKHYNIX:AI_MEMORY_CAPACITY",
-        external_change="AI accelerator deployments continue to raise demand for high-bandwidth memory while advanced-memory qualification and packaging remain supply constraints.",
-        emergent_need="Customers need qualified high-bandwidth memory suppliers that can ship advanced generations at high utilization without losing yield or cash conversion.",
+        external_change="AI accelerator deployments continue to raise demand for high-bandwidth memory while advanced-memory qualification and packaging remain constrained.",
+        emergent_need="Customers need qualified HBM suppliers that can ship advanced generations at high utilization without losing yield or cash conversion.",
         company_strength="SK hynix has begun HBM4 mass shipments, reports full average utilization on its disclosed production-cost basis, and describes long-term agreements with roughly ten customers.",
-        linkage_thesis="The demand bottleneck can reprice existing HBM qualification, customer access and operating capacity only to the extent that those strengths convert into durable FCFF rather than temporary cycle rents.",
-        market_blind_spot="A single memory-cycle label can obscure the distinction between structurally constrained HBM economics and ordinary DRAM/NAND normalization.",
-        value_capture_path="qualified HBM demand → utilization and product mix → operating margin and cash conversion → FCFF after reinvestment",
+        linkage_thesis="Demand bottlenecks can reprice existing HBM qualification, customer access and capacity only when those strengths convert into durable FCFF rather than temporary cycle rents.",
+        market_blind_spot="A single memory-cycle label can obscure the difference between structurally constrained HBM economics and ordinary DRAM/NAND normalization.",
+        value_capture_path="qualified HBM demand → utilization/product mix → margin/cash conversion → FCFF after reinvestment",
         causal_chain=(
             "AI-memory demand increases",
-            "qualified HBM supply becomes the scarce capability",
-            "SK hynix qualification and operating capacity absorb demand",
+            "qualified HBM supply becomes scarce",
+            "SK hynix qualification/capacity absorb demand",
             "shipments and mix affect margin and cash conversion",
             "FCFF determines intrinsic enterprise value",
         ),
@@ -402,15 +387,15 @@ def _intelligence_officer(context, snapshot: SKHynixSnapshot) -> IntelligencePro
             _eid("operating_cash_flow_h1_2026"),
         ),
         hypothesis_ids=tuple(item.id for item in hypotheses),
-        recognition_triggers=("HBM4/HBM4E shipment ramp", "sustained high utilization with cash conversion", "customer agreement conversion into shipments"),
-        kill_conditions=("HBM qualification or yield misses", "memory pricing and inventory normalize faster than the FCFF path", "capex burden absorbs incremental operating cash"),
-        next_checks=("next quarterly HBM shipment disclosure", "inventory and pricing disclosure", "capex and free-cash-flow conversion"),
+        recognition_triggers=("HBM4/HBM4E shipment ramp", "sustained high utilization with cash conversion", "agreement conversion into shipments"),
+        kill_conditions=("HBM qualification/yield misses", "pricing and inventory normalize faster than FCFF", "capex absorbs incremental cash"),
+        next_checks=("next HBM shipment disclosure", "inventory/pricing disclosure", "capex and FCFF conversion"),
         confidence=0.70,
     )
     return IntelligenceProposal(
         hypotheses=hypotheses,
         requested_evidence=("future HBM ASP/mix", "inventory", "cash cost"),
-        rationale="Evidence supports distinct Down/Core/Bull operating paths, while missing cycle variables remain explicit rather than imputed; numeric probability authority is withheld.",
+        rationale="Evidence supports distinct scenario proposals while missing cycle variables remain explicit; numeric probability authority is withheld.",
         context_strength_linkage_decision=ContextStrengthLinkageDecision(linkages=(linkage,)),
     )
 
@@ -418,24 +403,32 @@ def _intelligence_officer(context, snapshot: SKHynixSnapshot) -> IntelligencePro
 def _red_team_officer(context, hypotheses) -> RedTeamProposal:
     return RedTeamProposal(
         issues=(),
-        counter_thesis=(
-            "Current profitability may be an extreme peak-state observation; missing ASP, inventory and cash-cost disclosure prevents treating HBM strength as a calibrated long-run probability."
-        ),
+        counter_thesis="Current profitability may be an extreme peak-state observation; missing ASP, inventory and cash-cost disclosure prevents calibrated long-run probability claims.",
         requested_evidence=("memory ASP and inventory", "HBM qualification/ramp", "capex-to-FCFF conversion"),
     )
 
 
-def _bridge_record(*, scenario: str, key: str, evidence_ids: tuple[str, ...], hypothesis_id: str, variable: AffectedVariable, direction: Direction, old_value: float, new_value: float, unit: str) -> BridgeRecord:
+def _bridge_record(
+    *,
+    scenario: str,
+    key: str,
+    evidence_ids: tuple[str, ...],
+    variable: AffectedVariable,
+    direction: Direction,
+    old_value: float,
+    new_value: float,
+    unit: str,
+) -> BridgeRecord:
     return BridgeRecord(
         id=f"B:SKHYNIX:{scenario}:{key}",
         evidence_ids=evidence_ids,
-        hypothesis_id=hypothesis_id,
+        hypothesis_id=f"H:SKHYNIX:{scenario}",
         affected_variable=variable,
         direction=direction,
         old_value=old_value,
         new_value=new_value,
         unit=unit,
-        rationale="proposal is source-labelled and must be recomputed by the deterministic Assumption Compiler before use",
+        rationale="proposal-only input; deterministic Assumption Compiler recomputes before commitment",
         confidence=0.60,
         kill_condition="source revision or next primary filing invalidates the input",
         verification_event="next quarterly/annual filing or explicit source refresh",
@@ -443,73 +436,71 @@ def _bridge_record(*, scenario: str, key: str, evidence_ids: tuple[str, ...], hy
     )
 
 
+def _identity_draft(context, *, scenario: str, key: str, metric: str, unit: str, variable: AffectedVariable, min_value: str | None = None, max_value: str | None = None) -> BridgeDraft:
+    evidence_id = _eid(f"model_{scenario.lower()}_{metric}")
+    value = float(context.ledger.get(evidence_id).value)
+    return BridgeDraft(
+        assumption_key=key,
+        scenario_id=scenario,
+        bridge=_bridge_record(
+            scenario=scenario,
+            key=key,
+            evidence_ids=(evidence_id,),
+            variable=variable,
+            direction=Direction.UNCHANGED,
+            old_value=value,
+            new_value=value,
+            unit=unit,
+        ),
+        canonical_unit=unit,
+        transform_id="identity_observation",
+        input_evidence_ids=(evidence_id,),
+        min_value=min_value,
+        max_value=max_value,
+    )
+
+
 def _bridge_analyst(context, hypotheses, red_team) -> BridgeProposalBundle:
     drafts: list[BridgeDraft] = []
+    common = (
+        ("terminal_growth", "terminal_growth", "ratio", AffectedVariable.MARGIN, None, None),
+        ("terminal_roic", "terminal_roic", "ratio", AffectedVariable.MARGIN, "0", None),
+        ("ownership", "ownership", "ratio", AffectedVariable.SEGMENT_VALUE, "0", "1"),
+        ("broad_cash_q2_2026", "broad_cash_q2_2026", "KRW_billion", AffectedVariable.NET_DEBT, "0", None),
+        ("h2_2026_fcff_underwrite", "h2_2026_fcff_underwrite", "KRW_billion", AffectedVariable.NET_DEBT, "0", None),
+        ("ads_issue_proceeds", "ads_issue_proceeds", "KRW_billion", AffectedVariable.NET_DEBT, "0", None),
+        ("kioxia_remaining_stake_underwrite", "kioxia_remaining_stake_underwrite", "KRW_billion", AffectedVariable.NET_DEBT, "0", None),
+        ("diluted_shares", "diluted_shares", "shares", AffectedVariable.SHARE_COUNT, "0", None),
+    )
     for scenario in SCENARIOS:
-        hid = f"H:SKHYNIX:{scenario}"
         for year in range(1, FORECAST_YEARS + 1):
-            metric = f"model_{scenario.lower()}_fcff_year_{year}"
-            value = float(context.ledger.get(_eid(metric)).value)
-            key = f"fcff_year_{year}"
             drafts.append(
-                BridgeDraft(
-                    assumption_key=key,
-                    scenario_id=scenario,
-                    bridge=_bridge_record(
-                        scenario=scenario,
-                        key=key,
-                        evidence_ids=(_eid(metric),),
-                        hypothesis_id=hid,
-                        variable=AffectedVariable.MARGIN,
-                        direction=Direction.UNCHANGED,
-                        old_value=value,
-                        new_value=value,
-                        unit="KRW_billion",
-                    ),
-                    canonical_unit="KRW_billion",
-                    transform_id="identity_observation",
-                    input_evidence_ids=(_eid(metric),),
+                _identity_draft(
+                    context,
+                    scenario=scenario,
+                    key=f"fcff_year_{year}",
+                    metric=f"fcff_year_{year}",
+                    unit="KRW_billion",
+                    variable=AffectedVariable.MARGIN,
                     min_value="0",
                 )
             )
-        for key, metric_suffix, unit, variable in (
-            ("terminal_growth", "terminal_growth", "ratio", AffectedVariable.MARGIN),
-            ("terminal_roic", "terminal_roic", "ratio", AffectedVariable.MARGIN),
-            ("ownership", "ownership", "ratio", AffectedVariable.SEGMENT_VALUE),
-            ("broad_cash_q2_2026", "broad_cash_q2_2026", "KRW_billion", AffectedVariable.NET_DEBT),
-            ("h2_2026_fcff_underwrite", "h2_2026_fcff_underwrite", "KRW_billion", AffectedVariable.NET_DEBT),
-            ("ads_issue_proceeds", "ads_issue_proceeds", "KRW_billion", AffectedVariable.NET_DEBT),
-            ("kioxia_remaining_stake_underwrite", "kioxia_remaining_stake_underwrite", "KRW_billion", AffectedVariable.NET_DEBT),
-            ("diluted_shares", "diluted_shares", "shares", AffectedVariable.SHARE_COUNT),
-        ):
-            metric = f"model_{scenario.lower()}_{metric_suffix}"
-            value = float(context.ledger.get(_eid(metric)).value)
+        for key, metric, unit, variable, min_value, max_value in common:
             drafts.append(
-                BridgeDraft(
-                    assumption_key=key,
-                    scenario_id=scenario,
-                    bridge=_bridge_record(
-                        scenario=scenario,
-                        key=key,
-                        evidence_ids=(_eid(metric),),
-                        hypothesis_id=hid,
-                        variable=variable,
-                        direction=Direction.UNCHANGED,
-                        old_value=value,
-                        new_value=value,
-                        unit=unit,
-                    ),
-                    canonical_unit=unit,
-                    transform_id="identity_observation",
-                    input_evidence_ids=(_eid(metric),),
-                    min_value="0" if key not in {"terminal_growth"} else None,
-                    max_value="1" if key == "ownership" else None,
+                _identity_draft(
+                    context,
+                    scenario=scenario,
+                    key=key,
+                    metric=metric,
+                    unit=unit,
+                    variable=variable,
+                    min_value=min_value,
+                    max_value=max_value,
                 )
             )
-
-        debt_metric = f"model_{scenario.lower()}_borrowings_q2_2026"
-        sign_metric = f"model_{scenario.lower()}_negative_one"
-        debt_value = float(context.ledger.get(_eid(debt_metric)).value)
+        debt_id = _eid(f"model_{scenario.lower()}_borrowings_q2_2026")
+        sign_id = _eid(f"model_{scenario.lower()}_negative_one")
+        debt = float(context.ledger.get(debt_id).value)
         drafts.append(
             BridgeDraft(
                 assumption_key="borrowings_adjustment",
@@ -517,25 +508,22 @@ def _bridge_analyst(context, hypotheses, red_team) -> BridgeProposalBundle:
                 bridge=_bridge_record(
                     scenario=scenario,
                     key="borrowings_adjustment",
-                    evidence_ids=(_eid(debt_metric), _eid(sign_metric)),
-                    hypothesis_id=hid,
+                    evidence_ids=(debt_id, sign_id),
                     variable=AffectedVariable.NET_DEBT,
                     direction=Direction.DOWN,
                     old_value=0.0,
-                    new_value=-debt_value,
+                    new_value=-debt,
                     unit="KRW_billion",
                 ),
                 canonical_unit="KRW_billion",
                 transform_id="product",
-                input_evidence_ids=(_eid(debt_metric), _eid(sign_metric)),
+                input_evidence_ids=(debt_id, sign_id),
                 max_value="0",
             )
         )
     return BridgeProposalBundle(
         drafts=tuple(drafts),
-        rationale=(
-            "LLM-stage output is proposal-only. FCFF, terminal, capital structure and equity-adjustment proposals are all recompiled from Evidence; the announced but unsettled buyback is not committed."
-        ),
+        rationale="LLM stage proposes only; deterministic compiler owns FCFF, terminal, capital-structure and equity-adjustment commitments. Announced unsettled buyback is excluded.",
     )
 
 
@@ -548,7 +536,7 @@ def _target_structure(snapshot: SKHynixSnapshot) -> LiveCapitalStructureObservat
         method=TargetCapitalStructureMethod.LONG_RUN_POLICY,
         as_of=str(risk["as_of"]),
         source_refs=(snapshot.sources["underwriting"],),
-        rationale="explicit long-run capital-structure underwrite retained as a risk-stage input; it is not inferred from target market value",
+        rationale="explicit long-run capital-structure underwriting; target market value is not used",
     )
 
 
@@ -557,7 +545,6 @@ def _beta_loader(snapshot: SKHynixSnapshot):
         levels: list[LiveBetaLevelObservation] = []
         for level in BetaLevelName:
             row = snapshot.risk["beta_levels"][level.value]
-            source_ref = snapshot.sources[str(row["source_key"])]
             levels.append(
                 LiveBetaLevelObservation(
                     level=level,
@@ -572,41 +559,57 @@ def _beta_loader(snapshot: SKHynixSnapshot):
                             return_frequency="vendor_5y_beta",
                             estimation_window_months=60,
                             as_of=str(snapshot.risk["as_of"]),
-                            source_ref=source_ref,
-                            estimation_method="StockAnalysis Beta (5Y), public vendor observation",
+                            source_ref=snapshot.sources[str(row["source_key"])],
+                            estimation_method="StockAnalysis public 5Y Beta observation",
                         ),
                     ),
-                    selection_rationale="peer selected for progressively closer semiconductor and memory-cycle systematic-risk exposure rather than valuation similarity",
+                    selection_rationale="progressively closer semiconductor and memory-cycle systematic-risk exposure, not valuation similarity",
                     selection_evidence_ids=(_eid(f"beta_selection_{level.value}"),),
-                    risk_driver_features=(
-                        ("memory pricing cycle", "capital intensity", "inventory cycle", "AI data-center demand")
-                        if level is BetaLevelName.L4_ECONOMIC_TWINS
-                        else ()
-                    ),
+                    risk_driver_features=("memory pricing cycle", "capital intensity", "inventory cycle", "AI data-center demand") if level is BetaLevelName.L4_ECONOMIC_TWINS else (),
                 )
             )
         return LiveBetaUniverse(
             levels=tuple(levels),
             target_capital_structure=_target_structure(snapshot),
-            universe_rationale="L1→L4 hierarchy narrows from broad semiconductor exposure to a memory economic twin while preserving one normalized public 5Y Beta convention",
+            universe_rationale="L1→L4 narrows from broad semiconductor exposure to a memory economic twin under one public 5Y Beta convention",
             source_refs=tuple(snapshot.sources[str(snapshot.risk["beta_levels"][level.value]["source_key"])] for level in BetaLevelName),
         )
+
     return load
 
 
 def _wacc_loader(snapshot: SKHynixSnapshot):
     def load(context) -> LiveWACCInputs:
         risk = snapshot.risk
-        source_ref = snapshot.sources["underwriting"]
+        sources = snapshot.sources
         return LiveWACCInputs(
             cash_flow_currency="KRW",
-            risk_free_rate=RateObservation(float(risk["risk_free_rate"]), "KRW", str(risk["as_of"]), source_ref, "explicit KRW risk-free underwrite"),
-            equity_risk_premium=RateObservation(float(risk["equity_risk_premium"]), "KRW", str(risk["as_of"]), source_ref, "explicit equity-risk-premium underwrite"),
-            marginal_pre_tax_cost_of_debt=RateObservation(float(risk["pre_tax_cost_of_debt"]), "KRW", str(risk["as_of"]), source_ref, "explicit marginal KRW debt-cost underwrite"),
+            risk_free_rate=RateObservation(
+                float(risk["risk_free_rate"]),
+                "KRW",
+                str(risk["as_of"]),
+                sources["risk_free"],
+                "Korea Ministry of Finance and Economy 5-year Treasury bond yield",
+            ),
+            equity_risk_premium=RateObservation(
+                float(risk["equity_risk_premium"]),
+                "KRW",
+                str(risk["as_of"]),
+                sources["equity_risk_premium"],
+                "Damodaran South Korea total equity risk premium",
+            ),
+            marginal_pre_tax_cost_of_debt=RateObservation(
+                float(risk["pre_tax_cost_of_debt"]),
+                "KRW",
+                str(risk["as_of"]),
+                sources["debt_cost"],
+                "Korea Ministry of Finance and Economy AA- 3-year corporate bond yield",
+            ),
             target_capital_structure=_target_structure(snapshot),
             terminal_growth=float(snapshot.scenarios["Core"]["terminal_growth"]),
             terminal_roic=float(snapshot.payload["terminal_roic"]),
         )
+
     return load
 
 
@@ -635,8 +638,8 @@ def _street_reports(snapshot: SKHynixSnapshot) -> tuple[StreetResearchReport, ..
     street = snapshot.street
     return (
         StreetResearchReport(
-            broker="Investing.com consensus",
-            analyst="consensus aggregate",
+            broker="S&P Global consensus via StockAnalysis",
+            analyst="39-analyst aggregate",
             published_date=str(street["as_of"]),
             target_price=float(street["consensus_target_price"]),
             target_price_currency="KRW",
@@ -644,6 +647,10 @@ def _street_reports(snapshot: SKHynixSnapshot) -> tuple[StreetResearchReport, ..
             base_year="2026",
             estimates=(),
             source_ref=snapshot.sources["street"],
+            aggregate_report_count=int(street["report_count"]),
+            aggregate_median_target_price=float(street["median_target_price"]),
+            aggregate_min_target_price=float(street["min_target_price"]),
+            aggregate_max_target_price=float(street["max_target_price"]),
         ),
     )
 
@@ -670,16 +677,21 @@ def build_skhynix_live_primary_config(
 
     def resolver(request: CompanyResolutionRequest) -> ResolvedCompanyIdentity:
         if request.query not in {TICKER, "SK하이닉스", "SK hynix", TARGET_ID}:
-            raise ValueError("SK hynix provider accepts only the SK hynix identity")
+            raise ValueError("SK hynix provider accepts only SK hynix identity")
         return _identity(snapshot)
-
-    def snapshot_loader(_: ResolvedCompanyIdentity) -> IndustryKnowledgeSnapshot:
-        return _industry_snapshot(snapshot)
 
     def freshness_loader(_: ResolvedCompanyIdentity, industry: IndustryKnowledgeSnapshot) -> LiveFreshnessAssessment:
         return LiveFreshnessAssessment(
             checked_at=snapshot.as_of,
-            findings=(WatchFinding(WatchStatus.CLEAN, "SKHYNIX_FROZEN_SOURCES", "2026H1 filing, Q2 results and declared underwriting snapshot are frozen at the run cutoff", (), False),),
+            findings=(
+                WatchFinding(
+                    WatchStatus.CLEAN,
+                    "SKHYNIX_FROZEN_SOURCES",
+                    "2026H1 filing, Q2 results and declared underwriting snapshot frozen at the run cutoff",
+                    (),
+                    False,
+                ),
+            ),
             source_snapshot_hash=industry.snapshot_hash,
         )
 
@@ -704,7 +716,7 @@ def build_skhynix_live_primary_config(
         segment = segments[0]
         return (
             IndustryDNAProfile(
-                segment_id=segment.segment_id,
+                segment_id=SEGMENT_ID,
                 sector_adapter="semiconductor.memory",
                 archetypes=(EconomicArchetype.COMMODITY_PRICE_TAKER,),
                 revenue_recognition=segment.revenue_recognition,
@@ -721,7 +733,7 @@ def build_skhynix_live_primary_config(
 
     providers = LivePrimaryProviders(
         company_resolver=resolver,
-        industry_snapshot_loader=snapshot_loader,
+        industry_snapshot_loader=lambda _: _industry_snapshot(snapshot),
         freshness_loader=freshness_loader,
         segment_decomposer=decomposer,
         industry_dna_router=router,
@@ -731,21 +743,18 @@ def build_skhynix_live_primary_config(
         red_team_officer=_red_team_officer,
         bridge_analyst=_bridge_analyst,
         evaluator_registry_loader=live_fcff_dcf_registry_loader(
-            registrations=(
-                LiveDCFRegistration(
-                    "commodity_price_taker",
-                    "midcycle_price_volume_dcf",
-                    "1",
-                    FORECAST_YEARS,
-                ),
-            ),
+            registrations=(LiveDCFRegistration("commodity_price_taker", "midcycle_price_volume_dcf", "1", FORECAST_YEARS),),
             include_default_normalized_multiples=True,
         ),
         valuation_plan_inputs_loader=_valuation_plan_inputs,
         beta_loader=_beta_loader(snapshot),
         wacc_loader=_wacc_loader(snapshot),
         street_loader=lambda: _street_reports(snapshot),
-        market_loader=lambda: MarketObservation(float(snapshot.market["price"]), str(snapshot.market["as_of"]), snapshot.sources["market"]),
+        market_loader=lambda: MarketObservation(
+            float(snapshot.market["price"]),
+            str(snapshot.market["as_of"]),
+            snapshot.sources["market"],
+        ),
     )
     required_keys = tuple(
         dict.fromkeys(
