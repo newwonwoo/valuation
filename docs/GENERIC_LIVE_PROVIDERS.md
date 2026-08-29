@@ -174,6 +174,25 @@ SDK. A run with no underwriting file does not fail at configuration — it fails
 closed later at evidence coverage with the missing judgments named, which is
 the correct first-run experience: the engine hands back a work order.
 
+## Multi-segment boundary (verified)
+
+The aggregation layer is already N-segment correct: `aggregate_sotp` and
+`execute_company_valuation` sum parts, apply per-segment EV→equity before
+ownership, add parent adjustments at the company level, and divide by diluted
+shares — and the SOTP double-count guard (a shared economic value path across
+two segments) holds under attack. `tests/test_multi_segment_cold_start.py`
+proves all of this end-to-end on a genuine two-segment company with real
+evaluators, no mocks.
+
+The generic KR *collection* path is deliberately single-segment, enforced at
+two layers: `classified_segment_decomposer` emits one `core` segment, and
+`_single_segment_decomposer` in the KR OpenDART factory hard-raises for anything
+else ("multi-segment companies require note-scoped collectors"). Reaching real
+multi-segment is not a small change — it needs disclosure segment-note-scoped
+collectors, per-segment filing scopes, method choices and required-evidence
+maps. That is a documented boundary, not a defect; the guard that protects it is
+proven to work the moment real segmentation arrives.
+
 ## What this does and does not claim
 
 - It claims the pipeline **runs** for an unseen KR company: providers assemble,
