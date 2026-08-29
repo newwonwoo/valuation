@@ -35,26 +35,30 @@ stages:
   LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT:
     provider_slot: industry_snapshot_loader
     contract: valuation_engine.live_runtime:IndustrySnapshotLoader
-    generic_implementation: null
-    note: Only the stage adapter exists; no loader builds a snapshot for an unseen company.
+    generic_implementation: valuation_engine.generic_kr_industry:opendart_filing_snapshot_loader
+    note: >-
+      Periodic DART filings become the authoritative snapshot, filtered to the knowledge-time cutoff.
 
   SOURCE_FRESHNESS_PRECHECK:
     provider_slot: freshness_loader
     contract: valuation_engine.live_runtime:FreshnessLoader
-    generic_implementation: null
-    note: Only the stage adapter exists; freshness assessments are hand-supplied per company.
+    generic_implementation: valuation_engine.generic_kr_industry:filing_cadence_freshness_loader
+    note: >-
+      Deterministic cadence policy over the snapshot's own filing lineage; stale warns, empty blocks.
 
   SEGMENT_DECOMPOSITION:
     provider_slot: segment_decomposer
     contract: valuation_engine.live_runtime:SegmentDecomposer
-    generic_implementation: null
-    note: kr_opendart_provider only wraps an injected decomposer to a single segment.
+    generic_implementation: valuation_engine.generic_kr_industry:classified_segment_decomposer
+    note: >-
+      One whole-company segment structured by the KSIC classification map; finer segmentation without disclosure-backed extraction would be invented structure.
 
   INDUSTRY_DNA_ROUTE:
     provider_slot: industry_dna_router
     contract: valuation_engine.live_runtime:IndustryDNARouter
-    generic_implementation: null
-    note: compose_modules turns an archetype into requirements, but nothing chooses the archetype.
+    generic_implementation: valuation_engine.generic_kr_industry:classified_industry_dna_router
+    note: >-
+      Archetypes come from config/kr_industry_classification_map.yaml by longest KSIC prefix; an unmapped code fails closed instead of guessing.
 
   MODULE_REQUIREMENT_PLAN:
     provider_slot: null
@@ -77,8 +81,9 @@ stages:
   ROCKET_INSIGHT_SCAN:
     provider_slot: scanner_runners
     contract: valuation_engine.live_runtime:ScannerRunner
-    generic_implementation: null
-    note: The dispatcher exists; no runner in this repository produces findings for an unseen company.
+    generic_implementation: valuation_engine.generic_scanners:generic_scanner_runners
+    note: >-
+      Ledger screens for all 61 declared scanner ids; a screen that matches nothing emits an explicit verification request. External scan sources remain provider work.
 
   UPSTREAM_FUNDING_SCAN:
     provider_slot: funding_scanner
@@ -89,16 +94,16 @@ stages:
   RESEARCHER_A:
     provider_slot: intelligence_officer
     contract: valuation_engine.live_runtime:IntelligenceOfficer
-    generic_implementation: null
+    generic_implementation: valuation_engine.generic_llm_staff:GenericIntelligenceOfficer
     note: >-
-      IntelligenceOfficer is a Callable type alias. No model call exists anywhere
-      in the package, so hypotheses are hand-written per company.
+      Generic officer renders the Evidence table, demands strict JSON, and repairs once before failing closed; the model transport is caller-supplied and cannot widen authority.
 
   BLIND_RED_TEAM_B:
     provider_slot: red_team_officer
     contract: valuation_engine.live_runtime:RedTeamOfficer
-    generic_implementation: null
-    note: Typed blind contract only; no model provider is connected.
+    generic_implementation: valuation_engine.generic_llm_staff:GenericRedTeamOfficer
+    note: >-
+      Generic blind challenger over Evidence and hypotheses; market-comparison Evidence in context still blocks before any model call.
 
   RESEARCH_LOOP:
     provider_slot: research_recovery_adapter
@@ -109,8 +114,9 @@ stages:
   EVIDENCE_TO_ASSUMPTION_BRIDGE:
     provider_slot: bridge_analyst
     contract: valuation_engine.live_runtime:BridgeAnalyst
-    generic_implementation: null
-    note: Typed bridge proposals only; the analyst that produces them is hand-written per company.
+    generic_implementation: valuation_engine.generic_llm_staff:GenericBridgeAnalyst
+    note: >-
+      Generic analyst proposes one draft per (scenario, required key); values re-derive in the compiler or die with PROPOSAL_RECALC_MISMATCH.
 
   SCENARIO_BUILD:
     provider_slot: null
@@ -141,10 +147,9 @@ stages:
   DETERMINISTIC_VALUATION:
     provider_slot: valuation_plan_inputs_loader
     contract: valuation_engine.live_runtime:ValuationPlanInputsLoader
-    generic_implementation: null
+    generic_implementation: valuation_engine.generic_valuation_plan:conventional_valuation_plan_inputs_loader
     note: >-
-      Evaluator registries are generic, but nothing builds a CompanyValuationPlan
-      for an unseen company; the plan is hand-written per company.
+      Plan inputs bind each segment under fixed key conventions; composed_generic_registry_loader builds evaluators from the declared method choices.
 
   HIERARCHICAL_WARRANTED_PER:
     provider_slot: per_loader

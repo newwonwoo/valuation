@@ -20,24 +20,24 @@ stages:
     status: RUNTIME_READY
     reason: immutable local StateStore and research-learning state are implemented.
   LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT:
-    status: PROVIDER_REQUIRED
+    status: LIVE_READY
     reason: >-
-      typed live snapshot loader contract validates source/content lineage and a deterministic snapshot hash before downstream use. PROVIDER GAP: no company-neutral IndustrySnapshotLoader exists; only the stage adapter that consumes one.
+      generic opendart_filing_snapshot_loader builds the authoritative snapshot from live DART periodic filings by corp code, filtered to the knowledge-time cutoff; the API key is caller-supplied like other live loaders.
 
   SOURCE_FRESHNESS_PRECHECK:
-    status: PROVIDER_REQUIRED
+    status: RUNTIME_READY
     reason: >-
-      typed live source-watch loader contract blocks source failures, unreviewed changes and revalidation-required findings before downstream analysis. PROVIDER GAP: no company-neutral FreshnessLoader exists; freshness assessments are hand-supplied per company.
+      generic filing_cadence_freshness_loader derives freshness deterministically from the snapshot's own filing lineage: within cadence is CLEAN, stale warns as EXPECTED_RELEASE_MISSED, an empty lineage blocks as SOURCE_FAILURE.
 
   SEGMENT_DECOMPOSITION:
-    status: PROVIDER_REQUIRED
+    status: PARTIAL_LIVE
     reason: >-
-      typed live decomposer contract requires complete economic-structure fields and explicit Evidence IDs for every segment. PROVIDER GAP: no company-neutral SegmentDecomposer exists; kr_opendart_provider only narrows an injected one to a single segment.
+      generic classified_segment_decomposer emits one whole-company segment structured by the KSIC classification map and cited to the snapshot's filing lineage; disclosure-backed multi-segment decomposition from segment notes remains unimplemented.
 
   INDUSTRY_DNA_ROUTE:
-    status: PROVIDER_REQUIRED
+    status: PARTIAL_LIVE
     reason: >-
-      typed live router contract requires exact segment coverage and rejects Industry DNA Evidence IDs not present in the loaded snapshot or segment evidence. PROVIDER GAP: no company-neutral IndustryDNARouter exists; compose_modules expands an archetype but nothing selects it.
+      generic classified_industry_dna_router assigns archetypes from config/kr_industry_classification_map.yaml by longest KSIC prefix and fails closed on unmapped codes; the map covers 16 KSIC prefixes and widening it is a reviewed data change.
 
   MODULE_REQUIREMENT_PLAN:
     status: RUNTIME_READY
@@ -49,9 +49,9 @@ stages:
     status: RUNTIME_READY
     reason: append-only ledger, supersession and snapshot hashing are implemented.
   ROCKET_INSIGHT_SCAN:
-    status: PROVIDER_REQUIRED
+    status: PARTIAL_LIVE
     reason: >-
-      canonical scanner dispatcher executes the active/mandatory loadout through typed live runners, validates Evidence lineage, exposes findings to LLM Staff, and records explicit impact paths and research effort. PROVIDER GAP: no company-neutral ScannerRunner exists; the dispatcher has nothing generic to dispatch to.
+      generic ledger-screen runners cover all 61 declared scanner ids: matching Evidence is cited and connected, a miss emits an explicit verification request; external scan sources (news, dockets, feeds) remain provider work.
 
   UPSTREAM_FUNDING_SCAN:
     status: PROVIDER_REQUIRED
@@ -59,22 +59,22 @@ stages:
       route-required funding scans execute through a typed live FundingScanner contract; funding evidence and credit-improvement candidates are exposed downstream without directly mutating WACC or intrinsic value. PROVIDER GAP: no company-neutral FundingScanner exists; funding ladders are hand-written per company.
 
   RESEARCHER_A:
-    status: PROVIDER_REQUIRED
+    status: PARTIAL_LIVE
     reason: >-
-      typed LLM callback contract is implemented; model/provider remains injectable. PROVIDER GAP: no model provider is connected anywhere in the package, so hypotheses are hand-written per company.
+      GenericIntelligenceOfficer renders the Evidence table into a strict-JSON contract, validates citations against the ledger, repairs once and fails closed; the model transport is caller-supplied and runs proposal-only inside the authority boundary. Proposal quality with a live model is unproven.
 
   BLIND_RED_TEAM_B:
-    status: PROVIDER_REQUIRED
+    status: PARTIAL_LIVE
     reason: >-
-      blind typed Red Team contract with market isolation is implemented. PROVIDER GAP: no model provider is connected, so the blind challenge is hand-written per company.
+      GenericRedTeamOfficer implements the blind challenge over Evidence and hypotheses with the same strict-JSON contract; market-comparison Evidence still blocks the context before any model call. Model transport caller-supplied.
 
   RESEARCH_LOOP:
     status: RUNTIME_READY
     reason: bounded research-loop semantics are implemented; live evidence refresh between rounds depends on collectors.
   EVIDENCE_TO_ASSUMPTION_BRIDGE:
-    status: PROVIDER_REQUIRED
+    status: PARTIAL_LIVE
     reason: >-
-      typed Bridge proposals are implemented and cannot commit assumptions. PROVIDER GAP: no model provider is connected, so bridge proposals are hand-written per company.
+      GenericBridgeAnalyst proposes one draft per (scenario, required key) against registered transforms only; every value re-derives in the deterministic compiler or dies with PROPOSAL_RECALC_MISMATCH. Model transport caller-supplied.
 
   SCENARIO_BUILD:
     status: RUNTIME_READY
@@ -89,9 +89,9 @@ stages:
     status: LIVE_READY
     reason: typed currency-consistent WACC validation is implemented, and AuthorizedKRRiskProviderPack composes Bank of Korea ECOS rates, separated Damodaran ERP/CRP, an authorized marginal-debt benchmark, and peer-normalized target capital structure into validated KRW LiveWACCInputs; other currencies remain injectable under the same contract.
   DETERMINISTIC_VALUATION:
-    status: PROVIDER_REQUIRED
+    status: PARTIAL_LIVE
     reason: >-
-      exact registry/SOTP runtime supports normalized multiples, explicit FCFF DCF, finite-life project_npv/reserve_npv/cohort_npv, certificate-bound single-event rNPV, and PARTIAL_INTRINSIC with UNVALUED_NOT_ZERO preservation; multi-stage event trees, NAV/residual-income and other archetype-specific evaluator coverage remain incomplete. PROVIDER GAP: no company-neutral ValuationPlanInputsLoader exists; the CompanyValuationPlan is hand-written per company.
+      exact registry/SOTP runtime supports normalized multiples, explicit FCFF DCF, backlog-burn DCF, finite-life NPV, certificate-bound rNPV and PARTIAL_INTRINSIC preservation; generic plan inputs and registry composition now come from conventional_valuation_plan_inputs_loader and composed_generic_registry_loader, while multi-stage event trees, NAV/residual-income and other archetype evaluator breadth remain incomplete.
 
   HIERARCHICAL_WARRANTED_PER:
     status: LIVE_READY

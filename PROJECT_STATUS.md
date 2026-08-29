@@ -56,11 +56,11 @@ flowchart TB
 ## Objective readiness (derived, not manually scored)
 
 - Canonical stages mapped: **33/33**
-- `LIVE_READY` or `RUNTIME_READY`: **20/33**
-- `PARTIAL_LIVE`: **3/33**
-- Explicit runtime gaps: **10**
-- `PROVIDER_REQUIRED` (typed contract, no company-neutral implementation): **10/33**
-- Cold-start proven stages (ran for a company with no hand-written module): **0/33 — cold start blocked; no company-neutral provider for `bridge_analyst`, `freshness_loader`, `industry_dna_router`, `industry_snapshot_loader`, `intelligence_officer`, `red_team_officer`, `scanner_runners`, `segment_decomposer`, `valuation_plan_inputs_loader`**
+- `LIVE_READY` or `RUNTIME_READY`: **22/33**
+- `PARTIAL_LIVE`: **10/33**
+- Explicit runtime gaps: **1**
+- `PROVIDER_REQUIRED` (typed contract, no company-neutral implementation): **1/33**
+- Cold-start proven stages (ran for a company with no hand-written module): **7/33 — canonical runtime executed for an unseen company and stopped at `PRIMARY_EVIDENCE_COLLECTION` (not_implemented: no runnable collector is available for the compiled CompanyCollectionPlan)**
 - Executable method bindings: **42/42** (0 explicit `NOT_IMPLEMENTED`)
 
 These registry metrics measure typed runtime readiness, not full live source/provider coverage. The design-progress score above includes product, acceptance, source and release gaps. Every stage status is probe-derived: `scripts/validate_stage_capability.py` imports the symbols declared in `config/stage_capability_declarations.yaml` and fails any claim the repository cannot back.

@@ -56,6 +56,13 @@ def main() -> int:
         canonical_stages=canonical,
     )
     cold = probe_cold_start(base.stages)
+    if not cold.missing_provider_slots:
+        # Every required slot has a company-neutral implementation, so the
+        # stronger claim is testable: actually run the canonical runtime on a
+        # company this repository has never seen and record what executed.
+        from valuation_engine.cold_start_probe import execute_cold_start_probe
+
+        cold = execute_cold_start_probe()
     report = build_stage_capability_report(
         declarations=declarations,
         company_bound_modules=company_bound,
@@ -98,7 +105,12 @@ def main() -> int:
     )
     if cold.config_blocked_reason:
         print(f"cold start: BLOCKED — {cold.config_blocked_reason}")
-    elif not cold.probed:
+    elif cold.probed:
+        print(
+            f"cold start: EXECUTED — reached {len(cold.reached)}/{len(report.stages)} stages; "
+            f"stopped at {cold.blocking_stage}: {cold.blocking_reason}"
+        )
+    else:
         print(
             "cold start: NOT PROBED — every required provider slot is filled; "
             "an executed cold run is now required to claim COLD_PROVEN"

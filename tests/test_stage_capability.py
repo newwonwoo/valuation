@@ -98,8 +98,7 @@ def test_provider_required_counts_as_an_unresolved_gap():
         readiness_path=READINESS, stage_registry_path=STAGE_REGISTRY
     )
     unresolved = {item.stage for item in readiness.unresolved_live_stages}
-    assert "RESEARCHER_A" in unresolved
-    assert unresolved
+    assert "UPSTREAM_FUNDING_SCAN" in unresolved
 
 
 # --------------------------------------------------------------- symbol probing
@@ -212,19 +211,41 @@ def test_a_declaration_needs_a_note():
 # ------------------------------------------------------------------ cold start
 
 
-def test_cold_start_is_blocked_and_names_the_missing_slots(report):
+def test_the_assembly_probe_finds_no_missing_required_slot(report):
+    """Every REQUIRED_PROVIDER_SLOTS seat now has a company-neutral implementation."""
     cold = report.cold_start
-    assert cold.probed
-    assert cold.config_blocked_reason
-    assert "intelligence_officer" in cold.missing_provider_slots
-    assert "bridge_analyst" in cold.missing_provider_slots
-    assert set(cold.missing_provider_slots).issubset(REQUIRED_PROVIDER_SLOTS)
+    assert not cold.config_blocked_reason
+    assert not cold.missing_provider_slots
 
 
-def test_no_stage_claims_cold_execution_while_the_config_cannot_be_built(report):
+def test_cold_execution_reflects_the_assembly_probe_only_here(report):
+    """This fixture runs only the assembly probe, so nothing may claim PROVEN.
+
+    The executed probe (cold_start_probe.execute_cold_start_probe) is what
+    upgrades stages to COLD_PROVEN; scripts/validate_stage_capability.py runs it.
+    """
     assert report.cold_proven_count == 0
     for stage in report.stages:
-        assert stage.cold_execution is AxisOutcome.UNREACHED
+        assert stage.cold_execution is AxisOutcome.NOT_PROBED
+
+
+def test_the_executed_probe_upgrades_reached_stages_to_cold_proven():
+    from valuation_engine.cold_start_probe import execute_cold_start_probe
+
+    declarations, company_bound = load_stage_capability_declarations(DECLARATIONS)
+    canonical = load_stage_sequence(STAGE_REGISTRY)
+    executed = execute_cold_start_probe()
+    report = build_stage_capability_report(
+        declarations=declarations,
+        company_bound_modules=company_bound,
+        canonical_stages=canonical,
+        cold_start=executed,
+    )
+    assert report.cold_proven_count == len(executed.reached) == 7
+    assert report.by_stage("COMPANY_RESOLUTION").derived is DerivedCapability.COLD_PROVEN
+    blocked = report.by_stage(executed.blocking_stage)
+    assert blocked.cold_execution is AxisOutcome.BLOCKED
+    assert "no runnable collector" in blocked.cold_execution_detail
 
 
 def test_cold_start_reports_not_probed_once_every_slot_is_filled():

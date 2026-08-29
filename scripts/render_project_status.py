@@ -93,7 +93,14 @@ def _cold_start_line() -> str:
             f"0/{len(canonical)} — cold start blocked; no company-neutral provider for "
             + ", ".join(f"`{slot}`" for slot in cold.missing_provider_slots)
         )
-    return f"0/{len(canonical)} — providers assemble; an executed cold run is still required"
+    from valuation_engine.cold_start_probe import execute_cold_start_probe
+
+    executed = execute_cold_start_probe()
+    return (
+        f"{len(executed.reached)}/{len(canonical)} — canonical runtime executed for an "
+        f"unseen company and stopped at `{executed.blocking_stage}` "
+        f"({executed.blocking_reason})"
+    )
 
 
 def _method_metrics() -> dict[str, int]:

@@ -30,12 +30,13 @@ def test_live_readiness_registry_covers_every_canonical_stage_once():
 
 
 def test_live_readiness_records_the_provider_gaps_it_used_to_hide():
-    """Stages whose provider has no company-neutral implementation are gaps.
+    """Readiness words follow the probes: implementations exist, breadth is stated.
 
-    This assertion set previously pinned ROCKET_INSIGHT_SCAN, UPSTREAM_FUNDING_SCAN
-    and the LLM staff stages as ready and asserted ``not unresolved_live_stages``,
-    which is how "Explicit runtime gaps: 0" survived while nine required provider
-    slots were empty. Readiness is now probe-derived; the test tracks it.
+    History of this assertion set: it once pinned every stage as ready with zero
+    unresolved gaps while nine required provider slots were empty; then it pinned
+    the ten PROVIDER_REQUIRED gaps; now the generic providers exist and the
+    remaining honest gap is the funding scanner, with breadth limits carried as
+    PARTIAL_LIVE reasons rather than hidden.
     """
     report = load_report()
     by_stage = {item.stage: item for item in report.stages}
@@ -47,25 +48,29 @@ def test_live_readiness_records_the_provider_gaps_it_used_to_hide():
     assert by_stage["VALUATION_METHOD_INTENT"].status is LiveReadinessStatus.RUNTIME_READY
     assert by_stage["INTRINSIC_VALUE_FREEZE"].status is LiveReadinessStatus.RUNTIME_READY
 
-    # Providers it does not.
+    # The one provider still missing a company-neutral implementation.
+    assert by_stage["UPSTREAM_FUNDING_SCAN"].status is LiveReadinessStatus.PROVIDER_REQUIRED
+    assert "PROVIDER GAP:" in by_stage["UPSTREAM_FUNDING_SCAN"].reason
+
+    # Generic implementations exist but with explicitly limited breadth.
     for stage in (
+        "SEGMENT_DECOMPOSITION",
+        "INDUSTRY_DNA_ROUTE",
         "ROCKET_INSIGHT_SCAN",
-        "UPSTREAM_FUNDING_SCAN",
         "RESEARCHER_A",
         "BLIND_RED_TEAM_B",
         "EVIDENCE_TO_ASSUMPTION_BRIDGE",
         "DETERMINISTIC_VALUATION",
     ):
-        assert by_stage[stage].status is LiveReadinessStatus.PROVIDER_REQUIRED
-        assert "PROVIDER GAP:" in by_stage[stage].reason
+        assert by_stage[stage].status is LiveReadinessStatus.PARTIAL_LIVE, stage
 
     assert by_stage["PRIMARY_EVIDENCE_COLLECTION"].status is LiveReadinessStatus.PARTIAL_LIVE
     assert by_stage["STREET_REFERENCE_LOAD"].status is LiveReadinessStatus.PARTIAL_LIVE
 
     unresolved = {item.stage for item in report.unresolved_live_stages}
-    assert len(unresolved) == 10
-    assert report.canonical_live_ready_count == 20
-    assert len(report.partial_live_stages) == 3
+    assert unresolved == {"UPSTREAM_FUNDING_SCAN"}
+    assert report.canonical_live_ready_count == 22
+    assert len(report.partial_live_stages) == 10
 
     coverage = report.deterministic_method_coverage
     assert coverage is not None
