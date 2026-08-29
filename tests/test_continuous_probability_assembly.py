@@ -160,7 +160,7 @@ def _binding(root: Path, artifact: dict, provenance: dict, **overrides):
         expected_provenance_hash=LINEAGE_HASH,
         expected_source_row_count=210,
         expected_source_company_count=17,
-        excluded_target_ticker=TICKER,
+        excluded_ticker=TICKER,
         seed=7,
         non_negative_driver_ids=("yard_utilisation",),
     )
@@ -257,7 +257,7 @@ def test_conditioning_seen_after_the_cutoff_is_refused(tmp_path: Path):
 
 def test_the_binding_ticker_must_match_the_artifact_exclusion(tmp_path: Path):
     binding = _binding(
-        tmp_path, _artifact(), _provenance(), excluded_target_ticker="005930"
+        tmp_path, _artifact(), _provenance(), excluded_ticker="005930"
     )
     with pytest.raises(ContinuousCalibrationError, match="must exclude target rows"):
         build_continuous_probability_snapshot(
@@ -356,7 +356,7 @@ def test_binding_rejects_a_driver_named_after_a_forbidden_key(tmp_path: Path):
 def test_conditioning_must_cover_exactly_the_bound_drivers(bound):
     binding, _ = bound
     partial = ContinuousConditioning(
-        values=(("order_intake_growth", Decimal("0.18")),),
+        readings=(("order_intake_growth", Decimal("0.18")),),
         source_ref=SOURCE_REF,
         first_seen_at=FIRST_SEEN,
         source_hash=SOURCE_HASH,
@@ -368,7 +368,7 @@ def test_conditioning_must_cover_exactly_the_bound_drivers(bound):
 def test_a_non_http_conditioning_source_is_refused(bound):
     binding, _ = bound
     offline = ContinuousConditioning(
-        values=tuple(
+        readings=tuple(
             (driver_id, Decimal(CONDITIONING[driver_id])) for driver_id in DRIVERS
         ),
         source_ref="internal-note",
@@ -397,7 +397,7 @@ def test_a_negative_reading_on_a_non_negative_driver_is_refused(bound):
 
 def test_sk_hynix_is_now_a_declaration_on_the_same_assembler():
     SKHYNIX_CONTINUOUS_BINDING.validate()
-    assert SKHYNIX_CONTINUOUS_BINDING.excluded_target_ticker == "000660"
+    assert SKHYNIX_CONTINUOUS_BINDING.excluded_ticker == "000660"
     assert SKHYNIX_CONTINUOUS_BINDING.path_length == 9
     assert len(SKHYNIX_CONTINUOUS_BINDING.driver_ids) == 4
 
@@ -413,7 +413,7 @@ def test_sk_hynix_conditioning_converts_into_the_generic_form():
         source_hash="d" * 64,
     )
     generic = current.as_conditioning()
-    assert tuple(driver_id for driver_id, _ in generic.values) == (
+    assert tuple(driver_id for driver_id, _ in generic.readings) == (
         SKHYNIX_CONTINUOUS_BINDING.driver_ids
     )
     assert generic.as_map() == current.as_map()

@@ -17,7 +17,16 @@ from valuation_engine.continuous_financial_path_probability import (
     ContinuousDriverPosterior,
     ScenarioFinancialPath,
 )
+from valuation_engine.binary_event_probability import (
+    BinaryEventCalibrationBinding,
+    BinaryEventProbabilityCalibrationSnapshot,
+    BinaryEventScenarioEstimate,
+)
 from valuation_engine.continuous_predictive_weight import ContinuousWeightPolicy
+from valuation_engine.continuous_probability_assembly import (
+    ContinuousCalibrationBinding,
+    ContinuousConditioning,
+)
 from valuation_engine.probability_engine_v3 import ProbabilityEngineV3Result, ProbabilityEngineV3Spec
 
 
@@ -66,6 +75,14 @@ def main() -> int:
         ContinuousDriverPosterior,
         ContinuousDriverDependence,
         ScenarioFinancialPath,
+        # The bindings and sealed snapshots that carry probability into the
+        # runtime are part of the same isolation surface: a valuation field here
+        # would re-open the circularity the route exists to prevent.
+        ContinuousCalibrationBinding,
+        ContinuousConditioning,
+        BinaryEventCalibrationBinding,
+        BinaryEventScenarioEstimate,
+        BinaryEventProbabilityCalibrationSnapshot,
     ):
         for item in fields(cls):
             lowered = item.name.lower()

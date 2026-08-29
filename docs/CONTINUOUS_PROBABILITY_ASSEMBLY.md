@@ -49,13 +49,13 @@ ContinuousCalibrationBinding(
     expected_provenance_hash=...,
     expected_source_row_count=210,
     expected_source_company_count=17,
-    excluded_target_ticker="009540",
+    excluded_ticker="009540",
     seed=...,
     non_negative_driver_ids=("yard_utilisation",),
 )
 ```
 
-`excluded_target_ticker` is checked against **both** the artifact and the frozen
+`excluded_ticker` is checked against **both** the artifact and the frozen
 provenance file, so a calibration can never be silently re-pointed at a company
 whose own rows trained it.
 

@@ -72,7 +72,7 @@ class ContinuousCalibrationError(ValueError):
 class ContinuousCalibrationBinding:
     """Everything company-specific about one continuous calibration.
 
-    ``excluded_target_ticker`` is the ticker whose own rows were withheld from
+    ``excluded_ticker`` is the ticker whose own rows were withheld from
     the training set. It is checked against the artifact and the provenance file
     so a calibration can never be silently re-pointed at a company it was fitted
     on.
@@ -94,7 +94,7 @@ class ContinuousCalibrationBinding:
     expected_provenance_hash: str
     expected_source_row_count: int
     expected_source_company_count: int
-    excluded_target_ticker: str
+    excluded_ticker: str
     credible_level: Decimal = Decimal("0.90")
     outer_draws: int = 300
     inner_draws: int = 200
@@ -123,7 +123,7 @@ class ContinuousCalibrationBinding:
             self.expected_provenance_artifact_sha256,
             self.expected_dataset_sha256,
             self.expected_provenance_hash,
-            self.excluded_target_ticker,
+            self.excluded_ticker,
         )
         if not all(identity):
             raise ContinuousCalibrationError(
@@ -181,13 +181,13 @@ class ContinuousConditioning:
     date cannot silently condition on information that did not exist yet.
     """
 
-    values: tuple[tuple[str, Decimal], ...]
+    readings: tuple[tuple[str, Decimal], ...]
     source_ref: str
     first_seen_at: str
     source_hash: str
 
     def as_map(self) -> dict[str, Decimal]:
-        return {driver_id: value for driver_id, value in self.values}
+        return {driver_id: value for driver_id, value in self.readings}
 
     def validate(self, binding: ContinuousCalibrationBinding) -> None:
         if not self.source_ref.startswith("http"):
@@ -200,7 +200,7 @@ class ContinuousConditioning:
             )
         parse_timestamp(self.first_seen_at, label="current conditioning first_seen_at")
         readings = self.as_map()
-        if len(readings) != len(self.values):
+        if len(readings) != len(self.readings):
             raise ContinuousCalibrationError(
                 "current continuous conditioning repeats a driver"
             )
@@ -234,7 +234,7 @@ def conditioning_from_mapping(
             "conditioning row is missing drivers: " + ", ".join(missing)
         )
     return ContinuousConditioning(
-        values=tuple(
+        readings=tuple(
             (driver_id, Decimal(str(readings[driver_id])))
             for driver_id in binding.driver_ids
         ),
@@ -354,10 +354,10 @@ def load_artifact(
             "continuous calibration company breadth must remain "
             f"{binding.expected_source_company_count}"
         )
-    if str(payload.get("target_ticker_excluded") or "") != binding.excluded_target_ticker:
+    if str(payload.get("target_ticker_excluded") or "") != binding.excluded_ticker:
         raise ContinuousCalibrationError(
             "continuous calibration must exclude target rows for "
-            f"{binding.excluded_target_ticker}"
+            f"{binding.excluded_ticker}"
         )
     forbidden = _find_forbidden_keys(payload, binding.forbidden_artifact_keys)
     if forbidden:
@@ -399,7 +399,7 @@ def load_provenance(
         raise ContinuousCalibrationError(
             "continuous calibration provenance lineage hash mismatch"
         )
-    if str(payload.get("target_ticker_excluded") or "") != binding.excluded_target_ticker:
+    if str(payload.get("target_ticker_excluded") or "") != binding.excluded_ticker:
         raise ContinuousCalibrationError(
             "continuous calibration provenance lost target exclusion"
         )
