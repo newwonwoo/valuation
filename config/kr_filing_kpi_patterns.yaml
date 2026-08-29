@@ -11,8 +11,12 @@ purpose: >-
   (백만원/억원/천원): a physical-unit disclosure (MW, 대, 톤) needs its own
   dimension-specific metric entry because one extraction spec cannot mix unit
   dimensions - that is a declared limitation, not an accident.
+  anchor_terms gate the LLM locator path: a proposed quote must contain one of
+  the metric's anchor terms, so the model can only point at spans that carry
+  the metric's own disclosure vocabulary.
 patterns:
   orders:
+    anchor_terms: [수주총액, 신규수주]
     locator_label: 수주총액 (사업의 내용 수주상황 표)
     value_pattern: '수주총액[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원|원)'
     canonical_unit: KRW_million
@@ -23,6 +27,7 @@ patterns:
       원: KRW
     critical: false
   backlog:
+    anchor_terms: [수주잔고, 수주잔액]
     locator_label: 수주잔고 (사업의 내용 수주상황 표)
     value_pattern: '수주잔고[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원|원)'
     canonical_unit: KRW_million
@@ -33,6 +38,7 @@ patterns:
       원: KRW
     critical: false
   nameplate_capacity:
+    anchor_terms: [생산능력]
     locator_label: 생산능력 (사업의 내용 생산설비 표)
     value_pattern: '생산능력[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원)'
     canonical_unit: KRW_million
@@ -42,6 +48,7 @@ patterns:
       천원: KRW_thousand
     critical: false
   capacity:
+    anchor_terms: [생산능력]
     locator_label: 생산능력 (사업의 내용 생산설비 표)
     value_pattern: '생산능력[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원)'
     canonical_unit: KRW_million
@@ -51,6 +58,7 @@ patterns:
       천원: KRW_thousand
     critical: false
   production:
+    anchor_terms: [생산실적]
     locator_label: 생산실적 (사업의 내용 생산실적 표)
     value_pattern: '생산실적[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원)'
     canonical_unit: KRW_million
@@ -60,6 +68,7 @@ patterns:
       천원: KRW_thousand
     critical: false
   utilization:
+    anchor_terms: [가동률]
     locator_label: 가동률 (사업의 내용 생산설비 가동률 표)
     value_pattern: '(?:평균)?가동률[^0-9]{0,40}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>%)'
     canonical_unit: ratio

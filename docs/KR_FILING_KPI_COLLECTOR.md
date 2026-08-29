@@ -75,10 +75,29 @@ for. The boundary is no longer "can it run" but "which series are wired", which
 is the correct shape for a one-person securities operation: every widening of
 coverage is a reviewed connector, not a hand-typed number.
 
-## Growth path under the control doctrine
+## The LLM locator path (implemented)
 
-For filings the generic patterns miss, the intended mechanism is a controlled
-LLM proposing *locators* (member path + span) — and this same deterministic
-extractor re-running the proposal, accepting only what re-extracts identically.
-The model may point; only the extractor may read. That keeps extraction inside
-the same authority boundary as every other proposal in the engine.
+For filings the static patterns miss, the model gets the reading job — inside
+the cage (`src/valuation_engine/llm_filing_locators.py`):
+
+1. The filing-locator analyst sees the filing's normalized visible text and
+   the target metrics (definition, anchor vocabulary, allowed unit tokens),
+   and answers with **locators**: member path, a verbatim quote containing
+   anchor + value + unit, and which characters are the value and the unit.
+2. The deterministic verifier rejects: a quote that does not occur exactly
+   once in that member (a fabricated number has no quote to be found in), a
+   quote without the metric's anchor terms (no relabeling an unrelated
+   figure), an unregistered unit token, a value_text not inside the quote.
+3. A surviving locator compiles into an ordinary `DartKPIExtractionSpec`
+   whose pattern is the escaped quote, and `extract_dart_kpi` re-reads the
+   document through the same machinery as the static path — same member-hash
+   and span receipts, notes marked "LLM locator (verified)".
+
+A model that lies loses the round, not the run: rejected locators become named
+coverage gaps, exactly as if the metric were undisclosed. The stated residual
+risk is a quote that genuinely exists but is the wrong column (a prior-year
+figure beside the right label); the receipts exist so a reviewer can reopen
+the filing at the span — that review is the operator's, not the model's.
+
+The static patterns remain the fast path: zero model calls for statutory
+layouts, the locator pass only for what they miss.

@@ -170,6 +170,7 @@ def build_generic_kr_runtime_factory(
                 network,
                 as_of=spec.as_of,
                 segment_id=spec.filing.segment_id,
+                transport=transport,
             ),
             *industry_series_collector_providers(
                 network.fetch_text,

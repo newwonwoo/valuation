@@ -52,6 +52,8 @@ from .dart_kpi import (
 )
 from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequest
 from .kr_opendart_provider import OpenDartNetwork, opendart_corp_code_from_target_id
+from .llm_filing_locators import FilingLocatorTask, propose_and_verify_filing_kpis
+from .llm_transport import ProposalTransport
 from .live_indexers import index_opendart_filing_list
 from .live_runtime import LiveCollectorProvider
 from .source_index import DocumentIndexRecord
@@ -81,7 +83,23 @@ class FilingKPIPattern:
     value_pattern: str
     canonical_unit: str
     source_unit_map: tuple[tuple[str, str], ...]
+    anchor_terms: tuple[str, ...] = ()
     critical: bool = False
+
+    def locator_task(self) -> FilingLocatorTask:
+        if not self.anchor_terms:
+            raise FilingKPICollectorError(
+                f"metric {self.metric} declares no anchor terms; the LLM locator "
+                "path requires the metric's disclosure vocabulary"
+            )
+        return FilingLocatorTask(
+            metric=self.metric,
+            definition=self.locator_label,
+            anchor_terms=self.anchor_terms,
+            canonical_unit=self.canonical_unit,
+            source_unit_map=self.source_unit_map,
+            critical=self.critical,
+        )
 
     def to_spec(self, *, segment: str, effective_date: str) -> DartKPIExtractionSpec:
         return DartKPIExtractionSpec(
@@ -118,6 +136,9 @@ def load_filing_kpi_patterns(
             source_unit_map=tuple(
                 (str(token), str(unit))
                 for token, unit in (row.get("source_unit_map") or {}).items()
+            ),
+            anchor_terms=tuple(
+                str(item) for item in (row.get("anchor_terms") or ())
             ),
             critical=bool(row.get("critical", False)),
         )
@@ -183,14 +204,21 @@ def request_scoped_filing_kpi_collector(
     segment_id: str,
     patterns: tuple[FilingKPIPattern, ...],
     lookback_days: int = 540,
+    transport: ProposalTransport | None = None,
 ):
     """EvidenceCollector reading the latest periodic filing's operating tables.
 
-    Per-metric misses are omitted from the batch — the stage-level coverage
-    check then reports exactly which required metrics stayed unobserved, which
-    is the honest outcome for a filing that does not disclose them in the
-    standard format. A fetch or archive-integrity failure, by contrast, raises
-    and blocks: a broken source is not a coverage gap.
+    Two passes. The static patterns run first — the fast deterministic path for
+    the statutory layouts. Metrics they miss go to the LLM locator analyst when
+    a transport is configured: the model points at where the filing discloses
+    the metric, and the same deterministic extractor re-reads the document at
+    that locator — only what re-extracts becomes Evidence, and its notes say
+    the locator was a verified LLM proposal.
+
+    Per-metric misses (static and locator alike) are omitted from the batch —
+    the stage-level coverage check then reports exactly which required metrics
+    stayed unobserved. A fetch or archive-integrity failure, by contrast,
+    raises and blocks: a broken source is not a coverage gap.
     """
     network.validate()
     if not segment_id:
@@ -222,6 +250,7 @@ def request_scoped_filing_kpi_collector(
             api_key=network.api_key,
         )
         records = []
+        statically_missed: list[str] = []
         for metric in request.required_metrics:
             spec = by_metric[metric].to_spec(
                 segment=segment_id,
@@ -230,8 +259,10 @@ def request_scoped_filing_kpi_collector(
             try:
                 observation = extract_dart_kpi(filing, spec)
             except DartKPIExtractionError:
-                # Not disclosed in the standard format, or ambiguous: the
-                # coverage check downstream names this metric as missing.
+                # Not disclosed in the standard layout, or ambiguous. The LLM
+                # locator pass may still find it; otherwise the coverage check
+                # downstream names this metric as missing.
+                statically_missed.append(metric)
                 continue
             records.append(
                 dart_kpi_observation_to_evidence(
@@ -240,6 +271,25 @@ def request_scoped_filing_kpi_collector(
                     observed_date=as_of[:10],
                 )
             )
+        if statically_missed and transport is not None:
+            observations = propose_and_verify_filing_kpis(
+                transport=transport,
+                filing=filing,
+                tasks=tuple(
+                    by_metric[metric].locator_task()
+                    for metric in statically_missed
+                ),
+                segment=segment_id,
+                effective_date=effective_date,
+            )
+            for observation in observations:
+                records.append(
+                    dart_kpi_observation_to_evidence(
+                        observation,
+                        target_id=request.target_id,
+                        observed_date=as_of[:10],
+                    )
+                )
         batch = EvidenceCollectionBatch(
             source_id=SOURCE_ID,
             checked_at=as_of,
@@ -260,6 +310,7 @@ def filing_kpi_collector_provider(
     segment_id: str,
     pattern_config_path: str | Path = DEFAULT_PATTERN_CONFIG_PATH,
     lookback_days: int = 540,
+    transport: ProposalTransport | None = None,
 ) -> LiveCollectorProvider:
     patterns = load_filing_kpi_patterns(pattern_config_path)
     return LiveCollectorProvider(
@@ -279,5 +330,6 @@ def filing_kpi_collector_provider(
             segment_id=segment_id,
             patterns=patterns,
             lookback_days=lookback_days,
+            transport=transport,
         ),
     )

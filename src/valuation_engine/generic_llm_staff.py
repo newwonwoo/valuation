@@ -28,7 +28,6 @@ is fed back verbatim), then the stage fails closed. There is no partial accept.
 from __future__ import annotations
 
 from dataclasses import dataclass
-import json
 from typing import Any, Mapping
 
 from .assumption_compiler import TRANSFORMS
@@ -56,11 +55,16 @@ from .records import (
     Direction,
     HypothesisRecord,
 )
+from .proposal_parsing import (
+    ProposalParseError,
+    complete_with_repair as _complete_with_repair_shared,
+    number_field as _number,
+    parse_json_object as _parse_json_object,
+    require_keys as _require_keys_shared,
+    str_tuple as _str_tuple,
+    text_field as _text,
+)
 from .scanner_runtime import ScannerFinding
-
-
-class ProposalParseError(ValueError):
-    """A model response that does not satisfy the typed proposal contract."""
 
 
 # ------------------------------------------------------------------ rendering
@@ -110,16 +114,6 @@ def _staff_header(context: LLMStaffContext) -> str:
 # -------------------------------------------------------------------- parsing
 
 
-def _parse_json_object(text: str) -> dict[str, Any]:
-    try:
-        payload = json.loads(text)
-    except json.JSONDecodeError as exc:
-        raise ProposalParseError(f"response is not valid JSON: {exc}") from exc
-    if not isinstance(payload, dict):
-        raise ProposalParseError("response must be a single JSON object")
-    return payload
-
-
 def _require_keys(
     payload: Mapping[str, Any],
     *,
@@ -127,34 +121,7 @@ def _require_keys(
     optional: tuple[str, ...] = (),
     label: str,
 ) -> None:
-    unknown = set(payload) - set(required) - set(optional)
-    if unknown:
-        raise ProposalParseError(
-            f"{label} contains unknown keys: {', '.join(sorted(unknown))}"
-        )
-    missing = tuple(key for key in required if key not in payload)
-    if missing:
-        raise ProposalParseError(
-            f"{label} is missing required keys: {', '.join(missing)}"
-        )
-
-
-def _str_tuple(value: Any, label: str) -> tuple[str, ...]:
-    if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-        raise ProposalParseError(f"{label} must be a list of strings")
-    return tuple(value)
-
-
-def _text(value: Any, label: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ProposalParseError(f"{label} must be a non-empty string")
-    return value
-
-
-def _number(value: Any, label: str) -> float:
-    if isinstance(value, bool) or not isinstance(value, (int, float)):
-        raise ProposalParseError(f"{label} must be a number")
-    return float(value)
+    _require_keys_shared(payload, required=required, optional=optional, label=label)
 
 
 def _check_evidence_ids(
@@ -180,20 +147,12 @@ def _complete_with_repair(
     parse,
     max_attempts: int,
 ):
-    attempt_prompt = prompt
-    last_error: ProposalParseError | None = None
-    for _ in range(max_attempts):
-        response = transport.complete(role=role, prompt=attempt_prompt)
-        try:
-            return parse(response)
-        except ProposalParseError as exc:
-            last_error = exc
-            attempt_prompt = (
-                f"{prompt}\n\nYour previous response was rejected: {exc}\n"
-                "Return a corrected JSON object."
-            )
-    raise ProposalParseError(
-        f"{role} proposal failed after {max_attempts} attempts: {last_error}"
+    return _complete_with_repair_shared(
+        transport=transport,
+        role=role,
+        prompt=prompt,
+        parse=parse,
+        max_attempts=max_attempts,
     )
 
 

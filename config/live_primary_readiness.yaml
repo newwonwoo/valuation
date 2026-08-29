@@ -46,7 +46,9 @@ stages:
     status: PARTIAL_LIVE
     reason: >-
       three company-neutral collectors: OpenDART standard financial facts, the filing-KPI
-      collector over the statutory operating tables (exact member-hash/span receipts), and the
+      collector over the statutory operating tables (static patterns first, then a verified
+      LLM locator pass for layouts they miss - the model points, only the extractor reads,
+      exact member-hash/span receipts either way), and the
       industry-series collector serving definition-gated industry observables (benchmark/input/
       output prices, industry inventory) from operator-verified series - the default series
       registry ships with zero verified rows, so production coverage requires operator
