@@ -106,3 +106,91 @@ def test_an_unsupported_family_fails_closed_at_composition_time():
             ),
             forecast_years=5,
         )
+
+
+def _live_wacc(wacc: float = 0.08) -> LiveWACCStageResult:
+    from valuation_engine.risk_adapters import (
+        LiveBetaStageResult,
+        LiveCapitalStructureObservation,
+        TargetCapitalStructureMethod,
+    )
+    from valuation_engine.risk import HierarchicalBetaEstimate
+
+    structure = LiveCapitalStructureObservation(
+        equity_weight=0.7, debt_weight=0.3, tax_rate=0.24,
+        method=TargetCapitalStructureMethod.PEER_NORMALIZED_MARKET_VALUE,
+        as_of="2026-06-30", source_refs=("https://x/structure",),
+        rationale="test structure",
+    )
+    beta = LiveBetaStageResult(
+        estimate=HierarchicalBetaEstimate(
+            asset_beta=0.8, posterior_variance=0.01, updates=(),
+        ),
+        target_asset_beta=0.8, target_levered_beta=1.0,
+        target_capital_structure=structure, peer_ids=("P1",),
+        source_refs=("https://x/beta",), selection_evidence_ids=("E1",),
+        snapshot_hash="beta-hash",
+    )
+    return LiveWACCStageResult(
+        beta_result=beta,
+        wacc_result=WACCResult(
+            cost_of_equity=0.10, after_tax_cost_of_debt=0.035,
+            equity_weight=0.7, debt_weight=0.3, wacc=wacc,
+        ),
+        terminal_consistency=None,
+        source_refs=("https://x/rates",),
+        funding_credit_evidence_ids=(),
+        customer_advance_credit_supports_reduction_candidate=False,
+        snapshot_hash="wacc-hash",
+    )
+
+
+@pytest.mark.parametrize(
+    "archetype, method, family, needs_wacc",
+    [
+        ("regulated_rate_base", "ddm", "gordon_ddm", True),
+        ("regulated_rate_base", "rate_base_roe", "rate_base_roe", True),
+        ("asset_yield_nav", "ffo_multiple", "ffo_multiple", False),
+        ("asset_yield_nav", "nav", "net_asset_value", False),
+        ("financial_balance_sheet", "pb_roe", "justified_pb_roe", True),
+        ("financial_balance_sheet", "residual_income", "residual_income", True),
+        ("contracted_backlog", "normalized_ebitda", "normalized_ebitda_multiple", False),
+        ("reserve_depletion", "reserve_npv", "finite_life_npv", True),
+    ],
+)
+def test_every_delegated_family_composes_from_registry_pairs(
+    archetype, method, family, needs_wacc
+):
+    """The composer now delegates the equity/NAV and finite-life families to
+    their existing exact loaders — each real (archetype, method) pair from the
+    capability registry must build its evaluator, and the discounted ones must
+    consume the run's own WACC result rather than any composer-held rate."""
+    loader = composed_generic_registry_loader(
+        method_choices=(SegmentMethodChoice("core", archetype, method),),
+        forecast_years=3,
+    )
+    data = {"live_wacc_result": _live_wacc()} if needs_wacc else {}
+    registry = loader(_context(data))
+    evaluator = registry.get(ModelKey(archetype, method, "1"))
+    assert evaluator.required_assumption_keys
+    if needs_wacc and hasattr(evaluator, "cost_of_equity"):
+        assert evaluator.cost_of_equity == Decimal("0.1")
+    # Keys the run demands come from the same prototype the evaluator declares.
+    from valuation_engine.generic_live_providers import required_assumption_keys
+
+    keys = required_assumption_keys(
+        method_choices=(SegmentMethodChoice("core", archetype, method),),
+        forecast_years=3,
+    )
+    for key in evaluator.required_assumption_keys:
+        assert key in keys
+
+
+def test_rnpv_stays_an_explicit_gap_naming_the_family():
+    with pytest.raises(GenericValuationPlanError, match="calibrated_single_event_rnpv"):
+        composed_generic_registry_loader(
+            method_choices=(
+                SegmentMethodChoice("core", "probabilistic_pipeline", "rnpv"),
+            ),
+            forecast_years=3,
+        )

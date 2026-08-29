@@ -55,6 +55,7 @@ from .generic_valuation_plan import (
     GenericValuationPlanError,
     composed_generic_registry_loader,
     conventional_valuation_plan_inputs_loader,
+    family_prototype,
     generic_backlog_dcf_fingerprint_loader,
     withheld_per_loader,
 )
@@ -78,26 +79,6 @@ from .scenario_binding import ScenarioBindingSpec
 from .valuation_plan_compiler import SegmentMethodChoice
 
 
-#: Assumption keys each supported execution family requires, before the shared
-#: value-binding conventions. Forecast-length keys expand per ``forecast_years``.
-_FAMILY_KEY_TEMPLATES: dict[str, tuple[str, ...]] = {
-    "normalized_multiple": ("normalized_ebitda", "normalized_multiple"),
-    "explicit_fcff_dcf": ("fcff_year_{year}", "terminal_growth", "terminal_roic"),
-    "contracted_backlog_dcf": (
-        "opening_backlog",
-        "opening_revenue",
-        "new_orders_year_{year}",
-        "backlog_burn_rate_year_{year}",
-        "operating_margin_year_{year}",
-        "operating_tax_rate",
-        "depreciation_rate_of_revenue",
-        "maintenance_capex_rate_of_revenue",
-        "incremental_working_capital_rate",
-        "terminal_growth",
-        "terminal_roic",
-    ),
-}
-
 _VALUE_BINDING_KEYS = (OWNERSHIP_KEY, EV_ADJUSTMENT_KEY, DILUTED_SHARES_KEY)
 
 
@@ -112,18 +93,14 @@ def required_assumption_keys(
     keys: list[str] = []
     for choice in method_choices:
         family = registry.get(choice.archetype, choice.method).execution_family
-        template = _FAMILY_KEY_TEMPLATES.get(family)
-        if template is None:
+        prototype = family_prototype(family, forecast_years)
+        if prototype is None:
             raise GenericValuationPlanError(
-                f"execution family {family} has no generic assumption-key template"
+                f"execution family {family} has no generic evaluator prototype"
             )
-        for item in template:
-            if "{year}" in item:
-                keys.extend(
-                    item.format(year=year) for year in range(1, forecast_years + 1)
-                )
-            else:
-                keys.append(item)
+        # The keys are the evaluator's own declaration; a hand-kept template
+        # could drift from the math it describes.
+        keys.extend(prototype.required_assumption_keys)
     keys.extend(_VALUE_BINDING_KEYS)
     return tuple(dict.fromkeys(keys))
 
