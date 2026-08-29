@@ -94,10 +94,14 @@ the cage (`src/valuation_engine/llm_filing_locators.py`):
    and span receipts, notes marked "LLM locator (verified)".
 
 A model that lies loses the round, not the run: rejected locators become named
-coverage gaps, exactly as if the metric were undisclosed. The stated residual
-risk is a quote that genuinely exists but is the wrong column (a prior-year
-figure beside the right label); the receipts exist so a reviewer can reopen
-the filing at the span — that review is the operator's, not the model's.
+coverage gaps, exactly as if the metric were undisclosed. Beyond fabrication,
+the verifier also refuses **period laundering**: a quote carrying a prior-period
+marker (전기/전년/전분기…) or a forward-looking one (전망/예상/계획/목표…) cannot
+enter as a current realized value — the second forges the evidence layer itself,
+turning a forecast into a fact. See `docs/LLM_CONTAINMENT_THREAT_MODEL.md`. The
+stated residual is two adjacent current-period figures under one label, which
+vocabulary cannot separate; the receipts exist so a reviewer can reopen the
+filing at the span — that review is the operator's, not the model's.
 
 The static patterns remain the fast path: zero model calls for statutory
 layouts, the locator pass only for what they miss.

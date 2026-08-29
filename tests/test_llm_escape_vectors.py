@@ -1,0 +1,199 @@
+"""Adversarial audit of every model-controlled field.
+
+Four staff roles and a dispatcher now take model output. This suite attacks
+each channel that could move value or forge meaning, and pins the outcome so a
+future change cannot silently reopen an escape. Attacks run through the real
+cold-start pipeline (or the real verifier) — not against mocks of the guard.
+"""
+
+from __future__ import annotations
+
+import copy
+from datetime import date
+from io import BytesIO
+import json
+import tempfile
+from zipfile import ZipFile
+
+import pytest
+
+from valuation_engine.cli_runtime import LiveAnalysisRequest
+from valuation_engine.cold_start_probe import (
+    PROBE_COMPANY_NAME,
+    PROBE_RUN_ID,
+    _staff_scripts,
+    probe_network,
+    probe_runtime_spec,
+)
+from valuation_engine.dart_documents import parse_opendart_original_document_archive
+from valuation_engine.generic_live_providers import build_generic_kr_runtime_factory
+from valuation_engine.kr_filing_kpi_collector import load_filing_kpi_patterns
+from valuation_engine.llm_filing_locators import (
+    ROLE_FILING_LOCATOR,
+    propose_and_verify_filing_kpis,
+)
+from valuation_engine.llm_transport import ScriptedTransport
+from valuation_engine.strict_live_runtime import run_prism
+
+
+# --------------------------------------------------------------- pipeline harness
+
+
+def _run(scripts):
+    factory = build_generic_kr_runtime_factory(
+        network=probe_network(),
+        transport=ScriptedTransport(scripts),
+        spec=probe_runtime_spec(),
+    )
+    with tempfile.TemporaryDirectory() as root:
+        return run_prism(
+            factory(
+                LiveAnalysisRequest(
+                    command=f"분석시작 {PROBE_COMPANY_NAME}",
+                    company_query=PROBE_COMPANY_NAME,
+                    state_root=root,
+                    run_id=PROBE_RUN_ID,
+                    jurisdiction="KR",
+                )
+            )
+        ).result
+
+
+def _value(result):
+    valuation = result.data.get("generic_valuation_result")
+    return valuation.scenarios[0].value_per_share if valuation else None
+
+
+BASE_VALUE = None
+
+
+@pytest.fixture(scope="module")
+def base_value():
+    return _value(_run(_staff_scripts()))
+
+
+# ------------------------------------------------- value channels stay inert
+
+
+def test_old_value_and_confidence_do_not_move_the_valuation(base_value):
+    """Fields the compiler does not recalc must not reach the arithmetic."""
+    scripts = copy.deepcopy(_staff_scripts())
+    bridge = json.loads(scripts["bridge_analyst"][0])
+    for draft in bridge["drafts"]:
+        draft["old_value"] = 999999999
+        draft["confidence"] = 0.01
+    scripts["bridge_analyst"] = (json.dumps(bridge),)
+    assert _value(_run(scripts)) == base_value
+
+
+def test_a_smuggled_price_in_a_hypothesis_never_reaches_the_report():
+    scripts = copy.deepcopy(_staff_scripts())
+    payload = json.loads(scripts["intelligence_officer"][0])
+    payload["hypotheses"][0]["statement"] = "ZZPRICE 적정주가 95000원 목표가 110000원"
+    scripts["intelligence_officer"] = (json.dumps(payload),)
+    report = _run(scripts).data.get("final_report") or ""
+    assert "ZZPRICE" not in report
+    assert "95000" not in report and "95,000" not in report
+
+
+def test_a_smuggled_price_in_a_counter_thesis_never_reaches_the_report():
+    scripts = copy.deepcopy(_staff_scripts())
+    payload = json.loads(scripts["red_team_officer"][0])
+    payload["counter_thesis"] = "ZZTGT 목표주가 150000원 강력매수"
+    scripts["red_team_officer"] = (json.dumps(payload),)
+    report = _run(scripts).data.get("final_report") or ""
+    assert "ZZTGT" not in report
+    assert "150000" not in report and "150,000" not in report
+
+
+# ---------------------------------------------- locator laundering is refused
+
+
+RCEPT = "20260318000888"
+
+
+def _filing(body: str):
+    buffer = BytesIO()
+    with ZipFile(buffer, "w") as archive:
+        archive.writestr(f"{RCEPT}.xml", body)
+    return parse_opendart_original_document_archive(
+        buffer.getvalue(), rcept_no=RCEPT, checked_at=date(2026, 8, 27),
+        source_ref=f"https://opendart.fss.or.kr/api/document.xml?rcept_no={RCEPT}",
+    )
+
+
+def _backlog_tasks():
+    return tuple(
+        p.locator_task() for p in load_filing_kpi_patterns() if p.metric == "backlog"
+    )
+
+
+def _locate(body: str, quote: str, value_text: str):
+    proposal = json.dumps({
+        "locators": [{
+            "metric": "backlog", "member_path": f"{RCEPT}.xml",
+            "quote": quote, "value_text": value_text, "unit_token": "백만원",
+        }],
+        "not_found": [],
+    })
+    return propose_and_verify_filing_kpis(
+        transport=ScriptedTransport({ROLE_FILING_LOCATOR: (proposal, proposal)}),
+        filing=_filing(body), tasks=_backlog_tasks(),
+        segment="core", effective_date="2025-12-31",
+    )
+
+
+_TWO_PERIOD = (
+    "<BODY><P>II. 사업의 내용</P>"
+    "<P>당기말 수주잔액은 1,080,000 백만원입니다.</P>"
+    "<P>전기말 수주잔액은 900,000 백만원이었습니다.</P></BODY>"
+)
+_FORECAST = (
+    "<BODY><P>당사는 2027년 수주잔고가 2,000,000 백만원에 이를 것으로 전망합니다.</P></BODY>"
+)
+
+
+def test_a_prior_period_figure_cannot_enter_as_current_realized():
+    assert _locate(_TWO_PERIOD, "전기말 수주잔액은 900,000 백만원", "900,000") == ()
+
+
+def test_a_forward_looking_figure_cannot_forge_the_realized_layer():
+    assert _locate(
+        _FORECAST, "2027년 수주잔고가 2,000,000 백만원에 이를 것으로 전망", "2,000,000"
+    ) == ()
+
+
+def test_the_current_period_disclosure_still_extracts():
+    observations = _locate(_TWO_PERIOD, "당기말 수주잔액은 1,080,000 백만원", "1,080,000")
+    assert len(observations) == 1
+    assert str(observations[0].measure.amount) == "1080000"
+
+
+@pytest.mark.parametrize(
+    "term", ["전기", "전년", "전분기", "전망", "예상", "계획", "목표", "추정"]
+)
+def test_each_disqualifying_term_blocks_the_locator(term):
+    body = f"<BODY><P>{term} 기준 수주잔액은 500,000 백만원 수준입니다.</P></BODY>"
+    assert _locate(body, f"{term} 기준 수주잔액은 500,000 백만원", "500,000") == ()
+
+
+# ------------------------------------------ disclosure guardrail, not silence
+
+
+def test_a_fully_declared_valuation_is_disclosed_as_a_warning():
+    """100% operator-declared underwriting must surface, never pass silently.
+
+    The probe's valuation stands entirely on declared judgments; the
+    evidence-composition guardrail flags it and AUDIT_GATE is WARNING, so the
+    report tells the reader the intrinsic value rests on judgment, not filings.
+    """
+    result = _run(_staff_scripts())
+    audit = next(t for t in result.stage_traces if t.stage == "AUDIT_GATE")
+    assert audit.status.value == "warning"
+    report = result.data["evidence_composition_report"]
+    assert report.valuation_underwriting_share == 1
+    checks = {f.check: f for f in report.findings}
+    assert not checks["evidence_composition_primary_backing"].passed
+    assert not checks["evidence_composition_underwriting_concentration"].passed
+    # Disclosure, not a block: a knowingly-declared run still completes.
+    assert not result.blocked_reasons

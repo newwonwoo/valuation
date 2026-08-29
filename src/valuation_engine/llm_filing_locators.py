@@ -63,6 +63,21 @@ ROLE_FILING_LOCATOR = "filing_locator_analyst"
 #: Characters of normalized member text shown to the model per member.
 _MEMBER_TEXT_LIMIT = 12000
 
+#: Terms that disqualify a quote from being a current-period realized figure.
+#: A quote carrying any of these describes a different period or an
+#: expectation, so a number beside it is not this filing's realized state —
+#: exactly the laundering the anchor-and-existence checks cannot catch alone.
+#: Prior-period markers put a real-but-stale number into the current slot;
+#: forward-looking markers forge the evidence LAYER itself, turning a forecast
+#: into a realized fact. Both are refused.
+_PERIOD_DISQUALIFYING_TERMS = (
+    # prior period
+    "전기", "전년", "전분기", "직전", "과거", "기초", "기말 대비", "전기말",
+    # forward-looking / plan
+    "전망", "예상", "예측", "추정", "계획", "목표", "가이던스", "전년대비",
+    "예정", "이를 것", "될 것", "할 것", "전망됩니다", "예상됩니다",
+)
+
 
 @dataclass(frozen=True)
 class FilingLocatorTask:
@@ -178,6 +193,16 @@ def _verify_and_extract(
             f"locator quote for {metric} contains none of its anchor terms "
             f"({', '.join(task.anchor_terms)}); the model may only point at "
             "spans carrying the metric's own disclosure vocabulary"
+        )
+    disqualifying = tuple(
+        term for term in _PERIOD_DISQUALIFYING_TERMS if term in quote
+    )
+    if disqualifying:
+        raise ProposalParseError(
+            f"locator quote for {metric} carries period/expectation markers "
+            f"({', '.join(disqualifying)}); a prior-period or forward-looking "
+            "figure cannot enter as a current realized value. Quote the "
+            "current-period disclosure, or report the metric in not_found"
         )
     registered = {token for token, _ in task.source_unit_map}
     if unit_token not in registered:
