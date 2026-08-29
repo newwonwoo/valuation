@@ -19,7 +19,7 @@ def run_and_render(output: Path | None = None) -> dict[str, object]:
                         "blocked_reasons": list(authority.result.blocked_reasons),
                         "stage_traces": [
                             {
-                                "stage": item.stage_id,
+                                "stage": item.stage,
                                 "status": item.status.value,
                                 "rationale": item.rationale,
                             }
