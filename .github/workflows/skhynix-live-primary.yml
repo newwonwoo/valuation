@@ -1,0 +1,58 @@
+name: skhynix-live-primary
+
+on:
+  push:
+    branches: [main, feat/skhynix-canonical-live-20260829]
+    paths:
+      - 'config/skhynix_live_snapshot.yaml'
+      - 'src/valuation_engine/skhynix_live_primary.py'
+      - 'scripts/run_skhynix_live_primary.py'
+      - 'tests/test_skhynix_live_primary.py'
+      - 'src/valuation_engine/strict_live_runtime.py'
+      - 'src/valuation_engine/live_runtime.py'
+      - 'src/valuation_engine/assumption_compiler.py'
+      - 'src/valuation_engine/scenario_binding.py'
+      - 'src/valuation_engine/valuation_execution.py'
+      - 'src/valuation_engine/generic_audit.py'
+      - '.github/workflows/skhynix-live-primary.yml'
+  pull_request:
+    paths:
+      - 'config/skhynix_live_snapshot.yaml'
+      - 'src/valuation_engine/skhynix_live_primary.py'
+      - 'scripts/run_skhynix_live_primary.py'
+      - 'tests/test_skhynix_live_primary.py'
+      - 'src/valuation_engine/strict_live_runtime.py'
+      - 'src/valuation_engine/live_runtime.py'
+      - 'src/valuation_engine/assumption_compiler.py'
+      - 'src/valuation_engine/scenario_binding.py'
+      - 'src/valuation_engine/valuation_execution.py'
+      - 'src/valuation_engine/generic_audit.py'
+      - '.github/workflows/skhynix-live-primary.yml'
+  workflow_dispatch:
+
+jobs:
+  skhynix-live-primary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Execute canonical SK hynix LIVE_PRIMARY
+        run: >-
+          PYTHONPATH=src
+          python scripts/run_skhynix_live_primary.py
+          --output /tmp/SKHYNIX_000660_LIVE_PRIMARY_REPORT.md
+      - name: Upload canonical report
+        uses: actions/upload-artifact@v4
+        with:
+          name: SKHYNIX_000660_LIVE_PRIMARY_REPORT
+          path: |
+            /tmp/SKHYNIX_000660_LIVE_PRIMARY_REPORT.md
+            /tmp/SKHYNIX_000660_LIVE_PRIMARY_REPORT.json
+      - name: SK hynix canonical regressions
+        run: pytest -q tests/test_skhynix_live_primary.py
+      - name: Full regression
+        run: pytest -q
