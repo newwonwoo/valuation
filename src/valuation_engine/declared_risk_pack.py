@@ -194,13 +194,26 @@ class DeclaredRiskPack:
         capitalization back into the capital structure — the exact pre-freeze
         leakage the peer-normalized method exists to exclude.
         """
+        def _norm(value: str) -> str:
+            return "".join(ch for ch in value.upper() if ch.isalnum())
+
         markers = {self.target_id}
         if identity.ticker:
             markers.add(identity.ticker)
         markers.update(value for _, value in identity.external_ids if value)
+        # Formatting variants ("900881.KS", "A900881", "kr:dart:00888801") are
+        # the realistic way the target sneaks back in; compare on normalized
+        # alphanumerics, and treat a long marker appearing INSIDE a peer id as
+        # the same smuggling — a 6+ character code does not occur by accident.
+        normalized_markers = {_norm(marker) for marker in markers if _norm(marker)}
         for level in self.pack.beta_levels:
             for peer in level.peers:
-                if peer.peer_id in markers:
+                normalized_peer = _norm(peer.peer_id)
+                if peer.peer_id in markers or any(
+                    marker == normalized_peer
+                    or (len(marker) >= 6 and marker in normalized_peer)
+                    for marker in normalized_markers
+                ):
                     raise DeclaredRiskPackError(
                         f"declared risk pack lists the target itself as Beta peer "
                         f"{peer.peer_id!r} at {level.level.value}; the target's "

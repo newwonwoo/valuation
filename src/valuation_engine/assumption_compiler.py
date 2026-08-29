@@ -359,6 +359,23 @@ def compile_assumptions(
                         "observation may only cite its own metric (a scenario/"
                         "model qualifier is allowed, an unrelated quantity is not)"
                     )
+                # The mirror rule for computed transforms: evidence that IS the
+                # key's own quantity may only pass through unchanged. Feeding it
+                # into arithmetic (net debt x an unrelated burn rate, "adjusted"
+                # by whatever ratio the ledger happens to hold) produces a value
+                # that contradicts the direct declaration while citing it — the
+                # recalc verifies the arithmetic, so only this binding refuses
+                # the relabeling. Deriving a key from OTHER metrics (borrowings
+                # -> borrowings_adjustment, capacity x utilization) stays legal.
+                if spec.transform_id not in _PASSTHROUGH_TRANSFORMS and _metric_matches_key(
+                    evidence.metric, spec.key
+                ):
+                    raise ValueError(
+                        f"computed assumption {spec.key} cites direct evidence of "
+                        f"its own metric ({evidence.metric}) as a transform input; "
+                        "the key's own declaration may only enter via a "
+                        "pass-through transform, never rescaled by other factors"
+                    )
                 measures.append(measure_from_raw(evidence.value, evidence.unit, evidence.effective_date))
                 evidence_hash_parts.append(
                     f"{evidence.id}|{evidence.metric}|{evidence.value}|{evidence.unit}|{evidence.effective_date}|{evidence.source_ref}"

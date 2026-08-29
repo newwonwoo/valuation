@@ -161,10 +161,48 @@ A declared-underwriting file is bound to one `target_id`; reusing it for another
 company is refused at collection. A judgment declared for company A cannot leak
 into company B's valuation.
 
+## Round 4 — the discount-rate chain and computed transforms
+
+The declared risk pack and the beta/WACC wiring created new surfaces; auditing
+them found one real escape and confirmed three containments.
+
+**Computed-transform semantic laundering — FOUND OPEN, CLOSED.** Round 2's
+metric-identity binding covered pass-through transforms only. A bridge could
+cite the key's own declaration PLUS any ratio the ledger happened to hold and
+claim their product: declared net debt −2,100 × an unrelated backlog burn rate
+0.31 compiled to −651 — arithmetic verified, meaning forged, share value
+inflated. Fix: the mirror rule. Evidence whose metric IS the key's own quantity
+may only enter through a pass-through transform; feeding it into arithmetic is
+refused as relabeling the key's own declaration. Deriving a key from OTHER
+metrics (borrowings × sign → borrowings_adjustment; capacity × utilization)
+stays legal, and the SK hynix/Sanil golden runs are unchanged.
+
+Residual, stated: a computed transform citing only unrelated metrics (some
+other money figure × some other ratio) is still arithmetically verifiable and
+semantically free. It cannot contradict a direct declaration (the mirror rule),
+it is visible in the composition report, and its hypothesis/direction bindings
+apply — but the semantic truth of a cross-metric formula is analyst judgment
+the compiler cannot decide. That is the underwriting boundary, not a defect.
+
+**Forged risk paths — CONTAINED.** `economic_path_id` is model free-text, so a
+bridge can stamp `beta:...` prefixes into scenario paths. The audit compares
+against the ACTUAL stage results' snapshot hashes, which do not exist when the
+bridge runs; a forged prefix never matches, and a missing real one still fails.
+
+**Risk-pack rationale injection — CONTAINED.** Pack rationales enter Evidence
+notes; staff prompts render id/metric/value/unit/layer/source/effective only,
+so a poisoned declaration file cannot prompt-inject the analysts. Pinned.
+
+**Target-as-peer smuggling — HARDENED.** The refusal now compares normalized
+alphanumerics and catches venue formatting ("900881.KS", "A900881",
+"kr:dart:..."); an honest peer sharing no 6+ character run is unaffected.
+
 ## Regression lock
 
 `tests/test_llm_escape_vectors.py` runs each attack above through the real
-pipeline or the real verifier. Two rounds of audit are pinned: value/text/
-locator-period (round 1) and semantic laundering, filing injection and
-cross-target underwriting (round 2). A change that reopens any escape fails a
-test whose name says what was reopened.
+pipeline or the real verifier. Four rounds of audit are pinned: value/text/
+locator-period (round 1); semantic laundering, filing injection and
+cross-target underwriting (round 2); hash-chain, recovery, scanner, SOTP and
+certificate surfaces (round 3); the discount-rate chain and computed-transform
+laundering (round 4). A change that reopens any escape fails a test whose name
+says what was reopened.
