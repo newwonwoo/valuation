@@ -307,11 +307,16 @@ def dart_kpi_observation_to_evidence(
         f"DARTKPI:{observation.rcept_no}:{observation.segment}:"
         f"{observation.metric}:{observation.observation_hash[:16]}"
     )
+    amount = observation.measure.amount
+    integral = amount.to_integral_value()
+    # Preserve exact precision while keeping Evidence snapshots JSON-serializable,
+    # matching the dart_facts convention (int when integral, decimal string otherwise).
+    json_safe_value = int(integral) if amount == integral else format(amount, "f")
     return EvidenceRecord(
         id=evidence_id,
         target=target_id,
         metric=observation.metric,
-        value=observation.measure.amount,
+        value=json_safe_value,
         unit=observation.measure.unit,
         source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,
         effective_date=observation.measure.as_of,

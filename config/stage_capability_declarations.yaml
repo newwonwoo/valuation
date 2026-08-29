@@ -70,7 +70,8 @@ stages:
     provider_slot: collectors
     contract: valuation_engine.live_runtime:LiveCollectorProvider
     generic_implementation: valuation_engine.kr_opendart_provider:request_scoped_opendart_fact_collector
-    note: OpenDART standard financial facts collect from a corpCode alone.
+    note: >-
+      OpenDART standard financial facts plus the filing-KPI collector over the statutory operating tables; market-side industry metrics remain the named collection boundary.
 
   EVIDENCE_LEDGER:
     provider_slot: null

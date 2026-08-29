@@ -104,9 +104,31 @@ def probe_fetch_text(url: str) -> str:
     raise AssertionError(f"cold-start probe received an unexpected URL: {url}")
 
 
+_FILING_BODY = """
+<BODY>
+<P>II. 사업의 내용</P>
+<P>3. 생산 및 설비</P>
+<TABLE>
+<TR><TD>생산능력</TD><TD>5,400,000 백만원</TD></TR>
+<TR><TD>생산실적</TD><TD>4,860,000 백만원</TD></TR>
+<TR><TD>평균가동률</TD><TD>90.0 %</TD></TR>
+</TABLE>
+</BODY>
+"""
+
+
+def _document_archive() -> bytes:
+    buffer = BytesIO()
+    with ZipFile(buffer, "w") as archive:
+        archive.writestr("20260318000888.xml", _FILING_BODY)
+    return buffer.getvalue()
+
+
 def probe_fetch_bytes(url: str) -> bytes:
     if "corpCode.xml" in url:
         return _corp_archive()
+    if "document.xml" in url:
+        return _document_archive()
     raise AssertionError(f"cold-start probe received an unexpected binary URL: {url}")
 
 

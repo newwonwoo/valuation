@@ -48,6 +48,7 @@ from .generic_valuation_plan import (
     composed_generic_registry_loader,
     conventional_valuation_plan_inputs_loader,
 )
+from .kr_filing_kpi_collector import filing_kpi_collector_provider
 from .kr_opendart_provider import (
     KRLiveProviderExtensions,
     KRLiveRuntimeFactory,
@@ -159,6 +160,13 @@ def build_generic_kr_runtime_factory(
         capability_registry=capability_registry,
     )
     extensions = KRLiveProviderExtensions(
+        additional_collectors=(
+            filing_kpi_collector_provider(
+                network,
+                as_of=spec.as_of,
+                segment_id=spec.filing.segment_id,
+            ),
+        ),
         industry_snapshot_loader=opendart_filing_snapshot_loader(
             fetch_text=network.fetch_text,
             as_of=spec.as_of,

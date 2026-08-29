@@ -44,7 +44,13 @@ stages:
     reason: Industry DNA compiles to evidence, KPI, scanner, kill-condition and method requirements.
   PRIMARY_EVIDENCE_COLLECTION:
     status: PARTIAL_LIVE
-    reason: typed collector core is implemented and OpenDART standard financial facts plus deterministic original-filing KPI extraction are supported; company-specific spec/IR/source breadth remains incomplete.
+    reason: >-
+      typed collector core plus two company-neutral collectors: OpenDART standard financial
+      facts and the filing-KPI collector reading the statutory operating tables (수주총액,
+      수주잔고, 생산능력, 생산실적, 가동률) with exact member-hash/span receipts. Market-side
+      industry evidence (realized/benchmark prices, cash cost, inventory and process-spread
+      inputs) still lacks collectors - the executed cold-start probe names those metrics as
+      its current boundary.
   EVIDENCE_LEDGER:
     status: RUNTIME_READY
     reason: append-only ledger, supersession and snapshot hashing are implemented.

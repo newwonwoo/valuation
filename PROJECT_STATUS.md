@@ -60,7 +60,7 @@ flowchart TB
 - `PARTIAL_LIVE`: **11/33**
 - Explicit runtime gaps: **0**
 - `PROVIDER_REQUIRED` (typed contract, no company-neutral implementation): **0/33**
-- Cold-start proven stages (ran for a company with no hand-written module): **7/33 — canonical runtime executed for an unseen company and stopped at `PRIMARY_EVIDENCE_COLLECTION` (not_implemented: no runnable collector is available for the compiled CompanyCollectionPlan)**
+- Cold-start proven stages (ran for a company with no hand-written module): **7/33 — canonical runtime executed for an unseen company and stopped at `PRIMARY_EVIDENCE_COLLECTION` (recovery_required: required primary evidence missing: metrics=realized_price, benchmark_price, inventory, cash_cost, input_price, output_price, product_yield, plant_runs, turnaround)**
 - Executable method bindings: **42/42** (0 explicit `NOT_IMPLEMENTED`)
 
 These registry metrics measure typed runtime readiness, not full live source/provider coverage. The design-progress score above includes product, acceptance, source and release gaps. Every stage status is probe-derived: `scripts/validate_stage_capability.py` imports the symbols declared in `config/stage_capability_declarations.yaml` and fails any claim the repository cannot back.

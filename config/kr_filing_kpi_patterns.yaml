@@ -1,0 +1,68 @@
+version: 1
+purpose: >-
+  Deterministic extraction patterns for the semi-standard operating tables of
+  Korean statutory periodic filings (사업보고서/분기·반기보고서 "II. 사업의 내용"):
+  수주총액, 수주잔고, 생산능력, 생산실적, 가동률. These are facts about the
+  FILING FORMAT, not about any company. A pattern that does not match a given
+  company's filing yields no Evidence for that metric, and the collection stage
+  reports the gap by name - extraction never guesses and never averages.
+  Ambiguous matches (two locations) fail closed per dart_kpi's exactly-one rule.
+  Capacity/production patterns currently read money-denominated tables only
+  (백만원/억원/천원): a physical-unit disclosure (MW, 대, 톤) needs its own
+  dimension-specific metric entry because one extraction spec cannot mix unit
+  dimensions - that is a declared limitation, not an accident.
+patterns:
+  orders:
+    locator_label: 수주총액 (사업의 내용 수주상황 표)
+    value_pattern: '수주총액[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원|원)'
+    canonical_unit: KRW_million
+    source_unit_map:
+      백만원: KRW_million
+      억원: KRW_hundred_million
+      천원: KRW_thousand
+      원: KRW
+    critical: false
+  backlog:
+    locator_label: 수주잔고 (사업의 내용 수주상황 표)
+    value_pattern: '수주잔고[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원|원)'
+    canonical_unit: KRW_million
+    source_unit_map:
+      백만원: KRW_million
+      억원: KRW_hundred_million
+      천원: KRW_thousand
+      원: KRW
+    critical: false
+  nameplate_capacity:
+    locator_label: 생산능력 (사업의 내용 생산설비 표)
+    value_pattern: '생산능력[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원)'
+    canonical_unit: KRW_million
+    source_unit_map:
+      백만원: KRW_million
+      억원: KRW_hundred_million
+      천원: KRW_thousand
+    critical: false
+  capacity:
+    locator_label: 생산능력 (사업의 내용 생산설비 표)
+    value_pattern: '생산능력[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원)'
+    canonical_unit: KRW_million
+    source_unit_map:
+      백만원: KRW_million
+      억원: KRW_hundred_million
+      천원: KRW_thousand
+    critical: false
+  production:
+    locator_label: 생산실적 (사업의 내용 생산실적 표)
+    value_pattern: '생산실적[^0-9%]{0,60}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>백만원|억원|천원)'
+    canonical_unit: KRW_million
+    source_unit_map:
+      백만원: KRW_million
+      억원: KRW_hundred_million
+      천원: KRW_thousand
+    critical: false
+  utilization:
+    locator_label: 가동률 (사업의 내용 생산설비 가동률 표)
+    value_pattern: '(?:평균)?가동률[^0-9]{0,40}?(?P<value>[0-9][0-9,]*(?:\.[0-9]+)?)\s*(?P<unit>%)'
+    canonical_unit: ratio
+    source_unit_map:
+      '%': '%'
+    critical: false

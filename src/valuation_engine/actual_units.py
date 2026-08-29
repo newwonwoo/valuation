@@ -28,7 +28,13 @@ class UnitDef:
 
 _UNIT_DEFS = {
     "KRW": UnitDef("KRW", Dimension.MONEY, "KRW", Decimal("1")),
+    # Korean statutory filings quote 천원/백만원/억원; all three appear in the
+    # semi-standard operating tables the filing-KPI extractor reads.
+    "KRW_thousand": UnitDef("KRW_thousand", Dimension.MONEY, "KRW", Decimal("1000")),
     "KRW_million": UnitDef("KRW_million", Dimension.MONEY, "KRW", Decimal("1000000")),
+    "KRW_hundred_million": UnitDef(
+        "KRW_hundred_million", Dimension.MONEY, "KRW", Decimal("100000000")
+    ),
     "KRW_billion": UnitDef("KRW_billion", Dimension.MONEY, "KRW", Decimal("1000000000")),
     "USD": UnitDef("USD", Dimension.MONEY, "USD", Decimal("1")),
     "USD_million": UnitDef("USD_million", Dimension.MONEY, "USD", Decimal("1000000")),

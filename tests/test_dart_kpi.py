@@ -114,7 +114,7 @@ def test_kpi_observation_becomes_filing_evidence_not_assumption():
         observed_date="2026-08-24",
     )
     assert evidence.source_layer is EvidenceSourceLayer.REALIZED_OR_FILING
-    assert evidence.value == Decimal("12345")
+    assert evidence.value == 12345
     assert evidence.unit == "KRW_million"
     assert evidence.effective_date == "2026-06-30"
     assert evidence.segment == "core"

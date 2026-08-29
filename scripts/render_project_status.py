@@ -96,10 +96,13 @@ def _cold_start_line() -> str:
     from valuation_engine.cold_start_probe import execute_cold_start_probe
 
     executed = execute_cold_start_probe()
+    # The status page carries the headline; the full metric list stays in
+    # scripts/validate_stage_capability.py output and the probe itself.
+    reason = executed.blocking_reason.split("; segment requirements", 1)[0]
     return (
         f"{len(executed.reached)}/{len(canonical)} — canonical runtime executed for an "
         f"unseen company and stopped at `{executed.blocking_stage}` "
-        f"({executed.blocking_reason})"
+        f"({reason})"
     )
 
 

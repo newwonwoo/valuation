@@ -159,11 +159,7 @@ def test_the_run_fails_closed_exactly_at_evidence_breadth(cold_run):
     traces = {trace.stage: trace for trace in cold_run.result.stage_traces}
     collection = traces.get("PRIMARY_EVIDENCE_COLLECTION")
     assert collection is not None
-    assert collection.status in {
-        StageStatus.RECOVERY_REQUIRED,
-        StageStatus.BLOCKED,
-        StageStatus.NOT_IMPLEMENTED,
-    }
+    assert collection.status is StageStatus.RECOVERY_REQUIRED
     assert cold_run.result.blocked_reasons
     reason = " ".join(cold_run.result.blocked_reasons)
     # The engine names the archetype evidence the core collector cannot supply.
@@ -177,8 +173,19 @@ def test_a_blocked_cold_run_publishes_no_intrinsic_value(cold_run):
 
 
 def test_the_probe_module_reports_the_same_boundary():
+    """The boundary is now evidence breadth by name, no longer collector absence.
+
+    The filing-KPI collector extracts production/capacity/utilization from the
+    statutory tables; what remains missing is exactly the market-side evidence
+    (realized/benchmark prices, cash cost, inventory) that needs the industry
+    source indexers — and the engine names every one of those metrics itself.
+    """
     outcome = execute_cold_start_probe()
     assert outcome.probed
     assert outcome.reached == EXPECTED_REACHED
     assert outcome.blocking_stage == "PRIMARY_EVIDENCE_COLLECTION"
-    assert "no runnable collector" in outcome.blocking_reason
+    assert "required primary evidence missing" in outcome.blocking_reason
+    for metric in ("realized_price", "benchmark_price", "cash_cost", "inventory"):
+        assert metric in outcome.blocking_reason
+    # Collector absence is no longer the story.
+    assert "no runnable collector" not in outcome.blocking_reason

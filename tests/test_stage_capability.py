@@ -247,7 +247,7 @@ def test_the_executed_probe_upgrades_reached_stages_to_cold_proven():
     assert report.by_stage("COMPANY_RESOLUTION").derived is DerivedCapability.COLD_PROVEN
     blocked = report.by_stage(executed.blocking_stage)
     assert blocked.cold_execution is AxisOutcome.BLOCKED
-    assert "no runnable collector" in blocked.cold_execution_detail
+    assert "required primary evidence missing" in blocked.cold_execution_detail
 
 
 def test_cold_start_reports_not_probed_once_every_slot_is_filled():
