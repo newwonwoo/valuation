@@ -102,7 +102,7 @@ def test_identity_observation_compiles_and_hashes():
 
 
 def test_bridge_proposal_is_recomputed_not_trusted():
-    ledger = EvidenceLedger((evidence("E1", 0.82, "ratio"),))
+    ledger = EvidenceLedger((evidence("E1", 0.82, "ratio", metric="utilization"),))
     result = compile_assumptions(
         target_id="T",
         ledger=ledger,
@@ -183,7 +183,7 @@ def test_market_comparison_evidence_is_blocked_pre_freeze():
 
 def test_policy_price_alone_cannot_become_enterprise_price():
     ledger = EvidenceLedger((
-        evidence("E1", 21, "USD", layer=EvidenceSourceLayer.POLICY_PRIMARY_SOURCE),
+        evidence("E1", 21, "USD", metric="asp", layer=EvidenceSourceLayer.POLICY_PRIMARY_SOURCE),
     ))
     result = compile_assumptions(
         target_id="T",
@@ -212,7 +212,7 @@ def test_probability_requires_calibrated_hypothesis_when_spec_demands_it():
 
 
 def test_calibrated_probability_can_compile():
-    ledger = EvidenceLedger((evidence("E1", 0.6, "ratio"),))
+    ledger = EvidenceLedger((evidence("E1", 0.6, "ratio", metric="event_probability"),))
     result = compile_assumptions(
         target_id="T",
         ledger=ledger,

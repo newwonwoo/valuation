@@ -181,6 +181,46 @@ def _ramp_scaled_money(inputs: tuple[Measure, ...], output_unit: str) -> Measure
     )
 
 
+#: Transforms that pass a single evidence value straight through (possibly
+#: rescaling units). For these, the cited evidence must be the SAME economic
+#: quantity as the assumption — see the compiler's pass-through metric check.
+_PASSTHROUGH_TRANSFORMS = frozenset({"identity_observation", "unit_conversion"})
+
+
+def _metric_matches_key(metric: str, key: str) -> bool:
+    """True when a pass-through evidence metric is the assumption's own quantity.
+
+    Equality is the common case. A scenario/model qualifier is allowed: the
+    evidence metric may carry the assumption key as a contiguous run of
+    underscore tokens (``model_core_fcff_year_1`` for key ``fcff_year_1``), or
+    the reverse. Unrelated quantities of the same dimension — net debt cited
+    for EBITDA — share no such token run and are refused, which is the
+    semantic-laundering escape this closes.
+    """
+    if metric == key:
+        return True
+    import re as _re
+
+    def _tokens(value: str) -> list[str]:
+        # Underscore, colon and slash are all scenario/model qualifier
+        # separators seen in real and fixture evidence metrics.
+        return [part for part in _re.split(r"[_:/]", value) if part]
+
+    metric_tokens = _tokens(metric)
+    key_tokens = _tokens(key)
+
+    def contiguous_subsequence(short: list[str], long: list[str]) -> bool:
+        if not short or len(short) > len(long):
+            return False
+        return any(
+            long[index : index + len(short)] == short
+            for index in range(len(long) - len(short) + 1)
+        )
+
+    return contiguous_subsequence(key_tokens, metric_tokens) or contiguous_subsequence(
+        metric_tokens, key_tokens
+    )
+
 TRANSFORMS: dict[str, Transform] = {
     "identity_observation": _identity,
     "unit_conversion": _identity,
@@ -304,6 +344,21 @@ def compile_assumptions(
                 source_layers.append(evidence.source_layer)
                 if evidence.source_layer is EvidenceSourceLayer.MARKET_COMPARISON:
                     raise ValueError("market comparison evidence cannot enter intrinsic compilation")
+                # A pass-through transform asserts "this number IS this metric",
+                # so the cited evidence must actually be that metric. Without
+                # this a same-dimension figure (net debt for EBITDA, both money)
+                # passes recalc while forging the assumption's meaning. Computed
+                # transforms legitimately combine other metrics, so the check is
+                # scoped to the identity/unit-conversion family only.
+                if spec.transform_id in _PASSTHROUGH_TRANSFORMS and not _metric_matches_key(
+                    evidence.metric, spec.key
+                ):
+                    raise ValueError(
+                        f"pass-through assumption {spec.key} cites evidence for an "
+                        f"unrelated metric ({evidence.metric}); an identity "
+                        "observation may only cite its own metric (a scenario/"
+                        "model qualifier is allowed, an unrelated quantity is not)"
+                    )
                 measures.append(measure_from_raw(evidence.value, evidence.unit, evidence.effective_date))
                 evidence_hash_parts.append(
                     f"{evidence.id}|{evidence.metric}|{evidence.value}|{evidence.unit}|{evidence.effective_date}|{evidence.source_ref}"

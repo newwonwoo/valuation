@@ -71,6 +71,13 @@ COLLECTOR_METRICS = (
     "capacity",
     "utilization",
     "cost_curve_position",
+    # Valuation-input evidence carries its own metric so a pass-through
+    # assumption cites its own quantity, not an archetype look-alike.
+    "normalized_ebitda",
+    "normalized_multiple",
+    "ownership",
+    "ev_adjustment",
+    "diluted_shares",
 )
 
 EVIDENCE_VALUES = {
@@ -82,27 +89,36 @@ EVIDENCE_VALUES = {
     "capacity": (1, "count"),
     "utilization": (1, "ratio"),
     "cost_curve_position": (1, "count"),
+    "normalized_ebitda": (100, "KRW_billion"),
+    "normalized_multiple": (8, "multiple"),
+    "ownership": (1, "ratio"),
+    "ev_adjustment": (-100, "KRW_billion"),
+    "diluted_shares": (10_000_000, "shares"),
 }
 
+# Each assumption cites evidence of its OWN metric: a pass-through identity
+# means "this number is this quantity", so the compiler now requires the cited
+# evidence metric to match the key (a scenario/model qualifier aside). These
+# were arbitrary archetype metrics before; matching them is the correct shape.
 ASSUMPTION_SOURCES = {
     "normalized_ebitda": (
-        "realized_price",
+        "normalized_ebitda",
         AffectedVariable.MARGIN,
     ),
     "normalized_multiple": (
-        "benchmark_price",
+        "normalized_multiple",
         AffectedVariable.MULTIPLE,
     ),
     "ownership": (
-        "utilization",
+        "ownership",
         AffectedVariable.SEGMENT_VALUE,
     ),
     "ev_adjustment": (
-        "inventory",
+        "ev_adjustment",
         AffectedVariable.NET_DEBT,
     ),
     "diluted_shares": (
-        "production",
+        "diluted_shares",
         AffectedVariable.SHARE_COUNT,
     ),
 }
@@ -430,6 +446,7 @@ def runtime_config(tmp_path: Path) -> LivePrimaryRuntimeConfig:
             scenario_ids=("Base",),
             required_keys=tuple(ASSUMPTION_SOURCES),
         ),
+        additional_required_evidence={SEGMENT_ID: tuple(ASSUMPTION_SOURCES)},
         providers=providers,
         method_choices=(
             SegmentMethodChoice(

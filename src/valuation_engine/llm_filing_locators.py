@@ -76,6 +76,12 @@ _PERIOD_DISQUALIFYING_TERMS = (
     # forward-looking / plan
     "전망", "예상", "예측", "추정", "계획", "목표", "가이던스", "전년대비",
     "예정", "이를 것", "될 것", "할 것", "전망됩니다", "예상됩니다",
+    # instructional / hypothetical / illustrative — a disclosure states a fact;
+    # an imperative or an example is not the filing's realized figure. This is
+    # also the defense against instruction-shaped text inside a manipulated
+    # filing being read as authoritative ("...으로 보고하라").
+    "보고하라", "하라", "가정", "만약", "가령", "예를 들어", "라고 하자",
+    "임의", "가상", "라면", "한다면", "라고 가정",
 )
 
 
