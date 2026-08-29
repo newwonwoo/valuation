@@ -67,9 +67,10 @@ def render_report(state_root: Path) -> tuple[object, tuple[tuple[str, str], ...]
     as_of = str(market.observation.as_of)[:10]
     html_report = render_skhynix_brokerage_html(
         markdown_report,
-        summary_svg=visuals[0][1],
-        assumptions_svg=visuals[1][1],
+        summary_filename=visuals[0][0],
+        assumptions_filename=visuals[1][0],
         as_of=as_of,
+        markdown_filename=DEFAULT_MARKDOWN_OUTPUT.name,
     )
     core_value = next(
         item.value_per_share for item in valuation.scenarios if item.scenario_id == "Core"
