@@ -165,6 +165,9 @@ sources:
   - construction
   - services
   - demographics
+  - benchmark_price
+  - input_price
+  - output_price
   url: https://kosis.kr/openapi/devGuide/devGuide_0201List.do
   public_fulltext_allowed: true
 - id: KR_OPENDART
@@ -696,6 +699,35 @@ sources:
   - segments
   - filings
   url: https://www.sec.gov/edgar/search/
+  public_fulltext_allowed: true
+- id: OPERATOR_UNDERWRITING
+  family: OPERATOR
+  authority: analyst_declared
+  roles:
+  - company_primary
+  access: declared_file
+  cadence: per_run
+  industries:
+  - listed_companies
+  metrics:
+  - declared_judgments
+  url: docs/GENERIC_LIVE_PROVIDERS.md
+  public_fulltext_allowed: true
+- id: OPERATOR_RISK_DECLARATION
+  family: OPERATOR
+  authority: analyst_declared
+  roles:
+  - company_primary
+  access: declared_file
+  cadence: per_run
+  industries:
+  - listed_companies
+  metrics:
+  - beta_selection_l1_broad_sector
+  - beta_selection_l2_industry
+  - beta_selection_l3_risk_driver_subindustry
+  - beta_selection_l4_economic_twins
+  url: docs/GENERIC_LIVE_PROVIDERS.md
   public_fulltext_allowed: true
 phase2_candidates_to_verify:
 - id: KR_MSIT_TELECOM

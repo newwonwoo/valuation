@@ -1,0 +1,914 @@
+{
+ "rows": [
+  {
+   "company_id": "001080",
+   "period_end": "2017-12-31",
+   "published_at": "2018-09-28T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.003336,
+    "operating_margin": 0.013169
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00120872&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "004020",
+   "period_end": "2017-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.174777,
+    "operating_margin": 0.073023
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00145880&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "004890",
+   "period_end": "2017-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.245449,
+    "operating_margin": 0.061895
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00172936&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "005010",
+   "period_end": "2017-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.687832,
+    "operating_margin": 0.03807
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00156488&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "007280",
+   "period_end": "2017-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.400794,
+    "operating_margin": 0.024566
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00124090&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "008420",
+   "period_end": "2017-12-31",
+   "published_at": "2019-06-18T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.200914,
+    "operating_margin": 0.041498
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00121570&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "012160",
+   "period_end": "2017-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.057989,
+    "operating_margin": 0.00143
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00141477&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "017480",
+   "period_end": "2017-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.203717,
+    "operating_margin": 0.053897
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00128926&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "025550",
+   "period_end": "2017-12-31",
+   "published_at": "2019-07-12T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.059782,
+    "operating_margin": 0.033611
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00158015&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "026940",
+   "period_end": "2017-12-31",
+   "published_at": "2019-06-18T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.042399,
+    "operating_margin": 0.008914
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00123781&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "084010",
+   "period_end": "2017-12-31",
+   "published_at": "2019-03-29T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.353214,
+    "operating_margin": 0.037338
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00113225&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "001080",
+   "period_end": "2018-12-31",
+   "published_at": "2018-09-28T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.00861,
+    "operating_margin": 0.009382
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00120872&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "004020",
+   "period_end": "2018-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.101927,
+    "operating_margin": 0.050157
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00145880&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "004890",
+   "period_end": "2018-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.031569,
+    "operating_margin": 0.044252
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00172936&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "005010",
+   "period_end": "2018-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.179749,
+    "operating_margin": 0.016531
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00156488&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "007280",
+   "period_end": "2018-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.053999,
+    "operating_margin": 0.012434
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00124090&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "008420",
+   "period_end": "2018-12-31",
+   "published_at": "2019-06-18T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.021613,
+    "operating_margin": 0.020601
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00121570&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "012160",
+   "period_end": "2018-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.039368,
+    "operating_margin": -0.025057
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00141477&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "017480",
+   "period_end": "2018-12-31",
+   "published_at": "2019-04-01T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.347331,
+    "operating_margin": 0.039604
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00128926&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "025550",
+   "period_end": "2018-12-31",
+   "published_at": "2019-07-12T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.113745,
+    "operating_margin": 0.030588
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00158015&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "026940",
+   "period_end": "2018-12-31",
+   "published_at": "2019-06-18T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.025771,
+    "operating_margin": 0.006486
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00123781&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "084010",
+   "period_end": "2018-12-31",
+   "published_at": "2019-03-29T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.101394,
+    "operating_margin": 0.002145
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00113225&bsns_year=2018&reprt_code=11011"
+  },
+  {
+   "company_id": "001080",
+   "period_end": "2019-12-31",
+   "published_at": "2021-09-16T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.027097,
+    "operating_margin": -0.005937
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00120872&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "004020",
+   "period_end": "2019-12-31",
+   "published_at": "2022-03-15T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.028852,
+    "operating_margin": 0.015406
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00145880&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "004890",
+   "period_end": "2019-12-31",
+   "published_at": "2022-03-25T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.180954,
+    "operating_margin": -0.010921
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00172936&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "005010",
+   "period_end": "2019-12-31",
+   "published_at": "2022-03-23T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.15364,
+    "operating_margin": -0.008282
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00156488&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "007280",
+   "period_end": "2019-12-31",
+   "published_at": "2022-03-18T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.071246,
+    "operating_margin": -0.018982
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00124090&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "008420",
+   "period_end": "2019-12-31",
+   "published_at": "2022-03-10T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.019739,
+    "operating_margin": 0.015999
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00121570&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "012160",
+   "period_end": "2019-12-31",
+   "published_at": "2022-03-21T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.007768,
+    "operating_margin": 0.019495
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00141477&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "017480",
+   "period_end": "2019-12-31",
+   "published_at": "2022-02-28T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.042213,
+    "operating_margin": 0.033452
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00128926&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "025550",
+   "period_end": "2019-12-31",
+   "published_at": "2022-03-11T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.116117,
+    "operating_margin": 0.019009
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00158015&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "026940",
+   "period_end": "2019-12-31",
+   "published_at": "2022-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.070871,
+    "operating_margin": 0.002386
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00123781&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "084010",
+   "period_end": "2019-12-31",
+   "published_at": "2022-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.138591,
+    "operating_margin": 0.041735
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00113225&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "001080",
+   "period_end": "2020-12-31",
+   "published_at": "2021-09-16T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.05881,
+    "operating_margin": 0.00076
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00120872&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "004020",
+   "period_end": "2020-12-31",
+   "published_at": "2022-03-15T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.138644,
+    "operating_margin": 0.002676
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00145880&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "004890",
+   "period_end": "2020-12-31",
+   "published_at": "2022-03-25T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.119397,
+    "operating_margin": -0.004822
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00172936&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "005010",
+   "period_end": "2020-12-31",
+   "published_at": "2022-03-23T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.244836,
+    "operating_margin": -0.00604
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00156488&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "007280",
+   "period_end": "2020-12-31",
+   "published_at": "2022-03-18T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.062273,
+    "operating_margin": 0.017533
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00124090&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "008420",
+   "period_end": "2020-12-31",
+   "published_at": "2022-03-10T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.060746,
+    "operating_margin": 0.01833
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00121570&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "012160",
+   "period_end": "2020-12-31",
+   "published_at": "2022-03-21T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.005291,
+    "operating_margin": -0.068625
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00141477&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "017480",
+   "period_end": "2020-12-31",
+   "published_at": "2022-02-28T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.053383,
+    "operating_margin": 0.03837
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00128926&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "025550",
+   "period_end": "2020-12-31",
+   "published_at": "2022-03-11T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.025234,
+    "operating_margin": 0.025173
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00158015&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "026940",
+   "period_end": "2020-12-31",
+   "published_at": "2022-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.050398,
+    "operating_margin": 0.012875
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00123781&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "084010",
+   "period_end": "2020-12-31",
+   "published_at": "2022-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.12748,
+    "operating_margin": 0.08157
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00113225&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "001080",
+   "period_end": "2021-12-31",
+   "published_at": "2021-09-16T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.002372,
+    "operating_margin": 0.009027
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00120872&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "004020",
+   "period_end": "2021-12-31",
+   "published_at": "2022-03-15T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.284137,
+    "operating_margin": 0.115039
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00145880&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "004890",
+   "period_end": "2021-12-31",
+   "published_at": "2022-03-25T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.437834,
+    "operating_margin": 0.097844
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00172936&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "005010",
+   "period_end": "2021-12-31",
+   "published_at": "2022-03-23T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.639598,
+    "operating_margin": 0.084503
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00156488&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "007280",
+   "period_end": "2021-12-31",
+   "published_at": "2022-03-18T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.665068,
+    "operating_margin": 0.05786
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00124090&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "008420",
+   "period_end": "2021-12-31",
+   "published_at": "2022-03-10T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.341864,
+    "operating_margin": 0.101444
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00121570&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "012160",
+   "period_end": "2021-12-31",
+   "published_at": "2022-03-21T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.128105,
+    "operating_margin": 0.010252
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00141477&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "017480",
+   "period_end": "2021-12-31",
+   "published_at": "2022-02-28T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.432274,
+    "operating_margin": 0.1029
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00128926&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "025550",
+   "period_end": "2021-12-31",
+   "published_at": "2022-03-11T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.116387,
+    "operating_margin": 0.115698
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00158015&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "026940",
+   "period_end": "2021-12-31",
+   "published_at": "2022-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.40887,
+    "operating_margin": 0.041156
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00123781&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "084010",
+   "period_end": "2021-12-31",
+   "published_at": "2022-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.48788,
+    "operating_margin": 0.10467
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00113225&bsns_year=2021&reprt_code=11011"
+  },
+  {
+   "company_id": "001080",
+   "period_end": "2022-12-31",
+   "published_at": "2025-09-30T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.205568,
+    "operating_margin": -0.027449
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00120872&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "004020",
+   "period_end": "2022-12-31",
+   "published_at": "2025-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.183848,
+    "operating_margin": 0.06189
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00145880&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "004890",
+   "period_end": "2022-12-31",
+   "published_at": "2025-03-28T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.087635,
+    "operating_margin": 0.045553
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00172936&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "005010",
+   "period_end": "2022-12-31",
+   "published_at": "2025-03-18T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.359192,
+    "operating_margin": 0.146038
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00156488&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "007280",
+   "period_end": "2022-12-31",
+   "published_at": "2025-03-21T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.150992,
+    "operating_margin": 0.038499
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00124090&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "008260",
+   "period_end": "2022-12-31",
+   "published_at": "2025-03-13T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.431797,
+    "operating_margin": 0.190593
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00116301&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "008420",
+   "period_end": "2022-12-31",
+   "published_at": "2025-07-08T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.061826,
+    "operating_margin": 0.01564
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00121570&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "012160",
+   "period_end": "2022-12-31",
+   "published_at": "2025-03-28T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.065546,
+    "operating_margin": 0.016824
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00141477&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "017480",
+   "period_end": "2022-12-31",
+   "published_at": "2025-03-10T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.057179,
+    "operating_margin": 0.056159
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00128926&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "025550",
+   "period_end": "2022-12-31",
+   "published_at": "2025-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.108784,
+    "operating_margin": 0.034523
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00158015&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "026940",
+   "period_end": "2022-12-31",
+   "published_at": "2025-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.07149,
+    "operating_margin": 0.028238
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00123781&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "084010",
+   "period_end": "2022-12-31",
+   "published_at": "2025-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.119346,
+    "operating_margin": 0.109836
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00113225&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "001080",
+   "period_end": "2023-12-31",
+   "published_at": "2025-09-30T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.064427,
+    "operating_margin": -0.056506
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00120872&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "004020",
+   "period_end": "2023-12-31",
+   "published_at": "2025-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.086935,
+    "operating_margin": 0.030097
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00145880&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "004890",
+   "period_end": "2023-12-31",
+   "published_at": "2025-03-28T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.133522,
+    "operating_margin": -0.023267
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00172936&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "005010",
+   "period_end": "2023-12-31",
+   "published_at": "2025-03-18T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.192484,
+    "operating_margin": 0.099453
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00156488&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "007280",
+   "period_end": "2023-12-31",
+   "published_at": "2025-03-21T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.043285,
+    "operating_margin": 0.05698
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00124090&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "008260",
+   "period_end": "2023-12-31",
+   "published_at": "2025-03-13T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.077439,
+    "operating_margin": 0.184536
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00116301&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "008420",
+   "period_end": "2023-12-31",
+   "published_at": "2025-07-08T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.148657,
+    "operating_margin": -0.021003
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00121570&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "012160",
+   "period_end": "2023-12-31",
+   "published_at": "2025-03-28T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.103887,
+    "operating_margin": 0.001615
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00141477&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "017480",
+   "period_end": "2023-12-31",
+   "published_at": "2025-03-10T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.229409,
+    "operating_margin": 0.037067
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00128926&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "025550",
+   "period_end": "2023-12-31",
+   "published_at": "2025-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.046267,
+    "operating_margin": 0.021074
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00158015&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "026940",
+   "period_end": "2023-12-31",
+   "published_at": "2025-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.087222,
+    "operating_margin": 0.012623
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00123781&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "084010",
+   "period_end": "2023-12-31",
+   "published_at": "2025-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.255517,
+    "operating_margin": 0.077893
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00113225&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "001080",
+   "period_end": "2024-12-31",
+   "published_at": "2025-09-30T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.179791,
+    "operating_margin": -0.171174
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00120872&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "004020",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.138449,
+    "operating_margin": 0.000804
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00145880&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "004890",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-28T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.047318,
+    "operating_margin": -0.020013
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00172936&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "005010",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-18T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.132701,
+    "operating_margin": 0.017232
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00156488&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "007280",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-21T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.074199,
+    "operating_margin": 0.013804
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00124090&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "008260",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-13T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.281102,
+    "operating_margin": 0.134895
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00116301&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "008420",
+   "period_end": "2024-12-31",
+   "published_at": "2025-07-08T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.143168,
+    "operating_margin": -0.015198
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00121570&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "012160",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-28T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.22028,
+    "operating_margin": 0.001731
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00141477&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "017480",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-10T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.147754,
+    "operating_margin": 0.015916
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00128926&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "025550",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.102607,
+    "operating_margin": 0.023087
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00158015&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "026940",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.050232,
+    "operating_margin": 0.000526
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00123781&bsns_year=2024&reprt_code=11011"
+  },
+  {
+   "company_id": "084010",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.166687,
+    "operating_margin": 0.013372
+   },
+   "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcnt.json?corp_code=00113225&bsns_year=2024&reprt_code=11011"
+  }
+ ]
+}

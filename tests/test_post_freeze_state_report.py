@@ -61,7 +61,7 @@ def reports():
     )
 
 
-def run_post_freeze(tmp_path, *, expected=None):
+def run_post_freeze(tmp_path, *, expected=None, street_reports=None):
     sequence = (
         "INTRINSIC_VALUE_FREEZE",
         "STREET_REFERENCE_LOAD",
@@ -77,7 +77,9 @@ def run_post_freeze(tmp_path, *, expected=None):
         execution_mode=ExecutionMode.PRIMARY_SHADOW,
         stage_sequence=sequence,
         adapters={
-            "STREET_REFERENCE_LOAD": street_reference_load_adapter(loader=reports),
+            "STREET_REFERENCE_LOAD": street_reference_load_adapter(
+                loader=(reports if street_reports is None else lambda: street_reports)
+            ),
             "STREET_GAP_ANALYZER": street_gap_analyzer_adapter(),
             "MARKET_PRICE_LOAD": market_price_load_adapter(
                 loader=lambda: MarketObservation(65.0, "2026-08-23", "market-source"),
@@ -149,3 +151,41 @@ def test_post_freeze_stage_cannot_run_without_token():
     assert result.blocked_reasons
     assert result.stage_traces[0].status is StageStatus.BLOCKED
     assert "IntrinsicFreezeToken" in result.stage_traces[0].rationale
+
+
+def test_declared_no_coverage_withholds_the_street_reference_and_completes(tmp_path):
+    """A small cap with zero sell-side coverage is a normal company, not an
+    error. An authorized export declaring an EMPTY report set (the live
+    KISCO run's situation) must withhold the Street reference and gap as
+    SKIPPED_NOT_APPLICABLE and still drive the run through to the final
+    report — the report then says the Street target was not obtained."""
+    result = run_post_freeze(tmp_path, street_reports=())
+    assert result.blocked_reasons == ()
+    statuses = {trace.stage: trace.status for trace in result.stage_traces}
+    assert statuses["STREET_REFERENCE_LOAD"] is StageStatus.SKIPPED_NOT_APPLICABLE
+    assert statuses["STREET_GAP_ANALYZER"] is StageStatus.SKIPPED_NOT_APPLICABLE
+    assert statuses["FINAL_REPORT"] is StageStatus.PASS
+    assert "street_comparison" not in result.data
+    assert "확보되지 않았습니다" in result.data["final_report"]
+
+
+def test_an_empty_authorized_street_export_loads_as_declared_no_coverage(tmp_path):
+    import json as _json
+
+    from valuation_engine.official_market_data import (
+        street_loader_from_authorized_export,
+    )
+
+    path = tmp_path / "street.json"
+    path.write_text(
+        _json.dumps({"authorization_basis": "explicit_permission", "reports": []}),
+        encoding="utf-8",
+    )
+    assert street_loader_from_authorized_export(str(path))() == ()
+    # An export WITHOUT the authorization basis stays refused, empty or not.
+    bad = tmp_path / "bad.json"
+    bad.write_text(_json.dumps({"reports": []}), encoding="utf-8")
+    import pytest as _pytest
+
+    with _pytest.raises(Exception, match="authorization_basis"):
+        street_loader_from_authorized_export(str(bad))()

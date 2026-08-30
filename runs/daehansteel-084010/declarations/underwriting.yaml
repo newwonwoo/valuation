@@ -1,0 +1,218 @@
+
+target_id: KR:DART:00113225
+as_of: "2026-08-29"
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000780
+declarations:
+  fcff_year_1:
+    value: 8
+    unit: KRW_billion
+    rationale: >-
+      recovery-year FCFF: FY2025 consolidated operating loss -2.9bn turns as
+      the filed H1-2026 rebar-scrap spread widens (ASP 823 vs scrap 480
+      thousand KRW/ton, against 793/407 in FY2025); capex held near
+      depreciation, so FCFF tracks EBIT ramp off the trough.
+  fcff_year_2:
+    value: 20
+    unit: KRW_billion
+    rationale: >-
+      second-year normalization - annualized rolled volume ~1,412kt (filed
+      H1-2026 production 706kt) at a mid-30s thousand-KRW/ton cash spread
+      after conversion; YK Steel rolling utilization recovering from the
+      filed 49%.
+  fcff_year_3:
+    value: 30
+    unit: KRW_billion
+    rationale: >-
+      mid-cycle approach - volume steady near 1,400kt and spread at the
+      midpoint of the filed 2024-H1/2026 range; FY2024 filed operating income
+      10.3bn marks the lower half of the path.
+  fcff_year_4:
+    value: 38
+    unit: KRW_billion
+    rationale: >-
+      near mid-cycle FCFF for the combined 대한제강+YK 2,400kt/yr rolling
+      footprint at the declared benchmark spread; working-capital drag
+      assumed neutral across the cycle.
+  fcff_year_5:
+    value: 42
+    unit: KRW_billion
+    rationale: >-
+      mid-cycle FCFF plateau - EBIT margin ~3.5% on ~1.25조 revenue
+      (FY2025 filed revenue 1,247.1bn), consistent with a through-cycle
+      rebar mill and capex at maintenance level.
+  down_fcff_year_1:
+    value: -5
+    unit: KRW_billion
+    rationale: >-
+      structural-downside first year - construction starts stay at trough,
+      the FY2025 filed operating loss (-2.9bn) persists and working capital
+      absorbs cash.
+  down_fcff_year_2:
+    value: 0
+    unit: KRW_billion
+    rationale: >-
+      downside stabilization at breakeven; spread stays near the FY2025
+      filed level (ASP 793 vs scrap 407) with no volume recovery.
+  down_fcff_year_3:
+    value: 5
+    unit: KRW_billion
+    rationale: >-
+      shallow downside recovery - cost actions only; volume flat at the
+      filed H1-2026 run-rate.
+  down_fcff_year_4:
+    value: 8
+    unit: KRW_billion
+    rationale: >-
+      downside plateau - structurally lower domestic rebar demand caps FCFF
+      near 1% of filed revenue.
+  down_fcff_year_5:
+    value: 10
+    unit: KRW_billion
+    rationale: >-
+      downside terminal-entry FCFF - re-based demand, maintenance capex
+      only; the downside terminal is priced at zero growth on this level.
+  bull_fcff_year_1:
+    value: 20
+    unit: KRW_billion
+    rationale: >-
+      cycle-recovery first year - the filed H1-2026 spread (823-480
+      thousand KRW/ton) holds for the full year and YK rolling utilization
+      lifts from the filed 49% toward 70%.
+  bull_fcff_year_2:
+    value: 38
+    unit: KRW_billion
+    rationale: >-
+      recovery compounding - combined rolling utilization toward 75% on the
+      filed 2,400kt/yr capacity with the H1-2026 spread sustained.
+  bull_fcff_year_3:
+    value: 52
+    unit: KRW_billion
+    rationale: >-
+      upper-cycle FCFF - volume ~1,700kt and spread modestly above the
+      H1-2026 filed level as construction demand normalizes.
+  bull_fcff_year_4:
+    value: 60
+    unit: KRW_billion
+    rationale: >-
+      upper-cycle plateau approaching the FY2024 filed revenue base
+      (1,224.5bn) with mid-single-digit EBIT margin.
+  bull_fcff_year_5:
+    value: 65
+    unit: KRW_billion
+    rationale: >-
+      bull terminal-entry FCFF - ~5% EBIT margin on recovered volume,
+      capex at maintenance; consistent with the bull terminal growth 0.5%.
+  terminal_growth:
+    value: 0.0
+    unit: ratio
+    rationale: >-
+      flat long-run domestic rebar demand - housing starts structurally
+      sideways; no real growth priced beyond the explicit path.
+  down_terminal_growth:
+    value: 0.0
+    unit: ratio
+    rationale: >-
+      structural downside carried entirely in the lower FCFF plateau (10bn);
+      terminal growth held at zero because the evaluator prices reinvestment
+      as g/ROIC and refuses a negative rate - shrinkage is expressed as level,
+      not drift.
+  bull_terminal_growth:
+    value: 0.005
+    unit: ratio
+    rationale: >-
+      mild positive terminal drift if rebuilding/remodeling demand offsets
+      new-start weakness.
+  terminal_roic:
+    value: 0.06
+    unit: ratio
+    rationale: >-
+      through-cycle ROIC judgment for a two-company EAF rebar group near its
+      cost of capital; reinvestment at terminal is priced at this return.
+  ownership:
+    value: 0.8603
+    unit: ratio
+    rationale: >-
+      owners' share of consolidated equity per the FY2025 CFS - 지배기업
+      소유지분 800,329,287,154 / 자본총계 930,326,319,901 = 0.8603
+      (비지배지분 129,997,032,747, 와이케이스틸 소수주주); consolidated FCFF
+      attributed proportionally - a declared simplification.
+  ev_adjustment:
+    value: 119
+    unit: KRW_billion
+    rationale: >-
+      net cash added back to EV: FY2025 CFS cash and equivalents
+      161,316,171,568 less total borrowings and bonds 42,284,251,597
+      (단기차입 20.4bn + 유동성 사채·장기차입 2.6bn + 비유동 사채·장기차입
+      19.3bn) = +119.0bn.
+  diluted_shares:
+    value: 34371596
+    unit: shares
+    rationale: >-
+      issued shares from the H1-2026 filing's 주식의 총수 table as of
+      2026-06-30 (36,103,933 issued less 1,732,337 retired); treasury
+      5,537,674 not deducted - conservative per-share basis.
+  cash_cost:
+    value: 740000
+    unit: KRW_per_ton
+    rationale: >-
+      implied scrap-plus-conversion cash cost consistent with the filed
+      H1-2026 scrap purchase price 480 thousand KRW/ton (대한제강 표) plus
+      EAF conversion judgment ~260 thousand KRW/ton.
+  benchmark_price:
+    value: 820000
+    unit: KRW_per_ton
+    rationale: >-
+      domestic rebar distribution price level consistent with the company's
+      own filed realized-price series 863 (2024) / 793 (2025) / 823 (H1-26)
+      thousand KRW/ton; benchmark held near the filed trajectory pending a
+      verified industry series.
+  inventory:
+    value: 197
+    unit: KRW_billion
+    rationale: >-
+      FY2025 consolidated inventories 197,470,153,951 KRW
+      (ifrs-full_Inventories) from the filed full financial statement.
+  capacity:
+    value: 2400000
+    unit: tons_per_year
+    rationale: >-
+      annualized rolling capacity from the H1-2026 filing's own capacity
+      table: 대한제강 775kt + 와이케이스틸 425kt per half-year, x2.
+  production:
+    value: 1412000
+    unit: tons_per_year
+    rationale: >-
+      annualized rolling run-rate from the H1-2026 filed production table:
+      대한제강 496kt + 와이케이스틸 210kt in the half-year, x2.
+  input_price:
+    value: 480000
+    unit: KRW_per_ton
+    rationale: >-
+      domestic scrap purchase price 480 thousand KRW/ton from the H1-2026
+      filing's own raw-material price table (대한제강; YK 478), declared as
+      the input-price level pending a verified industry scrap series.
+  output_price:
+    value: 823000
+    unit: KRW_per_ton
+    rationale: >-
+      rebar output price level set to the company's filed H1-2026 average
+      selling price 823 thousand KRW/ton, declared pending a verified
+      industry rebar series.
+  product_yield:
+    value: 0.90
+    unit: ratio
+    rationale: >-
+      EAF billet-to-rebar overall yield judgment for the group's mills; no
+      yield KPI is disclosed in the filing.
+  plant_runs:
+    value: 4
+    unit: count
+    rationale: >-
+      four rolling sites per the H1-2026 filing's production-facility note:
+      신평, 녹산, 평택 (대한제강) and 부산 (와이케이스틸).
+  turnaround:
+    value: 14
+    unit: days
+    rationale: >-
+      annual EAF refractory/maintenance downtime judgment; not separately
+      disclosed in the filing.

@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='section-2'><A name='toc1'>4. 매출 및 수주상황</A></P>
+<P><BR/></P>
+<P><SPAN style='font-weight:bold;'>1) 매출실적<BR/></SPAN><SPAN>당사 매출의 세부내역은 다음과 같습니다 (단위 : 천원).</SPAN><BR/>
+</P>
+<TABLE border='1' width='841'>
+<COLGROUP>
+<COL width='108'></COL>
+<COL width='84'></COL>
+<COL width='103'></COL>
+<COL width='144'></COL>
+<COL width='134'></COL>
+<COL width='134'></COL>
+<COL width='134'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='99' height='23' align='CENTER' style='background-color:#D7D7D7;'>구분</TD>
+  <TD width='75' height='23' align='CENTER' style='background-color:#D7D7D7;'>사업부문</TD>
+  <TD width='94' height='23' align='CENTER' style='background-color:#D7D7D7;'>매출유형</TD>
+  <TD width='135' height='23' align='CENTER' style='background-color:#D7D7D7;'>품목</TD>
+  <TD width='125' height='23' align='CENTER' style='background-color:#D7D7D7;'>2026년 반기 누계</TD>
+  <TD width='125' height='23' align='CENTER' style='background-color:#D7D7D7;'>2025년 누계</TD>
+  <TD width='125' height='23' align='CENTER' style='background-color:#D7D7D7;'>2024년 누계</TD>
+</TR>
+<TR height='30'>
+  <TD width='99' height='83' rowspan='3' align='CENTER'>
+<P>대한제강</P>
+</TD>
+  <TD width='75' height='83' rowspan='3' align='CENTER'>
+<P>제강/압연</P>
+</TD>
+  <TD width='94' height='23' align='CENTER'>제품 및 상품</TD>
+  <TD width='135' height='23' align='CENTER'>철근 및 바인코일</TD>
+  <TD width='125' height='23' align='RIGHT'>409,564,181&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>719,952,728&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>792,563,245&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='94' height='23' align='CENTER' valign='BOTTOM'>제품</TD>
+  <TD width='135' height='23' align='CENTER' valign='BOTTOM'>빌릿</TD>
+  <TD width='125' height='23' align='RIGHT'>250,404&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>6,419,913&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>18,513&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='94' height='23' align='CENTER'>기타</TD>
+  <TD width='135' height='23' align='CENTER'>철근 외</TD>
+  <TD width='125' height='23' align='RIGHT'>3,199,548&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>4,896,383&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>3,703,072&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='430' height='23' colspan='4' align='CENTER' valign='BOTTOM'>합계</TD>
+  <TD width='125' height='23' align='RIGHT'>413,014,133</TD>
+  <TD width='125' height='23' align='RIGHT'>731,269,024&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>796,284,829&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='99' height='83' rowspan='3' align='CENTER'>
+<P>와이케이스틸</P>
+</TD>
+  <TD width='75' height='83' rowspan='3' align='CENTER'>
+<P>제강/압연</P>
+</TD>
+  <TD width='94' height='23' align='CENTER'>제품 및 상품</TD>
+  <TD width='135' height='23' align='CENTER'>철근 및 바인코일</TD>
+  <TD width='125' height='23' align='RIGHT'>160,685,732&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>273,778,597&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>385,904,180&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='94' height='23' align='CENTER' valign='BOTTOM'>제품</TD>
+  <TD width='135' height='23' align='CENTER' valign='BOTTOM'>빌릿</TD>
+  <TD width='125' height='23' align='RIGHT'>26,503,916&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>43,386,964&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>76,427,775&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='94' height='23' align='CENTER'>기타</TD>
+  <TD width='135' height='23' align='CENTER'>철근 외</TD>
+  <TD width='125' height='23' align='RIGHT'>945,780&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>1,293,532&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>215,707&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='430' height='23' colspan='4' align='CENTER' valign='BOTTOM'>합계</TD>
+  <TD width='125' height='23' align='RIGHT'>188,135,428&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>318,459,094&nbsp;</TD>
+  <TD width='125' height='23' align='RIGHT'>462,547,662&nbsp;</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P style='font-weight:bold;'><BR/><BR/></P>
+<P style='font-weight:bold;'>2) 판매경로 및 판매방법 등</P>
+<P>당사 철근의 경우 판매경로는 내수와 수출로 나누어지는데 내수는 민수(건설사 &amp; 유통사)와 관수(조달청)으로 나눌 수 있습니다. 민수의 경우 고객사의 발주를 받아 납품한 후 월말에 거래내역을 발송하고 상호간 납품수량을 확인하여 세금계산서를 발행합니다. 결제는 현금 및 어음으로 이루어지고 있습니다. 관수의 경우 2025년 10월부터 다수공급자계약(MAS, Multiple Award Schedule)으로 전환되었습니다. 다수의 수요기관이 필요로 하는 공통품목을 대상으로 조달청이 단가계약을 체결하고, 나라장터 종합쇼핑몰에 등록하여 수요기관이 자유롭게 선택ㆍ구매할 수 있는 계약제도로 각 수요기관의 발주로 납품이 진행됩니다. 관급현장 요청(소요량청구서)을 접수한 후 40일 또는 45일 이내에 납품합니다. 납품 후에는 수요기관에서 대금지급을 하는 월에 월 마감 세금계산서를 발행하고 현금으로 결제가 이루어집니다. 수출의 경우에는 고객에게 납품한 후 L/C 등을 통하여 결제가 이루어집니다.<BR/><BR/></P>
+<P><SPAN style='font-weight:bold;'>3) 판매전략</SPAN><BR/>내수 판매의 경우 영업사원의 컨설턴트화를 통해 고객 중심 영업을 실시하고 있습니다. 영업사원이 직접 고객사 본사 뿐 아니라 현장을 방문하여 &nbsp;VOC(Voice Of Customer)를 수집하여 업무에 적극 반영합니다. 또한 철근가공 등 부가서비스를 제공하여공사기간 단축 및 현장 재고부담 경감을 돕고 있습니다.<BR/><BR/><SPAN style='font-weight:bold;'>4) 주요 매출처</SPAN><BR/>
+</P>
+<TABLE border='1' width='319'>
+<COLGROUP>
+<COL width='160'></COL>
+<COL width='159'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='31'>
+  <TD width='151' height='24' align='CENTER' style='background-color:#D7D7D7;'>대한제강(주)</TD>
+  <TD width='150' height='24' align='CENTER' style='background-color:#D7D7D7;'>와이케이스틸(주)</TD>
+</TR>
+<TR height='31'>
+  <TD width='151' height='24' align='CENTER'>(주) GS 글로벌</TD>
+  <TD width='150' height='24' align='CENTER'>유진기업(주)</TD>
+</TR>
+<TR height='31'>
+  <TD width='151' height='24' align='CENTER'>DUFERCO SA(DITH)</TD>
+  <TD width='150' height='24' align='CENTER'>(주)유성티엔에스</TD>
+</TR>
+<TR height='31'>
+  <TD width='151' height='24' align='CENTER'>금호건설(주)</TD>
+  <TD width='150' height='24' align='CENTER'>신후철강(주)</TD>
+</TR>
+<TR height='31'>
+  <TD width='151' height='24' align='CENTER'>계룡건설산업(주)</TD>
+  <TD width='150' height='24' align='CENTER'>진흥기업(주)</TD>
+</TR>
+<TR height='31'>
+  <TD width='151' height='24' align='CENTER'>관문스틸(주)</TD>
+  <TD width='150' height='24' align='CENTER'>행복나래 주식회사</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

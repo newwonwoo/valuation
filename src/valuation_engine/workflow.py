@@ -156,7 +156,8 @@ def run_analysis_command(
 def market_loader_from_config(path: str | Path) -> MarketLoader:
     def load() -> MarketObservation:
         market = load_market_comparison(path)
-        return MarketObservation(float(market["price"]), str(market["as_of"]), f"{path}#market_comparison")
+        source_ref = str(market.get("source_ref") or f"{path}#market_comparison")
+        return MarketObservation(float(market["price"]), str(market["as_of"]), source_ref)
     return load
 
 

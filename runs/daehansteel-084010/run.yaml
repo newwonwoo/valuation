@@ -1,0 +1,56 @@
+# The third live run, and the first to open the declared-risk-pack chain on a
+# real company: 대한제강 (084010), an EAF rebar group valued on
+# commodity_price_taker/midcycle_price_volume_dcf — L1→L4 peer regression
+# betas computed from committed public price series, WACC assembled from the
+# declared pack, and the expected value calibrated on the committed KR steel
+# cohort refitted without the target.
+company_query: 대한제강
+run_id: LIVE-DAEHAN-1
+as_of: "2026-08-29"
+jurisdiction: KR
+scenario_ids: [Down, Base, Bull]
+method: commodity_price_taker/midcycle_price_volume_dcf
+market_currency: KRW
+filing:
+  business_year: "2025"
+  report_code: "11011"
+  fs_div: CFS
+  fiscal_period_end: "2025-12-31"
+  segment_id: core
+extra_required_evidence:
+  - down_fcff_year_1
+  - down_fcff_year_2
+  - down_fcff_year_3
+  - down_fcff_year_4
+  - down_fcff_year_5
+  - bull_fcff_year_1
+  - bull_fcff_year_2
+  - bull_fcff_year_3
+  - bull_fcff_year_4
+  - bull_fcff_year_5
+  - down_terminal_growth
+  - bull_terminal_growth
+calibration:
+  cohort_key: kr.steel.long|5y_path|continuous_v1
+  external_probability_source: continuous_financial_path_monte_carlo
+  forecast_class: kr.steel.long.continuous_financial_path
+  horizon: 5y_path
+  method_version: probability_engine_v3.2_factory_v2
+  mapping_version: kr_steel_cohort_ex084010_v1
+  driver_ids: [revenue_growth, operating_margin]
+  scenario_ids: [Down, Base, Bull]
+  path_length: 5
+  artifact: ../../config/kr_steel_calibration_artifact_ex084010.json
+  provenance: ../../config/kr_steel_calibration_provenance_ex084010.json
+  conditioning: ../../config/daehan_conditioning_fy2025.json
+  seed: 20260829
+  outer_draws: 300
+  inner_draws: 200
+  constants:
+    expected_artifact_sha256: b0b23ad563c1ca65085d453b20935feabbdde26c73294a7125af1b48550247b3
+    expected_provenance_artifact_sha256: 600fac644f356263faef174b9efa01ce6f1b89cfbec24c5a747ccd342ff8dfc9
+    expected_dataset_sha256: 359b97056441edc09a47f3e9db5eded02d5df4cfed833d6e4bf4d13704d582bc
+    expected_provenance_hash: 1488ad3dea83709d78d675569307c464d40544f49e603515ade0039bb880f779
+    expected_source_row_count: 83
+    expected_source_company_count: 11
+    excluded_ticker: "084010"

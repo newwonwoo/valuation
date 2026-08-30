@@ -1,0 +1,22 @@
+# The second live run, and the runbook's cross-industry validation: 신한알파리츠
+# (293940), a March-FYE K-REIT valued on asset_yield_nav/nav. Every raw byte
+# under raw/ came from public keyless endpoints; no calibration block — there is
+# no REIT cohort artifact yet, so the expected value stays honestly unproduced.
+company_query: 신한알파리츠
+run_id: LIVE-SHALPHA-1
+as_of: "2026-08-29"
+jurisdiction: KR
+scenario_ids: [Down, Base, Bull]
+method: asset_yield_nav/nav
+market_currency: KRW
+filing:
+  # March fiscal year-end: the FY16 annual report (사업보고서 2026.03,
+  # rcept 20260528000669) is filed under business_year 2026.
+  business_year: "2026"
+  report_code: "11011"
+  fs_div: CFS
+  fiscal_period_end: "2026-03-31"
+  segment_id: core
+extra_required_evidence:
+  - down_gross_asset_value
+  - bull_gross_asset_value

@@ -181,6 +181,47 @@ def _ramp_scaled_money(inputs: tuple[Measure, ...], output_unit: str) -> Measure
     )
 
 
+#: Transforms that pass a single evidence value straight through (possibly
+#: rescaling units). For these, the cited evidence must be the SAME economic
+#: quantity as the assumption — see the compiler's pass-through metric check.
+_PASSTHROUGH_TRANSFORMS = frozenset({"identity_observation", "unit_conversion"})
+
+_ALLOWED_METRIC_QUALIFIER_PREFIXES = frozenset(
+    {"model", "scenario", "base", "core", "bull", "bear", "up", "down"}
+)
+
+
+def _metric_matches_key(metric: str, key: str) -> bool:
+    """True when a pass-through evidence metric is the assumption's own quantity.
+
+    Equality is the common case. A closed set of scenario/model qualifiers may
+    prefix the complete assumption key (``model_core_fcff_year_1`` for key
+    ``fcff_year_1``). Partial, reverse and suffix matches are refused: otherwise
+    ``shares`` could silently stand in for ``diluted_shares`` and ``debt`` for
+    ``net_debt`` merely because their tokens overlap.
+    """
+    if metric == key:
+        return True
+    import re as _re
+
+    def _tokens(value: str) -> list[str]:
+        # Underscore, colon and slash are all scenario/model qualifier
+        # separators seen in real and fixture evidence metrics.
+        return [part for part in _re.split(r"[_:/]", value) if part]
+
+    metric_tokens = _tokens(metric)
+    key_tokens = _tokens(key)
+
+    if not key_tokens or len(metric_tokens) <= len(key_tokens):
+        return False
+    if metric_tokens[-len(key_tokens) :] != key_tokens:
+        return False
+    qualifiers = metric_tokens[: -len(key_tokens)]
+    return all(
+        token.casefold() in _ALLOWED_METRIC_QUALIFIER_PREFIXES
+        for token in qualifiers
+    )
+
 TRANSFORMS: dict[str, Transform] = {
     "identity_observation": _identity,
     "unit_conversion": _identity,
@@ -304,6 +345,38 @@ def compile_assumptions(
                 source_layers.append(evidence.source_layer)
                 if evidence.source_layer is EvidenceSourceLayer.MARKET_COMPARISON:
                     raise ValueError("market comparison evidence cannot enter intrinsic compilation")
+                # A pass-through transform asserts "this number IS this metric",
+                # so the cited evidence must actually be that metric. Without
+                # this a same-dimension figure (net debt for EBITDA, both money)
+                # passes recalc while forging the assumption's meaning. Computed
+                # transforms legitimately combine other metrics, so the check is
+                # scoped to the identity/unit-conversion family only.
+                if spec.transform_id in _PASSTHROUGH_TRANSFORMS and not _metric_matches_key(
+                    evidence.metric, spec.key
+                ):
+                    raise ValueError(
+                        f"pass-through assumption {spec.key} cites evidence for an "
+                        f"unrelated metric ({evidence.metric}); an identity "
+                        "observation may only cite its own metric (a scenario/"
+                        "model qualifier is allowed, an unrelated quantity is not)"
+                    )
+                # The mirror rule for computed transforms: evidence that IS the
+                # key's own quantity may only pass through unchanged. Feeding it
+                # into arithmetic (net debt x an unrelated burn rate, "adjusted"
+                # by whatever ratio the ledger happens to hold) produces a value
+                # that contradicts the direct declaration while citing it — the
+                # recalc verifies the arithmetic, so only this binding refuses
+                # the relabeling. Deriving a key from OTHER metrics (borrowings
+                # -> borrowings_adjustment, capacity x utilization) stays legal.
+                if spec.transform_id not in _PASSTHROUGH_TRANSFORMS and _metric_matches_key(
+                    evidence.metric, spec.key
+                ):
+                    raise ValueError(
+                        f"computed assumption {spec.key} cites direct evidence of "
+                        f"its own metric ({evidence.metric}) as a transform input; "
+                        "the key's own declaration may only enter via a "
+                        "pass-through transform, never rescaled by other factors"
+                    )
                 measures.append(measure_from_raw(evidence.value, evidence.unit, evidence.effective_date))
                 evidence_hash_parts.append(
                     f"{evidence.id}|{evidence.metric}|{evidence.value}|{evidence.unit}|{evidence.effective_date}|{evidence.source_ref}"

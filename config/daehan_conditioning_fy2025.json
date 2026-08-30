@@ -1,0 +1,9 @@
+{
+ "values": {
+  "operating_margin": -0.002303,
+  "revenue_growth": 0.018394
+ },
+ "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000780",
+ "first_seen_at": "2026-03-18T09:00:00Z",
+ "source_hash": "c619a45e0daa6c7929035c1393b40d00342db12d389cca330b840e6110064fe0"
+}

@@ -913,6 +913,13 @@ def save_state_adapter(
                 "context_strength_linkages.json": _jsonable(linkage_artifact),
                 "street_compare.json": _jsonable(context.data.get("street_comparison")),
                 "market_compare.json": _jsonable(context.data.get("market_comparison")),
+                "reverse_dcf.json": _jsonable(context.data.get("reverse_dcf_context")),
+                "evidence_composition.json": _jsonable(
+                    context.data.get("evidence_composition_report")
+                ),
+                "valuation_sensitivity.json": _jsonable(
+                    context.data.get("valuation_sensitivity_report")
+                ),
                 "thesis_delta.json": _jsonable(context.data.get("thesis_delta_result", {})),
                 "freeze_token.json": _jsonable(token),
                 "final_report.md": report,

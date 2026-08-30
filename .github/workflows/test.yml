@@ -23,6 +23,8 @@ jobs:
         run: PYTHONPATH=src python scripts/validate_module_requirement_plans.py
       - name: LIVE_PRIMARY readiness registry
         run: PYTHONPATH=src python scripts/validate_live_primary_readiness.py
+      - name: Validate stage capability receipts
+        run: PYTHONPATH=src python scripts/validate_stage_capability.py
       - name: Probability calibration policy
         run: PYTHONPATH=src python scripts/validate_probability_calibration_policy.py
       - name: Hierarchical calibration registry

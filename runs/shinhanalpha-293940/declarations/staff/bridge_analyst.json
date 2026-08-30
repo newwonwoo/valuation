@@ -1,0 +1,233 @@
+{
+ "rationale": "Evidence-backed pass-through of the declared NAV envelope.",
+ "drafts": [
+  {
+   "assumption_key": "gross_asset_value",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:down_gross_asset_value"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 3131.7,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:gross_asset_value"
+  },
+  {
+   "assumption_key": "liabilities",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:liabilities"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 2330.1,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:liabilities"
+  },
+  {
+   "assumption_key": "ownership",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.7782,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:ownership"
+  },
+  {
+   "assumption_key": "diluted_shares",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:diluted_shares"
+   ],
+   "affected_variable": "share_count",
+   "direction": "unchanged",
+   "value": 124940123,
+   "unit": "shares",
+   "canonical_unit": "shares",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:diluted_shares"
+  },
+  {
+   "assumption_key": "gross_asset_value",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:gross_asset_value"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 3933.3,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:gross_asset_value"
+  },
+  {
+   "assumption_key": "liabilities",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:liabilities"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 2330.1,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:liabilities"
+  },
+  {
+   "assumption_key": "ownership",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.7782,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:ownership"
+  },
+  {
+   "assumption_key": "diluted_shares",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:diluted_shares"
+   ],
+   "affected_variable": "share_count",
+   "direction": "unchanged",
+   "value": 124940123,
+   "unit": "shares",
+   "canonical_unit": "shares",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:diluted_shares"
+  },
+  {
+   "assumption_key": "gross_asset_value",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:bull_gross_asset_value"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 4123.0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:gross_asset_value"
+  },
+  {
+   "assumption_key": "liabilities",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:liabilities"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 2330.1,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:liabilities"
+  },
+  {
+   "assumption_key": "ownership",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.7782,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:ownership"
+  },
+  {
+   "assumption_key": "diluted_shares",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:SHALPHA:NAV",
+   "evidence_ids": [
+    "UW:KR:DART:01276594:diluted_shares"
+   ],
+   "affected_variable": "share_count",
+   "direction": "unchanged",
+   "value": 124940123,
+   "unit": "shares",
+   "canonical_unit": "shares",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:diluted_shares"
+  }
+ ]
+}

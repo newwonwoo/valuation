@@ -8,4 +8,4 @@ def test_installed_wheel_validator_is_repository_only_bootstrap():
     assert "PYTHONPATH" not in text
     assert "valuation_engine._registry_data" in text
     assert "load_default_unit_contract_registry" in text
-    assert "41" in text
+    assert "EXPECTED_METHOD_COUNT = 42" in text

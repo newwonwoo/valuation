@@ -1,0 +1,21 @@
+{
+  "status": "000",
+  "message": "정상",
+  "corp_code": "00113225",
+  "corp_name": "대한제강(주)",
+  "corp_name_eng": "DAEHAN STEEL CO.,LTD",
+  "stock_name": "대한제강",
+  "stock_code": "084010",
+  "ceo_nm": "이경백",
+  "corp_cls": "Y",
+  "jurir_no": "1801110003268",
+  "bizr_no": "6038113259",
+  "adres": "부산광역시 사하구 하신번영로 69",
+  "hm_url": "www.idaehan.com",
+  "ir_url": "",
+  "phn_no": "02-1670-3300",
+  "fax_no": "051-998-8893",
+  "induty_code": "2411",
+  "est_dt": "19540610",
+  "acc_mt": "12"
+}

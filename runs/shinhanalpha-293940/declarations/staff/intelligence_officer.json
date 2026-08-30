@@ -1,0 +1,34 @@
+{
+ "rationale": "A prime-office K-REIT trading near its book NAV while its own filed appraisals carry the portfolio ~800bn above carrying value is valued on the appraisal-adjusted net asset envelope, with the discount explained by leverage and the 2026-2027 refinancing wall rather than asset quality.",
+ "hypotheses": [
+  {
+   "id": "H:SHALPHA:NAV",
+   "statement": "Appraisal-adjusted NAV of ~1,247bn attributable (9,986/share) is real as filed Level-3 fair values (3,794.5bn vs 2,992.9bn carrying) hold through the refinancing cycle",
+   "causal_chain": [
+    "Seoul prime-office occupancy filed at 96.8% portfolio average",
+    "appraised fair value 3,794.5bn over 2,992.9bn carrying value",
+    "consolidated liabilities 2,330.1bn and 77.82% owners' share",
+    "net asset value per share"
+   ],
+   "supporting_evidence_ids": [
+    "UW:KR:DART:01276594:gross_asset_value",
+    "UW:KR:DART:01276594:asset_value",
+    "UW:KR:DART:01276594:occupancy"
+   ],
+   "contradicting_evidence_ids": [],
+   "kill_conditions": [
+    "refinancing of the ~1,011bn current-portion debt fails or reprices above rental yield",
+    "appraisal values are cut in the next annual report's fair-value note"
+   ],
+   "next_checks": [
+    "2026.09 반기보고서 차입금 주석 - 전단채·사모사채·숭례 트랜치 차환 조건",
+    "용산 아스테리움 임대율 추이 (77.1% 기준)"
+   ]
+  }
+ ],
+ "requested_evidence": [],
+ "scanner_reinforcements": [],
+ "context_strength_linkage": {
+  "not_applicable_reason": "No non-obvious environment-to-strength connection is observable in the collected evidence beyond the declared NAV thesis."
+ }
+}

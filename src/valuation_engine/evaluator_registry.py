@@ -26,6 +26,53 @@ class ModelKey:
 
 
 @dataclass(frozen=True)
+class SegmentValuationDiagnostics:
+    """Exact discounting decomposition published by a DCF-family evaluator.
+
+    Post-freeze reverse-DCF must never re-infer an evaluator's internal kernel from
+    compiled assumption keys. The evaluator that performed the discounting is the only
+    authority on how its own value was built, so it publishes the decomposition here.
+    """
+
+    execution_family: str
+    value_unit: str
+    discount_rate: Decimal
+    forecast_years: int
+    fcff_path: tuple[Decimal, ...]
+    present_value_explicit: Decimal
+    present_value_terminal: Decimal
+    terminal_growth: Decimal
+    terminal_roic: Decimal
+
+    def validate(self) -> None:
+        if not self.execution_family or not self.value_unit:
+            raise ValueError("valuation diagnostics require execution family and unit")
+        if self.forecast_years < 1 or len(self.fcff_path) != self.forecast_years:
+            raise ValueError("valuation diagnostics FCFF path must match forecast_years")
+        for name, value in (
+            ("discount_rate", self.discount_rate),
+            ("present_value_explicit", self.present_value_explicit),
+            ("present_value_terminal", self.present_value_terminal),
+            ("terminal_growth", self.terminal_growth),
+            ("terminal_roic", self.terminal_roic),
+        ):
+            if not value.is_finite():
+                raise ValueError(f"valuation diagnostics {name} must be finite")
+        if self.discount_rate <= self.terminal_growth:
+            raise ValueError("valuation diagnostics require discount rate above terminal growth")
+        if self.terminal_roic <= 0:
+            raise ValueError("valuation diagnostics require positive terminal ROIC")
+
+    @property
+    def enterprise_value(self) -> Decimal:
+        return self.present_value_explicit + self.present_value_terminal
+
+    @property
+    def terminal_fcff(self) -> Decimal:
+        return self.fcff_path[-1]
+
+
+@dataclass(frozen=True)
 class SegmentValuation:
     contribution_id: str
     segment_id: str
@@ -35,6 +82,7 @@ class SegmentValuation:
     economic_path_ids: tuple[str, ...]
     evaluator_id: str
     evaluator_version: str
+    diagnostics: SegmentValuationDiagnostics | None = None
 
     def __post_init__(self) -> None:
         if not all((self.contribution_id, self.segment_id, self.scenario_id, self.evaluator_id, self.evaluator_version)):

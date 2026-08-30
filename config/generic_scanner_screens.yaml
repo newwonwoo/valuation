@@ -1,0 +1,358 @@
+version: 1
+purpose: Metric-keyword screens the generic scanner runners apply to the run's own EvidenceLedger.
+  A screen that matches nothing produces an explicit verification-request finding, never a
+  silent pass. External scan sources remain provider work; this file only routes attention
+  over collected Evidence.
+screens:
+  AD_MONETIZATION:
+    metric_keywords:
+    - ad_revenue
+    - arpu
+    - monetization
+    - impression
+  ARCHITECTURE_SUBSTITUTION:
+    metric_keywords:
+    - design_win
+    - architecture
+    - substitution
+    - socket
+  ASSET_QUALITY:
+    metric_keywords:
+    - npl
+    - provision
+    - charge_off
+    - delinquen
+    - credit_cost
+  ATTENTION_ENGAGEMENT:
+    metric_keywords:
+    - mau
+    - dau
+    - engagement
+    - time_spent
+    - active_user
+  BACKLOG_QUALITY:
+    metric_keywords:
+    - backlog
+    - order
+    - book_to_bill
+    - contract_liabilit
+  CANCELLATION_TERMS:
+    metric_keywords:
+    - cancellation
+    - termination
+    - penalty
+    - refund
+  CAPACITY_RAMP:
+    metric_keywords:
+    - capacity
+    - ramp
+    - expansion
+    - factory
+    - line
+  CAPEX_EXECUTION:
+    metric_keywords:
+    - capex
+    - capital_expenditure
+    - construction_in_progress
+  CAP_RATE:
+    metric_keywords:
+    - cap_rate
+    - valuation_yield
+    - appraisal
+  CASH_RUNWAY:
+    metric_keywords:
+    - cash
+    - runway
+    - burn
+    - liquidity
+  CLINICAL_EVIDENCE:
+    metric_keywords:
+    - clinical
+    - trial
+    - phase
+    - efficacy
+    - endpoint
+  COHORT_DECAY:
+    metric_keywords:
+    - cohort
+    - decay
+    - retention
+    - churn
+  COMMITTED_SPEND:
+    metric_keywords:
+    - committed
+    - rpo
+    - remaining_performance
+    - minimum_commitment
+  COST_CURVE:
+    metric_keywords:
+    - cash_cost
+    - cost_curve
+    - unit_cost
+    - aisc
+  CUSTOMER_ADVANCE_FUNDING:
+    metric_keywords:
+    - advance
+    - down_payment
+    - contract_liabilit
+    - prepayment
+  CUSTOMER_CONCENTRATION:
+    metric_keywords:
+    - concentration
+    - top_customer
+    - major_customer
+  CYCLE_NORMALIZATION:
+    metric_keywords:
+    - mid_cycle
+    - normalized
+    - cycle
+    - average_price
+  DECLINE_CURVE:
+    metric_keywords:
+    - decline
+    - depletion
+    - production_profile
+  DESIGN_WIN_CONVERSION:
+    metric_keywords:
+    - design_win
+    - qualification
+    - socket
+    - award
+  DEVELOPMENT_CAPEX:
+    metric_keywords:
+    - development_capex
+    - drilling
+    - exploration
+  FEEDSTOCK_MIX:
+    metric_keywords:
+    - feedstock
+    - naphtha
+    - input_mix
+    - raw_material
+  FEE_RATE:
+    metric_keywords:
+    - fee_rate
+    - management_fee
+    - expense_ratio
+  FINANCING_CLOSE:
+    metric_keywords:
+    - financial_close
+    - financing_close
+    - loan_agreement
+    - ppa
+  FINANCING_NEED:
+    metric_keywords:
+    - funding_need
+    - capital_raise
+    - debt_issuance
+  FRANCHISE_DURABILITY:
+    metric_keywords:
+    - franchise
+    - ip_portfolio
+    - sequel
+    - catalog
+  FUNDING_MIX:
+    metric_keywords:
+    - deposit
+    - wholesale_funding
+    - funding_mix
+    - nim
+  GRID_TIME_TO_POWER:
+    metric_keywords:
+    - grid
+    - interconnection
+    - transmission
+    - time_to_power
+  INFRASTRUCTURE_COST:
+    metric_keywords:
+    - infrastructure
+    - network_cost
+    - data_center
+    - compute_cost
+  INVENTORY:
+    metric_keywords:
+    - inventory
+    - stockpile
+    - days_of_supply
+  INVENTORY_CHANNEL:
+    metric_keywords:
+    - channel_inventory
+    - sell_in
+    - sell_through
+  IP_LEGAL_STATE:
+    metric_keywords:
+    - patent
+    - litigation
+    - license_dispute
+    - ip_
+  NETWORK_DENSITY:
+    metric_keywords:
+    - network_density
+    - liquidity
+    - active_listing
+    - coverage
+  NET_FLOWS:
+    metric_keywords:
+    - net_flow
+    - inflow
+    - outflow
+    - aum
+  NEW_UNIT_COHORT:
+    metric_keywords:
+    - new_store
+    - new_unit
+    - opening
+    - cohort
+  OCCUPANCY_RENT:
+    metric_keywords:
+    - occupancy
+    - rent
+    - lease_rate
+    - vacancy
+  OWNERSHIP_ECONOMICS:
+    metric_keywords:
+    - royalty
+    - milestone
+    - ownership
+    - economics_split
+  PERFORMANCE_FEE_NORMALIZATION:
+    metric_keywords:
+    - performance_fee
+    - carry
+    - incentive_fee
+  PERMIT_REGULATORY:
+    metric_keywords:
+    - permit
+    - approval
+    - environmental
+    - license
+  PHYSICAL_CONSTRUCTION:
+    metric_keywords:
+    - construction
+    - completion
+    - epc
+    - progress
+  PRODUCT_CYCLE:
+    metric_keywords:
+    - product_cycle
+    - launch
+    - model_change
+    - refresh
+  PROJECT_REALIZATION:
+    metric_keywords:
+    - project
+    - pipeline
+    - cod
+    - commercial_operation
+  QUALIFICATION:
+    metric_keywords:
+    - qualification
+    - certification
+    - audit_pass
+    - customer_approval
+  RATE_CASE:
+    metric_keywords:
+    - rate_case
+    - tariff
+    - allowed_return
+  REFINANCING:
+    metric_keywords:
+    - refinanc
+    - maturity
+    - debt_due
+  REGULATORY_CAPITAL:
+    metric_keywords:
+    - cet1
+    - bis
+    - capital_ratio
+    - rwa
+  REGULATORY_DOCKET:
+    metric_keywords:
+    - docket
+    - regulatory_filing
+    - commission
+  REGULATORY_STATE:
+    metric_keywords:
+    - approval
+    - nda
+    - regulatory_status
+    - designation
+  RELEASE_PIPELINE:
+    metric_keywords:
+    - release
+    - launch_schedule
+    - pipeline_title
+  RESERVE_REPLACEMENT:
+    metric_keywords:
+    - reserve
+    - replacement_ratio
+    - resource
+  RETENTION_COHORT:
+    metric_keywords:
+    - retention
+    - nrr
+    - churn
+    - renewal
+  RPO_CONVERSION:
+    metric_keywords:
+    - rpo
+    - remaining_performance
+    - billings
+    - deferred_revenue
+  SALES_EFFICIENCY:
+    metric_keywords:
+    - cac
+    - sales_efficiency
+    - magic_number
+    - s&m
+  SPREAD_NORMALIZATION:
+    metric_keywords:
+    - spread
+    - margin_per_ton
+    - crack
+    - refining_margin
+  SUPPLY_CHAIN:
+    metric_keywords:
+    - supply
+    - shortage
+    - lead_time
+    - component
+  TAKE_RATE:
+    metric_keywords:
+    - take_rate
+    - commission_rate
+    - monetization_rate
+  TRADE_FLOW:
+    metric_keywords:
+    - export
+    - import
+    - trade
+    - shipment_volume
+  TRAFFIC_ACQUISITION_COST:
+    metric_keywords:
+    - tac
+    - traffic_acquisition
+    - revenue_share
+  TRAFFIC_DEMAND:
+    metric_keywords:
+    - traffic
+    - footfall
+    - visitor
+    - demand_index
+  TRANSACTION_FREQUENCY:
+    metric_keywords:
+    - transaction
+    - frequency
+    - order_count
+    - gmv
+  USAGE_GROWTH:
+    metric_keywords:
+    - usage
+    - consumption
+    - data_traffic
+    - volume_growth
+  UTILIZATION:
+    metric_keywords:
+    - utilization
+    - operating_rate
+    - load_factor

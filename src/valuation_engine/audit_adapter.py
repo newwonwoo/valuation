@@ -6,6 +6,7 @@ from .assumption_compiler import CompiledAssumptionSet
 from .control_plane import DoctrineCoverageEntry, ExecutionMode, StageStatus
 from .decision_impact import ModuleHistoryEntry
 from .doctrine_runtime import load_default_unit_contract_registry
+from .evidence_composition import EvidenceCompositionReport
 from .generic_audit import audit_generic_intrinsic
 from .impact_adapter import GenericDecisionImpactConfig, run_generic_decision_impact
 from .ledger import EvidenceLedger
@@ -15,6 +16,7 @@ from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
 from .risk_impact import build_risk_impact_traces
 from .scenario_binding import BoundScenarioSet
 from .unit_contracts import UnitContractRegistry
+from .valuation_sensitivity import ValuationSensitivityReport
 from .valuation_execution import GenericValuationResult
 
 
@@ -122,6 +124,34 @@ def generic_audit_adapter(
             else None
         )
 
+        composition = context.data.get("evidence_composition_report")
+        composition_hash = context.data.get("evidence_composition_hash")
+        sensitivity = context.data.get("valuation_sensitivity_report")
+        sensitivity_hash = context.data.get("valuation_sensitivity_hash")
+        if context.execution_mode is ExecutionMode.LIVE_PRIMARY and (
+            not isinstance(composition, EvidenceCompositionReport)
+            or not isinstance(composition_hash, str)
+            or not composition_hash
+            or not isinstance(sensitivity, ValuationSensitivityReport)
+            or not isinstance(sensitivity_hash, str)
+            or not sensitivity_hash
+        ):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "LIVE_PRIMARY evidence-composition and valuation-sensitivity artifacts "
+                "are required before generic audit",
+                blocking=True,
+            )
+        plausibility_findings = (
+            *(composition.findings if isinstance(composition, EvidenceCompositionReport) else ()),
+            *(sensitivity.findings if isinstance(sensitivity, ValuationSensitivityReport) else ()),
+        )
+        plausibility_hashes = tuple(
+            item
+            for item in (composition_hash, sensitivity_hash)
+            if isinstance(item, str) and item
+        )
+
         try:
             effective_config = _effective_impact_config(
                 impact_config,
@@ -162,10 +192,12 @@ def generic_audit_adapter(
             external_guardrail_findings=(
                 *(capacity_report.findings if capacity_report is not None else ()),
                 *(broker_report.findings if broker_report is not None else ()),
+                *plausibility_findings,
             ),
             external_guardrail_hashes=(
                 *((capacity_hash,) if capacity_hash is not None else ()),
                 *((broker_hash,) if broker_hash is not None else ()),
+                *plausibility_hashes,
             ),
         )
         common_outputs = {

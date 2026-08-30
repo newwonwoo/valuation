@@ -1,0 +1,12 @@
+{
+ "current_conditioning_first_seen_at": "2026-03-18T09:00:00Z",
+ "current_conditioning_source_hash": "c619a45e0daa6c7929035c1393b40d00342db12d389cca330b840e6110064fe0",
+ "current_conditioning_source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000780",
+ "source_company_count": 11,
+ "source_dataset_sha256": "359b97056441edc09a47f3e9db5eded02d5df4cfed833d6e4bf4d13704d582bc",
+ "source_provenance_hash": "1488ad3dea83709d78d675569307c464d40544f49e603515ade0039bb880f779",
+ "source_row_count": 83,
+ "target_ticker_excluded": "084010",
+ "training_latest_publication_at": "2025-09-30T09:00:00Z",
+ "version": "1.0"
+}

@@ -1,0 +1,34 @@
+{
+ "rationale": "A net-cash EAF rebar group at a filed FY2025 operating loss with the filed H1-2026 spread already recovering is valued on the normalized mid-cycle FCFF path, not on trough optics.",
+ "hypotheses": [
+  {
+   "id": "H:DAEHAN:MIDCYCLE",
+   "statement": "Mid-cycle FCFF of ~42 KRW bn is recoverable as the filed H1-2026 rebar-scrap spread (823-480 thousand KRW/ton) holds and YK Steel utilization normalizes from the filed 49%",
+   "causal_chain": [
+    "domestic rebar price vs scrap spread",
+    "rolling utilization recovery (filed: 대한제강 64%, YK 49%)",
+    "normalized FCFF path",
+    "enterprise value"
+   ],
+   "supporting_evidence_ids": [
+    "UW:KR:DART:00113225:fcff_year_5",
+    "UW:KR:DART:00113225:benchmark_price",
+    "UW:KR:DART:00113225:production"
+   ],
+   "contradicting_evidence_ids": [],
+   "kill_conditions": [
+    "rebar realized price falls back below 750 thousand KRW/ton for two consecutive halves",
+    "YK Steel rolling utilization stays below 50% through FY2027"
+   ],
+   "next_checks": [
+    "3Q26 분기보고서 가격변동·가동률 표",
+    "2026 사업보고서 와이케이스틸 부문 실적"
+   ]
+  }
+ ],
+ "requested_evidence": [],
+ "scanner_reinforcements": [],
+ "context_strength_linkage": {
+  "not_applicable_reason": "No non-obvious environment-to-strength connection is observable in the collected evidence beyond the declared mid-cycle thesis."
+ }
+}

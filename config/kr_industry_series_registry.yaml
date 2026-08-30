@@ -1,0 +1,36 @@
+version: 1
+purpose: >-
+  Operator-verified industry data series that the generic industry-series
+  collector may turn into Evidence. Three structural rules, enforced at load:
+  (1) a series may only serve an industry-observable metric - company-realized
+  quantities (realized_price, cash_cost, production, utilization, ...) are
+  refused, because an industry average wearing a company metric's name is the
+  exact conflation the definition-normalization gate forbids; (2) every row
+  carries a definition_id and a real definition that rides into the Evidence
+  notes; (3) a row collects only after an operator has checked the source
+  catalog and persisted the timestamp-enriched snapshot created by
+  scripts/verify_industry_series.py - a guessed table identity is a fabricated
+  source, so this file ships with ZERO verified rows and the cold run's coverage
+  gap stays truthful until real series are verified. Runtime collection never
+  fetches the mutable credentialed endpoint; Evidence uses verification_url,
+  which must be a credential-free public source link.
+series: []
+# Operator template (copy, fill from the KOSIS/KEEI catalog, verify, then set verified: true):
+#  - series_id: KR_KOSIS_PPI_STEEL_V1
+#    source_id: KR_KOSIS_API
+#    metric: output_price
+#    layer: authorized_market_data
+#    unit: dimensionless          # index level; declare the exact unit the table publishes
+#    geography: KR
+#    definition_id: DEF_PPI_STEEL_BASIC
+#    definition: >-
+#      Producer price index for basic steel products as published in the named
+#      KOSIS table; index base year per catalog; not a company-realized price.
+#    url_template: https://kosis.kr/openapi/Param/statisticsParameterData.do?method=getList&apiKey={api_key}&orgId=...&tblId=...&format=json&jsonVD=Y
+#    api_key_env: KOSIS_API_KEY
+#    snapshot_path: industry_series_snapshots/KR_KOSIS_PPI_STEEL_V1.json
+#    verification_url: https://kosis.kr/statHtml/statHtml.do?orgId=...&tblId=...
+#    published_at_field: PUBLISHED_AT
+#    first_seen_at_field: FIRST_SEEN_AT
+#    revision_at_field: REVISION_AT
+#    verified: false

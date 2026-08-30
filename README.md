@@ -126,6 +126,7 @@ COMPANY_RESOLUTION
 
 - exact `(archetype, method, version)` Evaluator Registry
 - no generic DCF/NPV fallback
+- contracted-backlog driver DCF (수주잔고 소진 항등식 → 매출 → FCFF)
 - normalized multiple
 - explicit FCFF DCF discounting kernel
 - finite-life `project_npv`, `reserve_npv`, `cohort_npv`
@@ -142,6 +143,9 @@ COMPANY_RESOLUTION
 - Decision Impact / ablation tracking
 - hash-bound Intrinsic Freeze Token
 - post-freeze Street/Market comparison
+- post-freeze Reverse DCF (시장 함의 영구성장률·현금흐름 배율·시나리오 위치)
+- 가치 투입 근거의 출처 계층 구성 공개 (공시 인용 대 분석가 추정 비중)
+- 커널 변수 3점 가치 민감도 (할인율·영구성장률·현금흐름 수준)
 - blocked result intrinsic redaction
 - immutable run history와 atomic last-good state
 - OCI regression preservation

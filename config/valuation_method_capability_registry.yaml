@@ -13,6 +13,15 @@ execution_families:
     requires_beta: false
     requires_wacc: false
     canonical_refs: [src/valuation_engine/equity_evaluators.py, tests/test_equity_evaluators.py]
+  contracted_backlog_dcf:
+    kind: segment_evaluator
+    runtime_status: RUNTIME_READY
+    requires_beta: true
+    requires_wacc: true
+    canonical_refs:
+    - src/valuation_engine/backlog_evaluators.py
+    - docs/CONTRACTED_BACKLOG_DCF.md
+    - tests/test_backlog_evaluators.py
   explicit_fcff_dcf:
     kind: segment_evaluator
     runtime_status: PARTIAL_RUNTIME
@@ -84,6 +93,9 @@ execution_families:
 
 bindings:
   contracted_backlog:
+    backlog_burn_dcf:
+      execution_family: contracted_backlog_dcf
+      output_kind: enterprise_value
     normalized_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
     normalized_ebitda: {execution_family: normalized_ebitda_multiple, output_kind: enterprise_value}
     warranted_per: {execution_family: warranted_per, output_kind: cross_method_reference}

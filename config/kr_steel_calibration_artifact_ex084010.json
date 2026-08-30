@@ -1,0 +1,272 @@
+{
+ "artifact_sha256": "b0b23ad563c1ca65085d453b20935feabbdde26c73294a7125af1b48550247b3",
+ "current_conditioning": {
+  "first_seen_at": "2026-03-18T09:00:00Z",
+  "operating_margin": -0.002303,
+  "revenue_growth": 0.018394,
+  "source_hash": "c619a45e0daa6c7929035c1393b40d00342db12d389cca330b840e6110064fe0"
+ },
+ "dependence": {
+  "complete_case_count": 72,
+  "correlation_matrix": [
+   [
+    1.0,
+    0.600439263649053
+   ],
+   [
+    0.600439263649053,
+    1.0
+   ]
+  ],
+  "student_t_df": 6,
+  "version": "empirical_residual_corr_v1"
+ },
+ "drivers": {
+  "operating_margin": {
+   "diagnostic": {
+    "company_count": 11,
+    "likelihood_weight": 0.403219257724703,
+    "quarter_count": 8,
+    "regime_similarity": 0.984058061795554,
+    "resolved_cases": 30,
+    "skill_windows": [
+     0.510255078574201,
+     0.448411886948771,
+     0.250990807651138
+    ],
+    "uncertainty_inflation": 1.72748651466432
+   },
+   "path": {
+    "lower_bound": -0.324816775737301,
+    "mean": [
+     0.00291208721781711,
+     0.0062221673087887,
+     0.00832311591252702,
+     0.00965661386854004,
+     0.010503001445812
+    ],
+    "mean_uncertainty": [
+     0.00484095460404768,
+     0.00484095460404768,
+     0.00484095460404768,
+     0.00484095460404768,
+     0.00484095460404768
+    ],
+    "scale": [
+     0.0709597250578904,
+     0.0840463868179766,
+     0.0887750029483938,
+     0.0906102672862557,
+     0.0913392017173753
+    ],
+    "upper_bound": 0.344235775737301
+   },
+   "posterior": {
+    "mean": 0.0249826388888889,
+    "mean_strength": 72.0,
+    "scale": 0.0912625047233055,
+    "shape": 37.0
+   },
+   "transition": {
+    "intercept": 0.00437382968368873,
+    "residual_std": 0.0410768619352603,
+    "slope": 0.63471231692211,
+    "x_bounds": [
+     -0.068625,
+     0.190593
+    ],
+    "y_bounds": [
+     -0.171174,
+     0.184536
+    ]
+   }
+  },
+  "revenue_growth": {
+   "diagnostic": {
+    "company_count": 11,
+    "likelihood_weight": 0.558746662267413,
+    "quarter_count": 8,
+    "regime_similarity": 0.747027288348953,
+    "resolved_cases": 30,
+    "skill_windows": [
+     0.607731721427805,
+     0.527318786288139,
+     0.541189479086296
+    ],
+    "uncertainty_inflation": 1.0
+   },
+   "path": {
+    "lower_bound": -0.899183397998409,
+    "mean": [
+     0.0193838526033286,
+     0.0194594567501137,
+     0.0194652313341193,
+     0.0194656723922074,
+     0.0194657060798699
+    ],
+    "mean_uncertainty": [
+     0.0227084970731829,
+     0.0227084970731829,
+     0.0227084970731829,
+     0.0227084970731829,
+     0.0227084970731829
+    ],
+    "scale": [
+     0.19268798725203,
+     0.193249219742554,
+     0.193252489068417,
+     0.193252508140788,
+     0.193252508252052
+    ],
+    "upper_bound": 1.30591339799841
+   },
+   "posterior": {
+    "mean": 0.0240825416666667,
+    "mean_strength": 72.0,
+    "scale": 1.32675193199094,
+    "shape": 37.0
+   },
+   "transition": {
+    "intercept": 0.0179789336575303,
+    "residual_std": 0.19268798725203,
+    "slope": 0.0763791967923391,
+    "x_bounds": [
+     -0.244836,
+     0.687832
+    ],
+    "y_bounds": [
+     -0.281102,
+     0.665068
+    ]
+   }
+  }
+ },
+ "forecast_seed": "target_current_conditioning_ar1_v2",
+ "oos_split_order": [
+  "TRAIN",
+  "VALIDATION",
+  "HOLDOUT",
+  "FINAL_OOS"
+ ],
+ "oos_window_policy": "whole_period_publication_fixed_origin_v2",
+ "oos_windows": [
+  {
+   "evaluation_earliest_publication_at": "2018-09-28T09:00:00Z",
+   "evaluation_latest_publication_at": "2022-03-25T09:00:00Z",
+   "period_ends": [
+    "2017-12-31",
+    "2018-12-31",
+    "2019-12-31",
+    "2020-12-31",
+    "2021-12-31"
+   ],
+   "row_count": 50,
+   "split": "TRAIN"
+  },
+  {
+   "evaluation_earliest_publication_at": "2025-03-10T09:00:00Z",
+   "evaluation_latest_publication_at": "2025-09-30T09:00:00Z",
+   "period_ends": [
+    "2022-12-31"
+   ],
+   "row_count": 11,
+   "split": "VALIDATION",
+   "training_latest_publication_at": "2022-03-25T09:00:00Z"
+  },
+  {
+   "evaluation_earliest_publication_at": "2025-03-10T09:00:00Z",
+   "evaluation_latest_publication_at": "2025-09-30T09:00:00Z",
+   "period_ends": [
+    "2023-12-31"
+   ],
+   "row_count": 11,
+   "split": "HOLDOUT",
+   "training_latest_publication_at": "2022-03-25T09:00:00Z"
+  },
+  {
+   "evaluation_earliest_publication_at": "2025-03-10T09:00:00Z",
+   "evaluation_latest_publication_at": "2025-09-30T09:00:00Z",
+   "period_ends": [
+    "2024-12-31"
+   ],
+   "row_count": 11,
+   "split": "FINAL_OOS",
+   "training_latest_publication_at": "2022-03-25T09:00:00Z"
+  }
+ ],
+ "provenance_hash": "1488ad3dea83709d78d675569307c464d40544f49e603515ade0039bb880f779",
+ "scenario_anchor_policy": "cohort_reference_path_independent_of_target_v2",
+ "scenarios": {
+  "Base": {
+   "driver_paths": {
+    "operating_margin": [
+     0.00446672848643824,
+     0.00720891727037794,
+     0.00894941826687013,
+     0.0100541356869589,
+     0.0107553134402077
+    ],
+    "revenue_growth": [
+     0.0074413749819621,
+     0.0185472999016832,
+     0.0193955615266875,
+     0.0194603510682751,
+     0.0194652996414221
+    ]
+   },
+   "driver_weights": {
+    "operating_margin": 1.0,
+    "revenue_growth": 1.0
+   }
+  },
+  "Bull": {
+   "driver_paths": {
+    "operating_margin": [
+     0.0754264535443286,
+     0.0912553040883546,
+     0.097724421215264,
+     0.100664402973215,
+     0.102094515157583
+    ],
+    "revenue_growth": [
+     0.200129362233992,
+     0.211796519644237,
+     0.212648050595105,
+     0.212712859209063,
+     0.212717807893474
+    ]
+   },
+   "driver_weights": {
+    "operating_margin": 1.0,
+    "revenue_growth": 1.0
+   }
+  },
+  "Down": {
+   "driver_paths": {
+    "operating_margin": [
+     -0.0664929965714521,
+     -0.0768374695475987,
+     -0.0798255846815237,
+     -0.0805561315992967,
+     -0.0805838882771676
+    ],
+    "revenue_growth": [
+     -0.185246612270068,
+     -0.17470191984087,
+     -0.17385692754173,
+     -0.173792157072513,
+     -0.17378720861063
+    ]
+   },
+   "driver_weights": {
+    "operating_margin": 1.0,
+    "revenue_growth": 1.0
+   }
+  }
+ },
+ "source_company_count": 11,
+ "source_dataset_sha256": "359b97056441edc09a47f3e9db5eded02d5df4cfed833d6e4bf4d13704d582bc",
+ "source_row_count": 83,
+ "target_ticker_excluded": "084010",
+ "version": "1.0"
+}

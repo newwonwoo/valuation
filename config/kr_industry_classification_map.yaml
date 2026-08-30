@@ -1,0 +1,217 @@
+version: 1
+purpose: >-
+  Deterministic KSIC-to-archetype classification for the generic KR providers.
+  The segment decomposer and Industry DNA router read this file; the code never
+  guesses an archetype. An unmapped KSIC code fails the run closed, naming the
+  code, because assigning an archetype is a valuation decision that must be a
+  reviewable, versioned data change - not an inference made silently at runtime.
+  Longest ksic_prefix match wins (5821 games beats 582 software).
+classifications:
+  - ksic_prefix: "261"
+    label: 반도체 제조업
+    sector_adapter: semiconductor.manufacturing
+    archetypes: [capacity_manufacturing]
+    structure:
+      revenue_recognition: shipment
+      price_formation: global memory/logic price cycles
+      asset_ownership: owned fabs
+      capital_intensity: very-high
+      regulation_intensity: medium
+      customer_structure: concentrated global OEM and hyperscaler buyers
+      reinvestment_model: node-migration and capacity expansion capex
+      cashflow_duration: capex-cycle driven
+  - ksic_prefix: "262"
+    label: 전자부품 제조업
+    sector_adapter: electronics.components
+    archetypes: [capacity_manufacturing]
+    structure:
+      revenue_recognition: shipment
+      price_formation: component price negotiation under set-maker cycles
+      asset_ownership: owned production lines
+      capital_intensity: high
+      regulation_intensity: low
+      customer_structure: concentrated set-maker customers
+      reinvestment_model: line conversion and yield-improvement capex
+      cashflow_duration: product-cycle driven
+  - ksic_prefix: "28"
+    label: 전기장비 제조업
+    sector_adapter: power.electrical_equipment
+    archetypes: [contracted_backlog, capacity_manufacturing]
+    structure:
+      revenue_recognition: delivery
+      price_formation: contracted ASP and product mix
+      asset_ownership: owned manufacturing
+      capital_intensity: medium-high
+      regulation_intensity: medium
+      customer_structure: utility, renewable and industrial buyers
+      reinvestment_model: capacity ramp against order backlog
+      cashflow_duration: backlog-conversion cycle
+  - ksic_prefix: "311"
+    label: 선박 및 보트 건조업
+    sector_adapter: shipbuilding.heavy
+    archetypes: [contracted_backlog]
+    structure:
+      revenue_recognition: percentage_of_completion
+      price_formation: contracted newbuild prices at order
+      asset_ownership: owned yards
+      capital_intensity: high
+      regulation_intensity: medium
+      customer_structure: global shipowner and defense buyers
+      reinvestment_model: yard productivity and dock utilization
+      cashflow_duration: multi-year build cycle
+  - ksic_prefix: "20"
+    label: 화학물질 및 화학제품 제조업
+    sector_adapter: chemicals.commodity
+    archetypes: [process_spread, commodity_price_taker]
+    structure:
+      revenue_recognition: shipment
+      price_formation: feedstock-product spread on global benchmarks
+      asset_ownership: owned plants
+      capital_intensity: high
+      regulation_intensity: medium-high
+      customer_structure: diversified industrial buyers
+      reinvestment_model: debottlenecking and maintenance capex
+      cashflow_duration: commodity-cycle driven
+  - ksic_prefix: "21"
+    label: 의료용 물질 및 의약품 제조업
+    sector_adapter: pharma.rnd
+    archetypes: [probabilistic_pipeline]
+    structure:
+      revenue_recognition: sale_or_licensing
+      price_formation: regulated reimbursement and licensing economics
+      asset_ownership: owned research and production
+      capital_intensity: medium
+      regulation_intensity: very-high
+      customer_structure: payors, hospitals and licensing partners
+      reinvestment_model: clinical-stage R&D reinvestment
+      cashflow_duration: pipeline-milestone driven
+  - ksic_prefix: "5821"
+    label: 게임 소프트웨어 개발 및 공급업
+    sector_adapter: content.games
+    archetypes: [hit_driven_content]
+    structure:
+      revenue_recognition: in_service_consumption
+      price_formation: free-to-play monetization and title pricing
+      asset_ownership: owned IP and live-service platforms
+      capital_intensity: low
+      regulation_intensity: medium
+      customer_structure: global consumer player base
+      reinvestment_model: title pipeline and live-ops investment
+      cashflow_duration: release-cohort decay driven
+  - ksic_prefix: "582"
+    label: 소프트웨어 개발 및 공급업
+    sector_adapter: software.application
+    archetypes: [recurring_subscription]
+    structure:
+      revenue_recognition: ratable_subscription
+      price_formation: seat and usage-tier pricing
+      asset_ownership: owned codebase and cloud operations
+      capital_intensity: low
+      regulation_intensity: low
+      customer_structure: business subscriber base
+      reinvestment_model: R&D and sales-efficiency investment
+      cashflow_duration: retention-cohort driven
+  - ksic_prefix: "351"
+    label: 전기업
+    sector_adapter: power.generation
+    archetypes: [regulated_rate_base]
+    structure:
+      revenue_recognition: metered_delivery
+      price_formation: regulated tariff and settlement price
+      asset_ownership: owned generation and grid assets
+      capital_intensity: very-high
+      regulation_intensity: very-high
+      customer_structure: captive service-territory demand
+      reinvestment_model: rate-base capex under regulatory approval
+      cashflow_duration: regulated-cycle driven
+  - ksic_prefix: "641"
+    label: 은행업
+    sector_adapter: financials.banking
+    archetypes: [financial_balance_sheet]
+    structure:
+      revenue_recognition: accrued_interest_and_fees
+      price_formation: rate spread over funding cost
+      asset_ownership: financial balance sheet
+      capital_intensity: balance-sheet-bound
+      regulation_intensity: very-high
+      customer_structure: retail and corporate borrowers/depositors
+      reinvestment_model: regulatory-capital constrained growth
+      cashflow_duration: credit-cycle driven
+  - ksic_prefix: "68"
+    label: 부동산업
+    sector_adapter: real_assets.property
+    archetypes: [asset_yield_nav]
+    structure:
+      revenue_recognition: rental_accrual
+      price_formation: market rent and cap-rate repricing
+      asset_ownership: owned income property
+      capital_intensity: very-high
+      regulation_intensity: medium
+      customer_structure: tenant base under lease contracts
+      reinvestment_model: acquisition and refurbishment capital recycling
+      cashflow_duration: lease-term driven
+  - ksic_prefix: "10"
+    label: 식료품 제조업
+    sector_adapter: consumer.food
+    archetypes: [consumer_unit_economics]
+    structure:
+      revenue_recognition: shipment
+      price_formation: branded retail pricing against input costs
+      asset_ownership: owned production
+      capital_intensity: medium
+      regulation_intensity: medium
+      customer_structure: retail channels and end consumers
+      reinvestment_model: brand and channel investment
+      cashflow_duration: steady consumption driven
+  - ksic_prefix: "47"
+    label: 소매업
+    sector_adapter: consumer.retail
+    archetypes: [consumer_unit_economics]
+    structure:
+      revenue_recognition: point_of_sale
+      price_formation: retail pricing and promotion cadence
+      asset_ownership: leased-and-owned store network
+      capital_intensity: medium
+      regulation_intensity: low
+      customer_structure: mass consumer traffic
+      reinvestment_model: new-unit rollout and store refresh
+      cashflow_duration: traffic-and-basket driven
+  - ksic_prefix: "61"
+    label: 우편 및 통신업
+    sector_adapter: telecom.network
+    archetypes: [metered_usage_network]
+    structure:
+      revenue_recognition: metered_service
+      price_formation: tariff plans over network usage
+      asset_ownership: owned network infrastructure
+      capital_intensity: very-high
+      regulation_intensity: high
+      customer_structure: mass subscriber base
+      reinvestment_model: network-generation capex cycles
+      cashflow_duration: subscription-usage driven
+  - ksic_prefix: "30"
+    label: 자동차 및 트레일러 제조업
+    sector_adapter: auto.oem
+    archetypes: [capacity_manufacturing]
+    structure:
+      revenue_recognition: shipment
+      price_formation: model pricing across trim mix and incentives
+      asset_ownership: owned assembly plants
+      capital_intensity: high
+      regulation_intensity: high
+      customer_structure: dealer networks and fleet buyers
+      reinvestment_model: platform and powertrain-transition capex
+      cashflow_duration: model-cycle driven
+  - ksic_prefix: "24"
+    label: 1차 금속 제조업
+    sector_adapter: metals.steel
+    archetypes: [commodity_price_taker, process_spread]
+    structure:
+      revenue_recognition: shipment
+      price_formation: benchmark metal prices and raw-material spreads
+      asset_ownership: owned mills
+      capital_intensity: very-high
+      regulation_intensity: medium-high
+      customer_structure: construction, auto and shipbuilding buyers
+      reinvestment_model: maintenance and low-carbon transition capex
+      cashflow_duration: commodity-cycle driven

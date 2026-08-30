@@ -7,6 +7,11 @@ status_definitions:
   ADAPTER_REQUIRED: reusable component exists but the canonical LIVE_PRIMARY stage still needs a stage/source adapter
   SHADOW_ONLY: current canonical implementation is integration/shadow behavior, not live evidence execution
   CONDITIONAL_NOT_IMPLEMENTED: stage is only needed for some Industry DNA routes and currently fails closed when required
+  PROVIDER_REQUIRED: typed contract exists but this repository has no company-neutral implementation of the provider the stage needs, so the stage cannot run without hand-written per-company code
+note: >-
+  Status is no longer written by hand. scripts/validate_stage_capability.py
+  imports every symbol declared in config/stage_capability_declarations.yaml and
+  refuses any row here that claims more than those probes prove.
 stages:
   COMPANY_RESOLUTION:
     status: LIVE_READY
@@ -16,43 +21,74 @@ stages:
     reason: immutable local StateStore and research-learning state are implemented.
   LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT:
     status: LIVE_READY
-    reason: typed live snapshot loader contract validates source/content lineage and a deterministic snapshot hash before downstream use.
+    reason: >-
+      generic opendart_filing_snapshot_loader builds the authoritative snapshot from live DART periodic filings by corp code, filtered to the knowledge-time cutoff; the API key is caller-supplied like other live loaders.
+
   SOURCE_FRESHNESS_PRECHECK:
-    status: LIVE_READY
-    reason: typed live source-watch loader contract blocks source failures, unreviewed changes and revalidation-required findings before downstream analysis.
+    status: RUNTIME_READY
+    reason: >-
+      generic filing_cadence_freshness_loader derives freshness deterministically from the snapshot's own filing lineage: within cadence is CLEAN, stale warns as EXPECTED_RELEASE_MISSED, an empty lineage blocks as SOURCE_FAILURE.
+
   SEGMENT_DECOMPOSITION:
-    status: LIVE_READY
-    reason: typed live decomposer contract requires complete economic-structure fields and explicit Evidence IDs for every segment.
+    status: PARTIAL_LIVE
+    reason: >-
+      generic opendart_filing_snapshot_loader screens explicit reportable/operating-segment clauses in the latest original filing for multiple named segments and records an immutable single-segment scope receipt; classified_segment_decomposer emits one KSIC-structured whole-company segment only with that receipt and fails closed for multi-segment or unscreened companies. Disclosure-backed note-scoped multi-segment decomposition remains unimplemented.
+
   INDUSTRY_DNA_ROUTE:
-    status: LIVE_READY
-    reason: typed live router contract requires exact segment coverage and rejects Industry DNA Evidence IDs not present in the loaded snapshot or segment evidence.
+    status: PARTIAL_LIVE
+    reason: >-
+      generic classified_industry_dna_router assigns archetypes from config/kr_industry_classification_map.yaml by longest KSIC prefix and fails closed on unmapped codes; the map covers 16 KSIC prefixes and widening it is a reviewed data change.
+
   MODULE_REQUIREMENT_PLAN:
     status: RUNTIME_READY
     reason: Industry DNA compiles to evidence, KPI, scanner, kill-condition and method requirements.
   PRIMARY_EVIDENCE_COLLECTION:
     status: PARTIAL_LIVE
-    reason: typed collector core is implemented and OpenDART standard financial facts plus deterministic original-filing KPI extraction are supported; company-specific spec/IR/source breadth remains incomplete.
+    reason: >-
+      three company-neutral collectors: OpenDART standard financial facts, the filing-KPI
+      collector over the statutory operating tables (static patterns first, then a verified
+      LLM locator pass for layouts they miss - the model points, only the extractor reads,
+      exact member-hash/span receipts either way), and the
+      industry-series collector serving definition-gated industry observables (benchmark/input/
+      output prices, industry inventory) from operator-verified series - the default series
+      registry ships with zero verified rows, so production coverage requires operator
+      verification. With a per-run declared-underwriting file for judgment inputs, the
+      executed cold-start probe completes all 33 stages to an attested freeze; live-source
+      breadth (verified series, live model proposals) remains the production gap.
   EVIDENCE_LEDGER:
     status: RUNTIME_READY
     reason: append-only ledger, supersession and snapshot hashing are implemented.
   ROCKET_INSIGHT_SCAN:
-    status: LIVE_READY
-    reason: canonical scanner dispatcher executes the active/mandatory loadout through typed live runners, validates Evidence lineage, exposes findings to LLM Staff, and records explicit impact paths and research effort.
+    status: PARTIAL_LIVE
+    reason: >-
+      generic ledger-screen runners cover all 61 declared scanner ids: matching Evidence is cited and connected, a miss emits an explicit verification request; external scan sources (news, dockets, feeds) remain provider work.
+
   UPSTREAM_FUNDING_SCAN:
-    status: LIVE_READY
-    reason: route-required funding scans execute through a typed live FundingScanner contract; funding evidence and credit-improvement candidates are exposed downstream without directly mutating WACC or intrinsic value.
+    status: PARTIAL_LIVE
+    reason: >-
+      generic_ledger_funding_scanner screens collected Evidence for funding items and reports
+      an UNKNOWN funded-demand state with explicit verification requests, failing closed when a
+      route-required scan has nothing to observe; provider-grade FUNDED/CONDITIONAL adjudication
+      from primary financing sources remains external work.
+
   RESEARCHER_A:
-    status: RUNTIME_READY
-    reason: typed LLM callback contract is implemented; model/provider remains injectable.
+    status: PARTIAL_LIVE
+    reason: >-
+      GenericIntelligenceOfficer renders the Evidence table into a strict-JSON contract, validates citations against the ledger, repairs once and fails closed; the model transport is caller-supplied and runs proposal-only inside the authority boundary. Proposal quality with a live model is unproven.
+
   BLIND_RED_TEAM_B:
-    status: RUNTIME_READY
-    reason: blind typed Red Team contract with market isolation is implemented.
+    status: PARTIAL_LIVE
+    reason: >-
+      GenericRedTeamOfficer implements the blind challenge over Evidence and hypotheses with the same strict-JSON contract; market-comparison Evidence still blocks the context before any model call. Model transport caller-supplied.
+
   RESEARCH_LOOP:
     status: RUNTIME_READY
     reason: bounded research-loop semantics are implemented; live evidence refresh between rounds depends on collectors.
   EVIDENCE_TO_ASSUMPTION_BRIDGE:
-    status: RUNTIME_READY
-    reason: typed Bridge proposals are implemented and cannot commit assumptions.
+    status: PARTIAL_LIVE
+    reason: >-
+      GenericBridgeAnalyst proposes one draft per (scenario, required key) against registered transforms only; every value re-derives in the deterministic compiler or dies with PROPOSAL_RECALC_MISMATCH. Model transport caller-supplied.
+
   SCENARIO_BUILD:
     status: RUNTIME_READY
     reason: deterministic Assumption Compiler and Scenario Binding are implemented; LIVE_PRIMARY calibrated probability weights additionally require a matching hash-bound CalibrationCertificate.
@@ -61,13 +97,27 @@ stages:
     reason: exact Industry-DNA method intent resolves and hashes segment method/version choices before Beta/WACC, and stage 19 verifies the same module, capability, evaluator and method-choice contracts.
   HIERARCHICAL_BETA_ESTIMATION:
     status: LIVE_READY
-    reason: typed L1→L4 peer-universe and target-relevering contracts are implemented, and AuthorizedKRRiskProviderPack composes authorized KRX regression Beta plus Evidence-backed peer capital observations into a validated LiveBetaUniverse; other jurisdictions remain injectable under the same contract.
+    reason: >-
+      typed L1→L4 peer-universe and target-relevering contracts are implemented, and AuthorizedKRRiskProviderPack composes authorized KRX regression Beta plus Evidence-backed peer capital observations into a validated LiveBetaUniverse; other jurisdictions remain injectable under the same contract.
+      Cold-start entrance - GenericKRRuntimeSpec.declared_risk_path loads an
+      operator-declared risk pack (declared_risk_pack.py) into this stage: L1-L4
+      peer selections enter Evidence at ANALYST_UNDERWRITING, the target may not
+      appear among its own peers, and the file SHA-256 binds into the hash chain.
+      Without a declared pack the stage still refuses to run and the nine
+      beta/WACC-bound families stop here; with one, a backlog-burn DCF cold run
+      completes all 33 stages (tests/test_new_archetype_cold_run.py).
   WACC_VALIDATION:
     status: LIVE_READY
-    reason: typed currency-consistent WACC validation is implemented, and AuthorizedKRRiskProviderPack composes Bank of Korea ECOS rates, separated Damodaran ERP/CRP, an authorized marginal-debt benchmark, and peer-normalized target capital structure into validated KRW LiveWACCInputs; other currencies remain injectable under the same contract.
+    reason: >-
+      typed currency-consistent WACC validation is implemented, and AuthorizedKRRiskProviderPack composes Bank of Korea ECOS rates, separated Damodaran ERP/CRP, an authorized marginal-debt benchmark, and peer-normalized target capital structure into validated KRW LiveWACCInputs; other currencies remain injectable under the same contract.
+      Same cold-start entrance as HIERARCHICAL_BETA_ESTIMATION - the declared
+      risk pack supplies validated KRW LiveWACCInputs; without one a
+      discount-rate-bound method still refuses to run on an unseen company.
   DETERMINISTIC_VALUATION:
     status: PARTIAL_LIVE
-    reason: exact registry/SOTP runtime supports normalized multiples, explicit FCFF DCF, finite-life project_npv/reserve_npv/cohort_npv, certificate-bound single-event rNPV, and PARTIAL_INTRINSIC with UNVALUED_NOT_ZERO preservation; multi-stage event trees, NAV/residual-income and other archetype-specific evaluator coverage remain incomplete.
+    reason: >-
+      exact registry/SOTP runtime supports normalized multiples, explicit FCFF DCF, backlog-burn DCF, finite-life NPV, certificate-bound rNPV and PARTIAL_INTRINSIC preservation; generic plan inputs and registry composition now come from conventional_valuation_plan_inputs_loader and composed_generic_registry_loader, while multi-stage event trees, NAV/residual-income and other archetype evaluator breadth remain incomplete.
+
   HIERARCHICAL_WARRANTED_PER:
     status: LIVE_READY
     reason: typed Compiled-Assumption/WACC/DCF-fingerprint adapter is implemented, and AuthorizedPERProviderPack supplies Evidence-backed normalized forward EPS plus exact L1→L4 peer residual observations through the canonical PERInputsLoader while excluding target-company Street inputs pre-freeze.

@@ -40,6 +40,7 @@ modules:
     forbidden_methods:
     - raw_backlog_multiple_without_margin_or_conversion
     allowed_valuation_methods:
+    - backlog_burn_dcf
     - normalized_dcf
     - normalized_ebitda
     - warranted_per

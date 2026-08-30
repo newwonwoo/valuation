@@ -1,0 +1,290 @@
+{
+ "rationale": "Evidence-backed pass-through of the declared cycle envelope.",
+ "drafts": [
+  {
+   "assumption_key": "normalized_ebitda",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:down_normalized_ebitda"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 35,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:normalized_ebitda"
+  },
+  {
+   "assumption_key": "normalized_multiple",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:down_normalized_multiple"
+   ],
+   "affected_variable": "multiple",
+   "direction": "unchanged",
+   "value": 3.5,
+   "unit": "multiple",
+   "canonical_unit": "multiple",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:normalized_multiple"
+  },
+  {
+   "assumption_key": "ownership",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:ownership"
+  },
+  {
+   "assumption_key": "ev_adjustment",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 392,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:ev_adjustment"
+  },
+  {
+   "assumption_key": "diluted_shares",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:diluted_shares"
+   ],
+   "affected_variable": "share_count",
+   "direction": "unchanged",
+   "value": 36450000,
+   "unit": "shares",
+   "canonical_unit": "shares",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:diluted_shares"
+  },
+  {
+   "assumption_key": "normalized_ebitda",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:normalized_ebitda"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 60,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:normalized_ebitda"
+  },
+  {
+   "assumption_key": "normalized_multiple",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:normalized_multiple"
+   ],
+   "affected_variable": "multiple",
+   "direction": "unchanged",
+   "value": 4.0,
+   "unit": "multiple",
+   "canonical_unit": "multiple",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:normalized_multiple"
+  },
+  {
+   "assumption_key": "ownership",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:ownership"
+  },
+  {
+   "assumption_key": "ev_adjustment",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 392,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:ev_adjustment"
+  },
+  {
+   "assumption_key": "diluted_shares",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:diluted_shares"
+   ],
+   "affected_variable": "share_count",
+   "direction": "unchanged",
+   "value": 36450000,
+   "unit": "shares",
+   "canonical_unit": "shares",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:diluted_shares"
+  },
+  {
+   "assumption_key": "normalized_ebitda",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:bull_normalized_ebitda"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 85,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:normalized_ebitda"
+  },
+  {
+   "assumption_key": "normalized_multiple",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:bull_normalized_multiple"
+   ],
+   "affected_variable": "multiple",
+   "direction": "unchanged",
+   "value": 4.5,
+   "unit": "multiple",
+   "canonical_unit": "multiple",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:normalized_multiple"
+  },
+  {
+   "assumption_key": "ownership",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:ownership"
+  },
+  {
+   "assumption_key": "ev_adjustment",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 392,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:ev_adjustment"
+  },
+  {
+   "assumption_key": "diluted_shares",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:KISCO:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00687711:diluted_shares"
+   ],
+   "affected_variable": "share_count",
+   "direction": "unchanged",
+   "value": 36450000,
+   "unit": "shares",
+   "canonical_unit": "shares",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:core:diluted_shares"
+  }
+ ]
+}

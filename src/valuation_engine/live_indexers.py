@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from decimal import Decimal, InvalidOperation
 import json
 import os
+import re
 import time
 from typing import Callable
 from urllib.error import HTTPError, URLError
@@ -391,3 +393,31 @@ def snapshot_kosis_json(
         periods,
         len(rows),
     )
+
+
+def parse_kosis_series_values(
+    rows: "list[dict]",
+) -> tuple[tuple[str, str], ...]:
+    """Extract (period, value) observations from KOSIS-style JSON rows.
+
+    KOSIS statisticsParameterData rows carry the period in ``PRD_DE`` (YYYY,
+    YYYYMM or YYYYMMDD) and the value in ``DT``. Rows with a missing or
+    non-numeric value are skipped — an unpublished cell is an absence, never a
+    zero. The result is sorted by period ascending; values stay strings so the
+    caller converts through the exact-decimal path, not float.
+    """
+    observations: list[tuple[str, str]] = []
+    for row in rows:
+        period = str(row.get("PRD_DE") or "").strip()
+        value = str(row.get("DT") if row.get("DT") is not None else "").strip()
+        if not re.fullmatch(r"20\d{2}(?:0[1-9]|1[0-2])?(?:[0-3]\d)?", period):
+            continue
+        if not value or value == "-":
+            continue
+        try:
+            Decimal(value.replace(",", ""))
+        except InvalidOperation:
+            continue
+        observations.append((period, value.replace(",", "")))
+    observations.sort(key=lambda item: item[0])
+    return tuple(observations)

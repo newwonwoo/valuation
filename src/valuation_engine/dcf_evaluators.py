@@ -11,6 +11,7 @@ from .evaluator_registry import (
     ModelKey,
     NormalizedMultipleEvaluator,
     SegmentValuation,
+    SegmentValuationDiagnostics,
     ValueKind,
 )
 from .method_capabilities import MethodCapabilityRegistry, require_execution_family
@@ -252,13 +253,16 @@ class ExplicitFCFFDCFEvaluator:
             raise ValueError("Gordon terminal value requires positive final-year FCFF")
 
         one = Decimal("1")
-        present_value = Decimal("0")
+        present_value_explicit = Decimal("0")
         for year, fcff in enumerate(fcff_path, start=1):
-            present_value += fcff.amount / (one + self.discount_rate) ** year
+            present_value_explicit += fcff.amount / (one + self.discount_rate) ** year
 
         terminal_fcff = fcff_path[-1].amount * (one + terminal_growth)
         terminal_value = terminal_fcff / (self.discount_rate - terminal_growth)
-        present_value += terminal_value / (one + self.discount_rate) ** self.forecast_years
+        present_value_terminal = (
+            terminal_value / (one + self.discount_rate) ** self.forecast_years
+        )
+        present_value = present_value_explicit + present_value_terminal
 
         as_of = max(
             *(item.measure.as_of for item in base_assumptions),
@@ -284,6 +288,18 @@ class ExplicitFCFFDCFEvaluator:
                 )
             )
         )
+        diagnostics = SegmentValuationDiagnostics(
+            execution_family="explicit_fcff_dcf",
+            value_unit=first_measure.unit,
+            discount_rate=self.discount_rate,
+            forecast_years=self.forecast_years,
+            fcff_path=tuple(item.amount for item in fcff_path),
+            present_value_explicit=present_value_explicit,
+            present_value_terminal=present_value_terminal,
+            terminal_growth=terminal_growth,
+            terminal_roic=terminal_roic,
+        )
+        diagnostics.validate()
         return SegmentValuation(
             contribution_id=(
                 f"{segment_id}:{scenario.scenario_id}:{self.evaluator_id}:v{self.version}"
@@ -295,6 +311,7 @@ class ExplicitFCFFDCFEvaluator:
             economic_path_ids=economic_paths,
             evaluator_id=self.evaluator_id,
             evaluator_version=self.version,
+            diagnostics=diagnostics,
         )
 
 

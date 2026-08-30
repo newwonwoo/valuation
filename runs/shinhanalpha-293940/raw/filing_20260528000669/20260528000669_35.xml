@@ -1,0 +1,288 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>12_2. 사채 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='600'></COL>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23' colspan='2'>사채에 대한 세부 정보 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='591' height='23'>당기</TD>
+  <TD width='591' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1200'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='951' height='23' colspan='8'>차입금명칭</TH>
+  <TH width='111' height='136' rowspan='4'>차입금명칭 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>전자단기사채</TH>
+  <TH width='471' height='23' colspan='4'>무보증사모사채</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='951' height='23' colspan='8'>거래상대방</TH>
+</TR>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>한국투자증권(주)_사채1</TH>
+  <TH width='111' height='46'>한국투자증권(주)_사채2</TH>
+  <TH width='111' height='46'>메리츠증권㈜</TH>
+  <TH width='111' height='46'>수협은행</TH>
+  <TH width='111' height='46'>한국투자증권(주)_사채1</TH>
+  <TH width='111' height='46'>한국투자증권(주)_사채2</TH>
+  <TH width='111' height='46'>메리츠증권㈜</TH>
+  <TH width='111' height='46'>수협은행</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>차입금,발행일</TD>
+  <TD width='111' height='23' align='CENTER'>2026-03-23</TD>
+  <TD width='111' height='23' align='CENTER'>2025-09-23</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+  <TD width='111' height='23' align='CENTER'>2025-09-23</TD>
+  <TD width='111' height='23' align='CENTER'>2025-09-23</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 만기</TD>
+  <TD width='111' height='23'>2026-04-30</TD>
+  <TD width='111' height='23'>2025-12-23</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>2026-09-23</TD>
+  <TD width='111' height='23'>2026-09-23</TD>
+  <TD width='111' height='23'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 이자율</TD>
+  <TD width='111' height='23' align='RIGHT'>0.043</TD>
+  <TD width='111' height='23' align='RIGHT'>0.039</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.041</TD>
+  <TD width='111' height='23' align='RIGHT'>0.041</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>명목금액</TD>
+  <TD width='111' height='23' align='RIGHT'>58,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>25,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>15,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>98,000,000</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>유동성사채</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>98,000,000</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='1200'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='600'></COL>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>전기</TD>
+  <TD width='591' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1200'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='951' height='23' colspan='8'>차입금명칭</TH>
+  <TH width='111' height='136' rowspan='4'>차입금명칭 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>전자단기사채</TH>
+  <TH width='471' height='23' colspan='4'>무보증사모사채</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='951' height='23' colspan='8'>거래상대방</TH>
+</TR>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>한국투자증권(주)_사채1</TH>
+  <TH width='111' height='46'>한국투자증권(주)_사채2</TH>
+  <TH width='111' height='46'>메리츠증권㈜</TH>
+  <TH width='111' height='46'>수협은행</TH>
+  <TH width='111' height='46'>한국투자증권(주)_사채1</TH>
+  <TH width='111' height='46'>한국투자증권(주)_사채2</TH>
+  <TH width='111' height='46'>메리츠증권㈜</TH>
+  <TH width='111' height='46'>수협은행</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>차입금,발행일</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+  <TD width='111' height='23' align='CENTER'>2025-09-23</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+  <TD width='111' height='23' align='CENTER'>2025-09-23</TD>
+  <TD width='111' height='23' align='CENTER'>2025-09-23</TD>
+  <TD width='111' height='23' align='CENTER'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 만기</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>2025-12-23</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>2026-09-23</TD>
+  <TD width='111' height='23'>2026-09-23</TD>
+  <TD width='111' height='23'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 이자율</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.039</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.041</TD>
+  <TD width='111' height='23' align='RIGHT'>0.041</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>명목금액</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>58,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>25,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>15,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>98,000,000</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>유동성사채</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>98,000,000</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='1200'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

@@ -34,10 +34,23 @@ def registry():
 
 def test_method_capability_registry_covers_every_exact_binding_once():
     summary = registry().coverage_summary()
-    assert summary.total == 41
-    assert len(summary.runtime_ready) == 27
+    assert summary.total == 42
+    assert len(summary.runtime_ready) == 28
     assert len(summary.partial_runtime) == 14
     assert summary.not_implemented == ()
+
+
+def test_backlog_burn_dcf_is_a_distinct_implemented_family():
+    """The backlog family is an addition; the normalized_dcf stub is untouched."""
+    value = registry()
+    backlog = value.get("contracted_backlog", "backlog_burn_dcf")
+    stub = value.get("contracted_backlog", "normalized_dcf")
+    assert backlog.execution_family == "contracted_backlog_dcf"
+    assert backlog.runtime_status is MethodRuntimeStatus.RUNTIME_READY
+    assert backlog.kind is MethodKind.SEGMENT_EVALUATOR
+    assert backlog.output_kind == "enterprise_value"
+    assert backlog.requires_beta and backlog.requires_wacc
+    assert stub.execution_family == "explicit_fcff_dcf"
 
 
 def test_execution_roles_are_separate_from_segment_model_keys():
@@ -75,8 +88,8 @@ def test_deterministic_readiness_uses_exact_method_coverage():
     )
     coverage = report.deterministic_method_coverage
     assert coverage is not None
-    assert coverage.total == 31
-    assert len(coverage.runtime_ready) == 17
+    assert coverage.total == 32
+    assert len(coverage.runtime_ready) == 18
     assert len(coverage.partial_runtime) == 14
     assert coverage.not_implemented == ()
     assert "asset_yield_nav/nav" in coverage.runtime_ready

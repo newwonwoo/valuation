@@ -562,6 +562,9 @@ class KRLiveRuntimeFactory:
     extensions: KRLiveProviderExtensions
     scenario_binding_spec: ScenarioBindingSpec
     method_choices: tuple[SegmentMethodChoice, ...] = ()
+    additional_required_evidence: Mapping[str, tuple[str, ...]] = field(
+        default_factory=dict
+    )
     market_currency: str | None = None
     capability_registry: MethodCapabilityRegistry | None = None
     impact_config: GenericDecisionImpactConfig | None = None
@@ -640,6 +643,7 @@ class KRLiveRuntimeFactory:
             scenario_binding_spec=self.scenario_binding_spec,
             providers=providers,
             method_choices=self.method_choices,
+            additional_required_evidence=dict(self.additional_required_evidence),
             market_currency=self.market_currency,
             capability_registry=self.capability_registry,
             impact_config=self.impact_config,

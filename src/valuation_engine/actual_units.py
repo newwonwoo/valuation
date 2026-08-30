@@ -15,6 +15,11 @@ class Dimension(str, Enum):
     TIME = "time"
     RATIO = "ratio"
     MULTIPLE = "multiple"
+    # Unit prices convert only within one denominator dimension: a price per
+    # tonne can rescale to a price per kilogram, never to a price per unit —
+    # that distinction is exactly what separates ASP concepts across archetypes.
+    PRICE_PER_MASS = "price_per_mass"
+    PRICE_PER_COUNT = "price_per_count"
     DIMENSIONLESS = "dimensionless"
 
 
@@ -28,7 +33,13 @@ class UnitDef:
 
 _UNIT_DEFS = {
     "KRW": UnitDef("KRW", Dimension.MONEY, "KRW", Decimal("1")),
+    # Korean statutory filings quote 천원/백만원/억원; all three appear in the
+    # semi-standard operating tables the filing-KPI extractor reads.
+    "KRW_thousand": UnitDef("KRW_thousand", Dimension.MONEY, "KRW", Decimal("1000")),
     "KRW_million": UnitDef("KRW_million", Dimension.MONEY, "KRW", Decimal("1000000")),
+    "KRW_hundred_million": UnitDef(
+        "KRW_hundred_million", Dimension.MONEY, "KRW", Decimal("100000000")
+    ),
     "KRW_billion": UnitDef("KRW_billion", Dimension.MONEY, "KRW", Decimal("1000000000")),
     "USD": UnitDef("USD", Dimension.MONEY, "USD", Decimal("1")),
     "USD_million": UnitDef("USD_million", Dimension.MONEY, "USD", Decimal("1000000")),
@@ -47,10 +58,27 @@ _UNIT_DEFS = {
     "count": UnitDef("count", Dimension.COUNT, "count", Decimal("1")),
     "shares": UnitDef("shares", Dimension.SHARES, "shares", Decimal("1")),
     "days": UnitDef("days", Dimension.TIME, "days", Decimal("1")),
+    "months": UnitDef("months", Dimension.TIME, "days", Decimal("30.4375")),
     "years": UnitDef("years", Dimension.TIME, "days", Decimal("365.25")),
     "ratio": UnitDef("ratio", Dimension.RATIO, "ratio", Decimal("1")),
     "%": UnitDef("%", Dimension.RATIO, "ratio", Decimal("0.01")),
     "multiple": UnitDef("multiple", Dimension.MULTIPLE, "multiple", Decimal("1")),
+    # Realized-price disclosures (판매단가/가격변동추이) quote KRW per tonne or
+    # per kilogram, occasionally in 천원; per-count prices (원/대) are a
+    # separate dimension by design.
+    "KRW_per_kg": UnitDef("KRW_per_kg", Dimension.PRICE_PER_MASS, "KRW_per_kg", Decimal("1")),
+    "KRW_per_ton": UnitDef(
+        "KRW_per_ton", Dimension.PRICE_PER_MASS, "KRW_per_kg", Decimal("0.001")
+    ),
+    "KRW_thousand_per_ton": UnitDef(
+        "KRW_thousand_per_ton", Dimension.PRICE_PER_MASS, "KRW_per_kg", Decimal("1")
+    ),
+    "KRW_per_unit": UnitDef(
+        "KRW_per_unit", Dimension.PRICE_PER_COUNT, "KRW_per_unit", Decimal("1")
+    ),
+    "KRW_thousand_per_unit": UnitDef(
+        "KRW_thousand_per_unit", Dimension.PRICE_PER_COUNT, "KRW_per_unit", Decimal("1000")
+    ),
     "dimensionless": UnitDef("dimensionless", Dimension.DIMENSIONLESS, "dimensionless", Decimal("1")),
 }
 
