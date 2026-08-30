@@ -57,8 +57,8 @@ TUNNEL_CLIENT_BIN=/trusted/path/to/tunnel-client
 
 ## 3. Prepare the PRISM runtime host
 
-The valuation process needs its ordinary provider credentials and a persistent
-state directory. Minimum generic setup:
+The valuation process needs its ordinary provider credentials and an explicitly
+configured persistent state directory. Minimum generic setup:
 
 ```text
 DART_API_KEY=<OpenDART credential>
@@ -67,6 +67,17 @@ VALUATION_MCP_STATE_ROOT=/persistent/private/prism-state
 CONTROL_PLANE_TUNNEL_ID=tunnel_<id>
 CONTROL_PLANE_API_KEY=<runtime key>
 ```
+
+In tunnel mode, `VALUATION_MCP_STATE_ROOT` has **no implicit default**. It must be
+supplied explicitly and resolve to an absolute persistent path. A relative path
+such as `.valuation_state` or `state/prism` is rejected so a launch from a Git
+checkout or ephemeral working directory cannot silently become the durable
+state location.
+
+The launcher creates a missing state root with private permissions and repairs
+an existing root to owner-only mode before starting the tunnel. On POSIX hosts
+the required root mode is `0700`; the launcher verifies that no group/other
+permission bits remain. If the root cannot be made private, preflight fails.
 
 Optional:
 
@@ -84,7 +95,7 @@ routing and leaves economic method authority in `VALUATION_METHOD_INTENT`. Set
 `VALUATION_METHOD` only when an operator deliberately wants the existing
 explicit-method path.
 
-The state root should be on durable storage and should not be shared by multiple
+The state root must be on durable storage and must not be shared by multiple
 independent MCP processes unless the deployment supplies an external
 single-writer lock. One PRISM MCP process already serializes runs that share the
 same state root.
@@ -111,7 +122,9 @@ The command validates only non-secret configuration and returns JSON similar to:
 }
 ```
 
-Secret values are never printed.
+Secret values are never printed. `READY_TO_CONNECT` also means the state root
+was explicitly supplied, is absolute, exists as a directory, and passed the
+private-permission check.
 
 ## 5. Connect the managed runtime
 
@@ -228,7 +241,8 @@ Before calling the integration complete, verify all of the following:
 
 - `prism-tunnel check` is clean.
 - tunnel-client is an approved binary.
-- state root is persistent and private.
+- `VALUATION_MCP_STATE_ROOT` is explicitly configured as an absolute path.
+- state root is on persistent storage and is owner-private (`0700` on POSIX).
 - `VALUATION_METHOD` is unset unless an explicit override is intended.
 - tunnel runtime status reports running/healthy/ready.
 - ChatGPT scans exactly `prism_analyze` as the valuation tool.
