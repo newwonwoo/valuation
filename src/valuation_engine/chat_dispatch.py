@@ -102,7 +102,7 @@ class ReportHandoff:
     def fenced(self) -> str:
         """Report wrapped in a fenced block with its fingerprint, for chat UIs."""
         return (
-            f"```\n{self.report_text.rstrip()}\n```\n"
+            f"```\n{self.report_text}```\n"
             f"<!-- report_sha256={self.report_sha256} -->"
         )
 

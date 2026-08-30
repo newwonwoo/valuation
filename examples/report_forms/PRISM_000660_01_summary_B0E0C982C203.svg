@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+<title id="title">SK하이닉스 투자 결론과 가치평가</title>
+<desc id="desc">회사 강점, 시나리오 가치, 현재가 및 행동 기준을 요약한 한국어 카드</desc>
+<style>
+text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+</style>
+<rect x="0" y="0" width="1200" height="1500" rx="0" fill="#F3F0E8"/>
+<rect x="0" y="0" width="1200" height="250" rx="0" fill="#102D3E"/>
+<text x="70" y="70" font-size="24" font-weight="700" fill="#FFCB77" text-anchor="start">프리즘 최종보고서 · 1/2</text>
+<text x="70" y="145" font-size="54" font-weight="800" fill="#FFFFFF" text-anchor="start">SK하이닉스</text>
+<text x="70" y="202" font-size="30" font-weight="500" fill="#D9E7EC" text-anchor="start">회사 강점 · 투자 결론 · 가치평가</text>
+<text x="70" y="295" font-size="24" font-weight="800" fill="#167C72" text-anchor="start">인공지능 연결 인사이트 · 가치평가 계산 비관여</text>
+<text x="70" y="345" font-size="24" font-weight="800" fill="#E26643" text-anchor="start">기업 강점</text>
+<text x="230" y="345" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">4세대 고대역폭메모리 양산 출하를 시작했고</text>
+<text x="230" y="380" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">높은 설비가동률과 주요 고객 기반을 확보해</text>
+<text x="230" y="415" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">장기계약을 통한 수요 가시성을 높였습니다</text>
+<text x="70" y="470" font-size="24" font-weight="800" fill="#E26643" text-anchor="start">재평가 연결</text>
+<text x="230" y="470" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">인공지능 메모리 수요가 고객 인증·공급능력과</text>
+<text x="230" y="505" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">결합해 제품 구성·가동률·영업이익률을 높이고</text>
+<text x="230" y="540" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">현금전환으로 이어질 때 가치가 재평가됩니다</text>
+<text x="70" y="595" font-size="24" font-weight="800" fill="#E26643" text-anchor="start">가치 포착</text>
+<text x="230" y="595" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">고대역폭메모리 수요 → 제품 구성·가동률 →</text>
+<text x="230" y="630" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">영업이익률·현금전환 → 재투자 후 현금흐름</text>
+<text x="70" y="690" font-size="32" font-weight="800" fill="#102D3E" text-anchor="start">결정론적 가치평가 결과</text>
+<text x="1090" y="690" font-size="20" font-weight="400" fill="#607582" text-anchor="end">확정된 개별 시나리오</text>
+<rect x="70" y="725" width="320" height="150" rx="20" fill="#FFFFFF"/>
+<text x="94" y="773" font-size="22" font-weight="700" fill="#607582" text-anchor="start">하방</text>
+<text x="94" y="833" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">1,069,224원</text>
+<rect x="408" y="725" width="320" height="150" rx="20" fill="#FFFFFF"/>
+<text x="432" y="773" font-size="22" font-weight="700" fill="#607582" text-anchor="start">기준</text>
+<text x="432" y="833" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">3,542,393원</text>
+<rect x="746" y="725" width="320" height="150" rx="20" fill="#FFFFFF"/>
+<text x="770" y="773" font-size="22" font-weight="700" fill="#607582" text-anchor="start">상방</text>
+<text x="770" y="833" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">4,963,295원</text>
+<rect x="70" y="925" width="1060" height="170" rx="24" fill="#DDEAE7"/>
+<text x="105" y="977" font-size="24" font-weight="800" fill="#167C72" text-anchor="start">현재가</text>
+<text x="105" y="1037" font-size="38" font-weight="800" fill="#102D3E" text-anchor="start">1,653,000원</text>
+<text x="1095" y="1037" font-size="21" font-weight="400" fill="#607582" text-anchor="end">기준일 2026-08-28</text>
+<text x="70" y="1145" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">행동 기준</text>
+<rect x="70" y="1173" width="1060" height="145" rx="22" fill="#FFF4DE"/>
+<text x="105" y="1223" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">확률가중 기대값은 3,726,580원입니다. 다만 별도 매수 규칙이 등록되지 않아 특정 매수가는</text>
+<text x="105" y="1261" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">제시하지 않습니다.</text>
+<rect x="0" y="1370" width="1200" height="130" rx="0" fill="#102D3E"/>
+<text x="70" y="1415" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
+<text x="140" y="1415" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">모든 수치의 원문 주소는 보고서 본문 ‘정보 출처’에서 직접 검증할 수 있습니다.</text>
+<a href="https://english.mofe.go.kr/?boardCd=P0002&amp;seq=2052" target="_blank"><text x="70" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
+<a href="https://www.sec.gov/Archives/edgar/data/2120882/000119312526354777/d147827d6k.htm" target="_blank"><text x="170" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 2</text></a>
+<a href="https://kr.investing.com/equities/sk-hynix-inc-historical-data" target="_blank"><text x="270" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 3</text></a>
+<a href="https://news.skhynix.com/en/q2-2026-business-results/" target="_blank"><text x="370" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 4</text></a>
+<a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctrypremtable.htm" target="_blank"><text x="470" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 5</text></a>
+</svg>

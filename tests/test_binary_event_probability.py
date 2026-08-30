@@ -3,9 +3,9 @@
 ``probability_engine_v3`` had no caller inside the engine and no snapshot type
 the SCENARIO_BUILD calibration socket would accept, which stranded it together
 with the only two callers of ``simulate_scenario_posterior`` and
-``build_dynamic_hierarchical_posterior``. These tests exercise the bridge that
-ends that: a binding, a sealed snapshot, a canonical certificate, and an
-external probability binding into a scenario set.
+``build_dynamic_hierarchical_posterior``. These tests exercise its sealed
+diagnostic route and prove the v3.2 policy boundary: binary events may support
+tail-risk diagnostics and legacy replay, but cannot weight a live valuation.
 """
 
 from __future__ import annotations
@@ -32,6 +32,7 @@ from valuation_engine.dynamic_hierarchical_posterior import DataIntegrityAssessm
 from valuation_engine.orchestrator import OrchestratorContext
 from valuation_engine.probability_adapter import (
     CALIBRATION_SNAPSHOT_CONTRACTS,
+    DIAGNOSTIC_PROBABILITY_SNAPSHOT_KEYS,
     EXTERNAL_PROBABILITY_SNAPSHOT_CONTRACTS,
     EXTERNAL_PROBABILITY_SNAPSHOT_KEYS,
     probability_calibration_load_adapter,
@@ -200,12 +201,12 @@ def _adapter_result(snapshot, *, cohort: str = COHORT):
     return adapter(OrchestratorContext("RUN", ExecutionMode.LIVE_PRIMARY, {}))
 
 
-def test_the_calibration_socket_accepts_a_binary_event_snapshot():
+def test_the_calibration_socket_keeps_binary_events_diagnostic_only():
     snapshot = _snapshot()
     result = _adapter_result(snapshot)
-    assert result.status is StageStatus.PASS
-    certificate = result.outputs["probability_calibration_certificate"]
-    assert certificate.snapshot_hash == snapshot.snapshot_hash
+    assert result.status is StageStatus.WARNING
+    assert "diagnostics/tail-risk only" in result.rationale
+    assert "probability_calibration_certificate" not in result.outputs
     assert result.outputs["binary_event_probability_calibration_snapshot"] is snapshot
     # Each route publishes only its own key, so a continuous run's context is
     # unchanged by this route's existence.
@@ -218,17 +219,19 @@ def test_the_socket_still_enforces_the_expected_cohort():
     assert result.blocking
 
 
-def test_both_probability_routes_are_registered_contracts():
+def test_binary_events_are_registered_as_diagnostics_not_external_weighting():
     from valuation_engine.continuous_probability_snapshot import (
         ContinuousProbabilityCalibrationSnapshot,
     )
 
     assert BinaryEventProbabilityCalibrationSnapshot in CALIBRATION_SNAPSHOT_CONTRACTS
-    assert set(EXTERNAL_PROBABILITY_SNAPSHOT_CONTRACTS) == {
+    assert EXTERNAL_PROBABILITY_SNAPSHOT_CONTRACTS == (
         ContinuousProbabilityCalibrationSnapshot,
-        BinaryEventProbabilityCalibrationSnapshot,
-    }
-    assert dict(EXTERNAL_PROBABILITY_SNAPSHOT_KEYS)[
+    )
+    assert BinaryEventProbabilityCalibrationSnapshot not in dict(
+        EXTERNAL_PROBABILITY_SNAPSHOT_KEYS
+    )
+    assert dict(DIAGNOSTIC_PROBABILITY_SNAPSHOT_KEYS)[
         BinaryEventProbabilityCalibrationSnapshot
     ] == "binary_event_probability_calibration_snapshot"
 
@@ -242,7 +245,7 @@ def test_the_provider_loader_is_what_the_runtime_calls():
         as_of_date=AS_OF,
     )
     result = _adapter_result(loader(None))
-    assert result.status is StageStatus.PASS
+    assert result.status is StageStatus.WARNING
 
 
 # ------------------------------------------------------------- external binding
@@ -266,7 +269,7 @@ def _compiled() -> CompiledAssumptionSet:
     return CompiledAssumptionSet(TARGET, assumptions, "assumption-set-hash")
 
 
-def test_a_binary_event_snapshot_binds_as_an_external_probability_source():
+def test_legacy_binary_binding_primitive_remains_available_for_replay_only():
     snapshot = _snapshot()
     compiled = _compiled()
     base_spec = ScenarioBindingSpec(SCENARIOS, ("fcff_year_1",))

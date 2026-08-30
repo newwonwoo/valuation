@@ -54,6 +54,40 @@ class CalibrationFactoryError(ValueError):
     """Raised when a cohort dataset cannot honestly support an artifact."""
 
 
+_CANONICAL_FLOAT_SIGNIFICANT_DIGITS = 15
+
+
+def _canonicalize_artifact_numbers(value: object) -> object:
+    """Seal computed floats at a cross-runtime-stable JSON precision.
+
+    CPython may improve ordinary floating-point reductions between supported
+    versions.  The factory therefore combines ``math.fsum`` reductions with a
+    final significant-digit boundary before hashing the computed artifact.
+    Source rows are intentionally excluded from this normalization so their
+    dataset hash continues to attest to the exact submitted observations.
+    """
+    if isinstance(value, bool) or value is None:
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise CalibrationFactoryError(
+                "calibration artifact contains a non-finite computed value"
+            )
+        if value == 0.0:
+            return 0.0
+        return float(format(value, f".{_CANONICAL_FLOAT_SIGNIFICANT_DIGITS}g"))
+    if isinstance(value, list):
+        return [_canonicalize_artifact_numbers(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_canonicalize_artifact_numbers(item) for item in value)
+    if isinstance(value, dict):
+        return {
+            key: _canonicalize_artifact_numbers(item)
+            for key, item in value.items()
+        }
+    return value
+
+
 @dataclass(frozen=True)
 class CohortObservation:
     """One company-period reading of the modeled drivers, with provenance."""
@@ -107,6 +141,10 @@ class ConditioningDeclaration:
             raise CalibrationFactoryError(
                 "conditioning must carry exactly the modeled drivers"
             )
+        if any(not math.isfinite(float(value)) for _, value in self.values):
+            raise CalibrationFactoryError(
+                "conditioning driver readings must be finite"
+            )
 
 
 @dataclass(frozen=True)
@@ -130,14 +168,16 @@ class FactoryResult:
 
 
 def _mean(values: Sequence[float]) -> float:
-    return sum(values) / len(values)
+    return math.fsum(values) / len(values)
 
 
 def _std(values: Sequence[float]) -> float:
     if len(values) < 2:
         return 0.0
     center = _mean(values)
-    return math.sqrt(sum((v - center) ** 2 for v in values) / (len(values) - 1))
+    return math.sqrt(
+        math.fsum((v - center) ** 2 for v in values) / (len(values) - 1)
+    )
 
 
 def _clamp(value: float, low: float, high: float) -> float:
@@ -164,9 +204,9 @@ def _ar1(pairs: Sequence[tuple[float, float]]) -> tuple[float, float, float]:
     xs = [x for x, _ in pairs]
     ys = [y for _, y in pairs]
     x_mean, y_mean = _mean(xs), _mean(ys)
-    denom = sum((x - x_mean) ** 2 for x in xs)
+    denom = math.fsum((x - x_mean) ** 2 for x in xs)
     slope = (
-        sum((x - x_mean) * (y - y_mean) for x, y in pairs) / denom
+        math.fsum((x - x_mean) * (y - y_mean) for x, y in pairs) / denom
         if denom > 0
         else 0.0
     )
@@ -179,11 +219,58 @@ def _ar1(pairs: Sequence[tuple[float, float]]) -> tuple[float, float, float]:
 def _chronological_splits(
     rows: Sequence[CohortObservation],
 ) -> tuple[tuple[CohortObservation, ...], ...]:
-    ordered = sorted(rows, key=lambda item: (item.period_end, item.company_id))
-    n = len(ordered)
-    bounds = [0, int(n * 0.4), int(n * 0.6), int(n * 0.8), n]
-    splits = tuple(
-        tuple(ordered[bounds[i] : bounds[i + 1]]) for i in range(4)
+    """A sealed training window plus whole-period fixed-origin OOS windows.
+
+    Fiscal periods can share one filing/publication wave.  Such periods cannot
+    honestly become expanding training inputs for one another.  We therefore
+    reserve the last required number of whole fiscal periods as independent
+    evaluation windows and require every row in each window to have become
+    public strictly after every row used for the single frozen training fit.
+    """
+    by_period: dict[str, list[CohortObservation]] = {}
+    for row in rows:
+        by_period.setdefault(row.period_end, []).append(row)
+    period_groups = []
+    for period_end, period_rows in by_period.items():
+        ordered_rows = tuple(
+            sorted(
+                period_rows,
+                key=lambda item: (
+                    parse_timestamp(item.published_at, label="published_at"),
+                    item.company_id,
+                ),
+            )
+        )
+        publications = tuple(
+            parse_timestamp(item.published_at, label="published_at")
+            for item in ordered_rows
+        )
+        period_groups.append(
+            (min(publications), max(publications), period_end, ordered_rows)
+        )
+    period_groups.sort(key=lambda item: (item[0], item[1], item[2]))
+    n = len(period_groups)
+    if n <= REQUIRED_OOS_WINDOWS:
+        raise CalibrationFactoryError(
+            "cohort dataset needs at least four whole fiscal periods "
+            "for chronological TRAIN/VALIDATION/HOLDOUT/FINAL_OOS splits"
+        )
+    training_groups = period_groups[:-REQUIRED_OOS_WINDOWS]
+    evaluation_groups = period_groups[-REQUIRED_OOS_WINDOWS:]
+    training = tuple(
+        row for _, _, _, period_rows in training_groups for row in period_rows
+    )
+    training_latest = max(
+        parse_timestamp(row.published_at, label="published_at") for row in training
+    )
+    for earliest, _, period_end, _ in evaluation_groups:
+        if earliest <= training_latest:
+            raise CalibrationFactoryError(
+                f"evaluation period {period_end} is not strictly later than all "
+                "frozen training inputs in publication knowledge time"
+            )
+    splits = (training,) + tuple(
+        period_rows for _, _, _, period_rows in evaluation_groups
     )
     if any(len(split) < 2 for split in splits):
         raise CalibrationFactoryError(
@@ -191,6 +278,89 @@ def _chronological_splits(
             "TRAIN/VALIDATION/HOLDOUT/FINAL_OOS splits"
         )
     return splits
+
+
+def _oos_forecast_cases(
+    training_rows: Sequence[CohortObservation],
+    evaluation_rows: Sequence[CohortObservation],
+    driver_id: str,
+    period_order: Sequence[str],
+) -> list[tuple[float, float, int]]:
+    """Fixed-origin cases as (last-known value, outcome, fiscal steps ahead)."""
+    period_rank = {period_end: index for index, period_end in enumerate(period_order)}
+    training_set = set(training_rows)
+    evaluation_set = set(evaluation_rows)
+    by_company: dict[str, list[CohortObservation]] = {}
+    for row in (*training_rows, *evaluation_rows):
+        by_company.setdefault(row.company_id, []).append(row)
+    cases: list[tuple[float, float, int]] = []
+    for company_rows in by_company.values():
+        train_candidates = sorted(
+            (row for row in company_rows if row in training_set),
+            key=lambda item: item.period_end,
+        )
+        evaluation_candidates = tuple(
+            row for row in company_rows if row in evaluation_set
+        )
+        if not train_candidates:
+            continue
+        prior = train_candidates[-1]
+        for current in evaluation_candidates:
+            prior_time = parse_timestamp(prior.published_at, label="published_at")
+            current_time = parse_timestamp(current.published_at, label="published_at")
+            if prior_time >= current_time:
+                raise CalibrationFactoryError(
+                    "OOS forecast origin must be public before its outcome"
+                )
+            steps = period_rank[current.period_end] - period_rank[prior.period_end]
+            if steps < 1:
+                raise CalibrationFactoryError(
+                    "OOS outcome must follow its frozen training fiscal period"
+                )
+            cases.append(
+                (
+                    dict(prior.values)[driver_id],
+                    dict(current.values)[driver_id],
+                    steps,
+                )
+            )
+    return cases
+
+
+def _oos_window_receipts(
+    splits: tuple[tuple[CohortObservation, ...], ...],
+) -> list[dict[str, object]]:
+    receipts: list[dict[str, object]] = []
+    training_rows = splits[0]
+    training_latest = max(
+        parse_timestamp(row.published_at, label="published_at")
+        for row in training_rows
+    )
+    for label, split in zip(REQUIRED_OOS_SPLIT_ORDER, splits, strict=True):
+        publications = tuple(
+            parse_timestamp(row.published_at, label="published_at") for row in split
+        )
+        receipt: dict[str, object] = {
+            "split": label,
+            "period_ends": sorted({row.period_end for row in split}),
+            "row_count": len(split),
+            "evaluation_earliest_publication_at": min(publications).isoformat().replace(
+                "+00:00", "Z"
+            ),
+            "evaluation_latest_publication_at": max(publications).isoformat().replace(
+                "+00:00", "Z"
+            ),
+        }
+        if label != "TRAIN":
+            if training_latest >= min(publications):
+                raise CalibrationFactoryError(
+                    f"{label} is not strictly later than its training inputs"
+                )
+            receipt["training_latest_publication_at"] = (
+                training_latest.isoformat().replace("+00:00", "Z")
+            )
+        receipts.append(receipt)
+    return receipts
 
 
 def _shrink_to_positive_definite(
@@ -203,7 +373,9 @@ def _shrink_to_positive_definite(
         lower = [[0.0] * n for _ in range(n)]
         for i in range(n):
             for j in range(i + 1):
-                total = sum(lower[i][k] * lower[j][k] for k in range(j))
+                total = math.fsum(
+                    lower[i][k] * lower[j][k] for k in range(j)
+                )
                 if i == j:
                     diag = m[i][i] - total
                     if diag <= 1e-10:
@@ -302,9 +474,12 @@ def build_continuous_calibration_artifact(
 
     splits = _chronological_splits(rows)
     train_rows = splits[0]
+    oos_window_receipts = _oos_window_receipts(splits)
+    period_order = sorted({row.period_end for row in rows})
 
     drivers_payload: dict[str, dict] = {}
     residual_series: dict[str, list[float]] = {}
+    scenario_anchor_paths: dict[str, list[float]] = {}
     for driver_id in driver_ids:
         pairs = _company_transitions(rows, driver_id)
         if len(pairs) < 8:
@@ -314,26 +489,44 @@ def build_continuous_calibration_artifact(
             )
         intercept, slope, resid_std = _ar1(pairs)
 
-        # Chronological OOS skill: fit on TRAIN only, score each later split.
+        # Chronological fixed-origin OOS skill. Every evaluation window is one
+        # whole fiscal period and is strictly later than every frozen training
+        # input. Multi-period forecasts are iterated from the last knowable
+        # company reading, so same-publication-wave outcomes never train one
+        # another.
         train_pairs = _company_transitions(train_rows, driver_id)
         if len(train_pairs) < 4:
             raise CalibrationFactoryError(
-                f"driver {driver_id} lacks TRAIN-split transitions"
+                f"driver {driver_id} lacks frozen TRAIN transitions"
             )
-        t_intercept, t_slope, t_resid = _ar1(train_pairs)
+        t_intercept, t_slope, _ = _ar1(train_pairs)
         base_var = max(_std([y for _, y in train_pairs]) ** 2, 1e-12)
         skill_windows: list[float] = []
         inflation_candidates: list[float] = []
-        for split in splits[1:]:
-            split_pairs = _company_transitions(split, driver_id)
-            if not split_pairs:
-                skill_windows.append(0.5)
-                continue
+        oos_case_count = 0
+        for split_label, split in zip(
+            REQUIRED_OOS_SPLIT_ORDER[1:], splits[1:], strict=True
+        ):
+            cases = _oos_forecast_cases(
+                train_rows,
+                split,
+                driver_id,
+                period_order,
+            )
+            if not cases:
+                raise CalibrationFactoryError(
+                    f"driver {driver_id} {split_label} window has no OOS "
+                    "forecast cases with a frozen training origin"
+                )
+            oos_case_count += len(cases)
+            errors = []
+            for origin, outcome, steps in cases:
+                prediction = origin
+                for _ in range(steps):
+                    prediction = t_intercept + t_slope * prediction
+                errors.append((outcome - prediction) ** 2)
             mse = _mean(
-                [
-                    (y - (t_intercept + t_slope * x)) ** 2
-                    for x, y in split_pairs
-                ]
+                errors
             )
             skill_windows.append(_clamp(1.0 / (1.0 + mse / base_var), 1e-6, 1.0))
             inflation_candidates.append(math.sqrt(max(mse / base_var, 1.0)))
@@ -341,24 +534,34 @@ def build_continuous_calibration_artifact(
         likelihood_weight = _clamp(_mean(skill_windows), 1e-6, 1.0)
         uncertainty_inflation = max(inflation_candidates or [1.0])
 
-        # Path: iterate the AR(1) from the cohort's latest cross-section.
+        # Path: iterate the cohort-fitted AR(1) from the target's current,
+        # knowledge-time-sealed reading — not from a cross-sectional peer mean.
         latest_by_company: dict[str, tuple[str, float]] = {}
         for row in rows:
             value = dict(row.values)[driver_id]
             prior = latest_by_company.get(row.company_id)
             if prior is None or row.period_end > prior[0]:
                 latest_by_company[row.company_id] = (row.period_end, value)
-        start = _mean([value for _, value in latest_by_company.values()])
+        cohort_latest_mean = _mean(
+            [value for _, value in latest_by_company.values()]
+        )
+        start = float(dict(conditioning.values)[driver_id])
         mean_path: list[float] = []
         level = start
         for _ in range(path_length):
             level = intercept + slope * level
             mean_path.append(level)
+        anchor_mean_path: list[float] = []
+        anchor_level = cohort_latest_mean
+        for _ in range(path_length):
+            anchor_level = intercept + slope * anchor_level
+            anchor_mean_path.append(anchor_level)
+        scenario_anchor_paths[driver_id] = anchor_mean_path
         stationary_std = resid_std / math.sqrt(max(1.0 - slope**2, 0.05))
         scale_path = [
             min(
                 resid_std
-                * math.sqrt(sum(slope ** (2 * i) for i in range(k + 1))),
+                * math.sqrt(math.fsum(slope ** (2 * i) for i in range(k + 1))),
                 stationary_std,
             )
             * uncertainty_inflation
@@ -378,12 +581,11 @@ def build_continuous_calibration_artifact(
         nig_strength = float(n)
         nig_shape = 1.0 + n / 2.0
         nig_scale = max(
-            sum((y - nig_mean) ** 2 for y in outcomes) / 2.0, 1e-9
+            math.fsum((y - nig_mean) ** 2 for y in outcomes) / 2.0, 1e-9
         )
 
-        recent = [dict(row.values)[driver_id] for row in splits[-1]]
         regime_similarity = _clamp(
-            1.0 - abs(_mean(recent) - _mean(all_values)) / (spread * 3.0),
+            1.0 - abs(start - cohort_latest_mean) / (spread * 3.0),
             0.0,
             1.0,
         )
@@ -413,7 +615,7 @@ def build_continuous_calibration_artifact(
                 "skill_windows": skill_windows,
                 "likelihood_weight": likelihood_weight,
                 "uncertainty_inflation": uncertainty_inflation,
-                "resolved_cases": len(pairs),
+                "resolved_cases": oos_case_count,
                 "company_count": len(
                     {row.company_id for row in rows}
                 ),
@@ -454,7 +656,7 @@ def build_continuous_calibration_artifact(
         scenario_id: {
             "driver_paths": {
                 driver_id: [
-                    drivers_payload[driver_id]["path"]["mean"][k]
+                    scenario_anchor_paths[driver_id][k]
                     + offsets[scenario_id]
                     * drivers_payload[driver_id]["path"]["scale"][k]
                     for k in range(path_length)
@@ -466,7 +668,7 @@ def build_continuous_calibration_artifact(
         for scenario_id in scenario_ids
     }
 
-    artifact: dict = {
+    artifact = _canonicalize_artifact_numbers({
         "version": ARTIFACT_FORMAT_VERSION,
         "source_dataset_sha256": dataset_sha256,
         "provenance_hash": provenance_hash,
@@ -474,6 +676,10 @@ def build_continuous_calibration_artifact(
         "source_company_count": len(companies),
         "target_ticker_excluded": excluded_ticker,
         "oos_split_order": list(REQUIRED_OOS_SPLIT_ORDER),
+        "oos_window_policy": "whole_period_publication_fixed_origin_v2",
+        "oos_windows": oos_window_receipts,
+        "forecast_seed": "target_current_conditioning_ar1_v2",
+        "scenario_anchor_policy": "cohort_reference_path_independent_of_target_v2",
         "current_conditioning": {
             **{k: v for k, v in conditioning.values},
             "source_hash": conditioning.source_hash,
@@ -487,7 +693,8 @@ def build_continuous_calibration_artifact(
             "complete_case_count": common,
         },
         "scenarios": scenarios_payload,
-    }
+    })
+    assert isinstance(artifact, dict)
     artifact["artifact_sha256"] = stable_hash(
         {k: v for k, v in artifact.items() if k != "artifact_sha256"}
     )

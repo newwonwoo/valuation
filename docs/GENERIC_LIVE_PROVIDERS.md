@@ -54,10 +54,13 @@ sector adapter, an archetype set, and the segment economic-structure fields.
 Longest-prefix match; an unmapped code fails closed naming the code, because
 guessing an archetype is a valuation decision.
 
-The decomposer emits a single whole-company segment (`core`) citing the
-snapshot's filing evidence. This is deliberate: finer segmentation without
-segment-note extraction would be invented structure. One evidence-backed segment
-is honest; the hand-written modules also used one segment.
+The snapshot loader screens the latest original filing's explicit reportable/
+operating-segment clauses for multiple named segments and writes an immutable
+scope receipt. The decomposer emits a
+single whole-company segment (`core`) only when that receipt exists, citing the
+snapshot's filing evidence. A disclosed multi-segment or unscreened company is
+blocked: finer segmentation without segment-note extraction would be invented
+structure.
 
 The router copies the segment's structure fields and attaches the mapped
 `sector_adapter` and archetypes — the map is data, the routing is code, and the
@@ -234,7 +237,9 @@ proves all of this end-to-end on a genuine two-segment company with real
 evaluators, no mocks.
 
 The generic KR *collection* path is deliberately single-segment, enforced at
-two layers: `classified_segment_decomposer` emits one `core` segment, and
+three layers: the original-filing screen blocks multiple named operating
+segments, `classified_segment_decomposer` requires its immutable scope receipt
+before emitting one `core` segment, and
 `_single_segment_decomposer` in the KR OpenDART factory hard-raises for anything
 else ("multi-segment companies require note-scoped collectors"). Reaching real
 multi-segment is not a small change — it needs disclosure segment-note-scoped

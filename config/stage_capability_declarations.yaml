@@ -51,7 +51,7 @@ stages:
     contract: valuation_engine.live_runtime:SegmentDecomposer
     generic_implementation: valuation_engine.generic_kr_industry:classified_segment_decomposer
     note: >-
-      One whole-company segment structured by the KSIC classification map; finer segmentation without disclosure-backed extraction would be invented structure.
+      One whole-company segment is emitted only after the latest original filing receives an immutable single-segment scope receipt; disclosed multi-segment and unscreened companies fail closed because finer segmentation requires note-scoped extraction.
 
   INDUSTRY_DNA_ROUTE:
     provider_slot: industry_dna_router

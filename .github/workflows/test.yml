@@ -56,3 +56,4 @@ jobs:
           /tmp/valuation-wheel-venv/bin/python -m pip install /tmp/valuation-wheelhouse/*.whl
           (cd /tmp && /tmp/valuation-wheel-venv/bin/python "$GITHUB_WORKSPACE/scripts/validate_installed_wheel.py")
           (cd /tmp && /tmp/valuation-wheel-venv/bin/valuation-engine --help >/dev/null)
+          (cd /tmp && /tmp/valuation-wheel-venv/bin/prism-tunnel --help >/dev/null)

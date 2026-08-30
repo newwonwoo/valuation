@@ -21,12 +21,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date, timedelta
+from html.parser import HTMLParser
 import json
 from pathlib import Path
+import re
 from typing import Any, Callable, Mapping
 
 import yaml
 
+from .dart_documents import fetch_indexed_opendart_original_document
+from .dart_kpi import _visible_text
 from .industry_dna import EconomicArchetype, IndustryDNAProfile
 from .live_indexers import index_opendart_filing_list
 from .live_primary_adapters import (
@@ -38,11 +42,11 @@ from .live_primary_adapters import (
 )
 from .source_index import DocumentIndexRecord
 from .source_watch import WatchFinding, WatchStatus
+from .runtime_resources import runtime_registry_path
 
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CLASSIFICATION_MAP_PATH = (
-    _REPO_ROOT / "config" / "kr_industry_classification_map.yaml"
+DEFAULT_CLASSIFICATION_MAP_PATH = runtime_registry_path(
+    "kr_industry_classification_map.yaml"
 )
 OPENDART_SOURCE_ID = "KR_OPENDART"
 
@@ -52,6 +56,42 @@ OPENDART_SOURCE_ID = "KR_OPENDART"
 _PERIODIC_REPORT_TOKENS = ("사업보고서", "반기보고서", "분기보고서")
 
 FetchText = Callable[[str], str]
+FetchBytes = Callable[[str], bytes]
+
+_SEGMENT_SCOPE_PREFIX = "SEGMENT_SCOPE:SINGLE"
+_KOREAN_NAMED_SEGMENT = re.compile(
+    r"(?<![가-힣A-Za-z0-9])([가-힣A-Za-z0-9·&/-]{2,24}?)\s*부문"
+)
+_ENGLISH_NAMED_SEGMENT = re.compile(
+    r"\b([A-Za-z][A-Za-z0-9&-]{1,24})\s+(?:segment|division)\b",
+    flags=re.IGNORECASE,
+)
+_KOREAN_SEGMENT_CLAUSE = re.compile(
+    r"(?:보고|영업)\s*부문(?:은|을|으로|에는|:)\s*(.{0,240})"
+)
+_ENGLISH_SEGMENT_CLAUSE = re.compile(
+    r"(?:reportable|operating)\s+segments?\s+(?:are|include|:)\s*(.{0,240})",
+    flags=re.IGNORECASE,
+)
+_SINGLE_SEGMENT_DECLARATION = re.compile(
+    r"(?:연결회사|연결실체|연결그룹)"
+    r"(?:(?![.!?。]).){0,160}?"
+    r"(?:전체를\s*)?단일\s*(?:보고|영업)\s*부문"
+)
+_GENERIC_SEGMENT_NAMES = frozenset(
+    {
+        "영업부문",
+        "보고부문",
+        "사업부문",
+        "주요부문",
+        "각부문",
+        "operating",
+        "reportable",
+        "business",
+    }
+)
+_SEGMENT_TABLE_HEADERS = frozenset({"사업부문", "영업부문", "보고부문"})
+_SEGMENT_TABLE_TOTALS = frozenset({"합계", "총계", "계", "연결조정", "내부거래"})
 
 
 class GenericKRIndustryError(ValueError):
@@ -101,9 +141,166 @@ def _lineage_from_record(
     )
 
 
+def _segment_scope_evidence_id(identity: ResolvedCompanyIdentity) -> str:
+    return f"E:{identity.target_id}:{_SEGMENT_SCOPE_PREFIX}"
+
+
+class _SegmentTableParser(HTMLParser):
+    """Collect cell text from filing tables without interpreting their values."""
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.tables: list[list[list[tuple[str, int, int]]]] = []
+        self._table: list[list[tuple[str, int, int]]] | None = None
+        self._table_depth = 0
+        self._row: list[tuple[str, int, int]] | None = None
+        self._cell: list[str] | None = None
+        self._cell_rowspan = 1
+        self._cell_colspan = 1
+
+    def handle_starttag(self, tag: str, attrs) -> None:
+        lowered = tag.casefold()
+        if lowered == "table":
+            if self._table is None:
+                self._table = []
+            self._table_depth += 1
+        elif lowered == "tr" and self._table is not None and self._table_depth == 1:
+            self._row = []
+        elif (
+            lowered in {"td", "th"}
+            and self._row is not None
+            and self._table_depth == 1
+        ):
+            self._cell = []
+            attributes = dict(attrs)
+            try:
+                self._cell_rowspan = max(1, int(attributes.get("rowspan", "1")))
+                self._cell_colspan = max(1, int(attributes.get("colspan", "1")))
+            except ValueError:
+                self._cell_rowspan = 1
+                self._cell_colspan = 1
+
+    def handle_data(self, data: str) -> None:
+        if self._cell is not None and data:
+            self._cell.append(data)
+
+    def handle_endtag(self, tag: str) -> None:
+        lowered = tag.casefold()
+        if lowered in {"td", "th"} and self._cell is not None:
+            assert self._row is not None
+            self._row.append(
+                (
+                    " ".join(" ".join(self._cell).split()),
+                    self._cell_rowspan,
+                    self._cell_colspan,
+                )
+            )
+            self._cell = None
+        elif lowered == "tr" and self._row is not None and self._table_depth == 1:
+            assert self._table is not None
+            self._table.append(self._row)
+            self._row = None
+        elif lowered == "table" and self._table is not None:
+            self._table_depth -= 1
+            if self._table_depth == 0:
+                self.tables.append(self._table)
+                self._table = None
+
+
+def _expand_table(
+    table: list[list[tuple[str, int, int]]],
+) -> list[list[str]]:
+    grid: list[list[str | None]] = []
+    for row_index, row in enumerate(table):
+        while len(grid) <= row_index:
+            grid.append([])
+        column_index = 0
+        for text, rowspan, colspan in row:
+            while (
+                column_index < len(grid[row_index])
+                and grid[row_index][column_index] is not None
+            ):
+                column_index += 1
+            for target_row in range(row_index, row_index + rowspan):
+                while len(grid) <= target_row:
+                    grid.append([])
+                required_width = column_index + colspan
+                if len(grid[target_row]) < required_width:
+                    grid[target_row].extend(
+                        [None] * (required_width - len(grid[target_row]))
+                    )
+                for target_column in range(column_index, required_width):
+                    grid[target_row][target_column] = text
+            column_index += colspan
+    return [[cell or "" for cell in row] for row in grid]
+
+
+def _table_segment_names(raw_text: str) -> set[str]:
+    parser = _SegmentTableParser()
+    parser.feed(raw_text)
+    names: set[str] = set()
+    canonical_names: dict[str, str] = {}
+    for raw_table in parser.tables:
+        table = _expand_table(raw_table)
+        header_index = None
+        segment_column = None
+        for row_index, row in enumerate(table):
+            for column_index, cell in enumerate(row):
+                if cell.replace(" ", "") in _SEGMENT_TABLE_HEADERS:
+                    header_index = row_index
+                    segment_column = column_index
+                    break
+            if header_index is not None:
+                break
+        if header_index is None or segment_column is None:
+            continue
+        for row in table[header_index + 1 :]:
+            if segment_column >= len(row):
+                continue
+            candidate = " ".join(row[segment_column].split()).strip()
+            if candidate and candidate.replace(" ", "") not in _SEGMENT_TABLE_TOTALS:
+                canonical = re.sub(r"[\s/·&-]+", "", candidate).casefold()
+                if canonical:
+                    canonical_names.setdefault(canonical, candidate)
+    names.update(canonical_names.values())
+    return names
+
+
+def _disclosed_segment_names(document) -> tuple[str, ...]:
+    names: set[str] = set()
+    member_texts = tuple(_visible_text(member) for member in document.text_members)
+    # Only an explicit *consolidated-entity* accounting declaration may
+    # outrank product/process tables whose "사업부문" column merely splits one
+    # integrated segment. Parent-only, subsidiary-only and generic industry
+    # prose cannot certify the consolidated reporting scope as single segment.
+    if any(_SINGLE_SEGMENT_DECLARATION.search(text) for text in member_texts):
+        return ()
+    for member, text in zip(document.text_members, member_texts, strict=True):
+        names.update(_table_segment_names(member.text or ""))
+        clauses = _KOREAN_SEGMENT_CLAUSE.findall(text)
+        clauses.extend(_ENGLISH_SEGMENT_CLAUSE.findall(text))
+        # A common reverse form names the segments first and closes with
+        # "2개 보고부문". Screen the immediately preceding clause as well.
+        for match in re.finditer(r"(?:2|두)\s*개\s*(?:보고|영업)\s*부문", text):
+            clauses.append(text[max(0, match.start() - 240) : match.start()])
+        for clause in clauses:
+            for stem in _KOREAN_NAMED_SEGMENT.findall(clause):
+                name = f"{stem}부문"
+                if name not in _GENERIC_SEGMENT_NAMES and not name.endswith(
+                    ("영업부문", "보고부문")
+                ):
+                    names.add(name)
+            for name in _ENGLISH_NAMED_SEGMENT.findall(clause):
+                normalized = name.casefold()
+                if normalized not in _GENERIC_SEGMENT_NAMES:
+                    names.add(normalized)
+    return tuple(sorted(names))
+
+
 def opendart_filing_snapshot_loader(
     *,
     fetch_text: FetchText,
+    fetch_bytes: FetchBytes,
     as_of: str,
     api_key: str | None = None,
     lookback_days: int = 540,
@@ -151,13 +348,42 @@ def opendart_filing_snapshot_loader(
             _lineage_from_record(record, identity=identity, as_of=as_of)
             for record in periodic
         )
+        newest = periodic[0]
+        filing = fetch_indexed_opendart_original_document(
+            fetch_bytes,
+            newest,
+            checked_at=cutoff,
+            api_key=api_key,
+        )
+        disclosed_segments = _disclosed_segment_names(filing)
+        if len(disclosed_segments) > 1:
+            raise GenericKRIndustryError(
+                f"latest periodic filing for {identity.target_id} discloses multiple "
+                f"operating segments ({', '.join(disclosed_segments)}); multi-segment "
+                "companies require note-scoped collectors and method choices"
+            )
+        newest_lineage = lineage[0]
+        scope_lineage = AuthoritativeEvidenceLineage(
+            evidence_id=_segment_scope_evidence_id(identity),
+            target_id=identity.target_id,
+            source_id=newest.source_id,
+            observed_date=as_of,
+            content_hash=filing.archive_hash,
+            event_date=newest_lineage.event_date,
+            effective_date=newest_lineage.effective_date,
+            published_at=newest_lineage.published_at,
+            first_seen_at=newest_lineage.first_seen_at,
+            revision_id=f"{newest.document_id}:segment-scope-v1",
+            revision_at=newest_lineage.revision_at,
+        )
+        complete_lineage = (*lineage, scope_lineage)
         return IndustryKnowledgeSnapshot.build(
             as_of=as_of,
             source_ids=(OPENDART_SOURCE_ID,),
             document_ids=tuple(record.document_id for record in periodic),
-            evidence_ids=tuple(item.evidence_id for item in lineage),
-            content_hashes=tuple(item.content_hash for item in lineage),
-            evidence_lineage=lineage,
+            evidence_ids=tuple(item.evidence_id for item in complete_lineage),
+            content_hashes=tuple(item.content_hash for item in complete_lineage),
+            evidence_lineage=complete_lineage,
         )
 
     return load
@@ -422,12 +648,12 @@ def classified_segment_decomposer(
     profile_fetcher: Callable[[ResolvedCompanyIdentity], OpenDartCompanyProfile],
     classification: KRIndustryClassification,
 ):
-    """SegmentDecomposer: one whole-company segment, structured by classification.
+    """SegmentDecomposer: screened whole-company segment, structured by classification.
 
-    Finer segmentation without disclosure-backed segment-note extraction would be
-    invented structure, so the generic decomposer deliberately emits a single
-    ``core`` segment whose economic-structure fields come from the KSIC
-    classification entry and whose evidence is the snapshot's filing lineage.
+    The snapshot loader first screens the latest original filing and records an
+    immutable single-segment scope receipt. Without that receipt, or when the
+    filing discloses multiple named operating segments, this decomposer refuses
+    to flatten the company. Note-scoped decomposition remains separate work.
     """
 
     def decompose(
@@ -436,10 +662,24 @@ def classified_segment_decomposer(
     ) -> tuple[SegmentDescriptor, ...]:
         profile = profile_fetcher(identity)
         entry = classification.lookup(profile.induty_code)
+        scope_id = _segment_scope_evidence_id(identity)
+        scope = tuple(
+            item
+            for item in snapshot.evidence_lineage
+            if item.evidence_id == scope_id
+            and item.target_id == identity.target_id
+            and item.active
+        )
+        if len(scope) != 1:
+            raise GenericKRIndustryError(
+                f"industry snapshot carries no unique single-segment scope receipt "
+                f"for {identity.target_id}; refusing to flatten an unscreened company"
+            )
         evidence_ids = tuple(
             item.evidence_id
             for item in snapshot.evidence_lineage
             if item.target_id == identity.target_id
+            and item.evidence_id != scope_id
         )
         if not evidence_ids:
             raise GenericKRIndustryError(

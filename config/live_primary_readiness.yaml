@@ -32,7 +32,7 @@ stages:
   SEGMENT_DECOMPOSITION:
     status: PARTIAL_LIVE
     reason: >-
-      generic classified_segment_decomposer emits one whole-company segment structured by the KSIC classification map and cited to the snapshot's filing lineage; disclosure-backed multi-segment decomposition from segment notes remains unimplemented.
+      generic opendart_filing_snapshot_loader screens explicit reportable/operating-segment clauses in the latest original filing for multiple named segments and records an immutable single-segment scope receipt; classified_segment_decomposer emits one KSIC-structured whole-company segment only with that receipt and fails closed for multi-segment or unscreened companies. Disclosure-backed note-scoped multi-segment decomposition remains unimplemented.
 
   INDUSTRY_DNA_ROUTE:
     status: PARTIAL_LIVE

@@ -108,7 +108,7 @@ def test_the_runbook_staff_transport_delegates_only_fileless_roles(
 
     # Point the env contract at the scripted stand-in used by the CLI tests.
     monkeypatch.setenv(
-        "VALUATION_LLM_TRANSPORT", "test_anthropic_transport:build_scripted"
+        "VALUATION_LLM_TRANSPORT", "tests.test_anthropic_transport:build_scripted"
     )
     hybrid = _StaffTransport(staff)
     assert hybrid.complete(role="bridge_analyst", prompt="p") == '{"drafts": []}'

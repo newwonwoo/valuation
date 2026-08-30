@@ -238,3 +238,27 @@ def test_editing_one_digit_changes_the_batch_fingerprint(tmp_path):
     payload["beta_levels"]["L2_INDUSTRY"]["peers"][0]["beta"]["beta"] = 1.25
     edited = load_declared_risk_pack(_write(tmp_path, payload))
     assert original.file_sha256 != edited.file_sha256
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    (
+        lambda p: p.update(as_of="2026-08-28"),
+        lambda p: p["risk_free_rate"].update(time="20260828"),
+        lambda p: p["country_risk"].update(as_of="2026-08-28"),
+        lambda p: p["marginal_debt"]["series"].update(time="20260828"),
+        lambda p: p["beta_levels"]["L1_BROAD_SECTOR"]["peers"][0]["beta"].update(
+            end_date="2026-08-28"
+        ),
+        lambda p: p["beta_levels"]["L1_BROAD_SECTOR"]["peers"][0]["capital"].update(
+            as_of="2026-08-28"
+        ),
+    ),
+)
+def test_every_future_dated_risk_observation_is_rejected(tmp_path, mutate):
+    payload = _payload()
+    mutate(payload)
+    with pytest.raises(DeclaredRiskPackError, match="after run cutoff"):
+        load_declared_risk_pack(
+            _write(tmp_path, payload), run_as_of=AS_OF
+        )

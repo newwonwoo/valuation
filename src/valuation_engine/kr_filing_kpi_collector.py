@@ -49,18 +49,24 @@ from .dart_kpi import (
     DartKPIExtractionSpec,
     dart_kpi_observation_to_evidence,
     extract_dart_kpi,
+    _visible_text,
 )
 from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequest
 from .kr_opendart_provider import OpenDartNetwork, opendart_corp_code_from_target_id
-from .llm_filing_locators import FilingLocatorTask, propose_and_verify_filing_kpis
+from .llm_filing_locators import (
+    FilingLocatorTask,
+    propose_and_verify_filing_kpis,
+    validate_filing_period_context,
+)
 from .llm_transport import ProposalTransport
 from .live_indexers import index_opendart_filing_list
 from .live_runtime import LiveCollectorProvider
+from .proposal_parsing import ProposalParseError
+from .runtime_resources import runtime_registry_path
 from .source_index import DocumentIndexRecord
 
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PATTERN_CONFIG_PATH = _REPO_ROOT / "config" / "kr_filing_kpi_patterns.yaml"
+DEFAULT_PATTERN_CONFIG_PATH = runtime_registry_path("kr_filing_kpi_patterns.yaml")
 COLLECTOR_ID = "kr-dart-filing-kpi"
 SOURCE_ID = "KR_OPENDART"
 
@@ -255,13 +261,40 @@ def request_scoped_filing_kpi_collector(
         records = []
         statically_missed: list[str] = []
         for metric in request.required_metrics:
-            spec = by_metric[metric].to_spec(
+            pattern = by_metric[metric]
+            spec = pattern.to_spec(
                 segment=segment_id,
                 effective_date=effective_date,
             )
             try:
                 observation = extract_dart_kpi(filing, spec)
-            except DartKPIExtractionError:
+                member = next(
+                    item
+                    for item in filing.text_members
+                    if item.path == observation.member_path
+                )
+                normalized = _visible_text(member)
+                # The static regex begins at the metric label, while a period
+                # marker commonly sits immediately before it in the same row.
+                # Validate a tight surrounding span rather than the match alone.
+                context = normalized[
+                    # Current/prior markers qualify the row label immediately;
+                    # a wider prefix can accidentally borrow "당기" from the
+                    # preceding metric's row in normalized table text.
+                    max(0, observation.text_start - 12):
+                    min(len(normalized), observation.text_end + 48)
+                ]
+                marker_context = normalized[
+                    max(0, observation.text_start - 12):observation.text_end
+                ]
+                validate_filing_period_context(
+                    context,
+                    metric=metric,
+                    effective_date=effective_date,
+                    require_current_period_marker=pattern.require_current_period,
+                    current_period_text=marker_context,
+                )
+            except (DartKPIExtractionError, ProposalParseError):
                 # Not disclosed in the standard layout, or ambiguous. The LLM
                 # locator pass may still find it; otherwise the coverage check
                 # downstream names this metric as missing.

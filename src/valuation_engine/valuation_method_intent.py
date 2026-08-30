@@ -233,12 +233,55 @@ def valuation_method_intent_adapter(
                 "intent resolution",
                 blocking=True,
             )
+        auto_resolved = False
         try:
             intent = resolve_valuation_method_intent(
                 plan,
                 capability_registry=capability_registry,
                 method_choices=method_choices,
             )
+            if (
+                not method_choices
+                and intent.status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+            ):
+                from .auto_method_routing import (
+                    AUTO_METHOD_ROUTING_FLAG,
+                    AUTO_METHOD_ROUTING_FORECAST_YEARS,
+                    auto_feasible_method_choices,
+                )
+                from .scenario_binding import BoundScenarioSet
+
+                enabled = context.data.get(AUTO_METHOD_ROUTING_FLAG, False)
+                if enabled not in (False, True):
+                    raise TypeError(f"{AUTO_METHOD_ROUTING_FLAG} must be bool")
+                if enabled:
+                    forecast_years = context.data.get(
+                        AUTO_METHOD_ROUTING_FORECAST_YEARS
+                    )
+                    scenarios = context.data.get("bound_scenario_set")
+                    if not isinstance(forecast_years, int) or isinstance(
+                        forecast_years, bool
+                    ):
+                        raise TypeError(
+                            f"{AUTO_METHOD_ROUTING_FORECAST_YEARS} must be an integer"
+                        )
+                    if not isinstance(scenarios, BoundScenarioSet):
+                        raise TypeError(
+                            "BoundScenarioSet is required for evidence-feasibility method resolution"
+                        )
+                    feasible_choices = auto_feasible_method_choices(
+                        plan,
+                        scenarios,
+                        forecast_years=forecast_years,
+                        capability_registry=capability_registry,
+                    )
+                    if feasible_choices:
+                        intent = resolve_valuation_method_intent(
+                            plan,
+                            capability_registry=capability_registry,
+                            method_choices=feasible_choices,
+                        )
+                        auto_resolved = intent.ready
         except Exception as exc:
             return StageExecutionResult(
                 StageStatus.BLOCKED,
@@ -267,10 +310,17 @@ def valuation_method_intent_adapter(
                 blocking=True,
             )
         planned_choices = intent.method_choices()
+        rationale = (
+            "economic valuation-method intent resolved by deterministic "
+            "evidence-feasibility filtering inside the canonical method-intent stage; "
+            "exact evaluator construction remains downstream"
+            if auto_resolved
+            else "economic valuation-method intent resolved before Beta/WACC; "
+            "exact evaluator construction remains downstream"
+        )
         return StageExecutionResult(
             StageStatus.PASS,
-            "economic valuation-method intent resolved before Beta/WACC; "
-            "exact evaluator construction remains downstream",
+            rationale,
             {
                 **common_outputs,
                 "planned_method_choices": planned_choices,

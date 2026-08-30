@@ -11,6 +11,7 @@ on:
       - 'src/valuation_engine/skhynix_continuous_live_primary.py'
       - 'src/valuation_engine/skhynix_continuous_probability.py'
       - 'src/valuation_engine/skhynix_public_report.py'
+      - 'src/valuation_engine/skhynix_brokerage_html.py'
       - 'src/valuation_engine/continuous_probability_snapshot.py'
       - 'src/valuation_engine/probability_adapter.py'
       - 'src/valuation_engine/scenario_binding.py'
@@ -24,6 +25,9 @@ on:
       - 'src/valuation_engine/assumption_compiler.py'
       - 'src/valuation_engine/valuation_execution.py'
       - 'src/valuation_engine/generic_audit.py'
+      - 'examples/report_forms/SKHYNIX_000660_*'
+      - 'examples/report_forms/PRISM_000660_*'
+      - 'pyproject.toml'
       - '.github/workflows/skhynix-live-primary.yml'
   pull_request:
     paths:
@@ -34,6 +38,7 @@ on:
       - 'src/valuation_engine/skhynix_continuous_live_primary.py'
       - 'src/valuation_engine/skhynix_continuous_probability.py'
       - 'src/valuation_engine/skhynix_public_report.py'
+      - 'src/valuation_engine/skhynix_brokerage_html.py'
       - 'src/valuation_engine/continuous_probability_snapshot.py'
       - 'src/valuation_engine/probability_adapter.py'
       - 'src/valuation_engine/scenario_binding.py'
@@ -47,6 +52,9 @@ on:
       - 'src/valuation_engine/assumption_compiler.py'
       - 'src/valuation_engine/valuation_execution.py'
       - 'src/valuation_engine/generic_audit.py'
+      - 'examples/report_forms/SKHYNIX_000660_*'
+      - 'examples/report_forms/PRISM_000660_*'
+      - 'pyproject.toml'
       - '.github/workflows/skhynix-live-primary.yml'
   workflow_dispatch:
 
@@ -60,26 +68,27 @@ jobs:
           python-version: '3.11'
       - name: Install
         run: python -m pip install -e '.[dev]'
-      - name: Execute canonical SK hynix LIVE_PRIMARY
-        run: >-
-          PYTHONPATH=src
-          python scripts/run_skhynix_live_primary.py
-          --output /tmp/SKHYNIX_000660_LIVE_PRIMARY_REPORT.md
+      - name: Verify tracked Korean HTML report bundle
+        run: PYTHONPATH=src python scripts/run_skhynix_live_primary.py --check
       - name: Verify immutable report bundle
         run: |
-          test "$(find /tmp -maxdepth 1 -name 'SKHYNIX_000660_20260828_CORE*.md' | wc -l)" -eq 1
-          test "$(find /tmp -maxdepth 1 -name 'SKHYNIX_000660_20260828_CORE*.json' | wc -l)" -eq 1
-          test -f /tmp/SKHYNIX_000660_LATEST_REPORT.json
-          test "$(find /tmp -maxdepth 1 -name 'PRISM_000660_*.svg' | wc -l)" -eq 2
+          test -f examples/report_forms/SKHYNIX_000660_LIVE_PRIMARY_REPORT.html
+          test -f examples/report_forms/SKHYNIX_000660_LIVE_PRIMARY_REPORT.md
+          test -f examples/report_forms/SKHYNIX_000660_LATEST_REPORT.json
+          test "$(find examples/report_forms -maxdepth 1 -name 'SKHYNIX_000660_20260828_TP*.html' | wc -l)" -ge 1
+          test "$(find examples/report_forms -maxdepth 1 -name 'SKHYNIX_000660_20260828_TP*.md' | wc -l)" -ge 1
+          test "$(find examples/report_forms -maxdepth 1 -name 'PRISM_000660_*.svg' | wc -l)" -ge 4
       - name: Upload canonical report
         uses: actions/upload-artifact@v4
         with:
           name: SKHYNIX_000660_LIVE_PRIMARY_${{ github.sha }}
           path: |
-            /tmp/SKHYNIX_000660_20260828_CORE*.md
-            /tmp/SKHYNIX_000660_20260828_CORE*.json
-            /tmp/SKHYNIX_000660_LATEST_REPORT.json
-            /tmp/PRISM_000660_*.svg
+            examples/report_forms/SKHYNIX_000660_LIVE_PRIMARY_REPORT.html
+            examples/report_forms/SKHYNIX_000660_LIVE_PRIMARY_REPORT.md
+            examples/report_forms/SKHYNIX_000660_20260828_TP*.html
+            examples/report_forms/SKHYNIX_000660_20260828_TP*.md
+            examples/report_forms/SKHYNIX_000660_LATEST_REPORT.json
+            examples/report_forms/PRISM_000660_*.svg
       - name: SK hynix canonical regressions
         run: >-
           pytest -q

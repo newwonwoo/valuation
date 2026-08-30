@@ -36,6 +36,7 @@ exactly the part of a discount rate that is analyst work.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date, datetime
 from hashlib import sha256
 from pathlib import Path
 from typing import Mapping
@@ -73,6 +74,18 @@ BETA_SELECTION_METRICS = tuple(
 
 class DeclaredRiskPackError(ValueError):
     """Raised when a declared risk-pack file violates its contract."""
+
+
+def _declared_date(value: str, label: str) -> date:
+    text = str(value or "").strip()
+    try:
+        if len(text) == 8 and text.isdigit():
+            return datetime.strptime(text, "%Y%m%d").date()
+        return date.fromisoformat(text[:10])
+    except ValueError as exc:
+        raise DeclaredRiskPackError(
+            f"{label} must be YYYY-MM-DD or YYYYMMDD"
+        ) from exc
 
 
 def _selection_evidence_id(target_id: str, metric: str) -> str:
@@ -187,6 +200,37 @@ class DeclaredRiskPack:
                 f"{target_id}; refusing cross-company reuse"
             )
 
+    def assert_knowable_by(self, run_as_of: str) -> None:
+        """Reject every dated declaration observation after the run cutoff."""
+        cutoff = _declared_date(run_as_of, "run as_of")
+        observations = [
+            ("risk pack as_of", self.as_of),
+            ("risk_free_rate.time", self.pack.risk_free_rate.time),
+            ("country_risk.as_of", self.pack.country_risk.as_of),
+            (
+                "marginal_debt.series.time",
+                self.pack.marginal_debt.series.time,
+            ),
+        ]
+        for level in self.pack.beta_levels:
+            for peer in level.peers:
+                label = f"{level.level.value}.{peer.peer_id}"
+                observations.extend(
+                    (
+                        (f"{label}.beta.start_date", peer.beta.start_date),
+                        (f"{label}.beta.end_date", peer.beta.end_date),
+                        (f"{label}.capital.as_of", peer.capital.as_of),
+                    )
+                )
+        for label, value in observations:
+            observed = _declared_date(value, label)
+            if observed > cutoff:
+                raise DeclaredRiskPackError(
+                    f"declared risk observation {label}={observed.isoformat()} is "
+                    f"after run cutoff {cutoff.isoformat()}; future risk input is "
+                    "inadmissible"
+                )
+
     def assert_target_not_a_peer(self, identity: ResolvedCompanyIdentity) -> None:
         """The peer-normalized structure must not contain the target itself.
 
@@ -231,7 +275,9 @@ class DeclaredRiskPack:
         )
 
 
-def load_declared_risk_pack(path: str | Path) -> DeclaredRiskPack:
+def load_declared_risk_pack(
+    path: str | Path, *, run_as_of: str | None = None
+) -> DeclaredRiskPack:
     raw = Path(path).read_text(encoding="utf-8")
     payload = _mapping(yaml.safe_load(raw), "declared risk pack")
     target_id = str(payload.get("target_id") or "")
@@ -349,6 +395,8 @@ def load_declared_risk_pack(path: str | Path) -> DeclaredRiskPack:
     # universe or valid WACC inputs is a broken declaration file.
     declared.beta_universe()
     declared.wacc_inputs()
+    if run_as_of is not None:
+        declared.assert_knowable_by(run_as_of)
     return declared
 
 

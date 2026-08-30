@@ -22,6 +22,7 @@ bridges, plan, evaluators — is derived by the providers at run time.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from datetime import date
 from pathlib import Path
 
 from .declared_risk_pack import (
@@ -214,13 +215,19 @@ def build_generic_kr_runtime_factory(
                 registry_path=spec.industry_series_registry_path,
             ),
             *(
-                (declared_underwriting_provider(spec.declared_underwriting_path),)
+                (
+                    declared_underwriting_provider(
+                        spec.declared_underwriting_path,
+                        run_as_of=spec.as_of,
+                    ),
+                )
                 if spec.declared_underwriting_path is not None
                 else ()
             ),
         ),
         industry_snapshot_loader=opendart_filing_snapshot_loader(
             fetch_text=network.fetch_text,
+            fetch_bytes=network.fetch_bytes,
             as_of=spec.as_of,
             api_key=network.api_key,
         ),
@@ -284,18 +291,57 @@ def build_generic_kr_runtime_factory(
     if spec.market_config_path is not None:
         from .workflow import market_loader_from_config
 
+        declared_market_loader = market_loader_from_config(spec.market_config_path)
+        run_cutoff = date.fromisoformat(spec.as_of[:10])
+
+        def cutoff_market_loader():
+            # This wrapper is invoked only by the post-freeze market stage. It
+            # preserves price isolation while refusing to admit a quote from
+            # beyond the intrinsic run's knowledge-time boundary.
+            market_observation = declared_market_loader()
+            market_date = date.fromisoformat(market_observation.as_of[:10])
+            if market_date > run_cutoff:
+                raise GenericValuationPlanError(
+                    f"market observation {market_date.isoformat()} is after run cutoff "
+                    f"{run_cutoff.isoformat()}; future post-freeze price is inadmissible"
+                )
+            return market_observation
+
         extensions = replace(
             extensions,
-            market_loader=market_loader_from_config(spec.market_config_path),
+            market_loader=cutoff_market_loader,
         )
     if spec.street_export_path is not None:
         from .official_market_data import street_loader_from_authorized_export
 
+        declared_street_loader = street_loader_from_authorized_export(
+            spec.street_export_path
+        )
+        run_cutoff = date.fromisoformat(spec.as_of[:10])
+
+        def cutoff_street_loader():
+            # Street remains inaccessible until its post-freeze stage. At that
+            # boundary, reject any report the intrinsic cutoff could not know.
+            reports = declared_street_loader()
+            future_dates = tuple(
+                sorted(
+                    {
+                        report.published_date[:10]
+                        for report in reports
+                        if date.fromisoformat(report.published_date[:10]) > run_cutoff
+                    }
+                )
+            )
+            if future_dates:
+                raise GenericValuationPlanError(
+                    "Street report publication date is after run cutoff "
+                    f"{run_cutoff.isoformat()}: {', '.join(future_dates)}"
+                )
+            return reports
+
         extensions = replace(
             extensions,
-            street_loader=street_loader_from_authorized_export(
-                spec.street_export_path
-            ),
+            street_loader=cutoff_street_loader,
         )
     if spec.calibration_snapshot_loader is not None:
         extensions = replace(
@@ -303,7 +349,9 @@ def build_generic_kr_runtime_factory(
             calibration_loader=spec.calibration_snapshot_loader,
         )
     if spec.declared_risk_path is not None:
-        declared_risk = load_declared_risk_pack(spec.declared_risk_path)
+        declared_risk = load_declared_risk_pack(
+            spec.declared_risk_path, run_as_of=spec.as_of
+        )
         extensions = replace(
             extensions,
             additional_collectors=(

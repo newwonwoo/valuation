@@ -3,7 +3,8 @@
 이 문서는 절차서다. 엔진 설계는 다른 문서들이 설명한다; 여기는 **"종목 X를
 지금 돌리려면 정확히 무엇을 하는가"** 만 다룬다. 이 절차 전체가 세 번 실행되어
 리포에 박제되어 있고 (회귀: `tests/test_kr_live_runbook.py`), 아래 모든 단계는
-그 실행에서 실제로 밟은 것이다:
+그 실행에서 실제로 밟은 것이다. 앞의 두 런은 완주 회귀이고, 대한제강 런은
+연결 다부문을 단일 `core`로 축약하지 않는 실패 폐쇄 회귀다:
 
 - `runs/kisco-104700/` — 한국철강: 12월 결산, EV 산출 방법
   (normalized_multiple), 캘리브레이션 포함(기대값까지).
@@ -11,7 +12,9 @@
   산출 방법**(nav), 리츠 코호트 캘리브레이션(기대값까지).
 - `runs/daehansteel-084010/` — 대한제강: **리스크팩 요구 방법**
   (midcycle_price_volume_dcf) — L1~L4 피어 회귀베타는 커밋된 공개 시세에서
-  `scripts/compute_peer_betas.py`로 재현, 코호트는 타깃 제외 재적합.
+  `scripts/compute_peer_betas.py`로 재현, 코호트는 타깃 제외 재적합. 다만 연결
+  공시의 `제강/압연`·`기타` 부문을 현재 단일세그먼트 런 선언으로 축약할 수
+  없어 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`에서 의도대로 중단한다.
 
 **실행자가 LLM 세션이라면**: `.claude/skills/kr-live-run`이 이 절차의 요약을
 자동 로드한다. 이 문서는 그 스킬의 원본이다.
@@ -67,13 +70,17 @@ runs/<종목>-<코드>/
   키 목록에 없다 — EV→자본 브릿지가 없는 방법에 그 선언을 만들지 마라
   (브릿지 제안이 존재하지 않는 evidence_id를 인용하게 된다).
   값·단위·**20자 이상의 rationale**(가능한 한 공시 수치 인용) 필수.
+  선언마다 그 판단을 실제로 뒷받침한 `source_ref` 또는 `source_refs`를 적는다.
+  여러 공시를 함께 썼다면 파일 상단의 공통 링크로 뭉개지 말고 해당 선언의
+  `source_refs`에 원문 링크를 모두 보존한다.
   다중 시나리오면 사이클 민감 키의 시나리오 한정 변형
   (`down_normalized_ebitda` 등)도 여기 선언하고 §5의
   `extra_required_evidence`에 등록한다.
 - **`market.yaml`** (권장): 공개 시세 종가 + as_of + source_ref.
 - **`street.json`** (권장): 인증된 증권사 export. **커버리지가 없으면
   `{"authorization_basis":"explicit_permission","reports":[]}`** — 무커버리지
-  선언이지 생략이 아니다.
+  선언이지 생략이 아니다. 시장가격 기준일과 각 증권사 보고서 발간일은 모두
+  `run.yaml`의 as_of 이하여야 한다.
 - **`risk_pack.yaml`** (DCF·NPV·DDM 등 베타 요구 방법일 때):
   `python scripts/draft_risk_pack.py template`으로 골격을 뽑고, 채운 뒤
   `… check <파일> --ticker <코드>` 로 런타임과 동일 검증을 미리 돌린다.
@@ -92,10 +99,12 @@ runs/<종목>-<코드>/
   `scripts/anthropic_transport.py` — stdlib HTTP만 쓰고 자격증명은
   `ANTHROPIC_API_KEY` 환경변수에서만 읽는다
   (`export VALUATION_LLM_TRANSPORT=anthropic_transport:build`,
-  모델은 `VALUATION_LLM_MODEL`). 러너(`run_kr_live.py`)는 **하이브리드**다:
+  모델은 `VALUATION_LLM_MODEL`, 프록시는 `ANTHROPIC_BASE_URL`, 출력 한도는
+  `VALUATION_LLM_MAX_TOKENS`). 러너(`run_kr_live.py`)는 **하이브리드**다:
   파일이 있는 역할은 항상 파일이 이기고(커밋된 런의 리플레이 불변), 파일이
   없는 역할만 라이브 모델에 위임된다. `generic_kr_cli.py` 경로는 전 좌석이
-  트랜스포트다 — 계약은 동일하다.
+  트랜스포트다 — 계약은 동일하다. 라이브 transport의 비밀키를 제외한 이 설정과
+  모듈 코드도 실행 입력 해시에 묶이므로 바꾸면 기존 번들을 재사용하지 않는다.
 
 ## 5. `run.yaml`
 
@@ -129,12 +138,17 @@ extra_required_evidence / market_currency`.
 PYTHONPATH=src python scripts/run_kr_live.py runs/<종목>-<코드>
 ```
 
-완주하면 `out/final_report.md`. **정지하면 정지 메시지가 작업지시서다**:
+완주하면 사용자 전달본은 `out/bundles/<종목>_<기준일>_TP<기준가>_<해시>/`
+아래의 버전 고정 Markdown이며, 같은 디렉토리에 감사 JSON·33단계 trace·SVG
+2장·실행 증명이 함께 보존된다. `out/<종목>_LATEST_REPORT.json`이 그 번들과
+각 SHA-256을 가리키고, `out/final_report.md`는 자동화용 최신 별칭일 뿐이다.
+**정지하면 정지 메시지가 작업지시서다**:
 
 | 정지 지점 | 뜻 | 대처 |
 |---|---|---|
 | `PRIMARY_EVIDENCE_COLLECTION` — required … missing: metrics=… | 이름 나온 지표의 증거가 없다 | 공시에 있으면 §2.1 섹션 추가+로케이터, 판단이면 §3 선언 추가 |
 | `INDUSTRY_DNA_ROUTE` — unmapped KSIC | 분류맵에 없는 업종 | `config/kr_industry_classification_map.yaml`에 prefix 행 추가 (리뷰되는 데이터 변경) |
+| `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT` — multiple operating segments | 연결 공시가 둘 이상의 부문을 명시 | 단일 `core`로 축약하지 말고 다부문 방법 의도·입력 지원 전까지 중단 |
 | `RESEARCHER_A/BRIDGE` — proposal failed: … | 스태프 제안이 계약 위반 | 메시지의 사유대로 §4 파일 수정 (없는 ID 인용, 값 불일치 등) |
 | `HIERARCHICAL_BETA_ESTIMATION` — no LIVE_PRIMARY provider | 베타 요구 방법인데 리스크팩 없음 | §3의 risk_pack.yaml |
 | `STREET_REFERENCE_LOAD` — not configured | street.json 자체가 없음 | 무커버리지면 빈 reports로 선언 |
@@ -148,8 +162,9 @@ PYTHONPATH=src python scripts/run_kr_live.py runs/<종목>-<코드>
 - 재현 가치가 있는 런이면 디렉토리를 커밋한다 (`out/`은 제외 —
   `.gitignore`). 커밋된 런은 `tests/test_kr_live_runbook.py` 패턴으로 값을
   pin해 전체 파이프라인 회귀가 된다.
-- 리포트 전달은 원문 그대로: 챗 계층은 `chat_dispatch`의 SHA-256 핸드오프로
-  숫자 무변조를 강제할 수 있다.
+- 리포트 전달은 `LATEST_REPORT.json`이 가리키는 **버전 고정 Markdown** 원문
+  그대로다. 최신 별칭은 전달하지 않는다. 챗 계층은 `chat_dispatch`의
+  SHA-256 핸드오프로 숫자 무변조를 강제할 수 있다.
 
 ## 8. F1 — 공시 트리거 자동 재실행 (감시 루프)
 
@@ -168,7 +183,7 @@ KST 아침, Claude Code Remote 트리거)이 새 세션을 띄워 다음을 수�
 4. 있으면 이 런북 §2~6 절차로 그 런 디렉토리를 갱신(raw 재수집, as_of
    전진, 선언 보수)하고 재실행한 뒤, **직전 커밋된 리포트와의 시나리오
    값·논지 변화(델타)** 를 요약해 보고한다. 리포트 숫자는 언제나
-   `out/final_report.md` 원문이다.
+   `out/<종목>_LATEST_REPORT.json`이 지목한 버전 고정 Markdown 원문이다.
 5. 재현 가치가 있으면 같은 브랜치에 커밋·푸시한다. 게이트 완화·수치 임의
    변경 금지는 여기서도 동일하다.
 

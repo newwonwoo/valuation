@@ -44,10 +44,15 @@ stage list, the frozen values and the report must all reproduce.
 from __future__ import annotations
 
 import argparse
+from decimal import Decimal
+from hashlib import sha256
+import importlib.util
 from io import BytesIO
 import json
 import os
 from pathlib import Path
+import re
+import shutil
 import sys
 import tempfile
 from urllib.parse import parse_qs, urlparse
@@ -274,6 +279,438 @@ def _optional_path(run_dir: Path, name: str) -> str | None:
     return str(path) if path.exists() else None
 
 
+def _safe_artifact_token(value: str) -> str:
+    token = re.sub(r"[^A-Za-z0-9_-]+", "-", value.strip()).strip("-")
+    if not token:
+        raise RunbookError("report artifact token cannot be empty")
+    return token
+
+
+def _file_sha256(path: Path) -> str:
+    return sha256(path.read_bytes()).hexdigest()
+
+
+def _run_input_sha256(run_dir: str | Path) -> str:
+    """Fingerprint every prepared and runtime input that can affect a replay.
+
+    ``out/`` is deliberately excluded because it is the result store. The
+    engine package, registries and this runner are included so an unchanged
+    prepared directory is still re-executed after valuation logic changes.
+    Existing file paths referenced by ``run.yaml`` are also bound, including
+    calibration artifacts that live outside the prepared directory.
+    """
+    run_dir = Path(run_dir).resolve()
+    config = _load_run(run_dir)
+    receipts: dict[str, dict[str, object]] = {}
+
+    def add(label: str, path: Path) -> None:
+        resolved = path.resolve()
+        if not resolved.is_file():
+            raise RunbookError(f"run input is not a readable file: {resolved}")
+        receipts[label] = {
+            "sha256": _file_sha256(resolved),
+            "size_bytes": resolved.stat().st_size,
+        }
+
+    for path in sorted(run_dir.rglob("*")):
+        relative = path.relative_to(run_dir)
+        if relative.parts and relative.parts[0] == "out":
+            continue
+        if path.is_file():
+            add(f"run/{relative.as_posix()}", path)
+
+    runtime_roots = (ROOT / "src" / "valuation_engine", ROOT / "config")
+    for base in runtime_roots:
+        for path in sorted(base.rglob("*")):
+            if (
+                path.is_file()
+                and "__pycache__" not in path.parts
+                and path.suffix not in {".pyc", ".pyo"}
+            ):
+                add(f"repo/{path.relative_to(ROOT).as_posix()}", path)
+    for path in (Path(__file__).resolve(), ROOT / "pyproject.toml"):
+        add(f"repo/{path.relative_to(ROOT).as_posix()}", path)
+
+    def bind_referenced_files(value: object, pointer: str = "run.yaml") -> None:
+        if isinstance(value, dict):
+            for key, item in sorted(value.items(), key=lambda pair: str(pair[0])):
+                bind_referenced_files(item, f"{pointer}/{key}")
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                bind_referenced_files(item, f"{pointer}/{index}")
+        elif isinstance(value, str):
+            candidate = _resolve(run_dir, value)
+            if candidate.is_file():
+                add(f"reference/{pointer}", candidate)
+
+    bind_referenced_files(config)
+    live_transport_binding = os.environ.get("VALUATION_LLM_TRANSPORT", "").strip()
+    live_transport: dict[str, object] | None = None
+    if live_transport_binding:
+        module_name, separator, callable_name = live_transport_binding.partition(":")
+        if not separator or not module_name or not callable_name:
+            raise RunbookError(
+                "VALUATION_LLM_TRANSPORT must be a module:callable binding"
+            )
+        module_spec = importlib.util.find_spec(module_name)
+        module_origin = Path(str(module_spec.origin)).resolve() if (
+            module_spec is not None and module_spec.origin
+        ) else None
+        if module_origin is None or not module_origin.is_file():
+            raise RunbookError(
+                f"live transport module cannot be fingerprinted: {module_name}"
+            )
+        add("live_transport/module", module_origin)
+        # Never bind the credential itself. These are the non-secret settings
+        # the committed Anthropic transport reads and that can change model
+        # proposals for otherwise identical prepared inputs.
+        live_transport = {
+            "binding": live_transport_binding,
+            "model": os.environ.get("VALUATION_LLM_MODEL", "").strip(),
+            "base_url": os.environ.get("ANTHROPIC_BASE_URL", "").strip(),
+            "max_tokens": os.environ.get("VALUATION_LLM_MAX_TOKENS", "").strip(),
+        }
+    contract = {
+        "schema_version": "kr-live-run-inputs/v1",
+        "files": tuple(
+            {"path": label, **receipt}
+            for label, receipt in sorted(receipts.items())
+        ),
+        "live_transport": live_transport,
+    }
+    encoded = json.dumps(
+        contract, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return sha256(encoded).hexdigest()
+
+
+def _reference_value_per_share(result) -> Decimal:
+    valuation = result.data.get("generic_valuation_result")
+    scenarios = tuple(getattr(valuation, "scenarios", ()))
+    if not scenarios:
+        raise RunbookError("completed run carries no intrinsic scenario values")
+    expected = getattr(valuation, "expected_value_per_share", None)
+    if expected is not None:
+        return Decimal(expected)
+    preferred = next(
+        (
+            item
+            for item in scenarios
+            if getattr(item, "scenario_id", "") in {"Base", "Core"}
+        ),
+        scenarios[0],
+    )
+    return Decimal(getattr(preferred, "value_per_share"))
+
+
+def _write_json_atomic(path: Path, payload: dict, *, token: str) -> None:
+    temporary = path.parent / f".{path.name}.{token}.tmp"
+    temporary.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(temporary, path)
+
+
+def publish_report_bundle(
+    run_dir: str | Path,
+    result,
+    *,
+    output_dir: str | Path | None = None,
+    report_alias: str | Path | None = None,
+) -> dict:
+    """Persist the complete immutable run bundle plus a hash-bound latest manifest."""
+    run_dir = Path(run_dir).resolve()
+    output_root = Path(output_dir or run_dir / "out").resolve()
+    source_raw = result.data.get("saved_run_dir")
+    if not isinstance(source_raw, str) or not source_raw:
+        raise RunbookError("completed run carries no saved_run_dir")
+    source = Path(source_raw).resolve()
+    visuals = tuple(result.data.get("saved_report_visuals") or ())
+    required = (
+        "manifest.json",
+        "control_plane_trace.json",
+        "audit.json",
+        "final_report.md",
+        "execution_attestation.json",
+        *visuals,
+    )
+    missing = tuple(name for name in required if not (source / name).is_file())
+    if missing:
+        raise RunbookError(
+            "completed run bundle is incomplete: " + ", ".join(missing)
+        )
+
+    report = (source / "final_report.md").read_text(encoding="utf-8")
+    valuation_hash = str(result.data.get("valuation_hash") or "")
+    audit_hash = str(result.data.get("audit_hash") or "")
+    run_id = str(getattr(result, "run_id", "") or "")
+    ticker = str(result.data.get("ticker") or "")
+    config = _load_run(run_dir)
+    as_of = str(config.get("as_of") or "")
+    run_input_sha256 = _run_input_sha256(run_dir)
+    if not all((valuation_hash, audit_hash, run_id, ticker, as_of)):
+        raise RunbookError("completed run lacks report artifact identities")
+    reference = _reference_value_per_share(result)
+    reference_token = f"TP{reference.quantize(Decimal('1')):.0f}"
+    seed = "|".join(
+        (
+            "kr-live-report-bundle/v1",
+            ticker,
+            as_of,
+            run_id,
+            valuation_hash,
+            audit_hash,
+            run_input_sha256,
+            sha256(report.encode("utf-8")).hexdigest(),
+            _file_sha256(source / "manifest.json"),
+        )
+    )
+    short_hash = sha256(seed.encode("utf-8")).hexdigest()[:12].upper()
+    artifact_id = "-".join(
+        (
+            _safe_artifact_token(ticker),
+            _safe_artifact_token(as_of.replace("-", "")),
+            reference_token,
+            short_hash,
+        )
+    )
+    filename_base = artifact_id.replace("-", "_")
+    bundle_relative = Path("bundles") / filename_base
+    bundle_dir = output_root / bundle_relative
+    if bundle_dir.exists():
+        raise RunbookError(f"immutable report bundle already exists: {bundle_dir}")
+    bundle_dir.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source, bundle_dir)
+
+    versioned_report_name = f"{filename_base}.md"
+    versioned_report = (
+        report.rstrip() + f"\n\n---\n보고서 ID `{artifact_id}`\n"
+    )
+    (bundle_dir / versioned_report_name).write_text(
+        versioned_report, encoding="utf-8"
+    )
+    files = tuple(
+        {
+            "filename": path.relative_to(bundle_dir).as_posix(),
+            "sha256": _file_sha256(path),
+        }
+        for path in sorted(bundle_dir.rglob("*"))
+        if path.is_file()
+    )
+    bundle_manifest = {
+        "schema_version": "kr-live-report-bundle/v1",
+        "artifact_id": artifact_id,
+        "as_of": as_of,
+        "run_id": run_id,
+        "ticker": ticker,
+        "reference_value_per_share": str(reference),
+        "valuation_hash": valuation_hash,
+        "audit_hash": audit_hash,
+        "run_input_sha256": run_input_sha256,
+        "report_filename": versioned_report_name,
+        "files": files,
+    }
+    bundle_manifest_path = bundle_dir / "report_bundle_manifest.json"
+    _write_json_atomic(bundle_manifest_path, bundle_manifest, token=short_hash)
+
+    latest_name = f"{_safe_artifact_token(ticker)}_LATEST_REPORT.json"
+    latest_path = output_root / latest_name
+    latest = {
+        "schema_version": "kr-live-latest-report/v1",
+        "artifact_id": artifact_id,
+        "as_of": as_of,
+        "bundle_directory": bundle_relative.as_posix(),
+        "bundle_manifest": (
+            bundle_relative / bundle_manifest_path.name
+        ).as_posix(),
+        "bundle_manifest_sha256": _file_sha256(bundle_manifest_path),
+        "report_filename": (
+            bundle_relative / versioned_report_name
+        ).as_posix(),
+        "report_sha256": _file_sha256(bundle_dir / versioned_report_name),
+        "valuation_hash": valuation_hash,
+        "audit_hash": audit_hash,
+        "run_input_sha256": run_input_sha256,
+    }
+    output_root.mkdir(parents=True, exist_ok=True)
+    _write_json_atomic(latest_path, latest, token=short_hash)
+
+    alias = Path(report_alias) if report_alias else output_root / "final_report.md"
+    alias.parent.mkdir(parents=True, exist_ok=True)
+    temporary_alias = alias.parent / f".{alias.name}.{short_hash}.tmp"
+    temporary_alias.write_text(report, encoding="utf-8")
+    os.replace(temporary_alias, alias)
+    return {
+        **latest,
+        "latest_manifest_path": str(latest_path),
+        "versioned_report_path": str(bundle_dir / versioned_report_name),
+    }
+
+
+def _resolve_manifest_path(root: Path, relative: object, *, label: str) -> Path:
+    if not isinstance(relative, str) or not relative:
+        raise RunbookError(f"published report {label} path is missing")
+    candidate = (root / relative).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError as exc:
+        raise RunbookError(
+            f"published report {label} escapes its output directory"
+        ) from exc
+    return candidate
+
+
+def reuse_published_report_bundle(
+    run_dir: str | Path,
+    *,
+    output_dir: str | Path | None = None,
+    report_alias: str | Path | None = None,
+) -> dict | None:
+    """Return a matching completed bundle only after verifying every bound hash.
+
+    A normal second invocation must not replay a fixed run ID into the immutable
+    StateStore. It reuses the already-published result, but only when the latest
+    pointer, bundle manifest, versioned report and every recorded bundle file
+    are byte-identical to their receipts.
+    """
+    run_dir = Path(run_dir).resolve()
+    output_root = Path(output_dir or run_dir / "out").resolve()
+    if not output_root.is_dir():
+        return None
+    config = _load_run(run_dir)
+    expected_run_id = str(config.get("run_id", f"RUNBOOK-{run_dir.name}"))
+    expected_as_of = str(config.get("as_of") or "")
+    expected_run_input_sha256 = _run_input_sha256(run_dir)
+    for latest_path in sorted(output_root.glob("*_LATEST_REPORT.json")):
+        try:
+            latest = json.loads(latest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RunbookError(
+                f"published latest-report manifest is unreadable: {latest_path}"
+            ) from exc
+        if not isinstance(latest, dict) or latest.get("schema_version") != (
+            "kr-live-latest-report/v1"
+        ):
+            raise RunbookError(
+                f"published latest-report manifest has unsupported schema: {latest_path}"
+            )
+        bundle_manifest_path = _resolve_manifest_path(
+            output_root, latest.get("bundle_manifest"), label="bundle manifest"
+        )
+        if not bundle_manifest_path.is_file():
+            raise RunbookError(
+                f"published bundle manifest is missing: {bundle_manifest_path}"
+            )
+        if _file_sha256(bundle_manifest_path) != latest.get(
+            "bundle_manifest_sha256"
+        ):
+            raise RunbookError("published bundle manifest hash mismatch")
+        try:
+            bundle_manifest = json.loads(
+                bundle_manifest_path.read_text(encoding="utf-8")
+            )
+        except json.JSONDecodeError as exc:
+            raise RunbookError("published bundle manifest is invalid JSON") from exc
+        if (
+            bundle_manifest.get("run_id") != expected_run_id
+            or bundle_manifest.get("as_of") != expected_as_of
+            or bundle_manifest.get("run_input_sha256")
+            != expected_run_input_sha256
+        ):
+            continue
+        bundle_dir = _resolve_manifest_path(
+            output_root, latest.get("bundle_directory"), label="bundle directory"
+        )
+        if bundle_manifest_path.parent != bundle_dir:
+            raise RunbookError("published bundle manifest is outside its bundle directory")
+        if bundle_manifest.get("schema_version") != "kr-live-report-bundle/v1":
+            raise RunbookError("published bundle manifest has unsupported schema")
+        for key in (
+            "artifact_id",
+            "as_of",
+            "valuation_hash",
+            "audit_hash",
+            "run_input_sha256",
+        ):
+            if latest.get(key) != bundle_manifest.get(key):
+                raise RunbookError(f"published latest manifest disagrees on {key}")
+        versioned_report_path = _resolve_manifest_path(
+            output_root, latest.get("report_filename"), label="versioned report"
+        )
+        if versioned_report_path.parent != bundle_dir:
+            raise RunbookError("published versioned report is outside its bundle directory")
+        if versioned_report_path.name != bundle_manifest.get("report_filename"):
+            raise RunbookError("published bundle disagrees on report filename")
+        if (
+            not versioned_report_path.is_file()
+            or _file_sha256(versioned_report_path) != latest.get("report_sha256")
+        ):
+            raise RunbookError("published versioned report hash mismatch")
+        files = bundle_manifest.get("files")
+        if not isinstance(files, list) or not files:
+            raise RunbookError("published bundle manifest carries no file receipts")
+        received_names = {
+            receipt.get("filename")
+            for receipt in files
+            if isinstance(receipt, dict)
+        }
+        required_names = {
+            "manifest.json",
+            "control_plane_trace.json",
+            "audit.json",
+            "final_report.md",
+            "execution_attestation.json",
+            str(bundle_manifest.get("report_filename") or ""),
+        }
+        missing_names = tuple(sorted(required_names - received_names))
+        if missing_names:
+            raise RunbookError(
+                "published bundle is missing required file receipts: "
+                + ", ".join(missing_names)
+            )
+        for receipt in files:
+            if not isinstance(receipt, dict):
+                raise RunbookError("published bundle file receipt is invalid")
+            path = _resolve_manifest_path(
+                bundle_dir, receipt.get("filename"), label="bundle file"
+            )
+            if not path.is_file() or _file_sha256(path) != receipt.get("sha256"):
+                raise RunbookError(
+                    f"published bundle file hash mismatch: {receipt.get('filename')}"
+                )
+        raw_report = bundle_dir / "final_report.md"
+        if not raw_report.is_file():
+            raise RunbookError("published bundle is missing final_report.md")
+        try:
+            run_manifest = json.loads(
+                (bundle_dir / "manifest.json").read_text(encoding="utf-8")
+            )
+        except json.JSONDecodeError as exc:
+            raise RunbookError("published run manifest is invalid JSON") from exc
+        if (
+            run_manifest.get("run_id") != expected_run_id
+            or run_manifest.get("ticker") != bundle_manifest.get("ticker")
+            or run_manifest.get("status") != "COMPLETED"
+            or run_manifest.get("audit_passed") is not True
+        ):
+            raise RunbookError("published run manifest identity/status mismatch")
+        report = raw_report.read_text(encoding="utf-8")
+        alias = Path(report_alias) if report_alias else output_root / "final_report.md"
+        alias.parent.mkdir(parents=True, exist_ok=True)
+        token = sha256(str(latest["artifact_id"]).encode("utf-8")).hexdigest()[:12]
+        temporary_alias = alias.parent / f".{alias.name}.{token}.tmp"
+        temporary_alias.write_text(report, encoding="utf-8")
+        os.replace(temporary_alias, alias)
+        return {
+            **latest,
+            "latest_manifest_path": str(latest_path),
+            "versioned_report_path": str(versioned_report_path),
+            "reused": True,
+        }
+    return None
+
+
 def execute_run(run_dir: str | Path, *, state_root: str | None = None):
     """Run one prepared directory; returns (reached, stop_stage, stop_reason, result)."""
     run_dir = Path(run_dir).resolve()
@@ -365,11 +802,24 @@ def main() -> int:
     parser.add_argument("run_dir", help="prepared run directory (see runbook)")
     parser.add_argument(
         "--report-out",
-        help="write the final report markdown here (default: <run_dir>/out/final_report.md)",
+        help="write the mutable latest-report alias here (immutable bundle stays under <run_dir>/out/bundles)",
     )
     args = parser.parse_args()
     run_dir = Path(args.run_dir)
-    reached, stop_stage, stop_reason, result = execute_run(run_dir)
+    output_root = run_dir / "out"
+    reused = reuse_published_report_bundle(
+        run_dir,
+        output_dir=output_root,
+        report_alias=args.report_out,
+    )
+    if reused is not None:
+        print("\n  stages: previously completed — REUSED")
+        print(f"  report: {reused['versioned_report_path']}")
+        print(f"  manifest: {reused['latest_manifest_path']}")
+        return 0
+    reached, stop_stage, stop_reason, result = execute_run(
+        run_dir, state_root=str(output_root / "state" / _run_input_sha256(run_dir))
+    )
     for stage in reached:
         print(f"  OK  {stage}")
     if stop_stage is not None:
@@ -383,14 +833,14 @@ def main() -> int:
     print(f"\n  stages: {len(reached)}/{len(result.stage_traces)} — COMPLETED")
     report = result.data.get("final_report")
     if isinstance(report, str):
-        out = (
-            Path(args.report_out)
-            if args.report_out
-            else run_dir / "out" / "final_report.md"
+        published = publish_report_bundle(
+            run_dir,
+            result,
+            output_dir=output_root,
+            report_alias=args.report_out,
         )
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(report, encoding="utf-8")
-        print(f"  report: {out}")
+        print(f"  report: {published['versioned_report_path']}")
+        print(f"  manifest: {published['latest_manifest_path']}")
         for line in report.splitlines():
             if "내재가치" in line or "기대값" in line or "상승여력" in line:
                 print("  " + line.strip("- *"))

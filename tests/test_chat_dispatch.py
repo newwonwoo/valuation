@@ -116,4 +116,10 @@ def test_the_fenced_form_carries_the_fingerprint():
     handoff = _handoff()
     fenced = handoff.fenced()
     assert handoff.report_sha256 in fenced
-    assert handoff.report_text.rstrip() in fenced
+    prefix = "```\n"
+    suffix = "```\n<!-- report_sha256="
+    assert fenced.startswith(prefix)
+    body_end = fenced.index(suffix, len(prefix))
+    fenced_body = fenced[len(prefix):body_end]
+    assert fenced_body == handoff.report_text
+    verify_report_presentation(handoff, fenced_body)
