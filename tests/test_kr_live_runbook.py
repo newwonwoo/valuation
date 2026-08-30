@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import shutil
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -51,31 +52,22 @@ def test_the_committed_shinhanalpha_run_replays_to_the_attested_nav_envelope():
         assert line in report, line
 
 
-def test_the_committed_daehan_run_replays_to_the_attested_dcf_expected_value():
-    """The third committed run opens the declared-risk-pack chain on a real
-    company: 대한제강 (084010) on commodity_price_taker/
-    midcycle_price_volume_dcf. The pack's L1→L4 peer regression betas are
-    reproducible from the committed fchart series (scripts/
-    compute_peer_betas.py), the WACC comes from the declared pack, and the
-    expected value binds the committed KR steel cohort refitted without the
-    target (83 rows / 11 companies)."""
+def test_the_committed_daehan_run_refuses_to_flatten_its_consolidated_segments():
+    """The prepared Daehan run remains useful as a fail-closed regression.
+
+    Its consolidated filing discloses the 제강/압연 and 기타 divisions. Parent
+    and subsidiary paragraphs separately call their steel processes a single
+    division, but those entity-level statements cannot flatten the consolidated
+    scope into the runbook's one ``core`` segment. Until multi-segment intent is
+    declared, the industry snapshot must stop before intrinsic valuation.
+    """
     reached, stop_stage, stop_reason, result = execute_run(
         ROOT / "runs" / "daehansteel-084010"
     )
-    assert stop_stage is None, stop_reason
-    assert len(reached) == len(result.stage_traces)
-    assert result.data["probability_weighting_allowed"] is True
-
-    report = result.data["final_report"]
-    for line in (
-        "**하방 시나리오:** 내재가치 주당 8,184원",
-        "**기준 시나리오:** 내재가치 주당 26,292원",
-        "**상방 시나리오:** 내재가치 주당 43,975원",
-        "**확률가중 기대값:** 주당 26,712원",
-        "**증권사 목표가:** 확보되지 않았습니다.",
-        "**현재가:** 8,420원 (2026-08-28)",
-    ):
-        assert line in report, line
+    assert reached == ("COMPANY_RESOLUTION", "LOAD_COMPANY_STATE")
+    assert stop_stage == "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT"
+    assert "multiple operating segments" in stop_reason
+    assert not result.completed
 
 
 def test_the_committed_kisco_run_replays_to_the_attested_expected_value(
@@ -127,6 +119,7 @@ def test_the_committed_kisco_run_replays_to_the_attested_expected_value(
     assert all((bundle / name).is_file() for name in result.data["saved_report_visuals"])
     assert bundle_manifest["artifact_id"] == latest["artifact_id"]
     assert bundle_manifest["valuation_hash"] == result.data["valuation_hash"]
+    assert latest["run_input_sha256"] == run_kr_live._run_input_sha256(run_dir)
 
     alias = tmp_path / "second-invocation-report.md"
     reused = reuse_published_report_bundle(
@@ -138,6 +131,20 @@ def test_the_committed_kisco_run_replays_to_the_attested_expected_value(
     assert reused["artifact_id"] == published["artifact_id"]
     assert reused["versioned_report_path"] == published["versioned_report_path"]
     assert alias.read_text(encoding="utf-8") == report
+
+    changed_run = tmp_path / "changed-run"
+    shutil.copytree(run_dir, changed_run, ignore=shutil.ignore_patterns("out"))
+    underwriting = changed_run / "declarations" / "underwriting.yaml"
+    underwriting.write_text(
+        underwriting.read_text(encoding="utf-8").replace(
+            "    value: 60\n", "    value: 61\n", 1
+        ),
+        encoding="utf-8",
+    )
+    assert run_kr_live._run_input_sha256(changed_run) != latest["run_input_sha256"]
+    assert reuse_published_report_bundle(
+        changed_run, output_dir=tmp_path / "published"
+    ) is None
 
     def unexpected_execute(*args, **kwargs):
         raise AssertionError("a verified published run must not execute again")

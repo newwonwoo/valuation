@@ -289,6 +289,74 @@ def _file_sha256(path: Path) -> str:
     return sha256(path.read_bytes()).hexdigest()
 
 
+def _run_input_sha256(run_dir: str | Path) -> str:
+    """Fingerprint every prepared and runtime input that can affect a replay.
+
+    ``out/`` is deliberately excluded because it is the result store. The
+    engine package, registries and this runner are included so an unchanged
+    prepared directory is still re-executed after valuation logic changes.
+    Existing file paths referenced by ``run.yaml`` are also bound, including
+    calibration artifacts that live outside the prepared directory.
+    """
+    run_dir = Path(run_dir).resolve()
+    config = _load_run(run_dir)
+    receipts: dict[str, dict[str, object]] = {}
+
+    def add(label: str, path: Path) -> None:
+        resolved = path.resolve()
+        if not resolved.is_file():
+            raise RunbookError(f"run input is not a readable file: {resolved}")
+        receipts[label] = {
+            "sha256": _file_sha256(resolved),
+            "size_bytes": resolved.stat().st_size,
+        }
+
+    for path in sorted(run_dir.rglob("*")):
+        relative = path.relative_to(run_dir)
+        if relative.parts and relative.parts[0] == "out":
+            continue
+        if path.is_file():
+            add(f"run/{relative.as_posix()}", path)
+
+    runtime_roots = (ROOT / "src" / "valuation_engine", ROOT / "config")
+    for base in runtime_roots:
+        for path in sorted(base.rglob("*")):
+            if (
+                path.is_file()
+                and "__pycache__" not in path.parts
+                and path.suffix not in {".pyc", ".pyo"}
+            ):
+                add(f"repo/{path.relative_to(ROOT).as_posix()}", path)
+    for path in (Path(__file__).resolve(), ROOT / "pyproject.toml"):
+        add(f"repo/{path.relative_to(ROOT).as_posix()}", path)
+
+    def bind_referenced_files(value: object, pointer: str = "run.yaml") -> None:
+        if isinstance(value, dict):
+            for key, item in sorted(value.items(), key=lambda pair: str(pair[0])):
+                bind_referenced_files(item, f"{pointer}/{key}")
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                bind_referenced_files(item, f"{pointer}/{index}")
+        elif isinstance(value, str):
+            candidate = _resolve(run_dir, value)
+            if candidate.is_file():
+                add(f"reference/{pointer}", candidate)
+
+    bind_referenced_files(config)
+    contract = {
+        "schema_version": "kr-live-run-inputs/v1",
+        "files": tuple(
+            {"path": label, **receipt}
+            for label, receipt in sorted(receipts.items())
+        ),
+        "live_transport": os.environ.get("VALUATION_LLM_TRANSPORT", "").strip(),
+    }
+    encoded = json.dumps(
+        contract, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return sha256(encoded).hexdigest()
+
+
 def _reference_value_per_share(result) -> Decimal:
     valuation = result.data.get("generic_valuation_result")
     scenarios = tuple(getattr(valuation, "scenarios", ()))
@@ -353,6 +421,7 @@ def publish_report_bundle(
     ticker = str(result.data.get("ticker") or "")
     config = _load_run(run_dir)
     as_of = str(config.get("as_of") or "")
+    run_input_sha256 = _run_input_sha256(run_dir)
     if not all((valuation_hash, audit_hash, run_id, ticker, as_of)):
         raise RunbookError("completed run lacks report artifact identities")
     reference = _reference_value_per_share(result)
@@ -365,6 +434,7 @@ def publish_report_bundle(
             run_id,
             valuation_hash,
             audit_hash,
+            run_input_sha256,
             sha256(report.encode("utf-8")).hexdigest(),
             _file_sha256(source / "manifest.json"),
         )
@@ -410,6 +480,7 @@ def publish_report_bundle(
         "reference_value_per_share": str(reference),
         "valuation_hash": valuation_hash,
         "audit_hash": audit_hash,
+        "run_input_sha256": run_input_sha256,
         "report_filename": versioned_report_name,
         "files": files,
     }
@@ -433,6 +504,7 @@ def publish_report_bundle(
         "report_sha256": _file_sha256(bundle_dir / versioned_report_name),
         "valuation_hash": valuation_hash,
         "audit_hash": audit_hash,
+        "run_input_sha256": run_input_sha256,
     }
     output_root.mkdir(parents=True, exist_ok=True)
     _write_json_atomic(latest_path, latest, token=short_hash)
@@ -482,6 +554,7 @@ def reuse_published_report_bundle(
     config = _load_run(run_dir)
     expected_run_id = str(config.get("run_id", f"RUNBOOK-{run_dir.name}"))
     expected_as_of = str(config.get("as_of") or "")
+    expected_run_input_sha256 = _run_input_sha256(run_dir)
     for latest_path in sorted(output_root.glob("*_LATEST_REPORT.json")):
         try:
             latest = json.loads(latest_path.read_text(encoding="utf-8"))
@@ -515,6 +588,8 @@ def reuse_published_report_bundle(
         if (
             bundle_manifest.get("run_id") != expected_run_id
             or bundle_manifest.get("as_of") != expected_as_of
+            or bundle_manifest.get("run_input_sha256")
+            != expected_run_input_sha256
         ):
             continue
         bundle_dir = _resolve_manifest_path(
@@ -524,7 +599,13 @@ def reuse_published_report_bundle(
             raise RunbookError("published bundle manifest is outside its bundle directory")
         if bundle_manifest.get("schema_version") != "kr-live-report-bundle/v1":
             raise RunbookError("published bundle manifest has unsupported schema")
-        for key in ("artifact_id", "as_of", "valuation_hash", "audit_hash"):
+        for key in (
+            "artifact_id",
+            "as_of",
+            "valuation_hash",
+            "audit_hash",
+            "run_input_sha256",
+        ):
             if latest.get(key) != bundle_manifest.get(key):
                 raise RunbookError(f"published latest manifest disagrees on {key}")
         versioned_report_path = _resolve_manifest_path(
@@ -710,7 +791,7 @@ def main() -> int:
         print(f"  manifest: {reused['latest_manifest_path']}")
         return 0
     reached, stop_stage, stop_reason, result = execute_run(
-        run_dir, state_root=str(output_root / "state")
+        run_dir, state_root=str(output_root / "state" / _run_input_sha256(run_dir))
     )
     for stage in reached:
         print(f"  OK  {stage}")

@@ -22,6 +22,7 @@ bridges, plan, evaluators — is derived by the providers at run time.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from datetime import date
 from pathlib import Path
 
 from .declared_risk_pack import (
@@ -290,9 +291,25 @@ def build_generic_kr_runtime_factory(
     if spec.market_config_path is not None:
         from .workflow import market_loader_from_config
 
+        declared_market_loader = market_loader_from_config(spec.market_config_path)
+        run_cutoff = date.fromisoformat(spec.as_of[:10])
+
+        def cutoff_market_loader():
+            # This wrapper is invoked only by the post-freeze market stage. It
+            # preserves price isolation while refusing to admit a quote from
+            # beyond the intrinsic run's knowledge-time boundary.
+            market_observation = declared_market_loader()
+            market_date = date.fromisoformat(market_observation.as_of[:10])
+            if market_date > run_cutoff:
+                raise GenericValuationPlanError(
+                    f"market observation {market_date.isoformat()} is after run cutoff "
+                    f"{run_cutoff.isoformat()}; future post-freeze price is inadmissible"
+                )
+            return market_observation
+
         extensions = replace(
             extensions,
-            market_loader=market_loader_from_config(spec.market_config_path),
+            market_loader=cutoff_market_loader,
         )
     if spec.street_export_path is not None:
         from .official_market_data import street_loader_from_authorized_export

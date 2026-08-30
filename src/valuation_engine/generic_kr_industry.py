@@ -74,11 +74,9 @@ _ENGLISH_SEGMENT_CLAUSE = re.compile(
     flags=re.IGNORECASE,
 )
 _SINGLE_SEGMENT_DECLARATION = re.compile(
-    r"(?:"
-    r"(?:회사|연결회사)\s*전체를\s*단일\s*보고\s*부문|"
-    r"공시대상\s*사업\s*부문.{0,80}?단일화|"
-    r"단일\s*사업\s*부문을\s*영위"
-    r")"
+    r"(?:연결회사|연결실체|연결그룹)"
+    r"(?:(?![.!?。]).){0,160}?"
+    r"(?:전체를\s*)?단일\s*(?:보고|영업)\s*부문"
 )
 _GENERIC_SEGMENT_NAMES = frozenset(
     {
@@ -271,8 +269,10 @@ def _table_segment_names(raw_text: str) -> set[str]:
 def _disclosed_segment_names(document) -> tuple[str, ...]:
     names: set[str] = set()
     member_texts = tuple(_visible_text(member) for member in document.text_members)
-    # An explicit consolidated/accounting declaration outranks product/process
-    # tables whose "사업부문" column may merely split one integrated segment.
+    # Only an explicit *consolidated-entity* accounting declaration may
+    # outrank product/process tables whose "사업부문" column merely splits one
+    # integrated segment. Parent-only, subsidiary-only and generic industry
+    # prose cannot certify the consolidated reporting scope as single segment.
     if any(_SINGLE_SEGMENT_DECLARATION.search(text) for text in member_texts):
         return ()
     for member, text in zip(document.text_members, member_texts, strict=True):

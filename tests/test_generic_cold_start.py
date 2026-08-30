@@ -280,3 +280,31 @@ def test_calibration_snapshot_loader_threads_into_the_probability_door():
         build_generic_kr_runtime_factory(
             network=probe_network(), transport=ScriptedTransport({}), spec=incomplete
         )
+
+
+def test_market_observation_after_historical_run_cutoff_is_rejected(tmp_path):
+    from dataclasses import replace
+
+    from valuation_engine.generic_valuation_plan import GenericValuationPlanError
+
+    market = tmp_path / "market.yaml"
+    market.write_text(
+        "market_comparison:\n"
+        "  price: 10000\n"
+        '  as_of: "2026-08-28"\n'
+        "  source_ref: https://example.test/market/close\n",
+        encoding="utf-8",
+    )
+    spec = replace(
+        probe_runtime_spec(),
+        market_config_path=market,
+        market_currency="KRW",
+    )
+
+    factory = build_generic_kr_runtime_factory(
+        network=probe_network(),
+        transport=ScriptedTransport({}),
+        spec=spec,
+    )
+    with pytest.raises(GenericValuationPlanError, match="after run cutoff"):
+        factory.extensions.market_loader()

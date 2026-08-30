@@ -214,7 +214,7 @@ def test_explicit_single_segment_declaration_outranks_process_rows():
             url,
             """
             <BODY>
-              <P>당사는 공시대상 사업부문을 철강으로 단일화하여 표시합니다.</P>
+              <P>연결회사는 영업수익을 창출하는 용역의 성격을 고려하여 연결회사 전체를 단일 보고부문으로 결정하였습니다.</P>
               <TABLE>
                 <TR><TH>사업부문</TH><TH>생산량</TH></TR>
                 <TR><TD>제강</TD><TD>100</TD></TR>
@@ -228,6 +228,31 @@ def test_explicit_single_segment_declaration_outranks_process_rows():
     )
     snapshot = loader(IDENTITY)
     assert any("SEGMENT_SCOPE:SINGLE" in item for item in snapshot.evidence_ids)
+
+
+def test_entity_level_single_segment_statements_do_not_flatten_consolidated_scope():
+    loader = opendart_filing_snapshot_loader(
+        fetch_text=_fetch_text,
+        fetch_bytes=lambda url: _fetch_bytes(
+            url,
+            """
+            <BODY>
+              <P>연결회사는 제강/압연과 기타 사업부문으로 구분합니다.</P>
+              <TABLE>
+                <TR><TH>사업부문</TH><TH>주요제품</TH></TR>
+                <TR><TD>제강/압연</TD><TD>철근</TD></TR>
+                <TR><TD>기타</TD><TD>물류용역</TD></TR>
+              </TABLE>
+              <P>지배회사는 공시대상 사업부문을 제강/압연으로 단일화하여 표시합니다.</P>
+              <P>종속회사도 철근을 생산하는 단일 사업부문을 영위합니다.</P>
+            </BODY>
+            """,
+        ),
+        as_of=AS_OF,
+        api_key="TESTKEY",
+    )
+    with pytest.raises(GenericKRIndustryError, match="multiple operating segments"):
+        loader(IDENTITY)
 
 
 def test_decomposer_refuses_a_snapshot_without_the_scope_receipt():

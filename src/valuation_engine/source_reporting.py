@@ -77,14 +77,18 @@ def build_source_link_index(
     ledger = data.get("evidence_ledger")
     active_evidence = ledger.active() if isinstance(ledger, EvidenceLedger) else ()
     for record in active_evidence:
-        add(
-            record.source_ref,
-            label=record.source_name,
-            coverage=(
-                f"근거 {record.id}: {record.metric} "
-                f"(기준일 {record.effective_date})"
-            ),
-        )
+        source_refs = getattr(record, "source_refs", ())
+        if not isinstance(source_refs, tuple) or not source_refs:
+            source_refs = (record.source_ref,)
+        for source_ref in dict.fromkeys(source_refs):
+            add(
+                source_ref,
+                label=record.source_name,
+                coverage=(
+                    f"근거 {record.id}: {record.metric} "
+                    f"(기준일 {record.effective_date})"
+                ),
+            )
 
     identity_refs = data.get("company_resolution_source_refs", ())
     if isinstance(identity_refs, tuple):
