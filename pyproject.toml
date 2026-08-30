@@ -16,6 +16,7 @@ dev = ["pytest>=8.0", "setuptools>=70", "mcp>=2,<3"]
 [project.scripts]
 valuation-engine = "valuation_engine.cli:main"
 prism-mcp = "valuation_engine.mcp_server:main"
+prism-tunnel = "valuation_engine.tunnel_launcher:main"
 
 [tool.setuptools]
 packages = ["valuation_engine", "valuation_engine._registry_data"]
