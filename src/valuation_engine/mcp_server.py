@@ -67,11 +67,11 @@ def _blocking_codes(result) -> list[str]:
 
 def run_prism_mcp(company: str) -> PrismAnalyzeResult:
     """Run one company through the canonical, attested PRISM LIVE_PRIMARY path."""
+    if "\n" in company or "\r" in company:
+        raise ToolError("company must be a single-line company name or ticker")
     normalized_company = " ".join(company.strip().split())
     if not normalized_company:
         raise ToolError("company is required")
-    if "\n" in normalized_company or "\r" in normalized_company:
-        raise ToolError("company must be a single-line company name or ticker")
 
     canonical_command = f"분석시작 {normalized_company}"
     try:
