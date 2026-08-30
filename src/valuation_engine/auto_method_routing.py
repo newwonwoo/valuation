@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from typing import Mapping
 
 from .generic_llm_staff import GenericBridgeAnalyst
 from .generic_live_providers import required_assumption_keys
@@ -27,8 +26,9 @@ from .method_capabilities import (
 )
 from .module_plan import ModuleRequirementPlan, SegmentModuleRequirementPlan
 from .orchestrator import OrchestratorContext
-from .scenario_binding import ScenarioBindingSpec
+from .scenario_binding import BoundScenarioSet
 from .valuation_method_intent import ValuationMethodIntent
+from .valuation_plan_compiler import SegmentMethodChoice
 
 
 AUTO_METHOD_ROUTING_FLAG = "auto_valuation_method_routing"
@@ -74,17 +74,28 @@ def _segment_candidates(
     return candidates
 
 
-def auto_required_assumption_keys(
+def _prototype_keys(capability: MethodCapability, forecast_years: int) -> tuple[str, ...]:
+    prototype = family_prototype(capability.execution_family, forecast_years)
+    if prototype is None:
+        raise AutoMethodRoutingError(
+            "generic auto routing has no evaluator prototype for "
+            f"{capability.execution_family}"
+        )
+    return tuple(prototype.required_assumption_keys)
+
+
+def auto_bridge_required_assumption_keys(
     plan: ModuleRequirementPlan,
     *,
+    evidence_metrics: frozenset[str],
     forecast_years: int,
     capability_registry: MethodCapabilityRegistry | None = None,
 ) -> tuple[str, ...]:
-    """Return the deterministic union of assumptions for all allowed candidates.
+    """Prepare assumptions only for evidence-complete candidate methods.
 
-    This function prepares evidence and Bridge cells only. It does not select an
-    economic method. The canonical VALUATION_METHOD_INTENT stage keeps that
-    authority and will auto-select only when Industry DNA leaves one method.
+    Filtering a method for missing source inputs is not an economic-method
+    decision. The formal VALUATION_METHOD_INTENT stage later owns selection from
+    the candidates whose assumptions survived deterministic compilation.
     """
     plan.validate()
     if forecast_years < 1 or forecast_years > 30:
@@ -93,16 +104,25 @@ def auto_required_assumption_keys(
     keys: list[str] = []
     needs_ev_adjustment = False
     for segment in plan.segments:
+        feasible: list[MethodCapability] = []
+        missing_by_candidate: list[str] = []
         for capability in _segment_candidates(segment, registry):
-            prototype = family_prototype(capability.execution_family, forecast_years)
-            if prototype is None:
-                raise AutoMethodRoutingError(
-                    "generic auto routing has no evaluator prototype for "
-                    f"{capability.execution_family}"
+            required = _prototype_keys(capability, forecast_years)
+            missing = tuple(key for key in required if key not in evidence_metrics)
+            if not missing:
+                feasible.append(capability)
+                keys.extend(required)
+                if capability.output_kind == "enterprise_value":
+                    needs_ev_adjustment = True
+            else:
+                missing_by_candidate.append(
+                    f"{capability.archetype}/{capability.method}=" + ",".join(missing)
                 )
-            keys.extend(prototype.required_assumption_keys)
-            if capability.output_kind == "enterprise_value":
-                needs_ev_adjustment = True
+        if not feasible:
+            raise AutoMethodRoutingError(
+                f"segment {segment.segment_id} has no evidence-complete valuation candidate; "
+                + "; ".join(missing_by_candidate)
+            )
     keys.append(OWNERSHIP_KEY)
     if needs_ev_adjustment:
         keys.append(EV_ADJUSTMENT_KEY)
@@ -110,36 +130,43 @@ def auto_required_assumption_keys(
     return tuple(dict.fromkeys(keys))
 
 
-def auto_required_evidence_map(
+def auto_feasible_method_choices(
     plan: ModuleRequirementPlan,
+    scenarios: BoundScenarioSet,
     *,
     forecast_years: int,
     capability_registry: MethodCapabilityRegistry | None = None,
-) -> dict[str, tuple[str, ...]]:
-    """Declare candidate-method Evidence after Industry DNA, before collection."""
+) -> tuple[SegmentMethodChoice, ...]:
+    """Return choices only when compiled scenarios leave one candidate per segment."""
     plan.validate()
     registry = capability_registry or load_default_method_capability_registry()
-    result: dict[str, tuple[str, ...]] = {}
-    for index, segment in enumerate(plan.segments):
-        keys: list[str] = []
-        needs_ev_adjustment = False
-        for capability in _segment_candidates(segment, registry):
-            prototype = family_prototype(capability.execution_family, forecast_years)
-            if prototype is None:
-                raise AutoMethodRoutingError(
-                    "generic auto routing has no evaluator prototype for "
-                    f"{capability.execution_family}"
-                )
-            keys.extend(prototype.required_assumption_keys)
-            if capability.output_kind == "enterprise_value":
-                needs_ev_adjustment = True
-        keys.append(OWNERSHIP_KEY)
-        if needs_ev_adjustment:
-            keys.append(EV_ADJUSTMENT_KEY)
-        if index == 0:
-            keys.append(DILUTED_SHARES_KEY)
-        result[segment.segment_id] = tuple(dict.fromkeys(keys))
-    return result
+    scenario_keys = tuple(
+        {item.key for item in scenario.assumptions}
+        for scenario in scenarios.scenarios
+    )
+    if not scenario_keys:
+        return ()
+    choices: list[SegmentMethodChoice] = []
+    for segment in plan.segments:
+        feasible = tuple(
+            capability
+            for capability in _segment_candidates(segment, registry)
+            if all(
+                set(_prototype_keys(capability, forecast_years)).issubset(keys)
+                for keys in scenario_keys
+            )
+        )
+        if len(feasible) != 1:
+            return ()
+        selected = feasible[0]
+        choices.append(
+            SegmentMethodChoice(
+                segment.segment_id,
+                selected.archetype,
+                selected.method,
+            )
+        )
+    return tuple(choices)
 
 
 @dataclass(frozen=True)
@@ -156,8 +183,12 @@ class AutoRoutingBridgeAnalyst:
             raise AutoMethodRoutingError(
                 "ModuleRequirementPlan is required before auto-routing Bridge analysis"
             )
-        keys = auto_required_assumption_keys(
+        evidence_metrics = frozenset(
+            item.metric for item in context.ledger.active()
+        )
+        keys = auto_bridge_required_assumption_keys(
             plan,
+            evidence_metrics=evidence_metrics,
             forecast_years=self.forecast_years,
             capability_registry=self.capability_registry,
         )
@@ -273,9 +304,12 @@ def enable_auto_method_routing(
     )
     retained_required: dict[str, tuple[str, ...]] = {}
     for segment_id, metrics in factory.additional_required_evidence.items():
-        retained = tuple(metric for metric in metrics if metric not in placeholder_keys)
+        retained = [metric for metric in metrics if metric not in placeholder_keys]
+        for provider in factory.extensions.additional_collectors:
+            if provider.capability.collector_id == "operator-declared-underwriting":
+                retained.extend(provider.capability.supported_metrics)
         if retained:
-            retained_required[segment_id] = retained
+            retained_required[segment_id] = tuple(dict.fromkeys(retained))
 
     extensions = replace(
         factory.extensions,
