@@ -12,6 +12,7 @@ change must be seen and owned.
 from __future__ import annotations
 
 import json
+import importlib
 from pathlib import Path
 import shutil
 import sys
@@ -145,6 +146,26 @@ def test_the_committed_kisco_run_replays_to_the_attested_expected_value(
     assert reuse_published_report_bundle(
         changed_run, output_dir=tmp_path / "published"
     ) is None
+
+    transport_module = tmp_path / "live_hash_transport.py"
+    transport_module.write_text("def build():\n    return object()\n", encoding="utf-8")
+    monkeypatch.syspath_prepend(str(tmp_path))
+    importlib.invalidate_caches()
+    monkeypatch.setenv("VALUATION_LLM_TRANSPORT", "live_hash_transport:build")
+    transport_hash = run_kr_live._run_input_sha256(run_dir)
+    monkeypatch.setenv("VALUATION_LLM_MODEL", "changed-model")
+    assert run_kr_live._run_input_sha256(run_dir) != transport_hash
+    monkeypatch.setenv("VALUATION_LLM_MODEL", "")
+    monkeypatch.setenv("ANTHROPIC_BASE_URL", "https://proxy.example.test")
+    assert run_kr_live._run_input_sha256(run_dir) != transport_hash
+    monkeypatch.setenv("ANTHROPIC_BASE_URL", "")
+    monkeypatch.setenv("VALUATION_LLM_MAX_TOKENS", "8192")
+    assert run_kr_live._run_input_sha256(run_dir) != transport_hash
+    monkeypatch.setenv("VALUATION_LLM_MAX_TOKENS", "")
+    transport_module.write_text("def build():\n    return None\n", encoding="utf-8")
+    assert run_kr_live._run_input_sha256(run_dir) != transport_hash
+
+    monkeypatch.delenv("VALUATION_LLM_TRANSPORT")
 
     def unexpected_execute(*args, **kwargs):
         raise AssertionError("a verified published run must not execute again")

@@ -46,6 +46,7 @@ from __future__ import annotations
 import argparse
 from decimal import Decimal
 from hashlib import sha256
+import importlib.util
 from io import BytesIO
 import json
 import os
@@ -343,13 +344,39 @@ def _run_input_sha256(run_dir: str | Path) -> str:
                 add(f"reference/{pointer}", candidate)
 
     bind_referenced_files(config)
+    live_transport_binding = os.environ.get("VALUATION_LLM_TRANSPORT", "").strip()
+    live_transport: dict[str, object] | None = None
+    if live_transport_binding:
+        module_name, separator, callable_name = live_transport_binding.partition(":")
+        if not separator or not module_name or not callable_name:
+            raise RunbookError(
+                "VALUATION_LLM_TRANSPORT must be a module:callable binding"
+            )
+        module_spec = importlib.util.find_spec(module_name)
+        module_origin = Path(str(module_spec.origin)).resolve() if (
+            module_spec is not None and module_spec.origin
+        ) else None
+        if module_origin is None or not module_origin.is_file():
+            raise RunbookError(
+                f"live transport module cannot be fingerprinted: {module_name}"
+            )
+        add("live_transport/module", module_origin)
+        # Never bind the credential itself. These are the non-secret settings
+        # the committed Anthropic transport reads and that can change model
+        # proposals for otherwise identical prepared inputs.
+        live_transport = {
+            "binding": live_transport_binding,
+            "model": os.environ.get("VALUATION_LLM_MODEL", "").strip(),
+            "base_url": os.environ.get("ANTHROPIC_BASE_URL", "").strip(),
+            "max_tokens": os.environ.get("VALUATION_LLM_MAX_TOKENS", "").strip(),
+        }
     contract = {
         "schema_version": "kr-live-run-inputs/v1",
         "files": tuple(
             {"path": label, **receipt}
             for label, receipt in sorted(receipts.items())
         ),
-        "live_transport": os.environ.get("VALUATION_LLM_TRANSPORT", "").strip(),
+        "live_transport": live_transport,
     }
     encoded = json.dumps(
         contract, ensure_ascii=False, sort_keys=True, separators=(",", ":")

@@ -308,3 +308,41 @@ def test_market_observation_after_historical_run_cutoff_is_rejected(tmp_path):
     )
     with pytest.raises(GenericValuationPlanError, match="after run cutoff"):
         factory.extensions.market_loader()
+
+
+def test_street_report_after_historical_run_cutoff_is_rejected(tmp_path):
+    from dataclasses import replace
+
+    from valuation_engine.generic_valuation_plan import GenericValuationPlanError
+
+    street = tmp_path / "street.json"
+    street.write_text(
+        json.dumps(
+            {
+                "authorization_basis": "explicit_permission",
+                "reports": [
+                    {
+                        "broker": "Authorized Broker",
+                        "analyst": "Analyst",
+                        "published_date": "2026-08-28",
+                        "target_price": 12000,
+                        "target_price_currency": "KRW",
+                        "valuation_method": "DCF",
+                        "base_year": "2026",
+                        "estimates": [],
+                        "source_ref": "https://example.test/street/report",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    spec = replace(probe_runtime_spec(), street_export_path=street)
+    factory = build_generic_kr_runtime_factory(
+        network=probe_network(),
+        transport=ScriptedTransport({}),
+        spec=spec,
+    )
+
+    with pytest.raises(GenericValuationPlanError, match="after run cutoff"):
+        factory.extensions.street_loader()

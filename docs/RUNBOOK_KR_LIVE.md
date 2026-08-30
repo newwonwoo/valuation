@@ -79,7 +79,8 @@ runs/<종목>-<코드>/
 - **`market.yaml`** (권장): 공개 시세 종가 + as_of + source_ref.
 - **`street.json`** (권장): 인증된 증권사 export. **커버리지가 없으면
   `{"authorization_basis":"explicit_permission","reports":[]}`** — 무커버리지
-  선언이지 생략이 아니다.
+  선언이지 생략이 아니다. 시장가격 기준일과 각 증권사 보고서 발간일은 모두
+  `run.yaml`의 as_of 이하여야 한다.
 - **`risk_pack.yaml`** (DCF·NPV·DDM 등 베타 요구 방법일 때):
   `python scripts/draft_risk_pack.py template`으로 골격을 뽑고, 채운 뒤
   `… check <파일> --ticker <코드>` 로 런타임과 동일 검증을 미리 돌린다.
@@ -98,10 +99,12 @@ runs/<종목>-<코드>/
   `scripts/anthropic_transport.py` — stdlib HTTP만 쓰고 자격증명은
   `ANTHROPIC_API_KEY` 환경변수에서만 읽는다
   (`export VALUATION_LLM_TRANSPORT=anthropic_transport:build`,
-  모델은 `VALUATION_LLM_MODEL`). 러너(`run_kr_live.py`)는 **하이브리드**다:
+  모델은 `VALUATION_LLM_MODEL`, 프록시는 `ANTHROPIC_BASE_URL`, 출력 한도는
+  `VALUATION_LLM_MAX_TOKENS`). 러너(`run_kr_live.py`)는 **하이브리드**다:
   파일이 있는 역할은 항상 파일이 이기고(커밋된 런의 리플레이 불변), 파일이
   없는 역할만 라이브 모델에 위임된다. `generic_kr_cli.py` 경로는 전 좌석이
-  트랜스포트다 — 계약은 동일하다.
+  트랜스포트다 — 계약은 동일하다. 라이브 transport의 비밀키를 제외한 이 설정과
+  모듈 코드도 실행 입력 해시에 묶이므로 바꾸면 기존 번들을 재사용하지 않는다.
 
 ## 5. `run.yaml`
 

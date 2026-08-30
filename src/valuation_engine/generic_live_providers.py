@@ -314,11 +314,34 @@ def build_generic_kr_runtime_factory(
     if spec.street_export_path is not None:
         from .official_market_data import street_loader_from_authorized_export
 
+        declared_street_loader = street_loader_from_authorized_export(
+            spec.street_export_path
+        )
+        run_cutoff = date.fromisoformat(spec.as_of[:10])
+
+        def cutoff_street_loader():
+            # Street remains inaccessible until its post-freeze stage. At that
+            # boundary, reject any report the intrinsic cutoff could not know.
+            reports = declared_street_loader()
+            future_dates = tuple(
+                sorted(
+                    {
+                        report.published_date[:10]
+                        for report in reports
+                        if date.fromisoformat(report.published_date[:10]) > run_cutoff
+                    }
+                )
+            )
+            if future_dates:
+                raise GenericValuationPlanError(
+                    "Street report publication date is after run cutoff "
+                    f"{run_cutoff.isoformat()}: {', '.join(future_dates)}"
+                )
+            return reports
+
         extensions = replace(
             extensions,
-            street_loader=street_loader_from_authorized_export(
-                spec.street_export_path
-            ),
+            street_loader=cutoff_street_loader,
         )
     if spec.calibration_snapshot_loader is not None:
         extensions = replace(
