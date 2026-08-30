@@ -479,6 +479,7 @@ def build_continuous_calibration_artifact(
 
     drivers_payload: dict[str, dict] = {}
     residual_series: dict[str, list[float]] = {}
+    scenario_anchor_paths: dict[str, list[float]] = {}
     for driver_id in driver_ids:
         pairs = _company_transitions(rows, driver_id)
         if len(pairs) < 8:
@@ -502,7 +503,10 @@ def build_continuous_calibration_artifact(
         base_var = max(_std([y for _, y in train_pairs]) ** 2, 1e-12)
         skill_windows: list[float] = []
         inflation_candidates: list[float] = []
-        for split in splits[1:]:
+        oos_case_count = 0
+        for split_label, split in zip(
+            REQUIRED_OOS_SPLIT_ORDER[1:], splits[1:], strict=True
+        ):
             cases = _oos_forecast_cases(
                 train_rows,
                 split,
@@ -510,8 +514,11 @@ def build_continuous_calibration_artifact(
                 period_order,
             )
             if not cases:
-                skill_windows.append(0.5)
-                continue
+                raise CalibrationFactoryError(
+                    f"driver {driver_id} {split_label} window has no OOS "
+                    "forecast cases with a frozen training origin"
+                )
+            oos_case_count += len(cases)
             errors = []
             for origin, outcome, steps in cases:
                 prediction = origin
@@ -544,6 +551,12 @@ def build_continuous_calibration_artifact(
         for _ in range(path_length):
             level = intercept + slope * level
             mean_path.append(level)
+        anchor_mean_path: list[float] = []
+        anchor_level = cohort_latest_mean
+        for _ in range(path_length):
+            anchor_level = intercept + slope * anchor_level
+            anchor_mean_path.append(anchor_level)
+        scenario_anchor_paths[driver_id] = anchor_mean_path
         stationary_std = resid_std / math.sqrt(max(1.0 - slope**2, 0.05))
         scale_path = [
             min(
@@ -602,7 +615,7 @@ def build_continuous_calibration_artifact(
                 "skill_windows": skill_windows,
                 "likelihood_weight": likelihood_weight,
                 "uncertainty_inflation": uncertainty_inflation,
-                "resolved_cases": len(pairs),
+                "resolved_cases": oos_case_count,
                 "company_count": len(
                     {row.company_id for row in rows}
                 ),
@@ -643,7 +656,7 @@ def build_continuous_calibration_artifact(
         scenario_id: {
             "driver_paths": {
                 driver_id: [
-                    drivers_payload[driver_id]["path"]["mean"][k]
+                    scenario_anchor_paths[driver_id][k]
                     + offsets[scenario_id]
                     * drivers_payload[driver_id]["path"]["scale"][k]
                     for k in range(path_length)
@@ -666,6 +679,7 @@ def build_continuous_calibration_artifact(
         "oos_window_policy": "whole_period_publication_fixed_origin_v2",
         "oos_windows": oos_window_receipts,
         "forecast_seed": "target_current_conditioning_ar1_v2",
+        "scenario_anchor_policy": "cohort_reference_path_independent_of_target_v2",
         "current_conditioning": {
             **{k: v for k, v in conditioning.values},
             "source_hash": conditioning.source_hash,

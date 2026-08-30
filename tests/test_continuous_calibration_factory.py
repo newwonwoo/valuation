@@ -208,7 +208,7 @@ def test_target_conditioning_changes_paths_and_calibrated_probabilities(tmp_path
     baseline = _conditioning()
     changed = replace(
         baseline,
-        values=(("operating_margin", 0.18), ("revenue_growth", 0.25)),
+        values=(("operating_margin", 0.051), ("revenue_growth", -0.029)),
         source_hash="conditioning-hash-2",
     )
     left = _build(conditioning=baseline)
@@ -216,7 +216,7 @@ def test_target_conditioning_changes_paths_and_calibrated_probabilities(tmp_path
     assert left.artifact["drivers"]["revenue_growth"]["path"]["mean"] != (
         right.artifact["drivers"]["revenue_growth"]["path"]["mean"]
     )
-    assert left.artifact["scenarios"] != right.artifact["scenarios"]
+    assert left.artifact["scenarios"] == right.artifact["scenarios"]
 
     left_snapshot = _snapshot(left, tmp_path / "left", conditioning=baseline)
     right_snapshot = _snapshot(right, tmp_path / "right", conditioning=changed)
@@ -256,6 +256,23 @@ def test_each_oos_window_keeps_the_same_frozen_training_cutoff():
         for window in windows[1:]
     )
     assert all(len(window["period_ends"]) == 1 for window in windows[1:])
+
+
+def test_an_oos_window_without_frozen_origin_cases_is_refused():
+    rows = [
+        row
+        for row in _cohort(companies=7)
+        if (
+            int(row.period_end[:4]) <= 2022
+            and row.company_id in {f"P{index:02d}" for index in range(5)}
+        )
+        or (
+            int(row.period_end[:4]) >= 2023
+            and row.company_id in {"P05", "P06"}
+        )
+    ]
+    with pytest.raises(CalibrationFactoryError, match="has no OOS forecast cases"):
+        _build(rows)
 
 
 @pytest.mark.parametrize(

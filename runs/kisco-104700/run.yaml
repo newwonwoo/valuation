@@ -37,7 +37,7 @@ calibration:
   outer_draws: 300
   inner_draws: 200
   constants:
-    expected_artifact_sha256: 58a2c075dcad69fd787b8970e23f31969aca7786d21db07b24f4b59e79e7f7f3
+    expected_artifact_sha256: 75820f966229ca00d879b50ccda708bf18d63b264dd8071ff8397af2c2ef3714
     expected_provenance_artifact_sha256: 127a471fc5dffc1ae234b76dca5b99ae02a8dc9d7f4494c747303484146024ca
     expected_dataset_sha256: 7ee98138a08322eaaef71e3caa9019c522983a3ef41afe118a6e220c247d0195
     expected_provenance_hash: 3ac5a9394afafdd5239ac0b3eeab946190e79c3fbbf5ab488313c541094feaeb
