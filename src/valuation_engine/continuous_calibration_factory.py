@@ -54,6 +54,40 @@ class CalibrationFactoryError(ValueError):
     """Raised when a cohort dataset cannot honestly support an artifact."""
 
 
+_CANONICAL_FLOAT_SIGNIFICANT_DIGITS = 15
+
+
+def _canonicalize_artifact_numbers(value: object) -> object:
+    """Seal computed floats at a cross-runtime-stable JSON precision.
+
+    CPython may improve ordinary floating-point reductions between supported
+    versions.  The factory therefore combines ``math.fsum`` reductions with a
+    final significant-digit boundary before hashing the computed artifact.
+    Source rows are intentionally excluded from this normalization so their
+    dataset hash continues to attest to the exact submitted observations.
+    """
+    if isinstance(value, bool) or value is None:
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value):
+            raise CalibrationFactoryError(
+                "calibration artifact contains a non-finite computed value"
+            )
+        if value == 0.0:
+            return 0.0
+        return float(format(value, f".{_CANONICAL_FLOAT_SIGNIFICANT_DIGITS}g"))
+    if isinstance(value, list):
+        return [_canonicalize_artifact_numbers(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_canonicalize_artifact_numbers(item) for item in value)
+    if isinstance(value, dict):
+        return {
+            key: _canonicalize_artifact_numbers(item)
+            for key, item in value.items()
+        }
+    return value
+
+
 @dataclass(frozen=True)
 class CohortObservation:
     """One company-period reading of the modeled drivers, with provenance."""
@@ -130,14 +164,16 @@ class FactoryResult:
 
 
 def _mean(values: Sequence[float]) -> float:
-    return sum(values) / len(values)
+    return math.fsum(values) / len(values)
 
 
 def _std(values: Sequence[float]) -> float:
     if len(values) < 2:
         return 0.0
     center = _mean(values)
-    return math.sqrt(sum((v - center) ** 2 for v in values) / (len(values) - 1))
+    return math.sqrt(
+        math.fsum((v - center) ** 2 for v in values) / (len(values) - 1)
+    )
 
 
 def _clamp(value: float, low: float, high: float) -> float:
@@ -164,9 +200,9 @@ def _ar1(pairs: Sequence[tuple[float, float]]) -> tuple[float, float, float]:
     xs = [x for x, _ in pairs]
     ys = [y for _, y in pairs]
     x_mean, y_mean = _mean(xs), _mean(ys)
-    denom = sum((x - x_mean) ** 2 for x in xs)
+    denom = math.fsum((x - x_mean) ** 2 for x in xs)
     slope = (
-        sum((x - x_mean) * (y - y_mean) for x, y in pairs) / denom
+        math.fsum((x - x_mean) * (y - y_mean) for x, y in pairs) / denom
         if denom > 0
         else 0.0
     )
@@ -203,7 +239,9 @@ def _shrink_to_positive_definite(
         lower = [[0.0] * n for _ in range(n)]
         for i in range(n):
             for j in range(i + 1):
-                total = sum(lower[i][k] * lower[j][k] for k in range(j))
+                total = math.fsum(
+                    lower[i][k] * lower[j][k] for k in range(j)
+                )
                 if i == j:
                     diag = m[i][i] - total
                     if diag <= 1e-10:
@@ -358,7 +396,7 @@ def build_continuous_calibration_artifact(
         scale_path = [
             min(
                 resid_std
-                * math.sqrt(sum(slope ** (2 * i) for i in range(k + 1))),
+                * math.sqrt(math.fsum(slope ** (2 * i) for i in range(k + 1))),
                 stationary_std,
             )
             * uncertainty_inflation
@@ -378,7 +416,7 @@ def build_continuous_calibration_artifact(
         nig_strength = float(n)
         nig_shape = 1.0 + n / 2.0
         nig_scale = max(
-            sum((y - nig_mean) ** 2 for y in outcomes) / 2.0, 1e-9
+            math.fsum((y - nig_mean) ** 2 for y in outcomes) / 2.0, 1e-9
         )
 
         recent = [dict(row.values)[driver_id] for row in splits[-1]]
@@ -466,7 +504,7 @@ def build_continuous_calibration_artifact(
         for scenario_id in scenario_ids
     }
 
-    artifact: dict = {
+    artifact = _canonicalize_artifact_numbers({
         "version": ARTIFACT_FORMAT_VERSION,
         "source_dataset_sha256": dataset_sha256,
         "provenance_hash": provenance_hash,
@@ -487,7 +525,8 @@ def build_continuous_calibration_artifact(
             "complete_case_count": common,
         },
         "scenarios": scenarios_payload,
-    }
+    })
+    assert isinstance(artifact, dict)
     artifact["artifact_sha256"] = stable_hash(
         {k: v for k, v in artifact.items() if k != "artifact_sha256"}
     )

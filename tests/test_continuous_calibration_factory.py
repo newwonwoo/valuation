@@ -18,6 +18,7 @@ import random
 import pytest
 
 from valuation_engine.continuous_calibration_factory import (
+    _CANONICAL_FLOAT_SIGNIFICANT_DIGITS,
     CalibrationFactoryError,
     CohortObservation,
     ConditioningDeclaration,
@@ -198,6 +199,24 @@ def test_the_artifact_is_deterministic_for_the_same_rows():
     second = _build()
     assert first.constants == second.constants
     assert first.artifact["artifact_sha256"] == second.artifact["artifact_sha256"]
+
+
+def test_computed_artifact_floats_are_canonical_before_hashing():
+    result = _build()
+
+    def assert_canonical(value):
+        if isinstance(value, float):
+            assert value == float(
+                format(value, f".{_CANONICAL_FLOAT_SIGNIFICANT_DIGITS}g")
+            )
+        elif isinstance(value, dict):
+            for item in value.values():
+                assert_canonical(item)
+        elif isinstance(value, (list, tuple)):
+            for item in value:
+                assert_canonical(item)
+
+    assert_canonical(result.artifact)
 
 
 # ------------------------------------------- the REAL cohort, pinned in-repo
