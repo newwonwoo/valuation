@@ -211,3 +211,32 @@ def test_the_probe_module_reports_completion():
     assert "WACC_VALIDATION" in outcome.route_skipped
     assert outcome.blocking_stage is None
     assert outcome.blocking_reason == ""
+
+
+def test_extra_required_evidence_routes_scenario_qualified_inputs():
+    """Multi-scenario runs need scenario-qualified declarations
+    (down_normalized_ebitda, …) in the ledger, and the underwriting collector
+    only serves REQUIRED metrics — so the spec's extra_required_evidence must
+    join the collection requirements, keeping coverage fail-closed for them."""
+    from dataclasses import replace
+
+    from valuation_engine.cold_start_probe import probe_network, probe_runtime_spec
+    from valuation_engine.generic_live_providers import (
+        build_generic_kr_runtime_factory,
+    )
+    from valuation_engine.llm_transport import ScriptedTransport
+
+    spec = replace(
+        probe_runtime_spec(),
+        extra_required_evidence=("down_normalized_ebitda", "bull_normalized_multiple"),
+    )
+    factory = build_generic_kr_runtime_factory(
+        network=probe_network(),
+        transport=ScriptedTransport({}),
+        spec=spec,
+    )
+    required = factory.additional_required_evidence[spec.filing.segment_id]
+    assert "down_normalized_ebitda" in required
+    assert "bull_normalized_multiple" in required
+    # The method's own assumption keys are still there, ahead of the extras.
+    assert "normalized_ebitda" in required

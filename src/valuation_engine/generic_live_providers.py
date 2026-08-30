@@ -128,6 +128,12 @@ class GenericKRRuntimeSpec:
     #: whose execution family needs a Beta/WACC; without it those stages stay
     #: honestly NOT_IMPLEMENTED and only the beta-free families can complete.
     declared_risk_path: str | Path | None = None
+    #: Extra evidence metrics this run requires beyond the method's assumption
+    #: keys — the door multi-scenario runs use for scenario-qualified inputs
+    #: (down_normalized_ebitda, bull_normalized_multiple, …): declaring them
+    #: here routes them through the collection plan so the underwriting
+    #: collector may serve them and coverage still fails closed when absent.
+    extra_required_evidence: tuple[str, ...] = ()
     market_config_path: str | Path | None = None
     street_export_path: str | Path | None = None
     market_currency: str | None = None
@@ -278,10 +284,12 @@ def build_generic_kr_runtime_factory(
     # required evidence for the core segment. A declared risk pack additionally
     # requires its four peer-selection judgments in the ledger, so the Beta
     # stage's evidence-ID validation has real records to bind to.
-    required_evidence_keys = keys
+    required_evidence_keys = tuple(
+        dict.fromkeys((*keys, *spec.extra_required_evidence))
+    )
     if spec.declared_risk_path is not None:
         required_evidence_keys = tuple(
-            dict.fromkeys((*keys, *BETA_SELECTION_METRICS))
+            dict.fromkeys((*required_evidence_keys, *BETA_SELECTION_METRICS))
         )
     additional_required = {spec.filing.segment_id: required_evidence_keys}
     return KRLiveRuntimeFactory(
