@@ -7,10 +7,12 @@ from pathlib import Path
 import sys
 from typing import Mapping, Sequence
 
+from .analysis_intent import canonicalize_analysis_command
 from .audit import audit_model, gate_report
 from .cli_runtime import (
     LiveCLIError,
     load_live_runtime_config_factory,
+    parse_analysis_command,
     render_controlled_run,
     render_major_gate_summary,
     resolve_provider_factory_spec,
@@ -31,7 +33,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "input",
-        help="company YAML config or '분석시작 <회사>'",
+        help="company YAML config or PRISM stock-analysis request",
     )
     parser.add_argument(
         "--state-root",
@@ -99,6 +101,9 @@ def _run_live_analysis(
             "LEGACY_CONFIG_REQUIRES_FLAG",
             "--config는 --legacy-oci와 함께 사용하는 회귀 전용 옵션입니다",
         )
+    # Validate the canonical command before provider resolution so an intent
+    # without a company fails as COMPANY_REQUIRED rather than as a provider error.
+    parse_analysis_command(args.input)
     spec = resolve_provider_factory_spec(
         args.provider_factory,
         environ=environ,
@@ -182,7 +187,9 @@ def main(
     args = _build_parser().parse_args(argv)
     environment = os.environ if environ is None else environ
     try:
-        if args.input.strip().startswith("분석시작"):
+        canonical_command = canonicalize_analysis_command(args.input)
+        if canonical_command is not None:
+            args.input = canonical_command
             if args.legacy_oci:
                 return _run_legacy_analysis(args)
             return _run_live_analysis(args, environ=environment)
