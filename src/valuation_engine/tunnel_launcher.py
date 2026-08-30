@@ -60,7 +60,17 @@ def _alias(env: Mapping[str, str]) -> str:
     return value
 
 
+def _supports_private_posix_permissions() -> bool:
+    """Whether this host can enforce the directory-mode contract used below."""
+    return os.name == "posix"
+
+
 def _private_persistent_state_root(env: Mapping[str, str]) -> Path:
+    if not _supports_private_posix_permissions():
+        raise PrismTunnelError(
+            "Secure MCP Tunnel state permission enforcement currently requires a "
+            "POSIX host; use WSL2, Linux, or macOS rather than native Windows"
+        )
     raw = env.get(_STATE_ROOT_ENV, "").strip()
     if not raw:
         raise PrismTunnelError(
