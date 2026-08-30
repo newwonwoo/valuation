@@ -69,6 +69,13 @@ def test_prepare_runtime_environment_requires_separate_tunnel_key(tmp_path):
         launcher._prepare_runtime_environment(env)
 
 
+def test_prepare_runtime_environment_rejects_non_posix_permission_host(monkeypatch, tmp_path):
+    monkeypatch.setattr(launcher, "_supports_private_posix_permissions", lambda: False)
+    env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state")}
+    with pytest.raises(launcher.PrismTunnelError, match="POSIX host"):
+        launcher._prepare_runtime_environment(env)
+
+
 def test_prepare_runtime_environment_requires_explicit_state_root():
     with pytest.raises(launcher.PrismTunnelError, match="VALUATION_MCP_STATE_ROOT"):
         launcher._prepare_runtime_environment(_base_env())
