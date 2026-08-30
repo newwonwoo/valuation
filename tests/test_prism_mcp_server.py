@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
+import time
 
 import pytest
 from mcp.server.mcpserver.exceptions import ToolError
@@ -95,7 +98,7 @@ def test_prism_analyze_dispatches_only_to_strict_entrypoint(monkeypatch, tmp_pat
     assert result["status"] == "COMPLETED"
     assert result["company"] == "고려아연"
     assert result["canonical_command"] == "분석시작 고려아연"
-    assert result["execution_mode"] == ExecutionMode.LIVE_PRIMARY.value
+    assert result["execution_mode"] == ExecutionMode.LIVE_PRIMARY.name
     assert result["blocking_codes"] == []
     assert "PRISM canonical report" in result["report"]
     assert seen["command"] == "분석시작 고려아연"
@@ -126,7 +129,45 @@ def test_mcp_call_returns_structured_prism_result(monkeypatch):
     assert result.structured_content["status"] == "COMPLETED"
     assert result.structured_content["company"] == "010130"
     assert result.structured_content["canonical_command"] == "분석시작 010130"
+    assert result.structured_content["execution_mode"] == "LIVE_PRIMARY"
     assert result.structured_content["run_id"] == "MCP-STRUCTURED"
+
+
+def test_same_state_root_runs_are_serialized(monkeypatch, tmp_path):
+    state_root = tmp_path / "state"
+    monkeypatch.setenv("VALUATION_MCP_STATE_ROOT", str(state_root))
+    monkeypatch.setattr(
+        mcp_server,
+        "load_live_runtime_config_factory",
+        lambda spec: object(),
+    )
+
+    activity_guard = Lock()
+    active = 0
+    max_active = 0
+    counter = 0
+
+    def fake_execute(command, **kwargs):
+        nonlocal active, max_active, counter
+        with activity_guard:
+            active += 1
+            max_active = max(max_active, active)
+            counter += 1
+            run_id = f"SERIAL-{counter}"
+        time.sleep(0.05)
+        with activity_guard:
+            active -= 1
+        return _completed_result(run_id)
+
+    monkeypatch.setattr(mcp_server, "execute_live_analysis", fake_execute)
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(
+            pool.map(mcp_server.run_prism_mcp, ("고려아연", "삼성전자"))
+        )
+
+    assert {item["run_id"] for item in results} == {"SERIAL-1", "SERIAL-2"}
+    assert max_active == 1
 
 
 def test_blocked_mcp_result_exposes_only_sanitized_codes(monkeypatch):
