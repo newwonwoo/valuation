@@ -9,6 +9,9 @@
   (normalized_multiple), 캘리브레이션 포함(기대값까지).
 - `runs/shinhanalpha-293940/` — 신한알파리츠: **3월 결산** REIT, **자본가치
   산출 방법**(nav), 캘리브레이션 없음(기대값 정직한 미산출).
+- `runs/daehansteel-084010/` — 대한제강: **리스크팩 요구 방법**
+  (midcycle_price_volume_dcf) — L1~L4 피어 회귀베타는 커밋된 공개 시세에서
+  `scripts/compute_peer_betas.py`로 재현, 코호트는 타깃 제외 재적합.
 
 **실행자가 LLM 세션이라면**: `.claude/skills/kr-live-run`이 이 절차의 요약을
 자동 로드한다. 이 문서는 그 스킬의 원본이다.

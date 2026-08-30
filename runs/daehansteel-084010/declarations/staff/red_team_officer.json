@@ -1,0 +1,22 @@
+{
+ "counter_thesis": "Domestic rebar demand is structurally lower, not cyclically: the FY2025 operating loss and sub-50% YK utilization may be the new normal, the YK acquisition adds fixed cost into a shrinking market, and the declared mid-cycle FCFF path (42bn by year 5) may never be reached; the 16% treasury stake and net cash do not return to shareholders on any declared schedule.",
+ "issues": [
+  {
+   "id": "R:DAEHAN:STRUCTURAL",
+   "blocking": false,
+   "description": "the declared Base path assumes spread persistence that only one filed half-year (H1-2026) evidences; FY2025 filed spread (793-407) still produced an operating loss",
+   "requested_evidence": [
+    "2H26 realized spread from the next quarterly filing"
+   ]
+  },
+  {
+   "id": "R:DAEHAN:NCI",
+   "blocking": false,
+   "description": "attributing consolidated FCFF at the balance-sheet equity ratio 0.8603 simplifies YK minority economics; YK's own losses may not be proportional",
+   "requested_evidence": [
+    "YK Steel separate-entity operating results"
+   ]
+  }
+ ],
+ "requested_evidence": []
+}

@@ -45,6 +45,33 @@ def test_the_committed_shinhanalpha_run_replays_to_the_attested_nav_envelope():
         assert line in report, line
 
 
+def test_the_committed_daehan_run_replays_to_the_attested_dcf_expected_value():
+    """The third committed run opens the declared-risk-pack chain on a real
+    company: 대한제강 (084010) on commodity_price_taker/
+    midcycle_price_volume_dcf. The pack's L1→L4 peer regression betas are
+    reproducible from the committed fchart series (scripts/
+    compute_peer_betas.py), the WACC comes from the declared pack, and the
+    expected value binds the committed KR steel cohort refitted without the
+    target (83 rows / 11 companies)."""
+    reached, stop_stage, stop_reason, result = execute_run(
+        ROOT / "runs" / "daehansteel-084010"
+    )
+    assert stop_stage is None, stop_reason
+    assert len(reached) == len(result.stage_traces)
+    assert result.data["probability_weighting_allowed"] is True
+
+    report = result.data["final_report"]
+    for line in (
+        "**하방 시나리오:** 내재가치 주당 8,184원",
+        "**기준 시나리오:** 내재가치 주당 26,292원",
+        "**상방 시나리오:** 내재가치 주당 43,975원",
+        "**확률가중 기대값:** 주당 26,712원",
+        "**증권사 목표가:** 확보되지 않았습니다.",
+        "**현재가:** 8,420원 (2026-08-28)",
+    ):
+        assert line in report, line
+
+
 def test_the_committed_kisco_run_replays_to_the_attested_expected_value():
     reached, stop_stage, stop_reason, result = execute_run(ROOT / "runs" / "kisco-104700")
     assert stop_stage is None, stop_reason

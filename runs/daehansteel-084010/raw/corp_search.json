@@ -1,0 +1,17 @@
+{
+  "status": "000",
+  "message": "'대한제강' 검색 결과: 2개 기업 발견",
+  "companies": [
+    {
+      "corp_code": "00113225",
+      "corp_name": "대한제강",
+      "stock_code": "084010"
+    },
+    {
+      "corp_code": "01623534",
+      "corp_name": "대한제강판매",
+      "stock_code": ""
+    }
+  ],
+  "usage_tip": "위 corp_code를 사용하여 get_company_info, get_financial_account 등을 호출하세요."
+}

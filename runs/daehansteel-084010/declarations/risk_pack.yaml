@@ -1,0 +1,195 @@
+target_id: KR:DART:00113225
+as_of: '2026-08-29'
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003201
+cash_flow_currency: KRW
+risk_free_rate:
+  time: '20260828'
+  value: 4.274
+  unit: 연%
+  name: 국고채 10년
+  source_ref: https://m.stock.naver.com/front-api/marketIndex/prices?category=bond&reutersCode=KR10YT%3DRR&page=1
+country_risk:
+  country: Korea
+  as_of: '2026-01-05'
+  mature_market_erp: 0.0423
+  country_risk_premium: 0.0064
+  total_equity_risk_premium: 0.0487
+  adjusted_default_spread: 0.0042
+  corporate_tax_rate: 0.264
+  rating: Aa2
+  source_ref: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctryprem.html
+marginal_debt:
+  series:
+    time: '20260828'
+    value: 4.274
+    unit: 연%
+    name: 국고채 10년 — 발행 공모사채 호가 부재로 한계부채비용 하한 대용 선언
+    source_ref: https://m.stock.naver.com/front-api/marketIndex/prices?category=bond&reutersCode=KR10YT%3DRR&page=1
+  credit_rating: 무등급(공모사채 미발행)
+  maturity: 10Y
+  rating_source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003201
+beta_levels:
+  L1_BROAD_SECTOR:
+    selection_rationale: 국내 대형 금속·소재 상장 3사(POSCO홀딩스·고려아연·풍산) — 금속 가격 사이클과 자본집약 구조를
+      공유하는 광의 섹터 사전확률. 베타는 2025-07-22~2026-08-28 일간 로그수익률의 코스피 OLS(scripts/compute_peer_betas.py로
+      재현).
+    risk_driver_features:
+    - metal price cyclicality
+    - capital intensity
+    peers:
+    - peer_id: 005490
+      beta:
+        benchmark: 코스피
+        beta: 0.5388
+        observations: 269
+        start_date: '2025-07-22'
+        end_date: '2026-08-28'
+      beta_standard_error: 0.0492
+      capital:
+        debt: 28492.0
+        equity_market_value: 26744.0
+        tax_rate: 0.264
+        as_of: '2026-08-28'
+        source_ref: https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00155319&bsns_year=2025&reprt_code=11011&fs_div=CFS
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=005490&timeframe=day&count=270&requestType=0
+    - peer_id: '010130'
+      beta:
+        benchmark: 코스피
+        beta: 0.6372
+        observations: 269
+        start_date: '2025-07-22'
+        end_date: '2026-08-28'
+      beta_standard_error: 0.0818
+      capital:
+        debt: 5805.0
+        equity_market_value: 28700.3
+        tax_rate: 0.264
+        as_of: '2026-08-28'
+        source_ref: https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2025&reprt_code=11011&fs_div=CFS
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=010130&timeframe=day&count=270&requestType=0
+    - peer_id: '103140'
+      beta:
+        benchmark: 코스피
+        beta: 0.5538
+        observations: 269
+        start_date: '2025-07-22'
+        end_date: '2026-08-28'
+      beta_standard_error: 0.0648
+      capital:
+        debt: 956.9
+        equity_market_value: 2421.3
+        tax_rate: 0.264
+        as_of: '2026-08-28'
+        source_ref: https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00684714&bsns_year=2025&reprt_code=11011&fs_div=CFS
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=103140&timeframe=day&count=270&requestType=0
+  L2_INDUSTRY:
+    selection_rationale: 국내 상장 철강 3사(현대제철·KG스틸·세아제강) — 철강 수급·원료 스프레드에 동일 노출되는 판재/강관
+      포함 산업 동종군.
+    risk_driver_features:
+    - steel demand
+    - raw material spread
+    peers:
+    - peer_id: '004020'
+      beta:
+        benchmark: 코스피
+        beta: 0.6181
+        observations: 269
+        start_date: '2025-07-22'
+        end_date: '2026-08-28'
+      beta_standard_error: 0.0612
+      capital:
+        debt: 9261.9
+        equity_market_value: 4136.8
+        tax_rate: 0.264
+        as_of: '2026-08-28'
+        source_ref: https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00145880&bsns_year=2025&reprt_code=11011&fs_div=CFS
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=004020&timeframe=day&count=270&requestType=0
+    - peer_id: 016380
+      beta:
+        benchmark: 코스피
+        beta: 0.2595
+        observations: 269
+        start_date: '2025-07-22'
+        end_date: '2026-08-28'
+      beta_standard_error: 0.0432
+      capital:
+        debt: 603.6
+        equity_market_value: 562.1
+        tax_rate: 0.264
+        as_of: '2026-08-28'
+        source_ref: https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00115676&bsns_year=2025&reprt_code=11011&fs_div=CFS
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=016380&timeframe=day&count=270&requestType=0
+    - peer_id: '306200'
+      beta:
+        benchmark: 코스피
+        beta: 0.2296
+        observations: 269
+        start_date: '2025-07-22'
+        end_date: '2026-08-28'
+      beta_standard_error: 0.0487
+      capital:
+        debt: 442.7
+        equity_market_value: 395.1
+        tax_rate: 0.264
+        as_of: '2026-08-28'
+        source_ref: https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=01325979&bsns_year=2025&reprt_code=11011&fs_div=CFS
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=306200&timeframe=day&count=270&requestType=0
+  L3_RISK_DRIVER_SUBINDUSTRY:
+    selection_rationale: 동국제강 — 봉형강(철근·형강) 비중이 지배적인 상장 대형사로, 철스크랩-철근 스프레드와 국내 건설착공
+      동인을 타깃과 공유하는 하위군.
+    risk_driver_features:
+    - rebar-scrap spread
+    - domestic construction starts
+    peers:
+    - peer_id: '460860'
+      beta:
+        benchmark: 코스피
+        beta: 0.4395
+        observations: 269
+        start_date: '2025-07-22'
+        end_date: '2026-08-28'
+      beta_standard_error: 0.0575
+      capital:
+        debt: 1643.3
+        equity_market_value: 514.9
+        tax_rate: 0.264
+        as_of: '2026-08-28'
+        source_ref: https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=01765265&bsns_year=2025&reprt_code=11011&fs_div=OFS
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=460860&timeframe=day&count=270&requestType=0
+  L4_ECONOMIC_TWINS:
+    selection_rationale: 한국철강·한국특강 — EAF 철근 압연 단일 사업, 전기로 원가구조·국내 건설수요·스크랩 조달까지 타깃(녹산·평택
+      EAF 철근)과 일치하는 경제적 쌍둥이.
+    risk_driver_features:
+    - EAF cost structure
+    - single-product rebar exposure
+    peers:
+    - peer_id: '104700'
+      beta:
+        benchmark: 코스피
+        beta: 0.0949
+        observations: 269
+        start_date: '2025-07-22'
+        end_date: '2026-08-28'
+      beta_standard_error: 0.0351
+      capital:
+        debt: 0.0
+        equity_market_value: 368.9
+        tax_rate: 0.264
+        as_of: '2026-08-28'
+        source_ref: https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00687711&bsns_year=2025&reprt_code=11011&fs_div=OFS
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=104700&timeframe=day&count=270&requestType=0
+    - peer_id: 007280
+      beta:
+        benchmark: 코스피
+        beta: 0.1472
+        observations: 269
+        start_date: '2025-07-22'
+        end_date: '2026-08-28'
+      beta_standard_error: 0.0478
+      capital:
+        debt: 253.5
+        equity_market_value: 66.2
+        tax_rate: 0.264
+        as_of: '2026-08-28'
+        source_ref: https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00124090&bsns_year=2025&reprt_code=11011&fs_div=OFS
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=007280&timeframe=day&count=270&requestType=0
