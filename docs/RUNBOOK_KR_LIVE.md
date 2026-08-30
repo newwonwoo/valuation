@@ -1,10 +1,14 @@
 # RUNBOOK — 한국 상장사 라이브 밸류에이션
 
 이 문서는 절차서다. 엔진 설계는 다른 문서들이 설명한다; 여기는 **"종목 X를
-지금 돌리려면 정확히 무엇을 하는가"** 만 다룬다. 이 절차 전체가 한국철강
-(104700)으로 한 번 실행되어 리포에 박제되어 있고
-(`runs/kisco-104700/`, 회귀: `tests/test_kr_live_runbook.py`), 아래 모든
-단계는 그 실행에서 실제로 밟은 것이다.
+지금 돌리려면 정확히 무엇을 하는가"** 만 다룬다. 이 절차 전체가 두 번 실행되어
+리포에 박제되어 있고 (회귀: `tests/test_kr_live_runbook.py`), 아래 모든 단계는
+그 실행에서 실제로 밟은 것이다:
+
+- `runs/kisco-104700/` — 한국철강: 12월 결산, EV 산출 방법
+  (normalized_multiple), 캘리브레이션 포함(기대값까지).
+- `runs/shinhanalpha-293940/` — 신한알파리츠: **3월 결산** REIT, **자본가치
+  산출 방법**(nav), 캘리브레이션 없음(기대값 정직한 미산출).
 
 **실행자가 LLM 세션이라면**: `.claude/skills/kr-live-run`이 이 절차의 요약을
 자동 로드한다. 이 문서는 그 스킬의 원본이다.
@@ -37,6 +41,7 @@ runs/<종목>-<코드>/
 | `company.json` | get_company_info | 기업개황 raw (induty_code가 KSIC 라우팅을 결정) |
 | `list.json` | search_disclosures | 공시목록 raw — **최신 정기보고서**(사업/반기/분기)가 lookback 540일 안에 있어야 한다 |
 | `fnltt_<연도>_<OFS\|CFS>.json` | get_full_financial_statement | 전체 재무제표 raw (`account_id`가 있는 형태). 연결 없는 회사는 OFS |
+| | | **12월 결산이 아니면** (`company.json`의 acc_mt): business_year는 회계연도가 **끝나는** 해다 (2026-03 결산 사업보고서 → bsns_year "2026"). 응답의 `rcept_no`가 채택한 정기보고서와 일치하는지 반드시 대조 — 다르면 전기 보고서를 받은 것이다 |
 | `filing_<rcept_no>/` | DART 공개 뷰어 | 최신 정기보고서의 "사업의 내용" 섹션들 (§2.1) |
 
 ### 2.1 원문 섹션 뜨는 법 (키리스)
@@ -55,6 +60,9 @@ runs/<종목>-<코드>/
 - **`underwriting.yaml`** (필수): 방법이 요구하는 가정 키 전부. 키 목록은
   엔진에게 물어라 —
   `required_assumption_keys(method_choices=…, forecast_years=…)`.
+  자본가치 산출 방법(nav·ddm·ffo_multiple·pb_roe 등)은 `ev_adjustment`가
+  키 목록에 없다 — EV→자본 브릿지가 없는 방법에 그 선언을 만들지 마라
+  (브릿지 제안이 존재하지 않는 evidence_id를 인용하게 된다).
   값·단위·**20자 이상의 rationale**(가능한 한 공시 수치 인용) 필수.
   다중 시나리오면 사이클 민감 키의 시나리오 한정 변형
   (`down_normalized_ebitda` 등)도 여기 선언하고 §5의

@@ -20,6 +20,31 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from run_kr_live import execute_run  # noqa: E402
 
 
+def test_the_committed_shinhanalpha_run_replays_to_the_attested_nav_envelope():
+    """The second committed run crosses industry, fiscal calendar and output
+    kind at once: a March-FYE K-REIT (신한알파리츠, 293940) on asset_yield_nav/
+    nav — an equity-output method, so the plan binds no EV-to-equity
+    adjustment — with no calibration block, so the expected value stays
+    honestly unproduced while the scenario envelope completes 33 stages."""
+    reached, stop_stage, stop_reason, result = execute_run(
+        ROOT / "runs" / "shinhanalpha-293940"
+    )
+    assert stop_stage is None, stop_reason
+    assert len(reached) == len(result.stage_traces)
+    assert not result.data.get("probability_weighting_allowed")
+
+    report = result.data["final_report"]
+    for line in (
+        "**하방 시나리오:** 내재가치 주당 4,993원",
+        "**기준 시나리오:** 내재가치 주당 9,986원",
+        "**상방 시나리오:** 내재가치 주당 11,167원",
+        "**확률가중 기대값:** 미산출",
+        "**증권사 목표가:** 확보되지 않았습니다.",
+        "**현재가:** 5,510원 (2026-08-28)",
+    ):
+        assert line in report, line
+
+
 def test_the_committed_kisco_run_replays_to_the_attested_expected_value():
     reached, stop_stage, stop_reason, result = execute_run(ROOT / "runs" / "kisco-104700")
     assert stop_stage is None, stop_reason

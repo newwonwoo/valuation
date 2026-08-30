@@ -1,0 +1,110 @@
+
+target_id: KR:DART:01276594
+as_of: "2026-08-29"
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260528000669
+declarations:
+  gross_asset_value:
+    value: 3933.3
+    unit: KRW_billion
+    rationale: >-
+      FY16 (2026-03-31) consolidated total assets 3,131,675,302,293 KRW plus
+      the appraisal uplift on investment property: the annual report's fair
+      value note (Level 3, 11 buildings) totals 3,794,500m KRW against a
+      consolidated investment-property carrying amount of 2,992,851,849k KRW,
+      an increment of +801.6bn. Assets absent from the appraisal table
+      (용산 아스테리움 지분 등) are held at book, i.e. their increment is
+      taken as zero — a conservative treatment.
+  down_gross_asset_value:
+    value: 3131.7
+    unit: KRW_billion
+    rationale: >-
+      cap-rate expansion scenario - the appraisal increment (+801.6bn over
+      carrying value) is written off entirely and gross assets revert to the
+      filed consolidated balance-sheet total 3,131,675,302,293 KRW; carrying
+      value acts as the floor.
+  bull_gross_asset_value:
+    value: 4123.0
+    unit: KRW_billion
+    rationale: >-
+      cap-rate compression scenario - the filed appraisal total 3,794.5bn
+      re-rates by +5% (+189.7bn) as the one under-let asset (용산 아스테리움,
+      filed occupancy 77.1%) leases up toward the 96.8% portfolio average and
+      rate cuts compress prime-office cap rates.
+  liabilities:
+    value: 2330.1
+    unit: KRW_billion
+    rationale: >-
+      FY16 (2026-03-31) consolidated total liabilities 2,330,100,250,878 KRW
+      from the filed full financial statement (ifrs-full_Liabilities family),
+      dominated by 2,231.6bn of borrowings and bonds plus lease deposits.
+  ownership:
+    value: 0.7782
+    unit: ratio
+    rationale: >-
+      owners' share of consolidated equity: 지배기업 소유주 귀속 자본
+      623,802,487,539 / 자본총계 801,575,051,415 = 0.7782 per the filed FY16
+      consolidated balance sheet (non-controlling interests 177,772,563,876
+      sit in property subsidiaries). The appraisal uplift is attributed
+      proportionally at the same ratio - a declared simplification.
+  diluted_shares:
+    value: 124940123
+    unit: shares
+    rationale: >-
+      issued shares from the annual report's 주식의 총수 table as of
+      2026-03-31: 보통주 120,940,123 + 종류주(우선주) 4,000,000 =
+      124,940,123; no treasury shares. Preferred counted as common-equivalent
+      for a conservative per-share basis.
+  asset_value:
+    value: 3794.5
+    unit: KRW_billion
+    rationale: >-
+      disclosed fair value of investment property (감정평가, Level 3) in the
+      FY16 annual report's 투자부동산 note: 11 buildings totalling
+      3,794,500m KRW (판교 1,010,000 / 강남 497,000 / 씨티스퀘어 464,500 /
+      L타워 365,500 / 숭례 359,500 등, 백만원).
+  noi_or_ffo:
+    value: 56.9
+    unit: KRW_billion
+    rationale: >-
+      FY16 consolidated operating income 56,873,581,245 KRW
+      (dart_OperatingIncomeLoss) from the filed full financial statement,
+      taken as the NOI/FFO proxy; 영업수익 85,330,922,743 less 영업비용
+      28,457,341,498.
+  occupancy:
+    value: 0.968
+    unit: ratio
+    rationale: >-
+      simple average of the 12 building-level 임대율 figures filed in the
+      annual report's 영업의 현황 (100/92/100/100/100/98.3/100/77.1/98.6/
+      100/100/95.4%); no portfolio-weighted single figure is disclosed.
+  rent:
+    value: 85.3
+    unit: KRW_billion
+    rationale: >-
+      FY16 consolidated 영업수익 85,330,922,743 KRW (ifrs-full_Revenue) from
+      the filed full financial statement, taken as the rental revenue level;
+      no separate portfolio rent-per-pyeong single figure is disclosed.
+  cap_rate:
+    value: 0.045
+    unit: ratio
+    rationale: >-
+      no cap rate is disclosed directly; the filed appraisals are income-based
+      (Level 3) and a 4.5% rate is the operator's mid judgment for Seoul prime
+      offices, noting the consolidated accounting yield (영업이익 56.9bn /
+      감정가 3,794.5bn = 1.5%) understates property-level NOI because part of
+      the portfolio is held through equity-method vehicles.
+  debt:
+    value: 2231.6
+    unit: KRW_billion
+    rationale: >-
+      total interest-bearing debt from the FY16 consolidated balance sheet:
+      단기차입금 72.0bn + 유동성사채 98.0bn + 유동성장기차입금 841.2bn +
+      장기차입금 1,220.4bn = 2,231,629,501,839 KRW per the 차입금·사채 notes.
+  maturities:
+    value: 1.2
+    unit: years
+    rationale: >-
+      approximate borrowing-weighted average life of the filed maturity
+      schedule: ~1,011bn current portion matures within a year (전단채
+      2026-04, 단기차입 2026-06, 사모사채 2026-09, 숭례 2026-09) against
+      1,220bn of long-term tranches concentrated 2027-03 ~ 2028-12.

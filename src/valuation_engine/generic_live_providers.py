@@ -79,9 +79,6 @@ from .scenario_binding import ScenarioBindingSpec
 from .valuation_plan_compiler import SegmentMethodChoice
 
 
-_VALUE_BINDING_KEYS = (OWNERSHIP_KEY, EV_ADJUSTMENT_KEY, DILUTED_SHARES_KEY)
-
-
 def required_assumption_keys(
     *,
     method_choices: tuple[SegmentMethodChoice, ...],
@@ -91,17 +88,27 @@ def required_assumption_keys(
     """The exact key set the compiler will demand for these method choices."""
     registry = capability_registry or load_default_method_capability_registry()
     keys: list[str] = []
+    needs_ev_adjustment = False
     for choice in method_choices:
-        family = registry.get(choice.archetype, choice.method).execution_family
-        prototype = family_prototype(family, forecast_years)
+        capability = registry.get(choice.archetype, choice.method)
+        prototype = family_prototype(capability.execution_family, forecast_years)
         if prototype is None:
             raise GenericValuationPlanError(
-                f"execution family {family} has no generic evaluator prototype"
+                f"execution family {capability.execution_family} has no "
+                "generic evaluator prototype"
             )
         # The keys are the evaluator's own declaration; a hand-kept template
         # could drift from the math it describes.
         keys.extend(prototype.required_assumption_keys)
-    keys.extend(_VALUE_BINDING_KEYS)
+        if capability.output_kind == "enterprise_value":
+            needs_ev_adjustment = True
+    keys.append(OWNERSHIP_KEY)
+    # The compiler refuses an EV-to-equity adjustment binding on an
+    # equity-output evaluator (it would double-bridge), so the adjustment key
+    # is demanded exactly when some chosen method emits enterprise value.
+    if needs_ev_adjustment:
+        keys.append(EV_ADJUSTMENT_KEY)
+    keys.append(DILUTED_SHARES_KEY)
     return tuple(dict.fromkeys(keys))
 
 
@@ -179,6 +186,9 @@ def build_generic_kr_runtime_factory(
     """Assemble the complete cold-start factory for an unseen KR company."""
     spec.validate()
     network.validate()
+    capability_registry = (
+        capability_registry or load_default_method_capability_registry()
+    )
     classification = load_kr_industry_classification(spec.classification_map_path)
     profile_fetcher = CachedCompanyProfileFetcher(
         fetch_text=network.fetch_text,
@@ -242,6 +252,13 @@ def build_generic_kr_runtime_factory(
         ),
         valuation_plan_inputs_loader=conventional_valuation_plan_inputs_loader(
             reporting_unit=spec.reporting_unit,
+            ev_adjustment_segments=frozenset(
+                choice.segment_id
+                for choice in spec.method_choices
+                if capability_registry.get(
+                    choice.archetype, choice.method
+                ).output_kind == "enterprise_value"
+            ),
         ),
         # An archetype that registers a Warranted-PER cross-check makes the
         # method intent demand a DCF fingerprint and a PER applicability
@@ -251,7 +268,7 @@ def build_generic_kr_runtime_factory(
         # authorized Economic-Twin residual PER pack exists in a cold start.
         per_loader=withheld_per_loader(),
     )
-    method_registry = capability_registry or load_default_method_capability_registry()
+    method_registry = capability_registry
     families = {
         method_registry.get(choice.archetype, choice.method).execution_family
         for choice in spec.method_choices

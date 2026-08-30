@@ -1,0 +1,759 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>7. 투자부동산 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='960'>
+<COLGROUP>
+<COL width='480'></COL>
+<COL width='480'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='951' height='23' colspan='2'>투자부동산에 대한 세부 정보 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='471' height='23'>당기</TD>
+  <TD width='471' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='960'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='711' height='23' colspan='6'>자산</TH>
+  <TH width='111' height='136' rowspan='4'>자산 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>토지</TH>
+  <TH width='351' height='23' colspan='3'>건물</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='231' height='23' colspan='2'>장부금액</TH>
+  <TH width='111' height='76' rowspan='2'>장부금액 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>장부금액</TH>
+  <TH width='111' height='76' rowspan='2'>장부금액 &nbsp;합계</TH>
+</TR>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>총장부금액</TH>
+  <TH width='111' height='46'>감가상각누계액 및 상각누계액</TH>
+  <TH width='111' height='46'>총장부금액</TH>
+  <TH width='111' height='46'>감가상각누계액 및 상각누계액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>투자부동산</TD>
+  <TD width='111' height='23' align='RIGHT'>2,317,182,266</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>2,317,182,266</TD>
+  <TD width='111' height='23' align='RIGHT'>759,350,901</TD>
+  <TD width='111' height='23' align='RIGHT'>(83,681,318)</TD>
+  <TD width='111' height='23' align='RIGHT'>675,669,583</TD>
+  <TD width='111' height='23' align='RIGHT'>2,992,851,849</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='960'>
+<COLGROUP>
+<COL width='960'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='951' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='960'>
+<COLGROUP>
+<COL width='480'></COL>
+<COL width='480'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='471' height='23'>전기</TD>
+  <TD width='471' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='960'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='711' height='23' colspan='6'>자산</TH>
+  <TH width='111' height='136' rowspan='4'>자산 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>토지</TH>
+  <TH width='351' height='23' colspan='3'>건물</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='231' height='23' colspan='2'>장부금액</TH>
+  <TH width='111' height='76' rowspan='2'>장부금액 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>장부금액</TH>
+  <TH width='111' height='76' rowspan='2'>장부금액 &nbsp;합계</TH>
+</TR>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>총장부금액</TH>
+  <TH width='111' height='46'>감가상각누계액 및 상각누계액</TH>
+  <TH width='111' height='46'>총장부금액</TH>
+  <TH width='111' height='46'>감가상각누계액 및 상각누계액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>투자부동산</TD>
+  <TD width='111' height='23' align='RIGHT'>2,317,182,266</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>2,317,182,266</TD>
+  <TD width='111' height='23' align='RIGHT'>759,275,743</TD>
+  <TD width='111' height='23' align='RIGHT'>(75,253,910)</TD>
+  <TD width='111' height='23' align='RIGHT'>684,021,833</TD>
+  <TD width='111' height='23' align='RIGHT'>3,001,204,099</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='960'>
+<COLGROUP>
+<COL width='960'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='951' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>투자부동산의 변동에 대한 조정</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='141' height='23'>토지</TH>
+  <TH width='141' height='23'>건물</TH>
+  <TH width='141' height='23'>자산 &nbsp;합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='141' height='23'>기초 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>2,317,182,266</TD>
+  <TD width='141' height='23' align='RIGHT'>684,021,833</TD>
+  <TD width='141' height='23' align='RIGHT'>3,001,204,099</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>취득, 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>75,159</TD>
+  <TD width='141' height='23' align='RIGHT'>75,159</TD>
+</TR>
+<TR height='53'>
+  <TD width='141' height='46'>연결범위의 변동, 투자부동산</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>대체, 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='53'>
+  <TD width='141' height='46'>감가상각비, 투자부동산</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+  <TD width='141' height='46' align='RIGHT'>(8,427,409)</TD>
+  <TD width='141' height='46' align='RIGHT'>(8,427,409)</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>기말 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>2,317,182,266</TD>
+  <TD width='141' height='23' align='RIGHT'>675,669,583</TD>
+  <TD width='141' height='23' align='RIGHT'>2,992,851,849</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='141' height='23'>토지</TH>
+  <TH width='141' height='23'>건물</TH>
+  <TH width='141' height='23'>자산 &nbsp;합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='141' height='23'>기초 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>1,875,867,617</TD>
+  <TD width='141' height='23' align='RIGHT'>647,441,922</TD>
+  <TD width='141' height='23' align='RIGHT'>2,523,309,539</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>취득, 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>441,314,649</TD>
+  <TD width='141' height='23' align='RIGHT'>44,871,126</TD>
+  <TD width='141' height='23' align='RIGHT'>486,185,775</TD>
+</TR>
+<TR height='53'>
+  <TD width='141' height='46'>연결범위의 변동, 투자부동산</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>대체, 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='53'>
+  <TD width='141' height='46'>감가상각비, 투자부동산</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+  <TD width='141' height='46' align='RIGHT'>(8,291,215)</TD>
+  <TD width='141' height='46' align='RIGHT'>(8,291,215)</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>기말 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>2,317,182,266</TD>
+  <TD width='141' height='23' align='RIGHT'>684,021,833</TD>
+  <TD width='141' height='23' align='RIGHT'>3,001,204,099</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>투자부동산에서 발생한 임대수익, 순직접운영비용</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>영업수익</TD>
+  <TD width='291' height='23' align='RIGHT'>85,330,923</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>영업비용</TD>
+  <TD width='291' height='23' align='RIGHT'>22,443,354</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>영업수익</TD>
+  <TD width='291' height='23' align='RIGHT'>82,852,116</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>영업비용</TD>
+  <TD width='291' height='23' align='RIGHT'>25,306,096</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>공정가치측정에 사용된 투입변수에 따른 공정가치 서열체계 분류, 투자부동산</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>　</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>측정 전체</TH>
+</TR>
+<TR height='53'>
+  <TH width='291' height='46'>　</TH>
+  <TH width='291' height='46'>재무상태표상에 공정가치로 측정되지 않았지만 공시된 공정가치</TH>
+</TR>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>자산</TH>
+</TR>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>투자부동산</TH>
+</TR>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공정가치 서열체계의 모든 수준</TH>
+</TR>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공정가치 서열체계 수준 3</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>투자부동산</TD>
+  <TD width='291' height='23' align='RIGHT'>3,794,500</TD>
+</TR>
+<TR height='237'>
+  <TD width='291' height='230'>공정가치측정에 사용된 평가기법에 대한 기술, 자산</TD>
+  <TD width='291' height='230'>- 수익환원법과 거래사례비교법의 감정가액을 적절하게 가중평균함<BR/>- 원가법, 수익환원법 및 거래사례 비교법의 감정가액을 산정하여 검토하고 거래사례비교법의 감정가액을 공정가치로 결정함<BR/>- 비용성에 입각한 원가방식 및 시장성을 반영하고 있는 비교방식<BR/> &nbsp; 과 수익성에 입각한 수익방식에 <BR/> &nbsp; 의한 감정가액을 적절하게 가중<BR/> &nbsp; 평균함</TD>
+</TR>
+<TR height='76'>
+  <TD width='291' height='69'>공정가치측정에 사용된 투입변수에 대한 기술, 자산</TD>
+  <TD width='291' height='69'>평방미터별 임대료,<BR/>할인율,<BR/>비교사례단가, 공시지가, 재조달원가</TD>
+</TR>
+<TR height='99'>
+  <TD width='291' height='92'>관측가능하지 않은 투입변수의 변동으로 인한 공정가치측정치의 민감도에 대한 기술, 자산</TD>
+  <TD width='291' height='92'>임대료가 증가(감소)하고 할인율이 감소(증가)하며, 비교사례단가와 공시지가 및 재조달원가가 증가(감소)한다면 투자부동산의 공정가치는 증가(감소)할 것임</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='720'></COL>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23' colspan='2'>투자부동산에 대한 공정가치 정보 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='711' height='23'>　</TD>
+  <TD width='711' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1440'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1311' height='23' colspan='11'>측정 전체</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1311' height='23' colspan='11'>재무상태표상에 공정가치로 측정되지 않았지만 공시된 공정가치</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1311' height='23' colspan='11'>자산</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1311' height='23' colspan='11'>투자부동산</TH>
+</TR>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>그레이츠 판교</TH>
+  <TH width='111' height='46'>그레이츠 청계(*1)</TH>
+  <TH width='111' height='46'>HSBC빌딩(*1)</TH>
+  <TH width='111' height='46'>신한L타워</TH>
+  <TH width='111' height='46'>트윈시티 남산</TH>
+  <TH width='111' height='46'>삼성화재 역삼빌딩(*2)</TH>
+  <TH width='111' height='46'>캠브리지 강남빌딩(*2)</TH>
+  <TH width='111' height='46'>그레이츠 숭례</TH>
+  <TH width='111' height='46'>GS건설 서초타워</TH>
+  <TH width='111' height='46'>씨티스퀘어</TH>
+  <TH width='111' height='46'>그레이츠 강남</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>투자부동산</TD>
+  <TD width='111' height='23' align='RIGHT'>1,010,000</TD>
+  <TD width='111' height='23' align='RIGHT'>99,700</TD>
+  <TD width='111' height='23' align='RIGHT'>212,700</TD>
+  <TD width='111' height='23' align='RIGHT'>365,500</TD>
+  <TD width='111' height='23' align='RIGHT'>317,800</TD>
+  <TD width='111' height='23' align='RIGHT'>216,300</TD>
+  <TD width='111' height='23' align='RIGHT'>31,400</TD>
+  <TD width='111' height='23' align='RIGHT'>359,500</TD>
+  <TD width='111' height='23' align='RIGHT'>220,100</TD>
+  <TD width='111' height='23' align='RIGHT'>464,500</TD>
+  <TD width='111' height='23' align='RIGHT'>497,000</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>평가기준일, 투자부동산</TD>
+  <TD width='111' height='46'>2026-01-21</TD>
+  <TD width='111' height='46'>2025-04-14</TD>
+  <TD width='111' height='46'>2025-04-14</TD>
+  <TD width='111' height='46'>2025-01-15</TD>
+  <TD width='111' height='46'>2025-03-17</TD>
+  <TD width='111' height='46'>2023-12-12</TD>
+  <TD width='111' height='46'>2022-05-12</TD>
+  <TD width='111' height='46'>2022-02-21</TD>
+  <TD width='111' height='46'>2024-04-09</TD>
+  <TD width='111' height='46'>2024-04-29</TD>
+  <TD width='111' height='46'>2025-04-09</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>평가자</TD>
+  <TD width='111' height='46'>㈜나라감정평가법인</TD>
+  <TD width='111' height='46'>㈜나라감정평가법인</TD>
+  <TD width='111' height='46'>㈜나라감정평가법인</TD>
+  <TD width='111' height='46'>㈜나라감정평가법인</TD>
+  <TD width='111' height='46'>㈜삼창감정평가법인</TD>
+  <TD width='111' height='46'>㈜나라감정평가법인</TD>
+  <TD width='111' height='46'>㈜삼창감정평가법인</TD>
+  <TD width='111' height='46'>㈜경일감정평가법인</TD>
+  <TD width='111' height='46'>㈜태평양감정평가법인</TD>
+  <TD width='111' height='46'>㈜경일감정평가법인</TD>
+  <TD width='111' height='46'>㈜삼창감정평가법인</TD>
+</TR>
+<TR height='329'>
+  <TD width='111' height='322'>공정가치측정에 사용된 평가기법에 대한 기술, 자산</TD>
+  <TD width='111' height='322'>시장가격을 잘 반영하고 있는 비교방식에 의한 가격과 투자가치를 잘 반영하고 있는 수익방식에 의한 가격에 각각 50%의 가중치를 적용하여 산출</TD>
+  <TD width='111' height='322'>시장가격을 잘 반영하고 있는 비교방식에 의한 가격과 투자가치를 잘 반영하고 있는 수익방식에 의한 가격에 각각 50%의 가중치를 적용하여 산출</TD>
+  <TD width='111' height='322'>거래사례가격을 반영하고 있는 비교방식에 의한 가액과 할인현금흐름(DCF) 분석법을 적용한 수익방식에 의한 가액을 종합적으로 고려하여 비교방식에 의한 감정가액을 해당 투자부동산의 공정가치로 적용함</TD>
+  <TD width='111' height='322'>시장가격을 잘 반영하고 있는 비교방식에 의한 가격과 투자가치를 잘 반영하고 있는 수익방식에 의한 가격에 각각 50%의 가중치를 적용하여 산출</TD>
+  <TD width='111' height='322'>시장가격을 잘 반영하고 있는 비교방식에 의한 가격과 투자가치를 잘 반영하고 있는 수익방식에 의한 가격에 각각 50%의 가중치를 적용하여 산출</TD>
+  <TD width='111' height='322'>시장가격을 잘 반영하고 있는 비교방식에 의한 가격과 투자가치를 잘 반영하고 있는 수익방식에 의한 가격을 검토 후 최종적으로 비교방식에 의한 가격을공정가치 금액으로 결정함</TD>
+  <TD width='111' height='322'>시장가격을 잘 반영하고 있는 비교방식에 의한 가격과 투자가치를 잘 반영하고 있는 수익방식에 의한 가격에 각각 30%와 70%의 가중치를 적용하여 산출</TD>
+  <TD width='111' height='322'>시장가격을 잘 반영하고 있는 비교방식에 의한 가격과 투자가치를 잘 반영하고 있는 수익방식에 의한 가격에 각각 50%의 가중치를 적용하여 산출</TD>
+  <TD width='111' height='322'>시장가격을 잘 반영하고 있는 비교방식에 의한 가격과 투자가치를 잘 반영하고 있는 수익방식에 의한 가격을 각각 50%의 가중치를 적용하여 산출</TD>
+  <TD width='111' height='322'>시장가격을 잘 반영하고 있는 비교방식에 의한 가격과 투자가치를 잘 반영하고 있는 수익방식에 의한 가격을 각각 50%의 가중치를 적용하여 산출</TD>
+  <TD width='111' height='322'>비용성에 입각한 원가방식 및 시장성을 반영하고 있는 비교방식과 수익성에 입각한 수익방식에 의한 가격을 각각 5%, 45%, 50%의 가중치를 적용하여 산출</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='1440'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='145'>
+  <TD width='591' height='138'>(*1) 지배기업의 종속기업인 ㈜신한알파광교위탁관리부동산투자회사는 그레이츠 청계와 HSBC빌딩의 일부를 소유하고 있습니다.<BR/>(*2) 지배기업의 종속기업인 ㈜신한알파역삼위탁관리부동산투자회사는 삼성화재 역삼빌딩과 캠브리지 강남빌딩의 일부를 소유하고 있습니다.<BR/><BR/><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>투자부동산의 보험 가입 내역</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>　</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>보험계약의 유형</TH>
+</TR>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>재산종합보험</TH>
+</TR>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>자산</TH>
+</TR>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>투자부동산</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>부보금액</TD>
+  <TD width='291' height='23' align='RIGHT'>1,037,025</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

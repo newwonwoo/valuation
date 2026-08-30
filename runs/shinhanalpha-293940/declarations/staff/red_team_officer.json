@@ -1,0 +1,22 @@
+{
+ "counter_thesis": "The NAV premium over price is a leverage illusion: ~1,011bn of the 2,231.6bn debt stack matures within a year, dividends already exceed consolidated attributable earnings (payout 152.6% filed), and if refinancing reprices at current rates the appraisal uplift belongs to lenders, not shareholders; carrying-value NAV (4,992/share) is the honest floor and it sits below the market price.",
+ "issues": [
+  {
+   "id": "R:SHALPHA:REFI",
+   "blocking": false,
+   "description": "the maturity wall (전단채 2026-04 rolled, 단기차입 2026-06, 사모사채·숭례 2026-09, ~1,011bn current portion) makes the equity a levered claim on cap rates; no scenario prices a failed roll",
+   "requested_evidence": [
+    "refinancing terms from the 2026.09 half-year filing"
+  ]
+  },
+  {
+   "id": "R:SHALPHA:NCI",
+   "blocking": false,
+   "description": "attributing the appraisal uplift to owners at the balance-sheet equity ratio 0.7782 is a simplification; the NCI sits in specific property vehicles and the true attributable uplift may differ per asset",
+   "requested_evidence": [
+    "per-vehicle NCI breakdown"
+   ]
+  }
+ ],
+ "requested_evidence": []
+}

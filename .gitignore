@@ -14,3 +14,5 @@ pip-*/
 .claude/worktrees/
 !runs/kisco-104700/
 runs/kisco-104700/out/
+!runs/shinhanalpha-293940/
+runs/shinhanalpha-293940/out/

@@ -1,0 +1,2137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>12_1. 차입금 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='960'>
+<COLGROUP>
+<COL width='480'></COL>
+<COL width='480'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='951' height='23' colspan='2'>단기차입금에 대한 세부 정보</TD>
+</TR>
+<TR height='30'>
+  <TD width='471' height='23'>당기</TD>
+  <TD width='471' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='960'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='76'>
+  <TH width='111' height='69'>　</TH>
+  <TH width='111' height='69'>단기차입금_신한캐피탈(주)</TH>
+  <TH width='111' height='69'>단기차입금_(주)아이비케이캐피탈</TH>
+  <TH width='111' height='69'>단기차입금_(주)디비저축은행</TH>
+  <TH width='111' height='69'>단기차입금_(주)에스비아이저축은행</TH>
+  <TH width='111' height='69'>단기차입금_(주)대신저축은행</TH>
+  <TH width='111' height='69'>단기차입금_엔에이치저축은행(주)</TH>
+  <TH width='111' height='69'>차입금명칭 &nbsp;합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='111' height='46'>차입처</TD>
+  <TD width='111' height='46'>신한캐피탈㈜</TD>
+  <TD width='111' height='46'>㈜아이비케이캐피탈</TD>
+  <TD width='111' height='46'>㈜디비저축은행</TD>
+  <TD width='111' height='46'>㈜에스비아이저축은행</TD>
+  <TD width='111' height='46'>㈜대신저축은행</TD>
+  <TD width='111' height='46'>엔에이치저축은행㈜</TD>
+  <TD width='111' height='46'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 만기</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 이자율</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>단기차입금</TD>
+  <TD width='111' height='23' align='RIGHT'>27,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>5,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>72,000,000</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>차입금에 대한 기술</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>그레이츠 강남 담보대출(후순위)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='960'>
+<COLGROUP>
+<COL width='960'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='951' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='960'>
+<COLGROUP>
+<COL width='480'></COL>
+<COL width='480'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='471' height='23'>전기</TD>
+  <TD width='471' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='960'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='76'>
+  <TH width='111' height='69'>　</TH>
+  <TH width='111' height='69'>단기차입금_신한캐피탈(주)</TH>
+  <TH width='111' height='69'>단기차입금_(주)아이비케이캐피탈</TH>
+  <TH width='111' height='69'>단기차입금_(주)디비저축은행</TH>
+  <TH width='111' height='69'>단기차입금_(주)에스비아이저축은행</TH>
+  <TH width='111' height='69'>단기차입금_(주)대신저축은행</TH>
+  <TH width='111' height='69'>단기차입금_엔에이치저축은행(주)</TH>
+  <TH width='111' height='69'>차입금명칭 &nbsp;합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='111' height='46'>차입처</TD>
+  <TD width='111' height='46'>신한캐피탈㈜</TD>
+  <TD width='111' height='46'>㈜아이비케이캐피탈</TD>
+  <TD width='111' height='46'>㈜디비저축은행</TD>
+  <TD width='111' height='46'>㈜에스비아이저축은행</TD>
+  <TD width='111' height='46'>㈜대신저축은행</TD>
+  <TD width='111' height='46'>엔에이치저축은행㈜</TD>
+  <TD width='111' height='46'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 만기</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>2026-06-25</TD>
+  <TD width='111' height='23'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 이자율</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>0.055</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>단기차입금</TD>
+  <TD width='111' height='23' align='RIGHT'>27,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>5,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>72,000,000</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>차입금에 대한 기술</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>그레이츠 강남 담보대출(후순위)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='960'>
+<COLGROUP>
+<COL width='960'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='951' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='720'></COL>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23' colspan='2'>장기차입금에 대한 세부 정보</TD>
+</TR>
+<TR height='30'>
+  <TD width='711' height='23'>당기</TD>
+  <TD width='711' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1440'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>차입처</TH>
+  <TH width='111' height='46'>차입금, 만기</TH>
+  <TH width='111' height='46'>차입금, 이자율</TH>
+  <TH width='111' height='46'>차입금, 기준이자율</TH>
+  <TH width='111' height='46'>차입금, 기준이자율 조정</TH>
+  <TH width='111' height='46'>차입금(사채 포함)</TH>
+  <TH width='111' height='46'>현재가치할인차금, 장기차입금</TH>
+  <TH width='111' height='46'>유동성 장기차입금(사채 제외)</TH>
+  <TH width='111' height='46'>비유동 차입금의 비유동성 부분</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='111' height='4131' rowspan='72'>차입금명칭</TD>
+  <TD width='111' height='311' rowspan='6'>그레이츠 판교 담보대출(선순위)</TD>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금1</TD>
+  <TD width='111' height='46'>한화생명보험㈜</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>190,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금2</TD>
+  <TD width='111' height='46'>㈜KB손해보험</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>100,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금3</TD>
+  <TD width='111' height='46'>신한라이프생명보험㈜</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>20,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금4</TD>
+  <TD width='111' height='46'>현대해상화재보험㈜</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>100,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금5</TD>
+  <TD width='111' height='46'>농협생명보험㈜</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>65,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금6</TD>
+  <TD width='111' height='46'>한화손해보험㈜</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>그레이츠 청계 담보대출(선순위)</TD>
+  <TD width='111' height='69'>그레이츠 청계_장기차입금1</TD>
+  <TD width='111' height='69'>(주)하나은행</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>0.0000</TD>
+  <TD width='111' height='69' align='RIGHT'>0</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>HSBC빌딩 담보대출(선순위)</TD>
+  <TD width='111' height='46'>HSBC빌딩_장기차입금1</TD>
+  <TD width='111' height='46'>㈜신한은행</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>HSBC빌딩_장기차입금2</TD>
+  <TD width='111' height='46'>수협은행</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>HSBC빌딩_장기차입금3</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='373' rowspan='5'>그레이츠 청계 및 HSBC빌딩 담보대출(선순위)</TD>
+  <TD width='111' height='69'>그레이츠 청계 및 HSBC빌딩_장기차입금 1</TD>
+  <TD width='111' height='69'>㈜신한은행</TD>
+  <TD width='111' height='69'>2028-12-01</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>CD 91일물</TD>
+  <TD width='111' height='69' align='RIGHT'>0.0180</TD>
+  <TD width='111' height='69' align='RIGHT'>70,000,000</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>그레이츠 청계 및 HSBC빌딩_장기차입금 2</TD>
+  <TD width='111' height='69'>수협은행</TD>
+  <TD width='111' height='69'>2028-12-01</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>CD 91일물</TD>
+  <TD width='111' height='69' align='RIGHT'>0.0180</TD>
+  <TD width='111' height='69' align='RIGHT'>33,300,000</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>그레이츠 청계 및 HSBC빌딩_장기차입금 3</TD>
+  <TD width='111' height='69'>광주은행</TD>
+  <TD width='111' height='69'>2028-12-01</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>CD 91일물</TD>
+  <TD width='111' height='69' align='RIGHT'>0.0180</TD>
+  <TD width='111' height='69' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>그레이츠 청계 및 HSBC빌딩_장기차입금 4</TD>
+  <TD width='111' height='69'>제주은행</TD>
+  <TD width='111' height='69'>2028-12-01</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>CD 91일물</TD>
+  <TD width='111' height='69' align='RIGHT'>0.0180</TD>
+  <TD width='111' height='69' align='RIGHT'>9,500,000</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>그레이츠 청계 및 HSBC빌딩_장기차입금 5</TD>
+  <TD width='111' height='69'>㈜하나은행</TD>
+  <TD width='111' height='69'>2028-12-01</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>CD 91일물</TD>
+  <TD width='111' height='69' align='RIGHT'>0.0180</TD>
+  <TD width='111' height='69' align='RIGHT'>57,200,000</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='205' rowspan='4'>신한L타워 담보대출(선순위)</TD>
+  <TD width='111' height='46'>신한L타워_장기차입금1</TD>
+  <TD width='111' height='46'>농협생명보험㈜</TD>
+  <TD width='111' height='46'>2027-09-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>80,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>신한L타워_장기차입금2</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2027-09-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>38,500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>신한L타워_장기차입금3</TD>
+  <TD width='111' height='46'>신용협동조합중앙회</TD>
+  <TD width='111' height='46'>2027-09-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>신한L타워_장기차입금4</TD>
+  <TD width='111' height='46'>㈜하나은행</TD>
+  <TD width='111' height='46'>2027-09-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='145'>
+  <TD width='111' height='389' rowspan='4'>트윈시티 남산 담보대출(선순위)</TD>
+  <TD width='111' height='138'>트윈시티 남산_장기차입금1</TD>
+  <TD width='111' height='138'>NH투자증권㈜ (삼성SRA국내담보대출일반사모부동산투자신탁제4호의 신탁업자 지위에서)</TD>
+  <TD width='111' height='138'>2028-08-28</TD>
+  <TD width='111' height='138' align='RIGHT'>0.040</TD>
+  <TD width='111' height='138'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>69,200,000</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+</TR>
+<TR height='145'>
+  <TD width='111' height='138'>트윈시티 남산_장기차입금2</TD>
+  <TD width='111' height='138'>케이비증권㈜ (삼성SRA국내담보대출일반사모부동산투자신탁제2호의 신탁업자 지위에서)</TD>
+  <TD width='111' height='138'>2028-08-28</TD>
+  <TD width='111' height='138' align='RIGHT'>0.040</TD>
+  <TD width='111' height='138'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>5,800,000</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>트윈시티 남산_장기차입금 3</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2028-08-28</TD>
+  <TD width='111' height='46' align='RIGHT'>0.040</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>트윈시티 남산_장기차입금 4</TD>
+  <TD width='111' height='46'>신용협동조합중앙회</TD>
+  <TD width='111' height='46'>2028-08-28</TD>
+  <TD width='111' height='46' align='RIGHT'>0.040</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>40,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>삼성화재 역삼빌딩 담보대출 (선순위)</TD>
+  <TD width='111' height='46'>삼성화재 역삼_장기차입금1</TD>
+  <TD width='111' height='46'>리치게이트와이에스㈜</TD>
+  <TD width='111' height='46'>2027-03-11</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0175</TD>
+  <TD width='111' height='46' align='RIGHT'>45,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>삼성화재 역삼_장기차입금2</TD>
+  <TD width='111' height='46'>신한캐피탈㈜</TD>
+  <TD width='111' height='46'>2027-03-11</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0175</TD>
+  <TD width='111' height='46' align='RIGHT'>25,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>삼성화재 역삼_장기차입금3</TD>
+  <TD width='111' height='46'>㈜아이비케이캐피탈</TD>
+  <TD width='111' height='46'>2027-03-11</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0175</TD>
+  <TD width='111' height='46' align='RIGHT'>32,500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='1265' rowspan='24'>그레이츠 숭례 담보대출(선순위)</TD>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금1</TD>
+  <TD width='111' height='46'>광주우리신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금2</TD>
+  <TD width='111' height='46'>광주충장신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>600,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금3</TD>
+  <TD width='111' height='46'>군산해성신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금4</TD>
+  <TD width='111' height='46'>군산월명신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,300,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금5</TD>
+  <TD width='111' height='46'>군산제일신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금6</TD>
+  <TD width='111' height='46'>김제신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>2,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금7</TD>
+  <TD width='111' height='46'>꿀벌신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,600,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금8</TD>
+  <TD width='111' height='46'>남광주신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,600,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금9</TD>
+  <TD width='111' height='46'>동양생명보험㈜</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>69,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금10</TD>
+  <TD width='111' height='46'>북광주신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금11</TD>
+  <TD width='111' height='46'>북동신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금12</TD>
+  <TD width='111' height='46'>삼례신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금13</TD>
+  <TD width='111' height='46'>삼애신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>900,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금14</TD>
+  <TD width='111' height='46'>새마을금고중앙회</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>100,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금15</TD>
+  <TD width='111' height='46'>샘신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,200,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금16</TD>
+  <TD width='111' height='46'>신용협동조합중앙회</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>20,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금17</TD>
+  <TD width='111' height='46'>양동행복신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금18</TD>
+  <TD width='111' height='46'>옥서신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>200,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금19</TD>
+  <TD width='111' height='46'>우리신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금20</TD>
+  <TD width='111' height='46'>이리주현신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금21</TD>
+  <TD width='111' height='46'>입하신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금22</TD>
+  <TD width='111' height='46'>전주복지신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금23</TD>
+  <TD width='111' height='46'>전주상진신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>2,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금24</TD>
+  <TD width='111' height='46'>한화손해보험㈜</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>그레이츠 숭례 담보대출(중순위)</TD>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금25</TD>
+  <TD width='111' height='46'>동양생명보험㈜</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.043</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>15,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금26</TD>
+  <TD width='111' height='46'>신용협동조합중앙회</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.043</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금27</TD>
+  <TD width='111' height='46'>한화손해보험㈜</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.043</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='205' rowspan='4'>GS건설 서초타워 담보대출(선순위)</TD>
+  <TD width='111' height='46'>GS건설 서초_장기차입금1</TD>
+  <TD width='111' height='46'>㈜신한은행</TD>
+  <TD width='111' height='46'>2027-06-27</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0125</TD>
+  <TD width='111' height='46' align='RIGHT'>41,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>GS건설 서초_장기차입금2</TD>
+  <TD width='111' height='46'>수협은행</TD>
+  <TD width='111' height='46'>2027-06-27</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0125</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>GS건설 서초_장기차입금3</TD>
+  <TD width='111' height='46'>농협은행㈜</TD>
+  <TD width='111' height='46'>2027-06-27</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0125</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>GS건설 서초_장기차입금4</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2027-06-27</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0125</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='364' rowspan='7'>씨티스퀘어 담보대출(선순위)</TD>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금1</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>45,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금2</TD>
+  <TD width='111' height='46'>㈜삼성화재해상보험</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금3</TD>
+  <TD width='111' height='46'>중소기업은행</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>45,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금4</TD>
+  <TD width='111' height='46'>농협은행㈜</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금5</TD>
+  <TD width='111' height='46'>수산업협동조합중앙회</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금6</TD>
+  <TD width='111' height='46'>수협은행</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>20,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금7</TD>
+  <TD width='111' height='46'>산립조합중앙회</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>20,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='417' rowspan='8'>그레이츠 강남 담보대출(선순위)</TD>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 1</TD>
+  <TD width='111' height='46'>우리강남알파제일차㈜</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.036</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 2</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.036</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장가치압금 3</TD>
+  <TD width='111' height='46'>신용협동조합중앙회</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.036</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>41,500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 4</TD>
+  <TD width='111' height='46'>농협은행㈜</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.036</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 5</TD>
+  <TD width='111' height='46'>중소기업은행</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.036</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>41,500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 6</TD>
+  <TD width='111' height='46'>농협은행생명보험㈜</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>40,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 7</TD>
+  <TD width='111' height='46'>㈜부산은행</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 8</TD>
+  <TD width='111' height='46'>㈜하나은행</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>25,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='351' height='23' colspan='3'>차입금명칭 &nbsp;합계</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>2,064,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>(2,370,498)</TD>
+  <TD width='111' height='23' align='RIGHT'>841,240,667</TD>
+  <TD width='111' height='23' align='RIGHT'>1,220,388,835</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='1440'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='720'></COL>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23'>전기</TD>
+  <TD width='711' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1440'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>차입처</TH>
+  <TH width='111' height='46'>차입금, 만기</TH>
+  <TH width='111' height='46'>차입금, 이자율</TH>
+  <TH width='111' height='46'>차입금, 기준이자율</TH>
+  <TH width='111' height='46'>차입금, 기준이자율 조정</TH>
+  <TH width='111' height='46'>차입금(사채 포함)</TH>
+  <TH width='111' height='46'>현재가치할인차금, 장기차입금</TH>
+  <TH width='111' height='46'>유동성 장기차입금(사채 제외)</TH>
+  <TH width='111' height='46'>비유동 차입금의 비유동성 부분</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='111' height='4131' rowspan='72'>차입금명칭</TD>
+  <TD width='111' height='311' rowspan='6'>그레이츠 판교 담보대출(선순위)</TD>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금1</TD>
+  <TD width='111' height='46'>한화생명보험㈜</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>190,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금2</TD>
+  <TD width='111' height='46'>㈜KB손해보험</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>100,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금3</TD>
+  <TD width='111' height='46'>신한라이프생명보험㈜</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>20,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금4</TD>
+  <TD width='111' height='46'>현대해상화재보험㈜</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>100,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금5</TD>
+  <TD width='111' height='46'>농협생명보험㈜</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>65,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 판교_장기차입금6</TD>
+  <TD width='111' height='46'>한화손해보험㈜</TD>
+  <TD width='111' height='46'>2026-04-29</TD>
+  <TD width='111' height='46' align='RIGHT'>0.027</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>그레이츠 청계 담보대출(선순위)</TD>
+  <TD width='111' height='69'>그레이츠 청계_장기차입금1</TD>
+  <TD width='111' height='69'>㈜하나은행</TD>
+  <TD width='111' height='69'>2025-11-30</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>CD 91일물</TD>
+  <TD width='111' height='69' align='RIGHT'>0.0196</TD>
+  <TD width='111' height='69' align='RIGHT'>60,000,000</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>HSBC빌딩 담보대출(선순위)</TD>
+  <TD width='111' height='46'>HSBC빌딩_장기차입금1</TD>
+  <TD width='111' height='46'>㈜신한은행</TD>
+  <TD width='111' height='46'>2025-11-30</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0160</TD>
+  <TD width='111' height='46' align='RIGHT'>75,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>HSBC빌딩_장기차입금2</TD>
+  <TD width='111' height='46'>수협은행</TD>
+  <TD width='111' height='46'>2025-11-30</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0160</TD>
+  <TD width='111' height='46' align='RIGHT'>35,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>HSBC빌딩_장기차입금3</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2025-11-30</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0160</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='373' rowspan='5'>그레이츠 청계 및 HSBC빌딩 담보대출(선순위)</TD>
+  <TD width='111' height='69'>그레이츠 청계 및 HSBC빌딩_장기차입금 1</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>그레이츠 청계 및 HSBC빌딩_장기차입금 2</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>그레이츠 청계 및 HSBC빌딩_장기차입금 3</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>그레이츠 청계 및 HSBC빌딩_장기차입금 4</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>그레이츠 청계 및 HSBC빌딩_장기차입금 5</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='205' rowspan='4'>신한L타워 담보대출(선순위)</TD>
+  <TD width='111' height='46'>신한L타워_장기차입금1</TD>
+  <TD width='111' height='46'>농협생명보험㈜</TD>
+  <TD width='111' height='46'>2027-09-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>80,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>신한L타워_장기차입금2</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2027-09-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>38,500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>신한L타워_장기차입금3</TD>
+  <TD width='111' height='46'>신용협동조합중앙회</TD>
+  <TD width='111' height='46'>2027-09-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>신한L타워_장기차입금4</TD>
+  <TD width='111' height='46'>㈜하나은행</TD>
+  <TD width='111' height='46'>2027-09-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='145'>
+  <TD width='111' height='389' rowspan='4'>트윈시티 남산 담보대출(선순위)</TD>
+  <TD width='111' height='138'>트윈시티 남산_장기차입금1</TD>
+  <TD width='111' height='138'>NH투자증권㈜ (삼성SRA국내담보대출일반사모부동산투자신탁제4호의 신탁업자 지위에서)</TD>
+  <TD width='111' height='138'>2028-08-28</TD>
+  <TD width='111' height='138' align='RIGHT'>0.040</TD>
+  <TD width='111' height='138'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>69,200,000</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+</TR>
+<TR height='145'>
+  <TD width='111' height='138'>트윈시티 남산_장기차입금2</TD>
+  <TD width='111' height='138'>케이비증권㈜ (삼성SRA국내담보대출일반사모부동산투자신탁제2호의 신탁업자 지위에서)</TD>
+  <TD width='111' height='138'>2028-08-28</TD>
+  <TD width='111' height='138' align='RIGHT'>0.040</TD>
+  <TD width='111' height='138'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>5,800,000</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>트윈시티 남산_장기차입금 3</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2028-08-28</TD>
+  <TD width='111' height='46' align='RIGHT'>0.040</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>트윈시티 남산_장기차입금 4</TD>
+  <TD width='111' height='46'>신용협동조합중앙회</TD>
+  <TD width='111' height='46'>2028-08-28</TD>
+  <TD width='111' height='46' align='RIGHT'>0.040</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>40,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>삼성화재 역삼빌딩 담보대출 (선순위)</TD>
+  <TD width='111' height='46'>삼성화재 역삼_장기차입금1</TD>
+  <TD width='111' height='46'>리치게이트와이에스㈜</TD>
+  <TD width='111' height='46'>2027-03-11</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0175</TD>
+  <TD width='111' height='46' align='RIGHT'>45,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>삼성화재 역삼_장기차입금2</TD>
+  <TD width='111' height='46'>신한캐피탈㈜</TD>
+  <TD width='111' height='46'>2027-03-11</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0175</TD>
+  <TD width='111' height='46' align='RIGHT'>25,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>삼성화재 역삼_장기차입금3</TD>
+  <TD width='111' height='46'>㈜아이비케이캐피탈</TD>
+  <TD width='111' height='46'>2027-03-11</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0175</TD>
+  <TD width='111' height='46' align='RIGHT'>32,500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='1265' rowspan='24'>그레이츠 숭례 담보대출(선순위)</TD>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금1</TD>
+  <TD width='111' height='46'>광주우리신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금2</TD>
+  <TD width='111' height='46'>광주충장신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>600,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금3</TD>
+  <TD width='111' height='46'>군산해성신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금4</TD>
+  <TD width='111' height='46'>군산월명신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,300,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금5</TD>
+  <TD width='111' height='46'>군산제일신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금6</TD>
+  <TD width='111' height='46'>김제신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>2,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금7</TD>
+  <TD width='111' height='46'>꿀벌신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,600,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금8</TD>
+  <TD width='111' height='46'>남광주신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,600,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금9</TD>
+  <TD width='111' height='46'>동양생명보험㈜</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>69,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금10</TD>
+  <TD width='111' height='46'>북광주신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금11</TD>
+  <TD width='111' height='46'>북동신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금12</TD>
+  <TD width='111' height='46'>삼례신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금13</TD>
+  <TD width='111' height='46'>삼애신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>900,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금14</TD>
+  <TD width='111' height='46'>새마을금고중앙회</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>100,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금15</TD>
+  <TD width='111' height='46'>샘신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,200,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금16</TD>
+  <TD width='111' height='46'>신용협동조합중앙회</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>20,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금17</TD>
+  <TD width='111' height='46'>양동행복신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금18</TD>
+  <TD width='111' height='46'>옥서신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>200,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금19</TD>
+  <TD width='111' height='46'>우리신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금20</TD>
+  <TD width='111' height='46'>이리주현신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금21</TD>
+  <TD width='111' height='46'>입하신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>700,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금22</TD>
+  <TD width='111' height='46'>전주복지신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금23</TD>
+  <TD width='111' height='46'>전주상진신협</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>2,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금24</TD>
+  <TD width='111' height='46'>한화손해보험㈜</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.028</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>그레이츠 숭례 담보대출(중순위)</TD>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금25</TD>
+  <TD width='111' height='46'>동양생명보험㈜</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.043</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>15,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금26</TD>
+  <TD width='111' height='46'>신용협동조합중앙회</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.043</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 숭례_장기차입금27</TD>
+  <TD width='111' height='46'>한화손해보험㈜</TD>
+  <TD width='111' height='46'>2026-09-15</TD>
+  <TD width='111' height='46' align='RIGHT'>0.043</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>10,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='205' rowspan='4'>GS건설 서초타워 담보대출(선순위)</TD>
+  <TD width='111' height='46'>GS건설 서초_장기차입금1</TD>
+  <TD width='111' height='46'>㈜신한은행</TD>
+  <TD width='111' height='46'>2027-06-27</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0125</TD>
+  <TD width='111' height='46' align='RIGHT'>41,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>GS건설 서초_장기차입금2</TD>
+  <TD width='111' height='46'>수협은행</TD>
+  <TD width='111' height='46'>2027-06-27</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0125</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>GS건설 서초_장기차입금3</TD>
+  <TD width='111' height='46'>농협은행㈜</TD>
+  <TD width='111' height='46'>2027-06-27</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0125</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>GS건설 서초_장기차입금4</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2027-06-27</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46'>CD 91일물</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0125</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='364' rowspan='7'>씨티스퀘어 담보대출(선순위)</TD>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금1</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>45,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금2</TD>
+  <TD width='111' height='46'>㈜삼성화재해상보험</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금3</TD>
+  <TD width='111' height='46'>중소기업은행</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>45,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금4</TD>
+  <TD width='111' height='46'>농협은행㈜</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금5</TD>
+  <TD width='111' height='46'>수산업협동조합중앙회</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금6</TD>
+  <TD width='111' height='46'>수협은행</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>20,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>씨티스퀘어_장기차입금7</TD>
+  <TD width='111' height='46'>산립조합중앙회</TD>
+  <TD width='111' height='46'>2027-07-31</TD>
+  <TD width='111' height='46' align='RIGHT'>0.045</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>20,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='417' rowspan='8'>그레이츠 강남 담보대출(선순위)</TD>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 1</TD>
+  <TD width='111' height='46'>우리강남알파제일차㈜</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.036</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 2</TD>
+  <TD width='111' height='46'>㈜국민은행</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.036</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>50,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장가치압금 3</TD>
+  <TD width='111' height='46'>신용협동조합중앙회</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.036</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>41,500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 4</TD>
+  <TD width='111' height='46'>농협은행㈜</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.036</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 5</TD>
+  <TD width='111' height='46'>중소기업은행</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.036</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>41,500,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 6</TD>
+  <TD width='111' height='46'>농협은행생명보험㈜</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>40,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 7</TD>
+  <TD width='111' height='46'>㈜부산은행</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>30,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>그레이츠 강남_장기차입금 8</TD>
+  <TD width='111' height='46'>㈜하나은행</TD>
+  <TD width='111' height='46'>2027-06-25</TD>
+  <TD width='111' height='46' align='RIGHT'>0.039</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>25,000,000</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='351' height='23' colspan='3'>차입금명칭 &nbsp;합계</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>2,064,000,000</TD>
+  <TD width='111' height='23' align='RIGHT'>(3,429,325)</TD>
+  <TD width='111' height='23' align='RIGHT'>918,412,686</TD>
+  <TD width='111' height='23' align='RIGHT'>1,142,157,989</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='1440'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

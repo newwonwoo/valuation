@@ -142,8 +142,19 @@ class GenericValuationPlanError(ValueError):
     """Raised when the generic composition cannot honour a method choice."""
 
 
-def conventional_valuation_plan_inputs_loader(*, reporting_unit: str):
-    """ValuationPlanInputsLoader bound to the fixed assumption-key conventions."""
+def conventional_valuation_plan_inputs_loader(
+    *,
+    reporting_unit: str,
+    ev_adjustment_segments: frozenset[str] | None = None,
+):
+    """ValuationPlanInputsLoader bound to the fixed assumption-key conventions.
+
+    ``ev_adjustment_segments`` names the segments whose chosen method emits
+    enterprise value and therefore needs the EV-to-equity adjustment binding;
+    the compiler refuses that binding on an equity-output evaluator, so an
+    equity-only segment must be bound with no adjustment key. ``None`` keeps
+    the historical behavior of binding the adjustment key everywhere.
+    """
     if not reporting_unit:
         raise GenericValuationPlanError("reporting_unit is required")
 
@@ -163,7 +174,12 @@ def conventional_valuation_plan_inputs_loader(*, reporting_unit: str):
                     segment_id=item.segment_id,
                     asset_id=item.segment_id,
                     ownership_key=OWNERSHIP_KEY,
-                    ev_to_equity_adjustment_key=EV_ADJUSTMENT_KEY,
+                    ev_to_equity_adjustment_key=(
+                        EV_ADJUSTMENT_KEY
+                        if ev_adjustment_segments is None
+                        or item.segment_id in ev_adjustment_segments
+                        else None
+                    ),
                 )
                 for item in segments
             ),
