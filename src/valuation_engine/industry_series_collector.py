@@ -22,9 +22,11 @@ structurally rather than by convention:
   rows — a guessed table id is a fabricated source. The default registry
   therefore ships with zero verified production rows and the capability
   reflects only what is verified.
-- **Knowledge-time discipline.** The newest observation at or before the run's
-  ``as_of`` is selected; period strings (YYYY / YYYYMM / YYYYMMDD) resolve to
-  period-end effective dates, and the observation date is the run cutoff.
+- **Knowledge-time discipline.** A verified row must carry publication,
+  first-seen and revision timestamps. The newest observation whose period and
+  all three knowledge timestamps are at or before the run's ``as_of`` is
+  selected; period strings (YYYY / YYYYMM / YYYYMMDD) resolve to period-end
+  effective dates, and the Evidence observation date is the first-seen date.
 - **Credentials never leak.** The fetch URL is rendered from a template with
   an environment credential; the Evidence ``source_ref`` carries the redacted
   form.
@@ -34,7 +36,7 @@ from __future__ import annotations
 
 from calendar import monthrange
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
 import json
@@ -101,6 +103,9 @@ class IndustrySeriesSpec:
     url_template: str
     api_key_env: str
     verified: bool
+    published_at_field: str = "PUBLISHED_AT"
+    first_seen_at_field: str = "FIRST_SEEN_AT"
+    revision_at_field: str = "REVISION_AT"
 
     def validate(self) -> None:
         required = (
@@ -113,6 +118,9 @@ class IndustrySeriesSpec:
             self.definition_id,
             self.definition,
             self.url_template,
+            self.published_at_field,
+            self.first_seen_at_field,
+            self.revision_at_field,
         )
         if not all(required):
             raise IndustrySeriesError(
@@ -181,6 +189,9 @@ def load_industry_series_registry(
             url_template=str(row.get("url_template", "")),
             api_key_env=str(row.get("api_key_env", "")),
             verified=bool(row.get("verified", False)),
+            published_at_field=str(row.get("published_at_field", "PUBLISHED_AT")),
+            first_seen_at_field=str(row.get("first_seen_at_field", "FIRST_SEEN_AT")),
+            revision_at_field=str(row.get("revision_at_field", "REVISION_AT")),
         )
         spec.validate()
         specs.append(spec)
@@ -212,6 +223,31 @@ def _period_end(period: str) -> str:
     raise IndustrySeriesError(f"unsupported series period: {period!r}")
 
 
+def _knowledge_timestamp(
+    row: Mapping[str, object],
+    *,
+    field: str,
+    label: str,
+    series_id: str,
+) -> datetime:
+    raw = str(row.get(field) or "").strip()
+    if not raw:
+        raise IndustrySeriesError(
+            f"verified series {series_id} row is missing required {label} field {field}"
+        )
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise IndustrySeriesError(
+            f"verified series {series_id} row has invalid {label} timestamp {raw!r}"
+        ) from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise IndustrySeriesError(
+            f"verified series {series_id} {label} timestamp must include a timezone"
+        )
+    return parsed
+
+
 def _json_safe(amount: Decimal) -> int | str:
     integral = amount.to_integral_value()
     return int(integral) if amount == integral else format(amount, "f")
@@ -228,9 +264,11 @@ def request_scoped_industry_series_collector(
     """EvidenceCollector serving one source's verified industry series.
 
     Each requested metric resolves to its verified series, fetches, and takes
-    the newest observation at or before ``as_of``. A series with no observation
-    inside the cutoff is a coverage gap, reported by name downstream; a fetch
-    or parse failure raises and blocks, because a broken source is not a gap.
+    the newest observation whose period, publication, first-seen and revision
+    timestamps are at or before ``as_of``. A series with no observation inside
+    the cutoff is a coverage gap, reported by name downstream; a fetch, parse or
+    required knowledge-time metadata failure raises and blocks, because a broken
+    source is not a gap.
     """
     if not segment_id:
         raise IndustrySeriesError("segment_id is required")
@@ -258,16 +296,53 @@ def request_scoped_industry_series_collector(
         for metric in request.required_metrics:
             spec = usable[metric]
             rows = parse_json_response(fetch_text(spec.fetch_url()))
-            observations = parse_kosis_series_values(rows)
-            fingerprints.append(stable_hash([spec.series_id, list(observations)]))
-            in_window = [
-                (period, value)
-                for period, value in observations
-                if _period_end(period) <= cutoff
-            ]
+            fingerprints.append(stable_hash([spec.series_id, rows]))
+            in_window: list[tuple[str, str, datetime, datetime, datetime]] = []
+            seen_periods: set[str] = set()
+            for row in rows:
+                observations = parse_kosis_series_values([row])
+                if not observations:
+                    continue
+                period, value = observations[0]
+                if _period_end(period) > cutoff:
+                    continue
+                published_at = _knowledge_timestamp(
+                    row,
+                    field=spec.published_at_field,
+                    label="published_at",
+                    series_id=spec.series_id,
+                )
+                first_seen_at = _knowledge_timestamp(
+                    row,
+                    field=spec.first_seen_at_field,
+                    label="first_seen_at",
+                    series_id=spec.series_id,
+                )
+                revision_at = _knowledge_timestamp(
+                    row,
+                    field=spec.revision_at_field,
+                    label="revision_at",
+                    series_id=spec.series_id,
+                )
+                if any(
+                    timestamp.date().isoformat() > cutoff
+                    for timestamp in (published_at, first_seen_at, revision_at)
+                ):
+                    continue
+                if period in seen_periods:
+                    raise IndustrySeriesError(
+                        f"verified series {spec.series_id} has duplicate eligible "
+                        f"observations for period {period}"
+                    )
+                seen_periods.add(period)
+                in_window.append(
+                    (period, value, published_at, first_seen_at, revision_at)
+                )
             if not in_window:
                 continue  # nothing knowable at the cutoff: a named gap downstream
-            period, value = in_window[-1]
+            period, value, published_at, first_seen_at, revision_at = max(
+                in_window, key=lambda item: item[0]
+            )
             effective = _period_end(period)
             amount = Decimal(value)
             records.append(
@@ -279,7 +354,7 @@ def request_scoped_industry_series_collector(
                     unit=spec.unit,
                     source_layer=spec.source_layer,
                     effective_date=effective,
-                    observed_date=cutoff,
+                    observed_date=first_seen_at.date().isoformat(),
                     source_name=f"{spec.source_id} series {spec.series_id}",
                     source_ref=spec.display_ref,
                     source_grade="A",
@@ -287,6 +362,9 @@ def request_scoped_industry_series_collector(
                     segment=segment_id,
                     notes=(
                         f"definition_id={spec.definition_id}; geography={spec.geography}; "
+                        f"published_at={published_at.isoformat()}; "
+                        f"first_seen_at={first_seen_at.isoformat()}; "
+                        f"revision_at={revision_at.isoformat()}; "
                         f"definition={spec.definition}"
                     ),
                 )

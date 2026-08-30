@@ -40,9 +40,27 @@ def _spec(**overrides) -> IndustrySeriesSpec:
 
 
 ROWS = [
-    {"PRD_DE": "202606", "DT": "101.5"},
-    {"PRD_DE": "202607", "DT": "103.0"},
-    {"PRD_DE": "202612", "DT": "999.0"},  # after the cutoff
+    {
+        "PRD_DE": "202606",
+        "DT": "101.5",
+        "PUBLISHED_AT": "2026-07-08T00:00:00Z",
+        "FIRST_SEEN_AT": "2026-07-10T09:00:00+09:00",
+        "REVISION_AT": "2026-07-08T00:00:00Z",
+    },
+    {
+        "PRD_DE": "202607",
+        "DT": "103.0",
+        "PUBLISHED_AT": "2026-08-08T00:00:00Z",
+        "FIRST_SEEN_AT": "2026-08-10T09:00:00+09:00",
+        "REVISION_AT": "2026-08-08T00:00:00Z",
+    },
+    {
+        "PRD_DE": "202612",
+        "DT": "999.0",
+        "PUBLISHED_AT": "2027-01-08T00:00:00Z",
+        "FIRST_SEEN_AT": "2027-01-10T09:00:00+09:00",
+        "REVISION_AT": "2027-01-08T00:00:00Z",
+    },  # after the cutoff
 ]
 
 
@@ -65,9 +83,34 @@ def test_latest_observation_within_the_cutoff_is_selected():
     assert record.metric == "benchmark_price"
     assert float(record.value) == 103.0
     assert record.effective_date == "2026-07-31"
-    assert record.observed_date == AS_OF
+    assert record.observed_date == "2026-08-10"
     assert record.source_layer is EvidenceSourceLayer.AUTHORIZED_MARKET_DATA
     assert "definition_id=DEF_S1" in record.notes
+    assert "published_at=2026-08-08T00:00:00+00:00" in record.notes
+    assert "first_seen_at=2026-08-10T09:00:00+09:00" in record.notes
+
+
+@pytest.mark.parametrize("late_field", ["PUBLISHED_AT", "FIRST_SEEN_AT", "REVISION_AT"])
+def test_post_cutoff_knowledge_timestamp_cannot_leak_a_revision(late_field):
+    rows = [dict(row) for row in ROWS[:2]]
+    rows[1][late_field] = "2026-08-28T00:00:00Z"
+    batch = _collect(rows=rows)
+    record = batch.records[0]
+    assert float(record.value) == 101.5
+    assert record.effective_date == "2026-06-30"
+
+
+@pytest.mark.parametrize("missing_field", ["PUBLISHED_AT", "FIRST_SEEN_AT", "REVISION_AT"])
+def test_verified_eligible_rows_require_all_knowledge_timestamps(missing_field):
+    row = dict(ROWS[0])
+    del row[missing_field]
+    with pytest.raises(IndustrySeriesError, match=f"missing required.*{missing_field}"):
+        _collect(rows=[row])
+
+
+def test_duplicate_eligible_periods_fail_closed():
+    with pytest.raises(IndustrySeriesError, match="duplicate eligible observations"):
+        _collect(rows=[dict(ROWS[0]), dict(ROWS[0])])
 
 
 def test_a_company_realized_metric_is_refused_by_the_definition_gate():
@@ -86,7 +129,7 @@ def test_an_unverified_series_never_collects():
 
 
 def test_no_observation_inside_the_cutoff_is_a_gap_not_a_zero():
-    batch = _collect(rows=[{"PRD_DE": "202612", "DT": "999.0"}])
+    batch = _collect(rows=[dict(ROWS[2])])
     assert not batch.records  # coverage names the metric downstream
 
 

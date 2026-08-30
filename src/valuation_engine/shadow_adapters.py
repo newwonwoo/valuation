@@ -132,9 +132,10 @@ def scenario_build_adapter() -> StageAdapter:
     """Compile Bridge proposals and bind scenarios in canonical SCENARIO_BUILD.
 
     Probability arithmetic remains deterministic. LIVE_PRIMARY may bind either a
-    calibrated probability assumption path or a frozen external probability
-    snapshot — continuous financial-path or binary-event — but never both. The
-    LLM remains proposal-only in either route.
+    calibrated probability assumption path or a frozen continuous financial-path
+    snapshot, but never both. Binary-event snapshots remain diagnostics/tail-risk
+    artifacts and cannot enter intrinsic scenario weighting. The LLM remains
+    proposal-only in either route.
     """
 
     def run(context: OrchestratorContext) -> StageExecutionResult:

@@ -11,10 +11,11 @@ from .probability_calibration import CalibrationSnapshot
 from .records import CalibrationStatus
 
 
-# A frozen distribution that binds itself into the scenario set as an external
-# probability source, rather than authorising an Evidence-carried probability
-# assumption path. Both continuous financial-path (Route B) and binary-event
-# (Route A) snapshots are of this kind.
+# A frozen distribution that may bind itself into the scenario set as an
+# external probability source, rather than authorising an Evidence-carried
+# probability assumption path. Canonical v3.2 policy permits only continuous
+# financial paths here. Binary-event snapshots remain diagnostics/tail-risk
+# artifacts and are deliberately kept out of this registry.
 # Each external route publishes its snapshot under its own context key, so a run
 # carries exactly the artifact its route produced and no run's context grows a
 # key because another route exists.
@@ -23,13 +24,18 @@ EXTERNAL_PROBABILITY_SNAPSHOT_KEYS: tuple[tuple[type, str], ...] = (
         ContinuousProbabilityCalibrationSnapshot,
         "continuous_probability_calibration_snapshot",
     ),
+)
+EXTERNAL_PROBABILITY_SNAPSHOT_CONTRACTS = tuple(
+    contract for contract, _ in EXTERNAL_PROBABILITY_SNAPSHOT_KEYS
+)
+DIAGNOSTIC_PROBABILITY_SNAPSHOT_KEYS: tuple[tuple[type, str], ...] = (
     (
         BinaryEventProbabilityCalibrationSnapshot,
         "binary_event_probability_calibration_snapshot",
     ),
 )
-EXTERNAL_PROBABILITY_SNAPSHOT_CONTRACTS = tuple(
-    contract for contract, _ in EXTERNAL_PROBABILITY_SNAPSHOT_KEYS
+DIAGNOSTIC_PROBABILITY_SNAPSHOT_CONTRACTS = tuple(
+    contract for contract, _ in DIAGNOSTIC_PROBABILITY_SNAPSHOT_KEYS
 )
 # Every snapshot type the SCENARIO_BUILD calibration socket accepts. Adding a
 # probability engine means adding its sealed snapshot type here; the socket
@@ -37,7 +43,7 @@ EXTERNAL_PROBABILITY_SNAPSHOT_CONTRACTS = tuple(
 CALIBRATION_SNAPSHOT_CONTRACTS = (
     CalibrationSnapshot,
     HierarchicalCalibrationSnapshot,
-) + EXTERNAL_PROBABILITY_SNAPSHOT_CONTRACTS
+) + EXTERNAL_PROBABILITY_SNAPSHOT_CONTRACTS + DIAGNOSTIC_PROBABILITY_SNAPSHOT_CONTRACTS
 
 CalibrationSnapshotType = (
     CalibrationSnapshot
@@ -55,9 +61,10 @@ def probability_calibration_load_adapter(
 ) -> StageAdapter:
     """Load a versioned calibration snapshot inside the canonical SCENARIO_BUILD stage.
 
-    Single-cohort v1, hierarchical v2, binary-event v3 and continuous
-    financial-path v3.2 snapshots share the same certificate boundary. Whichever
-    engine produced the distribution, the socket asks the same three questions:
+    Single-cohort v1, hierarchical v2 and continuous financial-path v3.2
+    snapshots share the weighting certificate boundary. Binary-event v3 is
+    accepted only as a diagnostics/tail-risk artifact. Whichever engine produced
+    the distribution, the socket asks the same three questions:
     is it a registered snapshot contract, does it belong to the expected cohort,
     and does it issue a certificate that passes ``validate_for_weighting``.
     Non-calibrated snapshots remain monitoring artifacts and never authorize
@@ -77,7 +84,11 @@ def probability_calibration_load_adapter(
                 raise ValueError(
                     f"calibration cohort {snapshot.cohort_key} does not match {expected_cohort_key}"
                 )
-            if isinstance(snapshot, EXTERNAL_PROBABILITY_SNAPSHOT_CONTRACTS):
+            if isinstance(
+                snapshot,
+                EXTERNAL_PROBABILITY_SNAPSHOT_CONTRACTS
+                + DIAGNOSTIC_PROBABILITY_SNAPSHOT_CONTRACTS,
+            ):
                 snapshot.validate()
         except Exception as exc:
             return StageExecutionResult(
@@ -90,6 +101,17 @@ def probability_calibration_load_adapter(
         for contract, key in EXTERNAL_PROBABILITY_SNAPSHOT_KEYS:
             if isinstance(snapshot, contract):
                 outputs[key] = snapshot
+        for contract, key in DIAGNOSTIC_PROBABILITY_SNAPSHOT_KEYS:
+            if isinstance(snapshot, contract):
+                outputs[key] = snapshot
+        if isinstance(snapshot, DIAGNOSTIC_PROBABILITY_SNAPSHOT_CONTRACTS):
+            return StageExecutionResult(
+                StageStatus.WARNING,
+                "binary-event calibration is diagnostics/tail-risk only under "
+                "probability engine v3.2 policy; intrinsic scenario weighting "
+                "remains disabled",
+                outputs,
+            )
         if snapshot.status is CalibrationStatus.CALIBRATED:
             try:
                 certificate = snapshot.certificate()

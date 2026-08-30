@@ -100,19 +100,49 @@ def _fact_rows() -> list[dict]:
 #: registry ships with zero verified rows until an operator checks real series.
 _PROBE_SERIES = {
     "PROBE_KOSIS_STEEL_PPI": [
-        {"PRD_DE": "202606", "DT": "112.4"},
-        {"PRD_DE": "202607", "DT": "113.1"},
+        {
+            "PRD_DE": "202606", "DT": "112.4",
+            "PUBLISHED_AT": "2026-07-08T00:00:00Z",
+            "FIRST_SEEN_AT": "2026-07-10T09:00:00+09:00",
+            "REVISION_AT": "2026-07-08T00:00:00Z",
+        },
+        {
+            "PRD_DE": "202607", "DT": "113.1",
+            "PUBLISHED_AT": "2026-08-08T00:00:00Z",
+            "FIRST_SEEN_AT": "2026-08-10T09:00:00+09:00",
+            "REVISION_AT": "2026-08-08T00:00:00Z",
+        },
     ],
     "PROBE_KOSIS_IRON_ORE_INPUT": [
-        {"PRD_DE": "202607", "DT": "98.7"},
+        {
+            "PRD_DE": "202607", "DT": "98.7",
+            "PUBLISHED_AT": "2026-08-08T00:00:00Z",
+            "FIRST_SEEN_AT": "2026-08-10T09:00:00+09:00",
+            "REVISION_AT": "2026-08-08T00:00:00Z",
+        },
     ],
     "PROBE_KOSIS_STEEL_OUTPUT": [
-        {"PRD_DE": "202607", "DT": "104.2"},
+        {
+            "PRD_DE": "202607", "DT": "104.2",
+            "PUBLISHED_AT": "2026-08-08T00:00:00Z",
+            "FIRST_SEEN_AT": "2026-08-10T09:00:00+09:00",
+            "REVISION_AT": "2026-08-08T00:00:00Z",
+        },
     ],
     "PROBE_KOSIS_STEEL_INVENTORY": [
-        {"PRD_DE": "202606", "DT": "121.9"},
+        {
+            "PRD_DE": "202606", "DT": "121.9",
+            "PUBLISHED_AT": "2026-07-08T00:00:00Z",
+            "FIRST_SEEN_AT": "2026-07-10T09:00:00+09:00",
+            "REVISION_AT": "2026-07-08T00:00:00Z",
+        },
         # Published after the probe cutoff: must never be selected.
-        {"PRD_DE": "202612", "DT": "999.0"},
+        {
+            "PRD_DE": "202612", "DT": "999.0",
+            "PUBLISHED_AT": "2027-01-08T00:00:00Z",
+            "FIRST_SEEN_AT": "2027-01-10T09:00:00+09:00",
+            "REVISION_AT": "2027-01-08T00:00:00Z",
+        },
     ],
 }
 
@@ -130,6 +160,9 @@ series:
       probe; index level, not a company-realized price.
     url_template: https://probe.invalid/kosis/PROBE_KOSIS_STEEL_PPI.json
     api_key_env: ""
+    published_at_field: PUBLISHED_AT
+    first_seen_at_field: FIRST_SEEN_AT
+    revision_at_field: REVISION_AT
     verified: true
   - series_id: PROBE_KOSIS_IRON_ORE_INPUT
     source_id: KR_KOSIS_API
@@ -142,6 +175,9 @@ series:
       Synthetic iron-ore input price index used only by the cold-start probe.
     url_template: https://probe.invalid/kosis/PROBE_KOSIS_IRON_ORE_INPUT.json
     api_key_env: ""
+    published_at_field: PUBLISHED_AT
+    first_seen_at_field: FIRST_SEEN_AT
+    revision_at_field: REVISION_AT
     verified: true
   - series_id: PROBE_KOSIS_STEEL_OUTPUT
     source_id: KR_KOSIS_API
@@ -154,6 +190,9 @@ series:
       Synthetic steel product output price index used only by the cold-start probe.
     url_template: https://probe.invalid/kosis/PROBE_KOSIS_STEEL_OUTPUT.json
     api_key_env: ""
+    published_at_field: PUBLISHED_AT
+    first_seen_at_field: FIRST_SEEN_AT
+    revision_at_field: REVISION_AT
     verified: true
   - series_id: PROBE_KOSIS_STEEL_INVENTORY
     source_id: KR_KOSIS_API
@@ -166,6 +205,9 @@ series:
       Synthetic industry inventory index used only by the cold-start probe.
     url_template: https://probe.invalid/kosis/PROBE_KOSIS_STEEL_INVENTORY.json
     api_key_env: ""
+    published_at_field: PUBLISHED_AT
+    first_seen_at_field: FIRST_SEEN_AT
+    revision_at_field: REVISION_AT
     verified: true
 """
 

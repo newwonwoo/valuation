@@ -27,4 +27,7 @@ series: []
 #      KOSIS table; index base year per catalog; not a company-realized price.
 #    url_template: https://kosis.kr/openapi/Param/statisticsParameterData.do?method=getList&apiKey={api_key}&orgId=...&tblId=...&format=json&jsonVD=Y
 #    api_key_env: KOSIS_API_KEY
+#    published_at_field: PUBLISHED_AT
+#    first_seen_at_field: FIRST_SEEN_AT
+#    revision_at_field: REVISION_AT
 #    verified: false
