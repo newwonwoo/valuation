@@ -198,3 +198,91 @@ def test_the_artifact_is_deterministic_for_the_same_rows():
     second = _build()
     assert first.constants == second.constants
     assert first.artifact["artifact_sha256"] == second.artifact["artifact_sha256"]
+
+
+# ------------------------------------------- the REAL cohort, pinned in-repo
+
+
+def test_the_committed_kr_steel_artifact_reproduces_from_its_committed_dataset():
+    """The repo carries the first real cohort: 91 company-year rows of filed
+    OFS financials for 12 listed KR steel companies (2017-2024, fetched from
+    public OpenDART endpoints), the artifact fitted from them, and KISCO's own
+    FY2025 conditioning. This pins that the committed artifact IS the factory's
+    deterministic output for the committed dataset — same hashes, bit for bit —
+    and that the pair yields a CALIBRATED snapshot and weighting certificate
+    for a post-publication as_of."""
+    import json
+    from decimal import Decimal
+    from pathlib import Path
+
+    from valuation_engine.continuous_calibration_factory import load_cohort_dataset
+
+    root = Path("config")
+    committed_artifact = json.loads(
+        (root / "kr_steel_calibration_artifact.json").read_text(encoding="utf-8")
+    )
+    committed_provenance = json.loads(
+        (root / "kr_steel_calibration_provenance.json").read_text(encoding="utf-8")
+    )
+    cond = json.loads(
+        (root / "kisco_conditioning_fy2025.json").read_text(encoding="utf-8")
+    )
+    rows = load_cohort_dataset(root / "kr_steel_cohort_dataset.json")
+    assert len(rows) == 91
+    assert len({row.company_id for row in rows}) == 12
+    assert all(row.company_id != "104700" for row in rows)
+
+    result = build_continuous_calibration_artifact(
+        observations=rows,
+        driver_ids=("revenue_growth", "operating_margin"),
+        scenario_ids=("Down", "Base", "Bull"),
+        path_length=5,
+        excluded_ticker="104700",
+        conditioning=ConditioningDeclaration(
+            values=tuple(sorted((k, float(v)) for k, v in cond["values"].items())),
+            source_ref=cond["source_ref"],
+            first_seen_at=cond["first_seen_at"],
+            source_hash=cond["source_hash"],
+        ),
+    )
+    assert result.artifact == committed_artifact
+    assert result.provenance == committed_provenance
+
+    binding = ContinuousCalibrationBinding(
+        cohort_key="kr.steel.long|5y_path|continuous_v1",
+        forecast_class="kr.steel.long.continuous_financial_path",
+        horizon="5y_path",
+        method_version="probability_engine_v3.2_factory_v1",
+        mapping_version="kr_steel_cohort_v1",
+        driver_ids=("revenue_growth", "operating_margin"),
+        scenario_ids=("Down", "Base", "Bull"),
+        path_length=5,
+        artifact_path=root / "kr_steel_calibration_artifact.json",
+        provenance_path=root / "kr_steel_calibration_provenance.json",
+        expected_artifact_sha256=result.constants.expected_artifact_sha256,
+        expected_provenance_artifact_sha256=result.constants.expected_provenance_artifact_sha256,
+        expected_dataset_sha256=result.constants.expected_dataset_sha256,
+        expected_provenance_hash=result.constants.expected_provenance_hash,
+        expected_source_row_count=91,
+        expected_source_company_count=12,
+        excluded_ticker="104700",
+        credible_level=Decimal("0.90"),
+        outer_draws=300,
+        inner_draws=200,
+        seed=20260829,
+    )
+    conditioning = ContinuousConditioning(
+        readings=tuple(
+            sorted((k, Decimal(str(v))) for k, v in cond["values"].items())
+        ),
+        source_ref=cond["source_ref"],
+        first_seen_at=cond["first_seen_at"],
+        source_hash=cond["source_hash"],
+    )
+    snapshot = build_continuous_probability_snapshot(
+        binding=binding, conditioning=conditioning, as_of_date="2026-08-29"
+    )
+    assert snapshot.status is CalibrationStatus.CALIBRATED
+    snapshot.certificate().validate_for_weighting()
+    total = sum(probability for _, probability in snapshot.probabilities)
+    assert abs(total - Decimal("1")) < Decimal("1e-9")
