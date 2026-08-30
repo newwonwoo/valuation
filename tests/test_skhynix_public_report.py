@@ -1,5 +1,9 @@
 from pathlib import Path
 
+from valuation_engine.skhynix_brokerage_html import (
+    render_skhynix_brokerage_html,
+    validate_skhynix_brokerage_html,
+)
 from valuation_engine.skhynix_continuous_live_primary import (
     render_calibrated_probability_summary,
     run_skhynix_live_primary,
@@ -67,3 +71,18 @@ def test_skhynix_public_report_uses_korean_standard_form(tmp_path: Path):
     assert "15.7%" in cards[1]
     assert "43.9%" in cards[1]
     assert "40.4%" in cards[1]
+
+    html = render_skhynix_brokerage_html(
+        report,
+        summary_filename=visual_names[0],
+        assumptions_filename=visual_names[1],
+        as_of="2026-08-28",
+        markdown_filename="SKHYNIX_000660_LIVE_PRIMARY_REPORT.md",
+    )
+    validate_skhynix_brokerage_html(html)
+    assert "*{box-sizing:border-box}" in html
+    assert "body{margin:0;font-size:13pt" in html
+    assert (
+        "@media(max-width:760px){.report{padding:0}.page{width:100%;min-height:0;"
+        "margin:0 0 12px;padding:24px 20px;box-shadow:none}"
+    ) in html
