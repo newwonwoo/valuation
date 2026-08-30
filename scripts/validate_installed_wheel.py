@@ -20,6 +20,7 @@ REGISTRIES = (
     "sanil_live_snapshot.yaml",
     "sanil_market_snapshot.yaml",
 )
+EXPECTED_METHOD_COUNT = 42
 
 
 def main() -> int:
@@ -29,7 +30,7 @@ def main() -> int:
         raise SystemExit("missing packaged runtime registries: " + ", ".join(missing))
 
     method_registry = load_default_method_capability_registry()
-    if method_registry.coverage_summary().total != 41:
+    if method_registry.coverage_summary().total != EXPECTED_METHOD_COUNT:
         raise SystemExit("installed wheel method registry is incomplete")
 
     # Exercise the exact production default path used by run_controlled_workflow and Audit.
