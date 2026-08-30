@@ -1,0 +1,124 @@
+from __future__ import annotations
+
+from pathlib import Path
+import sys
+
+import pytest
+
+import valuation_engine.mcp_tunnel_child as tunnel_child
+import valuation_engine.tunnel_launcher as launcher
+
+
+def test_tunnel_child_scrubs_control_plane_secrets_but_keeps_model_key():
+    env = {
+        "CONTROL_PLANE_API_KEY": "runtime-secret",
+        "OPENAI_ADMIN_KEY": "admin-secret",
+        "CLOUDFLARED_TOKEN": "cloudflare-secret",
+        "OPENAI_API_KEY": "model-secret",
+        "DART_API_KEY": "dart-secret",
+    }
+    removed = tunnel_child.scrub_tunnel_only_secrets(env)
+    assert set(removed) == {
+        "CONTROL_PLANE_API_KEY",
+        "OPENAI_ADMIN_KEY",
+        "CLOUDFLARED_TOKEN",
+    }
+    assert "CONTROL_PLANE_API_KEY" not in env
+    assert "OPENAI_ADMIN_KEY" not in env
+    assert "CLOUDFLARED_TOKEN" not in env
+    assert env["OPENAI_API_KEY"] == "model-secret"
+    assert env["DART_API_KEY"] == "dart-secret"
+
+
+def test_connect_command_uses_secret_reference_and_stdio_child():
+    command = launcher.build_connect_command(
+        binary="/trusted/tunnel-client",
+        alias="prism-valuation",
+        tunnel_id="tunnel_0123456789abcdef0123456789abcdef",
+    )
+    assert command[:3] == (
+        "/trusted/tunnel-client",
+        "runtimes",
+        "connect",
+    )
+    assert "env:CONTROL_PLANE_API_KEY" in command
+    assert "runtime-secret" not in command
+    child = command[command.index("--mcp-command") + 1]
+    assert "valuation_engine.mcp_tunnel_child" in child
+    assert sys.executable in child
+    assert command[-1] == "--json"
+
+
+def test_prepare_runtime_environment_requires_separate_tunnel_key(tmp_path):
+    env = {
+        "DART_API_KEY": "dart",
+        "VALUATION_LLM_TRANSPORT": "transport.module:build",
+        "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state"),
+    }
+    with pytest.raises(launcher.PrismTunnelError, match="CONTROL_PLANE_API_KEY"):
+        launcher._prepare_runtime_environment(env)
+
+
+def test_prepare_runtime_environment_resolves_persistent_state_root(tmp_path):
+    env = launcher._prepare_runtime_environment(
+        {
+            "DART_API_KEY": "dart",
+            "VALUATION_LLM_TRANSPORT": "transport.module:build",
+            "CONTROL_PLANE_API_KEY": "runtime",
+            "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state"),
+        }
+    )
+    root = Path(env["VALUATION_MCP_STATE_ROOT"])
+    assert root.is_absolute()
+    assert root.is_dir()
+    assert env["VALUATION_MCP_JURISDICTION"] == "KR"
+
+
+def test_check_never_returns_secret_values(monkeypatch, tmp_path):
+    fake_bin = tmp_path / "tunnel-client"
+    fake_bin.write_text("binary", encoding="utf-8")
+    monkeypatch.setattr(launcher.shutil, "which", lambda name: str(fake_bin))
+    payload = launcher.check(
+        {
+            "DART_API_KEY": "DART-TOP-SECRET",
+            "VALUATION_LLM_TRANSPORT": "transport.module:build",
+            "CONTROL_PLANE_API_KEY": "TUNNEL-TOP-SECRET",
+            "CONTROL_PLANE_TUNNEL_ID": "tunnel_0123456789abcdef0123456789abcdef",
+            "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state"),
+        }
+    )
+    rendered = repr(payload)
+    assert payload["status"] == "READY_TO_CONNECT"
+    assert payload["method_override"] is False
+    assert "DART-TOP-SECRET" not in rendered
+    assert "TUNNEL-TOP-SECRET" not in rendered
+
+
+def test_connect_runs_managed_runtime_then_checks_status(monkeypatch, tmp_path):
+    fake_bin = tmp_path / "tunnel-client"
+    fake_bin.write_text("binary", encoding="utf-8")
+    monkeypatch.setattr(launcher.shutil, "which", lambda name: str(fake_bin))
+    calls = []
+
+    def fake_run(command, *, env):
+        calls.append(command)
+        if command[1:3] == ("runtimes", "connect"):
+            return {"connected": True}
+        return {"process_running": True, "healthy": True, "ready": True}
+
+    monkeypatch.setattr(launcher, "_run", fake_run)
+    payload = launcher.connect(
+        {
+            "DART_API_KEY": "dart",
+            "VALUATION_LLM_TRANSPORT": "transport.module:build",
+            "CONTROL_PLANE_API_KEY": "runtime",
+            "CONTROL_PLANE_TUNNEL_ID": "tunnel_0123456789abcdef0123456789abcdef",
+            "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state"),
+        }
+    )
+    assert len(calls) == 2
+    assert calls[0][1:3] == ("runtimes", "connect")
+    assert calls[1][1:3] == ("runtimes", "status")
+    assert payload["process_running"] is True
+    assert payload["healthy"] is True
+    assert payload["ready"] is True
