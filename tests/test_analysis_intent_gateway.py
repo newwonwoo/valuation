@@ -18,16 +18,25 @@ from valuation_engine.orchestrator import ControlledRunResult, StageTrace
     ("utterance", "company"),
     (
         ("분석시작 고려아연", "고려아연"),
+        ("분석 시작 고려아연", "고려아연"),
         ("고려아연 분석시작", "고려아연"),
+        ("고려아연 분석 시작해", "고려아연"),
+        ("고려아연분석시작", "고려아연"),
         ("고려아연 분석해줘", "고려아연"),
+        ("고려아연분석해줘", "고려아연"),
         ("고려아연 분석해 줘", "고려아연"),
         ("고려아연 분석", "고려아연"),
+        ("010130분석", "010130"),
         ("고려아연 밸류에이션", "고려아연"),
+        ("고려아연밸류에이션", "고려아연"),
         ("고려아연 가치평가", "고려아연"),
+        ("고려아연가치평가", "고려아연"),
         ("고려아연 적정주가", "고려아연"),
         ("고려아연 프리즘", "고려아연"),
+        ("고려아연프리즘으로시작해", "고려아연"),
         ("프리즘 고려아연", "고려아연"),
         ("SK하이닉스 한번 돌려봐", "SK하이닉스"),
+        ("SK하이닉스돌려봐", "SK하이닉스"),
         ("010130 분석", "010130"),
         ("SK하이닉스를 분석해줘", "SK하이닉스"),
         ("고려아연 분석해줘?", "고려아연"),
@@ -56,6 +65,7 @@ def test_non_analysis_inputs_do_not_enter_prism_gateway(value):
 
 def test_intent_without_company_is_recognized_but_left_for_fail_closed_parser():
     assert canonicalize_analysis_command("분석해줘") == "분석시작"
+    assert canonicalize_analysis_command("분석 시작해") == "분석시작"
     assert canonicalize_analysis_command("프리즘") == "분석시작"
 
 
@@ -93,7 +103,7 @@ def test_public_strict_entrypoint_canonicalizes_before_runtime_request(
     factory = lambda request: request
 
     result = strict_cli.execute_live_analysis(
-        "고려아연 분석해줘",
+        "고려아연분석해줘",
         state_root=tmp_path,
         provider_factory=factory,
         run_id="RUN-INTENT",
@@ -107,7 +117,7 @@ def test_public_strict_entrypoint_canonicalizes_before_runtime_request(
 
 
 def test_cli_natural_analysis_intent_enters_live_path_not_yaml(capsys):
-    status = cli.main(["고려아연 분석해줘"], environ={})
+    status = cli.main(["고려아연분석해줘"], environ={})
     captured = capsys.readouterr()
 
     assert status == 2
