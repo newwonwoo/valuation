@@ -84,6 +84,59 @@ def _prototype_keys(capability: MethodCapability, forecast_years: int) -> tuple[
     return tuple(prototype.required_assumption_keys)
 
 
+def _economic_signature(
+    capability: MethodCapability,
+    *,
+    forecast_years: int,
+) -> tuple[object, ...]:
+    """Identity of an economic method independent of an overlapping archetype label."""
+    return (
+        capability.method,
+        capability.execution_family,
+        capability.output_kind,
+        capability.requires_beta,
+        capability.requires_wacc,
+        _prototype_keys(capability, forecast_years),
+    )
+
+
+def _collapse_equivalent_candidates(
+    segment: SegmentModuleRequirementPlan,
+    candidates: tuple[MethodCapability, ...],
+    *,
+    forecast_years: int,
+) -> tuple[MethodCapability, ...]:
+    """Collapse only exact economic duplicates created by multi-archetype routing.
+
+    A company may legitimately route to both ``commodity_price_taker`` and
+    ``process_spread``. If both archetypes expose the same method, runtime
+    family, risk requirements, output kind and evaluator assumptions, that is
+    one economic method with two registry bindings rather than two competing
+    valuation methods. The canonical archetype order breaks only that binding
+    tie. Distinct methods or execution families remain distinct and therefore
+    still require a user decision when more than one survives.
+    """
+    archetype_rank = {name: index for index, name in enumerate(segment.archetypes)}
+    grouped: dict[tuple[object, ...], list[MethodCapability]] = {}
+    for capability in candidates:
+        grouped.setdefault(
+            _economic_signature(capability, forecast_years=forecast_years), []
+        ).append(capability)
+    collapsed: list[MethodCapability] = []
+    for group in grouped.values():
+        collapsed.append(
+            min(
+                group,
+                key=lambda item: (
+                    archetype_rank.get(item.archetype, len(archetype_rank)),
+                    item.archetype,
+                    item.method,
+                ),
+            )
+        )
+    return tuple(collapsed)
+
+
 def auto_bridge_required_assumption_keys(
     plan: ModuleRequirementPlan,
     *,
@@ -137,7 +190,7 @@ def auto_feasible_method_choices(
     forecast_years: int,
     capability_registry: MethodCapabilityRegistry | None = None,
 ) -> tuple[SegmentMethodChoice, ...]:
-    """Return choices only when compiled scenarios leave one candidate per segment."""
+    """Return choices only when one economic candidate remains per segment."""
     plan.validate()
     registry = capability_registry or load_default_method_capability_registry()
     scenario_keys = tuple(
@@ -156,9 +209,14 @@ def auto_feasible_method_choices(
                 for keys in scenario_keys
             )
         )
-        if len(feasible) != 1:
+        economic_candidates = _collapse_equivalent_candidates(
+            segment,
+            feasible,
+            forecast_years=forecast_years,
+        )
+        if len(economic_candidates) != 1:
             return ()
-        selected = feasible[0]
+        selected = economic_candidates[0]
         choices.append(
             SegmentMethodChoice(
                 segment.segment_id,
