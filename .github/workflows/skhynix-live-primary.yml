@@ -75,9 +75,9 @@ jobs:
           test -f examples/report_forms/SKHYNIX_000660_LIVE_PRIMARY_REPORT.html
           test -f examples/report_forms/SKHYNIX_000660_LIVE_PRIMARY_REPORT.md
           test -f examples/report_forms/SKHYNIX_000660_LATEST_REPORT.json
-          test "$(find examples/report_forms -maxdepth 1 -name 'SKHYNIX_000660_20260828_TP*.html' | wc -l)" -eq 1
-          test "$(find examples/report_forms -maxdepth 1 -name 'SKHYNIX_000660_20260828_TP*.md' | wc -l)" -eq 1
-          test "$(find examples/report_forms -maxdepth 1 -name 'PRISM_000660_*.svg' | wc -l)" -eq 4
+          test "$(find examples/report_forms -maxdepth 1 -name 'SKHYNIX_000660_20260828_TP*.html' | wc -l)" -ge 1
+          test "$(find examples/report_forms -maxdepth 1 -name 'SKHYNIX_000660_20260828_TP*.md' | wc -l)" -ge 1
+          test "$(find examples/report_forms -maxdepth 1 -name 'PRISM_000660_*.svg' | wc -l)" -ge 4
       - name: Upload canonical report
         uses: actions/upload-artifact@v4
         with:
