@@ -226,6 +226,7 @@ def build_generic_kr_runtime_factory(
         ),
         industry_snapshot_loader=opendart_filing_snapshot_loader(
             fetch_text=network.fetch_text,
+            fetch_bytes=network.fetch_bytes,
             as_of=spec.as_of,
             api_key=network.api_key,
         ),

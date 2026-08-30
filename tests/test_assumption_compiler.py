@@ -1,5 +1,7 @@
 from decimal import Decimal
 
+import pytest
+
 from valuation_engine.actual_units import measure_from_raw
 from valuation_engine.assumption_compiler import (
     AssumptionSpec,
@@ -219,6 +221,47 @@ def test_calibrated_probability_can_compile():
         hypotheses=(hypothesis(CalibrationStatus.CALIBRATED),),
         bridges=(bridge(new_value=0.6, affected=AffectedVariable.PROBABILITY),),
         specs=(AssumptionSpec("event_probability", "Base", "B1", "ratio", "identity_observation", probability_only_if_calibrated=True, min_value=Decimal("0"), max_value=Decimal("1")),),
+        bridge_input_map={},
+    )
+    assert result.passed
+
+
+@pytest.mark.parametrize(
+    ("key", "metric"),
+    (
+        ("shares", "diluted_shares"),
+        ("debt", "net_debt"),
+        ("multiple", "normalized_multiple"),
+    ),
+)
+def test_pass_through_metric_rejects_partial_or_reverse_token_matches(key, metric):
+    ledger = EvidenceLedger((evidence("E1", 1, "ratio", metric=metric),))
+    result = compile_assumptions(
+        target_id="T",
+        ledger=ledger,
+        hypotheses=(hypothesis(),),
+        bridges=(bridge(new_value=1),),
+        specs=(AssumptionSpec(key, "Base", "B1", "ratio", "identity_observation"),),
+        bridge_input_map={},
+    )
+    assert not result.passed
+    assert any(item.code == "INVALID_EVIDENCE_INPUT" for item in result.findings)
+
+
+def test_pass_through_metric_allows_only_recognized_prefix_qualifiers():
+    ledger = EvidenceLedger(
+        (evidence("E1", 1, "ratio", metric="model_core_fcff_year_1"),)
+    )
+    result = compile_assumptions(
+        target_id="T",
+        ledger=ledger,
+        hypotheses=(hypothesis(),),
+        bridges=(bridge(new_value=1),),
+        specs=(
+            AssumptionSpec(
+                "fcff_year_1", "Base", "B1", "ratio", "identity_observation"
+            ),
+        ),
         bridge_input_map={},
     )
     assert result.passed

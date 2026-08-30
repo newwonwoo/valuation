@@ -404,8 +404,10 @@ def request_scoped_industry_series_collector(
                 spec, read_snapshot=read_snapshot
             )
             fingerprints.append(stable_hash(snapshot_payload))
-            in_window: list[tuple[str, str, datetime, datetime, datetime]] = []
-            seen_periods: set[str] = set()
+            eligible_by_period: dict[
+                str, tuple[str, str, datetime, datetime, datetime]
+            ] = {}
+            seen_versions: set[tuple[str, datetime, datetime, datetime]] = set()
             for row in rows:
                 observations = parse_kosis_series_values([row])
                 if not observations:
@@ -446,19 +448,27 @@ def request_scoped_industry_series_collector(
                     for timestamp in (published_at, first_seen_at, revision_at)
                 ):
                     continue
-                if period in seen_periods:
+                version_identity = (
+                    period, published_at, first_seen_at, revision_at
+                )
+                if version_identity in seen_versions:
                     raise IndustrySeriesError(
                         f"verified series {spec.series_id} has duplicate eligible "
-                        f"observations for period {period}"
+                        f"revision identity for period {period}"
                     )
-                seen_periods.add(period)
-                in_window.append(
-                    (period, value, published_at, first_seen_at, revision_at)
+                seen_versions.add(version_identity)
+                candidate = (
+                    period, value, published_at, first_seen_at, revision_at
                 )
-            if not in_window:
+                current = eligible_by_period.get(period)
+                if current is None or (
+                    revision_at, first_seen_at, published_at
+                ) > (current[4], current[3], current[2]):
+                    eligible_by_period[period] = candidate
+            if not eligible_by_period:
                 continue  # nothing knowable at the cutoff: a named gap downstream
             period, value, published_at, first_seen_at, revision_at = max(
-                in_window, key=lambda item: item[0]
+                eligible_by_period.values(), key=lambda item: item[0]
             )
             effective = _period_end(period)
             amount = Decimal(value)

@@ -7,6 +7,8 @@ module or a spec row, these tests could not pass.
 from __future__ import annotations
 
 import json
+from io import BytesIO
+from zipfile import ZipFile
 
 import pytest
 
@@ -21,7 +23,10 @@ from valuation_engine.generic_kr_industry import (
     opendart_filing_snapshot_loader,
 )
 from valuation_engine.industry_dna import EconomicArchetype
-from valuation_engine.live_primary_adapters import ResolvedCompanyIdentity
+from valuation_engine.live_primary_adapters import (
+    IndustryKnowledgeSnapshot,
+    ResolvedCompanyIdentity,
+)
 from valuation_engine.source_watch import WatchStatus
 
 
@@ -63,9 +68,20 @@ def _fetch_text(url: str) -> str:
     raise AssertionError(f"unexpected URL: {url}")
 
 
+def _fetch_bytes(url: str, body: str = "<BODY><P>단일 제조 사업을 영위합니다.</P></BODY>") -> bytes:
+    assert "document.xml" in url
+    buffer = BytesIO()
+    with ZipFile(buffer, "w") as archive:
+        archive.writestr("report.xml", body)
+    return buffer.getvalue()
+
+
 def _snapshot():
     loader = opendart_filing_snapshot_loader(
-        fetch_text=_fetch_text, as_of=AS_OF, api_key="TESTKEY"
+        fetch_text=_fetch_text,
+        fetch_bytes=_fetch_bytes,
+        as_of=AS_OF,
+        api_key="TESTKEY",
     )
     return loader(IDENTITY)
 
@@ -103,7 +119,10 @@ def test_a_company_with_no_periodic_filing_fails_closed():
         ]})
 
     loader = opendart_filing_snapshot_loader(
-        fetch_text=empty, as_of=AS_OF, api_key="TESTKEY"
+        fetch_text=empty,
+        fetch_bytes=_fetch_bytes,
+        as_of=AS_OF,
+        api_key="TESTKEY",
     )
     with pytest.raises(GenericKRIndustryError, match="no periodic DART filing"):
         loader(IDENTITY)
@@ -146,7 +165,92 @@ def test_decomposer_routes_the_unseen_company_from_its_ksic_code():
     assert "한빛중전기" in segment.name
     # KSIC 28112 -> 전기장비 제조업 entry.
     assert segment.revenue_recognition == "delivery"
-    assert set(segment.evidence_ids) == set(snapshot.evidence_ids)
+    assert set(segment.evidence_ids) == {
+        item.evidence_id
+        for item in snapshot.evidence_lineage
+        if "SEGMENT_SCOPE:SINGLE" not in item.evidence_id
+    }
+
+
+def test_multi_segment_filing_fails_closed_instead_of_flattening():
+    loader = opendart_filing_snapshot_loader(
+        fetch_text=_fetch_text,
+        fetch_bytes=lambda url: _fetch_bytes(
+            url,
+            "<BODY><P>연결회사의 보고부문은 철강부문과 건설부문입니다.</P></BODY>",
+        ),
+        as_of=AS_OF,
+        api_key="TESTKEY",
+    )
+    with pytest.raises(GenericKRIndustryError, match="multiple operating segments"):
+        loader(IDENTITY)
+
+
+def test_multi_segment_business_table_fails_closed():
+    loader = opendart_filing_snapshot_loader(
+        fetch_text=_fetch_text,
+        fetch_bytes=lambda url: _fetch_bytes(
+            url,
+            """
+            <BODY><TABLE>
+              <TR><TH>사업부문</TH><TH>매출</TH></TR>
+              <TR><TD>철강</TD><TD>100</TD></TR>
+              <TR><TD>건설</TD><TD>80</TD></TR>
+              <TR><TD>합계</TD><TD>180</TD></TR>
+            </TABLE></BODY>
+            """,
+        ),
+        as_of=AS_OF,
+        api_key="TESTKEY",
+    )
+    with pytest.raises(GenericKRIndustryError, match="multiple operating segments"):
+        loader(IDENTITY)
+
+
+def test_explicit_single_segment_declaration_outranks_process_rows():
+    loader = opendart_filing_snapshot_loader(
+        fetch_text=_fetch_text,
+        fetch_bytes=lambda url: _fetch_bytes(
+            url,
+            """
+            <BODY>
+              <P>당사는 공시대상 사업부문을 철강으로 단일화하여 표시합니다.</P>
+              <TABLE>
+                <TR><TH>사업부문</TH><TH>생산량</TH></TR>
+                <TR><TD>제강</TD><TD>100</TD></TR>
+                <TR><TD>압연</TD><TD>90</TD></TR>
+              </TABLE>
+            </BODY>
+            """,
+        ),
+        as_of=AS_OF,
+        api_key="TESTKEY",
+    )
+    snapshot = loader(IDENTITY)
+    assert any("SEGMENT_SCOPE:SINGLE" in item for item in snapshot.evidence_ids)
+
+
+def test_decomposer_refuses_a_snapshot_without_the_scope_receipt():
+    screened = _snapshot()
+    filing_lineage = tuple(
+        item
+        for item in screened.evidence_lineage
+        if "SEGMENT_SCOPE:SINGLE" not in item.evidence_id
+    )
+    unscreened = IndustryKnowledgeSnapshot.build(
+        as_of=screened.as_of,
+        source_ids=screened.source_ids,
+        document_ids=screened.document_ids,
+        evidence_ids=tuple(item.evidence_id for item in filing_lineage),
+        content_hashes=tuple(item.content_hash for item in filing_lineage),
+        evidence_lineage=filing_lineage,
+    )
+    decomposer = classified_segment_decomposer(
+        profile_fetcher=_fetcher(),
+        classification=load_kr_industry_classification(),
+    )
+    with pytest.raises(GenericKRIndustryError, match="unscreened company"):
+        decomposer(IDENTITY, unscreened)
 
 
 def test_router_attaches_the_mapped_archetypes():

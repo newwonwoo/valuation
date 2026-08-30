@@ -102,6 +102,51 @@ _CURRENT_PERIOD_AFFIRMING_TERMS = (
 )
 
 
+def validate_filing_period_context(
+    text: str,
+    *,
+    metric: str,
+    effective_date: str,
+    require_current_period_marker: bool,
+    current_period_text: str | None = None,
+) -> None:
+    """Reject stale/forecast text and, when requested, unmarked period cells.
+
+    This guard is shared by both locator paths. Static regexes are only a
+    different way to locate a disclosure; they do not get weaker chronology
+    rules than an LLM-proposed quote.
+    """
+    disqualifying = tuple(
+        term for term in _PERIOD_DISQUALIFYING_TERMS if term in text
+    )
+    if disqualifying:
+        raise ProposalParseError(
+            f"filing text for {metric} carries period/expectation markers "
+            f"({', '.join(disqualifying)}); a prior-period or forward-looking "
+            "figure cannot enter as a current realized value"
+        )
+    if not require_current_period_marker:
+        return
+    period_year = effective_date[:4]
+    marker_text = text if current_period_text is None else current_period_text
+    has_affirming = any(
+        term in marker_text for term in _CURRENT_PERIOD_AFFIRMING_TERMS
+    )
+    has_period_year = bool(period_year) and bool(
+        re.search(
+            rf"(?<!\d){re.escape(period_year)}\s*년(?:도)?(?!\d)",
+            marker_text,
+        )
+    )
+    if not (has_affirming or has_period_year):
+        raise ProposalParseError(
+            f"filing text for {metric} carries no current-period marker "
+            f"(one of {', '.join(_CURRENT_PERIOD_AFFIRMING_TERMS)}, or the "
+            f"fiscal-year marker {period_year + '년'!r}); an unlabelled cell cannot be "
+            "assumed to be the current column"
+        )
+
+
 @dataclass(frozen=True)
 class FilingLocatorTask:
     metric: str
@@ -218,36 +263,12 @@ def _verify_and_extract(
             f"({', '.join(task.anchor_terms)}); the model may only point at "
             "spans carrying the metric's own disclosure vocabulary"
         )
-    disqualifying = tuple(
-        term for term in _PERIOD_DISQUALIFYING_TERMS if term in quote
+    validate_filing_period_context(
+        quote,
+        metric=metric,
+        effective_date=effective_date,
+        require_current_period_marker=task.require_current_period_marker,
     )
-    if disqualifying:
-        raise ProposalParseError(
-            f"locator quote for {metric} carries period/expectation markers "
-            f"({', '.join(disqualifying)}); a prior-period or forward-looking "
-            "figure cannot enter as a current realized value. Quote the "
-            "current-period disclosure, or report the metric in not_found"
-        )
-    if task.require_current_period_marker:
-        # A quote may satisfy the anchor and carry no disqualifying word yet
-        # still be an unlabelled or prior-period cell in a multi-column table.
-        # Require an explicit current-period affirmation, OR the fiscal period's
-        # own year string (e.g. "2025") appearing in the quote — a value cell
-        # tagged with the reporting year is anchored to this period as surely as
-        # a "당기" word is.
-        period_year = effective_date[:4]
-        has_affirming = any(
-            term in quote for term in _CURRENT_PERIOD_AFFIRMING_TERMS
-        )
-        has_period_year = bool(period_year) and period_year in quote
-        if not (has_affirming or has_period_year):
-            raise ProposalParseError(
-                f"locator quote for {metric} carries no current-period marker "
-                f"(one of {', '.join(_CURRENT_PERIOD_AFFIRMING_TERMS)}, or the "
-                f"fiscal year {period_year!r}); in a multi-period table an "
-                "unlabelled cell cannot be assumed to be the current column. "
-                "Quote the cell that states its period, or report not_found"
-            )
     registered = {token for token, _ in task.source_unit_map}
     if unit_token not in registered:
         raise ProposalParseError(

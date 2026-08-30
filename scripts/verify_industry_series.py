@@ -134,7 +134,8 @@ def build_timestamped_snapshot(
     if not observations:
         raise IndustrySeriesError("snapshot has no parseable observations")
 
-    existing_rows: dict[str, Mapping[str, object]] = {}
+    prior_rows: list[dict[str, object]] = []
+    latest_by_period: dict[str, Mapping[str, object]] = {}
     if existing is not None:
         if (
             existing.get("schema_version") != SERIES_SNAPSHOT_SCHEMA
@@ -148,13 +149,67 @@ def build_timestamped_snapshot(
             isinstance(row, Mapping) for row in prior
         ):
             raise IndustrySeriesError("existing snapshot observations are invalid")
-        existing_rows = {str(row.get("PRD_DE") or ""): row for row in prior}
+        seen_versions: set[tuple[str, str, str, str]] = set()
+        for row in prior:
+            period = str(row.get("PRD_DE") or "")
+            if not period or not str(row.get("DT") or ""):
+                raise IndustrySeriesError("existing snapshot observation is incomplete")
+            published_time = _aware_timestamp(
+                str(row.get("PUBLISHED_AT") or ""), label="PUBLISHED_AT"
+            )
+            first_seen_time = _aware_timestamp(
+                str(row.get("FIRST_SEEN_AT") or ""), label="FIRST_SEEN_AT"
+            )
+            revision_time = _aware_timestamp(
+                str(row.get("REVISION_AT") or ""), label="REVISION_AT"
+            )
+            if revision_time < published_time:
+                raise IndustrySeriesError(
+                    "existing snapshot REVISION_AT cannot precede PUBLISHED_AT"
+                )
+            if first_seen_time < published_time or first_seen_time < revision_time:
+                raise IndustrySeriesError(
+                    "existing snapshot FIRST_SEEN_AT cannot precede publication or revision"
+                )
+            identity = (
+                period,
+                published_time.isoformat(),
+                first_seen_time.isoformat(),
+                revision_time.isoformat(),
+            )
+            if identity in seen_versions:
+                raise IndustrySeriesError(
+                    f"existing snapshot has duplicate revision identity for {period}"
+                )
+            seen_versions.add(identity)
+            copied = dict(row)
+            prior_rows.append(copied)
+            current = latest_by_period.get(period)
+            current_key = None
+            if current is not None:
+                current_key = (
+                    _aware_timestamp(
+                        str(current.get("REVISION_AT") or ""), label="REVISION_AT"
+                    ),
+                    _aware_timestamp(
+                        str(current.get("FIRST_SEEN_AT") or ""),
+                        label="FIRST_SEEN_AT",
+                    ),
+                    _aware_timestamp(
+                        str(current.get("PUBLISHED_AT") or ""),
+                        label="PUBLISHED_AT",
+                    ),
+                )
+            candidate_key = (revision_time, first_seen_time, published_time)
+            if current_key is None or candidate_key > current_key:
+                latest_by_period[period] = copied
 
-    enriched = []
+    # A refresh appends revisions instead of replacing them. Historical runs
+    # can therefore reconstruct what was knowable before a correction arrived.
+    enriched = list(prior_rows)
     for period, value in observations:
-        prior = existing_rows.get(period)
+        prior = latest_by_period.get(period)
         if prior is not None and str(prior.get("DT")) == value:
-            enriched.append(dict(prior))
             continue
         revision = captured if prior is not None else published
         enriched.append(
@@ -166,6 +221,15 @@ def build_timestamped_snapshot(
                 "REVISION_AT": revision.isoformat(),
             }
         )
+
+    enriched.sort(
+        key=lambda row: (
+            str(row["PRD_DE"]),
+            _aware_timestamp(str(row["REVISION_AT"]), label="REVISION_AT"),
+            _aware_timestamp(str(row["FIRST_SEEN_AT"]), label="FIRST_SEEN_AT"),
+            _aware_timestamp(str(row["PUBLISHED_AT"]), label="PUBLISHED_AT"),
+        )
+    )
 
     return {
         "schema_version": SERIES_SNAPSHOT_SCHEMA,

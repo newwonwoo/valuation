@@ -186,16 +186,19 @@ def _ramp_scaled_money(inputs: tuple[Measure, ...], output_unit: str) -> Measure
 #: quantity as the assumption — see the compiler's pass-through metric check.
 _PASSTHROUGH_TRANSFORMS = frozenset({"identity_observation", "unit_conversion"})
 
+_ALLOWED_METRIC_QUALIFIER_PREFIXES = frozenset(
+    {"model", "scenario", "base", "core", "bull", "bear", "up", "down"}
+)
+
 
 def _metric_matches_key(metric: str, key: str) -> bool:
     """True when a pass-through evidence metric is the assumption's own quantity.
 
-    Equality is the common case. A scenario/model qualifier is allowed: the
-    evidence metric may carry the assumption key as a contiguous run of
-    underscore tokens (``model_core_fcff_year_1`` for key ``fcff_year_1``), or
-    the reverse. Unrelated quantities of the same dimension — net debt cited
-    for EBITDA — share no such token run and are refused, which is the
-    semantic-laundering escape this closes.
+    Equality is the common case. A closed set of scenario/model qualifiers may
+    prefix the complete assumption key (``model_core_fcff_year_1`` for key
+    ``fcff_year_1``). Partial, reverse and suffix matches are refused: otherwise
+    ``shares`` could silently stand in for ``diluted_shares`` and ``debt`` for
+    ``net_debt`` merely because their tokens overlap.
     """
     if metric == key:
         return True
@@ -209,16 +212,14 @@ def _metric_matches_key(metric: str, key: str) -> bool:
     metric_tokens = _tokens(metric)
     key_tokens = _tokens(key)
 
-    def contiguous_subsequence(short: list[str], long: list[str]) -> bool:
-        if not short or len(short) > len(long):
-            return False
-        return any(
-            long[index : index + len(short)] == short
-            for index in range(len(long) - len(short) + 1)
-        )
-
-    return contiguous_subsequence(key_tokens, metric_tokens) or contiguous_subsequence(
-        metric_tokens, key_tokens
+    if not key_tokens or len(metric_tokens) <= len(key_tokens):
+        return False
+    if metric_tokens[-len(key_tokens) :] != key_tokens:
+        return False
+    qualifiers = metric_tokens[: -len(key_tokens)]
+    return all(
+        token.casefold() in _ALLOWED_METRIC_QUALIFIER_PREFIXES
+        for token in qualifiers
     )
 
 TRANSFORMS: dict[str, Transform] = {

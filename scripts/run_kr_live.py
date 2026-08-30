@@ -449,6 +449,160 @@ def publish_report_bundle(
     }
 
 
+def _resolve_manifest_path(root: Path, relative: object, *, label: str) -> Path:
+    if not isinstance(relative, str) or not relative:
+        raise RunbookError(f"published report {label} path is missing")
+    candidate = (root / relative).resolve()
+    try:
+        candidate.relative_to(root)
+    except ValueError as exc:
+        raise RunbookError(
+            f"published report {label} escapes its output directory"
+        ) from exc
+    return candidate
+
+
+def reuse_published_report_bundle(
+    run_dir: str | Path,
+    *,
+    output_dir: str | Path | None = None,
+    report_alias: str | Path | None = None,
+) -> dict | None:
+    """Return a matching completed bundle only after verifying every bound hash.
+
+    A normal second invocation must not replay a fixed run ID into the immutable
+    StateStore. It reuses the already-published result, but only when the latest
+    pointer, bundle manifest, versioned report and every recorded bundle file
+    are byte-identical to their receipts.
+    """
+    run_dir = Path(run_dir).resolve()
+    output_root = Path(output_dir or run_dir / "out").resolve()
+    if not output_root.is_dir():
+        return None
+    config = _load_run(run_dir)
+    expected_run_id = str(config.get("run_id", f"RUNBOOK-{run_dir.name}"))
+    expected_as_of = str(config.get("as_of") or "")
+    for latest_path in sorted(output_root.glob("*_LATEST_REPORT.json")):
+        try:
+            latest = json.loads(latest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            raise RunbookError(
+                f"published latest-report manifest is unreadable: {latest_path}"
+            ) from exc
+        if not isinstance(latest, dict) or latest.get("schema_version") != (
+            "kr-live-latest-report/v1"
+        ):
+            raise RunbookError(
+                f"published latest-report manifest has unsupported schema: {latest_path}"
+            )
+        bundle_manifest_path = _resolve_manifest_path(
+            output_root, latest.get("bundle_manifest"), label="bundle manifest"
+        )
+        if not bundle_manifest_path.is_file():
+            raise RunbookError(
+                f"published bundle manifest is missing: {bundle_manifest_path}"
+            )
+        if _file_sha256(bundle_manifest_path) != latest.get(
+            "bundle_manifest_sha256"
+        ):
+            raise RunbookError("published bundle manifest hash mismatch")
+        try:
+            bundle_manifest = json.loads(
+                bundle_manifest_path.read_text(encoding="utf-8")
+            )
+        except json.JSONDecodeError as exc:
+            raise RunbookError("published bundle manifest is invalid JSON") from exc
+        if (
+            bundle_manifest.get("run_id") != expected_run_id
+            or bundle_manifest.get("as_of") != expected_as_of
+        ):
+            continue
+        bundle_dir = _resolve_manifest_path(
+            output_root, latest.get("bundle_directory"), label="bundle directory"
+        )
+        if bundle_manifest_path.parent != bundle_dir:
+            raise RunbookError("published bundle manifest is outside its bundle directory")
+        if bundle_manifest.get("schema_version") != "kr-live-report-bundle/v1":
+            raise RunbookError("published bundle manifest has unsupported schema")
+        for key in ("artifact_id", "as_of", "valuation_hash", "audit_hash"):
+            if latest.get(key) != bundle_manifest.get(key):
+                raise RunbookError(f"published latest manifest disagrees on {key}")
+        versioned_report_path = _resolve_manifest_path(
+            output_root, latest.get("report_filename"), label="versioned report"
+        )
+        if versioned_report_path.parent != bundle_dir:
+            raise RunbookError("published versioned report is outside its bundle directory")
+        if versioned_report_path.name != bundle_manifest.get("report_filename"):
+            raise RunbookError("published bundle disagrees on report filename")
+        if (
+            not versioned_report_path.is_file()
+            or _file_sha256(versioned_report_path) != latest.get("report_sha256")
+        ):
+            raise RunbookError("published versioned report hash mismatch")
+        files = bundle_manifest.get("files")
+        if not isinstance(files, list) or not files:
+            raise RunbookError("published bundle manifest carries no file receipts")
+        received_names = {
+            receipt.get("filename")
+            for receipt in files
+            if isinstance(receipt, dict)
+        }
+        required_names = {
+            "manifest.json",
+            "control_plane_trace.json",
+            "audit.json",
+            "final_report.md",
+            "execution_attestation.json",
+            str(bundle_manifest.get("report_filename") or ""),
+        }
+        missing_names = tuple(sorted(required_names - received_names))
+        if missing_names:
+            raise RunbookError(
+                "published bundle is missing required file receipts: "
+                + ", ".join(missing_names)
+            )
+        for receipt in files:
+            if not isinstance(receipt, dict):
+                raise RunbookError("published bundle file receipt is invalid")
+            path = _resolve_manifest_path(
+                bundle_dir, receipt.get("filename"), label="bundle file"
+            )
+            if not path.is_file() or _file_sha256(path) != receipt.get("sha256"):
+                raise RunbookError(
+                    f"published bundle file hash mismatch: {receipt.get('filename')}"
+                )
+        raw_report = bundle_dir / "final_report.md"
+        if not raw_report.is_file():
+            raise RunbookError("published bundle is missing final_report.md")
+        try:
+            run_manifest = json.loads(
+                (bundle_dir / "manifest.json").read_text(encoding="utf-8")
+            )
+        except json.JSONDecodeError as exc:
+            raise RunbookError("published run manifest is invalid JSON") from exc
+        if (
+            run_manifest.get("run_id") != expected_run_id
+            or run_manifest.get("ticker") != bundle_manifest.get("ticker")
+            or run_manifest.get("status") != "COMPLETED"
+            or run_manifest.get("audit_passed") is not True
+        ):
+            raise RunbookError("published run manifest identity/status mismatch")
+        report = raw_report.read_text(encoding="utf-8")
+        alias = Path(report_alias) if report_alias else output_root / "final_report.md"
+        alias.parent.mkdir(parents=True, exist_ok=True)
+        token = sha256(str(latest["artifact_id"]).encode("utf-8")).hexdigest()[:12]
+        temporary_alias = alias.parent / f".{alias.name}.{token}.tmp"
+        temporary_alias.write_text(report, encoding="utf-8")
+        os.replace(temporary_alias, alias)
+        return {
+            **latest,
+            "latest_manifest_path": str(latest_path),
+            "versioned_report_path": str(versioned_report_path),
+            "reused": True,
+        }
+    return None
+
+
 def execute_run(run_dir: str | Path, *, state_root: str | None = None):
     """Run one prepared directory; returns (reached, stop_stage, stop_reason, result)."""
     run_dir = Path(run_dir).resolve()
@@ -545,6 +699,16 @@ def main() -> int:
     args = parser.parse_args()
     run_dir = Path(args.run_dir)
     output_root = run_dir / "out"
+    reused = reuse_published_report_bundle(
+        run_dir,
+        output_dir=output_root,
+        report_alias=args.report_out,
+    )
+    if reused is not None:
+        print("\n  stages: previously completed — REUSED")
+        print(f"  report: {reused['versioned_report_path']}")
+        print(f"  manifest: {reused['latest_manifest_path']}")
+        return 0
     reached, stop_stage, stop_reason, result = execute_run(
         run_dir, state_root=str(output_root / "state")
     )

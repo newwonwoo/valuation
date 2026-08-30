@@ -62,7 +62,9 @@ def test_changed_value_gets_a_new_first_seen_and_revision_cutoff():
         captured_at="2026-09-10T00:00:00Z",
         existing=first,
     )
-    row = revised["observations"][0]
+    assert len(revised["observations"]) == 2
+    assert revised["observations"][0] == first["observations"][0]
+    row = revised["observations"][1]
     assert row["DT"] == "104.5"
     assert row["PUBLISHED_AT"] == "2026-09-08T00:00:00+00:00"
     assert row["FIRST_SEEN_AT"] == "2026-09-10T00:00:00+00:00"

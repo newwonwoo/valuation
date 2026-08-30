@@ -69,7 +69,7 @@ ROWS = [
 ]
 
 
-def _collect(spec=None, rows=ROWS, metrics=("benchmark_price",)):
+def _collect(spec=None, rows=ROWS, metrics=("benchmark_price",), as_of=AS_OF):
     spec = spec or _spec()
 
     def fetch(url: str) -> str:
@@ -91,7 +91,7 @@ def _collect(spec=None, rows=ROWS, metrics=("benchmark_price",)):
     collector = request_scoped_industry_series_collector(
         fetch,
         source_id=spec.source_id,
-        as_of=AS_OF,
+        as_of=as_of,
         segment_id="core",
         series=(spec,),
         snapshot_text=snapshot_text,
@@ -136,8 +136,25 @@ def test_verified_eligible_rows_require_all_knowledge_timestamps(missing_field):
 
 
 def test_duplicate_eligible_periods_fail_closed():
-    with pytest.raises(IndustrySeriesError, match="duplicate eligible observations"):
+    with pytest.raises(IndustrySeriesError, match="duplicate eligible revision identity"):
         _collect(rows=[dict(ROWS[0]), dict(ROWS[0])])
+
+
+def test_revision_history_replays_the_value_known_at_each_cutoff():
+    old = dict(ROWS[1])
+    revised = {
+        "PRD_DE": "202607",
+        "DT": "104.5",
+        "PUBLISHED_AT": "2026-09-08T00:00:00Z",
+        "FIRST_SEEN_AT": "2026-09-10T00:00:00Z",
+        "REVISION_AT": "2026-09-10T00:00:00Z",
+    }
+    historical = _collect(rows=[old, revised], as_of="2026-08-27")
+    current = _collect(rows=[old, revised], as_of="2026-09-30")
+    assert float(historical.records[0].value) == 103.0
+    assert float(current.records[0].value) == 104.5
+    assert historical.records[0].observed_date == "2026-08-10"
+    assert current.records[0].observed_date == "2026-09-10"
 
 
 def test_a_company_realized_metric_is_refused_by_the_definition_gate():

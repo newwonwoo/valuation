@@ -18,7 +18,12 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from run_kr_live import execute_run, publish_report_bundle  # noqa: E402
+import run_kr_live  # noqa: E402
+from run_kr_live import (  # noqa: E402
+    execute_run,
+    publish_report_bundle,
+    reuse_published_report_bundle,
+)
 
 
 def test_the_committed_shinhanalpha_run_replays_to_the_attested_nav_envelope():
@@ -73,7 +78,9 @@ def test_the_committed_daehan_run_replays_to_the_attested_dcf_expected_value():
         assert line in report, line
 
 
-def test_the_committed_kisco_run_replays_to_the_attested_expected_value(tmp_path):
+def test_the_committed_kisco_run_replays_to_the_attested_expected_value(
+    tmp_path, monkeypatch
+):
     run_dir = ROOT / "runs" / "kisco-104700"
     reached, stop_stage, stop_reason, result = execute_run(
         run_dir, state_root=str(tmp_path / "state")
@@ -120,3 +127,37 @@ def test_the_committed_kisco_run_replays_to_the_attested_expected_value(tmp_path
     assert all((bundle / name).is_file() for name in result.data["saved_report_visuals"])
     assert bundle_manifest["artifact_id"] == latest["artifact_id"]
     assert bundle_manifest["valuation_hash"] == result.data["valuation_hash"]
+
+    alias = tmp_path / "second-invocation-report.md"
+    reused = reuse_published_report_bundle(
+        run_dir,
+        output_dir=tmp_path / "published",
+        report_alias=alias,
+    )
+    assert reused is not None
+    assert reused["artifact_id"] == published["artifact_id"]
+    assert reused["versioned_report_path"] == published["versioned_report_path"]
+    assert alias.read_text(encoding="utf-8") == report
+
+    def unexpected_execute(*args, **kwargs):
+        raise AssertionError("a verified published run must not execute again")
+
+    monkeypatch.setattr(run_kr_live, "execute_run", unexpected_execute)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_kr_live.py",
+            str(run_dir),
+            "--report-out",
+            str(tmp_path / "main-second-invocation.md"),
+        ],
+    )
+    # Point main's fixed <run_dir>/out location at the already verified test
+    # publication without mutating the committed run directory.
+    monkeypatch.setattr(
+        run_kr_live,
+        "reuse_published_report_bundle",
+        lambda *args, **kwargs: reused,
+    )
+    assert run_kr_live.main() == 0

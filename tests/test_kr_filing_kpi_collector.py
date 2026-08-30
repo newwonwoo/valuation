@@ -37,8 +37,8 @@ FILING_BODY = """
 <P>4. 수주상황 (단위 표기는 각 행에 기재)</P>
 <TABLE>
 <TR><TD>구분</TD><TD>금액</TD></TR>
-<TR><TD>수주총액</TD><TD>620,000 백만원</TD></TR>
-<TR><TD>수주잔고</TD><TD>1,080,000 백만원</TD></TR>
+<TR><TD>당기 수주총액</TD><TD>620,000 백만원</TD></TR>
+<TR><TD>당기말 수주잔고</TD><TD>1,080,000 백만원</TD></TR>
 </TABLE>
 <P>3. 생산 및 설비</P>
 <TABLE>
@@ -119,6 +119,20 @@ def test_an_ambiguous_disclosure_fails_closed_into_a_gap():
     body = FILING_BODY + "\n<P>수주잔고 999,999 백만원</P>"
     batch = _collect(("backlog",), body=body)
     assert not batch.records  # two matches -> neither is chosen
+
+
+def test_a_prior_period_static_match_is_not_stamped_as_current():
+    body = FILING_BODY.replace(
+        "당기말 수주잔고", "전기말 수주잔고"
+    )
+    batch = _collect(("backlog",), body=body)
+    assert not batch.records
+
+
+def test_an_unmarked_static_match_is_not_assumed_to_be_current():
+    body = FILING_BODY.replace("당기말 수주잔고", "수주잔고")
+    batch = _collect(("backlog",), body=body)
+    assert not batch.records
 
 
 def test_a_metric_outside_declared_capability_is_refused():
