@@ -70,10 +70,15 @@ def test_prism_analyze_dispatches_only_to_strict_entrypoint(monkeypatch, tmp_pat
 
     monkeypatch.setenv("VALUATION_MCP_STATE_ROOT", str(tmp_path / "state"))
     monkeypatch.setenv("VALUATION_MCP_JURISDICTION", "KR")
+
+    def fake_factory_loader(spec):
+        seen["factory_spec"] = spec
+        return factory
+
     monkeypatch.setattr(
         mcp_server,
         "load_live_runtime_config_factory",
-        lambda spec: seen.setdefault("factory_spec", spec) or factory,
+        fake_factory_loader,
     )
 
     def fake_execute(command, **kwargs):
