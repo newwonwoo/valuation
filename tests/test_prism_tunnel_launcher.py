@@ -94,6 +94,16 @@ def test_check_never_returns_secret_values(monkeypatch, tmp_path):
     assert "TUNNEL-TOP-SECRET" not in rendered
 
 
+def _runtime_env(tmp_path):
+    return {
+        "DART_API_KEY": "dart",
+        "VALUATION_LLM_TRANSPORT": "transport.module:build",
+        "CONTROL_PLANE_API_KEY": "runtime",
+        "CONTROL_PLANE_TUNNEL_ID": "tunnel_0123456789abcdef0123456789abcdef",
+        "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state"),
+    }
+
+
 def test_connect_runs_managed_runtime_then_checks_status(monkeypatch, tmp_path):
     fake_bin = tmp_path / "tunnel-client"
     fake_bin.write_text("binary", encoding="utf-8")
@@ -107,18 +117,25 @@ def test_connect_runs_managed_runtime_then_checks_status(monkeypatch, tmp_path):
         return {"process_running": True, "healthy": True, "ready": True}
 
     monkeypatch.setattr(launcher, "_run", fake_run)
-    payload = launcher.connect(
-        {
-            "DART_API_KEY": "dart",
-            "VALUATION_LLM_TRANSPORT": "transport.module:build",
-            "CONTROL_PLANE_API_KEY": "runtime",
-            "CONTROL_PLANE_TUNNEL_ID": "tunnel_0123456789abcdef0123456789abcdef",
-            "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state"),
-        }
-    )
+    payload = launcher.connect(_runtime_env(tmp_path))
     assert len(calls) == 2
     assert calls[0][1:3] == ("runtimes", "connect")
     assert calls[1][1:3] == ("runtimes", "status")
     assert payload["process_running"] is True
     assert payload["healthy"] is True
     assert payload["ready"] is True
+
+
+def test_connect_rejects_runtime_that_is_not_fully_ready(monkeypatch, tmp_path):
+    fake_bin = tmp_path / "tunnel-client"
+    fake_bin.write_text("binary", encoding="utf-8")
+    monkeypatch.setattr(launcher.shutil, "which", lambda name: str(fake_bin))
+
+    def fake_run(command, *, env):
+        if command[1:3] == ("runtimes", "connect"):
+            return {"connected": True}
+        return {"process_running": True, "healthy": True, "ready": False}
+
+    monkeypatch.setattr(launcher, "_run", fake_run)
+    with pytest.raises(launcher.PrismTunnelError, match="ready"):
+        launcher.connect(_runtime_env(tmp_path))
