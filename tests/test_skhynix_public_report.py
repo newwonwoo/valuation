@@ -82,6 +82,9 @@ def test_skhynix_public_report_uses_korean_standard_form(tmp_path: Path):
     validate_skhynix_brokerage_html(html)
     assert "*{box-sizing:border-box}" in html
     assert "body{margin:0;font-size:13pt" in html
+    assert ".metric{display:flex;justify-content:space-between;gap:10px;" in html
+    assert "padding:7px 0;font-size:13pt}" in html
+    assert "table{width:100%;border-collapse:collapse;font-size:13pt}" in html
     assert (
         "@media(max-width:760px){.report{padding:0}.page{width:100%;min-height:0;"
         "margin:0 0 12px;padding:24px 20px;box-shadow:none}"
