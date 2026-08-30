@@ -190,3 +190,18 @@ def test_blank_company_fails_before_any_runtime(monkeypatch):
     with pytest.raises(ToolError, match="company is required"):
         mcp_server.run_prism_mcp("   ")
     assert called is False
+
+
+def test_multiline_company_fails_before_any_runtime(monkeypatch):
+    called = False
+
+    def should_not_load(_):
+        nonlocal called
+        called = True
+        return object()
+
+    monkeypatch.setattr(mcp_server, "load_live_runtime_config_factory", should_not_load)
+
+    with pytest.raises(ToolError, match="single-line"):
+        mcp_server.run_prism_mcp("고려아연\n삼성전자")
+    assert called is False
