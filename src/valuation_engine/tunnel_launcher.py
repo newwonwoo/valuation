@@ -18,6 +18,7 @@ _ALIAS_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _DEFAULT_ALIAS = "prism-valuation"
 _REQUIRED_PRISM_ENV = ("DART_API_KEY", "VALUATION_LLM_TRANSPORT")
 _STATE_ROOT_ENV = "VALUATION_MCP_STATE_ROOT"
+_LINUX_ACL_XATTRS = frozenset({"system.posix_acl_access", "system.posix_acl_default"})
 
 
 class PrismTunnelError(RuntimeError):
@@ -61,15 +62,47 @@ def _alias(env: Mapping[str, str]) -> str:
 
 
 def _supports_private_posix_permissions() -> bool:
-    """Whether this host can enforce the directory-mode contract used below."""
-    return os.name == "posix"
+    """Whether this host matches the Linux security contract enforced below.
+
+    WSL2 reports a Linux platform and is covered. Native macOS/Windows are
+    rejected until platform-specific ACL verification is implemented.
+    """
+    return sys.platform.startswith("linux")
+
+
+def _reject_linux_extended_acls(root: Path) -> None:
+    """Refuse state roots with access/default POSIX ACL metadata.
+
+    Mode 0700 alone is not the complete authorization surface when a filesystem
+    carries POSIX ACL xattrs. We do not mutate or guess at operator ACL policy;
+    tunnel preflight stays fail-closed until the operator supplies a root whose
+    effective access is represented only by the verified owner mode bits.
+    """
+    if not hasattr(os, "listxattr"):
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} ACL verification is unavailable on this Linux runtime"
+        )
+    try:
+        names = {str(name) for name in os.listxattr(root)}
+    except OSError as exc:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} ACL metadata cannot be verified ({type(exc).__name__})"
+        ) from exc
+    found = tuple(sorted(names.intersection(_LINUX_ACL_XATTRS)))
+    if found:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} contains extended POSIX ACL metadata: "
+            + ", ".join(found)
+            + "; use a private root without access/default ACL entries"
+        )
 
 
 def _private_persistent_state_root(env: Mapping[str, str]) -> Path:
     if not _supports_private_posix_permissions():
         raise PrismTunnelError(
             "Secure MCP Tunnel state permission enforcement currently requires a "
-            "POSIX host; use WSL2, Linux, or macOS rather than native Windows"
+            "Linux host (including WSL2); native macOS/Windows are fail-closed "
+            "until ACL-aware enforcement exists"
         )
     raw = env.get(_STATE_ROOT_ENV, "").strip()
     if not raw:
@@ -103,6 +136,7 @@ def _private_persistent_state_root(env: Mapping[str, str]) -> Path:
         raise PrismTunnelError(
             f"{_STATE_ROOT_ENV} must not grant group/other permissions; current mode={mode:o}"
         )
+    _reject_linux_extended_acls(root)
     return root
 
 
