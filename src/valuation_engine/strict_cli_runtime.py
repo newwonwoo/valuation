@@ -4,6 +4,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Callable
 
+from .analysis_intent import canonicalize_analysis_command
 from .authority_orchestrator import AuthorityControlledResult
 from .cli_runtime import (
     LiveAnalysisRequest,
@@ -45,17 +46,25 @@ def execute_live_analysis(
     runner: StrictLiveRuntimeRunner = run_prism,
     major_gate_reporter: MajorGateReporter | None = None,
 ) -> ControlledRunResult:
-    """Execute `분석시작` through the canonical attested LIVE_PRIMARY path.
+    """Execute valuation intent through the canonical attested LIVE_PRIMARY path.
 
-    A custom runner remains accepted for focused tests. The default production
-    runner must return an AuthorityControlledResult and successful output must
-    pass `require_canonical_live_result` before it reaches the CLI/report layer.
+    Natural stock-analysis phrasings are normalized to ``분석시작 <기업>`` before
+    the runtime request is built. A custom runner remains accepted for focused
+    tests. The default production runner must return an AuthorityControlledResult
+    and successful output must pass ``require_canonical_live_result`` before it
+    reaches the CLI/report layer.
     """
     from .cli_runtime import parse_analysis_command
 
-    company_query = parse_analysis_command(command)
+    canonical_command = canonicalize_analysis_command(command)
+    if canonical_command is None:
+        raise LiveCLIError(
+            "INVALID_ANALYSIS_COMMAND",
+            "PRISM 분석 의도를 확인할 수 없습니다",
+        )
+    company_query = parse_analysis_command(canonical_command)
     request = LiveAnalysisRequest(
-        command=command.strip(),
+        command=canonical_command,
         company_query=company_query,
         state_root=Path(state_root),
         run_id=run_id or generate_run_id(),
