@@ -8,30 +8,36 @@ _TRAILING_PUNCTUATION = "?!.,。！？"
 _INTENT_ONLY = frozenset(
     {
         "분석시작",
+        "분석 시작",
+        "분석 시작해",
         "분석",
+        "분석해",
         "분석해줘",
         "분석해 줘",
         "밸류에이션",
+        "밸류에이션해",
         "가치평가",
         "가치 평가",
+        "가치평가해",
         "적정주가",
         "적정가치",
         "프리즘",
+        "돌려",
         "돌려봐",
         "돌려 봐",
     }
 )
 _PREFIX_PATTERNS = (
-    re.compile(r"^분석시작\s+(?P<company>.+)$"),
-    re.compile(r"^(?:프리즘|밸류에이션|가치\s*평가)\s+(?P<company>.+)$"),
+    re.compile(r"^분석\s*시작\s+(?P<company>.+)$"),
+    re.compile(r"^(?:프리즘(?:으로)?|밸류에이션|가치\s*평가)\s+(?P<company>.+)$"),
 )
 _SUFFIX_PATTERNS = (
-    re.compile(r"^(?P<company>.+?)\s+분석시작$"),
-    re.compile(r"^(?P<company>.+?)\s+(?:좀\s+)?분석(?:해\s*줘|해\s*봐)?$"),
-    re.compile(r"^(?P<company>.+?)\s+(?:좀\s+)?(?:밸류에이션|가치\s*평가)(?:\s*(?:해\s*줘|해\s*봐|시작))?$"),
-    re.compile(r"^(?P<company>.+?)\s+(?:적정주가|적정가치)(?:\s*(?:구해\s*줘|봐\s*줘|분석))?$"),
-    re.compile(r"^(?P<company>.+?)\s+프리즘(?:\s*(?:분석|시작|돌려\s*봐))?$"),
-    re.compile(r"^(?P<company>.+?)\s+(?:한번\s+|한\s*번\s+)?돌려\s*봐$"),
+    re.compile(r"^(?P<company>.+?)\s*분석\s*시작(?:해)?$"),
+    re.compile(r"^(?P<company>.+?)\s*(?:좀\s*)?분석(?:해\s*줘|해\s*봐|해)?$"),
+    re.compile(r"^(?P<company>.+?)\s*(?:좀\s*)?(?:밸류에이션|가치\s*평가)(?:\s*(?:해\s*줘|해\s*봐|해|시작(?:해)?))?$"),
+    re.compile(r"^(?P<company>.+?)\s*(?:적정주가|적정가치)(?:\s*(?:구해\s*줘|봐\s*줘|분석))?$"),
+    re.compile(r"^(?P<company>.+?)\s*프리즘(?:으로)?(?:\s*(?:분석(?:해\s*줘)?|시작(?:해)?|돌려\s*봐))?$"),
+    re.compile(r"^(?P<company>.+?)\s*(?:한번\s*|한\s*번\s*)?돌려(?:\s*봐)?$"),
 )
 
 
@@ -50,11 +56,12 @@ def canonicalize_analysis_command(command: str) -> str | None:
     """Return canonical ``분석시작 <기업>`` for explicit valuation intent.
 
     This gateway is deliberately deterministic. It recognizes a bounded set of
-    stock-analysis phrasings, but it never decides whether the extracted text is
-    actually a listed company; canonical COMPANY_RESOLUTION owns that decision.
-    Non-analysis input returns ``None`` so YAML/regression entrypoints remain
-    unaffected. Intent without a company canonicalizes to ``분석시작`` so the
-    live parser can fail closed with COMPANY_REQUIRED.
+    stock-analysis phrasings, including compact Korean input without spaces, but
+    it never decides whether the extracted text is actually a listed company;
+    canonical COMPANY_RESOLUTION owns that decision. Non-analysis input returns
+    ``None`` so YAML/regression entrypoints remain unaffected. Intent without a
+    company canonicalizes to ``분석시작`` so the live parser can fail closed with
+    COMPANY_REQUIRED.
     """
 
     text = _normalize_text(command)
