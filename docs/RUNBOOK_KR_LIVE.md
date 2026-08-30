@@ -138,6 +138,30 @@ PYTHONPATH=src python scripts/run_kr_live.py runs/<종목>-<코드>
 - 리포트 전달은 원문 그대로: 챗 계층은 `chat_dispatch`의 SHA-256 핸드오프로
   숫자 무변조를 강제할 수 있다.
 
+## 8. F1 — 공시 트리거 자동 재실행 (감시 루프)
+
+커밋된 런은 일회성 스냅샷이 아니라 감시 대상이다. 정기 Routine(예: 평일
+KST 아침, Claude Code Remote 트리거)이 새 세션을 띄워 다음을 수행한다:
+
+1. 작업 브랜치를 체크아웃하고, `runs/` 아래 커밋된 각 런의 `run.yaml`에서
+   종목·`as_of`를 읽는다.
+2. `python scripts/check_new_filings.py` — DART 공개 검색
+   (`dsab007/detailSearch.ax`, 키·MCP 불필요)으로 런별 **as_of 이후** 신규
+   공시를 조회해 정기보고서·주요사항보고를 `ACTIONABLE`로 표시한다
+   (있으면 exit 1). PlayMCP가 있는 세션이면
+   `opendart-search_disclosures`로 교차 확인해도 된다.
+3. 신규 정기보고서·주요사항보고가 없으면 아무 산출물 없이 종료한다 —
+   무변화 알림은 소음이다.
+4. 있으면 이 런북 §2~6 절차로 그 런 디렉토리를 갱신(raw 재수집, as_of
+   전진, 선언 보수)하고 재실행한 뒤, **직전 커밋된 리포트와의 시나리오
+   값·논지 변화(델타)** 를 요약해 보고한다. 리포트 숫자는 언제나
+   `out/final_report.md` 원문이다.
+5. 재현 가치가 있으면 같은 브랜치에 커밋·푸시한다. 게이트 완화·수치 임의
+   변경 금지는 여기서도 동일하다.
+
+트리거 관리는 CCR MCP 도구(`list_triggers` / `update_trigger` /
+`delete_trigger`)로 한다.
+
 ## 하지 않는 것
 
 숫자를 지어내지 않는다. 타깃을 자기 코호트·자기 피어에 넣지 않는다. as_of
