@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from threading import Lock
+from threading import Barrier, Lock
 import time
 
 import pytest
@@ -143,6 +143,7 @@ def test_same_state_root_runs_are_serialized(monkeypatch, tmp_path):
     )
 
     activity_guard = Lock()
+    start_together = Barrier(2)
     active = 0
     max_active = 0
     counter = 0
@@ -159,12 +160,14 @@ def test_same_state_root_runs_are_serialized(monkeypatch, tmp_path):
             active -= 1
         return _completed_result(run_id)
 
+    def invoke(company):
+        start_together.wait(timeout=1)
+        return mcp_server.run_prism_mcp(company)
+
     monkeypatch.setattr(mcp_server, "execute_live_analysis", fake_execute)
 
     with ThreadPoolExecutor(max_workers=2) as pool:
-        results = list(
-            pool.map(mcp_server.run_prism_mcp, ("고려아연", "삼성전자"))
-        )
+        results = list(pool.map(invoke, ("고려아연", "삼성전자")))
 
     assert {item["run_id"] for item in results} == {"SERIAL-1", "SERIAL-2"}
     assert max_active == 1
