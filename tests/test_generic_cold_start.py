@@ -240,3 +240,43 @@ def test_extra_required_evidence_routes_scenario_qualified_inputs():
     assert "bull_normalized_multiple" in required
     # The method's own assumption keys are still there, ahead of the extras.
     assert "normalized_ebitda" in required
+
+
+def test_calibration_snapshot_loader_threads_into_the_probability_door():
+    """The probability route's generic door: a snapshot loader on the spec must
+    reach the extensions' calibration_loader slot and stamp the cohort and
+    external source into the ScenarioBindingSpec — and declaring a loader
+    without its cohort/source identity is refused."""
+    from dataclasses import replace
+
+    import pytest as _pytest
+
+    from valuation_engine.cold_start_probe import probe_network, probe_runtime_spec
+    from valuation_engine.generic_live_providers import (
+        build_generic_kr_runtime_factory,
+    )
+    from valuation_engine.generic_valuation_plan import GenericValuationPlanError
+    from valuation_engine.llm_transport import ScriptedTransport
+
+    def loader(_context):  # pragma: no cover - never invoked here
+        raise AssertionError("not called at wiring time")
+
+    spec = replace(
+        probe_runtime_spec(),
+        calibration_snapshot_loader=loader,
+        calibration_cohort_key="kr.steel.long|5y_path|continuous_v1",
+        external_probability_source="continuous_financial_path_monte_carlo",
+    )
+    factory = build_generic_kr_runtime_factory(
+        network=probe_network(), transport=ScriptedTransport({}), spec=spec
+    )
+    assert factory.extensions.calibration_loader is loader
+    binding = factory.scenario_binding_spec
+    assert binding.calibration_cohort_key == "kr.steel.long|5y_path|continuous_v1"
+    assert binding.external_probability_source == "continuous_financial_path_monte_carlo"
+
+    incomplete = replace(probe_runtime_spec(), calibration_snapshot_loader=loader)
+    with _pytest.raises(GenericValuationPlanError, match="calibration_cohort_key"):
+        build_generic_kr_runtime_factory(
+            network=probe_network(), transport=ScriptedTransport({}), spec=incomplete
+        )

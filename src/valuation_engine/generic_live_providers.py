@@ -134,6 +134,14 @@ class GenericKRRuntimeSpec:
     #: here routes them through the collection plan so the underwriting
     #: collector may serve them and coverage still fails closed when absent.
     extra_required_evidence: tuple[str, ...] = ()
+    #: The probability route: a loader returning a sealed calibration snapshot
+    #: (e.g. the continuous financial-path snapshot the artifact factory's
+    #: output produces) plus the cohort it must belong to. When set, the
+    #: SCENARIO_BUILD chain verifies the certificate and binds the snapshot's
+    #: probabilities to the scenarios — the only door to numeric weighting.
+    calibration_snapshot_loader: object | None = None
+    calibration_cohort_key: str | None = None
+    external_probability_source: str | None = None
     market_config_path: str | Path | None = None
     street_export_path: str | Path | None = None
     market_currency: str | None = None
@@ -142,6 +150,13 @@ class GenericKRRuntimeSpec:
         if not self.as_of or not self.scenario_ids or not self.method_choices:
             raise GenericValuationPlanError(
                 "generic runtime spec requires as_of, scenario_ids and method_choices"
+            )
+        if self.calibration_snapshot_loader is not None and not (
+            self.calibration_cohort_key and self.external_probability_source
+        ):
+            raise GenericValuationPlanError(
+                "a calibration snapshot loader requires calibration_cohort_key "
+                "and external_probability_source"
             )
         if self.market_config_path is not None and not self.market_currency:
             raise GenericValuationPlanError(
@@ -265,6 +280,11 @@ def build_generic_kr_runtime_factory(
                 spec.street_export_path
             ),
         )
+    if spec.calibration_snapshot_loader is not None:
+        extensions = replace(
+            extensions,
+            calibration_loader=spec.calibration_snapshot_loader,
+        )
     if spec.declared_risk_path is not None:
         declared_risk = load_declared_risk_pack(spec.declared_risk_path)
         extensions = replace(
@@ -301,6 +321,8 @@ def build_generic_kr_runtime_factory(
         scenario_binding_spec=ScenarioBindingSpec(
             scenario_ids=spec.scenario_ids,
             required_keys=keys,
+            calibration_cohort_key=spec.calibration_cohort_key,
+            external_probability_source=spec.external_probability_source,
         ),
         method_choices=spec.method_choices,
         capability_registry=capability_registry,
