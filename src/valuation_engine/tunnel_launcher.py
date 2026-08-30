@@ -139,6 +139,19 @@ def _run(command: tuple[str, ...], *, env: Mapping[str, str]) -> dict[str, objec
     return payload
 
 
+def _require_ready_status(payload: Mapping[str, object]) -> None:
+    required = {
+        "process_running": payload.get("process_running") is True,
+        "healthy": payload.get("healthy") is True,
+        "ready": payload.get("ready") is True,
+    }
+    failed = tuple(name for name, passed in required.items() if not passed)
+    if failed:
+        raise PrismTunnelError(
+            "managed tunnel connected but is not ready: " + ", ".join(failed)
+        )
+
+
 def connect(environ: Mapping[str, str] | None = None) -> dict[str, object]:
     env = _prepare_runtime_environment(environ)
     binary = _tunnel_client(env)
@@ -148,10 +161,14 @@ def connect(environ: Mapping[str, str] | None = None) -> dict[str, object]:
         build_connect_command(binary=binary, alias=alias, tunnel_id=tunnel_id),
         env=env,
     )
-    status = _run(build_status_command(binary=binary, alias=alias), env=env)
-    status.setdefault("alias", alias)
-    status.setdefault("tunnel_id", tunnel_id)
-    return status
+    runtime_status = _run(
+        build_status_command(binary=binary, alias=alias),
+        env=env,
+    )
+    _require_ready_status(runtime_status)
+    runtime_status.setdefault("alias", alias)
+    runtime_status.setdefault("tunnel_id", tunnel_id)
+    return runtime_status
 
 
 def status(environ: Mapping[str, str] | None = None) -> dict[str, object]:
