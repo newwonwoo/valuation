@@ -17,7 +17,7 @@ from .cli_runtime import (
 from .strict_cli_runtime import execute_live_analysis
 
 
-_DEFAULT_PROVIDER_FACTORY = "valuation_engine.generic_kr_cli:factory"
+_DEFAULT_PROVIDER_FACTORY = "valuation_engine.auto_generic_kr_cli:factory"
 _MCP_PROVIDER_FACTORY_ENV = "VALUATION_MCP_PROVIDER_FACTORY"
 _LIVE_PROVIDER_FACTORY_ENV = "VALUATION_LIVE_PROVIDER_FACTORY"
 _MCP_STATE_ROOT_ENV = "VALUATION_MCP_STATE_ROOT"

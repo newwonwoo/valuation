@@ -105,7 +105,7 @@ def test_prism_analyze_dispatches_only_to_strict_entrypoint(monkeypatch, tmp_pat
     assert seen["state_root"] == tmp_path / "state"
     assert seen["factory"] is factory
     assert seen["jurisdiction"] == "KR"
-    assert seen["factory_spec"] == "valuation_engine.generic_kr_cli:factory"
+    assert seen["factory_spec"] == "valuation_engine.auto_generic_kr_cli:factory"
 
 
 def test_mcp_call_returns_structured_prism_result(monkeypatch):

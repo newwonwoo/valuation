@@ -1,9 +1,8 @@
 # PRISM MCP Gateway
 
 `prism-mcp` is the external tool boundary for the PRISM valuation repository.
-It exists so ChatGPT, Claude, IDE agents, and other MCP hosts can invoke the
-same canonical PRISM runtime instead of answering a stock-analysis request with
-a separate manual valuation.
+It lets an MCP host invoke the same canonical PRISM runtime instead of answering
+a stock-analysis request with a separate manual valuation.
 
 ## Contract
 
@@ -20,55 +19,70 @@ company / ticker
 → "분석시작 <company>"
 → strict_cli_runtime.execute_live_analysis
 → strict_live_runtime.run_prism
+→ canonical Control Plane stages
 → AuthorityControlledResult / execution attestation
 → FINAL_REPORT or fail-closed blocking code
 ```
 
-It does **not** contain valuation formulas, a second router, a simplified DCF,
-a price target fallback, or an alternate report generator. A blocked PRISM run
-stays blocked. A missing execution attestation stays an error.
+It does not contain valuation formulas, a simplified DCF, a target-price
+fallback, or an alternate report generator. A blocked PRISM run stays blocked.
+A missing execution attestation stays an error.
 
-The MCP server instructions explicitly tell the host model to use
-`prism_analyze` whenever a user names a listed company/ticker and asks for
-analysis, valuation, PRISM, fair value, target value, or says to run the stock.
-The tool accepts the normalized company/ticker only; the deterministic
-`COMPANY_RESOLUTION` stage remains responsible for deciding whether that target
-is valid.
+## Automatic method routing
 
-## State mutation and concurrency
+The MCP default provider is:
 
-A completed PRISM run can promote mutable current-state/learning pointers after
-writing immutable run history. MCP hosts may dispatch synchronous tools in
-parallel, so `prism-mcp` serializes the entire strict execution for a given
-resolved `VALUATION_MCP_STATE_ROOT`. This deliberately favors state lineage
-integrity over parallel throughput: two companies sharing one state root do not
-promote current state concurrently inside the same MCP server process.
+```text
+valuation_engine.auto_generic_kr_cli:factory
+```
 
-The lock is an MCP process boundary. Do not run multiple independent MCP server
-processes against the same mutable state root unless an external single-writer
-lock or isolated state roots are provided.
+`VALUATION_METHOD` is no longer required for ordinary MCP analysis. The default
+flow is:
+
+```text
+Industry DNA
+→ Module Requirement Plan
+→ Evidence / Bridge / Scenario compilation
+→ VALUATION_METHOD_INTENT
+→ deterministic method resolution
+```
+
+The Bridge prepares only candidate methods whose required inputs are actually
+present in the Evidence Ledger. This is an evidence-feasibility filter, not an
+economic-method decision. The formal `VALUATION_METHOD_INTENT` stage retains
+authority:
+
+- if one compiled candidate remains, the stage selects it deterministically;
+- if multiple viable economic methods remain, the run stops with
+  `AWAITING_USER_DECISION`;
+- if no source-backed candidate can be compiled, the run fails closed earlier;
+- no LLM or MCP wrapper is allowed to choose a method outside the canonical
+  method-intent stage.
+
+An operator may still set `VALUATION_METHOD` deliberately. When present, the
+existing explicit-intent `generic_kr_cli:factory` path is used unchanged.
 
 ## Install
 
-The MCP dependency is optional so ordinary engine installations stay small.
+The MCP dependency is optional:
 
 ```bash
 python -m pip install -e '.[mcp]'
 ```
 
-For development, the existing dev extra includes MCP:
+For development:
 
 ```bash
 python -m pip install -e '.[dev]'
 ```
 
-The repository pins the current MCP Python SDK major line:
+The repository tracks MCP Python SDK major version 2:
 
 ```text
 mcp>=2,<3
 ```
 
-## Run over stdio
+## Local stdio
 
 ```bash
 prism-mcp
@@ -80,13 +94,10 @@ or:
 python -m valuation_engine.mcp_server
 ```
 
-`stdio` is intentional. The MCP host launches the process and owns the process
-security boundary; PRISM credentials remain in the server process environment
-and are never MCP tool arguments.
+The MCP process keeps PRISM credentials in its process environment. Credentials
+are never tool arguments.
 
-## Host configuration
-
-A typical local MCP host entry is:
+A generic MCP host can launch the server with configuration similar to:
 
 ```json
 {
@@ -97,86 +108,76 @@ A typical local MCP host entry is:
       "env": {
         "DART_API_KEY": "<secret>",
         "VALUATION_LLM_TRANSPORT": "your_transport.module:build",
-        "VALUATION_METHOD": "commodity_price_taker/normalized_multiple",
-        "VALUATION_MCP_STATE_ROOT": "/private/path/valuation-state"
+        "VALUATION_MCP_STATE_ROOT": "/persistent/private/valuation-state"
       }
     }
   }
 }
 ```
 
-Do not commit credentials. Exact host configuration keys can differ by MCP host;
-what matters is that the host launches `prism-mcp` over stdio with the required
-runtime environment.
+Do not commit credentials.
 
-### ChatGPT deployment note
-
-Current ChatGPT custom-app documentation connects to remote MCP servers rather
-than directly to a local stdio process. For ChatGPT, deploy/wrap this gateway
-through a supported remote MCP endpoint or Secure MCP Tunnel; do not expose the
-local PRISM process or its credentials directly to the public internet. Local
-stdio remains appropriate for MCP hosts that launch local servers themselves.
-
-OpenAI reference:
-https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta
-
-## Provider factory
-
-Provider-factory precedence is:
+## Provider-factory precedence
 
 1. `VALUATION_MCP_PROVIDER_FACTORY`
 2. `VALUATION_LIVE_PROVIDER_FACTORY`
-3. `valuation_engine.generic_kr_cli:factory`
+3. `valuation_engine.auto_generic_kr_cli:factory`
 
-The default generic Korean provider keeps the existing production contracts.
-It can require, depending on the selected method and company:
+The automatic provider preserves existing source and declaration contracts. It
+can require, depending on the selected company and route:
 
 - `DART_API_KEY`
 - `VALUATION_LLM_TRANSPORT`
-- `VALUATION_METHOD`
-- `VALUATION_UNDERWRITING_PATH`
-- `VALUATION_RISK_PACK_PATH`
+- `VALUATION_UNDERWRITING_PATH` when source-backed analyst declarations are
+  needed
+- `VALUATION_RISK_PACK_PATH` when the selected method needs risk inputs
 - optional post-freeze market / Street declaration paths
+- optional `VALUATION_METHOD` only as an explicit operator override
 
-The MCP gateway does not invent any missing declaration. Missing inputs must
-surface as the existing PRISM configuration or stage blocker.
+Missing inputs are never invented by the MCP layer.
 
-## MCP-only configuration
+## MCP process configuration
 
 ```text
-VALUATION_MCP_PROVIDER_FACTORY   optional provider factory override
-VALUATION_MCP_STATE_ROOT         state root; default .valuation_state
+VALUATION_MCP_PROVIDER_FACTORY   optional provider-factory override
+VALUATION_MCP_STATE_ROOT         persistent state root; default .valuation_state
 VALUATION_MCP_JURISDICTION       jurisdiction lock; default KR
 ```
 
-These are process configuration, not model-controlled tool parameters.
+Same-state-root executions are single-writer serialized inside one MCP server
+process so mutable current-state promotion cannot race. Independent MCP server
+processes must not share one mutable state root unless the deployment supplies
+an external single-writer lock.
 
 ## Returned result
-
-The tool returns structured content with:
 
 ```text
 status              COMPLETED | VALUATION_BLOCKED
 company             normalized target supplied to PRISM
 canonical_command   분석시작 <company>
 run_id               PRISM run identity
-execution_mode       must be LIVE_PRIMARY
+execution_mode       LIVE_PRIMARY
 blocking_codes       sanitized stage/status codes only
 report               canonical PRISM report or blocked rendering
 ```
 
-Raw provider exceptions and raw blocked rationales are not returned through the
-MCP result. The existing PRISM report renderer owns blocked-output redaction.
+Raw provider exceptions, raw blocker rationales and credentials are not returned
+through the MCP result.
 
-## What this solves — and what it cannot solve alone
+## ChatGPT connection
 
-Inside an MCP host that has this server enabled, the model now sees a dedicated
-`PRISM_ANALYZE` tool whose description says to use it for stock-analysis intent.
-Once the tool is called, there is no manual-valuation escape hatch: only the
-strict attested runtime is reachable.
+ChatGPT does not connect directly to a local stdio MCP process. Keep the PRISM
+engine on a host with persistent storage and connect it through OpenAI Secure MCP
+Tunnel instead of moving `.valuation_state` onto an ephemeral serverless
+filesystem.
 
-MCP itself cannot intercept a host that refuses to call its tools. A host-level
-policy can make tool selection mandatory, but that policy lives in the host,
-not in the MCP server. The repository side is therefore designed so that any
-host that *does* invoke PRISM has one canonical executable path and cannot
-silently switch to a second valuation implementation.
+The repository provides:
+
+```bash
+prism-tunnel check
+prism-tunnel connect
+prism-tunnel status
+prism-tunnel stop
+```
+
+See `docs/PRISM_SECURE_TUNNEL.md` for the operator flow.
