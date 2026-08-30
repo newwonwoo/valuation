@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 
+from .assumption_compiler import _metric_matches_key
 from .generic_llm_staff import GenericBridgeAnalyst
 from .generic_live_providers import required_assumption_keys
 from .generic_valuation_plan import (
@@ -137,6 +138,17 @@ def _collapse_equivalent_candidates(
     return tuple(collapsed)
 
 
+def _evidence_has_assumption_key(
+    evidence_metrics: frozenset[str],
+    assumption_key: str,
+) -> bool:
+    """Use the compiler's own scenario/model qualifier matching semantics."""
+    return any(
+        _metric_matches_key(metric, assumption_key)
+        for metric in evidence_metrics
+    )
+
+
 def auto_bridge_required_assumption_keys(
     plan: ModuleRequirementPlan,
     *,
@@ -149,6 +161,9 @@ def auto_bridge_required_assumption_keys(
     Filtering a method for missing source inputs is not an economic-method
     decision. The formal VALUATION_METHOD_INTENT stage later owns selection from
     the candidates whose assumptions survived deterministic compilation.
+    Evidence feasibility deliberately reuses the Assumption Compiler's closed
+    qualifier-prefix rule, so ``bear_normalized_ebitda`` may satisfy
+    ``normalized_ebitda`` while unrelated suffix/partial matches remain blocked.
     """
     plan.validate()
     if forecast_years < 1 or forecast_years > 30:
@@ -161,7 +176,11 @@ def auto_bridge_required_assumption_keys(
         missing_by_candidate: list[str] = []
         for capability in _segment_candidates(segment, registry):
             required = _prototype_keys(capability, forecast_years)
-            missing = tuple(key for key in required if key not in evidence_metrics)
+            missing = tuple(
+                key
+                for key in required
+                if not _evidence_has_assumption_key(evidence_metrics, key)
+            )
             if not missing:
                 feasible.append(capability)
                 keys.extend(required)
