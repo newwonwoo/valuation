@@ -35,6 +35,19 @@ The tool accepts the normalized company/ticker only; the deterministic
 `COMPANY_RESOLUTION` stage remains responsible for deciding whether that target
 is valid.
 
+## State mutation and concurrency
+
+A completed PRISM run can promote mutable current-state/learning pointers after
+writing immutable run history. MCP hosts may dispatch synchronous tools in
+parallel, so `prism-mcp` serializes the entire strict execution for a given
+resolved `VALUATION_MCP_STATE_ROOT`. This deliberately favors state lineage
+integrity over parallel throughput: two companies sharing one state root do not
+promote current state concurrently inside the same MCP server process.
+
+The lock is an MCP process boundary. Do not run multiple independent MCP server
+processes against the same mutable state root unless an external single-writer
+lock or isolated state roots are provided.
+
 ## Install
 
 The MCP dependency is optional so ordinary engine installations stay small.
@@ -95,6 +108,17 @@ A typical local MCP host entry is:
 Do not commit credentials. Exact host configuration keys can differ by MCP host;
 what matters is that the host launches `prism-mcp` over stdio with the required
 runtime environment.
+
+### ChatGPT deployment note
+
+Current ChatGPT custom-app documentation connects to remote MCP servers rather
+than directly to a local stdio process. For ChatGPT, deploy/wrap this gateway
+through a supported remote MCP endpoint or Secure MCP Tunnel; do not expose the
+local PRISM process or its credentials directly to the public internet. Local
+stdio remains appropriate for MCP hosts that launch local servers themselves.
+
+OpenAI reference:
+https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta
 
 ## Provider factory
 
