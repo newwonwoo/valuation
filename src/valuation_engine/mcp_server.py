@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from threading import Lock
 from typing import TypedDict
 
 from mcp.server import MCPServer
@@ -21,6 +22,8 @@ _MCP_PROVIDER_FACTORY_ENV = "VALUATION_MCP_PROVIDER_FACTORY"
 _LIVE_PROVIDER_FACTORY_ENV = "VALUATION_LIVE_PROVIDER_FACTORY"
 _MCP_STATE_ROOT_ENV = "VALUATION_MCP_STATE_ROOT"
 _MCP_JURISDICTION_ENV = "VALUATION_MCP_JURISDICTION"
+_STATE_ROOT_LOCKS: dict[str, Lock] = {}
+_STATE_ROOT_LOCKS_GUARD = Lock()
 
 
 class PrismAnalyzeResult(TypedDict):
@@ -55,6 +58,23 @@ def _jurisdiction() -> str:
     return value
 
 
+def _state_root_lock(state_root: Path) -> Lock:
+    """Serialize MCP runs that can promote state under the same state root.
+
+    PRISM itself preserves immutable run history, but the mutable current-state
+    pointer is a single-writer boundary. MCP hosts may dispatch synchronous tools
+    concurrently, so the gateway serializes the whole strict run per state root
+    rather than allowing nondeterministic last-writer-wins promotion.
+    """
+    key = str(state_root.resolve())
+    with _STATE_ROOT_LOCKS_GUARD:
+        lock = _STATE_ROOT_LOCKS.get(key)
+        if lock is None:
+            lock = Lock()
+            _STATE_ROOT_LOCKS[key] = lock
+        return lock
+
+
 def _blocking_codes(result) -> list[str]:
     return list(
         dict.fromkeys(
@@ -74,14 +94,16 @@ def run_prism_mcp(company: str) -> PrismAnalyzeResult:
         raise ToolError("company is required")
 
     canonical_command = f"분석시작 {normalized_company}"
+    state_root = _state_root()
     try:
         factory = load_live_runtime_config_factory(_provider_factory_spec())
-        result = execute_live_analysis(
-            canonical_command,
-            state_root=_state_root(),
-            provider_factory=factory,
-            jurisdiction=_jurisdiction(),
-        )
+        with _state_root_lock(state_root):
+            result = execute_live_analysis(
+                canonical_command,
+                state_root=state_root,
+                provider_factory=factory,
+                jurisdiction=_jurisdiction(),
+            )
         report = render_controlled_run(result)
     except LiveCLIError as exc:
         raise ToolError(f"PRISM [{exc.code}] {exc}") from exc
@@ -99,7 +121,7 @@ def run_prism_mcp(company: str) -> PrismAnalyzeResult:
         company=normalized_company,
         canonical_command=canonical_command,
         run_id=result.run_id,
-        execution_mode=result.execution_mode.value,
+        execution_mode=result.execution_mode.name,
         blocking_codes=_blocking_codes(result),
         report=report,
     )
