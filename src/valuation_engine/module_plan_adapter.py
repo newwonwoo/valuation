@@ -76,38 +76,6 @@ def extend_module_required_evidence(
     return result
 
 
-def _auto_method_evidence(
-    context: OrchestratorContext,
-    plan: ModuleRequirementPlan,
-) -> Mapping[str, tuple[str, ...]] | None:
-    """Resolve candidate-method evidence only after canonical Industry DNA routing.
-
-    This is preparation, not method selection. The formal
-    VALUATION_METHOD_INTENT stage still owns economic method resolution and
-    fails closed when multiple implemented candidates remain.
-    """
-    from .auto_method_routing import (
-        AUTO_METHOD_ROUTING_FLAG,
-        AUTO_METHOD_ROUTING_FORECAST_YEARS,
-        auto_required_evidence_map,
-    )
-
-    enabled = context.data.get(AUTO_METHOD_ROUTING_FLAG, False)
-    if enabled is False:
-        return None
-    if enabled is not True:
-        raise TypeError(f"{AUTO_METHOD_ROUTING_FLAG} must be bool")
-    forecast_years = context.data.get(AUTO_METHOD_ROUTING_FORECAST_YEARS)
-    if not isinstance(forecast_years, int) or isinstance(forecast_years, bool):
-        raise TypeError(
-            f"{AUTO_METHOD_ROUTING_FORECAST_YEARS} must be an integer"
-        )
-    return auto_required_evidence_map(
-        plan,
-        forecast_years=forecast_years,
-    )
-
-
 def module_requirement_plan_adapter(
     *,
     registry_path: str | Path,
@@ -156,10 +124,6 @@ def module_requirement_plan_adapter(
                 profiles,
                 registry_path=registry_path,
                 control_requirements_path=control_requirements_path,
-            )
-            plan = extend_module_required_evidence(
-                plan,
-                _auto_method_evidence(context, plan),
             )
             plan = extend_module_required_evidence(
                 plan,
