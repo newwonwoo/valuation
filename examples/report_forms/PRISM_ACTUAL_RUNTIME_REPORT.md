@@ -69,18 +69,18 @@
 ![고정 원자재 기업 가치평가 가정·위험·출처](PRISM_000000_02_assumptions.svg)
 
 ## 정보 출처 — 원문 바로 확인
-- **고정 공시 시험자료 / 기업 식별정보 / 증권사: 증권사 A / 증권사: 증권사 B / 현재 시장가격** — 근거 8개: 기준 가격, 생산능력, 현금원가, 원가곡선상 위치, 재고, 생산량 외 2개 유형 (기준일 2026-06-30); 기업 식별 확인; 목표가 발표일 2026-08-01; 목표가 발표일 2026-08-05; 시장가격 기준일 2026-08-23 [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/tests/test_full_live_primary_runtime.py)
+- **고정 공시 시험자료 / 기업 식별정보 / 증권사: 증권사 A / 증권사: 증권사 B / 현재 시장가격** — 근거 13개: 기준 가격, 생산능력, 현금원가, 원가곡선상 위치, 희석주식수, 기업가치 조정 외 7개 유형 (기준일 2026-06-30); 기업 식별 확인; 목표가 발표일 2026-08-01; 목표가 발표일 2026-08-05; 시장가격 기준일 2026-08-23 [원문 바로 열기](https://github.com/newwonwoo/valuation/blob/main/tests/test_full_live_primary_runtime.py)
 <details>
-<summary>이 원문에 연결된 근거 8개 보기</summary>
+<summary>이 원문에 연결된 근거 13개 보기</summary>
 
-- `E:core:benchmark_price` · `E:core:capacity` · `E:core:cash_cost` · `E:core:cost_curve_position` · `E:core:inventory` · `E:core:production` · `E:core:realized_price` · `E:core:utilization`
+- `E:core:benchmark_price` · `E:core:capacity` · `E:core:cash_cost` · `E:core:cost_curve_position` · `E:core:diluted_shares` · `E:core:ev_adjustment` · `E:core:inventory` · `E:core:normalized_ebitda` · `E:core:normalized_multiple` · `E:core:ownership` · `E:core:production` · `E:core:realized_price` · `E:core:utilization`
 
 </details>
 - 전체 근거 식별자·지표·기준일 연결 내역은 별도 분석 기록에 보관됩니다.
 
 ## 분석 범위와 유의사항
 - **평가범위:** 전체 기업 내재가치
-- **계산 확인:** 자동 오류 점검 22개 통과 · 분석 원칙 28/28개 충족
+- **계산 확인:** 자동 오류 점검 26개 통과 · 분석 원칙 28/28개 충족
 - 회사 공시 사실, 분석가 가정, 인공지능 연결 인사이트를 구분해 표시했습니다.
 - 증권사 목표가와 현재가는 가치평가를 마친 뒤 참고했으며, 앞서 계산한 가정을 바꾸는 데 사용하지 않았습니다.
 
@@ -110,11 +110,11 @@
 
 ### 4. 가치평가·오류 점검·결과 확정 — 경고 (7/7)
 - 결과: 가치평가와 오류 점검을 마치고 결과를 확정했습니다
-- 잔여위험: 시나리오 확률 보정 점검: 실제 해결 이력 기반 확률 보정이 완료되지 않아 확률가중 기대값을 산출하지 않았습니다 · 다음 단계: 증권사·시장 비교·보고서 저장
+- 잔여위험: 시나리오 확률 보정 점검: 실제 해결 이력 기반 확률 보정이 완료되지 않아 확률가중 기대값을 산출하지 않았습니다 | 가정 타당성 점검: 근거 구성 또는 가치 민감도에서 확인 필요 항목이 기록되었습니다 · 다음 단계: 증권사·시장 비교·보고서 저장
 
-### 5. 증권사·시장 비교·보고서 저장 — 통과 (7/7)
+### 5. 증권사·시장 비교·보고서 저장 — 경고 (7/7)
 - 결과: 시장·증권사 비교 후 한국어 최종보고서와 요약 이미지 2장을 저장했습니다
-- 잔여위험: 없음 · 다음 단계: 최종 결과보고서
+- 잔여위험: 시장 함의 기대치 역산: 현재 시장가격이 요구하는 영구성장률·현금흐름 수준이 확정된 가정과 달라 확인이 필요합니다 · 다음 단계: 최종 결과보고서
 
 ## 세부 계산 기록
 
@@ -122,8 +122,8 @@
 - **증거 수집·산업 라우팅:** 1 기업 식별=통과 · 2 기존 분석 상태 불러오기=통과 · 3 산업 지식 기준일 설정=통과 · 4 출처 최신성 사전점검=통과 · 5 사업부 분해=통과 · 6 산업 특성 분류=통과 · 7 필수 분석 모듈 확정=통과 · 8 1차 근거 수집=통과 · 9 근거 기록 확정=통과
 - **인사이트 도출·반증 검토:** 10 환경 변화 인사이트 탐색=통과 · 11 상류 자금흐름 점검=해당 없음 · 12 주 분석가 가설 도출=통과 · 13 독립 반증 검토=통과 · 14 추가 조사 반복=해당 없음
 - **가정·평가방법·위험:** 15 근거·가정 연결=통과 · 16 시나리오 구성=통과 · 17 가치평가 방법 확정=통과 · 18 계층형 베타 추정=해당 없음 · 19 가중평균자본비용 검증=해당 없음
-- **가치평가·오류 점검·결과 확정:** 20 결정론적 가치평가=통과 · 21 계층형 적정 주가수익비율=해당 없음 · 22 현금흐름·주가수익비율 가정 정합성=통과 · 23 평가방법 간 이중계상 감사=통과 · 24 시나리오 확률 보정 점검=경고 · 25 최종 감사=통과 · 26 가치평가 결과 확정=통과
-- **증권사·시장 비교·보고서 저장:** 27 증권사 자료 불러오기=통과 · 28 증권사 목표가 비교=통과 · 29 현재 시장가격 불러오기=통과 · 30 시장가격 비교=통과 · 31 투자논지 변화 점검=통과 · 32 분석 결과 저장=통과 · 33 최종보고서 생성=통과
+- **가치평가·오류 점검·결과 확정:** 20 결정론적 가치평가=통과 · 21 계층형 적정 주가수익비율=해당 없음 · 22 현금흐름·주가수익비율 가정 정합성=통과 · 23 평가방법 간 이중계상 감사=통과 · 24 시나리오 확률 보정 점검=경고 · 25 최종 감사=경고 · 26 가치평가 결과 확정=통과
+- **증권사·시장 비교·보고서 저장:** 27 증권사 자료 불러오기=통과 · 28 증권사 목표가 비교=통과 · 29 현재 시장가격 불러오기=통과 · 30 시장가격 비교=경고 · 31 투자논지 변화 점검=통과 · 32 분석 결과 저장=통과 · 33 최종보고서 생성=통과
 - 단계별 사유와 출력값 식별자는 별도 분석 기록에 보존됩니다.
 
 ### 분석 모듈 점검
@@ -131,18 +131,29 @@
 - 영향 미측정: 가정 컴파일러, 독립 반증 검토, 증권사 자료 검증, 근거 원장, 근거·가정 연결, 산업 특성 분류, 산업 지식, 지식 배치 검증 외 7개
 - 비적용: 계층형 베타, 상류 자금흐름 점검, 가중평균자본비용 · 실패: 없음
 
+### 근거 구성
+
+- 가치 투입 근거 5건 — 공시·실적 원문 5건(100%)
+- 수집 근거 13건 — 공시·실적 원문 13건(100.0%)
+- 공시·회사 공식계획 직접 인용 100.0% · 분석가 추정 0.0% · 평균 신뢰도 1.00
+
+### 가치 민감도
+
+- Base: 시나리오 가치가 단일 DCF 기여분으로 구성되지 않아 변수별 민감도를 분리할 수 없습니다
+- 확인 필요: 단일 DCF 기여분으로 재구성 가능한 시나리오가 없어 민감도를 산출하지 못했습니다
+
 ### 실행 식별자와 해시
 
 - 실행 식별자: `FULL-LIVE-1`
 - 실행 모드: `live_primary`
-- 작성 확인 해시: `468fbef83bc55264102ded0e8b4d3d6e2718233c403e48169d32060433b595d5`
-- 증거 해시: `844702b379f405baffd8cea944854ac2c00a1b0e8141a693bfd75fd8934a786d`
-- 가정 해시: `f9a111745f4945d119f02f1708f026ff7473c9c96a6055c454370634d2a0e818`
-- 시나리오 해시: `363189a1674c763b0f3d2e60be59156f25e956d800342bf9f468dbf093c4538c`
-- 가치평가 해시: `759890294b90fb9bda449cc6b539214a0795bb59ad27d1f46e37b42b8f99da06`
-- 오류 점검 해시: `484915ff80ef965128618a753168b38ae268ebcc4f4656bfb8a9e84270a15d5a`
-- 가치평가 확정 해시: `77990c6f5d8c2fd9b152a537b6ecf4cf6e5140640e00c9f817acad2bf0105ed1`
-- 보조 결속정보: 생산능력 평가 `a3545801a2b8a62a817dc8625fd5baccc104aa9ed22e1476e89b8c440ce55462` · 생산능력 시나리오 `749eb5803378d1917242a7bbc628d9f735b5a3101a0593da19d5c3fa3a17ff24` · 생산능력 가치평가 `5e36a496bd37604aa33ffb0b4f80cd48eadf839b83218aaa9422a35649e297fe` · 생산능력 주가수익비율 `09d1f570a1c55c08e4639a4c59546ddac49c2704ed6ebdf185cba5cd4457d478` · 생산능력 정합성 `adfc3920a842875012b27720a55cf7324ede5d2ae4abf320d1c4484f3aafb1eb` · 생산능력 오류 점검 `5405620256db2ab82529b83171ef2e5f41bc1d1fd8d1785902318c52f5b0c353`
-- 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=pass · 11 `UPSTREAM_FUNDING_SCAN`=skipped_not_applicable · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=skipped_not_applicable · 19 `WACC_VALIDATION`=skipped_not_applicable · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=pass · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=pass · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
+- 작성 확인 해시: `72d464a6dd7593c86903fad836e4e84dd3d9556c84ca97e00084759795d53911`
+- 증거 해시: `d5e9845d72ee935cf907cf698b9d07e87788fde2b11e010324b78aff26986a90`
+- 가정 해시: `2f5f076a09940c97903531c848eae9b60b92dc3c90865b12e78b75ed593f32a9`
+- 시나리오 해시: `e50bb1431ca558190c96981f39f96e1a6822247f069dd5008af2421aa303e62e`
+- 가치평가 해시: `b0b994aca0efcb61f8affea549274dda626b738c512b207c876ea3d8c87611d8`
+- 오류 점검 해시: `a7ce8c9a90e1b219831ee756b36bb91259ee7f9b3c7ef6ddb2b01f973eaf47c7`
+- 가치평가 확정 해시: `184c0984a268ff0069be739f00ad3f3d0928009d194d31bb41f855242718cb80`
+- 보조 결속정보: 생산능력 평가 `a3545801a2b8a62a817dc8625fd5baccc104aa9ed22e1476e89b8c440ce55462` · 생산능력 시나리오 `749eb5803378d1917242a7bbc628d9f735b5a3101a0593da19d5c3fa3a17ff24` · 생산능력 가치평가 `e81acebbcdcd233862743456a1a09db4894161819ffe12e3de3c9fc51bdfb183` · 생산능력 주가수익비율 `33cce18c3440468a3df284d7c56bbe17c347f8a3fe8e7ce4e2ba0e6717ed021e` · 생산능력 정합성 `6cac0633b124734285ef80271d40e17fc948f6d7382647738bd9ada82dadc0d7` · 생산능력 오류 점검 `4614a37b715110041efaf1e12b8318a5e41f0dbf16d701f18a1428733cd7bdda`
+- 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=pass · 11 `UPSTREAM_FUNDING_SCAN`=skipped_not_applicable · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=skipped_not_applicable · 19 `WACC_VALIDATION`=skipped_not_applicable · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=warning · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=warning · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
 
 </details>
