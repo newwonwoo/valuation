@@ -18,7 +18,6 @@ _ALIAS_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _DEFAULT_ALIAS = "prism-valuation"
 _REQUIRED_PRISM_ENV = ("DART_API_KEY", "VALUATION_LLM_TRANSPORT")
 _STATE_ROOT_ENV = "VALUATION_MCP_STATE_ROOT"
-_LINUX_ACL_XATTRS = frozenset({"system.posix_acl_access", "system.posix_acl_default"})
 
 
 class PrismTunnelError(RuntimeError):
@@ -61,22 +60,32 @@ def _alias(env: Mapping[str, str]) -> str:
     return value
 
 
-def _supports_private_posix_permissions() -> bool:
-    """Whether this host matches the Linux security contract enforced below.
+def _is_wsl_runtime() -> bool:
+    """Detect WSL without trusting only environment variables."""
+    if os.environ.get("WSL_INTEROP") or os.environ.get("WSL_DISTRO_NAME"):
+        return True
+    for path in (Path("/proc/sys/kernel/osrelease"), Path("/proc/version")):
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if "microsoft" in text.casefold():
+            return True
+    return False
 
-    WSL2 reports a Linux platform and is covered. Native macOS/Windows are
-    rejected until platform-specific ACL verification is implemented.
-    """
-    return sys.platform.startswith("linux")
+
+def _supports_private_posix_permissions() -> bool:
+    """Whether this host matches the native-Linux security contract."""
+    return sys.platform.startswith("linux") and not _is_wsl_runtime()
 
 
 def _reject_linux_extended_acls(root: Path) -> None:
-    """Refuse state roots with access/default POSIX ACL metadata.
+    """Refuse state roots carrying any ACL-like extended attribute.
 
-    Mode 0700 alone is not the complete authorization surface when a filesystem
-    carries POSIX ACL xattrs. We do not mutate or guess at operator ACL policy;
-    tunnel preflight stays fail-closed until the operator supplies a root whose
-    effective access is represented only by the verified owner mode bits.
+    Mode 0700 is not the complete authorization surface when a filesystem
+    carries POSIX, NFSv4, Samba/NT, or another ACL xattr. The launcher does not
+    rewrite operator ACL policy and then claim success; any ACL-like metadata,
+    or inability to inspect xattrs, keeps tunnel preflight fail-closed.
     """
     if not hasattr(os, "listxattr"):
         raise PrismTunnelError(
@@ -88,12 +97,12 @@ def _reject_linux_extended_acls(root: Path) -> None:
         raise PrismTunnelError(
             f"{_STATE_ROOT_ENV} ACL metadata cannot be verified ({type(exc).__name__})"
         ) from exc
-    found = tuple(sorted(names.intersection(_LINUX_ACL_XATTRS)))
+    found = tuple(sorted(name for name in names if "acl" in name.casefold()))
     if found:
         raise PrismTunnelError(
-            f"{_STATE_ROOT_ENV} contains extended POSIX ACL metadata: "
+            f"{_STATE_ROOT_ENV} contains extended ACL metadata: "
             + ", ".join(found)
-            + "; use a private root without access/default ACL entries"
+            + "; use a private native-Linux root without ACL entries"
         )
 
 
@@ -101,8 +110,8 @@ def _private_persistent_state_root(env: Mapping[str, str]) -> Path:
     if not _supports_private_posix_permissions():
         raise PrismTunnelError(
             "Secure MCP Tunnel state permission enforcement currently requires a "
-            "Linux host (including WSL2); native macOS/Windows are fail-closed "
-            "until ACL-aware enforcement exists"
+            "native Linux host; WSL, macOS, and Windows are fail-closed until "
+            "their alternate authorization surfaces are verified explicitly"
         )
     raw = env.get(_STATE_ROOT_ENV, "").strip()
     if not raw:
