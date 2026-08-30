@@ -38,11 +38,11 @@ from .live_primary_adapters import (
 )
 from .source_index import DocumentIndexRecord
 from .source_watch import WatchFinding, WatchStatus
+from .runtime_resources import runtime_registry_path
 
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CLASSIFICATION_MAP_PATH = (
-    _REPO_ROOT / "config" / "kr_industry_classification_map.yaml"
+DEFAULT_CLASSIFICATION_MAP_PATH = runtime_registry_path(
+    "kr_industry_classification_map.yaml"
 )
 OPENDART_SOURCE_ID = "KR_OPENDART"
 

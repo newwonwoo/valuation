@@ -44,10 +44,14 @@ stage list, the frozen values and the report must all reproduce.
 from __future__ import annotations
 
 import argparse
+from decimal import Decimal
+from hashlib import sha256
 from io import BytesIO
 import json
 import os
 from pathlib import Path
+import re
+import shutil
 import sys
 import tempfile
 from urllib.parse import parse_qs, urlparse
@@ -274,6 +278,177 @@ def _optional_path(run_dir: Path, name: str) -> str | None:
     return str(path) if path.exists() else None
 
 
+def _safe_artifact_token(value: str) -> str:
+    token = re.sub(r"[^A-Za-z0-9_-]+", "-", value.strip()).strip("-")
+    if not token:
+        raise RunbookError("report artifact token cannot be empty")
+    return token
+
+
+def _file_sha256(path: Path) -> str:
+    return sha256(path.read_bytes()).hexdigest()
+
+
+def _reference_value_per_share(result) -> Decimal:
+    valuation = result.data.get("generic_valuation_result")
+    scenarios = tuple(getattr(valuation, "scenarios", ()))
+    if not scenarios:
+        raise RunbookError("completed run carries no intrinsic scenario values")
+    expected = getattr(valuation, "expected_value_per_share", None)
+    if expected is not None:
+        return Decimal(expected)
+    preferred = next(
+        (
+            item
+            for item in scenarios
+            if getattr(item, "scenario_id", "") in {"Base", "Core"}
+        ),
+        scenarios[0],
+    )
+    return Decimal(getattr(preferred, "value_per_share"))
+
+
+def _write_json_atomic(path: Path, payload: dict, *, token: str) -> None:
+    temporary = path.parent / f".{path.name}.{token}.tmp"
+    temporary.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    os.replace(temporary, path)
+
+
+def publish_report_bundle(
+    run_dir: str | Path,
+    result,
+    *,
+    output_dir: str | Path | None = None,
+    report_alias: str | Path | None = None,
+) -> dict:
+    """Persist the complete immutable run bundle plus a hash-bound latest manifest."""
+    run_dir = Path(run_dir).resolve()
+    output_root = Path(output_dir or run_dir / "out").resolve()
+    source_raw = result.data.get("saved_run_dir")
+    if not isinstance(source_raw, str) or not source_raw:
+        raise RunbookError("completed run carries no saved_run_dir")
+    source = Path(source_raw).resolve()
+    visuals = tuple(result.data.get("saved_report_visuals") or ())
+    required = (
+        "manifest.json",
+        "control_plane_trace.json",
+        "audit.json",
+        "final_report.md",
+        "execution_attestation.json",
+        *visuals,
+    )
+    missing = tuple(name for name in required if not (source / name).is_file())
+    if missing:
+        raise RunbookError(
+            "completed run bundle is incomplete: " + ", ".join(missing)
+        )
+
+    report = (source / "final_report.md").read_text(encoding="utf-8")
+    valuation_hash = str(result.data.get("valuation_hash") or "")
+    audit_hash = str(result.data.get("audit_hash") or "")
+    run_id = str(getattr(result, "run_id", "") or "")
+    ticker = str(result.data.get("ticker") or "")
+    config = _load_run(run_dir)
+    as_of = str(config.get("as_of") or "")
+    if not all((valuation_hash, audit_hash, run_id, ticker, as_of)):
+        raise RunbookError("completed run lacks report artifact identities")
+    reference = _reference_value_per_share(result)
+    reference_token = f"TP{reference.quantize(Decimal('1')):.0f}"
+    seed = "|".join(
+        (
+            "kr-live-report-bundle/v1",
+            ticker,
+            as_of,
+            run_id,
+            valuation_hash,
+            audit_hash,
+            sha256(report.encode("utf-8")).hexdigest(),
+            _file_sha256(source / "manifest.json"),
+        )
+    )
+    short_hash = sha256(seed.encode("utf-8")).hexdigest()[:12].upper()
+    artifact_id = "-".join(
+        (
+            _safe_artifact_token(ticker),
+            _safe_artifact_token(as_of.replace("-", "")),
+            reference_token,
+            short_hash,
+        )
+    )
+    filename_base = artifact_id.replace("-", "_")
+    bundle_relative = Path("bundles") / filename_base
+    bundle_dir = output_root / bundle_relative
+    if bundle_dir.exists():
+        raise RunbookError(f"immutable report bundle already exists: {bundle_dir}")
+    bundle_dir.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copytree(source, bundle_dir)
+
+    versioned_report_name = f"{filename_base}.md"
+    versioned_report = (
+        report.rstrip() + f"\n\n---\n보고서 ID `{artifact_id}`\n"
+    )
+    (bundle_dir / versioned_report_name).write_text(
+        versioned_report, encoding="utf-8"
+    )
+    files = tuple(
+        {
+            "filename": path.relative_to(bundle_dir).as_posix(),
+            "sha256": _file_sha256(path),
+        }
+        for path in sorted(bundle_dir.rglob("*"))
+        if path.is_file()
+    )
+    bundle_manifest = {
+        "schema_version": "kr-live-report-bundle/v1",
+        "artifact_id": artifact_id,
+        "as_of": as_of,
+        "run_id": run_id,
+        "ticker": ticker,
+        "reference_value_per_share": str(reference),
+        "valuation_hash": valuation_hash,
+        "audit_hash": audit_hash,
+        "report_filename": versioned_report_name,
+        "files": files,
+    }
+    bundle_manifest_path = bundle_dir / "report_bundle_manifest.json"
+    _write_json_atomic(bundle_manifest_path, bundle_manifest, token=short_hash)
+
+    latest_name = f"{_safe_artifact_token(ticker)}_LATEST_REPORT.json"
+    latest_path = output_root / latest_name
+    latest = {
+        "schema_version": "kr-live-latest-report/v1",
+        "artifact_id": artifact_id,
+        "as_of": as_of,
+        "bundle_directory": bundle_relative.as_posix(),
+        "bundle_manifest": (
+            bundle_relative / bundle_manifest_path.name
+        ).as_posix(),
+        "bundle_manifest_sha256": _file_sha256(bundle_manifest_path),
+        "report_filename": (
+            bundle_relative / versioned_report_name
+        ).as_posix(),
+        "report_sha256": _file_sha256(bundle_dir / versioned_report_name),
+        "valuation_hash": valuation_hash,
+        "audit_hash": audit_hash,
+    }
+    output_root.mkdir(parents=True, exist_ok=True)
+    _write_json_atomic(latest_path, latest, token=short_hash)
+
+    alias = Path(report_alias) if report_alias else output_root / "final_report.md"
+    alias.parent.mkdir(parents=True, exist_ok=True)
+    temporary_alias = alias.parent / f".{alias.name}.{short_hash}.tmp"
+    temporary_alias.write_text(report, encoding="utf-8")
+    os.replace(temporary_alias, alias)
+    return {
+        **latest,
+        "latest_manifest_path": str(latest_path),
+        "versioned_report_path": str(bundle_dir / versioned_report_name),
+    }
+
+
 def execute_run(run_dir: str | Path, *, state_root: str | None = None):
     """Run one prepared directory; returns (reached, stop_stage, stop_reason, result)."""
     run_dir = Path(run_dir).resolve()
@@ -365,11 +540,14 @@ def main() -> int:
     parser.add_argument("run_dir", help="prepared run directory (see runbook)")
     parser.add_argument(
         "--report-out",
-        help="write the final report markdown here (default: <run_dir>/out/final_report.md)",
+        help="write the mutable latest-report alias here (immutable bundle stays under <run_dir>/out/bundles)",
     )
     args = parser.parse_args()
     run_dir = Path(args.run_dir)
-    reached, stop_stage, stop_reason, result = execute_run(run_dir)
+    output_root = run_dir / "out"
+    reached, stop_stage, stop_reason, result = execute_run(
+        run_dir, state_root=str(output_root / "state")
+    )
     for stage in reached:
         print(f"  OK  {stage}")
     if stop_stage is not None:
@@ -383,14 +561,14 @@ def main() -> int:
     print(f"\n  stages: {len(reached)}/{len(result.stage_traces)} — COMPLETED")
     report = result.data.get("final_report")
     if isinstance(report, str):
-        out = (
-            Path(args.report_out)
-            if args.report_out
-            else run_dir / "out" / "final_report.md"
+        published = publish_report_bundle(
+            run_dir,
+            result,
+            output_dir=output_root,
+            report_alias=args.report_out,
         )
-        out.parent.mkdir(parents=True, exist_ok=True)
-        out.write_text(report, encoding="utf-8")
-        print(f"  report: {out}")
+        print(f"  report: {published['versioned_report_path']}")
+        print(f"  manifest: {published['latest_manifest_path']}")
         for line in report.splitlines():
             if "내재가치" in line or "기대값" in line or "상승여력" in line:
                 print("  " + line.strip("- *"))

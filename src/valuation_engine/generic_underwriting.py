@@ -22,6 +22,7 @@ a judgment look like a fact; it makes the judgment *auditable*.
 
 from __future__ import annotations
 
+from datetime import date
 from hashlib import sha256
 from pathlib import Path
 from typing import Mapping
@@ -43,6 +44,23 @@ class DeclaredUnderwritingError(ValueError):
     """Raised when a declared-underwriting file violates its contract."""
 
 
+def _declared_date(value: str, label: str) -> date:
+    try:
+        return date.fromisoformat(str(value)[:10])
+    except ValueError as exc:
+        raise DeclaredUnderwritingError(f"{label} must be YYYY-MM-DD") from exc
+
+
+def _assert_knowable_by(payload: Mapping, run_as_of: str) -> None:
+    cutoff = _declared_date(run_as_of, "run as_of")
+    declared_at = _declared_date(str(payload["as_of"]), "underwriting as_of")
+    if declared_at > cutoff:
+        raise DeclaredUnderwritingError(
+            f"declared underwriting as_of {declared_at.isoformat()} is after run "
+            f"cutoff {cutoff.isoformat()}; future analyst judgment is inadmissible"
+        )
+
+
 def load_declared_underwriting(path: str | Path) -> dict:
     raw = Path(path).read_text(encoding="utf-8")
     payload = yaml.safe_load(raw)
@@ -56,6 +74,7 @@ def load_declared_underwriting(path: str | Path) -> dict:
         raise DeclaredUnderwritingError(
             "declared underwriting requires target_id, as_of and source_ref"
         )
+    _declared_date(as_of, "underwriting as_of")
     if not source_ref.startswith("http"):
         raise DeclaredUnderwritingError(
             "declared underwriting source_ref must be an HTTP provenance link "
@@ -90,9 +109,13 @@ def load_declared_underwriting(path: str | Path) -> dict:
     }
 
 
-def declared_underwriting_collector(path: str | Path):
+def declared_underwriting_collector(
+    path: str | Path, *, run_as_of: str | None = None
+):
     """EvidenceCollector serving the operator's declared judgments for one run."""
     payload = load_declared_underwriting(path)
+    if run_as_of is not None:
+        _assert_knowable_by(payload, run_as_of)
 
     def collect(request: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
         if request.target_id != payload["target_id"]:
@@ -140,8 +163,12 @@ def declared_underwriting_collector(path: str | Path):
     return collect
 
 
-def declared_underwriting_provider(path: str | Path) -> LiveCollectorProvider:
+def declared_underwriting_provider(
+    path: str | Path, *, run_as_of: str | None = None
+) -> LiveCollectorProvider:
     payload = load_declared_underwriting(path)
+    if run_as_of is not None:
+        _assert_knowable_by(payload, run_as_of)
     return LiveCollectorProvider(
         capability=CollectorCapability(
             collector_id=COLLECTOR_ID,
@@ -152,5 +179,5 @@ def declared_underwriting_provider(path: str | Path) -> LiveCollectorProvider:
                 "valuation_engine.generic_underwriting.declared_underwriting_collector"
             ),
         ),
-        collector=declared_underwriting_collector(path),
+        collector=declared_underwriting_collector(path, run_as_of=run_as_of),
     )

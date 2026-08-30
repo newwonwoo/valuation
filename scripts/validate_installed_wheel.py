@@ -3,6 +3,10 @@ from __future__ import annotations
 from importlib import resources
 
 from valuation_engine.doctrine_runtime import load_default_unit_contract_registry
+from valuation_engine.generic_kr_industry import load_kr_industry_classification
+from valuation_engine.generic_scanners import load_scanner_screens
+from valuation_engine.industry_series_collector import load_industry_series_registry
+from valuation_engine.kr_filing_kpi_collector import load_filing_kpi_patterns
 from valuation_engine.method_capabilities import load_default_method_capability_registry
 from valuation_engine.sanil_live_primary import (
     load_sanil_market_snapshot,
@@ -19,6 +23,10 @@ REGISTRIES = (
     "probability_calibration_policy.yaml",
     "sanil_live_snapshot.yaml",
     "sanil_market_snapshot.yaml",
+    "kr_industry_classification_map.yaml",
+    "generic_scanner_screens.yaml",
+    "kr_industry_series_registry.yaml",
+    "kr_filing_kpi_patterns.yaml",
 )
 EXPECTED_METHOD_COUNT = 42
 
@@ -32,6 +40,13 @@ def main() -> int:
     method_registry = load_default_method_capability_registry()
     if method_registry.coverage_summary().total != EXPECTED_METHOD_COUNT:
         raise SystemExit("installed wheel method registry is incomplete")
+
+    classification = load_kr_industry_classification()
+    screens = load_scanner_screens()
+    series = load_industry_series_registry()
+    patterns = load_filing_kpi_patterns()
+    if not classification.entries or not screens or not patterns:
+        raise SystemExit("installed wheel generic runtime registries are incomplete")
 
     # Exercise the exact production default path used by run_controlled_workflow and Audit.
     unit_registry = load_default_unit_contract_registry()
@@ -47,7 +62,7 @@ def main() -> int:
     print(
         "installed-wheel runtime OK: "
         f"registries={len(REGISTRIES)} methods={method_registry.coverage_summary().total} "
-        f"units={len(unit_registry.units)}"
+        f"units={len(unit_registry.units)} generic_series={len(series)}"
     )
     return 0
 

@@ -11,6 +11,7 @@ from valuation_engine.cli_runtime import (
     load_live_runtime_config_factory,
 )
 from valuation_engine.generic_kr_cli import GenericCLIConfigError, factory
+from valuation_engine.generic_underwriting import DeclaredUnderwritingError
 from valuation_engine.live_runtime import LivePrimaryRuntimeConfig
 
 
@@ -93,3 +94,17 @@ def test_without_underwriting_the_config_still_builds(monkeypatch, tmp_path):
         item.capability.collector_id for item in config.providers.collectors
     }
     assert "operator-declared-underwriting" not in collector_ids
+
+
+def test_future_underwriting_is_rejected_before_provider_registration(
+    monkeypatch, tmp_path
+):
+    _base_env(monkeypatch, tmp_path)
+    path = tmp_path / "uw.yaml"
+    text = path.read_text(encoding="utf-8").replace(
+        'as_of: "2026-08-27"', 'as_of: "2026-08-28"'
+    )
+    path.write_text(text, encoding="utf-8")
+
+    with pytest.raises(DeclaredUnderwritingError, match="after run cutoff"):
+        factory(_request(tmp_path))

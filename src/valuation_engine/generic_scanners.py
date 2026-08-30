@@ -26,11 +26,11 @@ from typing import Mapping
 import yaml
 
 from .decision_impact import ResearchEffort
+from .runtime_resources import runtime_registry_path
 from .scanner_runtime import ScannerContext, ScannerFinding, ScannerFindingStatus
 
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_SCREEN_CONFIG_PATH = _REPO_ROOT / "config" / "generic_scanner_screens.yaml"
+DEFAULT_SCREEN_CONFIG_PATH = runtime_registry_path("generic_scanner_screens.yaml")
 
 
 class GenericScannerError(ValueError):

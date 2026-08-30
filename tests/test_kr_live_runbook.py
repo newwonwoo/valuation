@@ -11,13 +11,14 @@ change must be seen and owned.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from run_kr_live import execute_run  # noqa: E402
+from run_kr_live import execute_run, publish_report_bundle  # noqa: E402
 
 
 def test_the_committed_shinhanalpha_run_replays_to_the_attested_nav_envelope():
@@ -72,8 +73,11 @@ def test_the_committed_daehan_run_replays_to_the_attested_dcf_expected_value():
         assert line in report, line
 
 
-def test_the_committed_kisco_run_replays_to_the_attested_expected_value():
-    reached, stop_stage, stop_reason, result = execute_run(ROOT / "runs" / "kisco-104700")
+def test_the_committed_kisco_run_replays_to_the_attested_expected_value(tmp_path):
+    run_dir = ROOT / "runs" / "kisco-104700"
+    reached, stop_stage, stop_reason, result = execute_run(
+        run_dir, state_root=str(tmp_path / "state")
+    )
     assert stop_stage is None, stop_reason
     assert len(reached) == len(result.stage_traces)
 
@@ -92,3 +96,27 @@ def test_the_committed_kisco_run_replays_to_the_attested_expected_value():
         "**현재가:** 10,120원 (2026-08-28)",
     ):
         assert line in report, line
+
+    published = publish_report_bundle(
+        run_dir, result, output_dir=tmp_path / "published"
+    )
+    latest = json.loads(
+        Path(published["latest_manifest_path"]).read_text(encoding="utf-8")
+    )
+    bundle = tmp_path / "published" / latest["bundle_directory"]
+    bundle_manifest = json.loads(
+        (tmp_path / "published" / latest["bundle_manifest"]).read_text(
+            encoding="utf-8"
+        )
+    )
+    assert latest["artifact_id"] in Path(
+        published["versioned_report_path"]
+    ).read_text(encoding="utf-8")
+    assert latest["report_filename"].endswith(".md")
+    assert (bundle / "control_plane_trace.json").is_file()
+    assert (bundle / "audit.json").is_file()
+    assert (bundle / "execution_attestation.json").is_file()
+    assert len(result.data["saved_report_visuals"]) == 2
+    assert all((bundle / name).is_file() for name in result.data["saved_report_visuals"])
+    assert bundle_manifest["artifact_id"] == latest["artifact_id"]
+    assert bundle_manifest["valuation_hash"] == result.data["valuation_hash"]

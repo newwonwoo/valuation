@@ -125,7 +125,11 @@ extra_required_evidence / market_currency`.
 PYTHONPATH=src python scripts/run_kr_live.py runs/<종목>-<코드>
 ```
 
-완주하면 `out/final_report.md`. **정지하면 정지 메시지가 작업지시서다**:
+완주하면 사용자 전달본은 `out/bundles/<종목>_<기준일>_TP<기준가>_<해시>/`
+아래의 버전 고정 Markdown이며, 같은 디렉토리에 감사 JSON·33단계 trace·SVG
+2장·실행 증명이 함께 보존된다. `out/<종목>_LATEST_REPORT.json`이 그 번들과
+각 SHA-256을 가리키고, `out/final_report.md`는 자동화용 최신 별칭일 뿐이다.
+**정지하면 정지 메시지가 작업지시서다**:
 
 | 정지 지점 | 뜻 | 대처 |
 |---|---|---|
@@ -144,8 +148,9 @@ PYTHONPATH=src python scripts/run_kr_live.py runs/<종목>-<코드>
 - 재현 가치가 있는 런이면 디렉토리를 커밋한다 (`out/`은 제외 —
   `.gitignore`). 커밋된 런은 `tests/test_kr_live_runbook.py` 패턴으로 값을
   pin해 전체 파이프라인 회귀가 된다.
-- 리포트 전달은 원문 그대로: 챗 계층은 `chat_dispatch`의 SHA-256 핸드오프로
-  숫자 무변조를 강제할 수 있다.
+- 리포트 전달은 `LATEST_REPORT.json`이 가리키는 **버전 고정 Markdown** 원문
+  그대로다. 최신 별칭은 전달하지 않는다. 챗 계층은 `chat_dispatch`의
+  SHA-256 핸드오프로 숫자 무변조를 강제할 수 있다.
 
 ## 8. F1 — 공시 트리거 자동 재실행 (감시 루프)
 
@@ -164,7 +169,7 @@ KST 아침, Claude Code Remote 트리거)이 새 세션을 띄워 다음을 수�
 4. 있으면 이 런북 §2~6 절차로 그 런 디렉토리를 갱신(raw 재수집, as_of
    전진, 선언 보수)하고 재실행한 뒤, **직전 커밋된 리포트와의 시나리오
    값·논지 변화(델타)** 를 요약해 보고한다. 리포트 숫자는 언제나
-   `out/final_report.md` 원문이다.
+   `out/<종목>_LATEST_REPORT.json`이 지목한 버전 고정 Markdown 원문이다.
 5. 재현 가치가 있으면 같은 브랜치에 커밋·푸시한다. 게이트 완화·수치 임의
    변경 금지는 여기서도 동일하다.
 

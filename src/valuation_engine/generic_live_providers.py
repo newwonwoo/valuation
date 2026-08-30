@@ -214,7 +214,12 @@ def build_generic_kr_runtime_factory(
                 registry_path=spec.industry_series_registry_path,
             ),
             *(
-                (declared_underwriting_provider(spec.declared_underwriting_path),)
+                (
+                    declared_underwriting_provider(
+                        spec.declared_underwriting_path,
+                        run_as_of=spec.as_of,
+                    ),
+                )
                 if spec.declared_underwriting_path is not None
                 else ()
             ),
@@ -303,7 +308,9 @@ def build_generic_kr_runtime_factory(
             calibration_loader=spec.calibration_snapshot_loader,
         )
     if spec.declared_risk_path is not None:
-        declared_risk = load_declared_risk_pack(spec.declared_risk_path)
+        declared_risk = load_declared_risk_pack(
+            spec.declared_risk_path, run_as_of=spec.as_of
+        )
         extensions = replace(
             extensions,
             additional_collectors=(

@@ -56,11 +56,11 @@ from .llm_filing_locators import FilingLocatorTask, propose_and_verify_filing_kp
 from .llm_transport import ProposalTransport
 from .live_indexers import index_opendart_filing_list
 from .live_runtime import LiveCollectorProvider
+from .runtime_resources import runtime_registry_path
 from .source_index import DocumentIndexRecord
 
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_PATTERN_CONFIG_PATH = _REPO_ROOT / "config" / "kr_filing_kpi_patterns.yaml"
+DEFAULT_PATTERN_CONFIG_PATH = runtime_registry_path("kr_filing_kpi_patterns.yaml")
 COLLECTOR_ID = "kr-dart-filing-kpi"
 SOURCE_ID = "KR_OPENDART"
 

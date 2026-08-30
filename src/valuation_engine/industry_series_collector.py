@@ -48,11 +48,13 @@ from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequ
 from .live_indexers import parse_json_response, parse_kosis_series_values
 from .live_runtime import LiveCollectorProvider
 from .records import EvidenceRecord, EvidenceSourceLayer
+from .runtime_resources import runtime_registry_path
 from .source_index import stable_hash
 
 
-_REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_SERIES_REGISTRY_PATH = _REPO_ROOT / "config" / "kr_industry_series_registry.yaml"
+DEFAULT_SERIES_REGISTRY_PATH = runtime_registry_path(
+    "kr_industry_series_registry.yaml"
+)
 
 #: Metrics an industry-wide series may legitimately observe. Everything else is
 #: a company-realized quantity and must come from the company's own filings,
