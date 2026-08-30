@@ -69,10 +69,10 @@ def test_prepare_runtime_environment_requires_separate_tunnel_key(tmp_path):
         launcher._prepare_runtime_environment(env)
 
 
-def test_prepare_runtime_environment_rejects_non_posix_permission_host(monkeypatch, tmp_path):
+def test_prepare_runtime_environment_rejects_non_linux_permission_host(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher, "_supports_private_posix_permissions", lambda: False)
     env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state")}
-    with pytest.raises(launcher.PrismTunnelError, match="POSIX host"):
+    with pytest.raises(launcher.PrismTunnelError, match="Linux host"):
         launcher._prepare_runtime_environment(env)
 
 
@@ -100,7 +100,7 @@ def test_prepare_runtime_environment_resolves_persistent_state_root(tmp_path):
     assert env["VALUATION_MCP_JURISDICTION"] == "KR"
 
 
-@pytest.mark.skipif(os.name == "nt", reason="POSIX directory modes required")
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux tunnel security contract")
 def test_new_tunnel_state_root_is_private(tmp_path):
     root = tmp_path / "private-state"
     launcher._prepare_runtime_environment(
@@ -109,7 +109,7 @@ def test_new_tunnel_state_root_is_private(tmp_path):
     assert stat.S_IMODE(root.stat().st_mode) == 0o700
 
 
-@pytest.mark.skipif(os.name == "nt", reason="POSIX directory modes required")
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux tunnel security contract")
 def test_existing_permissive_state_root_is_repaired(tmp_path):
     root = tmp_path / "permissive-state"
     root.mkdir(mode=0o755)
@@ -121,6 +121,28 @@ def test_existing_permissive_state_root_is_repaired(tmp_path):
     )
 
     assert stat.S_IMODE(root.stat().st_mode) == 0o700
+
+
+def test_extended_linux_acl_metadata_fails_closed(monkeypatch, tmp_path):
+    root = tmp_path / "acl-state"
+    monkeypatch.setattr(launcher.os, "listxattr", lambda path: ["system.posix_acl_access"])
+    with pytest.raises(launcher.PrismTunnelError, match="extended POSIX ACL"):
+        launcher._prepare_runtime_environment(
+            {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(root)}
+        )
+
+
+def test_unverifiable_linux_acl_metadata_fails_closed(monkeypatch, tmp_path):
+    root = tmp_path / "acl-unverifiable"
+
+    def deny(_path):
+        raise OSError("not permitted")
+
+    monkeypatch.setattr(launcher.os, "listxattr", deny)
+    with pytest.raises(launcher.PrismTunnelError, match="ACL metadata cannot be verified"):
+        launcher._prepare_runtime_environment(
+            {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(root)}
+        )
 
 
 def test_check_never_returns_secret_values(monkeypatch, tmp_path):
