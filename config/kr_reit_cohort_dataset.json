@@ -1,0 +1,574 @@
+{
+ "rows": [
+  {
+   "company_id": "088260",
+   "period_end": "2022-06-30",
+   "published_at": "2023-03-14T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.001186,
+    "operating_margin": 0.767134
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230314000498"
+  },
+  {
+   "company_id": "088260",
+   "period_end": "2022-12-31",
+   "published_at": "2023-03-14T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.015929,
+    "operating_margin": 0.770043
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230314000498"
+  },
+  {
+   "company_id": "088260",
+   "period_end": "2023-06-30",
+   "published_at": "2024-03-14T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.008046,
+    "operating_margin": 0.77015
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20240314000743"
+  },
+  {
+   "company_id": "088260",
+   "period_end": "2023-12-31",
+   "published_at": "2024-03-14T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.020472,
+    "operating_margin": 0.774584
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20240314000743"
+  },
+  {
+   "company_id": "088260",
+   "period_end": "2024-06-30",
+   "published_at": "2025-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.004708,
+    "operating_margin": 0.774933
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250317000839"
+  },
+  {
+   "company_id": "088260",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-17T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.016018,
+    "operating_margin": 0.77376
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250317000839"
+  },
+  {
+   "company_id": "088260",
+   "period_end": "2025-06-30",
+   "published_at": "2026-06-08T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.005519,
+    "operating_margin": 0.779367
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260608000343"
+  },
+  {
+   "company_id": "088260",
+   "period_end": "2025-12-31",
+   "published_at": "2026-06-08T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.014796,
+    "operating_margin": 0.783034
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260608000343"
+  },
+  {
+   "company_id": "330590",
+   "period_end": "2022-06-30",
+   "published_at": "2023-03-02T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.023136,
+    "operating_margin": 0.587131
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230302000408"
+  },
+  {
+   "company_id": "330590",
+   "period_end": "2022-12-31",
+   "published_at": "2023-03-02T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.007663,
+    "operating_margin": 0.588882
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230302000408"
+  },
+  {
+   "company_id": "330590",
+   "period_end": "2023-06-30",
+   "published_at": "2024-03-06T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.012854,
+    "operating_margin": 0.592612
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20240306000530"
+  },
+  {
+   "company_id": "330590",
+   "period_end": "2023-12-31",
+   "published_at": "2024-03-06T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.012793,
+    "operating_margin": 0.608154
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20240306000530"
+  },
+  {
+   "company_id": "330590",
+   "period_end": "2024-06-30",
+   "published_at": "2025-03-12T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.009972,
+    "operating_margin": 0.626355
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250312000767"
+  },
+  {
+   "company_id": "330590",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-12T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.093678,
+    "operating_margin": 0.640055
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250312000767"
+  },
+  {
+   "company_id": "330590",
+   "period_end": "2025-06-30",
+   "published_at": "2026-03-10T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.065905,
+    "operating_margin": 0.646478
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002810"
+  },
+  {
+   "company_id": "330590",
+   "period_end": "2025-12-31",
+   "published_at": "2026-03-10T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.013227,
+    "operating_margin": 0.652583
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260310002810"
+  },
+  {
+   "company_id": "334890",
+   "period_end": "2022-02-28",
+   "published_at": "2022-11-18T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.702799,
+    "operating_margin": 0.744421
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20221118000373"
+  },
+  {
+   "company_id": "334890",
+   "period_end": "2022-08-31",
+   "published_at": "2022-11-18T09:00:00Z",
+   "values": {
+    "revenue_growth": 5.808238,
+    "operating_margin": 0.967063
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20221118000373"
+  },
+  {
+   "company_id": "334890",
+   "period_end": "2023-02-28",
+   "published_at": "2023-11-17T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.078959,
+    "operating_margin": 0.743853
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20231117000308"
+  },
+  {
+   "company_id": "334890",
+   "period_end": "2023-08-31",
+   "published_at": "2023-11-17T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.233954,
+    "operating_margin": 0.74897
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20231117000308"
+  },
+  {
+   "company_id": "334890",
+   "period_end": "2024-02-29",
+   "published_at": "2024-11-21T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.228485,
+    "operating_margin": 0.838097
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20241121000504"
+  },
+  {
+   "company_id": "334890",
+   "period_end": "2024-08-31",
+   "published_at": "2024-11-21T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.74818,
+    "operating_margin": 0.061069
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20241121000504"
+  },
+  {
+   "company_id": "334890",
+   "period_end": "2025-02-28",
+   "published_at": "2025-11-20T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.587973,
+    "operating_margin": 0.105576
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20251120000578"
+  },
+  {
+   "company_id": "334890",
+   "period_end": "2025-08-31",
+   "published_at": "2025-11-20T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.318244,
+    "operating_margin": 0.763018
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20251120000578"
+  },
+  {
+   "company_id": "334890",
+   "period_end": "2026-02-28",
+   "published_at": "2026-05-21T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.027559,
+    "operating_margin": 0.687787
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260521000682"
+  },
+  {
+   "company_id": "338100",
+   "period_end": "2022-05-31",
+   "published_at": "2023-02-10T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.369977,
+    "operating_margin": 0.885909
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230210000537"
+  },
+  {
+   "company_id": "338100",
+   "period_end": "2022-11-30",
+   "published_at": "2023-02-10T09:00:00Z",
+   "values": {
+    "revenue_growth": 1.920974,
+    "operating_margin": 0.962404
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230210000537"
+  },
+  {
+   "company_id": "338100",
+   "period_end": "2023-05-31",
+   "published_at": "2024-02-13T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.619294,
+    "operating_margin": 0.866299
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20240213001144"
+  },
+  {
+   "company_id": "338100",
+   "period_end": "2023-11-30",
+   "published_at": "2024-02-13T09:00:00Z",
+   "values": {
+    "revenue_growth": 4.034847,
+    "operating_margin": 0.878134
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20240213001144"
+  },
+  {
+   "company_id": "338100",
+   "period_end": "2024-05-31",
+   "published_at": "2025-02-14T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.756041,
+    "operating_margin": 0.886391
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250214002376"
+  },
+  {
+   "company_id": "338100",
+   "period_end": "2024-11-30",
+   "published_at": "2025-02-14T09:00:00Z",
+   "values": {
+    "revenue_growth": 3.099599,
+    "operating_margin": 0.479733
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250214002376"
+  },
+  {
+   "company_id": "338100",
+   "period_end": "2025-05-31",
+   "published_at": "2026-02-11T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.242018,
+    "operating_margin": 0.954824
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260211001059"
+  },
+  {
+   "company_id": "338100",
+   "period_end": "2025-11-30",
+   "published_at": "2026-02-11T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.641234,
+    "operating_margin": -0.050388
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260211001059"
+  },
+  {
+   "company_id": "348950",
+   "period_end": "2022-06-30",
+   "published_at": "2023-03-23T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.060631,
+    "operating_margin": 0.490956
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230323001334"
+  },
+  {
+   "company_id": "348950",
+   "period_end": "2022-12-31",
+   "published_at": "2023-03-23T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.118793,
+    "operating_margin": 0.489961
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230323001334"
+  },
+  {
+   "company_id": "348950",
+   "period_end": "2023-06-30",
+   "published_at": "2024-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.042846,
+    "operating_margin": 0.57294
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20240320000921"
+  },
+  {
+   "company_id": "348950",
+   "period_end": "2023-12-31",
+   "published_at": "2024-03-20T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.055886,
+    "operating_margin": 0.538861
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20240320000921"
+  },
+  {
+   "company_id": "348950",
+   "period_end": "2024-06-30",
+   "published_at": "2025-03-21T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.01592,
+    "operating_margin": 0.546716
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250321001699"
+  },
+  {
+   "company_id": "348950",
+   "period_end": "2024-12-31",
+   "published_at": "2025-03-21T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.018719,
+    "operating_margin": 0.495291
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250321001699"
+  },
+  {
+   "company_id": "348950",
+   "period_end": "2025-06-30",
+   "published_at": "2026-03-23T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.195319,
+    "operating_margin": 0.854446
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001319"
+  },
+  {
+   "company_id": "348950",
+   "period_end": "2025-12-31",
+   "published_at": "2026-03-23T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.035114,
+    "operating_margin": 0.755787
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260323001319"
+  },
+  {
+   "company_id": "357120",
+   "period_end": "2022-05-31",
+   "published_at": "2023-02-09T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.345871,
+    "operating_margin": 0.753932
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230209000633"
+  },
+  {
+   "company_id": "357120",
+   "period_end": "2022-11-30",
+   "published_at": "2023-02-09T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.282192,
+    "operating_margin": 0.685656
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230209000633"
+  },
+  {
+   "company_id": "357120",
+   "period_end": "2023-05-31",
+   "published_at": "2024-02-08T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.037546,
+    "operating_margin": 0.712443
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20240208000985"
+  },
+  {
+   "company_id": "357120",
+   "period_end": "2023-11-30",
+   "published_at": "2024-02-08T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.117402,
+    "operating_margin": 0.575617
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20240208000985"
+  },
+  {
+   "company_id": "357120",
+   "period_end": "2024-05-31",
+   "published_at": "2025-02-11T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.082221,
+    "operating_margin": 0.687347
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250211000671"
+  },
+  {
+   "company_id": "357120",
+   "period_end": "2024-11-30",
+   "published_at": "2025-02-11T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.42344,
+    "operating_margin": 0.735093
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250211000671"
+  },
+  {
+   "company_id": "357120",
+   "period_end": "2025-05-31",
+   "published_at": "2026-02-13T09:00:00Z",
+   "values": {
+    "revenue_growth": -0.281196,
+    "operating_margin": 0.731686
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260213001848"
+  },
+  {
+   "company_id": "357120",
+   "period_end": "2025-11-30",
+   "published_at": "2026-02-13T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.106031,
+    "operating_margin": 0.626599
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260213001848"
+  },
+  {
+   "company_id": "365550",
+   "period_end": "2022-05-31",
+   "published_at": "2023-02-16T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.554862,
+    "operating_margin": 0.508941
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230216001343"
+  },
+  {
+   "company_id": "365550",
+   "period_end": "2022-11-30",
+   "published_at": "2023-02-16T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.04841,
+    "operating_margin": 0.460133
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20230216001343"
+  },
+  {
+   "company_id": "365550",
+   "period_end": "2023-05-31",
+   "published_at": "2024-10-31T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.009722,
+    "operating_margin": 0.527037
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20241031000315"
+  },
+  {
+   "company_id": "365550",
+   "period_end": "2023-11-30",
+   "published_at": "2024-10-31T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.07023,
+    "operating_margin": 0.456871
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20241031000315"
+  },
+  {
+   "company_id": "365550",
+   "period_end": "2024-05-31",
+   "published_at": "2025-02-18T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.055145,
+    "operating_margin": 0.515535
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250218000559"
+  },
+  {
+   "company_id": "365550",
+   "period_end": "2024-11-30",
+   "published_at": "2025-02-18T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.017863,
+    "operating_margin": 0.46683
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250218000559"
+  },
+  {
+   "company_id": "365550",
+   "period_end": "2025-05-31",
+   "published_at": "2026-02-13T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.032006,
+    "operating_margin": 0.489022
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260213002140"
+  },
+  {
+   "company_id": "365550",
+   "period_end": "2025-11-30",
+   "published_at": "2026-02-13T09:00:00Z",
+   "values": {
+    "revenue_growth": 0.014668,
+    "operating_margin": 0.434187
+   },
+   "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260213002140"
+  }
+ ]
+}

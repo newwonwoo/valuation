@@ -1,14 +1,14 @@
 # RUNBOOK — 한국 상장사 라이브 밸류에이션
 
 이 문서는 절차서다. 엔진 설계는 다른 문서들이 설명한다; 여기는 **"종목 X를
-지금 돌리려면 정확히 무엇을 하는가"** 만 다룬다. 이 절차 전체가 두 번 실행되어
+지금 돌리려면 정확히 무엇을 하는가"** 만 다룬다. 이 절차 전체가 세 번 실행되어
 리포에 박제되어 있고 (회귀: `tests/test_kr_live_runbook.py`), 아래 모든 단계는
 그 실행에서 실제로 밟은 것이다:
 
 - `runs/kisco-104700/` — 한국철강: 12월 결산, EV 산출 방법
   (normalized_multiple), 캘리브레이션 포함(기대값까지).
 - `runs/shinhanalpha-293940/` — 신한알파리츠: **3월 결산** REIT, **자본가치
-  산출 방법**(nav), 캘리브레이션 없음(기대값 정직한 미산출).
+  산출 방법**(nav), 리츠 코호트 캘리브레이션(기대값까지).
 - `runs/daehansteel-084010/` — 대한제강: **리스크팩 요구 방법**
   (midcycle_price_volume_dcf) — L1~L4 피어 회귀베타는 커밋된 공개 시세에서
   `scripts/compute_peer_betas.py`로 재현, 코호트는 타깃 제외 재적합.
@@ -108,7 +108,11 @@ extra_required_evidence / market_currency`.
 한다. 없으면 —
 1. 동종사(타깃 **제외**) 5곳 이상 × 다년 실적 이력을 §2와 같은 원천에서 모아
    `{"rows":[{company_id,period_end,published_at,values,source_ref}]}` 로 저장
-   (예: `config/kr_steel_cohort_dataset.json`, 12사 91행).
+   (예: `config/kr_steel_cohort_dataset.json` 12사 91행,
+   `config/kr_reit_cohort_dataset.json` 7사 57행).
+   **결산 주기가 섞이면 안 된다** — 반기 결산 리츠의 6개월 성장률과 12월
+   결산사의 연간 성장률은 같은 축이 아니다. 타깃과 같은 주기의 회사만
+   코호트에 넣는다 (리츠 코호트가 반기 7사로 좁혀진 이유).
 2. `python scripts/build_calibration_artifact.py --dataset … --drivers … \
    --scenarios Down,Base,Bull --path-length 5 --exclude-ticker <코드> \
    --conditioning-json …` → 아티팩트·프로버넌스 파일과 **BindingConstants**가

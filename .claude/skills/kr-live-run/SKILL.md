@@ -6,14 +6,17 @@ description: 이 레포에서 실제 한국 상장 종목의 라이브 밸류에
 # KR 라이브 런 — 오퍼레이터 절차
 
 정본은 `docs/RUNBOOK_KR_LIVE.md`. 이 스킬은 그 요약 + LLM 세션용 주의점이다.
-**전 절차가 두 종목으로 실증되어 박제**되어 있다 — 파일 형식은 이 디렉토리를
+**전 절차가 세 종목으로 실증되어 박제**되어 있다 — 파일 형식은 이 디렉토리를
 그대로 본뜨면 된다:
 
-- `runs/kisco-104700/` — 12월 결산 · EV 산출 방법 · 캘리브레이션(기대값)
-- `runs/shinhanalpha-293940/` — 3월 결산 REIT · 자본가치 방법(nav) ·
-  캘리브레이션 없음(기대값 미산출). 비12월 결산이면 business_year는
-  회계연도가 **끝나는** 해; fnltt 응답의 rcept_no를 채택 보고서와 대조.
-  자본가치 방법은 `ev_adjustment` 키가 없다 — 선언 만들지 마라.
+- `runs/kisco-104700/` — 12월 결산 · EV 산출 방법 · 철강 코호트(기대값)
+- `runs/shinhanalpha-293940/` — 3월 결산 REIT · 자본가치 방법(nav) · 리츠
+  코호트(기대값). 비12월 결산이면 business_year는 회계연도가 **끝나는** 해;
+  fnltt 응답의 rcept_no를 채택 보고서와 대조. 자본가치 방법은
+  `ev_adjustment` 키가 없다 — 선언 만들지 마라.
+- `runs/daehansteel-084010/` — 리스크팩 요구 DCF · 피어 회귀베타는
+  `scripts/compute_peer_betas.py`로 커밋된 공개 시세에서 재현. 피어는 레벨
+  간 중복 불가; 코호트는 타깃 제외 재적합.
 
 ## 순서 (요약)
 
@@ -38,7 +41,10 @@ description: 이 레포에서 실제 한국 상장 종목의 라이브 밸류에
 5. **기대값까지 원하면** calibration 블록: 동종사(타깃 제외) 이력 →
    `scripts/build_calibration_artifact.py` → 출력된 BindingConstants를
    run.yaml에 붙여넣기. 기존 코호트가 맞으면 재사용
-   (철강: `config/kr_steel_calibration_artifact.json`).
+   (철강: `config/kr_steel_calibration_artifact.json`,
+   리츠: `config/kr_reit_calibration_artifact.json`).
+   **코호트는 타깃과 결산 주기가 같아야 한다** — 반기 결산사의 6개월
+   성장률과 12월 결산사의 연간 성장률을 한 축에 섞지 마라.
 6. **실행**: `PYTHONPATH=src python scripts/run_kr_live.py runs/<종목>-<코드>`
 
 ## 철칙
