@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
+import stat
 import sys
 
 import pytest
@@ -49,6 +51,14 @@ def test_connect_command_uses_secret_reference_and_stdio_child():
     assert command[-1] == "--json"
 
 
+def _base_env():
+    return {
+        "DART_API_KEY": "dart",
+        "VALUATION_LLM_TRANSPORT": "transport.module:build",
+        "CONTROL_PLANE_API_KEY": "runtime",
+    }
+
+
 def test_prepare_runtime_environment_requires_separate_tunnel_key(tmp_path):
     env = {
         "DART_API_KEY": "dart",
@@ -59,12 +69,21 @@ def test_prepare_runtime_environment_requires_separate_tunnel_key(tmp_path):
         launcher._prepare_runtime_environment(env)
 
 
+def test_prepare_runtime_environment_requires_explicit_state_root():
+    with pytest.raises(launcher.PrismTunnelError, match="VALUATION_MCP_STATE_ROOT"):
+        launcher._prepare_runtime_environment(_base_env())
+
+
+def test_prepare_runtime_environment_rejects_relative_state_root():
+    env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": "relative/prism-state"}
+    with pytest.raises(launcher.PrismTunnelError, match="absolute"):
+        launcher._prepare_runtime_environment(env)
+
+
 def test_prepare_runtime_environment_resolves_persistent_state_root(tmp_path):
     env = launcher._prepare_runtime_environment(
         {
-            "DART_API_KEY": "dart",
-            "VALUATION_LLM_TRANSPORT": "transport.module:build",
-            "CONTROL_PLANE_API_KEY": "runtime",
+            **_base_env(),
             "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state"),
         }
     )
@@ -72,6 +91,29 @@ def test_prepare_runtime_environment_resolves_persistent_state_root(tmp_path):
     assert root.is_absolute()
     assert root.is_dir()
     assert env["VALUATION_MCP_JURISDICTION"] == "KR"
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX directory modes required")
+def test_new_tunnel_state_root_is_private(tmp_path):
+    root = tmp_path / "private-state"
+    launcher._prepare_runtime_environment(
+        {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(root)}
+    )
+    assert stat.S_IMODE(root.stat().st_mode) == 0o700
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX directory modes required")
+def test_existing_permissive_state_root_is_repaired(tmp_path):
+    root = tmp_path / "permissive-state"
+    root.mkdir(mode=0o755)
+    os.chmod(root, 0o755)
+    assert stat.S_IMODE(root.stat().st_mode) == 0o755
+
+    launcher._prepare_runtime_environment(
+        {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(root)}
+    )
+
+    assert stat.S_IMODE(root.stat().st_mode) == 0o700
 
 
 def test_check_never_returns_secret_values(monkeypatch, tmp_path):
