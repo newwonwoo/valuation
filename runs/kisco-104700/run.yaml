@@ -25,7 +25,7 @@ calibration:
   external_probability_source: continuous_financial_path_monte_carlo
   forecast_class: kr.steel.long.continuous_financial_path
   horizon: 5y_path
-  method_version: probability_engine_v3.2_factory_v1
+  method_version: probability_engine_v3.2_factory_v2
   mapping_version: kr_steel_cohort_v1
   driver_ids: [revenue_growth, operating_margin]
   scenario_ids: [Down, Base, Bull]
@@ -37,7 +37,7 @@ calibration:
   outer_draws: 300
   inner_draws: 200
   constants:
-    expected_artifact_sha256: f882d2c5d00f352dc45fb6e874291191c6a0f707acc0e9e6e0461b1b97a5dd97
+    expected_artifact_sha256: 58a2c075dcad69fd787b8970e23f31969aca7786d21db07b24f4b59e79e7f7f3
     expected_provenance_artifact_sha256: 127a471fc5dffc1ae234b76dca5b99ae02a8dc9d7f4494c747303484146024ca
     expected_dataset_sha256: 7ee98138a08322eaaef71e3caa9019c522983a3ef41afe118a6e220c247d0195
     expected_provenance_hash: 3ac5a9394afafdd5239ac0b3eeab946190e79c3fbbf5ab488313c541094feaeb
