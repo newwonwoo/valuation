@@ -1,0 +1,14 @@
+{
+ "counter_thesis": "Domestic rebar demand is structurally, not cyclically, lower (construction starts down); mid-cycle EBITDA may re-base below the declared 85bn and the cash pile may stay unreturned.",
+ "issues": [
+  {
+   "id": "R:KISCO:STRUCTURAL",
+   "blocking": false,
+   "description": "single-scenario run cannot express structural demand re-basing",
+   "requested_evidence": [
+    "multi-scenario underwriting"
+   ]
+  }
+ ],
+ "requested_evidence": []
+}

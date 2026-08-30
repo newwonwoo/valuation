@@ -1,0 +1,137 @@
+# RUNBOOK — 한국 상장사 라이브 밸류에이션
+
+이 문서는 절차서다. 엔진 설계는 다른 문서들이 설명한다; 여기는 **"종목 X를
+지금 돌리려면 정확히 무엇을 하는가"** 만 다룬다. 이 절차 전체가 한국철강
+(104700)으로 한 번 실행되어 리포에 박제되어 있고
+(`runs/kisco-104700/`, 회귀: `tests/test_kr_live_runbook.py`), 아래 모든
+단계는 그 실행에서 실제로 밟은 것이다.
+
+**실행자가 LLM 세션이라면**: `.claude/skills/kr-live-run`이 이 절차의 요약을
+자동 로드한다. 이 문서는 그 스킬의 원본이다.
+
+## 0. 준비물과 원칙
+
+- OpenDART **API 키가 없어도 된다**: 공시목록·기업개황·전체 재무제표는 키리스
+  공개 브릿지(예: 카카오 PlayMCP `opendart-*` 도구)로, 사업보고서 원문 섹션은
+  DART 공개 뷰어(`dart.fss.or.kr/report/viewer.do`)로 온다. 키가 있으면
+  `generic_kr_cli.py` 경로로 직접 라이브 페치해도 된다 — 형식은 동일하다.
+- 원칙 세 가지: **원시 그대로**(가공된 요약이 아니라 raw JSON을 저장),
+  **지식시점**(as_of 이후 공표물은 쓰지 않는다), **판단은 선언으로**(모델·사람
+  누구의 판단이든 rationale과 출처를 단 선언 파일로만 들어간다).
+
+## 1. 런 디렉토리를 만든다
+
+```
+runs/<종목>-<코드>/
+  run.yaml                # §5
+  raw/                    # §2 — 공개 원천에서 그대로
+  declarations/           # §3~4 — 오퍼레이터/스태프 산출물
+  out/                    # 러너가 쓴다 (커밋 안 함)
+```
+
+## 2. 원시 데이터 수집 → `raw/`
+
+| 파일 | 원천 | 내용 |
+|---|---|---|
+| `corp_search.json` | find_company("회사명") | `{"companies":[{corp_code,corp_name,stock_code},…]}` 검색 결과 그대로 |
+| `company.json` | get_company_info | 기업개황 raw (induty_code가 KSIC 라우팅을 결정) |
+| `list.json` | search_disclosures | 공시목록 raw — **최신 정기보고서**(사업/반기/분기)가 lookback 540일 안에 있어야 한다 |
+| `fnltt_<연도>_<OFS\|CFS>.json` | get_full_financial_statement | 전체 재무제표 raw (`account_id`가 있는 형태). 연결 없는 회사는 OFS |
+| `filing_<rcept_no>/` | DART 공개 뷰어 | 최신 정기보고서의 "사업의 내용" 섹션들 (§2.1) |
+
+### 2.1 원문 섹션 뜨는 법 (키리스)
+
+1. `dart.fss.or.kr/dsaf001/main.do?rcpNo=<rcept_no>` HTML을 받는다.
+2. HTML 안의 목차 트리에서 원하는 섹션 제목(예: "원재료 및 생산설비",
+   "매출 및 수주상황", "주요 제품 및 서비스", "주식의 총수")을 찾아 그 노드의
+   `dcmNo / eleId / offset / length` 를 읽는다.
+3. `report/viewer.do?rcpNo=…&dcmNo=…&eleId=…&offset=…&length=…&dtd=dart4.xsd`
+   로 각 섹션 HTML을 받아 `filing_<rcept_no>/<rcept_no>_<eleId>.xml` 로 저장.
+   러너가 이 디렉토리를 원문 아카이브로 조립하고, 추출 영수증(멤버 SHA-256·
+   스팬)은 평소처럼 남는다.
+
+## 3. 오퍼레이터 선언 → `declarations/`
+
+- **`underwriting.yaml`** (필수): 방법이 요구하는 가정 키 전부. 키 목록은
+  엔진에게 물어라 —
+  `required_assumption_keys(method_choices=…, forecast_years=…)`.
+  값·단위·**20자 이상의 rationale**(가능한 한 공시 수치 인용) 필수.
+  다중 시나리오면 사이클 민감 키의 시나리오 한정 변형
+  (`down_normalized_ebitda` 등)도 여기 선언하고 §5의
+  `extra_required_evidence`에 등록한다.
+- **`market.yaml`** (권장): 공개 시세 종가 + as_of + source_ref.
+- **`street.json`** (권장): 인증된 증권사 export. **커버리지가 없으면
+  `{"authorization_basis":"explicit_permission","reports":[]}`** — 무커버리지
+  선언이지 생략이 아니다.
+- **`risk_pack.yaml`** (DCF·NPV·DDM 등 베타 요구 방법일 때):
+  `python scripts/draft_risk_pack.py template`으로 골격을 뽑고, 채운 뒤
+  `… check <파일> --ticker <코드>` 로 런타임과 동일 검증을 미리 돌린다.
+
+## 4. 스태프 제안 → `declarations/staff/`
+
+역할당 JSON 파일 하나(`intelligence_officer.json`, `red_team_officer.json`,
+`bridge_analyst.json`, 정적 패턴이 못 읽는 지표가 있으면
+`filing_locator_analyst.json`). 파일이 배열이면 수리 루프의 연속 턴이다.
+
+- 형식은 예시 런의 파일을 그대로 본떠라. 규칙은 엔진이 강제한다: 존재하는
+  evidence_id만 인용, identity 트랜스폼은 값=인용값, 로케이터 quote는 원문에
+  유일하게 실재. **거부되면 정지 메시지에 사유가 그대로 나온다 — 제안을
+  고쳐서 재실행하는 것이 수리 루프다.**
+- 라이브 모델을 붙일 거면 파일 대신 `VALUATION_LLM_TRANSPORT`(모듈:빌더)로
+  `generic_kr_cli.py` 경로를 쓴다. 계약은 동일하다.
+
+## 5. `run.yaml`
+
+`runs/kisco-104700/run.yaml`을 복사해 고쳐라. 핵심 필드:
+`company_query / as_of / scenario_ids / method(archetype/method[/version]) /
+filing(business_year·report_code·fs_div·fiscal_period_end) /
+extra_required_evidence / market_currency`.
+
+**기대값(확률가중)까지 원하면 `calibration:` 블록**: 코호트 아티팩트가 있어야
+한다. 없으면 —
+1. 동종사(타깃 **제외**) 5곳 이상 × 다년 실적 이력을 §2와 같은 원천에서 모아
+   `{"rows":[{company_id,period_end,published_at,values,source_ref}]}` 로 저장
+   (예: `config/kr_steel_cohort_dataset.json`, 12사 91행).
+2. `python scripts/build_calibration_artifact.py --dataset … --drivers … \
+   --scenarios Down,Base,Bull --path-length 5 --exclude-ticker <코드> \
+   --conditioning-json …` → 아티팩트·프로버넌스 파일과 **BindingConstants**가
+   출력된다. 그 상수를 `calibration.constants`에 그대로 붙여넣는다.
+3. conditioning은 **타깃 자신의 최신 실측**(값 + 출처 URL + first_seen_at +
+   원천 파일 sha256)이다.
+
+캘리브레이션이 없으면 그 블록을 빼라 — 시나리오 범위는 나오고 기대값은
+정직하게 "미산출"로 남는다.
+
+## 6. 실행과 막힘 대처
+
+```bash
+PYTHONPATH=src python scripts/run_kr_live.py runs/<종목>-<코드>
+```
+
+완주하면 `out/final_report.md`. **정지하면 정지 메시지가 작업지시서다**:
+
+| 정지 지점 | 뜻 | 대처 |
+|---|---|---|
+| `PRIMARY_EVIDENCE_COLLECTION` — required … missing: metrics=… | 이름 나온 지표의 증거가 없다 | 공시에 있으면 §2.1 섹션 추가+로케이터, 판단이면 §3 선언 추가 |
+| `INDUSTRY_DNA_ROUTE` — unmapped KSIC | 분류맵에 없는 업종 | `config/kr_industry_classification_map.yaml`에 prefix 행 추가 (리뷰되는 데이터 변경) |
+| `RESEARCHER_A/BRIDGE` — proposal failed: … | 스태프 제안이 계약 위반 | 메시지의 사유대로 §4 파일 수정 (없는 ID 인용, 값 불일치 등) |
+| `HIERARCHICAL_BETA_ESTIMATION` — no LIVE_PRIMARY provider | 베타 요구 방법인데 리스크팩 없음 | §3의 risk_pack.yaml |
+| `STREET_REFERENCE_LOAD` — not configured | street.json 자체가 없음 | 무커버리지면 빈 reports로 선언 |
+| freshness/지식시점 위반 | as_of가 데이터보다 이르거나 공시가 너무 오래됨 | as_of·수집물 정합 확인 |
+
+같은 지표의 정지가 반복되면 그 지표는 이 회사 공시에 없는 것이다 — 선언으로
+채우든가, 채울 수 없으면 그 gap이 곧 이 회사에 대한 정직한 결론의 일부다.
+
+## 7. 끝났으면
+
+- 재현 가치가 있는 런이면 디렉토리를 커밋한다 (`out/`은 제외 —
+  `.gitignore`). 커밋된 런은 `tests/test_kr_live_runbook.py` 패턴으로 값을
+  pin해 전체 파이프라인 회귀가 된다.
+- 리포트 전달은 원문 그대로: 챗 계층은 `chat_dispatch`의 SHA-256 핸드오프로
+  숫자 무변조를 강제할 수 있다.
+
+## 하지 않는 것
+
+숫자를 지어내지 않는다. 타깃을 자기 코호트·자기 피어에 넣지 않는다. as_of
+이후 지식을 쓰지 않는다. 게이트를 완화해서 완주를 사지 않는다 — 이 절차의
+모든 "막힘"은 버그가 아니라 엔진이 요구하는 다음 입력의 이름이다.

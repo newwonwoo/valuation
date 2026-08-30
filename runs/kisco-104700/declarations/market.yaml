@@ -1,0 +1,5 @@
+
+market_comparison:
+  price: 10120
+  as_of: "2026-08-28"
+  source_ref: https://m.stock.naver.com/api/stock/104700/price

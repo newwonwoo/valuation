@@ -1,0 +1,19 @@
+{
+ "locators": [
+  {
+   "metric": "realized_price",
+   "member_path": "20260814002934_11.xml",
+   "quote": "제품등의 가격변동 (단위 : 원/Ton) 부 문 품 목 제19기 반기 제18기 제17기 철강 철 근 824,808",
+   "value_text": "824,808",
+   "unit_token": "원/Ton"
+  },
+  {
+   "metric": "utilization",
+   "member_path": "20260814002934_12.xml",
+   "quote": "가동률 (%) 철 강 철 근 379,042 313,762 82.78",
+   "value_text": "82.78",
+   "unit_token": "%"
+  }
+ ],
+ "not_found": []
+}

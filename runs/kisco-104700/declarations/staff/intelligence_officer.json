@@ -1,0 +1,31 @@
+{
+ "rationale": "A single-product rebar mill at trough utilization with a filed falling price series is valued on normalized mid-cycle earnings and its own filed net cash, not on trough optics.",
+ "hypotheses": [
+  {
+   "id": "H:KISCO:MIDCYCLE",
+   "statement": "Mid-cycle EBITDA of 60 KRW bn is recoverable as the filed H1-2026 utilization and price rebound holds",
+   "causal_chain": [
+    "domestic rebar price vs scrap spread",
+    "utilization recovery filed at 82.78% in H1-2026",
+    "normalized operating margin",
+    "enterprise value"
+   ],
+   "supporting_evidence_ids": [
+    "UW:KR:DART:00687711:normalized_ebitda",
+    "UW:KR:DART:00687711:benchmark_price"
+   ],
+   "contradicting_evidence_ids": [],
+   "kill_conditions": [
+    "rebar realized price falls back below 750,000 KRW/ton for two consecutive halves"
+   ],
+   "next_checks": [
+    "3Q26 분기보고서 가동률/판매단가 표"
+   ]
+  }
+ ],
+ "requested_evidence": [],
+ "scanner_reinforcements": [],
+ "context_strength_linkage": {
+  "not_applicable_reason": "No non-obvious environment-to-strength connection is observable in the collected evidence beyond the declared mid-cycle thesis."
+ }
+}

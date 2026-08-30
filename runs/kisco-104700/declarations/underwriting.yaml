@@ -1,0 +1,128 @@
+
+target_id: KR:DART:00687711
+as_of: "2026-08-29"
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319001021
+declarations:
+  normalized_ebitda:
+    value: 60
+    unit: KRW_billion
+    rationale: >-
+      mid-cycle judgment from the filed operating-income path 121.5bn (2022) /
+      86.6bn (2023) / 1.8bn (2024) / -38.7bn (2025) in the annual reports
+      (OFS), with the H1-2026 filing showing utilization back at 82.78% and
+      realized price recovering to 824,808 KRW/ton; ~45bn mid-cycle EBIT plus
+      ~15bn depreciation run-rate.
+  normalized_multiple:
+    value: 4.0
+    unit: multiple
+    rationale: >-
+      through-cycle EV/EBITDA for a single-product rebar mill with flat
+      long-run demand; low end of the domestic long-steel cohort.
+  down_normalized_ebitda:
+    value: 35
+    unit: KRW_billion
+    rationale: >-
+      structural re-basing scenario - domestic construction starts stay at the
+      2025 trough, mid-cycle EBIT re-bases near 20bn plus depreciation; the
+      2025 filed operating loss of -38.7bn marks the floor economics.
+  down_normalized_multiple:
+    value: 3.5
+    unit: multiple
+    rationale: >-
+      de-rated through-cycle multiple under structurally lower domestic rebar
+      demand.
+  bull_normalized_ebitda:
+    value: 85
+    unit: KRW_billion
+    rationale: >-
+      cycle-recovery scenario - H1-2026 filed utilization 82.78% and realized
+      price 824,808 KRW/ton hold, spreads mean-revert toward the 2022-2023
+      filed operating-income levels (121.5bn/86.6bn).
+  bull_normalized_multiple:
+    value: 4.5
+    unit: multiple
+    rationale: >-
+      modest re-rating if the filed utilization and price recovery persists
+      across a full year.
+  cash_cost:
+    value: 700000
+    unit: KRW_per_ton
+    rationale: >-
+      implied conversion+scrap cash cost consistent with the filed H1-2026
+      scrap purchase price 470,468 KRW/ton plus conversion, against the filed
+      H1-2026 average selling price 824,808 KRW/ton.
+  benchmark_price:
+    value: 820000
+    unit: KRW_per_ton
+    rationale: >-
+      domestic rebar distribution price level consistent with the company's
+      filed realized-price series 838,286 (FY24) / 768,503 (FY25) / 824,808
+      (H1-26) KRW/ton; benchmark held near the filed trajectory pending a
+      verified industry series.
+  inventory:
+    value: 100
+    unit: KRW_billion
+    rationale: >-
+      inventory carrying level order-of-magnitude from the 2025 OFS
+      balance-sheet inventory account family in the filed full statement.
+  capacity:
+    value: 758084
+    unit: tons_per_year
+    rationale: >-
+      annualized nameplate from the H1-2026 filing's own capacity table
+      (379,042 tons for the half year, Changwon+Jeungpyeong rebar).
+  production:
+    value: 627524
+    unit: tons_per_year
+    rationale: >-
+      annualized run-rate from the H1-2026 filed production table
+      (313,762 tons of rebar in the half year).
+  ownership:
+    value: 1.0
+    unit: ratio
+    rationale: single wholly-owned steel segment; no consolidated subsidiaries in the OFS scope used.
+  ev_adjustment:
+    value: 392
+    unit: KRW_billion
+    rationale: >-
+      net cash added back to EV; 2025 OFS cash 35.2bn plus short-term financial
+      instruments 356.8bn, no interest-bearing borrowings on the filed balance
+      sheet.
+  input_price:
+    value: 470468
+    unit: KRW_per_ton
+    rationale: >-
+      domestic scrap purchase price 470,468 KRW/ton from the H1-2026 filing's
+      own raw-material price table, declared as the input-price level pending
+      a verified industry scrap series.
+  output_price:
+    value: 824808
+    unit: KRW_per_ton
+    rationale: >-
+      rebar output price level set to the company's filed H1-2026 average
+      selling price, declared pending a verified industry rebar series.
+  product_yield:
+    value: 0.90
+    unit: ratio
+    rationale: >-
+      EAF billet-to-rebar overall yield judgment for a two-plant rebar mill;
+      no yield KPI is disclosed in the filing.
+  plant_runs:
+    value: 2
+    unit: count
+    rationale: >-
+      two operating plants (Changwon, Jeungpyeong) per the H1-2025 filing's
+      production-facility note.
+  turnaround:
+    value: 14
+    unit: days
+    rationale: >-
+      annual EAF refractory/maintenance downtime judgment; not separately
+      disclosed.
+  diluted_shares:
+    value: 36450000
+    unit: shares
+    rationale: >-
+      total issued shares from the H1-2026 filing's 주식의 총수 table
+      (46,050,000 issued less 9,600,000 retired); treasury 5,008,535 not
+      deducted — conservative per-share basis.

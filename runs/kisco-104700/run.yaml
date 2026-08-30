@@ -1,0 +1,46 @@
+# The first live run: 한국철강 (KISCO, 104700) — every raw byte under raw/ was
+# fetched from public DART endpoints (no API key), every judgment under
+# declarations/ is the operator's with rationale, and replaying this directory
+# through scripts/run_kr_live.py reproduces the attested 33-stage report.
+company_query: 한국철강
+run_id: LIVE-KISCO-1
+as_of: "2026-08-29"
+jurisdiction: KR
+scenario_ids: [Down, Base, Bull]
+method: commodity_price_taker/normalized_multiple
+market_currency: KRW
+filing:
+  business_year: "2025"
+  report_code: "11011"
+  fs_div: OFS
+  fiscal_period_end: "2025-12-31"
+  segment_id: core
+extra_required_evidence:
+  - down_normalized_ebitda
+  - down_normalized_multiple
+  - bull_normalized_ebitda
+  - bull_normalized_multiple
+calibration:
+  cohort_key: kr.steel.long|5y_path|continuous_v1
+  external_probability_source: continuous_financial_path_monte_carlo
+  forecast_class: kr.steel.long.continuous_financial_path
+  horizon: 5y_path
+  method_version: probability_engine_v3.2_factory_v1
+  mapping_version: kr_steel_cohort_v1
+  driver_ids: [revenue_growth, operating_margin]
+  scenario_ids: [Down, Base, Bull]
+  path_length: 5
+  artifact: ../../config/kr_steel_calibration_artifact.json
+  provenance: ../../config/kr_steel_calibration_provenance.json
+  conditioning: ../../config/kisco_conditioning_fy2025.json
+  seed: 20260829
+  outer_draws: 300
+  inner_draws: 200
+  constants:
+    expected_artifact_sha256: 60369d264efe127df7997cd1cfdf36ba1d891c9ce6e724318569f563724abff3
+    expected_provenance_artifact_sha256: 127a471fc5dffc1ae234b76dca5b99ae02a8dc9d7f4494c747303484146024ca
+    expected_dataset_sha256: 7ee98138a08322eaaef71e3caa9019c522983a3ef41afe118a6e220c247d0195
+    expected_provenance_hash: 3ac5a9394afafdd5239ac0b3eeab946190e79c3fbbf5ab488313c541094feaeb
+    expected_source_row_count: 91
+    expected_source_company_count: 12
+    excluded_ticker: "104700"
