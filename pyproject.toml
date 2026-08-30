@@ -20,7 +20,7 @@ packages = ["valuation_engine", "valuation_engine._registry_data"]
 package-dir = {valuation_engine = "src/valuation_engine", "valuation_engine._registry_data" = "config"}
 
 [tool.setuptools.package-data]
-"valuation_engine._registry_data" = ["*.yaml"]
+"valuation_engine._registry_data" = ["*.yaml", "industry_series_snapshots/*.json"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

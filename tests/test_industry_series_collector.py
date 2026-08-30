@@ -8,13 +8,16 @@ import pytest
 
 from valuation_engine.evidence_collection import EvidenceCollectionRequest
 from valuation_engine.industry_series_collector import (
+    SERIES_SNAPSHOT_SCHEMA,
     IndustrySeriesError,
     IndustrySeriesSpec,
+    credential_free_verification_url,
     industry_series_collector_providers,
     load_industry_series_registry,
     request_scoped_industry_series_collector,
 )
 from valuation_engine.records import EvidenceSourceLayer
+from valuation_engine.source_reporting import canonical_verification_url
 
 
 AS_OF = "2026-08-27"
@@ -33,6 +36,8 @@ def _spec(**overrides) -> IndustrySeriesSpec:
         definition="Synthetic producer-price benchmark index for tests.",
         url_template="https://probe.invalid/kosis/S1.json",
         api_key_env="",
+        snapshot_path="/frozen/S1.json",
+        verification_url="https://probe.invalid/catalog/S1",
         verified=True,
     )
     defaults.update(overrides)
@@ -68,11 +73,28 @@ def _collect(spec=None, rows=ROWS, metrics=("benchmark_price",)):
     spec = spec or _spec()
 
     def fetch(url: str) -> str:
-        assert url == spec.url_template
-        return json.dumps(rows)
+        raise AssertionError(f"live source must not be fetched by collector: {url}")
+
+    def snapshot_text(path: str) -> str:
+        assert path == spec.snapshot_path
+        return json.dumps(
+            {
+                "schema_version": SERIES_SNAPSHOT_SCHEMA,
+                "series_id": spec.series_id,
+                "source_id": spec.source_id,
+                "verification_url": spec.verification_url,
+                "captured_at": "2026-08-27T00:00:00+00:00",
+                "observations": rows,
+            }
+        )
 
     collector = request_scoped_industry_series_collector(
-        fetch, source_id=spec.source_id, as_of=AS_OF, segment_id="core", series=(spec,)
+        fetch,
+        source_id=spec.source_id,
+        as_of=AS_OF,
+        segment_id="core",
+        series=(spec,),
+        snapshot_text=snapshot_text,
     )
     return collector(EvidenceCollectionRequest(target_id=TARGET, required_metrics=metrics))
 
@@ -94,6 +116,11 @@ def test_latest_observation_within_the_cutoff_is_selected():
 def test_post_cutoff_knowledge_timestamp_cannot_leak_a_revision(late_field):
     rows = [dict(row) for row in ROWS[:2]]
     rows[1][late_field] = "2026-08-28T00:00:00Z"
+    if late_field == "PUBLISHED_AT":
+        rows[1]["REVISION_AT"] = "2026-08-28T00:00:00Z"
+        rows[1]["FIRST_SEEN_AT"] = "2026-08-29T00:00:00Z"
+    elif late_field == "REVISION_AT":
+        rows[1]["FIRST_SEEN_AT"] = "2026-08-29T00:00:00Z"
     batch = _collect(rows=rows)
     record = batch.records[0]
     assert float(record.value) == 101.5
@@ -133,25 +160,26 @@ def test_no_observation_inside_the_cutoff_is_a_gap_not_a_zero():
     assert not batch.records  # coverage names the metric downstream
 
 
-def test_the_credential_never_reaches_the_evidence_ref(monkeypatch):
+def test_the_credential_parameter_never_reaches_the_evidence_ref(monkeypatch):
     monkeypatch.setenv("TEST_SERIES_KEY", "supersecret")
     spec = _spec(
         url_template="https://api.example/data?apiKey={api_key}&tbl=T1",
         api_key_env="TEST_SERIES_KEY",
+        verification_url="https://api.example/catalog?tbl=T1",
     )
-
-    def fetch(url: str) -> str:
-        assert "supersecret" in url  # the fetch itself uses the real key
-        return json.dumps(ROWS)
-
-    collector = request_scoped_industry_series_collector(
-        fetch, source_id=spec.source_id, as_of=AS_OF, segment_id="core", series=(spec,)
-    )
-    batch = collector(
-        EvidenceCollectionRequest(target_id=TARGET, required_metrics=("benchmark_price",))
-    )
+    assert "supersecret" in spec.fetch_url()  # verifier-only upstream fetch
+    batch = _collect(spec=spec)
     assert "supersecret" not in batch.records[0].source_ref
-    assert "[CREDENTIAL]" in batch.records[0].source_ref
+    assert "apiKey" not in batch.records[0].source_ref
+    assert canonical_verification_url(batch.records[0].source_ref) is not None
+
+
+def test_credential_free_url_removes_the_sensitive_query_key():
+    url = credential_free_verification_url(
+        "https://api.example/data?apiKey={api_key}&tblId=T1&format=json"
+    )
+    assert url == "https://api.example/data?tblId=T1&format=json"
+    assert canonical_verification_url(url) == url
 
 
 def test_a_missing_credential_fails_closed():
@@ -160,7 +188,14 @@ def test_a_missing_credential_fails_closed():
         api_key_env="DEFINITELY_UNSET_KEY_XYZ",
     )
     with pytest.raises(IndustrySeriesError, match="requires credential"):
-        _collect(spec=spec)
+        spec.fetch_url()
+
+
+def test_a_verified_registry_row_requires_a_snapshot_and_safe_verification_url():
+    with pytest.raises(IndustrySeriesError, match="snapshot_path"):
+        _spec(snapshot_path="").validate()
+    with pytest.raises(IndustrySeriesError, match="credential-free"):
+        _spec(verification_url="https://api.example/data?apiKey=REDACTED").validate()
 
 
 def test_two_verified_series_for_one_metric_is_a_conflict_not_an_average(tmp_path):
@@ -176,6 +211,8 @@ def test_two_verified_series_for_one_metric_is_a_conflict_not_an_average(tmp_pat
     definition: Synthetic producer-price benchmark index for tests.
     url_template: https://probe.invalid/{sid}.json
     api_key_env: ""
+    snapshot_path: snapshots/{sid}.json
+    verification_url: https://probe.invalid/catalog/{sid}
     verified: true"""
     registry.write_text(
         "series:" + row.format(sid="A1") + row.format(sid="B1") + "\n",

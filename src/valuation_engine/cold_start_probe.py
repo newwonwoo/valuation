@@ -160,6 +160,8 @@ series:
       probe; index level, not a company-realized price.
     url_template: https://probe.invalid/kosis/PROBE_KOSIS_STEEL_PPI.json
     api_key_env: ""
+    snapshot_path: snapshots/PROBE_KOSIS_STEEL_PPI.json
+    verification_url: https://probe.invalid/catalog/PROBE_KOSIS_STEEL_PPI
     published_at_field: PUBLISHED_AT
     first_seen_at_field: FIRST_SEEN_AT
     revision_at_field: REVISION_AT
@@ -175,6 +177,8 @@ series:
       Synthetic iron-ore input price index used only by the cold-start probe.
     url_template: https://probe.invalid/kosis/PROBE_KOSIS_IRON_ORE_INPUT.json
     api_key_env: ""
+    snapshot_path: snapshots/PROBE_KOSIS_IRON_ORE_INPUT.json
+    verification_url: https://probe.invalid/catalog/PROBE_KOSIS_IRON_ORE_INPUT
     published_at_field: PUBLISHED_AT
     first_seen_at_field: FIRST_SEEN_AT
     revision_at_field: REVISION_AT
@@ -190,6 +194,8 @@ series:
       Synthetic steel product output price index used only by the cold-start probe.
     url_template: https://probe.invalid/kosis/PROBE_KOSIS_STEEL_OUTPUT.json
     api_key_env: ""
+    snapshot_path: snapshots/PROBE_KOSIS_STEEL_OUTPUT.json
+    verification_url: https://probe.invalid/catalog/PROBE_KOSIS_STEEL_OUTPUT
     published_at_field: PUBLISHED_AT
     first_seen_at_field: FIRST_SEEN_AT
     revision_at_field: REVISION_AT
@@ -205,6 +211,8 @@ series:
       Synthetic industry inventory index used only by the cold-start probe.
     url_template: https://probe.invalid/kosis/PROBE_KOSIS_STEEL_INVENTORY.json
     api_key_env: ""
+    snapshot_path: snapshots/PROBE_KOSIS_STEEL_INVENTORY.json
+    verification_url: https://probe.invalid/catalog/PROBE_KOSIS_STEEL_INVENTORY
     published_at_field: PUBLISHED_AT
     first_seen_at_field: FIRST_SEEN_AT
     revision_at_field: REVISION_AT
@@ -382,6 +390,21 @@ def _staff_scripts() -> dict[str, tuple[str, ...]]:
 
 def _probe_series_registry_path() -> str:
     directory = tempfile.mkdtemp(prefix="cold-start-series-")
+    snapshots = Path(directory) / "snapshots"
+    snapshots.mkdir()
+    for series_id, observations in _PROBE_SERIES.items():
+        payload = {
+            "schema_version": "industry-series-snapshot/v1",
+            "series_id": series_id,
+            "source_id": "KR_KOSIS_API",
+            "verification_url": f"https://probe.invalid/catalog/{series_id}",
+            "captured_at": PROBE_AS_OF + "T00:00:00+00:00",
+            "observations": observations,
+        }
+        (snapshots / f"{series_id}.json").write_text(
+            json.dumps(payload, ensure_ascii=False, sort_keys=True),
+            encoding="utf-8",
+        )
     path = Path(directory) / "series_registry.yaml"
     path.write_text("version: 1\npurpose: cold-start probe fixture\n" + _PROBE_SERIES_ROWS,
                     encoding="utf-8")

@@ -22,14 +22,16 @@ structurally rather than by convention:
   rows — a guessed table id is a fabricated source. The default registry
   therefore ships with zero verified production rows and the capability
   reflects only what is verified.
-- **Knowledge-time discipline.** A verified row must carry publication,
-  first-seen and revision timestamps. The newest observation whose period and
-  all three knowledge timestamps are at or before the run's ``as_of`` is
-  selected; period strings (YYYY / YYYYMM / YYYYMMDD) resolve to period-end
-  effective dates, and the Evidence observation date is the first-seen date.
-- **Credentials never leak.** The fetch URL is rendered from a template with
-  an environment credential; the Evidence ``source_ref`` carries the redacted
-  form.
+- **Knowledge-time discipline.** A verified registry row points to a persisted
+  timestamped snapshot, never the source's current mutable response. Snapshot
+  observations must carry publication, first-seen and revision timestamps. The
+  newest observation whose period and all three knowledge timestamps are at or
+  before the run's ``as_of`` is selected; period strings (YYYY / YYYYMM /
+  YYYYMMDD) resolve to period-end effective dates, and the Evidence observation
+  date is the first-seen date.
+- **Credentials never leak.** Only the operator verifier contacts the mutable
+  endpoint with an environment credential. Runtime collection reads the frozen
+  snapshot, and Evidence links to a separate credential-free verification URL.
 """
 
 from __future__ import annotations
@@ -42,16 +44,18 @@ from pathlib import Path
 import json
 import os
 from typing import Callable, Mapping
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import yaml
 
 from .collection_plan import CollectorCapability
 from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequest
-from .live_indexers import parse_json_response, parse_kosis_series_values
+from .live_indexers import parse_kosis_series_values
 from .live_runtime import LiveCollectorProvider
 from .records import EvidenceRecord, EvidenceSourceLayer
 from .runtime_resources import runtime_registry_path
 from .source_index import stable_hash
+from .source_reporting import canonical_verification_url
 
 
 DEFAULT_SERIES_REGISTRY_PATH = runtime_registry_path(
@@ -84,6 +88,9 @@ _ALLOWED_LAYERS = {
 }
 
 FetchText = Callable[[str], str]
+SnapshotText = Callable[[str], str]
+
+SERIES_SNAPSHOT_SCHEMA = "industry-series-snapshot/v1"
 
 
 class IndustrySeriesError(ValueError):
@@ -106,6 +113,8 @@ class IndustrySeriesSpec:
     published_at_field: str = "PUBLISHED_AT"
     first_seen_at_field: str = "FIRST_SEEN_AT"
     revision_at_field: str = "REVISION_AT"
+    snapshot_path: str = ""
+    verification_url: str = ""
 
     def validate(self) -> None:
         required = (
@@ -144,6 +153,15 @@ class IndustrySeriesSpec:
             raise IndustrySeriesError(
                 f"series {self.series_id} template needs api_key_env for its credential"
             )
+        if self.verified and not self.snapshot_path:
+            raise IndustrySeriesError(
+                f"verified series {self.series_id} requires a persisted snapshot_path"
+            )
+        if self.verified and canonical_verification_url(self.verification_url) is None:
+            raise IndustrySeriesError(
+                f"verified series {self.series_id} requires a credential-free HTTP(S) "
+                "verification_url"
+            )
 
     @property
     def source_layer(self) -> EvidenceSourceLayer:
@@ -161,13 +179,14 @@ class IndustrySeriesSpec:
 
     @property
     def display_ref(self) -> str:
-        return self.url_template.replace("{api_key}", "[CREDENTIAL]")
+        return self.verification_url
 
 
 def load_industry_series_registry(
     path: str | Path = DEFAULT_SERIES_REGISTRY_PATH,
 ) -> tuple[IndustrySeriesSpec, ...]:
-    payload = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
+    registry_path = Path(path)
+    payload = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
     if not isinstance(payload, Mapping):
         raise IndustrySeriesError("industry series registry must be a mapping")
     rows = payload.get("series")
@@ -177,6 +196,9 @@ def load_industry_series_registry(
     for row in rows or ():
         if not isinstance(row, Mapping):
             raise IndustrySeriesError("series row must be a mapping")
+        snapshot_path = str(row.get("snapshot_path", ""))
+        if snapshot_path and not Path(snapshot_path).is_absolute():
+            snapshot_path = str((registry_path.parent / snapshot_path).resolve())
         spec = IndustrySeriesSpec(
             series_id=str(row.get("series_id", "")),
             source_id=str(row.get("source_id", "")),
@@ -192,6 +214,8 @@ def load_industry_series_registry(
             published_at_field=str(row.get("published_at_field", "PUBLISHED_AT")),
             first_seen_at_field=str(row.get("first_seen_at_field", "FIRST_SEEN_AT")),
             revision_at_field=str(row.get("revision_at_field", "REVISION_AT")),
+            snapshot_path=snapshot_path,
+            verification_url=str(row.get("verification_url", "")),
         )
         spec.validate()
         specs.append(spec)
@@ -248,6 +272,79 @@ def _knowledge_timestamp(
     return parsed
 
 
+def credential_free_verification_url(url: str) -> str:
+    """Remove credential-bearing query parameters from an operator URL.
+
+    The returned URL is a report reference only; collection consumes the frozen
+    snapshot. An explicitly supplied public catalog URL remains preferable, but
+    this conservative transformation prevents placeholders such as
+    ``apiKey={api_key}`` from violating the live report source-link contract.
+    """
+    parts = urlsplit(url.strip())
+    safe_query = [
+        (key, value)
+        for key, value in parse_qsl(parts.query, keep_blank_values=True)
+        if "{api_key}" not in value.casefold()
+        and key.casefold()
+        not in {
+            "api_key",
+            "apikey",
+            "auth",
+            "authorization",
+            "access_token",
+            "token",
+            "password",
+            "secret",
+        }
+    ]
+    candidate = urlunsplit(
+        (parts.scheme, parts.netloc, parts.path, urlencode(safe_query), "")
+    )
+    if canonical_verification_url(candidate) is None:
+        raise IndustrySeriesError(
+            "industry series verification URL must be credential-free HTTP(S)"
+        )
+    return candidate
+
+
+def _load_frozen_series_snapshot(
+    spec: IndustrySeriesSpec,
+    *,
+    read_snapshot: SnapshotText,
+) -> tuple[list[dict], Mapping[str, object]]:
+    try:
+        payload = json.loads(read_snapshot(spec.snapshot_path))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise IndustrySeriesError(
+            f"unable to load frozen snapshot for verified series {spec.series_id}: {exc}"
+        ) from exc
+    if not isinstance(payload, Mapping):
+        raise IndustrySeriesError(
+            f"frozen snapshot for {spec.series_id} must be a JSON object"
+        )
+    if payload.get("schema_version") != SERIES_SNAPSHOT_SCHEMA:
+        raise IndustrySeriesError(
+            f"frozen snapshot for {spec.series_id} has unsupported schema"
+        )
+    if (
+        payload.get("series_id") != spec.series_id
+        or payload.get("source_id") != spec.source_id
+    ):
+        raise IndustrySeriesError(
+            f"frozen snapshot identity does not match verified series {spec.series_id}"
+        )
+    if payload.get("verification_url") != spec.verification_url:
+        raise IndustrySeriesError(
+            f"frozen snapshot verification URL does not match series {spec.series_id}"
+        )
+    rows = payload.get("observations")
+    if not isinstance(rows, list) or not all(isinstance(row, dict) for row in rows):
+        raise IndustrySeriesError(
+            f"frozen snapshot for {spec.series_id} requires observation objects"
+        )
+    return rows, payload
+
+
 def _json_safe(amount: Decimal) -> int | str:
     integral = amount.to_integral_value()
     return int(integral) if amount == integral else format(amount, "f")
@@ -260,19 +357,26 @@ def request_scoped_industry_series_collector(
     as_of: str,
     segment_id: str,
     series: tuple[IndustrySeriesSpec, ...],
+    snapshot_text: SnapshotText | None = None,
 ):
     """EvidenceCollector serving one source's verified industry series.
 
-    Each requested metric resolves to its verified series, fetches, and takes
+    Each requested metric resolves to its verified frozen snapshot and takes
     the newest observation whose period, publication, first-seen and revision
     timestamps are at or before ``as_of``. A series with no observation inside
     the cutoff is a coverage gap, reported by name downstream; a fetch, parse or
     required knowledge-time metadata failure raises and blocks, because a broken
-    source is not a gap.
+    source is not a gap. ``fetch_text`` remains in the provider signature for
+    compatibility but is deliberately not used for verified series; only the
+    operator snapshot workflow may contact the mutable upstream endpoint.
     """
     if not segment_id:
         raise IndustrySeriesError("segment_id is required")
+    del fetch_text
     cutoff = as_of[:10]
+    read_snapshot = snapshot_text or (
+        lambda snapshot_path: Path(snapshot_path).read_text(encoding="utf-8")
+    )
     usable = {
         item.metric: item
         for item in series
@@ -295,8 +399,11 @@ def request_scoped_industry_series_collector(
         fingerprints: list[str] = []
         for metric in request.required_metrics:
             spec = usable[metric]
-            rows = parse_json_response(fetch_text(spec.fetch_url()))
-            fingerprints.append(stable_hash([spec.series_id, rows]))
+            spec.validate()
+            rows, snapshot_payload = _load_frozen_series_snapshot(
+                spec, read_snapshot=read_snapshot
+            )
+            fingerprints.append(stable_hash(snapshot_payload))
             in_window: list[tuple[str, str, datetime, datetime, datetime]] = []
             seen_periods: set[str] = set()
             for row in rows:
@@ -324,6 +431,16 @@ def request_scoped_industry_series_collector(
                     label="revision_at",
                     series_id=spec.series_id,
                 )
+                if revision_at < published_at:
+                    raise IndustrySeriesError(
+                        f"verified series {spec.series_id} revision_at cannot precede "
+                        "published_at"
+                    )
+                if first_seen_at < published_at or first_seen_at < revision_at:
+                    raise IndustrySeriesError(
+                        f"verified series {spec.series_id} first_seen_at cannot precede "
+                        "published_at or revision_at"
+                    )
                 if any(
                     timestamp.date().isoformat() > cutoff
                     for timestamp in (published_at, first_seen_at, revision_at)
