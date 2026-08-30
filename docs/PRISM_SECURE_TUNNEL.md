@@ -57,6 +57,12 @@ TUNNEL_CLIENT_BIN=/trusted/path/to/tunnel-client
 
 ## 3. Prepare the PRISM runtime host
 
+The tunnel launcher currently requires a **POSIX host** where owner/group/other
+permissions can be enforced and verified. Supported deployment shapes include
+Linux, macOS, and WSL2. Native Windows is intentionally rejected until an
+ACL-aware implementation can provide an equivalent privacy guarantee; the
+launcher does not pretend that POSIX `0700` semantics secure a Windows ACL.
+
 The valuation process needs its ordinary provider credentials and an explicitly
 configured persistent state directory. Minimum generic setup:
 
@@ -75,9 +81,10 @@ checkout or ephemeral working directory cannot silently become the durable
 state location.
 
 The launcher creates a missing state root with private permissions and repairs
-an existing root to owner-only mode before starting the tunnel. On POSIX hosts
-the required root mode is `0700`; the launcher verifies that no group/other
-permission bits remain. If the root cannot be made private, preflight fails.
+an existing root to owner-only mode before starting the tunnel. On the supported
+POSIX hosts the required root mode is `0700`; the launcher verifies that no
+group/other permission bits remain. If the root cannot be made private,
+preflight fails.
 
 Optional:
 
@@ -240,9 +247,10 @@ There is no MCP-side fallback valuation.
 Before calling the integration complete, verify all of the following:
 
 - `prism-tunnel check` is clean.
+- runtime host is POSIX (Linux/macOS/WSL2); native Windows is rejected.
 - tunnel-client is an approved binary.
 - `VALUATION_MCP_STATE_ROOT` is explicitly configured as an absolute path.
-- state root is on persistent storage and is owner-private (`0700` on POSIX).
+- state root is on persistent storage and is owner-private (`0700`).
 - `VALUATION_METHOD` is unset unless an explicit override is intended.
 - tunnel runtime status reports running/healthy/ready.
 - ChatGPT scans exactly `prism_analyze` as the valuation tool.
