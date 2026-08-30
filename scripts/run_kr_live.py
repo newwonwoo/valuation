@@ -46,6 +46,7 @@ from __future__ import annotations
 import argparse
 from io import BytesIO
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -166,6 +167,11 @@ class _StaffTransport:
 
     The last answer repeats so a rejection surfaces as the engine's own
     contract error, never as transport exhaustion.
+
+    When ``VALUATION_LLM_TRANSPORT`` is set, roles WITHOUT a file are
+    delegated to that live transport (same ``module:callable`` contract as
+    ``generic_kr_cli``) — a declared file always wins, so a committed run
+    replays byte-identically whether or not a live model is configured.
     """
 
     def __init__(self, staff_dir: Path) -> None:
@@ -178,13 +184,24 @@ class _StaffTransport:
                     json.dumps(turn, ensure_ascii=False) for turn in turns
                 ]
         self._counts: dict[str, int] = {}
+        self._live = None
+
+    def _live_transport(self):
+        if self._live is None:
+            from valuation_engine.generic_kr_cli import _load_transport
+
+            self._live = _load_transport()
+        return self._live
 
     def complete(self, *, role: str, prompt: str) -> str:
         answers = self._answers.get(role)
         if not answers:
+            if os.environ.get("VALUATION_LLM_TRANSPORT", "").strip():
+                return self._live_transport().complete(role=role, prompt=prompt)
             raise RunbookError(
                 f"no staff proposal file for role {role!r}; add "
-                f"declarations/staff/{role}.json per the runbook"
+                f"declarations/staff/{role}.json per the runbook, or set "
+                "VALUATION_LLM_TRANSPORT to let a live model take the seat"
             )
         index = self._counts.get(role, 0)
         self._counts[role] = index + 1

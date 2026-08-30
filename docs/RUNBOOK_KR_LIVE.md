@@ -85,8 +85,14 @@ runs/<종목>-<코드>/
   evidence_id만 인용, identity 트랜스폼은 값=인용값, 로케이터 quote는 원문에
   유일하게 실재. **거부되면 정지 메시지에 사유가 그대로 나온다 — 제안을
   고쳐서 재실행하는 것이 수리 루프다.**
-- 라이브 모델을 붙일 거면 파일 대신 `VALUATION_LLM_TRANSPORT`(모듈:빌더)로
-  `generic_kr_cli.py` 경로를 쓴다. 계약은 동일하다.
+- 라이브 모델을 붙일 거면 `VALUATION_LLM_TRANSPORT`(모듈:빌더). 기성 빌더:
+  `scripts/anthropic_transport.py` — stdlib HTTP만 쓰고 자격증명은
+  `ANTHROPIC_API_KEY` 환경변수에서만 읽는다
+  (`export VALUATION_LLM_TRANSPORT=anthropic_transport:build`,
+  모델은 `VALUATION_LLM_MODEL`). 러너(`run_kr_live.py`)는 **하이브리드**다:
+  파일이 있는 역할은 항상 파일이 이기고(커밋된 런의 리플레이 불변), 파일이
+  없는 역할만 라이브 모델에 위임된다. `generic_kr_cli.py` 경로는 전 좌석이
+  트랜스포트다 — 계약은 동일하다.
 
 ## 5. `run.yaml`
 
