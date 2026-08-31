@@ -1,0 +1,143 @@
+name: koreazinc-calibrated-prism
+
+on:
+  push:
+    branches:
+      - run/koreazinc-calibrated-010130-20260901-prod
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  run:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Restore frozen Korea Zinc run
+        uses: actions/download-artifact@v4
+        with:
+          name: KOREAZINC_010130_CANDIDATE_SCOPE
+          path: /tmp/koreazinc-010130
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: 33430100967
+      - name: Build target-excluded continuous calibration binding
+        run: |
+          python - <<'PY'
+          from hashlib import sha256
+          import json
+          from pathlib import Path
+          import yaml
+
+          from valuation_engine.continuous_calibration_factory import (
+              ConditioningDeclaration,
+              build_continuous_calibration_artifact,
+              load_cohort_dataset,
+              write_artifact_files,
+          )
+
+          run_dir = Path('/tmp/koreazinc-010130')
+          source_file = run_dir / 'raw/filing_20260316000929/20260316000929_21.xml'
+          source_hash = sha256(source_file.read_bytes()).hexdigest()
+
+          # FY2025 official consolidated figures from DART filing 20260316000929:
+          # revenue 16,587,850,779,912; FY2024 revenue 12,052,918,410,249;
+          # operating income 1,231,926,775,791.
+          conditioning_payload = {
+              'values': {
+                  'revenue_growth': 0.3762518101679669,
+                  'operating_margin': 0.0742668108205357,
+              },
+              'source_ref': 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929',
+              'first_seen_at': '2026-03-16T09:00:00Z',
+              'source_hash': source_hash,
+          }
+          calibration_dir = run_dir / 'calibration'
+          calibration_dir.mkdir(exist_ok=True)
+          conditioning_path = calibration_dir / 'koreazinc_conditioning_fy2025.json'
+          conditioning_path.write_text(
+              json.dumps(conditioning_payload, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+
+          conditioning = ConditioningDeclaration(
+              values=tuple(sorted((k, float(v)) for k, v in conditioning_payload['values'].items())),
+              source_ref=conditioning_payload['source_ref'],
+              first_seen_at=conditioning_payload['first_seen_at'],
+              source_hash=conditioning_payload['source_hash'],
+          )
+          result = build_continuous_calibration_artifact(
+              observations=load_cohort_dataset('config/kr_steel_cohort_dataset.json'),
+              driver_ids=('revenue_growth', 'operating_margin'),
+              scenario_ids=('Down', 'Base', 'Bull'),
+              path_length=5,
+              excluded_ticker='010130',
+              conditioning=conditioning,
+          )
+          artifact_path = calibration_dir / 'kr_primary_metals_calibration_ex010130.json'
+          provenance_path = calibration_dir / 'kr_primary_metals_calibration_provenance_ex010130.json'
+          write_artifact_files(
+              result,
+              artifact_path=artifact_path,
+              provenance_path=provenance_path,
+          )
+          c = result.constants
+
+          run_yaml_path = run_dir / 'run.yaml'
+          run_yaml = yaml.safe_load(run_yaml_path.read_text(encoding='utf-8'))
+          run_yaml['calibration'] = {
+              'cohort_key': 'kr.steel.long|5y_path|continuous_v1',
+              'external_probability_source': 'continuous_financial_path_monte_carlo',
+              'forecast_class': 'kr.steel.long.continuous_financial_path',
+              'horizon': '5y_path',
+              'method_version': 'probability_engine_v3.2_factory_v2',
+              'mapping_version': 'kr_steel_cohort_ex010130_v1',
+              'driver_ids': ['revenue_growth', 'operating_margin'],
+              'scenario_ids': ['Down', 'Base', 'Bull'],
+              'path_length': 5,
+              'artifact': 'calibration/' + artifact_path.name,
+              'provenance': 'calibration/' + provenance_path.name,
+              'conditioning': 'calibration/' + conditioning_path.name,
+              'seed': 20260901,
+              'outer_draws': 300,
+              'inner_draws': 200,
+              'constants': {
+                  'expected_artifact_sha256': c.expected_artifact_sha256,
+                  'expected_provenance_artifact_sha256': c.expected_provenance_artifact_sha256,
+                  'expected_dataset_sha256': c.expected_dataset_sha256,
+                  'expected_provenance_hash': c.expected_provenance_hash,
+                  'expected_source_row_count': c.expected_source_row_count,
+                  'expected_source_company_count': c.expected_source_company_count,
+                  'excluded_ticker': c.excluded_ticker,
+              },
+          }
+          run_yaml_path.write_text(
+              yaml.safe_dump(run_yaml, allow_unicode=True, sort_keys=False),
+              encoding='utf-8',
+          )
+          print('CALIBRATION_CONSTANTS')
+          print(json.dumps(run_yaml['calibration']['constants'], indent=2))
+          PY
+      - name: Execute canonical calibrated PRISM
+        run: |
+          rm -rf /tmp/koreazinc-010130/out
+          set -o pipefail
+          PYTHONPATH=src python scripts/run_kr_live.py /tmp/koreazinc-010130 2>&1 | tee /tmp/koreazinc-010130/prism-calibrated.log
+      - name: Upload calibrated result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: KOREAZINC_010130_PRISM_CALIBRATED
+          path: /tmp/koreazinc-010130
+      - name: Show result
+        if: always()
+        run: |
+          cat /tmp/koreazinc-010130/prism-calibrated.log || true
+          if [ -f /tmp/koreazinc-010130/out/final_report.md ]; then
+            grep -n -E '시나리오 가능성|확률가중 기대값|확률 보정|하방 시나리오|기준 시나리오|상방 시나리오|기준 내재가치' /tmp/koreazinc-010130/out/final_report.md || true
+          fi
