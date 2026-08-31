@@ -5,8 +5,8 @@
 - Blueprint: **v0.5.2 canonical workflow + LIVE_PRIMARY readiness**
 - Design progress: **99% (68/69 accepted milestone points)**
 - Current delivery: **0 ACTIVE / 0 READY / 1 BLOCKED / 0 BACKLOG / 0 MERGED PENDING ACCEPTANCE**
-- Accepted validation baseline: `fd1926973363dd46b021dee51c4e1fd5c3174e00`
-- Updated: **2026-08-27**
+- Accepted validation baseline: `f2e961bd7fe6e65125e06246070109ee0cc5d358`
+- Updated: **2026-09-01**
 
 Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE work receives zero credit until every required acceptance check is VERIFIED or explicitly ADR-waived.
 
@@ -24,34 +24,34 @@ Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE
 ```mermaid
 flowchart TB
   PM["PM / Integrator<br/>Design 99% (68/69)<br/>Now: 0 ACTIVE workstreams coordinated"]
-  PM --> PMO["Architecture & Program Office<br/>Design 100% (5/5)<br/>Now: MAINTENANCE — real-company LIVE acceptance is complete; only production calibration history remains"]
-  PM --> EVIDENCE["Evidence & Industry Intelligence<br/>Design 100% (13/13)<br/>Now: MAINTENANCE — context-strength linkage and the Sanil source-backed run are accepted; design complete"]
-  PM --> RUNTIME["Runtime Safety & Control Plane<br/>Design 100% (10/10)<br/>Now: MAINTENANCE — accepted design complete"]
-  PM --> VALUATION["Deterministic Valuation Engines<br/>Design 100% (8/8)<br/>Now: MAINTENANCE — accepted design complete"]
-  PM --> CALIBRATION["Risk, PER & Probability Calibration<br/>Design 90% (9/10)<br/>Now: BLOCKED CAL-PRODUCTION-COHORT-003 — Production capture is wired; requires sufficient real resolved historical forecasts across declared cohorts"]
+  PM --> PMO["Architecture & Program Office<br/>Design 100% (5/5)<br/>Now: MAINTENANCE — natural-language routing, PRISM MCP, KR live-run/SOTP and runtime hardening are accepted; only repository-admin branch protection and real production-history accumulation remain"]
+  PM --> EVIDENCE["Evidence & Industry Intelligence<br/>Design 100% (13/13)<br/>Now: MAINTENANCE — source chronology and Sanil dependency coverage are accepted; design complete"]
+  PM --> RUNTIME["Runtime Safety & Control Plane<br/>Design 100% (10/10)<br/>Now: MAINTENANCE — natural-language/MCP authority and native-Linux tunnel state authorization are accepted; main branch protection remains repository-admin configuration"]
+  PM --> VALUATION["Deterministic Valuation Engines<br/>Design 100% (8/8)<br/>Now: MAINTENANCE — exact evaluator coverage and evidence-bound multi-segment KR SOTP are accepted"]
+  PM --> CALIBRATION["Risk, PER & Probability Calibration<br/>Design 90% (9/10)<br/>Now: BLOCKED CAL-PRODUCTION-COHORT-003 — append-only production capture is accepted; future real outcomes must accumulate to declared cohort thresholds"]
   PM --> POST_FREEZE["Post-Freeze Market & State<br/>Design 100% (6/6)<br/>Now: MAINTENANCE — accepted design complete"]
   PM --> PLATFORM["Platform, Packaging & Performance<br/>Design 100% (9/9)<br/>Now: MAINTENANCE — accepted design complete"]
-  PM --> QA_RELEASE["Quality, Security & Release<br/>Design 100% (8/8)<br/>Now: MAINTENANCE — all required real-company LIVE_PRIMARY acceptance fixtures are accepted"]
+  PM --> QA_RELEASE["Quality, Security & Release<br/>Design 100% (8/8)<br/>Now: MAINTENANCE — exact-main valuation-tests, Sanil and SK hynix acceptance workflows pass at the current runtime baseline"]
 ```
 
 ## Department status
 
 | Department | Design progress | Current work |
 |---|---:|---|
-| Architecture & Program Office (`pm-integrator`) | **100% (5/5)** | MAINTENANCE — real-company LIVE acceptance is complete; only production calibration history remains |
-| Evidence & Industry Intelligence (`evidence-industry-agent`) | **100% (13/13)** | MAINTENANCE — context-strength linkage and the Sanil source-backed run are accepted; design complete |
-| Runtime Safety & Control Plane (`runtime-safety-agent`) | **100% (10/10)** | MAINTENANCE — accepted design complete |
-| Deterministic Valuation Engines (`valuation-engine-agent`) | **100% (8/8)** | MAINTENANCE — accepted design complete |
-| Risk, PER & Probability Calibration (`calibration-risk-agent`) | **90% (9/10)** | BLOCKED CAL-PRODUCTION-COHORT-003 — Production capture is wired; requires sufficient real resolved historical forecasts across declared cohorts |
+| Architecture & Program Office (`pm-integrator`) | **100% (5/5)** | MAINTENANCE — natural-language routing, PRISM MCP, KR live-run/SOTP and runtime hardening are accepted; only repository-admin branch protection and real production-history accumulation remain |
+| Evidence & Industry Intelligence (`evidence-industry-agent`) | **100% (13/13)** | MAINTENANCE — source chronology and Sanil dependency coverage are accepted; design complete |
+| Runtime Safety & Control Plane (`runtime-safety-agent`) | **100% (10/10)** | MAINTENANCE — natural-language/MCP authority and native-Linux tunnel state authorization are accepted; main branch protection remains repository-admin configuration |
+| Deterministic Valuation Engines (`valuation-engine-agent`) | **100% (8/8)** | MAINTENANCE — exact evaluator coverage and evidence-bound multi-segment KR SOTP are accepted |
+| Risk, PER & Probability Calibration (`calibration-risk-agent`) | **90% (9/10)** | BLOCKED CAL-PRODUCTION-COHORT-003 — append-only production capture is accepted; future real outcomes must accumulate to declared cohort thresholds |
 | Post-Freeze Market & State (`post-freeze-agent`) | **100% (6/6)** | MAINTENANCE — accepted design complete |
 | Platform, Packaging & Performance (`performance-platform-agent`) | **100% (9/9)** | MAINTENANCE — accepted design complete |
-| Quality, Security & Release (`qa-release-agent`) | **100% (8/8)** | MAINTENANCE — all required real-company LIVE_PRIMARY acceptance fixtures are accepted |
+| Quality, Security & Release (`qa-release-agent`) | **100% (8/8)** | MAINTENANCE — exact-main valuation-tests, Sanil and SK hynix acceptance workflows pass at the current runtime baseline |
 
 ## Current execution queue
 
 | Priority | Status | Work item | Owner | Current step | Dependencies |
 |---|---|---|---|---|---|
-| P1 | **BLOCKED** | `CAL-PRODUCTION-COHORT-003` — Populate production probability calibration cohorts with real resolved history | `calibration-risk-agent` | Run declared pre-resolution forecasts through the append-only production writer, resolve only with first-seen primary-source Evidence, and accumulate enough real outcomes for declared cohort thresholds; synthetic or post-hoc history remains forbidden. | — |
+| P1 | **BLOCKED** | `CAL-PRODUCTION-COHORT-003` — Populate production probability calibration cohorts with real resolved history | `calibration-risk-agent` | Record every qualifying pre-resolution forecast with `prism-probability-history append-forecast`; append only later first-seen primary-source outcomes, validate/export the hash-chained ledger, and accumulate the declared cohort thresholds tracked in Issue #154. Synthetic, reconstructed, migrated or post-hoc history remains forbidden. | — |
 
 ## Objective readiness (derived, not manually scored)
 
@@ -69,6 +69,9 @@ These registry metrics measure typed runtime readiness, not full live source/pro
 
 | Handoff | To | Head | Validation evidence | Closes | Residual work |
 |---|---|---|---|---|---|
+| `H-PRISM-ENTRY-SOTP-20260901` | `pm-integrator + runtime-safety-agent + valuation-engine-agent + qa-release-agent` | `f2e961bd7fe6e65125e06246070109ee0cc5d358` | `GHA-VALUATION-TESTS-701`, `GHA-SANIL-LIVE-PRIMARY-113`, `GHA-SKHYNIX-LIVE-PRIMARY-89` | `RUN-PRISM-INTENT-MCP-20260901`, `VAL-KR-MULTISEG-SOTP-20260901` | `CAL-PRODUCTION-COHORT-003` |
+| `H-EVIDENCE-TUNNEL-HARDENING-20260901` | `pm-integrator + evidence-industry-agent + runtime-safety-agent + qa-release-agent` | `f2e961bd7fe6e65125e06246070109ee0cc5d358` | `GHA-VALUATION-TESTS-701`, `GHA-SANIL-LIVE-PRIMARY-113` | `EVI-COLLECTION-KNOWLEDGE-TIME-20260901`, `RUN-TUNNEL-STATE-AUTHORIZATION-20260901` | — |
+| `H-CAL-PRODUCTION-HISTORY-WRITER-20260901` | `pm-integrator + calibration-risk-agent + performance-platform-agent + qa-release-agent` | `f2e961bd7fe6e65125e06246070109ee0cc5d358` | `GHA-VALUATION-TESTS-701`, `GHA-SANIL-LIVE-PRIMARY-113`, `GHA-SKHYNIX-LIVE-PRIMARY-89` | `CAL-PRODUCTION-HISTORY-WRITER-20260901` | `CAL-PRODUCTION-COHORT-003` |
 | `H-EVIDENCE-CONTEXT-STRENGTH-ACCEPTANCE-20260827` | `pm-integrator + evidence-industry-agent` | `fd1926973363dd46b021dee51c4e1fd5c3174e00` | `GHA-VALUATION-TESTS-519` | `EVI-CONTEXT-STRENGTH-LINKAGE-005` | — |
 | `H-RECOVERY-EVI-VERTICAL-20260825` | `pm-integrator + evidence-industry-agent` | `76b13159c8955ed6e337f4342a741fdceaa00fbe` | `GHA-VALUATION-TESTS-302` | `EVI-VERTICAL-001` | — |
 | `H-RECOVERY-PST-STREET-20260825` | `pm-integrator + post-freeze-agent` | `76b13159c8955ed6e337f4342a741fdceaa00fbe` | `GHA-VALUATION-TESTS-302` | `PST-STREET-001` | — |

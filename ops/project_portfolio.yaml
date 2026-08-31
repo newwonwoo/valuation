@@ -1,9 +1,9 @@
 version: 2
 blueprint: v0.5.2 canonical workflow + LIVE_PRIMARY readiness
-updated: '2026-08-27'
-recovery_note: Reconstructed from the archived PROJECT_STATUS.md dated 2026-08-25. The archived departmental design
-  totals and accepted baseline points are preserved exactly; unknown historical milestone labels are not invented.
-  New acceptance after recovery is recorded only with exact-SHA validation evidence.
+updated: '2026-09-01'
+recovery_note: Reconstructed from the archived PROJECT_STATUS.md dated 2026-08-25. The archived departmental design totals
+  and accepted baseline points are preserved exactly; unknown historical milestone labels are not invented. New acceptance
+  after recovery is recorded only with exact-SHA validation evidence.
 scoring:
   rule: conservative_verified_only
   active_credit: 0
@@ -15,31 +15,45 @@ scoring:
   - pm_integrator_close
   adr_waiver_allowed: true
 validation_baseline:
-  accepted_sha: fd1926973363dd46b021dee51c4e1fd5c3174e00
+  accepted_sha: f2e961bd7fe6e65125e06246070109ee0cc5d358
   evidence:
   - kind: github_actions
     workflow: valuation-tests
-    run_number: 519
-    run_id: 33034748328
+    run_number: 701
+    run_id: 33411388645
     conclusion: success
     event: push
-    head_sha: fd1926973363dd46b021dee51c4e1fd5c3174e00
+    head_sha: f2e961bd7fe6e65125e06246070109ee0cc5d358
+  - kind: github_actions
+    workflow: sanil-live-primary
+    run_number: 113
+    run_id: 33411388647
+    conclusion: success
+    event: push
+    head_sha: f2e961bd7fe6e65125e06246070109ee0cc5d358
+  - kind: github_actions
+    workflow: skhynix-live-primary
+    run_number: 89
+    run_id: 33411388682
+    conclusion: success
+    event: push
+    head_sha: f2e961bd7fe6e65125e06246070109ee0cc5d358
 departments:
 - id: pm-integrator
   name: Architecture & Program Office
   design_points: 5
   baseline_accepted_points: 5
-  current_work: MAINTENANCE — real-company LIVE acceptance is complete; only production calibration history remains
+  current_work: MAINTENANCE — natural-language routing, PRISM MCP, KR live-run/SOTP and runtime hardening are accepted; only
+    repository-admin branch protection and real production-history accumulation remain
   accepted_milestones: []
 - id: evidence-industry-agent
   name: Evidence & Industry Intelligence
   design_points: 13
   baseline_accepted_points: 7
-  current_work: MAINTENANCE — context-strength linkage and the Sanil source-backed run are accepted; design complete
+  current_work: MAINTENANCE — source chronology and Sanil dependency coverage are accepted; design complete
   accepted_milestones:
   - id: EVI-VERTICAL-001
-    title: Complete the first official OpenDART vertical provider pack through raw filing and deterministic KPI
-      extraction
+    title: Complete the first official OpenDART vertical provider pack through raw filing and deterministic KPI extraction
     points: 1
     status: VERIFIED
     accepted_sha: 76b13159c8955ed6e337f4342a741fdceaa00fbe
@@ -119,11 +133,22 @@ departments:
     implementation_refs:
     - PR 94 Add mandatory context-strength linkage gate
     - Acceptance follow-up to EVI-CONTEXT-STRENGTH-LINKAGE-001; no duplicate design credit
+  - id: EVI-COLLECTION-KNOWLEDGE-TIME-20260901
+    title: Reject future-observed intrinsic Evidence at collection time and restore dependency-complete Sanil verification
+    points: 0
+    status: VERIFIED
+    accepted_sha: f2e961bd7fe6e65125e06246070109ee0cc5d358
+    validation_evidence:
+    - GHA valuation-tests run 701 PASS at exact main SHA
+    - GHA sanil-live-primary run 113 PASS at exact main SHA
+    implementation_refs:
+    - PR 152 collection chronology and Sanil verified-report dependency coverage
 - id: runtime-safety-agent
   name: Runtime Safety & Control Plane
   design_points: 10
   baseline_accepted_points: 5
-  current_work: MAINTENANCE — accepted design complete
+  current_work: MAINTENANCE — natural-language/MCP authority and native-Linux tunnel state authorization are accepted; main
+    branch protection remains repository-admin configuration
   accepted_milestones:
   - id: RUN-HASH-001
     title: Close the Evidence-to-Assumption-to-Audit-to-Freeze hash chain
@@ -170,11 +195,34 @@ departments:
     - GHA valuation-tests run 385 PASS at exact integrated main SHA
     implementation_refs:
     - PR 76 Harden runtime stage context boundaries
+  - id: RUN-PRISM-INTENT-MCP-20260901
+    title: Route natural-language stock analysis through the single PRISM MCP gateway and strict attested runtime
+    points: 0
+    status: VERIFIED
+    accepted_sha: f2e961bd7fe6e65125e06246070109ee0cc5d358
+    validation_evidence: &id001
+    - GHA valuation-tests run 701 PASS at exact main SHA
+    - GHA sanil-live-primary run 113 PASS at exact main SHA
+    - GHA skhynix-live-primary run 89 PASS at exact main SHA
+    implementation_refs:
+    - PR 145 natural-language intent gateway
+    - PR 146 strict PRISM_ANALYZE MCP gateway
+    - PR 147 canonical no-preselection live routing and managed tunnel launcher
+  - id: RUN-TUNNEL-STATE-AUTHORIZATION-20260901
+    title: Fail closed unless Secure MCP Tunnel state resides on a verified private native-Linux authorization surface
+    points: 0
+    status: VERIFIED
+    accepted_sha: f2e961bd7fe6e65125e06246070109ee0cc5d358
+    validation_evidence: *id001
+    implementation_refs:
+    - PR 148 explicit persistent private state root
+    - PR 150 reject macOS and unsupported hosts
+    - PR 153 native-Linux filesystem, stacked-mount and ACL-xattr hardening
 - id: valuation-engine-agent
   name: Deterministic Valuation Engines
   design_points: 8
   baseline_accepted_points: 6
-  current_work: MAINTENANCE — accepted design complete
+  current_work: MAINTENANCE — exact evaluator coverage and evidence-bound multi-segment KR SOTP are accepted
   accepted_milestones:
   - id: VAL-PARTIAL-001
     title: Preserve PARTIAL_INTRINSIC and UNVALUED_NOT_ZERO end to end
@@ -195,12 +243,20 @@ departments:
     implementation_refs:
     - PR 74 Implement remaining equity and NAV valuation method families
     - exact method bindings 41/41 executable with zero NOT_IMPLEMENTED
+  - id: VAL-KR-MULTISEG-SOTP-20260901
+    title: Execute evidence-bound Korean multi-segment SOTP through disclosed segment bijection and segment-specific methods
+    points: 0
+    status: VERIFIED
+    accepted_sha: f2e961bd7fe6e65125e06246070109ee0cc5d358
+    validation_evidence: *id001
+    implementation_refs:
+    - PR 151 KR live-run entry detail, IFRS 8 segment declarations and multi-segment SOTP
 - id: calibration-risk-agent
   name: Risk, PER & Probability Calibration
   design_points: 10
   baseline_accepted_points: 5
-  current_work: BLOCKED CAL-PRODUCTION-COHORT-003 — Production capture is wired; requires sufficient real resolved
-    historical forecasts across declared cohorts
+  current_work: BLOCKED CAL-PRODUCTION-COHORT-003 — append-only production capture is accepted; future real outcomes must
+    accumulate to declared cohort thresholds
   accepted_milestones:
   - id: CAL-ASOF-001
     title: Add a first-seen boundary to historical forecast revisions and replay
@@ -238,6 +294,14 @@ departments:
     - GHA valuation-tests run 385 PASS at exact integrated main SHA
     implementation_refs:
     - PR 78 Add declared probability calibration dataset contract
+  - id: CAL-PRODUCTION-HISTORY-WRITER-20260901
+    title: Provide a hash-chained append-only writer for pre-resolution forecasts and first-seen realized outcomes
+    points: 0
+    status: VERIFIED
+    accepted_sha: f2e961bd7fe6e65125e06246070109ee0cc5d358
+    validation_evidence: *id001
+    implementation_refs:
+    - PR 155 append-only production probability history CLI
 - id: post-freeze-agent
   name: Post-Freeze Market & State
   design_points: 6
@@ -299,7 +363,8 @@ departments:
   name: Quality, Security & Release
   design_points: 8
   baseline_accepted_points: 5
-  current_work: MAINTENANCE — all required real-company LIVE_PRIMARY acceptance fixtures are accepted
+  current_work: MAINTENANCE — exact-main valuation-tests, Sanil and SK hynix acceptance workflows pass at the current runtime
+    baseline
   accepted_milestones:
   - id: QA-PR51-001
     title: Publish the accepted canonical LIVE_PRIMARY runtime and verify valuation-tests
@@ -332,8 +397,8 @@ departments:
     - PR 95 Run Sanil Electric through the full LIVE_PRIMARY stack
     - 33/33 canonical stages and VERIFIED_FROZEN execution attestation
   - id: QA-LIVE-COMPANY-FIXTURES-003
-    title: Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy
-      and GE Vernova
+    title: Accept source-backed LIVE_PRIMARY success and adversarial fixtures for OCI Holdings Oracle Bloom Energy and GE
+      Vernova
     points: 1
     status: VERIFIED
     accepted_sha: f1df53f79688aff51ec92d990462104a555f2df3
@@ -349,11 +414,44 @@ work_items:
   id: CAL-PRODUCTION-COHORT-003
   title: Populate production probability calibration cohorts with real resolved history
   owner: calibration-risk-agent
-  current_step: Run declared pre-resolution forecasts through the append-only production writer, resolve only with
-    first-seen primary-source Evidence, and accumulate enough real outcomes for declared cohort thresholds; synthetic
-    or post-hoc history remains forbidden.
+  current_step: 'Record every qualifying pre-resolution forecast with `prism-probability-history append-forecast`; append
+    only later first-seen primary-source outcomes, validate/export the hash-chained ledger, and accumulate the declared cohort
+    thresholds tracked in Issue #154. Synthetic, reconstructed, migrated or post-hoc history remains forbidden.'
   dependencies: []
 accepted_handoffs:
+- id: H-PRISM-ENTRY-SOTP-20260901
+  to: pm-integrator + runtime-safety-agent + valuation-engine-agent + qa-release-agent
+  head: f2e961bd7fe6e65125e06246070109ee0cc5d358
+  validation_evidence:
+  - GHA-VALUATION-TESTS-701
+  - GHA-SANIL-LIVE-PRIMARY-113
+  - GHA-SKHYNIX-LIVE-PRIMARY-89
+  closes:
+  - RUN-PRISM-INTENT-MCP-20260901
+  - VAL-KR-MULTISEG-SOTP-20260901
+  residual_work:
+  - CAL-PRODUCTION-COHORT-003
+- id: H-EVIDENCE-TUNNEL-HARDENING-20260901
+  to: pm-integrator + evidence-industry-agent + runtime-safety-agent + qa-release-agent
+  head: f2e961bd7fe6e65125e06246070109ee0cc5d358
+  validation_evidence:
+  - GHA-VALUATION-TESTS-701
+  - GHA-SANIL-LIVE-PRIMARY-113
+  closes:
+  - EVI-COLLECTION-KNOWLEDGE-TIME-20260901
+  - RUN-TUNNEL-STATE-AUTHORIZATION-20260901
+  residual_work: []
+- id: H-CAL-PRODUCTION-HISTORY-WRITER-20260901
+  to: pm-integrator + calibration-risk-agent + performance-platform-agent + qa-release-agent
+  head: f2e961bd7fe6e65125e06246070109ee0cc5d358
+  validation_evidence:
+  - GHA-VALUATION-TESTS-701
+  - GHA-SANIL-LIVE-PRIMARY-113
+  - GHA-SKHYNIX-LIVE-PRIMARY-89
+  closes:
+  - CAL-PRODUCTION-HISTORY-WRITER-20260901
+  residual_work:
+  - CAL-PRODUCTION-COHORT-003
 - id: H-EVIDENCE-CONTEXT-STRENGTH-ACCEPTANCE-20260827
   to: pm-integrator + evidence-industry-agent
   head: fd1926973363dd46b021dee51c4e1fd5c3174e00
