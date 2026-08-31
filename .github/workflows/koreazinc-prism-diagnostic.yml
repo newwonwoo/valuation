@@ -1,0 +1,85 @@
+name: koreazinc-prism-diagnostic
+
+on:
+  pull_request:
+
+jobs:
+  koreazinc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Build exact public-DART prepared run
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.parse import urlencode
+          from urllib.request import Request, urlopen
+          import json
+
+          run = Path('runs/koreazinc-010130')
+          raw = run/'raw'
+          filing = raw/'filing_20260814003958'
+          decl = run/'declarations'
+          staff = decl/'staff'
+          filing.mkdir(parents=True, exist_ok=True)
+          staff.mkdir(parents=True, exist_ok=True)
+
+          rcp='20260814003958'; dcm='11539212'
+          sections={
+            '9':('155272','490365'), '11':('156488','60237'), '12':('216729','176922'),
+            '13':('393655','66150'), '18':('645800','21336'), '19':('667380','211253'),
+            '20':('667529','42368'), '21':('709897','43518'), '23':('833070','45567'),
+            '24':('878637','1382323'), '58':('2147237','66678'), '66':('2395154','1147464'),
+          }
+          headers={'User-Agent':'Mozilla/5.0 PRISM research runner','Referer':f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}'}
+          def fetch(url):
+              with urlopen(Request(url,headers=headers),timeout=40) as resp: return resp.read()
+          for ele,(offset,length) in sections.items():
+              url='https://dart.fss.or.kr/report/viewer.do?'+urlencode({'rcpNo':rcp,'dcmNo':dcm,'eleId':ele,'offset':offset,'length':length,'dtd':'dart4.xsd'})
+              (filing/f'{rcp}_{ele}.html').write_bytes(fetch(url))
+
+          (raw/'corp_search.json').write_text(json.dumps({'status':'000','companies':[{'corp_code':'00102858','corp_name':'고려아연','stock_code':'010130'}]},ensure_ascii=False,indent=2),encoding='utf-8')
+          (raw/'company.json').write_text(json.dumps({'status':'000','corp_code':'00102858','corp_name':'고려아연(주)','stock_name':'고려아연','stock_code':'010130','induty_code':'24213','acc_mt':'12'},ensure_ascii=False,indent=2),encoding='utf-8')
+          (raw/'list.json').write_text(json.dumps({'status':'000','list':[{'corp_code':'00102858','corp_name':'고려아연','stock_code':'010130','corp_cls':'Y','report_nm':'반기보고서 (2026.06)','rcept_no':rcp,'flr_nm':'고려아연','rcept_dt':'20260814','rm':''}]},ensure_ascii=False,indent=2),encoding='utf-8')
+
+          facts=[
+            ('IS','ifrs-full_Revenue','12444628513649','12444628513649'),
+            ('IS','dart_OperatingIncomeLoss','1333168321617','1333168321617'),
+            ('IS','ifrs-full_ProfitLoss','705580051369','705580051369'),
+            ('BS','ifrs-full_Assets','22721427044856',None),
+            ('BS','ifrs-full_Liabilities','11127527334198',None),
+            ('BS','ifrs-full_Equity','11593899710658',None),
+            ('BS','ifrs-full_CashAndCashEquivalents','905223854735',None),
+            ('BS','ifrs-full_Inventories','6724138976030',None),
+          ]
+          rows=[]
+          for sj,account,amount,ytd in facts:
+              x={'rcept_no':rcp,'reprt_code':'11012','bsns_year':'2026','corp_code':'00102858','sj_div':sj,'account_id':account,'thstrm_amount':amount,'currency':'KRW','fs_div':'CFS'}
+              if ytd is not None: x['thstrm_add_amount']=ytd
+              rows.append(x)
+          (raw/'fnltt_2026_CFS.json').write_text(json.dumps({'status':'000','list':rows},ensure_ascii=False,indent=2),encoding='utf-8')
+
+          source=f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}'
+          (decl/'segments.yaml').write_text(f'''target_id: KR:DART:00102858\nas_of: "2026-09-01"\nsource_ref: {source}\nsegments:\n  - segment_id: smelting\n    disclosed_name: 비철금속 제조 및 판매\n    ksic_code: "24213"\n    rationale: "아연·연·귀금속 등 비철금속을 제련·생산·판매하는 공시상 제조부문으로 회사 대표 KSIC 24213을 그대로 적용한다."\n  - segment_id: trading\n    disclosed_name: 비철금속 수출입\n    ksic_code: "46721"\n    rationale: "비철금속 제품을 매입해 국내외에 재판매하는 공시상 수출입부문으로 1차 금속제품 도매업의 매입-판매 스프레드 경제성을 적용한다."\n  - segment_id: other\n    disclosed_name: 폐기물처리, 광물 등\n    ksic_code: "38210"\n    rationale: "공시상 기타부문의 명시적 첫 경제활동인 폐기물처리를 기준으로 지정 외 폐기물 처리업을 적용하며 광물 사업은 잔여 리스크로 별도 검증한다."\n''',encoding='utf-8')
+          (decl/'underwriting.yaml').write_text(f'''target_id: KR:DART:00102858\nas_of: "2026-09-01"\nsource_ref: {source}\ndeclarations:\n  placeholder:\n    value: 0\n    unit: ratio\n    rationale: "다부문 라우팅 이후 엔진이 요구하는 정확한 Evidence와 가정 키를 확인하기 위한 비가치 placeholder이며 평가 입력으로 사용하지 않는다."\n''',encoding='utf-8')
+          (run/'run.yaml').write_text('''company_query: 고려아연\nrun_id: LIVE-KOREAZINC-010130-20260901-B\nas_of: "2026-09-01"\njurisdiction: KR\nscenario_ids: [Down, Base, Bull]\nsegments:\n  - segment_id: smelting\n    method: commodity_price_taker/normalized_multiple\n  - segment_id: trading\n    method: process_spread/normalized_multiple\n  - segment_id: other\n    method: process_spread/normalized_multiple\nmarket_currency: KRW\nfiling:\n  business_year: "2026"\n  report_code: "11012"\n  fs_div: CFS\n  fiscal_period_end: "2026-06-30"\n  segment_id: smelting\n''',encoding='utf-8')
+          PY
+      - name: Run canonical PRISM prepared run
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          PYTHONPATH=src python scripts/run_kr_live.py runs/koreazinc-010130 2>&1 | tee /tmp/koreazinc-prism.log
+      - name: Upload gate output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: KOREAZINC_010130_PRISM_GATE_V2
+          path: |
+            /tmp/koreazinc-prism.log
+            runs/koreazinc-010130/
+          if-no-files-found: error
