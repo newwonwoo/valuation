@@ -20,7 +20,7 @@ new = '''        revenue = sum((entry.revenue for entry in self.entries), Decima
             or abs(income - self.total_operating_income) > Decimal("1")
         ):
             raise SegmentNoteError(
-                "reportable segment values do not reconcile to the disclosed segment total"
+                "reportable segment values do not sum and do not reconcile to the disclosed segment total"
             )
 '''
 if old not in text:
