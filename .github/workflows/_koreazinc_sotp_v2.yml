@@ -45,6 +45,15 @@ jobs:
           if old not in body:
               raise SystemExit('first_metric block not found in recovered recipe')
           body = body.replace(old, new, 1)
+          old_fy_da = "fy_da=sum(first_metric(fy_cf,(x,)) for x in ('감가상각비','투자부동산감가상각비 조정','무형자산상각비'))"
+          if old_fy_da not in body:
+              raise SystemExit('FY D&A block not found in recovered recipe')
+          body = body.replace(old_fy_da, "fy_da=h1_da*Decimal(2)", 1)
+          old_rationale = '2025 연간 부문 영업이익과 공시 감가상각·상각비를 부문 매출비중으로 배분한 EBITDA, 2026 상반기 동일 산식의 연환산 EBITDA를 산술평균한 정상화 기준값입니다.'
+          new_rationale = '2025 연간 부문 영업이익에 2026 상반기 공시 감가상각·상각비의 연환산 run-rate를 해당 연간 매출비중으로 배분한 EBITDA와, 2026 상반기 동일 산식의 연환산 EBITDA를 산술평균한 정상화 기준값입니다. 2025 부문별 D&A가 별도 공시되지 않아 현 run-rate proxy를 썼음을 명시합니다.'
+          if old_rationale not in body:
+              raise SystemExit('EBITDA rationale block not found in recovered recipe')
+          body = body.replace(old_rationale, new_rationale, 1)
           Path('/tmp/prepare_koreazinc.py').write_text(body, encoding='utf-8')
           PY
           python /tmp/prepare_koreazinc.py
