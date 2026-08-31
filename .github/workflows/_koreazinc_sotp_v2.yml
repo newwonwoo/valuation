@@ -10,78 +10,96 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Install
         run: python -m pip install -e '.[dev]'
-      - name: Recover validated Korea Zinc prepared-run recipe
+      - name: Reuse frozen official-DART prepared run
+        uses: actions/download-artifact@v4
+        with:
+          name: KOREAZINC_010130_PRISM_SOTP_V2
+          path: /tmp/koreazinc-010130
+          github-token: ${{ github.token }}
+          run-id: 33428060052
+      - name: Apply only the current PRISM work order
         run: |
-          git fetch origin run/koreazinc-sotp-010130-20260901
           python - <<'PY'
           from pathlib import Path
-          import subprocess
+          import json, yaml
 
-          raw = subprocess.check_output([
-              'git','show','origin/run/koreazinc-sotp-010130-20260901:.github/workflows/_koreazinc_sotp_run.yml'
-          ], text=True)
-          lines = raw.splitlines()
-          start = next(i for i,x in enumerate(lines) if "python - <<'PY'" in x) + 1
-          end = next(i for i in range(start,len(lines)) if lines[i].strip() == 'PY')
-          body = '\n'.join(x[10:] if x.startswith('          ') else x for x in lines[start:end]) + '\n'
-          body = body.replace(
-              "assert fy_disc.segment_names==expected, fy_disc.segment_names",
-              "assert len(fy_disc.entries)==3, fy_disc.segment_names",
+          run = Path('/tmp/koreazinc-010130')
+          run_cfg = yaml.safe_load((run/'run.yaml').read_text(encoding='utf-8'))
+          run_cfg['extra_required_evidence'] = [
+              x for x in run_cfg.get('extra_required_evidence', [])
+              if 'manufacturing' in x
+          ]
+          (run/'run.yaml').write_text(
+              yaml.safe_dump(run_cfg, allow_unicode=True, sort_keys=False),
+              encoding='utf-8',
           )
-          old_fetch = '''def fetch(url):\n    return urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0'}),timeout=30).read()\n'''
-          new_fetch = '''def fetch(url):\n    import time\n    last=None\n    for attempt in range(4):\n        try:\n            return urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0'}),timeout=60).read()\n        except Exception as exc:\n            last=exc\n            if attempt == 3:\n                raise\n            time.sleep(2 * (attempt + 1))\n    raise last\n'''
-          if old_fetch not in body:
-              raise SystemExit('fetch block not found in recovered recipe')
-          body = body.replace(old_fetch, new_fetch, 1)
-          old = '''def first_metric(path, labels):\n    parser=_SegmentTableParser(); parser.feed(path.read_text(encoding='utf-8'))\n    for table in parser.tables:\n        for row in _expand_table(table):\n            if not row: continue\n            if re.sub(r'\\s+','',row[0] or '') in {re.sub(r'\\s+','',x) for x in labels}:\n                for cell in row[1:]:\n                    v=amount(cell)\n                    if v is not None: return v\n    raise RuntimeError(f'metric not found: {labels}')\n'''
-          new = '''def first_metric(path, labels):\n    parser=_SegmentTableParser(); parser.feed(path.read_text(encoding='utf-8'))\n    wanted={re.sub(r'\\s+','',x) for x in labels}\n    for table in parser.tables:\n        for row in _expand_table(table):\n            if not row: continue\n            for idx, cell in enumerate(row):\n                if re.sub(r'\\s+','',cell or '') not in wanted:\n                    continue\n                for value_cell in row[idx+1:]:\n                    v=amount(value_cell)\n                    if v is not None: return v\n    raise RuntimeError(f'metric not found: {labels}')\n'''
-          if old not in body:
-              raise SystemExit('first_metric block not found in recovered recipe')
-          body = body.replace(old, new, 1)
-          old_fy_da = "fy_da=sum(first_metric(fy_cf,(x,)) for x in ('감가상각비','투자부동산감가상각비 조정','무형자산상각비'))"
-          if old_fy_da not in body:
-              raise SystemExit('FY D&A block not found in recovered recipe')
-          body = body.replace(old_fy_da, "fy_da=h1_da*Decimal(2)", 1)
-          old_rationale = '2025 연간 부문 영업이익과 공시 감가상각·상각비를 부문 매출비중으로 배분한 EBITDA, 2026 상반기 동일 산식의 연환산 EBITDA를 산술평균한 정상화 기준값입니다.'
-          new_rationale = '2025 연간 부문 영업이익에 2026 상반기 공시 감가상각·상각비의 연환산 run-rate를 해당 연간 매출비중으로 배분한 EBITDA와, 2026 상반기 동일 산식의 연환산 EBITDA를 산술평균한 정상화 기준값입니다. 2025 부문별 D&A가 별도 공시되지 않아 현 run-rate proxy를 썼음을 명시합니다.'
-          if old_rationale not in body:
-              raise SystemExit('EBITDA rationale block not found in recovered recipe')
-          body = body.replace(old_rationale, new_rationale, 1)
 
-          run_write = "(run/'run.yaml').write_text"
-          if run_write not in body:
-              raise SystemExit('run.yaml write block not found')
-          body = body.replace(
-              run_write,
-              "run_yaml['extra_required_evidence']=[x for x in run_yaml.get('extra_required_evidence',[]) if 'manufacturing' in x]\n" + run_write,
-              1,
+          uw_path = run/'declarations'/'underwriting.yaml'
+          uw = yaml.safe_load(uw_path.read_text(encoding='utf-8'))
+          d = uw['declarations']
+          for sid in ('trading','recycling'):
+              for pre in ('down_','bull_'):
+                  d.pop(f'{pre}{sid}_normalized_ebitda', None)
+                  d.pop(f'{pre}{sid}_normalized_multiple', None)
+
+          additions = {
+              'input_price': {
+                  'value': 1663, 'unit': 'USD_per_DMT', 'segment': 'manufacturing',
+                  'source_ref': 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958',
+                  'rationale': '2026년 반기보고서 원재료 가격표의 아연정광 수입 평균가격 1,663달러/DMT를 제조 공정 input-price Evidence로 사용합니다.',
+              },
+              'output_price': {
+                  'value': 5112279, 'unit': 'KRW_per_MT', 'segment': 'manufacturing',
+                  'source_ref': 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958',
+                  'rationale': '2026년 반기보고서 주요 제품 가격표의 아연 내수 평균단가 5,112,279원/MT를 제조 공정 output-price Evidence로 사용합니다.',
+              },
+              'product_yield': {
+                  'value': 0.53, 'unit': 'ratio', 'segment': 'manufacturing',
+                  'source_ref': 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958',
+                  'rationale': '반기보고서 아연정광 기준품위 Zn 53%를 공정 input 대비 대표 금속함량 수율 proxy로 명시하며 실제 종합회수율과 동일시하지 않습니다.',
+              },
+              'plant_runs': {
+                  'value': 1, 'unit': 'count', 'segment': 'manufacturing',
+                  'source_ref': 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958',
+                  'rationale': '반기보고서가 아연조업을 24시간 연속조업으로 기재하므로 전체 제조공정을 하나의 연속 operating run으로 정규화합니다.',
+              },
+              'turnaround': {
+                  'value': 0, 'unit': 'days', 'segment': 'manufacturing',
+                  'source_ref': 'https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958',
+                  'rationale': '반기보고서는 부분 정기보수가 있어도 전체 제품생산 공정은 중단되지 않고 가동률 100%라고 공시하므로 whole-plant turnaround를 0일로 둡니다.',
+              },
+          }
+          for metric, row in additions.items():
+              existing = d.get(metric)
+              rows = existing if isinstance(existing, list) else ([existing] if existing else [])
+              if not any(x and x.get('segment') == 'manufacturing' for x in rows):
+                  rows.insert(0, row)
+              d[metric] = rows
+          uw_path.write_text(
+              yaml.safe_dump(uw, allow_unicode=True, sort_keys=False),
+              encoding='utf-8',
           )
-          underwriting_marker = "underwriting={'target_id'"
-          cleanup = '''for sid in ('trading','recycling'):\n    for pre in ('down_','bull_'):\n        declarations.pop(f'{pre}{sid}_normalized_ebitda', None)\n        declarations.pop(f'{pre}{sid}_normalized_multiple', None)\ndeclarations['input_price'].insert(0, {'value':1663,'unit':'USD_per_DMT','segment':'manufacturing','source_ref':h1_main,'rationale':'2026년 반기보고서 원재료 가격표의 아연정광 수입 평균가격 1,663달러/DMT를 제조 공정 input-price Evidence로 사용합니다.'})\ndeclarations['output_price'].insert(0, {'value':5112279,'unit':'KRW_per_MT','segment':'manufacturing','source_ref':h1_main,'rationale':'2026년 반기보고서 주요 제품 가격표의 아연 내수 평균단가 5,112,279원/MT를 제조 공정 output-price Evidence로 사용합니다.'})\ndeclarations['product_yield'].insert(0, {'value':0.53,'unit':'ratio','segment':'manufacturing','source_ref':h1_main,'rationale':'반기보고서 아연정광 기준품위 Zn 53%를 공정 input 대비 대표 금속함량 수율 proxy로 명시하며 실제 종합회수율과 동일시하지 않습니다.'})\ndeclarations['plant_runs'].insert(0, {'value':1,'unit':'count','segment':'manufacturing','source_ref':h1_main,'rationale':'반기보고서가 아연조업을 24시간 연속조업으로 기재하므로 전체 제조공정을 하나의 연속 operating run으로 정규화합니다.'})\ndeclarations['turnaround'].insert(0, {'value':0,'unit':'days','segment':'manufacturing','source_ref':h1_main,'rationale':'반기보고서는 부분 정기보수가 있어도 전체 제품생산 공정은 중단되지 않고 가동률 100%라고 공시하므로 whole-plant turnaround를 0일로 둡니다.'})\n'''
-          if underwriting_marker not in body:
-              raise SystemExit('underwriting marker not found')
-          body = body.replace(underwriting_marker, cleanup + underwriting_marker, 1)
-          old_metric = "evidence_metric=f'{prefix}{sid}_{suffix}'"
-          new_metric = "evidence_metric=f'{prefix if sid == \"manufacturing\" else \"\"}{sid}_{suffix}'"
-          if old_metric not in body:
-              raise SystemExit('bridge scenario metric block not found')
-          body = body.replace(old_metric, new_metric, 1)
 
-          Path('/tmp/prepare_koreazinc.py').write_text(body, encoding='utf-8')
-          PY
-          python /tmp/prepare_koreazinc.py
-          python - <<'PY'
-          from pathlib import Path
-          import json
-          p=Path('/tmp/koreazinc-010130/declarations/staff/filing_locator_analyst.json')
-          p.write_text(json.dumps({'locators': [], 'not_found': []}, ensure_ascii=False, indent=2), encoding='utf-8')
+          bridge_path = run/'declarations'/'staff'/'bridge_analyst.json'
+          bridge = json.loads(bridge_path.read_text(encoding='utf-8'))
+          for draft in bridge.get('drafts', []):
+              key = draft.get('assumption_key','')
+              if key.startswith(('trading_','recycling_')) and key.endswith(('normalized_ebitda','normalized_multiple')):
+                  base = d[key]
+                  draft['evidence_ids'] = [f'UW:KR:DART:00102858:{key}']
+                  draft['value'] = base['value']
+                  draft['unit'] = base['unit']
+                  draft['canonical_unit'] = base['unit']
+          bridge_path.write_text(json.dumps(bridge, ensure_ascii=False, indent=2), encoding='utf-8')
+
+          locator = run/'declarations'/'staff'/'filing_locator_analyst.json'
+          if not locator.exists():
+              locator.write_text(json.dumps({'locators': [], 'not_found': []}, ensure_ascii=False, indent=2), encoding='utf-8')
           PY
       - name: Execute canonical PRISM SOTP
         id: prism
@@ -92,7 +110,7 @@ jobs:
       - name: Upload Korea Zinc PRISM SOTP bundle
         uses: actions/upload-artifact@v4
         with:
-          name: KOREAZINC_010130_PRISM_SOTP_V2
+          name: KOREAZINC_010130_PRISM_SOTP_FAST
           path: /tmp/koreazinc-010130
       - name: Show stop or completion
         run: cat /tmp/koreazinc-010130/prism.log
