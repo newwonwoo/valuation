@@ -39,12 +39,11 @@ class ProductionProbabilityHistoryError(RuntimeError):
 
 
 def _utc_now() -> datetime:
-    """Return the writer-controlled knowledge time.
+    """Return writer-controlled knowledge time.
 
     Tests may monkeypatch this private clock. Public append functions expose no
     recorded-at override, so production callers cannot backdate first_seen_at.
     """
-
     return datetime.now(timezone.utc)
 
 
@@ -114,14 +113,17 @@ def _event_hash(
     previous_hash: str,
     payload: dict[str, Any],
 ) -> str:
-    fields = _hash_fields(
-        sequence=sequence,
-        kind=kind,
-        recorded_at=recorded_at,
-        previous_hash=previous_hash,
-        payload=payload,
-    )
-    return sha256(_canonical_json(fields).encode("utf-8")).hexdigest()
+    return sha256(
+        _canonical_json(
+            _hash_fields(
+                sequence=sequence,
+                kind=kind,
+                recorded_at=recorded_at,
+                previous_hash=previous_hash,
+                payload=payload,
+            )
+        ).encode("utf-8")
+    ).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -231,7 +233,8 @@ class ProductionHistorySnapshot:
             revisions = tuple(
                 item
                 for item in self.ledger.forecasts
-                if item.forecast_class == forecast_class and item.horizon == horizon
+                if item.forecast_class == forecast_class
+                and item.horizon == horizon
             )
             terminal = self.ledger.terminal_forecasts(
                 forecast_class=forecast_class,
@@ -285,9 +288,11 @@ def _forecast_row(item: ProbabilityForecast) -> dict[str, Any]:
         "resolution_rule": item.resolution_rule,
         "resolution_source_policy": item.resolution_source_policy,
         "supersedes_id": item.supersedes_id,
-        "first_seen_at": item.first_seen_at.isoformat()
-        if item.first_seen_at is not None
-        else None,
+        "first_seen_at": (
+            item.first_seen_at.isoformat()
+            if item.first_seen_at is not None
+            else None
+        ),
     }
 
 
@@ -307,7 +312,10 @@ def _forecast_from_row(row: dict[str, Any]) -> ProbabilityForecast:
         forecast_class=str(row.get("forecast_class") or ""),
         horizon=str(row.get("horizon") or ""),
         event_definition=str(row.get("event_definition") or ""),
-        issued_at=_aware_datetime(str(row.get("issued_at") or ""), label="issued_at"),
+        issued_at=_aware_datetime(
+            str(row.get("issued_at") or ""),
+            label="issued_at",
+        ),
         evaluation_deadline=_iso_date(
             str(row.get("evaluation_deadline") or ""),
             label="evaluation_deadline",
@@ -341,9 +349,11 @@ def _outcome_row(item: ForecastOutcome) -> dict[str, Any]:
         "outcome_evidence_ids": list(item.outcome_evidence_ids),
         "resolver_id": item.resolver_id,
         "rationale": item.rationale,
-        "first_seen_at": item.first_seen_at.isoformat()
-        if item.first_seen_at is not None
-        else None,
+        "first_seen_at": (
+            item.first_seen_at.isoformat()
+            if item.first_seen_at is not None
+            else None
+        ),
     }
 
 
@@ -368,7 +378,10 @@ def _outcome_from_row(row: dict[str, Any]) -> ForecastOutcome:
         resolver_id=str(row.get("resolver_id") or ""),
         rationale=str(row.get("rationale") or ""),
         first_seen_at=(
-            _aware_datetime(str(first_seen), label="outcome first_seen_at")
+            _aware_datetime(
+                str(first_seen),
+                label="outcome first_seen_at",
+            )
             if first_seen is not None
             else None
         ),
@@ -389,32 +402,54 @@ def _first_seen(event: ProductionHistoryEvent) -> datetime:
     )
 
 
-def _require_private_regular_file(path: Path) -> None:
+def _require_owned_private_directory(path: Path) -> None:
     try:
         metadata = path.stat()
     except OSError as exc:
         raise ProductionProbabilityHistoryError(
-            f"cannot inspect production history file ({type(exc).__name__})"
+            f"cannot inspect production history directory ({type(exc).__name__})"
+        ) from exc
+    if not stat.S_ISDIR(metadata.st_mode):
+        raise ProductionProbabilityHistoryError(
+            "production probability history parent must be a directory"
+        )
+    if os.name == "posix":
+        if metadata.st_uid != os.geteuid():
+            raise ProductionProbabilityHistoryError(
+                "production probability history parent must be owned by the current user"
+            )
+        if stat.S_IMODE(metadata.st_mode) & 0o077:
+            raise ProductionProbabilityHistoryError(
+                "production probability history parent must not grant "
+                "group/other permissions"
+            )
+
+
+def _require_owned_private_regular_file(path: Path, *, label: str) -> None:
+    try:
+        metadata = path.stat()
+    except OSError as exc:
+        raise ProductionProbabilityHistoryError(
+            f"cannot inspect {label} ({type(exc).__name__})"
         ) from exc
     if not stat.S_ISREG(metadata.st_mode):
-        raise ProductionProbabilityHistoryError(
-            "production probability history path must be a regular file"
-        )
-    if os.name == "posix" and stat.S_IMODE(metadata.st_mode) & 0o077:
-        raise ProductionProbabilityHistoryError(
-            "production probability history must not grant group/other permissions"
-        )
+        raise ProductionProbabilityHistoryError(f"{label} must be a regular file")
+    if os.name == "posix":
+        if metadata.st_uid != os.geteuid():
+            raise ProductionProbabilityHistoryError(
+                f"{label} must be owned by the current user"
+            )
+        if stat.S_IMODE(metadata.st_mode) & 0o077:
+            raise ProductionProbabilityHistoryError(
+                f"{label} must not grant group/other permissions"
+            )
 
 
-def load_production_history(
-    path: str | Path,
+def _load_unlocked(
+    history_path: Path,
     *,
     allow_missing: bool = False,
 ) -> ProductionHistorySnapshot:
-    history_path = _absolute_path(
-        path,
-        label="production probability history path",
-    )
     if not history_path.exists():
         if not allow_missing:
             raise ProductionProbabilityHistoryError(
@@ -422,7 +457,10 @@ def load_production_history(
             )
         raw = b""
     else:
-        _require_private_regular_file(history_path)
+        _require_owned_private_regular_file(
+            history_path,
+            label="production probability history",
+        )
         raw = history_path.read_bytes()
     if raw and not raw.endswith(b"\n"):
         raise ProductionProbabilityHistoryError(
@@ -484,30 +522,31 @@ def load_production_history(
 
 
 def _prepare_parent(path: Path) -> None:
-    existed = path.parent.exists()
     path.parent.mkdir(parents=True, mode=0o700, exist_ok=True)
-    if not path.parent.is_dir():
-        raise ProductionProbabilityHistoryError(
-            "production probability history parent must be a directory"
-        )
-    if not existed:
+    if os.name == "posix":
         os.chmod(path.parent, 0o700)
+    _require_owned_private_directory(path.parent)
 
 
 def _no_follow(flags: int) -> int:
     return flags | int(getattr(os, "O_NOFOLLOW", 0))
 
 
-def _require_regular_descriptor(descriptor: int, *, label: str) -> None:
-    if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+def _require_owned_regular_descriptor(descriptor: int, *, label: str) -> None:
+    metadata = os.fstat(descriptor)
+    if not stat.S_ISREG(metadata.st_mode):
         raise ProductionProbabilityHistoryError(f"{label} must be a regular file")
+    if os.name == "posix" and metadata.st_uid != os.geteuid():
+        raise ProductionProbabilityHistoryError(
+            f"{label} must be owned by the current user"
+        )
 
 
 @contextmanager
 def _locked(path: Path) -> Iterator[None]:
     if fcntl is None:
         raise ProductionProbabilityHistoryError(
-            "production probability history mutation requires POSIX flock support"
+            "production probability history access requires POSIX flock support"
         )
     _prepare_parent(path)
     lock_path = path.with_name(path.name + ".lock")
@@ -517,7 +556,10 @@ def _locked(path: Path) -> Iterator[None]:
         0o600,
     )
     try:
-        _require_regular_descriptor(descriptor, label="production history lock")
+        _require_owned_regular_descriptor(
+            descriptor,
+            label="production history lock",
+        )
         os.fchmod(descriptor, 0o600)
         fcntl.flock(descriptor, fcntl.LOCK_EX)
         yield
@@ -530,7 +572,10 @@ def _locked(path: Path) -> Iterator[None]:
 
 def _create_empty(path: Path) -> None:
     if path.exists():
-        _require_private_regular_file(path)
+        _require_owned_private_regular_file(
+            path,
+            label="production probability history",
+        )
         return
     descriptor = os.open(
         path,
@@ -538,25 +583,38 @@ def _create_empty(path: Path) -> None:
         0o600,
     )
     try:
-        _require_regular_descriptor(descriptor, label="production history")
+        _require_owned_regular_descriptor(
+            descriptor,
+            label="production probability history",
+        )
         os.fsync(descriptor)
     finally:
         os.close(descriptor)
 
 
 def initialize_production_history(path: str | Path) -> dict[str, Any]:
-    history_path = _absolute_path(path, label="production probability history path")
+    history_path = _absolute_path(
+        path,
+        label="production probability history path",
+    )
     with _locked(history_path):
         _create_empty(history_path)
         os.chmod(history_path, 0o600)
-        snapshot = load_production_history(history_path)
+        snapshot = _load_unlocked(history_path)
     return {**snapshot.summary(), "status": "INITIALIZED"}
 
 
-def inspect_production_history(path: str | Path) -> ProductionHistorySnapshot:
-    history_path = _absolute_path(path, label="production probability history path")
+def load_production_history(
+    path: str | Path,
+    *,
+    allow_missing: bool = False,
+) -> ProductionHistorySnapshot:
+    history_path = _absolute_path(
+        path,
+        label="production probability history path",
+    )
     with _locked(history_path):
-        return load_production_history(history_path)
+        return _load_unlocked(history_path, allow_missing=allow_missing)
 
 
 def _write_all(descriptor: int, payload: bytes) -> None:
@@ -577,7 +635,10 @@ def _append(
     payload: dict[str, Any],
     recorded_at: datetime,
 ) -> tuple[ProductionHistoryEvent, ProductionHistorySnapshot]:
-    history_path = _absolute_path(path, label="production probability history path")
+    history_path = _absolute_path(
+        path,
+        label="production probability history path",
+    )
     if recorded_at.tzinfo is None or recorded_at.utcoffset() is None:
         raise ProductionProbabilityHistoryError(
             "production history recorded_at must be timezone-aware"
@@ -585,7 +646,7 @@ def _append(
     recorded_at = recorded_at.astimezone(timezone.utc)
     with _locked(history_path):
         _create_empty(history_path)
-        before = load_production_history(history_path)
+        before = _load_unlocked(history_path)
         sequence = len(before.events) + 1
         digest = _event_hash(
             sequence=sequence,
@@ -619,13 +680,16 @@ def _append(
             0o600,
         )
         try:
-            _require_regular_descriptor(descriptor, label="production history")
+            _require_owned_regular_descriptor(
+                descriptor,
+                label="production probability history",
+            )
             os.fchmod(descriptor, 0o600)
             _write_all(descriptor, encoded)
             os.fsync(descriptor)
         finally:
             os.close(descriptor)
-        after = load_production_history(history_path)
+        after = _load_unlocked(history_path)
         if after.head_event_hash != event.event_hash:
             raise ProductionProbabilityHistoryError(
                 "production history append verification failed"
@@ -762,13 +826,16 @@ def export_production_ledger(
         history_path,
         label="production probability history path",
     )
-    output = _absolute_path(output_path, label="production probability export path")
+    output = _absolute_path(
+        output_path,
+        label="production probability export path",
+    )
     if output == history:
         raise ProductionProbabilityHistoryError(
             "production probability export cannot overwrite the append-only journal"
         )
     with _locked(history):
-        snapshot = load_production_history(history)
+        snapshot = _load_unlocked(history)
         _atomic_json(output, snapshot.ledger.to_payload())
     return {
         "status": "EXPORTED",
@@ -840,7 +907,7 @@ def _dispatch(args: argparse.Namespace) -> dict[str, Any]:
     if args.command == "init":
         return initialize_production_history(args.history)
     if args.command in {"validate", "summary"}:
-        return inspect_production_history(args.history).summary()
+        return load_production_history(args.history).summary()
     if args.command == "export":
         return export_production_ledger(args.history, args.output)
     if args.command == "append-forecast":
