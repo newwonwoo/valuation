@@ -87,55 +87,98 @@ SUPPORTED_EXECUTION_FAMILIES = (
 _PROTO_RATE = Decimal("0.1")
 
 
-def family_prototype(family: str, forecast_years: int):
+def family_prototype(family: str, forecast_years: int, assumption_prefix: str = ""):
+    """A throwaway evaluator whose required_assumption_keys IS the key contract.
+
+    ``assumption_prefix`` is the segment namespace: a multi-segment run scopes
+    every method-specific key as ``<segment_id>_<key>`` so two segments running
+    the same execution family cannot silently share (or fight over) one
+    assumption. Single-segment runs pass "" and keep the historical key names
+    byte-identical.
+    """
+    prefix = assumption_prefix
     if family == "normalized_multiple":
-        return NormalizedMultipleEvaluator("proto")
+        return NormalizedMultipleEvaluator(
+            "proto",
+            ebitda_key=f"{prefix}normalized_ebitda",
+            multiple_key=f"{prefix}normalized_multiple",
+        )
     if family == "explicit_fcff_dcf":
         return ExplicitFCFFDCFEvaluator(
             archetype="proto", method="proto", version="1",
             forecast_years=forecast_years, discount_rate=_PROTO_RATE,
-            discount_rate_path_id="proto",
+            discount_rate_path_id="proto", assumption_prefix=prefix,
         )
     if family == "contracted_backlog_dcf":
         return BacklogBurnDCFEvaluator(
             archetype="proto", method="proto", version="1",
             forecast_years=forecast_years, discount_rate=_PROTO_RATE,
-            discount_rate_path_id="proto",
+            discount_rate_path_id="proto", assumption_prefix=prefix,
         )
     if family == "normalized_ebitda_multiple":
-        return NormalizedEBITDAMultipleEvaluator(archetype="proto", method="proto")
+        return NormalizedEBITDAMultipleEvaluator(
+            archetype="proto", method="proto",
+            ebitda_key=f"{prefix}normalized_ebitda",
+            multiple_key=f"{prefix}normalized_ebitda_multiple",
+        )
     if family == "ffo_multiple":
-        return FFOMultipleEvaluator(archetype="proto", method="proto")
+        return FFOMultipleEvaluator(
+            archetype="proto", method="proto",
+            ffo_key=f"{prefix}normalized_forward_ffo",
+            multiple_key=f"{prefix}ffo_multiple",
+        )
     if family == "net_asset_value":
-        return NetAssetValueEvaluator(archetype="proto", method="proto")
+        return NetAssetValueEvaluator(
+            archetype="proto", method="proto",
+            asset_value_key=f"{prefix}gross_asset_value",
+            liabilities_key=f"{prefix}liabilities",
+        )
     if family == "gordon_ddm":
         return GordonDDMEvaluator(
             "proto", cost_of_equity=_PROTO_RATE,
             cost_of_equity_path_id="proto", beta_path_id="proto",
+            distribution_key=f"{prefix}forward_distribution",
+            terminal_growth_key=f"{prefix}terminal_growth",
         )
     if family == "justified_pb_roe":
         return JustifiedPBROEEvaluator(
             "proto", cost_of_equity=_PROTO_RATE,
             cost_of_equity_path_id="proto", beta_path_id="proto",
+            book_value_key=f"{prefix}current_book_value",
+            forward_roe_key=f"{prefix}forward_roe",
+            terminal_growth_key=f"{prefix}terminal_growth",
         )
     if family == "residual_income":
         return ResidualIncomeEvaluator(
             "proto", cost_of_equity=_PROTO_RATE,
             cost_of_equity_path_id="proto", beta_path_id="proto",
-            forecast_years=forecast_years,
+            forecast_years=forecast_years, assumption_prefix=prefix,
         )
     if family == "rate_base_roe":
         return RateBaseROEEvaluator(
             "proto", cost_of_equity=_PROTO_RATE,
             cost_of_equity_path_id="proto", beta_path_id="proto",
+            rate_base_key=f"{prefix}rate_base",
+            equity_ratio_key=f"{prefix}equity_ratio",
+            allowed_roe_key=f"{prefix}allowed_roe",
+            terminal_growth_key=f"{prefix}terminal_growth",
         )
     if family == "finite_life_npv":
         return FiniteLifeNPVEvaluator(
             archetype="proto", method="proto", version="1",
             final_year=forecast_years, discount_rate=_PROTO_RATE,
             discount_rate_path_id="proto", beta_path_id="proto",
+            assumption_prefix=prefix,
         )
     return None
+
+
+def segment_assumption_prefix(
+    method_choices: tuple, segment_id: str
+) -> str:
+    """The namespace rule: multi-segment runs prefix, single-segment runs don't."""
+    distinct = {choice.segment_id for choice in method_choices}
+    return f"{segment_id}_" if len(distinct) > 1 else ""
 
 
 class GenericValuationPlanError(ValueError):
@@ -146,6 +189,7 @@ def conventional_valuation_plan_inputs_loader(
     *,
     reporting_unit: str,
     ev_adjustment_segments: frozenset[str] | None = None,
+    segment_scoped_keys: bool = False,
 ):
     """ValuationPlanInputsLoader bound to the fixed assumption-key conventions.
 
@@ -173,9 +217,20 @@ def conventional_valuation_plan_inputs_loader(
                 SegmentValueBinding(
                     segment_id=item.segment_id,
                     asset_id=item.segment_id,
-                    ownership_key=OWNERSHIP_KEY,
+                    # Multi-segment runs scope the per-segment binding keys the
+                    # same way the evaluators scope theirs: two segments must
+                    # not share one ownership or one EV bridge.
+                    ownership_key=(
+                        f"{item.segment_id}_{OWNERSHIP_KEY}"
+                        if segment_scoped_keys
+                        else OWNERSHIP_KEY
+                    ),
                     ev_to_equity_adjustment_key=(
-                        EV_ADJUSTMENT_KEY
+                        (
+                            f"{item.segment_id}_{EV_ADJUSTMENT_KEY}"
+                            if segment_scoped_keys
+                            else EV_ADJUSTMENT_KEY
+                        )
                         if ev_adjustment_segments is None
                         or item.segment_id in ev_adjustment_segments
                         else None
@@ -240,6 +295,9 @@ def composed_generic_registry_loader(
                     method=choice.method,
                     version=version,
                     forecast_years=forecast_years,
+                    assumption_prefix=segment_assumption_prefix(
+                        method_choices, choice.segment_id
+                    ),
                 )
             )
             continue
@@ -250,6 +308,9 @@ def composed_generic_registry_loader(
                     method=choice.method,
                     version=version,
                     final_year=forecast_years,
+                    assumption_prefix=segment_assumption_prefix(
+                        method_choices, choice.segment_id
+                    ),
                 )
             )
             continue
@@ -279,9 +340,15 @@ def composed_generic_registry_loader(
             if key in seen:
                 continue
             seen.add(key)
+            prefix = segment_assumption_prefix(method_choices, choice.segment_id)
             if family == "normalized_multiple":
                 evaluator_registry.register(
-                    NormalizedMultipleEvaluator(choice.archetype, version=version)
+                    NormalizedMultipleEvaluator(
+                        choice.archetype,
+                        version=version,
+                        ebitda_key=f"{prefix}normalized_ebitda",
+                        multiple_key=f"{prefix}normalized_multiple",
+                    )
                 )
             elif family == "explicit_fcff_dcf":
                 evaluator_registry.register(
@@ -293,6 +360,7 @@ def composed_generic_registry_loader(
                         discount_rate=rate,
                         discount_rate_path_id=rate_path,
                         beta_path_id=beta_path,
+                        assumption_prefix=prefix,
                     )
                 )
             elif family == "contracted_backlog_dcf":
@@ -305,6 +373,7 @@ def composed_generic_registry_loader(
                         discount_rate=rate,
                         discount_rate_path_id=rate_path,
                         beta_path_id=beta_path,
+                        assumption_prefix=prefix,
                     )
                 )
         return evaluator_registry
@@ -426,5 +495,58 @@ def withheld_per_loader():
                 "declared for this run; PER is withheld rather than approximated"
             ),
         )
+
+    return load
+
+
+def generic_capacity_commitment_loader():
+    """CapacityCommitmentLoader for cold starts: read the ledger's own answer.
+
+    The Capacity Commitment Gate asks one question per capacity_manufacturing
+    segment: is there an active expansion whose gates must be verified, or has
+    the operator explicitly declared there is none? A cold start has exactly
+    one honest source for the answer — the declared-underwriting Evidence in
+    the ledger. A truthy ``no_active_capacity_expansion`` record bound to the
+    segment becomes the input's explicit no-expansion Evidence; a declared
+    ACTIVE expansion cannot be composed generically yet, so it fails closed by
+    name rather than gate-walking a project this loader did not type.
+    """
+    from .capacity_commitment import (
+        CapacityCommitmentInput,
+        CapacitySegmentCommitmentInput,
+    )
+    from .industry_dna import EconomicArchetype
+
+    def load(context: OrchestratorContext) -> CapacityCommitmentInput:
+        plan = context.data.get("module_requirement_plan")
+        ledger = context.data.get("evidence_ledger")
+        segments: list[CapacitySegmentCommitmentInput] = []
+        for segment in plan.segments:
+            if EconomicArchetype.CAPACITY_MANUFACTURING not in segment.archetypes:
+                continue
+            declared_none = tuple(
+                record.id
+                for record in ledger.active()
+                if record.metric == "no_active_capacity_expansion"
+                and record.segment == segment.segment_id
+                and bool(record.value)
+            )
+            if not declared_none:
+                raise GenericValuationPlanError(
+                    f"segment {segment.segment_id} runs the "
+                    "capacity_manufacturing route but the ledger carries no "
+                    "truthy no_active_capacity_expansion declaration for it; "
+                    "declare the no-expansion state, or an active expansion "
+                    "needs a typed project loader this cold start does not "
+                    "compose"
+                )
+            segments.append(
+                CapacitySegmentCommitmentInput(
+                    segment.segment_id,
+                    (),
+                    declared_none,
+                )
+            )
+        return CapacityCommitmentInput(tuple(segments))
 
     return load

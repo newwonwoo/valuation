@@ -1,0 +1,713 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>21. 영업부문 정보 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='600'></COL>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23' colspan='2'>영업부문에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='591' height='23'>당반기</TD>
+  <TD width='591' height='23' align='RIGHT'>(단위 : 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1200'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='951' height='23' colspan='8'>부문의 합계</TH>
+  <TH width='111' height='173' rowspan='6'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='53' colspan='4' rowspan='2'>영업부문</TH>
+  <TH width='471' height='23' colspan='4'>중요한 조정사항</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>부문간 제거한 금액</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+  <TH width='351' height='23' colspan='3'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>제강부문</TH>
+  <TH width='111' height='23'>운송부문</TH>
+  <TH width='111' height='23'>기타부문</TH>
+  <TH width='111' height='23'>제강부문</TH>
+  <TH width='111' height='23'>운송부문</TH>
+  <TH width='111' height='23'>기타부문</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='513'>
+  <TD width='111' height='506'>보고부문을 식별하기 위하여 사용한 요소에 대한 기술</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>연결회사의 최고영업의사결정자는 이사회입니다. 경영진은 자원배분 및 성과평가에 대해 연결회사의 기획실 등에서 검토되는 보고정보에 기초하여 영업부문을 결정하고있습니다.<BR/>이사회는 업종의 측면에서 영업정보를 검토하고 있습니다. 경영진은 제강부문과 종속기업의 운송부분 및 임대업 등 기타부문의 성과를 검토하고 있습니다.</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>수익</TD>
+  <TD width='111' height='46' align='RIGHT'>717,620,206,316</TD>
+  <TD width='111' height='46' align='RIGHT'>18,363,344,406</TD>
+  <TD width='111' height='46' align='RIGHT'>13,052,416,005</TD>
+  <TD width='111' height='46' align='RIGHT'>749,035,966,727</TD>
+  <TD width='111' height='46' align='RIGHT'>(39,514,340,828)</TD>
+  <TD width='111' height='46' align='RIGHT'>(17,451,995,944)</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>(56,966,336,772)</TD>
+  <TD width='111' height='46' align='RIGHT'>692,069,629,955</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>영업이익(손실)</TD>
+  <TD width='111' height='23' align='RIGHT'>18,678,018,398</TD>
+  <TD width='111' height='23' align='RIGHT'>26,046,958</TD>
+  <TD width='111' height='23' align='RIGHT'>(914,683,852)</TD>
+  <TD width='111' height='23' align='RIGHT'>17,789,381,504</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(1,008,749,506)</TD>
+  <TD width='111' height='23' align='RIGHT'>16,780,631,998</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>감가상각비와 상각비</TD>
+  <TD width='111' height='46' align='RIGHT'>14,477,860,891</TD>
+  <TD width='111' height='46' align='RIGHT'>410,537,598</TD>
+  <TD width='111' height='46' align='RIGHT'>883,643,553</TD>
+  <TD width='111' height='46' align='RIGHT'>15,772,042,042</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>15,772,042,042</TD>
+</TR>
+<TR height='260'>
+  <TD width='111' height='253'>영업부문에 대한 기술</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>부문간 매출거래는 독립된 당사자 간의 거래조건에 따라 이루어졌습니다.<BR/>연결회사의 경영진은 부문 영업이익에 근거하여 영업부문의 성과를 평가하고 있습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='1200'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='600'></COL>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>전반기</TD>
+  <TD width='591' height='23' align='RIGHT'>(단위 : 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1200'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='951' height='23' colspan='8'>부문의 합계</TH>
+  <TH width='111' height='173' rowspan='6'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='53' colspan='4' rowspan='2'>영업부문</TH>
+  <TH width='471' height='23' colspan='4'>중요한 조정사항</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>부문간 제거한 금액</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+  <TH width='351' height='23' colspan='3'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>제강부문</TH>
+  <TH width='111' height='23'>운송부문</TH>
+  <TH width='111' height='23'>기타부문</TH>
+  <TH width='111' height='23'>제강부문</TH>
+  <TH width='111' height='23'>운송부문</TH>
+  <TH width='111' height='23'>기타부문</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='513'>
+  <TD width='111' height='506'>보고부문을 식별하기 위하여 사용한 요소에 대한 기술</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>　</TD>
+  <TD width='111' height='506'>연결회사의 최고영업의사결정자는 이사회입니다. 경영진은 자원배분 및 성과평가에 대해 연결회사의 기획실 등에서 검토되는 보고정보에 기초하여 영업부문을 결정하고있습니다.<BR/>이사회는 업종의 측면에서 영업정보를 검토하고 있습니다. 경영진은 제강부문과 종속기업의 운송부분 및 임대업 등 기타부문의 성과를 검토하고 있습니다.</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>수익</TD>
+  <TD width='111' height='46' align='RIGHT'>631,643,194,987</TD>
+  <TD width='111' height='46' align='RIGHT'>5,460,118,458</TD>
+  <TD width='111' height='46' align='RIGHT'>4,645,087,081</TD>
+  <TD width='111' height='46' align='RIGHT'>641,748,400,526</TD>
+  <TD width='111' height='46' align='RIGHT'>(35,538,050,468)</TD>
+  <TD width='111' height='46' align='RIGHT'>(4,091,547,924)</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>(39,629,598,392)</TD>
+  <TD width='111' height='46' align='RIGHT'>602,118,802,134</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>영업이익(손실)</TD>
+  <TD width='111' height='23' align='RIGHT'>9,401,068,101</TD>
+  <TD width='111' height='23' align='RIGHT'>(65,244,572)</TD>
+  <TD width='111' height='23' align='RIGHT'>(499,920,951)</TD>
+  <TD width='111' height='23' align='RIGHT'>8,835,902,578</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>444,502,258</TD>
+  <TD width='111' height='23' align='RIGHT'>9,280,404,836</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>감가상각비와 상각비</TD>
+  <TD width='111' height='46' align='RIGHT'>13,876,957,666</TD>
+  <TD width='111' height='46' align='RIGHT'>391,565,481</TD>
+  <TD width='111' height='46' align='RIGHT'>92,762,887</TD>
+  <TD width='111' height='46' align='RIGHT'>14,361,286,034</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>14,361,286,034</TD>
+</TR>
+<TR height='260'>
+  <TD width='111' height='253'>영업부문에 대한 기술</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>　</TD>
+  <TD width='111' height='253'>부문간 매출거래는 독립된 당사자 간의 거래조건에 따라 이루어졌습니다.<BR/>연결회사의 경영진은 부문 영업이익에 근거하여 영업부문의 성과를 평가하고 있습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='1200'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='360'></COL>
+<COL width='360'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23' colspan='2'>영업부문에 대한 공시_자산 및 부채</TD>
+</TR>
+<TR height='30'>
+  <TD width='351' height='23'>당반기말</TD>
+  <TD width='351' height='23' align='RIGHT'>(단위 : 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='720'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>부문의 합계</TH>
+  <TH width='111' height='106' rowspan='3'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>영업부문</TH>
+  <TH width='111' height='23'>중요한 조정사항</TH>
+</TR>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>제강부문</TH>
+  <TH width='111' height='46'>운송부문</TH>
+  <TH width='111' height='46'>기타부문</TH>
+  <TH width='111' height='46'>부문간 제거한 금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='111' height='46'>자산</TD>
+  <TD width='111' height='46' align='RIGHT'>1,608,961,996,454</TD>
+  <TD width='111' height='46' align='RIGHT'>50,510,303,806</TD>
+  <TD width='111' height='46' align='RIGHT'>84,740,975,145</TD>
+  <TD width='111' height='46' align='RIGHT'>(433,117,549,851)</TD>
+  <TD width='111' height='46' align='RIGHT'>1,311,095,725,554</TD>
+</TR>
+<TR height='168'>
+  <TD width='111' height='161'>금융상품, 이연법인세자산, 퇴직급여자산 및 보험계약에서 발생하는 권리의 취득액을 제외한 비유동 자산</TD>
+  <TD width='111' height='161' align='RIGHT'>334,070,791,925</TD>
+  <TD width='111' height='161' align='RIGHT'>14,201,029,655</TD>
+  <TD width='111' height='161' align='RIGHT'>71,452,911,856</TD>
+  <TD width='111' height='161' align='RIGHT'>(1,456,112,556)</TD>
+  <TD width='111' height='161' align='RIGHT'>418,268,620,880</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>부채</TD>
+  <TD width='111' height='46' align='RIGHT'>351,042,750,628</TD>
+  <TD width='111' height='46' align='RIGHT'>4,478,930,662</TD>
+  <TD width='111' height='46' align='RIGHT'>38,999,452,730</TD>
+  <TD width='111' height='46' align='RIGHT'>(14,365,281,809)</TD>
+  <TD width='111' height='46' align='RIGHT'>380,155,852,211</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='360'></COL>
+<COL width='360'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='351' height='23'>전기말</TD>
+  <TD width='351' height='23' align='RIGHT'>(단위 : 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='720'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>부문의 합계</TH>
+  <TH width='111' height='106' rowspan='3'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>영업부문</TH>
+  <TH width='111' height='23'>중요한 조정사항</TH>
+</TR>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>제강부문</TH>
+  <TH width='111' height='46'>운송부문</TH>
+  <TH width='111' height='46'>기타부문</TH>
+  <TH width='111' height='46'>부문간 제거한 금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='111' height='46'>자산</TD>
+  <TD width='111' height='46' align='RIGHT'>1,535,209,802,723</TD>
+  <TD width='111' height='46' align='RIGHT'>39,958,015,303</TD>
+  <TD width='111' height='46' align='RIGHT'>85,571,776,953</TD>
+  <TD width='111' height='46' align='RIGHT'>(410,785,522,119)</TD>
+  <TD width='111' height='46' align='RIGHT'>1,249,954,072,860</TD>
+</TR>
+<TR height='168'>
+  <TD width='111' height='161'>금융상품, 이연법인세자산, 퇴직급여자산 및 보험계약에서 발생하는 권리의 취득액을 제외한 비유동 자산</TD>
+  <TD width='111' height='161' align='RIGHT'>336,972,338,083</TD>
+  <TD width='111' height='161' align='RIGHT'>11,651,526,282</TD>
+  <TD width='111' height='161' align='RIGHT'>71,849,769,990</TD>
+  <TD width='111' height='161' align='RIGHT'>3,261,671,272</TD>
+  <TD width='111' height='161' align='RIGHT'>423,735,305,627</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>부채</TD>
+  <TD width='111' height='23' align='RIGHT'>287,066,881,411</TD>
+  <TD width='111' height='23' align='RIGHT'>1,658,737,625</TD>
+  <TD width='111' height='23' align='RIGHT'>39,328,426,299</TD>
+  <TD width='111' height='23' align='RIGHT'>(8,426,292,376)</TD>
+  <TD width='111' height='23' align='RIGHT'>319,627,752,959</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>제품과 용역에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='200'></COL>
+<COL width='200'></COL>
+<COL width='200'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>보고부문</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='391' height='23' colspan='2'>수익</TD>
+  <TD width='191' height='23' align='RIGHT'>692,069,629,955</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='83' rowspan='3'>수익</TD>
+  <TD width='191' height='23'>제품판매</TD>
+  <TD width='191' height='23' align='RIGHT'>678,105,865,488</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>운송수익 등</TD>
+  <TD width='191' height='23' align='RIGHT'>911,348,462</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>임대수익 등</TD>
+  <TD width='191' height='23' align='RIGHT'>13,052,416,005</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='200'></COL>
+<COL width='200'></COL>
+<COL width='200'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>보고부문</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='391' height='23' colspan='2'>수익</TD>
+  <TD width='191' height='23' align='RIGHT'>602,118,802,134</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='83' rowspan='3'>수익</TD>
+  <TD width='191' height='23'>제품판매</TD>
+  <TD width='191' height='23' align='RIGHT'>596,105,144,519</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>운송수익 등</TD>
+  <TD width='191' height='23' align='RIGHT'>1,368,570,534</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>임대수익 등</TD>
+  <TD width='191' height='23' align='RIGHT'>4,645,087,081</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>주요 고객에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당반기</TD>
+  <TD width='291' height='23' align='RIGHT'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='200'></COL>
+<COL width='200'></COL>
+<COL width='200'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='76'>
+  <TD width='391' height='69' colspan='2'>주요 고객에 대한 정보</TD>
+  <TD width='191' height='69'>연결회사 매출액의 10% 이상을 차지하는 외부고객은 없습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='53' rowspan='2'>주요 고객에 대한 정보</TD>
+  <TD width='191' height='23'>기업전체 수익에 대한 비율</TD>
+  <TD width='191' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>주요 고객에 대한 매출액</TD>
+  <TD width='191' height='23' align='RIGHT'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전반기</TD>
+  <TD width='291' height='23' align='RIGHT'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='200'></COL>
+<COL width='200'></COL>
+<COL width='200'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='76'>
+  <TD width='391' height='69' colspan='2'>주요 고객에 대한 정보</TD>
+  <TD width='191' height='69'>연결회사 매출액의 10% 이상을 차지하는 외부고객은 없습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='53' rowspan='2'>주요 고객에 대한 정보</TD>
+  <TD width='191' height='23'>기업전체 수익에 대한 비율</TD>
+  <TD width='191' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>주요 고객에 대한 매출액</TD>
+  <TD width='191' height='23' align='RIGHT'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

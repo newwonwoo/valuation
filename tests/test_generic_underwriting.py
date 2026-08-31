@@ -37,7 +37,7 @@ def test_declaration_retains_multiple_original_source_links(tmp_path):
         "      - https://example.test/interim-filing\n",
     )
     payload = load_declared_underwriting(path)
-    assert payload["declarations"]["normalized_ebitda"]["source_refs"] == (
+    assert payload["declarations"]["normalized_ebitda"][0]["source_refs"] == (
         "https://example.test/annual-filing",
         "https://example.test/interim-filing",
     )

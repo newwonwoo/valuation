@@ -80,19 +80,31 @@ from .scenario_binding import ScenarioBindingSpec
 from .valuation_plan_compiler import SegmentMethodChoice
 
 
-def required_assumption_keys(
+def required_assumption_keys_by_segment(
     *,
     method_choices: tuple[SegmentMethodChoice, ...],
     forecast_years: int,
     capability_registry: MethodCapabilityRegistry | None = None,
-) -> tuple[str, ...]:
-    """The exact key set the compiler will demand for these method choices."""
+) -> dict[str, tuple[str, ...]]:
+    """The exact key set the compiler will demand, per segment.
+
+    Multi-segment runs namespace every method-specific and per-segment binding
+    key as ``<segment_id>_<key>`` (the same prefix the composed registry
+    builds its evaluators with), so two segments can run the same execution
+    family without sharing an assumption. The company-level diluted-shares
+    key stays unprefixed and lives with the first declared segment.
+    Single-segment runs keep the historical unprefixed names byte-identical.
+    """
     registry = capability_registry or load_default_method_capability_registry()
-    keys: list[str] = []
-    needs_ev_adjustment = False
+    multi = len({choice.segment_id for choice in method_choices}) > 1
+    by_segment: dict[str, list[str]] = {}
+    ev_segments: set[str] = set()
     for choice in method_choices:
         capability = registry.get(choice.archetype, choice.method)
-        prototype = family_prototype(capability.execution_family, forecast_years)
+        prefix = f"{choice.segment_id}_" if multi else ""
+        prototype = family_prototype(
+            capability.execution_family, forecast_years, prefix
+        )
         if prototype is None:
             raise GenericValuationPlanError(
                 f"execution family {capability.execution_family} has no "
@@ -100,16 +112,43 @@ def required_assumption_keys(
             )
         # The keys are the evaluator's own declaration; a hand-kept template
         # could drift from the math it describes.
-        keys.extend(prototype.required_assumption_keys)
+        by_segment.setdefault(choice.segment_id, []).extend(
+            prototype.required_assumption_keys
+        )
         if capability.output_kind == "enterprise_value":
-            needs_ev_adjustment = True
-    keys.append(OWNERSHIP_KEY)
-    # The compiler refuses an EV-to-equity adjustment binding on an
-    # equity-output evaluator (it would double-bridge), so the adjustment key
-    # is demanded exactly when some chosen method emits enterprise value.
-    if needs_ev_adjustment:
-        keys.append(EV_ADJUSTMENT_KEY)
-    keys.append(DILUTED_SHARES_KEY)
+            ev_segments.add(choice.segment_id)
+    for segment_id, keys in by_segment.items():
+        prefix = f"{segment_id}_" if multi else ""
+        keys.append(f"{prefix}{OWNERSHIP_KEY}")
+        # The compiler refuses an EV-to-equity adjustment binding on an
+        # equity-output evaluator (it would double-bridge), so the adjustment
+        # key is demanded exactly where some chosen method emits enterprise
+        # value.
+        if segment_id in ev_segments:
+            keys.append(f"{prefix}{EV_ADJUSTMENT_KEY}")
+    first_segment = method_choices[0].segment_id
+    by_segment[first_segment].append(DILUTED_SHARES_KEY)
+    return {
+        segment_id: tuple(dict.fromkeys(keys))
+        for segment_id, keys in by_segment.items()
+    }
+
+
+def required_assumption_keys(
+    *,
+    method_choices: tuple[SegmentMethodChoice, ...],
+    forecast_years: int,
+    capability_registry: MethodCapabilityRegistry | None = None,
+) -> tuple[str, ...]:
+    """The union of every segment's demanded keys, in declaration order."""
+    by_segment = required_assumption_keys_by_segment(
+        method_choices=method_choices,
+        forecast_years=forecast_years,
+        capability_registry=capability_registry,
+    )
+    keys: list[str] = []
+    for choice in method_choices:
+        keys.extend(by_segment[choice.segment_id])
     return tuple(dict.fromkeys(keys))
 
 
@@ -136,6 +175,13 @@ class GenericKRRuntimeSpec:
     #: whose execution family needs a Beta/WACC; without it those stages stay
     #: honestly NOT_IMPLEMENTED and only the beta-free families can complete.
     declared_risk_path: str | Path | None = None
+    #: Operator-declared reportable-segment map (declarations/segments.yaml).
+    #: Which segments exist is evidence — the IFRS 8 note names them — but
+    #: what each one economically *is* cannot come from the company-level
+    #: KSIC code, so every disclosed segment carries a declared classification
+    #: here. Required for any issuer whose filing discloses multiple
+    #: reportable segments; forbidden for one that reports itself whole.
+    declared_segments_path: str | Path | None = None
     #: Extra evidence metrics this run requires beyond the method's assumption
     #: keys — the door multi-scenario runs use for scenario-qualified inputs
     #: (down_normalized_ebitda, bull_normalized_multiple, …): declaring them
@@ -191,15 +237,34 @@ def build_generic_kr_runtime_factory(
         capability_registry or load_default_method_capability_registry()
     )
     classification = load_kr_industry_classification(spec.classification_map_path)
+    declared_segments = None
+    if spec.declared_segments_path is not None:
+        from .declared_segments import load_declared_segments
+
+        declared_segments = load_declared_segments(spec.declared_segments_path)
     profile_fetcher = CachedCompanyProfileFetcher(
         fetch_text=network.fetch_text,
         api_key=network.api_key,
     )
-    keys = required_assumption_keys(
+    keys_by_segment = required_assumption_keys_by_segment(
         method_choices=spec.method_choices,
         forecast_years=spec.forecast_years,
         capability_registry=capability_registry,
     )
+    keys = tuple(
+        dict.fromkeys(
+            key
+            for choice in spec.method_choices
+            for key in keys_by_segment[choice.segment_id]
+        )
+    )
+    multi_segment = len(keys_by_segment) > 1
+    if multi_segment and spec.filing.segment_id not in keys_by_segment:
+        raise GenericValuationPlanError(
+            f"filing.segment_id {spec.filing.segment_id!r} is not one of the "
+            "declared method segments; the filing KPI extraction and "
+            "company-level evidence must bind to a real segment"
+        )
     extensions = KRLiveProviderExtensions(
         additional_collectors=(
             filing_kpi_collector_provider(
@@ -230,6 +295,7 @@ def build_generic_kr_runtime_factory(
             fetch_bytes=network.fetch_bytes,
             as_of=spec.as_of,
             api_key=network.api_key,
+            declared_segments=declared_segments,
         ),
         freshness_loader=filing_cadence_freshness_loader(
             as_of=spec.as_of,
@@ -238,10 +304,12 @@ def build_generic_kr_runtime_factory(
         segment_decomposer=classified_segment_decomposer(
             profile_fetcher=profile_fetcher,
             classification=classification,
+            declared_segments=declared_segments,
         ),
         industry_dna_router=classified_industry_dna_router(
             profile_fetcher=profile_fetcher,
             classification=classification,
+            declared_segments=declared_segments,
         ),
         scanner_runners=generic_scanner_runners(),
         funding_scanner=generic_ledger_funding_scanner,
@@ -259,6 +327,7 @@ def build_generic_kr_runtime_factory(
         ),
         valuation_plan_inputs_loader=conventional_valuation_plan_inputs_loader(
             reporting_unit=spec.reporting_unit,
+            segment_scoped_keys=multi_segment,
             ev_adjustment_segments=frozenset(
                 choice.segment_id
                 for choice in spec.method_choices
@@ -280,6 +349,16 @@ def build_generic_kr_runtime_factory(
         method_registry.get(choice.archetype, choice.method).execution_family
         for choice in spec.method_choices
     }
+    if any(
+        choice.archetype == "capacity_manufacturing"
+        for choice in spec.method_choices
+    ):
+        from .generic_valuation_plan import generic_capacity_commitment_loader
+
+        extensions = replace(
+            extensions,
+            capacity_commitment_loader=generic_capacity_commitment_loader(),
+        )
     if "contracted_backlog_dcf" in families:
         extensions = replace(
             extensions,
@@ -369,14 +448,36 @@ def build_generic_kr_runtime_factory(
     # required evidence for the core segment. A declared risk pack additionally
     # requires its four peer-selection judgments in the ledger, so the Beta
     # stage's evidence-ID validation has real records to bind to.
-    required_evidence_keys = tuple(
-        dict.fromkeys((*keys, *spec.extra_required_evidence))
-    )
-    if spec.declared_risk_path is not None:
-        required_evidence_keys = tuple(
-            dict.fromkeys((*required_evidence_keys, *BETA_SELECTION_METRICS))
+    additional_required: dict[str, tuple[str, ...]] = {
+        segment_id: segment_keys
+        for segment_id, segment_keys in keys_by_segment.items()
+    }
+    # Extras route to the segment whose namespace prefixes them (multi-segment
+    # scenario variants like steel_down_fcff_year_1); anything unprefixed —
+    # every single-segment extra — binds to the filing segment as before.
+    for extra in spec.extra_required_evidence:
+        owner = next(
+            (
+                segment_id
+                for segment_id in keys_by_segment
+                if multi_segment and extra.startswith(f"{segment_id}_")
+            ),
+            spec.filing.segment_id,
         )
-    additional_required = {spec.filing.segment_id: required_evidence_keys}
+        additional_required[owner] = tuple(
+            dict.fromkeys((*additional_required[owner], extra))
+        )
+    if spec.declared_risk_path is not None:
+        # The risk pack is company-level; its peer-selection judgments bind to
+        # the filing segment's ledger.
+        additional_required[spec.filing.segment_id] = tuple(
+            dict.fromkeys(
+                (
+                    *additional_required[spec.filing.segment_id],
+                    *BETA_SELECTION_METRICS,
+                )
+            )
+        )
     return KRLiveRuntimeFactory(
         network=network,
         filing=spec.filing,

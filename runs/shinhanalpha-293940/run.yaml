@@ -20,3 +20,27 @@ filing:
 extra_required_evidence:
   - down_gross_asset_value
   - bull_gross_asset_value
+calibration:
+  cohort_key: kr.reit.office|5y_path|continuous_v1
+  external_probability_source: continuous_financial_path_monte_carlo
+  forecast_class: kr.reit.office.continuous_financial_path
+  horizon: 5y_path
+  method_version: probability_engine_v3.2_factory_v1
+  mapping_version: kr_reit_cohort_v1
+  driver_ids: [revenue_growth, operating_margin]
+  scenario_ids: [Down, Base, Bull]
+  path_length: 5
+  artifact: ../../config/kr_reit_calibration_artifact.json
+  provenance: ../../config/kr_reit_calibration_provenance.json
+  conditioning: ../../config/shinhanalpha_conditioning_fy2026.json
+  seed: 20260829
+  outer_draws: 300
+  inner_draws: 200
+  constants:
+    expected_artifact_sha256: fd682cb0d400acb1da6c610ec2d323c8c5236dc3e746fbb847cc150686fdcb4a
+    expected_provenance_artifact_sha256: 7b94ab1ae7e2cf11c8f357fcac8cb0086d011d15f603357878ca68fdab0a42e4
+    expected_dataset_sha256: 2f49de4f86b4905de3b2a4118c675b14206223cfe22c91beac43e114f3776bc0
+    expected_provenance_hash: 2a03b22e43cfa2c79548fdef9706c06e6373f416d0964881bcda114f3e3fd82f
+    expected_source_row_count: 57
+    expected_source_company_count: 7
+    excluded_ticker: "293940"

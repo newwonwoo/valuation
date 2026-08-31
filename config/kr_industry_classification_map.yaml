@@ -202,6 +202,23 @@ classifications:
       customer_structure: dealer networks and fleet buyers
       reinvestment_model: platform and powertrain-transition capex
       cashflow_duration: model-cycle driven
+  - ksic_prefix: "49"
+    # 대한제강 연결의 운송부문(종속 물류사) 라우팅을 위해 추가된 항목.
+    # 화물 운송의 가치동인은 운임(산출가격)과 연료·인건비(투입원가)의
+    # 스프레드다 — 증설 게이트가 지배하는 capacity_manufacturing이 아니라
+    # process_spread 원형이 정직한 기술이다.
+    label: 육상 운송 및 파이프라인 운송업
+    sector_adapter: transport.trucking
+    archetypes: [process_spread]
+    structure:
+      revenue_recognition: service_delivery
+      price_formation: contracted freight rates over fuel and labor costs
+      asset_ownership: owned or leased vehicle fleet
+      capital_intensity: high
+      regulation_intensity: medium
+      customer_structure: contracted shippers and affiliated cargo owners
+      reinvestment_model: fleet replacement capex
+      cashflow_duration: freight-cycle driven
   - ksic_prefix: "24"
     label: 1차 금속 제조업
     sector_adapter: metals.steel

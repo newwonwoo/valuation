@@ -12,6 +12,7 @@ change must be seen and owned.
 from __future__ import annotations
 
 import json
+from decimal import Decimal
 import importlib
 from pathlib import Path
 import shutil
@@ -32,42 +33,88 @@ def test_the_committed_shinhanalpha_run_replays_to_the_attested_nav_envelope():
     """The second committed run crosses industry, fiscal calendar and output
     kind at once: a March-FYE K-REIT (신한알파리츠, 293940) on asset_yield_nav/
     nav — an equity-output method, so the plan binds no EV-to-equity
-    adjustment — with no calibration block, so the expected value stays
-    honestly unproduced while the scenario envelope completes 33 stages."""
+    adjustment — and its expected value binds a REIT cohort of its own: 57
+    half-year observations from 7 listed K-REITs on the same semiannual
+    reporting cadence as the target, the target itself excluded."""
     reached, stop_stage, stop_reason, result = execute_run(
         ROOT / "runs" / "shinhanalpha-293940"
     )
     assert stop_stage is None, stop_reason
     assert len(reached) == len(result.stage_traces)
-    assert not result.data.get("probability_weighting_allowed")
+    assert result.data["probability_weighting_allowed"] is True
 
     report = result.data["final_report"]
     for line in (
         "**하방 시나리오:** 내재가치 주당 4,993원",
         "**기준 시나리오:** 내재가치 주당 9,986원",
         "**상방 시나리오:** 내재가치 주당 11,167원",
-        "**확률가중 기대값:** 미산출",
+        "**확률가중 기대값:** 주당 9,504원",
         "**증권사 목표가:** 확보되지 않았습니다.",
         "**현재가:** 5,510원 (2026-08-28)",
     ):
         assert line in report, line
 
 
-def test_the_committed_daehan_run_refuses_to_flatten_its_consolidated_segments():
-    """The prepared Daehan run remains useful as a fail-closed regression.
-
-    Its consolidated filing discloses the 제강/압연 and 기타 divisions. Parent
-    and subsidiary paragraphs separately call their steel processes a single
-    division, but those entity-level statements cannot flatten the consolidated
-    scope into the runbook's one ``core`` segment. Until multi-segment intent is
-    declared, the industry snapshot must stop before intrinsic valuation.
-    """
+def test_the_committed_daehan_run_replays_as_a_three_segment_sotp():
+    """The third committed run is now the first true sum-of-the-parts: the
+    IFRS 8 note names 제강/운송/기타, declarations/segments.yaml types each
+    one (steel DCF at 0.8603 ownership, transport spread-DCF, leasing NAV),
+    and every component carries its own key namespace and economic paths —
+    wacc:...:steel is not wacc:...:transport."""
     reached, stop_stage, stop_reason, result = execute_run(
         ROOT / "runs" / "daehansteel-084010"
     )
-    assert reached == ("COMPANY_RESOLUTION", "LOAD_COMPANY_STATE")
+    assert stop_stage is None, stop_reason
+    assert len(reached) == len(result.stage_traces)
+    assert result.data["probability_weighting_allowed"] is True
+
+    aggregation = result.data["generic_valuation_result"].equity_aggregation
+    base = next(
+        item
+        for item in aggregation.scenario_values
+        if item.scenario_id == "Base"
+    )
+    by_asset = {item.asset_id: item for item in base.components}
+    assert set(by_asset) == {"steel", "transport", "other"}
+    assert by_asset["steel"].ownership_ratio == Decimal("0.8603")
+    assert by_asset["other"].attributable_equity_value.amount == Decimal(
+        "45700000000.00"
+    )
+    assert "path:transport_fcff_year_1" in by_asset["transport"].economic_path_ids
+    assert not any(
+        "steel" in path for path in by_asset["transport"].economic_path_ids
+    )
+
+    report = result.data["final_report"]
+    for line in (
+        "**하방 시나리오:** 내재가치 주당 10,284원",
+        "**기준 시나리오:** 내재가치 주당 28,392원",
+        "**상방 시나리오:** 내재가치 주당 46,076원",
+        "**확률가중 기대값:** 주당 28,344원",
+        "**현재가:** 8,420원 (2026-08-28)",
+    ):
+        assert line in report, line
+
+
+def test_a_multi_segment_filing_without_a_declaration_still_fails_closed(tmp_path):
+    """Removing segments.yaml must put the refusal back: the screen stops the
+    run at the industry snapshot and names the declaration to write."""
+    run_copy = tmp_path / "daehan-undeclared"
+    shutil.copytree(
+        ROOT / "runs" / "daehansteel-084010",
+        run_copy,
+        ignore=shutil.ignore_patterns("out"),
+    )
+    (run_copy / "declarations" / "segments.yaml").unlink()
+    # The copy lives outside runs/, so the run.yaml's relative calibration
+    # paths cannot resolve; the refusal under test fires long before
+    # calibration, so the block comes off the copy.
+    run_yaml = run_copy / "run.yaml"
+    text = run_yaml.read_text(encoding="utf-8")
+    run_yaml.write_text(text.split("calibration:")[0], encoding="utf-8")
+    reached, stop_stage, stop_reason, result = execute_run(run_copy)
     assert stop_stage == "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT"
-    assert "multiple operating segments" in stop_reason
+    assert "declare the reportable segments" in stop_reason
     assert not result.completed
 
 

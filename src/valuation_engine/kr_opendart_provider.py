@@ -324,11 +324,20 @@ def _validated_corp_archive_payload(
     return payload
 
 
-def _single_segment_decomposer(
+def _scoped_segment_decomposer(
     decomposer: SegmentDecomposer,
     *,
     expected_segment_id: str,
-) -> SegmentDecomposer:
+) -> SegmentDescriptor:
+    """Validate the decomposed segment set against the filing collector scope.
+
+    The filing KPI collector binds its extractions to ``expected_segment_id``,
+    so that segment must exist among the descriptors — a run whose filing
+    scope names no real segment would silently orphan every extracted KPI.
+    Beyond that the set's shape is the decomposer's: one whole-company
+    descriptor for a single-segment issuer, one per declared reportable
+    segment otherwise, with unique ids either way.
+    """
     if not callable(decomposer):
         raise TypeError("segment_decomposer must be callable")
     if not expected_segment_id:
@@ -341,20 +350,24 @@ def _single_segment_decomposer(
             raise TypeError(
                 "KR OpenDART segment_decomposer must return an iterable of SegmentDescriptor"
             ) from exc
-        if len(segments) != 1:
+        if not segments:
             raise ValueError(
-                "KR OpenDART provider foundation supports exactly one segment; "
-                "multi-segment companies require note-scoped collectors"
+                "KR OpenDART segment_decomposer returned no segments"
             )
-        segment = segments[0]
-        if not isinstance(segment, SegmentDescriptor):
-            raise TypeError(
-                "KR OpenDART segment_decomposer must return SegmentDescriptor"
-            )
-        if segment.segment_id != expected_segment_id:
+        for segment in segments:
+            if not isinstance(segment, SegmentDescriptor):
+                raise TypeError(
+                    "KR OpenDART segment_decomposer must return SegmentDescriptor"
+                )
+        identifiers = tuple(segment.segment_id for segment in segments)
+        if len(set(identifiers)) != len(identifiers):
             raise ValueError(
-                "KR OpenDART segment ID does not match the filing collector scope: "
-                f"expected {expected_segment_id}, got {segment.segment_id}"
+                f"KR OpenDART segment_decomposer returned duplicate segment ids: {identifiers}"
+            )
+        if expected_segment_id not in identifiers:
+            raise ValueError(
+                "KR OpenDART filing collector scope names no decomposed segment: "
+                f"expected {expected_segment_id} among {identifiers}"
             )
         return segments
 
@@ -517,6 +530,7 @@ class KRLiveProviderExtensions:
     beta_loader: BetaUniverseLoader | None = None
     wacc_loader: WACCInputsLoader | None = None
     dcf_fingerprint_loader: DCFConsistencyFingerprintLoader | None = None
+    capacity_commitment_loader: object | None = None
     per_loader: PERInputsLoader | None = None
     calibration_loader: CalibrationSnapshotLoader | None = None
     street_loader: StreetLoader | None = None
@@ -545,6 +559,7 @@ class KRLiveProviderExtensions:
             research_recovery_adapter=self.research_recovery_adapter,
             beta_loader=self.beta_loader,
             wacc_loader=self.wacc_loader,
+            capacity_commitment_loader=self.capacity_commitment_loader,
             dcf_fingerprint_loader=self.dcf_fingerprint_loader,
             per_loader=self.per_loader,
             calibration_loader=self.calibration_loader,
@@ -624,7 +639,7 @@ class KRLiveRuntimeFactory:
         )
         scoped_extensions = replace(
             self.extensions,
-            segment_decomposer=_single_segment_decomposer(
+            segment_decomposer=_scoped_segment_decomposer(
                 self.extensions.segment_decomposer,
                 expected_segment_id=self.filing.segment_id,
             ),

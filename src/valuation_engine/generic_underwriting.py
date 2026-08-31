@@ -134,29 +134,58 @@ def load_declared_underwriting(path: str | Path) -> dict:
         raise DeclaredUnderwritingError(
             "declared underwriting requires a declarations mapping"
         )
-    normalized_declarations: dict[object, dict] = {}
-    for metric, row in declarations.items():
-        if not isinstance(row, Mapping):
+    normalized_declarations: dict[object, list[dict]] = {}
+    for metric, entry in declarations.items():
+        # A metric declared once is the historical single-row form. A list of
+        # rows declares the same metric for several segments (a multi-segment
+        # run's steel and transport both underwrite an input_price); each row
+        # then names its segment and the pair (metric, segment) must be
+        # unique.
+        rows = entry if isinstance(entry, list) else [entry]
+        if not rows:
             raise DeclaredUnderwritingError(
-                f"declaration {metric} must be a mapping"
+                f"declaration {metric} carries no rows"
             )
-        if row.get("value") is None or not str(row.get("unit") or ""):
-            raise DeclaredUnderwritingError(
-                f"declaration {metric} requires value and unit"
+        multi_row = isinstance(entry, list)
+        seen_segments: set[str] = set()
+        normalized_rows: list[dict] = []
+        for row in rows:
+            if not isinstance(row, Mapping):
+                raise DeclaredUnderwritingError(
+                    f"declaration {metric} must be a mapping"
+                )
+            if row.get("value") is None or not str(row.get("unit") or ""):
+                raise DeclaredUnderwritingError(
+                    f"declaration {metric} requires value and unit"
+                )
+            rationale = str(row.get("rationale") or "")
+            if len(rationale.strip()) < _MIN_RATIONALE_CHARS:
+                raise DeclaredUnderwritingError(
+                    f"declaration {metric} requires a substantive rationale "
+                    f"(>= {_MIN_RATIONALE_CHARS} chars); a judgment without a reason "
+                    "is not admissible"
+                )
+            segment = str(row.get("segment", "core"))
+            if multi_row and not str(row.get("segment") or ""):
+                raise DeclaredUnderwritingError(
+                    f"declaration {metric} lists multiple rows; each row must "
+                    "name its segment"
+                )
+            if segment in seen_segments:
+                raise DeclaredUnderwritingError(
+                    f"declaration {metric} declares segment {segment} twice"
+                )
+            seen_segments.add(segment)
+            normalized_rows.append(
+                {
+                    **row,
+                    "_multi_row": multi_row,
+                    "source_refs": _declaration_source_refs(
+                        row, fallback=source_ref, metric=metric
+                    ),
+                }
             )
-        rationale = str(row.get("rationale") or "")
-        if len(rationale.strip()) < _MIN_RATIONALE_CHARS:
-            raise DeclaredUnderwritingError(
-                f"declaration {metric} requires a substantive rationale "
-                f"(>= {_MIN_RATIONALE_CHARS} chars); a judgment without a reason "
-                "is not admissible"
-            )
-        normalized_declarations[metric] = {
-            **row,
-            "source_refs": _declaration_source_refs(
-                row, fallback=source_ref, metric=metric
-            ),
-        }
+        normalized_declarations[metric] = normalized_rows
     return {
         "target_id": target_id,
         "as_of": as_of,
@@ -183,13 +212,23 @@ def declared_underwriting_collector(
         declarations = payload["declarations"]
         records = []
         for metric in request.required_metrics:
-            row = declarations.get(metric)
-            if row is None:
+            rows = declarations.get(metric)
+            if rows is None:
                 continue  # undeclared: a named coverage gap downstream
-            source_refs = tuple(row["source_refs"])
-            records.append(
-                DeclaredUnderwritingEvidenceRecord(
-                    id=f"UW:{payload['target_id']}:{metric}",
+            for row in rows:
+                source_refs = tuple(row["source_refs"])
+                # Single-row declarations keep the historical Evidence id so
+                # committed runs replay byte-identically; a multi-row metric
+                # appends the segment, because two segments' judgments are
+                # two pieces of Evidence.
+                record_id = (
+                    f"UW:{payload['target_id']}:{metric}:{row.get('segment')}"
+                    if row.get("_multi_row")
+                    else f"UW:{payload['target_id']}:{metric}"
+                )
+                records.append(
+                    DeclaredUnderwritingEvidenceRecord(
+                        id=record_id,
                     target=payload["target_id"],
                     metric=metric,
                     value=row["value"],
