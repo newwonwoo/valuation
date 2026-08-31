@@ -54,6 +54,26 @@ jobs:
           if old_rationale not in body:
               raise SystemExit('EBITDA rationale block not found in recovered recipe')
           body = body.replace(old_rationale, new_rationale, 1)
+
+          run_write = "(run/'run.yaml').write_text"
+          if run_write not in body:
+              raise SystemExit('run.yaml write block not found')
+          body = body.replace(
+              run_write,
+              "run_yaml['extra_required_evidence']=[x for x in run_yaml.get('extra_required_evidence',[]) if 'manufacturing' in x]\n          " + run_write,
+              1,
+          )
+          underwriting_marker = "underwriting={'target_id'"
+          cleanup = '''for sid in ('trading','recycling'):\n    for pre in ('down_','bull_'):\n        declarations.pop(f'{pre}{sid}_normalized_ebitda', None)\n        declarations.pop(f'{pre}{sid}_normalized_multiple', None)\n'''
+          if underwriting_marker not in body:
+              raise SystemExit('underwriting marker not found')
+          body = body.replace(underwriting_marker, cleanup + underwriting_marker, 1)
+          old_metric = "evidence_metric=f'{prefix}{sid}_{suffix}'"
+          new_metric = "evidence_metric=f'{prefix if sid == \"manufacturing\" else \"\"}{sid}_{suffix}'"
+          if old_metric not in body:
+              raise SystemExit('bridge scenario metric block not found')
+          body = body.replace(old_metric, new_metric, 1)
+
           Path('/tmp/prepare_koreazinc.py').write_text(body, encoding='utf-8')
           PY
           python /tmp/prepare_koreazinc.py
