@@ -11,6 +11,12 @@ import valuation_engine.mcp_tunnel_child as tunnel_child
 import valuation_engine.tunnel_launcher as launcher
 
 
+_linux_only = pytest.mark.skipif(
+    not sys.platform.startswith("linux"),
+    reason="Linux/WSL2 tunnel host required",
+)
+
+
 def test_tunnel_child_scrubs_control_plane_secrets_but_keeps_model_key():
     env = {
         "CONTROL_PLANE_API_KEY": "runtime-secret",
@@ -69,24 +75,34 @@ def test_prepare_runtime_environment_requires_separate_tunnel_key(tmp_path):
         launcher._prepare_runtime_environment(env)
 
 
-def test_prepare_runtime_environment_rejects_non_posix_permission_host(monkeypatch, tmp_path):
+def test_prepare_runtime_environment_rejects_non_linux_permission_host(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher, "_supports_private_posix_permissions", lambda: False)
     env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state")}
-    with pytest.raises(launcher.PrismTunnelError, match="POSIX host"):
+    with pytest.raises(launcher.PrismTunnelError, match="Linux host"):
         launcher._prepare_runtime_environment(env)
 
 
-def test_prepare_runtime_environment_requires_explicit_state_root():
+def test_prepare_runtime_environment_rejects_macos(monkeypatch, tmp_path):
+    monkeypatch.setattr(launcher.sys, "platform", "darwin")
+    env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state")}
+    with pytest.raises(launcher.PrismTunnelError, match="macOS"):
+        launcher._prepare_runtime_environment(env)
+
+
+def test_prepare_runtime_environment_requires_explicit_state_root(monkeypatch):
+    monkeypatch.setattr(launcher, "_supports_private_posix_permissions", lambda: True)
     with pytest.raises(launcher.PrismTunnelError, match="VALUATION_MCP_STATE_ROOT"):
         launcher._prepare_runtime_environment(_base_env())
 
 
-def test_prepare_runtime_environment_rejects_relative_state_root():
+def test_prepare_runtime_environment_rejects_relative_state_root(monkeypatch):
+    monkeypatch.setattr(launcher, "_supports_private_posix_permissions", lambda: True)
     env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": "relative/prism-state"}
     with pytest.raises(launcher.PrismTunnelError, match="absolute"):
         launcher._prepare_runtime_environment(env)
 
 
+@_linux_only
 def test_prepare_runtime_environment_resolves_persistent_state_root(tmp_path):
     env = launcher._prepare_runtime_environment(
         {
@@ -100,7 +116,7 @@ def test_prepare_runtime_environment_resolves_persistent_state_root(tmp_path):
     assert env["VALUATION_MCP_JURISDICTION"] == "KR"
 
 
-@pytest.mark.skipif(os.name == "nt", reason="POSIX directory modes required")
+@_linux_only
 def test_new_tunnel_state_root_is_private(tmp_path):
     root = tmp_path / "private-state"
     launcher._prepare_runtime_environment(
@@ -109,7 +125,7 @@ def test_new_tunnel_state_root_is_private(tmp_path):
     assert stat.S_IMODE(root.stat().st_mode) == 0o700
 
 
-@pytest.mark.skipif(os.name == "nt", reason="POSIX directory modes required")
+@_linux_only
 def test_existing_permissive_state_root_is_repaired(tmp_path):
     root = tmp_path / "permissive-state"
     root.mkdir(mode=0o755)
@@ -123,6 +139,7 @@ def test_existing_permissive_state_root_is_repaired(tmp_path):
     assert stat.S_IMODE(root.stat().st_mode) == 0o700
 
 
+@_linux_only
 def test_check_never_returns_secret_values(monkeypatch, tmp_path):
     fake_bin = tmp_path / "tunnel-client"
     fake_bin.write_text("binary", encoding="utf-8")
@@ -153,6 +170,7 @@ def _runtime_env(tmp_path):
     }
 
 
+@_linux_only
 def test_connect_runs_managed_runtime_then_checks_status(monkeypatch, tmp_path):
     fake_bin = tmp_path / "tunnel-client"
     fake_bin.write_text("binary", encoding="utf-8")
@@ -175,6 +193,7 @@ def test_connect_runs_managed_runtime_then_checks_status(monkeypatch, tmp_path):
     assert payload["ready"] is True
 
 
+@_linux_only
 def test_connect_rejects_runtime_that_is_not_fully_ready(monkeypatch, tmp_path):
     fake_bin = tmp_path / "tunnel-client"
     fake_bin.write_text("binary", encoding="utf-8")
