@@ -38,8 +38,8 @@ CONTROL_PLANE_TUNNEL_ID=tunnel_<32 lowercase hex chars>
 CONTROL_PLANE_API_KEY=<dedicated tunnel runtime key>
 ```
 
-Do not put either value in repository files, command history, `.env` files that
-are committed, MCP tool arguments, logs or generated reports.
+Do not put either value in repository files, command history, committed `.env`
+files, MCP tool arguments, logs or generated reports.
 
 ## 2. Install the supported tunnel-client
 
@@ -57,11 +57,11 @@ TUNNEL_CLIENT_BIN=/trusted/path/to/tunnel-client
 
 ## 3. Prepare the PRISM runtime host
 
-The tunnel launcher currently requires a **Linux host**, including WSL2. Native
-Windows is intentionally rejected until an ACL-aware implementation can provide
-an equivalent privacy guarantee. macOS is also rejected for now because a
-`0700` mode check alone does not disprove extended ACL grants to another account.
-The launcher therefore does not claim a privacy guarantee it cannot verify.
+The tunnel launcher currently supports **native Linux only**. WSL, macOS and
+Windows are intentionally fail-closed. WSL can expose Windows-backed filesystems
+under Linux-looking paths, while macOS and Windows have authorization surfaces
+that are not fully represented by Linux/POSIX mode bits. The launcher therefore
+does not claim a privacy guarantee it cannot verify.
 
 The valuation process needs its ordinary provider credentials and an explicitly
 configured persistent state directory. Minimum generic setup:
@@ -80,11 +80,20 @@ such as `.valuation_state` or `state/prism` is rejected so a launch from a Git
 checkout or ephemeral working directory cannot silently become the durable
 state location.
 
-The launcher creates a missing state root with private permissions and repairs
-an existing root to owner-only mode before starting the tunnel. On supported
-Linux/WSL2 hosts the required root mode is `0700`; the launcher verifies that no
-group/other permission bits remain. If the root cannot be made private,
-preflight fails.
+The root must also resolve, through `/proc/self/mountinfo`, to one of the small
+local-filesystem allowlist currently covered by the security contract:
+`ext2`, `ext3`, `ext4`, `xfs`, or `btrfs`. CIFS/SMB, NFS, FUSE, overlay and other
+foreign/virtual filesystems are fail-closed because their effective
+authorization surface cannot be established from the container/process view
+alone.
+
+The launcher creates a missing state root with owner-only `0700` permissions and
+repairs an existing root to `0700` before starting the tunnel. It then verifies
+that no group/other mode bits remain and inspects extended attributes. Any
+ACL-like xattr (for example POSIX, NFSv4 or Samba/NT ACL metadata) causes
+preflight to fail. If mount metadata or extended attributes cannot be inspected,
+preflight also fails. The launcher deliberately does not rewrite an operator's
+ACL policy and then assume the rewrite was safe.
 
 Optional:
 
@@ -129,9 +138,10 @@ The command validates only non-secret configuration and returns JSON similar to:
 }
 ```
 
-Secret values are never printed. `READY_TO_CONNECT` also means the state root
-was explicitly supplied, is absolute, exists as a directory, and passed the
-private-permission check.
+Secret values are never printed. `READY_TO_CONNECT` also means the host passed
+the native-Linux check and the state root was explicitly supplied, is absolute,
+is on an allowlisted local Linux filesystem, is `0700`, and contains no detected
+ACL-like xattrs.
 
 ## 5. Connect the managed runtime
 
@@ -159,7 +169,7 @@ tunnel-client runtimes status prism-valuation --json
 ```
 
 Do not treat the tunnel as ready merely because the connect process returned.
-The managed runtime should report the process running and its health/readiness
+The managed runtime must report the process running and its health/readiness
 checks healthy before it is presented as a usable connection.
 
 Do not supervise the tunnel with `nohup` or `disown`; use the native managed
@@ -247,10 +257,11 @@ There is no MCP-side fallback valuation.
 Before calling the integration complete, verify all of the following:
 
 - `prism-tunnel check` is clean.
-- runtime host is Linux/WSL2; native Windows and macOS are rejected.
+- runtime host is native Linux; WSL/macOS/Windows are rejected.
 - tunnel-client is an approved binary.
 - `VALUATION_MCP_STATE_ROOT` is explicitly configured as an absolute path.
-- state root is on persistent storage and is owner-private (`0700`).
+- state root is on persistent `ext2/ext3/ext4/xfs/btrfs` storage, mode `0700`,
+  with no detected ACL-like xattrs.
 - `VALUATION_METHOD` is unset unless an explicit override is intended.
 - tunnel runtime status reports running/healthy/ready.
 - ChatGPT scans exactly `prism_analyze` as the valuation tool.
