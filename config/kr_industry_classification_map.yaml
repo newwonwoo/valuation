@@ -232,3 +232,33 @@ classifications:
       customer_structure: construction, auto and shipbuilding buyers
       reinvestment_model: maintenance and low-carbon transition capex
       cashflow_duration: commodity-cycle driven
+  - ksic_prefix: "46721"
+    # 1차 금속제품을 매입해 재판매하는 도매업은 생산설비 원형이 아니라
+    # 매입단가와 판매단가 사이의 상업 스프레드가 핵심 경제성이다.
+    label: 1차 금속제품 도매업
+    sector_adapter: metals.trading
+    archetypes: [process_spread]
+    structure:
+      revenue_recognition: delivery
+      price_formation: resale price over metal acquisition cost
+      asset_ownership: inventory and distribution network
+      capital_intensity: low-medium
+      regulation_intensity: low
+      customer_structure: industrial buyers and affiliated trading counterparties
+      reinvestment_model: working-capital and logistics capacity
+      cashflow_duration: inventory-and-spread cycle driven
+  - ksic_prefix: "38210"
+    # 지정 외 폐기물 처리시설은 처리단가에서 처리·운영원가를 차감한 경제성이
+    # 지배적이므로 현재 구현된 원형 중 process_spread가 가장 보수적이다.
+    label: 지정 외 폐기물 처리업
+    sector_adapter: environmental.waste_processing
+    archetypes: [process_spread]
+    structure:
+      revenue_recognition: service_delivery
+      price_formation: treatment fee over collection and processing cost
+      asset_ownership: owned or leased treatment facilities
+      capital_intensity: high
+      regulation_intensity: high
+      customer_structure: industrial and municipal waste generators
+      reinvestment_model: treatment-capacity maintenance and environmental capex
+      cashflow_duration: contracted-volume and treatment-spread driven
