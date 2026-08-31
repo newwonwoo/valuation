@@ -1,0 +1,177 @@
+name: apply-kr-segment-header-fix
+
+on:
+  push:
+    branches: [feat/kr-trading-recycling-classification]
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/kr-trading-recycling-classification
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Patch generic segment parser, classifications and regression
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          seg = Path('src/valuation_engine/segment_note.py')
+          text = seg.read_text(encoding='utf-8')
+          start = text.index('def _segment_columns(')
+          end = text.index('\ndef _metric_row(', start)
+          replacement = r'''def _segment_columns(grid: list[list[str]]) -> tuple[int, tuple[tuple[int, str], ...], int] | None:
+              """Locate the reportable-segment block by disclosed header structure.
+
+              Most filings put the actual segment names (``제강부문`` etc.) on the
+              same row as the closing ``부문 합계`` cell. Some valid IFRS 8 notes
+              use a two-tier header instead: a first row groups columns under
+              ``보고부문`` / ``기타부문`` and the following row names the actual
+              reportable businesses. Both layouts are evidence-equivalent, so the
+              parser accepts either while still requiring a closing segment-total
+              column and later row reconciliation.
+              """
+              # Historical single-tier layout: actual segment names and the segment
+              # total live on one header row.
+              for row_index, row in enumerate(grid):
+                  named: list[tuple[int, str]] = []
+                  for column_index, cell in enumerate(row):
+                      squeezed = _squeeze(cell)
+                      if squeezed in _SEGMENT_TOTAL_CELLS and named:
+                          if len(named) < 2:
+                              break
+                          return row_index, tuple(named), column_index
+                      if squeezed in _STRUCTURAL_CELLS or not squeezed:
+                          continue
+                      name = " ".join(str(cell).split()).strip()
+                      if _SEGMENT_NAME.match(_squeeze(name)) and (
+                          not named or name != named[-1][1]
+                      ):
+                          named.append((column_index, name))
+
+              # Two-tier layout seen in statutory IFRS 8 notes: e.g. columns 1/2
+              # are grouped as 보고부문, column 3 as 기타부문, and the next row
+              # carries the actual names for columns 1/2 while 기타부문 repeats.
+              for group_row_index, row in enumerate(grid):
+                  total_columns = tuple(
+                      column_index
+                      for column_index, cell in enumerate(row)
+                      if _squeeze(cell) in _SEGMENT_TOTAL_CELLS
+                  )
+                  for total_column in total_columns:
+                      if total_column < 3:
+                          continue
+                      group_columns = tuple(
+                          column_index
+                          for column_index in range(1, total_column)
+                          if (
+                              _squeeze(row[column_index]) == "보고부문"
+                              or (
+                                  _SEGMENT_NAME.match(_squeeze(row[column_index]))
+                                  and _squeeze(row[column_index])
+                                  not in _SEGMENT_TOTAL_CELLS
+                              )
+                          )
+                      )
+                      if len(group_columns) < 2:
+                          continue
+                      for name_row_index in range(
+                          group_row_index + 1,
+                          min(len(grid), group_row_index + 4),
+                      ):
+                          name_row = grid[name_row_index]
+                          named: list[tuple[int, str]] = []
+                          valid = True
+                          for column_index in group_columns:
+                              if column_index >= len(name_row):
+                                  valid = False
+                                  break
+                              candidate = " ".join(
+                                  str(name_row[column_index]).split()
+                              ).strip()
+                              squeezed = _squeeze(candidate)
+                              if (
+                                  not candidate
+                                  or squeezed in _STRUCTURAL_CELLS
+                                  or _amount(candidate) is not None
+                              ):
+                                  valid = False
+                                  break
+                              named.append((column_index, candidate))
+                          if not valid:
+                              continue
+                          canonical = tuple(
+                              re.sub(r"[\\s/·&-]+", "", name).casefold()
+                              for _, name in named
+                          )
+                          if len(named) >= 2 and len(set(canonical)) == len(named):
+                              return name_row_index, tuple(named), total_column
+              return None
+          '''
+          replacement = '\n'.join(line[10:] if line.startswith('          ') else line for line in replacement.splitlines())
+          seg.write_text(text[:start] + replacement + text[end:], encoding='utf-8')
+
+          cfg = Path('config/kr_industry_classification_map.yaml')
+          ctext = cfg.read_text(encoding='utf-8')
+          anchor = '  - ksic_prefix: "24"\n'
+          if 'ksic_prefix: "46"' not in ctext:
+              addition = '''  - ksic_prefix: "46"\n    label: 도매 및 상품 중개업\n    sector_adapter: trade.commodity\n    archetypes: [process_spread]\n    structure:\n      revenue_recognition: delivery_or_resale\n      price_formation: commodity resale spread over procurement and logistics\n      asset_ownership: working-capital-led trading platform\n      capital_intensity: low-medium\n      regulation_intensity: low\n      customer_structure: industrial buyers and affiliated producers\n      reinvestment_model: inventory and receivables working capital\n      cashflow_duration: commodity-and-working-capital cycle\n  - ksic_prefix: "38"\n    label: 폐기물 수집·처리 및 원료 재생업\n    sector_adapter: recycling.materials\n    archetypes: [process_spread]\n    structure:\n      revenue_recognition: processed_material_delivery\n      price_formation: recovered-metal benchmark less feedstock and processing cost\n      asset_ownership: owned processing and recovery assets\n      capital_intensity: medium-high\n      regulation_intensity: high\n      customer_structure: waste suppliers and commodity or material buyers\n      reinvestment_model: recovery capacity and environmental compliance capex\n      cashflow_duration: commodity-and-feedstock cycle\n'''
+              if anchor not in ctext:
+                  raise SystemExit('classification insertion anchor not found')
+              ctext = ctext.replace(anchor, addition + anchor, 1)
+              cfg.write_text(ctext, encoding='utf-8')
+
+          tests = Path('tests/test_segment_note.py')
+          ttext = tests.read_text(encoding='utf-8')
+          if 'test_two_tier_reportable_segment_header_is_reconciled' not in ttext:
+              ttext += r'''
+
+
+def test_two_tier_reportable_segment_header_is_reconciled():
+    """Some IFRS 8 notes group two named businesses under 보고부문 and place
+    their actual names one row lower, with a separate 기타부문 column. The
+    structural group row must not hide the three economic segments."""
+    text = """
+    <table>
+      <tr><td></td><td>부문</td><td>부문</td><td>부문</td><td>부문 합계</td></tr>
+      <tr><td></td><td>보고부문</td><td>보고부문</td><td>기타부문</td><td>부문 합계</td></tr>
+      <tr><td></td><td>비철금속 제조 및 판매</td><td>비철금속 수출입</td><td>기타부문</td><td>부문 합계</td></tr>
+      <tr><td>매출액</td><td>9693315659</td><td>3182281396</td><td>413925299</td><td>13289522354</td></tr>
+      <tr><td>영업이익</td><td>1241489905</td><td>54979012</td><td>(13599031)</td><td>1282869886</td></tr>
+    </table>
+    """
+    disclosure = parse_operating_segment_note(text)
+    assert disclosure.segment_names == (
+        "비철금속 제조 및 판매",
+        "비철금속 수출입",
+        "기타부문",
+    )
+    assert disclosure.total_revenue == Decimal("13289522354")
+    assert disclosure.total_operating_income == Decimal("1282869886")
+    assert disclosure.entries[2].operating_income == Decimal("-13599031")
+'''
+              tests.write_text(ttext, encoding='utf-8')
+          PY
+      - name: Install and verify
+        run: |
+          python -m pip install -e '.[dev]'
+          pytest -q tests/test_segment_note.py tests/test_declared_segments.py
+          PYTHONPATH=src python scripts/validate_module_registries.py
+          pytest -q
+      - name: Commit target files only
+        run: |
+          rm .github/workflows/_apply_kr_segment_header_fix.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/valuation_engine/segment_note.py config/kr_industry_classification_map.yaml tests/test_segment_note.py .github/workflows/_apply_kr_segment_header_fix.yml
+          git commit -m 'Support two-tier KR segment headers and adjacent trading/recycling routes'
+          git push origin HEAD:feat/kr-trading-recycling-classification
