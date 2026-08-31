@@ -512,7 +512,7 @@ def _candidate_for(
         sorted(
             (
                 key
-                for key in evaluator_registry.keys()
+                for key in evaluator_registry.keys_for_segment(segment_id)
                 if key.archetype == capability.archetype
                 and key.method == capability.method
             ),

@@ -156,6 +156,22 @@ class EvaluatorRegistry:
         keys.update(key for _, key in self._segment_evaluators)
         return tuple(sorted(keys, key=lambda item: (item.archetype, item.method, item.version)))
 
+    def keys_for_segment(self, segment_id: str) -> tuple[ModelKey, ...]:
+        if not segment_id:
+            raise ValueError("segment evaluator lookup requires segment_id")
+        keys = set(self._evaluators)
+        keys.update(
+            key
+            for scoped_segment_id, key in self._segment_evaluators
+            if scoped_segment_id == segment_id
+        )
+        return tuple(
+            sorted(
+                keys,
+                key=lambda item: (item.archetype, item.method, item.version),
+            )
+        )
+
     def has_scoped_registrations(self) -> bool:
         return bool(self._segment_evaluators)
 

@@ -215,6 +215,9 @@ def test_registry_scopes_duplicate_exact_model_key_by_segment():
         "recycling_normalized_ebitda",
         "recycling_normalized_multiple",
     )
+    assert registry.keys_for_segment("trading") == (key,)
+    assert registry.keys_for_segment("recycling") == (key,)
+    assert registry.keys_for_segment("manufacturing") == ()
     with pytest.raises(KeyError, match="no exact evaluator"):
         registry.get(key)
 
