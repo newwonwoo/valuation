@@ -136,6 +136,13 @@ class GenericKRRuntimeSpec:
     #: whose execution family needs a Beta/WACC; without it those stages stay
     #: honestly NOT_IMPLEMENTED and only the beta-free families can complete.
     declared_risk_path: str | Path | None = None
+    #: Operator-declared reportable-segment map (declarations/segments.yaml).
+    #: Which segments exist is evidence — the IFRS 8 note names them — but
+    #: what each one economically *is* cannot come from the company-level
+    #: KSIC code, so every disclosed segment carries a declared classification
+    #: here. Required for any issuer whose filing discloses multiple
+    #: reportable segments; forbidden for one that reports itself whole.
+    declared_segments_path: str | Path | None = None
     #: Extra evidence metrics this run requires beyond the method's assumption
     #: keys — the door multi-scenario runs use for scenario-qualified inputs
     #: (down_normalized_ebitda, bull_normalized_multiple, …): declaring them
@@ -191,6 +198,11 @@ def build_generic_kr_runtime_factory(
         capability_registry or load_default_method_capability_registry()
     )
     classification = load_kr_industry_classification(spec.classification_map_path)
+    declared_segments = None
+    if spec.declared_segments_path is not None:
+        from .declared_segments import load_declared_segments
+
+        declared_segments = load_declared_segments(spec.declared_segments_path)
     profile_fetcher = CachedCompanyProfileFetcher(
         fetch_text=network.fetch_text,
         api_key=network.api_key,
@@ -230,6 +242,7 @@ def build_generic_kr_runtime_factory(
             fetch_bytes=network.fetch_bytes,
             as_of=spec.as_of,
             api_key=network.api_key,
+            declared_segments=declared_segments,
         ),
         freshness_loader=filing_cadence_freshness_loader(
             as_of=spec.as_of,
@@ -238,10 +251,12 @@ def build_generic_kr_runtime_factory(
         segment_decomposer=classified_segment_decomposer(
             profile_fetcher=profile_fetcher,
             classification=classification,
+            declared_segments=declared_segments,
         ),
         industry_dna_router=classified_industry_dna_router(
             profile_fetcher=profile_fetcher,
             classification=classification,
+            declared_segments=declared_segments,
         ),
         scanner_runners=generic_scanner_runners(),
         funding_scanner=generic_ledger_funding_scanner,

@@ -754,6 +754,7 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
         forecast_years=int(config.get("forecast_years", 5)),
         declared_underwriting_path=str(run_dir / "declarations" / "underwriting.yaml"),
         declared_risk_path=_optional_path(run_dir, "risk_pack.yaml"),
+        declared_segments_path=_optional_path(run_dir, "segments.yaml"),
         extra_required_evidence=tuple(config.get("extra_required_evidence", ())),
         market_config_path=market_path,
         street_export_path=_optional_path(run_dir, "street.json"),

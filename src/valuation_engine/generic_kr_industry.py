@@ -141,8 +141,16 @@ def _lineage_from_record(
     )
 
 
-def _segment_scope_evidence_id(identity: ResolvedCompanyIdentity) -> str:
-    return f"E:{identity.target_id}:{_SEGMENT_SCOPE_PREFIX}"
+def _segment_scope_evidence_id(
+    identity: ResolvedCompanyIdentity, segment_id: str | None = None
+) -> str:
+    """Scope receipt id: the whole-company receipt when ``segment_id`` is None
+    (byte-identical to the single-segment era, SINGLE token included), else
+    one SEGMENT_SCOPE:<segment_id> receipt per declared reportable segment —
+    a multi-segment receipt must not claim SINGLE."""
+    if segment_id is None:
+        return f"E:{identity.target_id}:{_SEGMENT_SCOPE_PREFIX}"
+    return f"E:{identity.target_id}:SEGMENT_SCOPE:{segment_id}"
 
 
 class _SegmentTableParser(HTMLParser):
@@ -305,6 +313,7 @@ def opendart_filing_snapshot_loader(
     api_key: str | None = None,
     lookback_days: int = 540,
     max_filings: int = 4,
+    declared_segments=None,
 ):
     """IndustrySnapshotLoader: periodic DART filings become the authoritative snapshot.
 
@@ -356,27 +365,74 @@ def opendart_filing_snapshot_loader(
             api_key=api_key,
         )
         disclosed_segments = _disclosed_segment_names(filing)
-        if len(disclosed_segments) > 1:
-            raise GenericKRIndustryError(
-                f"latest periodic filing for {identity.target_id} discloses multiple "
-                f"operating segments ({', '.join(disclosed_segments)}); multi-segment "
-                "companies require note-scoped collectors and method choices"
-            )
         newest_lineage = lineage[0]
-        scope_lineage = AuthoritativeEvidenceLineage(
-            evidence_id=_segment_scope_evidence_id(identity),
-            target_id=identity.target_id,
-            source_id=newest.source_id,
-            observed_date=as_of,
-            content_hash=filing.archive_hash,
-            event_date=newest_lineage.event_date,
-            effective_date=newest_lineage.effective_date,
-            published_at=newest_lineage.published_at,
-            first_seen_at=newest_lineage.first_seen_at,
-            revision_id=f"{newest.document_id}:segment-scope-v1",
-            revision_at=newest_lineage.revision_at,
-        )
-        complete_lineage = (*lineage, scope_lineage)
+
+        def _scope_receipt(segment_id: str | None, revision: str):
+            return AuthoritativeEvidenceLineage(
+                evidence_id=_segment_scope_evidence_id(identity, segment_id),
+                target_id=identity.target_id,
+                source_id=newest.source_id,
+                observed_date=as_of,
+                content_hash=filing.archive_hash,
+                event_date=newest_lineage.event_date,
+                effective_date=newest_lineage.effective_date,
+                published_at=newest_lineage.published_at,
+                first_seen_at=newest_lineage.first_seen_at,
+                revision_id=f"{newest.document_id}:{revision}",
+                revision_at=newest_lineage.revision_at,
+            )
+
+        if len(disclosed_segments) > 1:
+            if declared_segments is None:
+                raise GenericKRIndustryError(
+                    f"latest periodic filing for {identity.target_id} discloses "
+                    f"multiple operating segments ({', '.join(disclosed_segments)}); "
+                    "declare the reportable segments (declarations/segments.yaml) "
+                    "so each carries its own classification and evidence scope"
+                )
+            declared_segments.validate()
+            declared_segments.assert_target(identity.target_id)
+            # The screen above is an over-inclusive alarm, never a segment
+            # list. The reportable set comes from the filing's own IFRS 8
+            # note, read member by member with its reconciliation intact.
+            from .segment_note import SegmentNoteError, parse_operating_segment_note
+
+            disclosure = None
+            for member in filing.text_members:
+                try:
+                    disclosure = parse_operating_segment_note(member.text or "")
+                    break
+                except SegmentNoteError:
+                    continue
+            if disclosure is None:
+                raise GenericKRIndustryError(
+                    f"filing {newest.document_id} for {identity.target_id} "
+                    "screens as multi-segment but its archive carries no "
+                    "readable 영업부문 정보 note; add that section to the "
+                    "filing archive before declaring segments"
+                )
+            matched = declared_segments.match_note(disclosure)
+            scope_receipts = tuple(
+                _scope_receipt(declared.segment_id, f"segment-scope-v2:{declared.segment_id}")
+                for declared, _entry in matched
+            )
+            complete_lineage = (*lineage, *scope_receipts)
+            return IndustryKnowledgeSnapshot.build(
+                as_of=as_of,
+                source_ids=(OPENDART_SOURCE_ID,),
+                document_ids=tuple(record.document_id for record in periodic),
+                evidence_ids=tuple(item.evidence_id for item in complete_lineage),
+                content_hashes=tuple(item.content_hash for item in complete_lineage),
+                evidence_lineage=complete_lineage,
+            )
+        if declared_segments is not None:
+            raise GenericKRIndustryError(
+                f"a segment declaration is present but the latest periodic "
+                f"filing for {identity.target_id} does not disclose multiple "
+                "operating segments; remove the declaration rather than "
+                "splitting a company its own filing reports whole"
+            )
+        complete_lineage = (*lineage, _scope_receipt(None, "segment-scope-v1"))
         return IndustryKnowledgeSnapshot.build(
             as_of=as_of,
             source_ids=(OPENDART_SOURCE_ID,),
@@ -647,29 +703,91 @@ def classified_segment_decomposer(
     *,
     profile_fetcher: Callable[[ResolvedCompanyIdentity], OpenDartCompanyProfile],
     classification: KRIndustryClassification,
+    declared_segments=None,
 ):
-    """SegmentDecomposer: screened whole-company segment, structured by classification.
+    """SegmentDecomposer: descriptors follow the snapshot's scope receipts.
 
-    The snapshot loader first screens the latest original filing and records an
-    immutable single-segment scope receipt. Without that receipt, or when the
-    filing discloses multiple named operating segments, this decomposer refuses
-    to flatten the company. Note-scoped decomposition remains separate work.
+    The snapshot loader screens the latest original filing first. A company
+    whose filing reports itself whole carries one whole-company scope receipt
+    and becomes the single ``core`` descriptor, exactly as before. A company
+    whose filing discloses multiple reportable segments carries one receipt
+    per declared segment — issued only after the declaration matched the
+    IFRS 8 note bijectively — and each becomes its own descriptor, structured
+    by the classification the operator declared for it (the company-level
+    KSIC types the issuer, not its 운송부문). No receipt, no descriptor:
+    flattening an unscreened company stays impossible.
     """
+
+    def _descriptor(
+        segment_id: str, name: str, entry, evidence_ids: tuple[str, ...]
+    ) -> SegmentDescriptor:
+        descriptor = SegmentDescriptor(
+            segment_id=segment_id,
+            name=name,
+            revenue_recognition=str(entry.structure["revenue_recognition"]),
+            price_formation=str(entry.structure["price_formation"]),
+            asset_ownership=str(entry.structure["asset_ownership"]),
+            capital_intensity=str(entry.structure["capital_intensity"]),
+            regulation_intensity=str(entry.structure["regulation_intensity"]),
+            customer_structure=str(entry.structure["customer_structure"]),
+            reinvestment_model=str(entry.structure["reinvestment_model"]),
+            cashflow_duration=str(entry.structure["cashflow_duration"]),
+            evidence_ids=evidence_ids,
+        )
+        descriptor.validate()
+        return descriptor
 
     def decompose(
         identity: ResolvedCompanyIdentity,
         snapshot: IndustryKnowledgeSnapshot,
     ) -> tuple[SegmentDescriptor, ...]:
+        active = tuple(
+            item
+            for item in snapshot.evidence_lineage
+            if item.target_id == identity.target_id and item.active
+        )
+        if declared_segments is not None:
+            declared_segments.validate()
+            declared_segments.assert_target(identity.target_id)
+            scope_ids = {
+                _segment_scope_evidence_id(identity, item.segment_id): item
+                for item in declared_segments.segments
+            }
+            shared_ids = tuple(
+                item.evidence_id
+                for item in active
+                if item.evidence_id not in scope_ids
+                and not item.evidence_id.startswith(
+                    f"E:{identity.target_id}:SEGMENT_SCOPE"
+                )
+            )
+            descriptors = []
+            for declared in declared_segments.segments:
+                receipt_id = _segment_scope_evidence_id(identity, declared.segment_id)
+                receipts = tuple(
+                    item for item in active if item.evidence_id == receipt_id
+                )
+                if len(receipts) != 1:
+                    raise GenericKRIndustryError(
+                        f"industry snapshot carries no unique scope receipt for "
+                        f"declared segment {declared.segment_id}; the declaration "
+                        "did not survive the filing screen"
+                    )
+                entry = classification.lookup(declared.ksic_code)
+                descriptors.append(
+                    _descriptor(
+                        declared.segment_id,
+                        f"{declared.disclosed_name} — {entry.label}",
+                        entry,
+                        (receipt_id, *shared_ids),
+                    )
+                )
+            return tuple(descriptors)
+
         profile = profile_fetcher(identity)
         entry = classification.lookup(profile.induty_code)
         scope_id = _segment_scope_evidence_id(identity)
-        scope = tuple(
-            item
-            for item in snapshot.evidence_lineage
-            if item.evidence_id == scope_id
-            and item.target_id == identity.target_id
-            and item.active
-        )
+        scope = tuple(item for item in active if item.evidence_id == scope_id)
         if len(scope) != 1:
             raise GenericKRIndustryError(
                 f"industry snapshot carries no unique single-segment scope receipt "
@@ -685,21 +803,14 @@ def classified_segment_decomposer(
             raise GenericKRIndustryError(
                 f"industry snapshot carries no Evidence lineage for {identity.target_id}"
             )
-        descriptor = SegmentDescriptor(
-            segment_id=CORE_SEGMENT_ID,
-            name=f"{identity.legal_name} — {entry.label}",
-            revenue_recognition=str(entry.structure["revenue_recognition"]),
-            price_formation=str(entry.structure["price_formation"]),
-            asset_ownership=str(entry.structure["asset_ownership"]),
-            capital_intensity=str(entry.structure["capital_intensity"]),
-            regulation_intensity=str(entry.structure["regulation_intensity"]),
-            customer_structure=str(entry.structure["customer_structure"]),
-            reinvestment_model=str(entry.structure["reinvestment_model"]),
-            cashflow_duration=str(entry.structure["cashflow_duration"]),
-            evidence_ids=evidence_ids,
+        return (
+            _descriptor(
+                CORE_SEGMENT_ID,
+                f"{identity.legal_name} — {entry.label}",
+                entry,
+                evidence_ids,
+            ),
         )
-        descriptor.validate()
-        return (descriptor,)
 
     return decompose
 
@@ -708,18 +819,46 @@ def classified_industry_dna_router(
     *,
     profile_fetcher: Callable[[ResolvedCompanyIdentity], OpenDartCompanyProfile],
     classification: KRIndustryClassification,
+    declared_segments=None,
 ):
-    """IndustryDNARouter: archetypes come from the classification map, never a guess."""
+    """IndustryDNARouter: archetypes come from the classification map, never a guess.
+
+    With a segment declaration, each segment routes through its own declared
+    KSIC code — the company-level code types the issuer, and copying it onto
+    every reportable segment would hand a logistics segment a steel archetype.
+    """
 
     def route(
         identity: ResolvedCompanyIdentity,
         segments: tuple[SegmentDescriptor, ...],
         snapshot: IndustryKnowledgeSnapshot,
     ) -> tuple[IndustryDNAProfile, ...]:
-        profile = profile_fetcher(identity)
-        entry = classification.lookup(profile.induty_code)
-        profiles = tuple(
-            IndustryDNAProfile(
+        if declared_segments is not None:
+            declared_segments.assert_target(identity.target_id)
+            declared_codes = {
+                item.segment_id: item.ksic_code
+                for item in declared_segments.segments
+            }
+
+            def _entry_for(segment_id: str):
+                code = declared_codes.get(segment_id)
+                if code is None:
+                    raise GenericKRIndustryError(
+                        f"segment {segment_id} has no declared ksic_code; the "
+                        "DNA route cannot type an undeclared segment"
+                    )
+                return classification.lookup(code)
+
+        else:
+            profile = profile_fetcher(identity)
+            company_entry = classification.lookup(profile.induty_code)
+
+            def _entry_for(segment_id: str):
+                return company_entry
+
+        def _profile_for(segment: SegmentDescriptor) -> IndustryDNAProfile:
+            entry = _entry_for(segment.segment_id)
+            return IndustryDNAProfile(
                 segment_id=segment.segment_id,
                 sector_adapter=entry.sector_adapter,
                 archetypes=entry.archetypes,
@@ -733,8 +872,8 @@ def classified_industry_dna_router(
                 cashflow_duration=segment.cashflow_duration,
                 evidence_keys=segment.evidence_ids,
             )
-            for segment in segments
-        )
+
+        profiles = tuple(_profile_for(segment) for segment in segments)
         for item in profiles:
             item.validate()
         return profiles

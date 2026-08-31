@@ -202,6 +202,22 @@ classifications:
       customer_structure: dealer networks and fleet buyers
       reinvestment_model: platform and powertrain-transition capex
       cashflow_duration: model-cycle driven
+  - ksic_prefix: "49"
+    # 대한제강 연결의 운송부문(종속 물류사) 라우팅을 위해 추가된 항목.
+    # 육상 운송업의 경제 구조는 차량·설비 capacity의 가동률 경제이므로
+    # capacity_manufacturing 원형으로 라우팅한다.
+    label: 육상 운송 및 파이프라인 운송업
+    sector_adapter: transport.trucking
+    archetypes: [capacity_manufacturing]
+    structure:
+      revenue_recognition: service_delivery
+      price_formation: contracted freight rates over fuel and labor costs
+      asset_ownership: owned or leased vehicle fleet
+      capital_intensity: high
+      regulation_intensity: medium
+      customer_structure: contracted shippers and affiliated cargo owners
+      reinvestment_model: fleet replacement capex
+      cashflow_duration: freight-cycle driven
   - ksic_prefix: "24"
     label: 1차 금속 제조업
     sector_adapter: metals.steel
