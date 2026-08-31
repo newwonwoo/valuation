@@ -324,3 +324,56 @@ segments:
         )
         with pytest.raises(DeclaredSegmentsError, match=match):
             load_declared_segments(bad)
+
+
+# ------------------------------------------------- the assumption namespace
+
+
+def test_multi_segment_runs_namespace_every_method_key_by_segment():
+    """Two segments running DCF families must not share fcff_year_1: the key
+    map prefixes method keys and the per-segment bindings, keeps the
+    company-level diluted-shares key once, and leaves single-segment runs
+    byte-identical to the historical names."""
+    from valuation_engine.generic_live_providers import (
+        required_assumption_keys_by_segment,
+    )
+    from valuation_engine.valuation_plan_compiler import SegmentMethodChoice
+
+    multi = required_assumption_keys_by_segment(
+        method_choices=(
+            SegmentMethodChoice(
+                "steel", "commodity_price_taker", "midcycle_price_volume_dcf", None
+            ),
+            SegmentMethodChoice(
+                "transport", "capacity_manufacturing", "driver_dcf", None
+            ),
+            SegmentMethodChoice("other", "asset_yield_nav", "nav", None),
+        ),
+        forecast_years=5,
+    )
+    assert "steel_fcff_year_1" in multi["steel"]
+    assert "transport_fcff_year_1" in multi["transport"]
+    assert "other_gross_asset_value" in multi["other"]
+    assert "steel_ownership" in multi["steel"]
+    assert "steel_ev_adjustment" in multi["steel"]
+    # nav is equity-output: no EV bridge key for that segment.
+    assert "other_ev_adjustment" not in multi["other"]
+    # diluted shares is company-level: once, unprefixed, on the first segment.
+    assert "diluted_shares" in multi["steel"]
+    assert "diluted_shares" not in multi["transport"]
+    assert not any(key.startswith("fcff_year") for key in multi["transport"])
+
+    single = required_assumption_keys_by_segment(
+        method_choices=(
+            SegmentMethodChoice("core", "asset_yield_nav", "nav", None),
+        ),
+        forecast_years=5,
+    )
+    assert single == {
+        "core": (
+            "gross_asset_value",
+            "liabilities",
+            "ownership",
+            "diluted_shares",
+        )
+    }

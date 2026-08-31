@@ -550,6 +550,10 @@ def live_equity_evaluator_registry_loader(
                 else ""
             )
             family = capability.execution_family
+            # The registration's assumption_prefix is the segment namespace:
+            # every family's key names take it, so two segments running the
+            # same equity family cannot share one compiled assumption.
+            prefix = registration.assumption_prefix
             if family == "gordon_ddm":
                 evaluator = GordonDDMEvaluator(
                     registration.archetype,
@@ -558,6 +562,8 @@ def live_equity_evaluator_registry_loader(
                     beta_path_id=beta_path,
                     method=registration.method,
                     version=registration.version,
+                    distribution_key=f"{prefix}forward_distribution",
+                    terminal_growth_key=f"{prefix}terminal_growth",
                 )
             elif family == "justified_pb_roe":
                 evaluator = JustifiedPBROEEvaluator(
@@ -567,6 +573,9 @@ def live_equity_evaluator_registry_loader(
                     beta_path_id=beta_path,
                     method=registration.method,
                     version=registration.version,
+                    book_value_key=f"{prefix}current_book_value",
+                    forward_roe_key=f"{prefix}forward_roe",
+                    terminal_growth_key=f"{prefix}terminal_growth",
                 )
             elif family == "residual_income":
                 evaluator = ResidualIncomeEvaluator(
@@ -584,12 +593,16 @@ def live_equity_evaluator_registry_loader(
                     registration.archetype,
                     method=registration.method,
                     version=registration.version,
+                    asset_value_key=f"{prefix}gross_asset_value",
+                    liabilities_key=f"{prefix}liabilities",
                 )
             elif family == "ffo_multiple":
                 evaluator = FFOMultipleEvaluator(
                     registration.archetype,
                     method=registration.method,
                     version=registration.version,
+                    ffo_key=f"{prefix}normalized_forward_ffo",
+                    multiple_key=f"{prefix}ffo_multiple",
                 )
             elif family == "rate_base_roe":
                 evaluator = RateBaseROEEvaluator(
@@ -599,12 +612,18 @@ def live_equity_evaluator_registry_loader(
                     beta_path_id=beta_path,
                     method=registration.method,
                     version=registration.version,
+                    rate_base_key=f"{prefix}rate_base",
+                    equity_ratio_key=f"{prefix}equity_ratio",
+                    allowed_roe_key=f"{prefix}allowed_roe",
+                    terminal_growth_key=f"{prefix}terminal_growth",
                 )
             elif family == "normalized_ebitda_multiple":
                 evaluator = NormalizedEBITDAMultipleEvaluator(
                     registration.archetype,
                     method=registration.method,
                     version=registration.version,
+                    ebitda_key=f"{prefix}normalized_ebitda",
+                    multiple_key=f"{prefix}normalized_ebitda_multiple",
                 )
             else:  # validated above
                 raise AssertionError(family)

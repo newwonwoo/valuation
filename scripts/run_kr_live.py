@@ -716,10 +716,36 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
     run_dir = Path(run_dir).resolve()
     config = _load_run(run_dir)
     filing = config["filing"]
-    archetype, _, rest = str(config["method"]).partition("/")
-    method, _, version = rest.partition("/")
-    if not archetype or not method:
-        raise RunbookError("run.yaml method must be 'archetype/method[/version]'")
+
+    def _parse_method(text: str, label: str) -> tuple[str, str, str | None]:
+        archetype, _, rest = str(text).partition("/")
+        method, _, version = rest.partition("/")
+        if not archetype or not method:
+            raise RunbookError(f"{label} must be 'archetype/method[/version]'")
+        return archetype, method, version or None
+
+    segments_config = config.get("segments")
+    if segments_config and config.get("method"):
+        raise RunbookError(
+            "run.yaml declares both 'method' and 'segments'; a single-segment "
+            "run uses 'method', a multi-segment run lists one method per "
+            "segment under 'segments'"
+        )
+    if segments_config:
+        method_choices = tuple(
+            SegmentMethodChoice(
+                str(row["segment_id"]),
+                *_parse_method(row["method"], f"segments[{index}].method"),
+            )
+            for index, row in enumerate(segments_config)
+        )
+    else:
+        method_choices = (
+            SegmentMethodChoice(
+                str(filing.get("segment_id", "core")),
+                *_parse_method(config["method"], "run.yaml method"),
+            ),
+        )
 
     calibration = config.get("calibration")
     spec_kwargs: dict = {}
@@ -735,14 +761,7 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
     spec = GenericKRRuntimeSpec(
         as_of=str(config["as_of"]),
         scenario_ids=tuple(config["scenario_ids"]),
-        method_choices=(
-            SegmentMethodChoice(
-                str(filing.get("segment_id", "core")),
-                archetype,
-                method,
-                version or None,
-            ),
-        ),
+        method_choices=method_choices,
         filing=OpenDartFilingSelection(
             business_year=str(filing["business_year"]),
             report_code=str(filing.get("report_code", "11011")),
