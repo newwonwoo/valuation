@@ -1,0 +1,126 @@
+name: koreazinc-prism-prepared-run
+
+on:
+  push:
+    branches: [run/koreazinc-live-010130-20260901]
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Prepare official DART raw archive
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          import html, json, re, yaml
+
+          run = Path('/tmp/koreazinc-010130')
+          raw = run/'raw'
+          decl = run/'declarations'
+          staff = decl/'staff'
+          filing_dir = raw/'filing_20260814003958'
+          for p in (raw, decl, staff, filing_dir): p.mkdir(parents=True, exist_ok=True)
+
+          def fetch(url):
+              return urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0'}),timeout=30).read()
+
+          def parse_nodes(text):
+              starts=[m.start() for m in re.finditer(r'var node\d+\s*=\s*\{\};',text)]
+              rows=[]
+              for i,s in enumerate(starts):
+                  e=starts[i+1] if i+1<len(starts) else min(len(text),s+4000)
+                  block=text[s:e]
+                  def g(k):
+                      m=re.search(rf"node\d+\['{re.escape(k)}'\]\s*=\s*\"([^\"]*)\"",block)
+                      return html.unescape(m.group(1)) if m else ''
+                  row={k:g(k) for k in ('text','rcpNo','dcmNo','eleId','offset','length','dtd')}
+                  if row['eleId']: rows.append(row)
+              return rows
+
+          rcp='20260814003958'
+          main_url=f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}'
+          main=fetch(main_url).decode('utf-8','replace')
+          nodes=parse_nodes(main)
+          wanted_terms=(
+              '사업의 개요','주요 제품 및 서비스','원재료 및 생산설비','매출 및 수주상황',
+              '주식의 총수','연결 재무상태표','연결 포괄손익계산서','연결 현금흐름표',
+              '재고자산 (연결)','차입금 (연결)','사채 (연결)','고객과의 계약에서 생기는 수익',
+              '현금흐름표 (연결)','부문별 정보','보고기간 후 사건','연결회사의 개요'
+          )
+          saved=[]
+          for row in nodes:
+              if not any(term in row['text'] for term in wanted_terms): continue
+              q=(f"https://dart.fss.or.kr/report/viewer.do?rcpNo={row['rcpNo']}"
+                 f"&dcmNo={row['dcmNo']}&eleId={row['eleId']}"
+                 f"&offset={row['offset']}&length={row['length']}&dtd={row['dtd']}")
+              body=fetch(q).decode('utf-8','replace')
+              (filing_dir/f"{rcp}_{row['eleId']}.xml").write_text(body,encoding='utf-8')
+              saved.append({'eleId':row['eleId'],'text':row['text'],'url':q})
+
+          (raw/'corp_search.json').write_text(json.dumps({
+              'companies':[{'corp_code':'00102858','corp_name':'고려아연','stock_code':'010130'}]
+          },ensure_ascii=False),encoding='utf-8')
+          (raw/'company.json').write_text(json.dumps({
+              'status':'000','message':'정상','corp_code':'00102858','corp_name':'고려아연 주식회사',
+              'corp_name_eng':'Korea Zinc Co., Ltd.','stock_name':'고려아연','stock_code':'010130',
+              'corp_cls':'Y','induty_code':'24213','acc_mt':'12'
+          },ensure_ascii=False),encoding='utf-8')
+          (raw/'list.json').write_text(json.dumps({
+              'status':'000','message':'정상','page_no':1,'page_count':10,'total_count':2,'total_page':1,
+              'list':[
+                  {'corp_code':'00102858','corp_name':'고려아연','stock_code':'010130','corp_cls':'Y',
+                   'report_nm':'반기보고서 (2026.06)','rcept_no':'20260814003958','flr_nm':'고려아연','rcept_dt':'20260814','rm':''},
+                  {'corp_code':'00102858','corp_name':'고려아연','stock_code':'010130','corp_cls':'Y',
+                   'report_nm':'사업보고서 (2025.12)','rcept_no':'20260316000929','flr_nm':'고려아연','rcept_dt':'20260316','rm':''}
+              ]
+          },ensure_ascii=False),encoding='utf-8')
+
+          run_yaml={
+              'company_query':'고려아연','as_of':'2026-08-31','scenario_ids':['Down','Base','Bull'],
+              'method':'commodity_price_taker/normalized_multiple','market_currency':'KRW',
+              'report_name':'고려아연','ticker':'010130','safe_name':'KOREAZINC',
+              'filing':{'business_year':'2026','report_code':'11012','fs_div':'CFS','fiscal_period_end':'2026-06-30','segment_id':'core'}
+          }
+          (run/'run.yaml').write_text(yaml.safe_dump(run_yaml,allow_unicode=True,sort_keys=False),encoding='utf-8')
+          source=main_url
+          underwriting={
+              'target_id':'KR:DART:00102858','as_of':'2026-08-31','source_ref':source,
+              'declarations':{
+                  'normalized_ebitda':{'value':2700,'unit':'KRW_billion','source_ref':source,
+                    'rationale':'2025 연간 실적과 2026년 반기 영업이익·감가상각 추이를 함께 보아 사이클 고점 전부를 반영하지 않은 중간 수준의 EBITDA 판단값입니다.'},
+                  'normalized_multiple':{'value':7.0,'unit':'multiple','source_ref':source,
+                    'rationale':'비철금속 제련의 높은 자본집약도와 금속가격 민감도, 귀금속 부산물 가치가 공존한다는 점을 반영한 통과주기 EV/EBITDA 판단값입니다.'},
+                  'ownership':{'value':1.0,'unit':'ratio','source_ref':source,
+                    'rationale':'연결 기준 기업가치 평가의 회사 전체 귀속비율을 100%로 두는 기본 소유권 브리지 판단입니다.'},
+                  'ev_adjustment':{'value':-4000,'unit':'KRW_billion','source_ref':source,
+                    'rationale':'본 초기 진단 런에서는 연결 순차입금 방향을 보수적으로 반영하기 위한 임시 브리지이며 최종 SOTP 전 공식 재무상태표로 재산정합니다.'},
+                  'diluted_shares':{'value':20872969,'unit':'shares','source_ref':source,
+                    'rationale':'2026년 반기보고서 주식의 총수 표에 기재된 발행주식 총수 20,872,969주를 희석주식수의 보수적 기준으로 사용합니다.'}
+              }
+          }
+          (decl/'underwriting.yaml').write_text(yaml.safe_dump(underwriting,allow_unicode=True,sort_keys=False),encoding='utf-8')
+          (run/'source_manifest.json').write_text(json.dumps({'main_url':main_url,'saved_sections':saved},ensure_ascii=False,indent=2),encoding='utf-8')
+          print(json.dumps({'run':str(run),'saved':saved},ensure_ascii=False)[:12000])
+          PY
+      - name: Execute canonical PRISM runbook
+        id: prism
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          PYTHONPATH=src python scripts/run_kr_live.py /tmp/koreazinc-010130 2>&1 | tee /tmp/koreazinc-010130/prism.log
+      - name: Upload prepared run and PRISM output
+        uses: actions/upload-artifact@v4
+        with:
+          name: KOREAZINC_010130_PREPARED_PRISM
+          path: /tmp/koreazinc-010130
+      - name: Report stop
+        run: |
+          cat /tmp/koreazinc-010130/prism.log
