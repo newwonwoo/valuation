@@ -15,6 +15,43 @@ jobs:
           python-version: '3.11'
       - name: Install
         run: python -m pip install -e '.[dev]'
+      - name: Korea Zinc canonical PRISM live run
+        env:
+          DART_API_KEY: ${{ secrets.DART_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          VALUATION_LLM_TRANSPORT: anthropic_transport:build
+          VALUATION_MCP_STATE_ROOT: /tmp/prism-koreazinc-state
+          PYTHONPATH: src:scripts
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from valuation_engine.mcp_server import run_prism_mcp
+
+          output = Path('/tmp/KOREAZINC_010130_PRISM_RESULT.json')
+          try:
+              result = run_prism_mcp('고려아연')
+          except Exception as exc:
+              payload = {
+                  'status': 'EXECUTION_ERROR',
+                  'error_type': type(exc).__name__,
+                  'error': str(exc),
+              }
+              output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
+              print(json.dumps(payload, ensure_ascii=False))
+              raise
+          else:
+              output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+              summary = {key: value for key, value in result.items() if key != 'report'}
+              print(json.dumps(summary, ensure_ascii=False))
+          PY
+      - name: Upload Korea Zinc PRISM result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: KOREAZINC_010130_PRISM_RESULT
+          path: /tmp/KOREAZINC_010130_PRISM_RESULT.json
+          if-no-files-found: error
       - name: Unit contract registry
         run: PYTHONPATH=src python scripts/validate_unit_contract_registry.py
       - name: Module registries and method capabilities
