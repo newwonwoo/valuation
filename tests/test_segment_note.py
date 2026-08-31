@@ -156,3 +156,24 @@ def test_reconciliation_refuses_a_whole_it_cannot_anchor_to():
             consolidated_revenue=D("0"),
             consolidated_operating_income=D("-2872504765"),
         )
+
+
+def test_two_tier_reportable_segment_header_is_reconciled():
+    text = """
+    <table>
+      <tr><td></td><td>부문</td><td>부문</td><td>부문</td><td>부문 합계</td></tr>
+      <tr><td></td><td>보고부문</td><td>보고부문</td><td>기타부문</td><td>부문 합계</td></tr>
+      <tr><td></td><td>비철금속 제조 및 판매</td><td>비철금속 수출입</td><td>기타부문</td><td>부문 합계</td></tr>
+      <tr><td>매출액</td><td>9693315659</td><td>3182281396</td><td>413925299</td><td>13289522354</td></tr>
+      <tr><td>영업이익</td><td>1241489905</td><td>54979012</td><td>(13599031)</td><td>1282869886</td></tr>
+    </table>
+    """
+    disclosure = parse_operating_segment_note(text)
+    assert disclosure.segment_names == (
+        "비철금속 제조 및 판매",
+        "비철금속 수출입",
+        "기타부문",
+    )
+    assert disclosure.total_revenue == Decimal("13289522354")
+    assert disclosure.total_operating_income == Decimal("1282869886")
+    assert disclosure.entries[2].operating_income == Decimal("-13599031")

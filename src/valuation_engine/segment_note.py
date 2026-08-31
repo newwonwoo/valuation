@@ -136,13 +136,7 @@ class OperatingSegmentDisclosure:
 
 
 def _segment_columns(grid: list[list[str]]) -> tuple[int, tuple[tuple[int, str], ...], int] | None:
-    """Locate the reportable-segment block by header name.
-
-    Returns ``(header_row, ((column, name), …), total_column)`` for the first
-    header row that names two or more segments and is closed by a
-    ``부문 합계`` cell — the ``영업부문`` group. The mirrored group under
-    ``중요한 조정사항`` repeats the same names, so only the first block is taken.
-    """
+    """Locate reportable-segment columns in one- or two-tier IFRS 8 headers."""
     for row_index, row in enumerate(grid):
         named: list[tuple[int, str]] = []
         for column_index, cell in enumerate(row):
@@ -158,8 +152,61 @@ def _segment_columns(grid: list[list[str]]) -> tuple[int, tuple[tuple[int, str],
                 not named or name != named[-1][1]
             ):
                 named.append((column_index, name))
-    return None
 
+    # Some statutory notes group columns under 보고부문/기타부문 and put the
+    # actual reportable names one row lower. The economic names may not end in
+    # '부문', so locate the grouped columns first, then read the next header row.
+    for group_row_index, row in enumerate(grid):
+        total_columns = tuple(
+            column_index
+            for column_index, cell in enumerate(row)
+            if _squeeze(cell) in _SEGMENT_TOTAL_CELLS
+        )
+        for total_column in total_columns:
+            if total_column < 3:
+                continue
+            group_columns = tuple(
+                column_index
+                for column_index in range(1, total_column)
+                if (
+                    _squeeze(row[column_index]) == "보고부문"
+                    or (
+                        _SEGMENT_NAME.match(_squeeze(row[column_index]))
+                        and _squeeze(row[column_index]) not in _SEGMENT_TOTAL_CELLS
+                    )
+                )
+            )
+            if len(group_columns) < 2:
+                continue
+            for name_row_index in range(
+                group_row_index + 1, min(len(grid), group_row_index + 4)
+            ):
+                name_row = grid[name_row_index]
+                named: list[tuple[int, str]] = []
+                valid = True
+                for column_index in group_columns:
+                    if column_index >= len(name_row):
+                        valid = False
+                        break
+                    candidate = " ".join(str(name_row[column_index]).split()).strip()
+                    squeezed = _squeeze(candidate)
+                    if (
+                        not candidate
+                        or squeezed in _STRUCTURAL_CELLS
+                        or _amount(candidate) is not None
+                    ):
+                        valid = False
+                        break
+                    named.append((column_index, candidate))
+                if not valid:
+                    continue
+                canonical = tuple(
+                    re.sub(r"[\s/·&-]+", "", name).casefold()
+                    for _, name in named
+                )
+                if len(named) >= 2 and len(set(canonical)) == len(named):
+                    return name_row_index, tuple(named), total_column
+    return None
 
 def _metric_row(
     grid: list[list[str]], labels: frozenset[str], header_row: int

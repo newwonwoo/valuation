@@ -219,6 +219,32 @@ classifications:
       customer_structure: contracted shippers and affiliated cargo owners
       reinvestment_model: fleet replacement capex
       cashflow_duration: freight-cycle driven
+  - ksic_prefix: "46"
+    label: 도매 및 상품 중개업
+    sector_adapter: trade.commodity
+    archetypes: [process_spread]
+    structure:
+      revenue_recognition: delivery_or_resale
+      price_formation: commodity resale spread over procurement and logistics
+      asset_ownership: working-capital-led trading platform
+      capital_intensity: low-medium
+      regulation_intensity: low
+      customer_structure: industrial buyers and affiliated producers
+      reinvestment_model: inventory and receivables working capital
+      cashflow_duration: commodity-and-working-capital cycle
+  - ksic_prefix: "38"
+    label: 폐기물 수집·처리 및 원료 재생업
+    sector_adapter: recycling.materials
+    archetypes: [process_spread]
+    structure:
+      revenue_recognition: processed_material_delivery
+      price_formation: recovered-metal benchmark less feedstock and processing cost
+      asset_ownership: owned processing and recovery assets
+      capital_intensity: medium-high
+      regulation_intensity: high
+      customer_structure: waste suppliers and commodity or material buyers
+      reinvestment_model: recovery capacity and environmental compliance capex
+      cashflow_duration: commodity-and-feedstock cycle
   - ksic_prefix: "24"
     label: 1차 금속 제조업
     sector_adapter: metals.steel
