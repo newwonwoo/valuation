@@ -11,76 +11,75 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install
-        run: python -m pip install -e '.[dev]'
-      - name: Harvest Korea Zinc H1 public DART filing index
+      - name: Harvest exact Korea Zinc H1 public DART sections
         run: |
           python - <<'PY'
           from pathlib import Path
+          from urllib.parse import urlencode
           from urllib.request import Request, urlopen
           import json, re
 
           rcp = '20260814003958'
-          url = f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}'
-          req = Request(url, headers={
+          dcm = '11539212'
+          base_headers = {
               'User-Agent': 'Mozilla/5.0 PRISM research runner',
               'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
-          })
-          with urlopen(req, timeout=30) as resp:
-              raw = resp.read()
-          text = raw.decode('utf-8', errors='replace')
+              'Referer': f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}',
+          }
+          def fetch(url):
+              req = Request(url, headers=base_headers)
+              with urlopen(req, timeout=40) as resp:
+                  return resp.read()
+
           out = Path('/tmp/koreazinc_dart')
           out.mkdir(parents=True, exist_ok=True)
+          main_url = f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}'
+          raw = fetch(main_url)
+          text = raw.decode('utf-8', errors='replace')
           (out / 'main.html').write_bytes(raw)
-          patterns = {
-              'viewer_calls': r"(?:viewDoc|openPdfDownload|viewDoc2)\(([^\n]{0,500})\)",
-              'nodes': r"node\d+\[[^\n]{0,500}",
-              'viewer_urls': r"report/viewer\.do\?[^\"'<> ]+",
-          }
-          payload = {'url': url, 'bytes': len(raw), 'matches': {}}
-          for name, pattern in patterns.items():
-              payload['matches'][name] = re.findall(pattern, text)[:500]
-          # Keep useful surrounding text where DART writes section metadata.
-          lines = [line for line in text.splitlines() if any(k in line for k in ('dcmNo','eleId','offset','length','rcpNo','treeNode'))]
-          (out / 'metadata_lines.txt').write_text('\n'.join(lines), encoding='utf-8')
-          (out / 'index.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
-          print(json.dumps({'url': url, 'bytes': len(raw), 'metadata_lines': len(lines)}, ensure_ascii=False))
+
+          lines = text.splitlines()
+          nodes = []
+          current = None
+          for line in lines:
+              m = re.search(r"(node\d+)\['text'\]\s*=\s*\"(.*?)\";", line)
+              if m:
+                  if current and current.get('text'):
+                      nodes.append(current)
+                  current = {'node': m.group(1), 'text': m.group(2)}
+                  continue
+              if current:
+                  for key in ('id','rcpNo','dcmNo','eleId','offset','length','dtd','tocNo','atocId'):
+                      m = re.search(rf"\['{key}'\]\s*=\s*\"?([^\";]+)\"?;", line)
+                      if m:
+                          current[key] = m.group(1).strip().strip('"')
+                          break
+          if current and current.get('text'):
+              nodes.append(current)
+
+          wanted_ids = {'9','11','12','13','18','19','20','21','23','24','58','66'}
+          selected = [n for n in nodes if n.get('id') in wanted_ids]
+          receipts = []
+          for node in selected:
+              params = {
+                  'rcpNo': node['rcpNo'],
+                  'dcmNo': node['dcmNo'],
+                  'eleId': node['eleId'],
+                  'offset': node['offset'],
+                  'length': node['length'],
+                  'dtd': node.get('dtd','dart4.xsd'),
+              }
+              url = 'https://dart.fss.or.kr/report/viewer.do?' + urlencode(params)
+              body = fetch(url)
+              path = out / f"{rcp}_{node['eleId']}.html"
+              path.write_bytes(body)
+              receipts.append({**node, 'url': url, 'bytes': len(body), 'filename': path.name})
+              print(node['id'], node['text'], len(body))
+          (out / 'sections.json').write_text(json.dumps(receipts, ensure_ascii=False, indent=2), encoding='utf-8')
           PY
-      - name: Upload public DART filing index
+      - name: Upload exact public DART sections
         uses: actions/upload-artifact@v4
         with:
-          name: KOREAZINC_010130_DART_H1_INDEX
+          name: KOREAZINC_010130_DART_H1_SECTIONS
           path: /tmp/koreazinc_dart/
-          if-no-files-found: error
-      - name: Korea Zinc canonical PRISM direct-provider diagnostic
-        continue-on-error: true
-        env:
-          DART_API_KEY: ${{ secrets.DART_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          VALUATION_LLM_TRANSPORT: anthropic_transport:build
-          VALUATION_MCP_STATE_ROOT: /tmp/prism-koreazinc-state
-          PYTHONPATH: src:scripts
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          from valuation_engine.mcp_server import run_prism_mcp
-          output = Path('/tmp/KOREAZINC_010130_PRISM_RESULT.json')
-          try:
-              result = run_prism_mcp('고려아연')
-          except Exception as exc:
-              payload = {'status':'EXECUTION_ERROR','error_type':type(exc).__name__,'error':str(exc)}
-              output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding='utf-8')
-              print(json.dumps(payload, ensure_ascii=False))
-              raise
-          else:
-              output.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
-              print(json.dumps({k:v for k,v in result.items() if k != 'report'}, ensure_ascii=False))
-          PY
-      - name: Upload Korea Zinc direct-provider result
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: KOREAZINC_010130_PRISM_RESULT
-          path: /tmp/KOREAZINC_010130_PRISM_RESULT.json
           if-no-files-found: error
