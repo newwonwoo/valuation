@@ -1,0 +1,52 @@
+name: koreazinc-candidate-scope
+
+on:
+  push:
+    branches: [run/koreazinc-candidate-scope-010130-20260901]
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Apply reviewed candidate-scope delta in diagnostic worktree
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('src/valuation_engine/evaluator_registry.py')
+          t=p.read_text(encoding='utf-8')
+          anchor='''    def has_scoped_registrations(self) -> bool:\n        return bool(self._segment_evaluators)\n'''
+          addition='''    def keys_for_segment(self, segment_id: str) -> tuple[ModelKey, ...]:\n        if not segment_id:\n            raise ValueError("segment evaluator lookup requires segment_id")\n        keys = set(self._evaluators)\n        keys.update(\n            key for scoped_segment_id, key in self._segment_evaluators\n            if scoped_segment_id == segment_id\n        )\n        return tuple(sorted(keys, key=lambda item: (item.archetype, item.method, item.version)))\n\n'''
+          if anchor not in t: raise SystemExit('registry anchor missing')
+          p.write_text(t.replace(anchor, addition+anchor, 1), encoding='utf-8')
+          p=Path('src/valuation_engine/valuation_plan_compiler.py')
+          t=p.read_text(encoding='utf-8')
+          old='        for key in evaluator_registry.keys()\n'
+          if old not in t: raise SystemExit('compiler key loop missing')
+          p.write_text(t.replace(old,'        for key in evaluator_registry.keys_for_segment(segment_id)\n',1),encoding='utf-8')
+          PY
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Restore frozen Korea Zinc input
+        uses: actions/download-artifact@v4
+        with:
+          name: KOREAZINC_010130_PRISM_SOTP_FAST
+          path: /tmp/koreazinc-010130
+          github-token: ${{ github.token }}
+          run-id: 33428566520
+      - name: Execute canonical PRISM
+        id: prism
+        continue-on-error: true
+        run: |
+          rm -rf /tmp/koreazinc-010130/out
+          set -o pipefail
+          PYTHONPATH=src python scripts/run_kr_live.py /tmp/koreazinc-010130 2>&1 | tee /tmp/koreazinc-010130/prism.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KOREAZINC_010130_CANDIDATE_SCOPE
+          path: /tmp/koreazinc-010130
+      - name: Show result
+        run: cat /tmp/koreazinc-010130/prism.log
