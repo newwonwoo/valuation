@@ -80,13 +80,20 @@ such as `.valuation_state` or `state/prism` is rejected so a launch from a Git
 checkout or ephemeral working directory cannot silently become the durable
 state location.
 
+The root must also resolve, through `/proc/self/mountinfo`, to one of the small
+local-filesystem allowlist currently covered by the security contract:
+`ext2`, `ext3`, `ext4`, `xfs`, or `btrfs`. CIFS/SMB, NFS, FUSE, overlay and other
+foreign/virtual filesystems are fail-closed because their effective
+authorization surface cannot be established from the container/process view
+alone.
+
 The launcher creates a missing state root with owner-only `0700` permissions and
 repairs an existing root to `0700` before starting the tunnel. It then verifies
 that no group/other mode bits remain and inspects extended attributes. Any
 ACL-like xattr (for example POSIX, NFSv4 or Samba/NT ACL metadata) causes
-preflight to fail. If extended attributes cannot be inspected, preflight also
-fails. The launcher deliberately does not rewrite an operator's ACL policy and
-then assume the rewrite was safe.
+preflight to fail. If mount metadata or extended attributes cannot be inspected,
+preflight also fails. The launcher deliberately does not rewrite an operator's
+ACL policy and then assume the rewrite was safe.
 
 Optional:
 
@@ -133,7 +140,8 @@ The command validates only non-secret configuration and returns JSON similar to:
 
 Secret values are never printed. `READY_TO_CONNECT` also means the host passed
 the native-Linux check and the state root was explicitly supplied, is absolute,
-is a directory, is `0700`, and contains no detected ACL-like xattrs.
+is on an allowlisted local Linux filesystem, is `0700`, and contains no detected
+ACL-like xattrs.
 
 ## 5. Connect the managed runtime
 
@@ -252,7 +260,7 @@ Before calling the integration complete, verify all of the following:
 - runtime host is native Linux; WSL/macOS/Windows are rejected.
 - tunnel-client is an approved binary.
 - `VALUATION_MCP_STATE_ROOT` is explicitly configured as an absolute path.
-- state root is on persistent storage, mode `0700`, with no detected ACL-like xattrs.
+- state root is on persistent `ext2/ext3/ext4/xfs/btrfs` storage, mode `0700`, with no detected ACL-like xattrs.
 - `VALUATION_METHOD` is unset unless an explicit override is intended.
 - tunnel runtime status reports running/healthy/ready.
 - ChatGPT scans exactly `prism_analyze` as the valuation tool.
