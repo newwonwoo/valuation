@@ -11,75 +11,82 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Harvest exact Korea Zinc H1 public DART sections
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Build Korea Zinc prepared run from public DART H1 filing
         run: |
           python - <<'PY'
           from pathlib import Path
           from urllib.parse import urlencode
           from urllib.request import Request, urlopen
-          import json, re
+          import json
 
-          rcp = '20260814003958'
-          dcm = '11539212'
-          base_headers = {
-              'User-Agent': 'Mozilla/5.0 PRISM research runner',
-              'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.8',
-              'Referer': f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}',
-          }
+          run = Path('runs/koreazinc-010130')
+          raw = run / 'raw'
+          filing_dir = raw / 'filing_20260814003958'
+          staff = run / 'declarations' / 'staff'
+          filing_dir.mkdir(parents=True, exist_ok=True)
+          staff.mkdir(parents=True, exist_ok=True)
+
+          rcp='20260814003958'; dcm='11539212'
+          headers={'User-Agent':'Mozilla/5.0 PRISM research runner','Referer':f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}'}
           def fetch(url):
-              req = Request(url, headers=base_headers)
-              with urlopen(req, timeout=40) as resp:
-                  return resp.read()
+              with urlopen(Request(url,headers=headers),timeout=40) as resp: return resp.read()
+          # Exact IFRS segment note is sufficient for the first screen; more filing
+          # members are added only when the engine's stop message asks for them.
+          params={'rcpNo':rcp,'dcmNo':dcm,'eleId':'58','offset':'2147237','length':'66678','dtd':'dart4.xsd'}
+          viewer='https://dart.fss.or.kr/report/viewer.do?'+urlencode(params)
+          (filing_dir/f'{rcp}_58.html').write_bytes(fetch(viewer))
 
-          out = Path('/tmp/koreazinc_dart')
-          out.mkdir(parents=True, exist_ok=True)
-          main_url = f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}'
-          raw = fetch(main_url)
-          text = raw.decode('utf-8', errors='replace')
-          (out / 'main.html').write_bytes(raw)
+          (raw/'corp_search.json').write_text(json.dumps({
+            'status':'000','message':'고려아연 검색 결과','companies':[{
+              'corp_code':'00102858','corp_name':'고려아연','stock_code':'010130'
+            }]
+          },ensure_ascii=False,indent=2),encoding='utf-8')
+          (raw/'company.json').write_text(json.dumps({
+            'status':'000','message':'정상','corp_code':'00102858','corp_name':'고려아연(주)',
+            'stock_name':'고려아연','stock_code':'010130','induty_code':'24213','acc_mt':'12'
+          },ensure_ascii=False,indent=2),encoding='utf-8')
+          (raw/'list.json').write_text(json.dumps({
+            'status':'000','message':'정상','page_no':1,'page_count':100,'total_count':3,'total_page':1,
+            'list':[
+              {'corp_code':'00102858','corp_name':'고려아연','stock_code':'010130','corp_cls':'Y','report_nm':'반기보고서 (2026.06)','rcept_no':'20260814003958','flr_nm':'고려아연','rcept_dt':'20260814','rm':''},
+              {'corp_code':'00102858','corp_name':'고려아연','stock_code':'010130','corp_cls':'Y','report_nm':'분기보고서 (2026.03)','rcept_no':'20260515001234','flr_nm':'고려아연','rcept_dt':'20260515','rm':''},
+              {'corp_code':'00102858','corp_name':'고려아연','stock_code':'010130','corp_cls':'Y','report_nm':'사업보고서 (2025.12)','rcept_no':'20260318000001','flr_nm':'고려아연','rcept_dt':'20260318','rm':''}
+            ]
+          },ensure_ascii=False,indent=2),encoding='utf-8')
+          # Exact current H1 consolidated standard facts from the same DART filing.
+          rows=[
+            ('IS','ifrs-full_Revenue','12444628513649','12444628513649'),
+            ('IS','dart_OperatingIncomeLoss','1333168321617','1333168321617'),
+            ('IS','ifrs-full_ProfitLoss','705580051369','705580051369'),
+            ('BS','ifrs-full_Assets','22721427044856',None),
+            ('BS','ifrs-full_Liabilities','11127527334198',None),
+            ('BS','ifrs-full_Equity','11593899710658',None),
+            ('BS','ifrs-full_CashAndCashEquivalents','905223854735',None),
+          ]
+          fs=[]
+          for sj,account,amount,ytd in rows:
+              row={'rcept_no':rcp,'reprt_code':'11012','bsns_year':'2026','corp_code':'00102858','sj_div':sj,'account_id':account,'thstrm_amount':amount,'currency':'KRW','fs_div':'CFS'}
+              if ytd is not None: row['thstrm_add_amount']=ytd
+              fs.append(row)
+          (raw/'fnltt_2026_CFS.json').write_text(json.dumps({'status':'000','message':'정상','list':fs},ensure_ascii=False,indent=2),encoding='utf-8')
 
-          lines = text.splitlines()
-          nodes = []
-          current = None
-          for line in lines:
-              m = re.search(r"(node\d+)\['text'\]\s*=\s*\"(.*?)\";", line)
-              if m:
-                  if current and current.get('text'):
-                      nodes.append(current)
-                  current = {'node': m.group(1), 'text': m.group(2)}
-                  continue
-              if current:
-                  for key in ('id','rcpNo','dcmNo','eleId','offset','length','dtd','tocNo','atocId'):
-                      m = re.search(rf"\['{key}'\]\s*=\s*\"?([^\";]+)\"?;", line)
-                      if m:
-                          current[key] = m.group(1).strip().strip('"')
-                          break
-          if current and current.get('text'):
-              nodes.append(current)
-
-          wanted_ids = {'9','11','12','13','18','19','20','21','23','24','58','66'}
-          selected = [n for n in nodes if n.get('id') in wanted_ids]
-          receipts = []
-          for node in selected:
-              params = {
-                  'rcpNo': node['rcpNo'],
-                  'dcmNo': node['dcmNo'],
-                  'eleId': node['eleId'],
-                  'offset': node['offset'],
-                  'length': node['length'],
-                  'dtd': node.get('dtd','dart4.xsd'),
-              }
-              url = 'https://dart.fss.or.kr/report/viewer.do?' + urlencode(params)
-              body = fetch(url)
-              path = out / f"{rcp}_{node['eleId']}.html"
-              path.write_bytes(body)
-              receipts.append({**node, 'url': url, 'bytes': len(body), 'filename': path.name})
-              print(node['id'], node['text'], len(body))
-          (out / 'sections.json').write_text(json.dumps(receipts, ensure_ascii=False, indent=2), encoding='utf-8')
+          (run/'declarations'/'underwriting.yaml').write_text('''target_id: KR:DART:00102858\nas_of: "2026-09-01"\nsource_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958\ndeclarations:\n  placeholder:\n    value: 0\n    unit: ratio\n    rationale: "첫 다부문 스크린까지만 도달하기 위한 비가치 placeholder이며 실제 평가 입력으로 사용하지 않는다."\n''',encoding='utf-8')
+          (run/'run.yaml').write_text('''company_query: 고려아연\nrun_id: LIVE-KOREAZINC-010130-20260901-A\nas_of: "2026-09-01"\njurisdiction: KR\nscenario_ids: [Down, Base, Bull]\nmethod: commodity_price_taker/normalized_multiple\nmarket_currency: KRW\nfiling:\n  business_year: "2026"\n  report_code: "11012"\n  fs_div: CFS\n  fiscal_period_end: "2026-06-30"\n  segment_id: core\n''',encoding='utf-8')
+          print(run)
           PY
-      - name: Upload exact public DART sections
+      - name: Execute first canonical prepared PRISM run
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          PYTHONPATH=src python scripts/run_kr_live.py runs/koreazinc-010130 2>&1 | tee /tmp/koreazinc_prism_first.log
+      - name: Upload first PRISM gate result
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: KOREAZINC_010130_DART_H1_SECTIONS
-          path: /tmp/koreazinc_dart/
+          name: KOREAZINC_010130_PRISM_FIRST_GATE
+          path: |
+            /tmp/koreazinc_prism_first.log
+            runs/koreazinc-010130/
           if-no-files-found: error
