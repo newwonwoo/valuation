@@ -11,10 +11,7 @@ import valuation_engine.mcp_tunnel_child as tunnel_child
 import valuation_engine.tunnel_launcher as launcher
 
 
-_linux_only = pytest.mark.skipif(
-    not sys.platform.startswith("linux"),
-    reason="Linux/WSL2 tunnel host required",
-)
+_NATIVE_LINUX = launcher._supports_private_posix_permissions()
 
 
 def test_tunnel_child_scrubs_control_plane_secrets_but_keeps_model_key():
@@ -75,34 +72,94 @@ def test_prepare_runtime_environment_requires_separate_tunnel_key(tmp_path):
         launcher._prepare_runtime_environment(env)
 
 
-def test_prepare_runtime_environment_rejects_non_linux_permission_host(monkeypatch, tmp_path):
-    monkeypatch.setattr(launcher, "_supports_private_posix_permissions", lambda: False)
+def test_prepare_runtime_environment_rejects_non_linux_permission_host(
+    monkeypatch,
+    tmp_path,
+):
+    monkeypatch.setattr(
+        launcher,
+        "_supports_private_posix_permissions",
+        lambda: False,
+    )
     env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state")}
-    with pytest.raises(launcher.PrismTunnelError, match="Linux host"):
+    with pytest.raises(launcher.PrismTunnelError, match="native Linux host"):
         launcher._prepare_runtime_environment(env)
 
 
-def test_prepare_runtime_environment_rejects_macos(monkeypatch, tmp_path):
-    monkeypatch.setattr(launcher.sys, "platform", "darwin")
-    env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state")}
-    with pytest.raises(launcher.PrismTunnelError, match="macOS"):
-        launcher._prepare_runtime_environment(env)
+def test_wsl_runtime_is_not_supported(monkeypatch):
+    monkeypatch.setattr(launcher.sys, "platform", "linux")
+    monkeypatch.setattr(launcher, "_is_wsl_runtime", lambda: True)
+    assert launcher._supports_private_posix_permissions() is False
 
 
 def test_prepare_runtime_environment_requires_explicit_state_root(monkeypatch):
-    monkeypatch.setattr(launcher, "_supports_private_posix_permissions", lambda: True)
+    monkeypatch.setattr(
+        launcher,
+        "_supports_private_posix_permissions",
+        lambda: True,
+    )
     with pytest.raises(launcher.PrismTunnelError, match="VALUATION_MCP_STATE_ROOT"):
         launcher._prepare_runtime_environment(_base_env())
 
 
 def test_prepare_runtime_environment_rejects_relative_state_root(monkeypatch):
-    monkeypatch.setattr(launcher, "_supports_private_posix_permissions", lambda: True)
+    monkeypatch.setattr(
+        launcher,
+        "_supports_private_posix_permissions",
+        lambda: True,
+    )
     env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": "relative/prism-state"}
     with pytest.raises(launcher.PrismTunnelError, match="absolute"):
         launcher._prepare_runtime_environment(env)
 
 
-@_linux_only
+def test_mountinfo_uses_the_most_specific_mount():
+    text = (
+        "20 1 8:1 / / rw,relatime - ext4 /dev/root rw\n"
+        "21 20 0:44 / /mnt/data rw,relatime - cifs //server/share rw\n"
+    )
+    fs_type, mount_point = launcher._filesystem_type_for_path(
+        Path("/mnt/data/prism/state"),
+        mountinfo_text=text,
+    )
+    assert fs_type == "cifs"
+    assert mount_point == Path("/mnt/data")
+
+
+def test_mountinfo_decodes_escaped_mount_paths():
+    text = "20 1 8:1 / /mnt/private\\040data rw - ext4 /dev/root rw\n"
+    fs_type, mount_point = launcher._filesystem_type_for_path(
+        Path("/mnt/private data/prism"),
+        mountinfo_text=text,
+    )
+    assert fs_type == "ext4"
+    assert mount_point == Path("/mnt/private data")
+
+
+def test_foreign_filesystem_fails_closed(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        launcher,
+        "_supports_private_posix_permissions",
+        lambda: True,
+    )
+    monkeypatch.setattr(
+        launcher,
+        "_filesystem_type_for_path",
+        lambda root: ("cifs", Path("/mnt/share")),
+    )
+    with pytest.raises(
+        launcher.PrismTunnelError,
+        match="verified local Linux filesystem",
+    ):
+        launcher._prepare_runtime_environment(
+            {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state")}
+        )
+
+
+@pytest.mark.skipif(
+    not _NATIVE_LINUX,
+    reason="native Linux tunnel security contract",
+)
 def test_prepare_runtime_environment_resolves_persistent_state_root(tmp_path):
     env = launcher._prepare_runtime_environment(
         {
@@ -116,7 +173,10 @@ def test_prepare_runtime_environment_resolves_persistent_state_root(tmp_path):
     assert env["VALUATION_MCP_JURISDICTION"] == "KR"
 
 
-@_linux_only
+@pytest.mark.skipif(
+    not _NATIVE_LINUX,
+    reason="native Linux tunnel security contract",
+)
 def test_new_tunnel_state_root_is_private(tmp_path):
     root = tmp_path / "private-state"
     launcher._prepare_runtime_environment(
@@ -125,7 +185,10 @@ def test_new_tunnel_state_root_is_private(tmp_path):
     assert stat.S_IMODE(root.stat().st_mode) == 0o700
 
 
-@_linux_only
+@pytest.mark.skipif(
+    not _NATIVE_LINUX,
+    reason="native Linux tunnel security contract",
+)
 def test_existing_permissive_state_root_is_repaired(tmp_path):
     root = tmp_path / "permissive-state"
     root.mkdir(mode=0o755)
@@ -139,7 +202,47 @@ def test_existing_permissive_state_root_is_repaired(tmp_path):
     assert stat.S_IMODE(root.stat().st_mode) == 0o700
 
 
-@_linux_only
+@pytest.mark.skipif(
+    not _NATIVE_LINUX,
+    reason="native Linux tunnel security contract",
+)
+def test_extended_linux_acl_metadata_fails_closed(monkeypatch, tmp_path):
+    root = tmp_path / "acl-state"
+    monkeypatch.setattr(
+        launcher.os,
+        "listxattr",
+        lambda path: ["system.posix_acl_access", "system.nfs4_acl"],
+    )
+    with pytest.raises(launcher.PrismTunnelError, match="extended ACL metadata"):
+        launcher._prepare_runtime_environment(
+            {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(root)}
+        )
+
+
+@pytest.mark.skipif(
+    not _NATIVE_LINUX,
+    reason="native Linux tunnel security contract",
+)
+def test_unverifiable_linux_acl_metadata_fails_closed(monkeypatch, tmp_path):
+    root = tmp_path / "acl-unverifiable"
+
+    def deny(_path):
+        raise OSError("not permitted")
+
+    monkeypatch.setattr(launcher.os, "listxattr", deny)
+    with pytest.raises(
+        launcher.PrismTunnelError,
+        match="ACL metadata cannot be verified",
+    ):
+        launcher._prepare_runtime_environment(
+            {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(root)}
+        )
+
+
+@pytest.mark.skipif(
+    not _NATIVE_LINUX,
+    reason="native Linux tunnel security contract",
+)
 def test_check_never_returns_secret_values(monkeypatch, tmp_path):
     fake_bin = tmp_path / "tunnel-client"
     fake_bin.write_text("binary", encoding="utf-8")
@@ -170,7 +273,10 @@ def _runtime_env(tmp_path):
     }
 
 
-@_linux_only
+@pytest.mark.skipif(
+    not _NATIVE_LINUX,
+    reason="native Linux tunnel security contract",
+)
 def test_connect_runs_managed_runtime_then_checks_status(monkeypatch, tmp_path):
     fake_bin = tmp_path / "tunnel-client"
     fake_bin.write_text("binary", encoding="utf-8")
@@ -193,7 +299,10 @@ def test_connect_runs_managed_runtime_then_checks_status(monkeypatch, tmp_path):
     assert payload["ready"] is True
 
 
-@_linux_only
+@pytest.mark.skipif(
+    not _NATIVE_LINUX,
+    reason="native Linux tunnel security contract",
+)
 def test_connect_rejects_runtime_that_is_not_fully_ready(monkeypatch, tmp_path):
     fake_bin = tmp_path / "tunnel-client"
     fake_bin.write_text("binary", encoding="utf-8")
