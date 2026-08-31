@@ -103,3 +103,56 @@ def test_a_single_segment_disclosure_is_not_a_multi_segment_case():
     )
     with pytest.raises(SegmentNoteError, match="at least two"):
         disclosure.validate()
+
+
+# ------------------------------------- the parts, the whole, and the residual
+
+
+def test_the_elimination_between_parts_and_whole_is_carried_not_dropped():
+    """대한제강 FY2025 sums its three segments to 1,322,796,260,309 KRW of
+    revenue while the consolidated income statement reports
+    1,247,058,624,052 — a 75.7bn inter-segment elimination. A sum-of-the-parts
+    that ignored it would inflate the company by that amount with nothing in
+    the output to show for it, so the reconciliation computes and keeps it."""
+    from decimal import Decimal as D
+
+    from valuation_engine.segment_note import reconcile_segments
+
+    disclosure = parse_operating_segment_note(
+        _fixture("daehan_segment_note_fy2025.xml")
+    )
+    reconciliation = reconcile_segments(
+        disclosure,
+        # Both figures are the filed consolidated statement's own
+        # (fnltt_2025_CFS: 매출액 / 영업이익, dart CIS rows).
+        consolidated_revenue=D("1247058624052"),
+        consolidated_operating_income=D("-2872504765"),
+    )
+    assert reconciliation.revenue_elimination == D("-75737636257")
+    assert reconciliation.operating_income_elimination == D("430262387")
+    # The identity that makes the parts complete: parts + elimination = whole.
+    assert (
+        disclosure.total_revenue + reconciliation.revenue_elimination
+        == reconciliation.consolidated_revenue
+    )
+    assert (
+        disclosure.total_operating_income
+        + reconciliation.operating_income_elimination
+        == reconciliation.consolidated_operating_income
+    )
+
+
+def test_reconciliation_refuses_a_whole_it_cannot_anchor_to():
+    from decimal import Decimal as D
+
+    from valuation_engine.segment_note import reconcile_segments
+
+    disclosure = parse_operating_segment_note(
+        _fixture("daehan_segment_note_fy2025.xml")
+    )
+    with pytest.raises(SegmentNoteError, match="non-positive whole"):
+        reconcile_segments(
+            disclosure,
+            consolidated_revenue=D("0"),
+            consolidated_operating_income=D("-2872504765"),
+        )

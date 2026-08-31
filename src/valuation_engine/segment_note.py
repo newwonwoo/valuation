@@ -234,3 +234,65 @@ def parse_operating_segment_note(text: str) -> OperatingSegmentDisclosure:
         "no reconciled operating-segment table found in the note; the filing "
         "does not disclose reportable segments in the expected IFRS 8 layout"
     )
+
+
+@dataclass(frozen=True)
+class SegmentReconciliation:
+    """The parts, the whole, and the difference between them — all three kept.
+
+    A sum-of-the-parts valuation is only honest if the parts are known to be
+    *all* of the company. The segment note gives the parts; the consolidated
+    income statement gives the whole; the difference is the inter-segment
+    elimination the entity itself reports. For 대한제강 FY2025 that difference
+    is -75,737,636,257 KRW of revenue — a real quantity that would silently
+    inflate a segment-summed valuation if it were dropped.
+
+    So it is not dropped: nothing here compares it to a threshold, judges it,
+    or nets it away. It is computed from two authoritative figures and carried,
+    which is what makes a downstream sum-of-the-parts auditable rather than
+    optimistic. A consumer that wants the segments must take this record, and
+    taking it means holding the elimination.
+    """
+
+    disclosure: OperatingSegmentDisclosure
+    consolidated_revenue: Decimal
+    consolidated_operating_income: Decimal
+
+    @property
+    def revenue_elimination(self) -> Decimal:
+        """Consolidated revenue less the segment total: the inter-segment sales
+        the entity eliminates on consolidation (negative when segments trade
+        with each other, which is the normal case)."""
+        return self.consolidated_revenue - self.disclosure.total_revenue
+
+    @property
+    def operating_income_elimination(self) -> Decimal:
+        return (
+            self.consolidated_operating_income
+            - self.disclosure.total_operating_income
+        )
+
+    def validate(self) -> None:
+        self.disclosure.validate()
+        if self.consolidated_revenue <= 0:
+            raise SegmentNoteError(
+                "segment reconciliation requires the consolidated revenue the "
+                "income statement reports; a non-positive whole cannot anchor "
+                "a sum of parts"
+            )
+
+
+def reconcile_segments(
+    disclosure: OperatingSegmentDisclosure,
+    *,
+    consolidated_revenue: Decimal,
+    consolidated_operating_income: Decimal,
+) -> SegmentReconciliation:
+    """Bind disclosed segments to the consolidated whole they must add up to."""
+    reconciliation = SegmentReconciliation(
+        disclosure=disclosure,
+        consolidated_revenue=consolidated_revenue,
+        consolidated_operating_income=consolidated_operating_income,
+    )
+    reconciliation.validate()
+    return reconciliation
