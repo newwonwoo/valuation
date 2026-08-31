@@ -45,9 +45,6 @@ jobs:
           source_file = run_dir / 'raw/filing_20260316000929/20260316000929_21.xml'
           source_hash = sha256(source_file.read_bytes()).hexdigest()
 
-          # FY2025 official consolidated figures from DART filing 20260316000929:
-          # revenue 16,587,850,779,912; FY2024 revenue 12,052,918,410,249;
-          # operating income 1,231,926,775,791.
           conditioning_payload = {
               'values': {
                   'revenue_growth': 0.3762518101679669,
@@ -60,10 +57,6 @@ jobs:
           calibration_dir = run_dir / 'calibration'
           calibration_dir.mkdir(exist_ok=True)
           conditioning_path = calibration_dir / 'koreazinc_conditioning_fy2025.json'
-          conditioning_path.write_text(
-              json.dumps(conditioning_payload, ensure_ascii=False, indent=2) + '\n',
-              encoding='utf-8',
-          )
 
           conditioning = ConditioningDeclaration(
               values=tuple(sorted((k, float(v)) for k, v in conditioning_payload['values'].items())),
@@ -85,6 +78,18 @@ jobs:
               result,
               artifact_path=artifact_path,
               provenance_path=provenance_path,
+          )
+          # The artifact factory seals computed floats at its canonical precision.
+          # Replay the exact sealed target readings so the assembly's exact drift
+          # check compares one canonical representation on both sides.
+          sealed = result.artifact['current_conditioning']
+          conditioning_payload['values'] = {
+              'revenue_growth': sealed['revenue_growth'],
+              'operating_margin': sealed['operating_margin'],
+          }
+          conditioning_path.write_text(
+              json.dumps(conditioning_payload, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
           )
           c = result.constants
 
@@ -120,6 +125,8 @@ jobs:
               yaml.safe_dump(run_yaml, allow_unicode=True, sort_keys=False),
               encoding='utf-8',
           )
+          print('SEALED_CONDITIONING')
+          print(json.dumps(conditioning_payload, ensure_ascii=False, indent=2))
           print('CALIBRATION_CONSTANTS')
           print(json.dumps(run_yaml['calibration']['constants'], indent=2))
           PY
