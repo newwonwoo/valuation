@@ -1,0 +1,77 @@
+name: koreazinc-annual-segment-probe
+
+on:
+  push:
+    branches: [run/koreazinc-sotp-010130-20260901]
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Fetch and inspect annual segment note
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          from urllib.request import Request, urlopen
+          from html.parser import HTMLParser
+          import html, json, re
+
+          url='https://dart.fss.or.kr/report/viewer.do?rcpNo=20260316000929&dcmNo=11126322&eleId=62&offset=4816089&length=99706&dtd=dart4.xsd'
+          body=urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0'}),timeout=30).read().decode('utf-8','replace')
+          out=Path('/tmp/kzannual'); out.mkdir(parents=True,exist_ok=True)
+          (out/'20260316000929_62.xml').write_text(body,encoding='utf-8')
+
+          class P(HTMLParser):
+              def __init__(self):
+                  super().__init__(convert_charrefs=True); self.tables=[]; self.t=None; self.depth=0; self.r=None; self.c=None; self.rs=1; self.cs=1
+              def handle_starttag(self,tag,attrs):
+                  t=tag.casefold()
+                  if t=='table':
+                      if self.t is None:self.t=[]
+                      self.depth+=1
+                  elif t=='tr' and self.t is not None and self.depth==1:self.r=[]
+                  elif t in {'td','th'} and self.r is not None and self.depth==1:
+                      self.c=[]; a=dict(attrs)
+                      try:self.rs=max(1,int(a.get('rowspan','1')));self.cs=max(1,int(a.get('colspan','1')))
+                      except:self.rs=self.cs=1
+              def handle_data(self,d):
+                  if self.c is not None and d:self.c.append(d)
+              def handle_endtag(self,tag):
+                  t=tag.casefold()
+                  if t in {'td','th'} and self.c is not None:
+                      self.r.append((' '.join(' '.join(self.c).split()),self.rs,self.cs));self.c=None
+                  elif t=='tr' and self.r is not None and self.depth==1:self.t.append(self.r);self.r=None
+                  elif t=='table' and self.t is not None:
+                      self.depth-=1
+                      if self.depth==0:self.tables.append(self.t);self.t=None
+          def expand(table):
+              grid=[]
+              for ri,row in enumerate(table):
+                  while len(grid)<=ri:grid.append([])
+                  ci=0
+                  for text,rs,cs in row:
+                      while ci<len(grid[ri]) and grid[ri][ci] is not None:ci+=1
+                      for tr in range(ri,ri+rs):
+                          while len(grid)<=tr:grid.append([])
+                          while len(grid[tr])<ci+cs:grid[tr].append(None)
+                          for tc in range(ci,ci+cs):grid[tr][tc]=text
+                      ci+=cs
+              return [[x or '' for x in row] for row in grid]
+          p=P();p.feed(body)
+          hits=[]
+          for i,t in enumerate(p.tables):
+              g=expand(t)
+              flat=' | '.join(' || '.join(row) for row in g)
+              if ('부문 합계' in flat or '보고부문' in flat) and ('매출액' in flat or '영업이익' in flat or '수익' in flat):
+                  hits.append({'table_index':i,'rows':g[:30]})
+          (out/'tables.json').write_text(json.dumps(hits,ensure_ascii=False,indent=2),encoding='utf-8')
+          print(json.dumps(hits,ensure_ascii=False)[:50000])
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KOREAZINC_ANNUAL_SEGMENT_TABLE
+          path: /tmp/kzannual
