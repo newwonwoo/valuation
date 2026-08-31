@@ -194,3 +194,42 @@ def test_rnpv_stays_an_explicit_gap_naming_the_family():
             ),
             forecast_years=3,
         )
+
+
+def test_registry_scopes_duplicate_exact_model_key_by_segment():
+    loader = composed_generic_registry_loader(
+        method_choices=(
+            SegmentMethodChoice("trading", "process_spread", "normalized_multiple"),
+            SegmentMethodChoice("recycling", "process_spread", "normalized_multiple"),
+        ),
+        forecast_years=5,
+    )
+    registry = loader(_context({}))
+    key = ModelKey("process_spread", "normalized_multiple", "1")
+    assert registry.has_scoped_registrations()
+    assert registry.get(key, segment_id="trading").required_assumption_keys == (
+        "trading_normalized_ebitda",
+        "trading_normalized_multiple",
+    )
+    assert registry.get(key, segment_id="recycling").required_assumption_keys == (
+        "recycling_normalized_ebitda",
+        "recycling_normalized_multiple",
+    )
+    with pytest.raises(KeyError, match="no exact evaluator"):
+        registry.get(key)
+
+
+def test_unique_model_key_keeps_historical_global_registry_contract():
+    loader = composed_generic_registry_loader(
+        method_choices=(
+            SegmentMethodChoice("core", "process_spread", "normalized_multiple"),
+        ),
+        forecast_years=5,
+    )
+    registry = loader(_context({}))
+    key = ModelKey("process_spread", "normalized_multiple", "1")
+    assert not registry.has_scoped_registrations()
+    assert registry.get(key).required_assumption_keys == (
+        "normalized_ebitda",
+        "normalized_multiple",
+    )

@@ -107,9 +107,38 @@ def valuation_evaluator_registry_hash(
         raise TypeError(
             "valuation evaluator identity requires EvaluatorRegistry"
         )
-    rows: list[dict[str, object]] = []
-    for key in registry.keys():
-        evaluator = registry.get(key)
+    if not registry.has_scoped_registrations():
+        rows: list[dict[str, object]] = []
+        for key in registry.keys():
+            evaluator = registry.get(key)
+            required = tuple(evaluator.required_assumption_keys)
+            if not required or not all(
+                isinstance(item, str) and item for item in required
+            ):
+                raise ValueError(
+                    f"evaluator {key!r} has an invalid required-assumption contract"
+                )
+            if len(required) != len(set(required)):
+                raise ValueError(
+                    f"evaluator {key!r} declares duplicate required assumptions"
+                )
+            rows.append(
+                {
+                    "archetype": key.archetype,
+                    "method": key.method,
+                    "version": key.version,
+                    "required_assumption_keys": required,
+                }
+            )
+        return _stable_contract_hash(
+            {
+                "contract": "valuation_evaluator_registry/v1",
+                "evaluators": rows,
+            }
+        )
+
+    scoped_rows: list[dict[str, object]] = []
+    for segment_id, key, evaluator in registry.registration_items():
         required = tuple(evaluator.required_assumption_keys)
         if not required or not all(
             isinstance(item, str) and item for item in required
@@ -121,8 +150,9 @@ def valuation_evaluator_registry_hash(
             raise ValueError(
                 f"evaluator {key!r} declares duplicate required assumptions"
             )
-        rows.append(
+        scoped_rows.append(
             {
+                "segment_id": segment_id,
                 "archetype": key.archetype,
                 "method": key.method,
                 "version": key.version,
@@ -131,8 +161,8 @@ def valuation_evaluator_registry_hash(
         )
     return _stable_contract_hash(
         {
-            "contract": "valuation_evaluator_registry/v1",
-            "evaluators": rows,
+            "contract": "valuation_evaluator_registry/v2",
+            "evaluators": scoped_rows,
         }
     )
 
@@ -359,6 +389,7 @@ def compile_company_valuation_plan(
                 capability,
                 scenario_set=scenario_set,
                 evaluator_registry=evaluator_registry,
+                segment_id=segment.segment_id,
             )
             for capability in capabilities
             if capability.kind is MethodKind.SEGMENT_EVALUATOR
@@ -475,6 +506,7 @@ def _candidate_for(
     *,
     scenario_set: BoundScenarioSet,
     evaluator_registry: EvaluatorRegistry,
+    segment_id: str,
 ) -> SegmentMethodCandidate:
     registered = tuple(
         sorted(
@@ -491,7 +523,7 @@ def _candidate_for(
     missing_union: list[str] = []
     missing_by_key: list[tuple[ModelKey, tuple[str, ...]]] = []
     for key in registered:
-        evaluator = evaluator_registry.get(key)
+        evaluator = evaluator_registry.get(key, segment_id=segment_id)
         key_missing: list[str] = []
         for scenario in scenario_set.scenarios:
             for assumption_key in evaluator.required_assumption_keys:
