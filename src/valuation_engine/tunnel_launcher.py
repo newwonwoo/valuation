@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import shlex
 import shutil
+import stat
 import subprocess
 import sys
 from typing import Mapping, Sequence
@@ -16,6 +17,7 @@ _TUNNEL_ID_RE = re.compile(r"^tunnel_[0-9a-f]{32}$")
 _ALIAS_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _DEFAULT_ALIAS = "prism-valuation"
 _REQUIRED_PRISM_ENV = ("DART_API_KEY", "VALUATION_LLM_TRANSPORT")
+_STATE_ROOT_ENV = "VALUATION_MCP_STATE_ROOT"
 
 
 class PrismTunnelError(RuntimeError):
@@ -58,6 +60,57 @@ def _alias(env: Mapping[str, str]) -> str:
     return value
 
 
+def _supports_private_posix_permissions() -> bool:
+    """Whether this host can enforce the reviewed mode-only state-root contract.
+
+    Linux (including WSL2) is the only supported tunnel host today. Native
+    Windows needs ACL-aware checks, and macOS can retain extended ACL grants
+    that are not disproved by ``stat.S_IMODE(...)=0700`` alone.
+    """
+    return sys.platform.startswith("linux")
+
+
+def _private_persistent_state_root(env: Mapping[str, str]) -> Path:
+    if not _supports_private_posix_permissions():
+        raise PrismTunnelError(
+            "Secure MCP Tunnel state permission enforcement currently requires a "
+            "Linux host (including WSL2); native Windows and macOS are unsupported"
+        )
+    raw = env.get(_STATE_ROOT_ENV, "").strip()
+    if not raw:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} is required in tunnel mode and must name an "
+            "explicit absolute persistent directory"
+        )
+    expanded = Path(raw).expanduser()
+    if not expanded.is_absolute():
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} must be an absolute persistent directory in tunnel mode"
+        )
+    root = expanded.resolve()
+    try:
+        root.mkdir(parents=True, mode=0o700, exist_ok=True)
+        if not root.is_dir():
+            raise PrismTunnelError(f"{_STATE_ROOT_ENV} is not a directory")
+        # `mkdir(mode=...)` is umask-dependent and does not repair an existing
+        # permissive directory. Tunnel state contains reports, history and
+        # attestations, so make the single-writer root private and verify it.
+        os.chmod(root, 0o700)
+        mode = stat.S_IMODE(root.stat().st_mode)
+    except PrismTunnelError:
+        raise
+    except OSError as exc:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} cannot be prepared as a private persistent directory "
+            f"({type(exc).__name__})"
+        ) from exc
+    if mode & 0o077:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} must not grant group/other permissions; current mode={mode:o}"
+        )
+    return root
+
+
 def _prepare_runtime_environment(
     environ: Mapping[str, str] | None = None,
 ) -> dict[str, str]:
@@ -71,11 +124,8 @@ def _prepare_runtime_environment(
         raise PrismTunnelError(
             "CONTROL_PLANE_API_KEY is required as the dedicated Tunnels Read + Use runtime key"
         )
-    root = Path(env.get("VALUATION_MCP_STATE_ROOT", ".valuation_state")).expanduser().resolve()
-    root.mkdir(parents=True, exist_ok=True)
-    if not root.is_dir():
-        raise PrismTunnelError("VALUATION_MCP_STATE_ROOT is not a directory")
-    env["VALUATION_MCP_STATE_ROOT"] = str(root)
+    root = _private_persistent_state_root(env)
+    env[_STATE_ROOT_ENV] = str(root)
     env.setdefault("VALUATION_MCP_JURISDICTION", "KR")
     return env
 
@@ -193,7 +243,7 @@ def check(environ: Mapping[str, str] | None = None) -> dict[str, object]:
         "tunnel_id": _tunnel_id(env),
         "alias": _alias(env),
         "mcp_command": _mcp_child_command(),
-        "state_root": env["VALUATION_MCP_STATE_ROOT"],
+        "state_root": env[_STATE_ROOT_ENV],
         "method_override": bool(env.get("VALUATION_METHOD", "").strip()),
     }
 
