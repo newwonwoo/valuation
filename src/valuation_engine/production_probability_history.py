@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 import sys
 import tempfile
 from typing import Any, Iterator, Sequence
@@ -35,6 +36,16 @@ _EVENT_KINDS = frozenset({"forecast", "outcome"})
 
 class ProductionProbabilityHistoryError(RuntimeError):
     """Persistent production probability history is unsafe or invalid."""
+
+
+def _utc_now() -> datetime:
+    """Return the writer-controlled knowledge time.
+
+    Tests may monkeypatch this private clock. Public append functions expose no
+    recorded-at override, so production callers cannot backdate first_seen_at.
+    """
+
+    return datetime.now(timezone.utc)
 
 
 def _canonical_json(value: object) -> str:
@@ -378,6 +389,23 @@ def _first_seen(event: ProductionHistoryEvent) -> datetime:
     )
 
 
+def _require_private_regular_file(path: Path) -> None:
+    try:
+        metadata = path.stat()
+    except OSError as exc:
+        raise ProductionProbabilityHistoryError(
+            f"cannot inspect production history file ({type(exc).__name__})"
+        ) from exc
+    if not stat.S_ISREG(metadata.st_mode):
+        raise ProductionProbabilityHistoryError(
+            "production probability history path must be a regular file"
+        )
+    if os.name == "posix" and stat.S_IMODE(metadata.st_mode) & 0o077:
+        raise ProductionProbabilityHistoryError(
+            "production probability history must not grant group/other permissions"
+        )
+
+
 def load_production_history(
     path: str | Path,
     *,
@@ -394,10 +422,7 @@ def load_production_history(
             )
         raw = b""
     else:
-        if not history_path.is_file():
-            raise ProductionProbabilityHistoryError(
-                "production probability history path must be a regular file"
-            )
+        _require_private_regular_file(history_path)
         raw = history_path.read_bytes()
     if raw and not raw.endswith(b"\n"):
         raise ProductionProbabilityHistoryError(
@@ -469,6 +494,15 @@ def _prepare_parent(path: Path) -> None:
         os.chmod(path.parent, 0o700)
 
 
+def _no_follow(flags: int) -> int:
+    return flags | int(getattr(os, "O_NOFOLLOW", 0))
+
+
+def _require_regular_descriptor(descriptor: int, *, label: str) -> None:
+    if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+        raise ProductionProbabilityHistoryError(f"{label} must be a regular file")
+
+
 @contextmanager
 def _locked(path: Path) -> Iterator[None]:
     if fcntl is None:
@@ -477,8 +511,13 @@ def _locked(path: Path) -> Iterator[None]:
         )
     _prepare_parent(path)
     lock_path = path.with_name(path.name + ".lock")
-    descriptor = os.open(lock_path, os.O_RDWR | os.O_CREAT, 0o600)
+    descriptor = os.open(
+        lock_path,
+        _no_follow(os.O_RDWR | os.O_CREAT),
+        0o600,
+    )
     try:
+        _require_regular_descriptor(descriptor, label="production history lock")
         os.fchmod(descriptor, 0o600)
         fcntl.flock(descriptor, fcntl.LOCK_EX)
         yield
@@ -491,9 +530,15 @@ def _locked(path: Path) -> Iterator[None]:
 
 def _create_empty(path: Path) -> None:
     if path.exists():
+        _require_private_regular_file(path)
         return
-    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    descriptor = os.open(
+        path,
+        _no_follow(os.O_WRONLY | os.O_CREAT | os.O_EXCL),
+        0o600,
+    )
     try:
+        _require_regular_descriptor(descriptor, label="production history")
         os.fsync(descriptor)
     finally:
         os.close(descriptor)
@@ -508,13 +553,19 @@ def initialize_production_history(path: str | Path) -> dict[str, Any]:
     return {**snapshot.summary(), "status": "INITIALIZED"}
 
 
+def inspect_production_history(path: str | Path) -> ProductionHistorySnapshot:
+    history_path = _absolute_path(path, label="production probability history path")
+    with _locked(history_path):
+        return load_production_history(history_path)
+
+
 def _write_all(descriptor: int, payload: bytes) -> None:
     offset = 0
     while offset < len(payload):
         written = os.write(descriptor, payload[offset:])
         if written <= 0:
             raise ProductionProbabilityHistoryError(
-                "production history append was incomplete"
+                "production history write was incomplete"
             )
         offset += written
 
@@ -562,8 +613,13 @@ def _append(
             before.ledger.append_outcome(_outcome_from_row(payload))
 
         encoded = (_canonical_json(event.to_row()) + "\n").encode("utf-8")
-        descriptor = os.open(history_path, os.O_WRONLY | os.O_APPEND, 0o600)
+        descriptor = os.open(
+            history_path,
+            _no_follow(os.O_WRONLY | os.O_APPEND),
+            0o600,
+        )
         try:
+            _require_regular_descriptor(descriptor, label="production history")
             os.fchmod(descriptor, 0o600)
             _write_all(descriptor, encoded)
             os.fsync(descriptor)
@@ -596,9 +652,8 @@ def append_production_forecast(
     resolution_rule: str,
     resolution_source_policy: str,
     supersedes_id: str | None = None,
-    recorded_at: datetime | None = None,
 ) -> dict[str, Any]:
-    now = (recorded_at or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    now = _utc_now().astimezone(timezone.utc)
     forecast = ProbabilityForecast(
         forecast_id=forecast_id,
         event_key=event_key,
@@ -643,9 +698,8 @@ def append_production_outcome(
     outcome_evidence_ids: tuple[str, ...],
     resolver_id: str,
     rationale: str,
-    recorded_at: datetime | None = None,
 ) -> dict[str, Any]:
-    now = (recorded_at or datetime.now(timezone.utc)).astimezone(timezone.utc)
+    now = _utc_now().astimezone(timezone.utc)
     resolution = ForecastOutcome(
         forecast_id=forecast_id,
         observed_at=observed_at,
@@ -704,13 +758,18 @@ def export_production_ledger(
     history_path: str | Path,
     output_path: str | Path,
 ) -> dict[str, Any]:
-    snapshot = load_production_history(history_path)
+    history = _absolute_path(
+        history_path,
+        label="production probability history path",
+    )
     output = _absolute_path(output_path, label="production probability export path")
-    if output == snapshot.path:
+    if output == history:
         raise ProductionProbabilityHistoryError(
             "production probability export cannot overwrite the append-only journal"
         )
-    _atomic_json(output, snapshot.ledger.to_payload())
+    with _locked(history):
+        snapshot = load_production_history(history)
+        _atomic_json(output, snapshot.ledger.to_payload())
     return {
         "status": "EXPORTED",
         "history_path": str(snapshot.path),
@@ -781,7 +840,7 @@ def _dispatch(args: argparse.Namespace) -> dict[str, Any]:
     if args.command == "init":
         return initialize_production_history(args.history)
     if args.command in {"validate", "summary"}:
-        return load_production_history(args.history).summary()
+        return inspect_production_history(args.history).summary()
     if args.command == "export":
         return export_production_ledger(args.history, args.output)
     if args.command == "append-forecast":
