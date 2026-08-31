@@ -61,15 +61,20 @@ def _alias(env: Mapping[str, str]) -> str:
 
 
 def _supports_private_posix_permissions() -> bool:
-    """Whether this host can enforce the directory-mode contract used below."""
-    return os.name == "posix"
+    """Whether this host can enforce the reviewed mode-only state-root contract.
+
+    Linux (including WSL2) is the only supported tunnel host today. Native
+    Windows needs ACL-aware checks, and macOS can retain extended ACL grants
+    that are not disproved by ``stat.S_IMODE(...)=0700`` alone.
+    """
+    return sys.platform.startswith("linux")
 
 
 def _private_persistent_state_root(env: Mapping[str, str]) -> Path:
     if not _supports_private_posix_permissions():
         raise PrismTunnelError(
             "Secure MCP Tunnel state permission enforcement currently requires a "
-            "POSIX host; use WSL2, Linux, or macOS rather than native Windows"
+            "Linux host (including WSL2); native Windows and macOS are unsupported"
         )
     raw = env.get(_STATE_ROOT_ENV, "").strip()
     if not raw:
