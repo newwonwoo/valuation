@@ -13,45 +13,63 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Fetch DART public filing pages
+      - name: Fetch DART public filing pages and selected sections
         run: |
           python - <<'PY'
           from pathlib import Path
           from urllib.request import Request, urlopen
-          import json, re
+          import html, json, re
 
           out = Path('/tmp/koreazinc-dart')
           out.mkdir(parents=True, exist_ok=True)
           receipts = ['20260814003958','20260316000929']
           result = {}
+
+          def fetch(url):
+              req=Request(url,headers={'User-Agent':'Mozilla/5.0'})
+              return urlopen(req,timeout=30).read()
+
+          def parse_nodes(text):
+              starts=[m.start() for m in re.finditer(r'var node\d+\s*=\s*\{\};',text)]
+              rows=[]
+              for i,s in enumerate(starts):
+                  e=starts[i+1] if i+1<len(starts) else min(len(text),s+4000)
+                  block=text[s:e]
+                  def g(k):
+                      m=re.search(rf"node\d+\['{re.escape(k)}'\]\s*=\s*\"([^\"]*)\"",block)
+                      return html.unescape(m.group(1)) if m else ''
+                  row={k:g(k) for k in ('text','rcpNo','dcmNo','eleId','offset','length','dtd','tocNo')}
+                  if row['eleId']: rows.append(row)
+              return rows
+
+          wanted_half={7,11,12,13,21,23,36,42,43,50,54,58}
           for rcp in receipts:
-              url = f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}'
-              req = Request(url, headers={'User-Agent':'Mozilla/5.0'})
-              try:
-                  raw = urlopen(req, timeout=30).read()
-                  text = raw.decode('utf-8','replace')
-              except Exception as exc:
-                  result[rcp] = {'error': type(exc).__name__, 'detail': str(exc)}
-                  continue
-              (out / f'{rcp}_main.html').write_text(text, encoding='utf-8')
-              nodes=[]
-              # DART main page embeds tree nodes with text/dcmNo/eleId/offset/length.
-              for m in re.finditer(r"node\d+\s*=\s*\{(.*?)\};", text, re.S):
-                  block=m.group(1)
-                  def grab(key):
-                      x=re.search(rf"['\"]?{key}['\"]?\s*:\s*['\"]([^'\"]*)['\"]", block)
-                      return x.group(1) if x else ''
-                  row={k:grab(k) for k in ('text','dcmNo','eleId','offset','length','dtd')}
-                  if row['dcmNo'] and row['eleId']:
-                      nodes.append(row)
-              if not nodes:
-                  # fallback: collect viewer.do argument tuples around title text
-                  patt=re.compile(r"viewDoc\(['\"]?(\d+)['\"]?,['\"]?(\d+)['\"]?,['\"]?(\d+)['\"]?,['\"]?(\d+)['\"]?,['\"]?(\d+)['\"]?,['\"]?([^'\"]*)", re.S)
-                  for m in patt.finditer(text):
-                      nodes.append({'text':'', 'dcmNo':m.group(2),'eleId':m.group(3),'offset':m.group(4),'length':m.group(5),'dtd':m.group(6)})
-              result[rcp]={'bytes':len(raw),'contains_company':'고려아연' in text,'contains_half':'반기보고서' in text,'contains_annual':'사업보고서' in text,'nodes':nodes[:500]}
+              main_url=f'https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rcp}'
+              raw=fetch(main_url)
+              text=raw.decode('utf-8','replace')
+              (out/f'{rcp}_main.html').write_text(text,encoding='utf-8')
+              nodes=parse_nodes(text)
+              wanted=wanted_half if rcp=='20260814003958' else set()
+              selected=[]
+              for row in nodes:
+                  if int(row['eleId']) not in wanted: continue
+                  q=(f"https://dart.fss.or.kr/report/viewer.do?rcpNo={row['rcpNo']}"
+                     f"&dcmNo={row['dcmNo']}&eleId={row['eleId']}"
+                     f"&offset={row['offset']}&length={row['length']}&dtd={row['dtd']}")
+                  body=fetch(q)
+                  body_text=body.decode('utf-8','replace')
+                  path=out/f"{rcp}_{row['eleId']}.xml"
+                  path.write_text(body_text,encoding='utf-8')
+                  plain=re.sub(r'<[^>]+>',' ',body_text)
+                  plain=html.unescape(re.sub(r'\s+',' ',plain)).strip()
+                  selected.append({**row,'viewer_url':q,'bytes':len(body),'plain_excerpt':plain[:3500]})
+              result[rcp]={
+                  'bytes':len(raw),'contains_company':'고려아연' in text,
+                  'contains_half':'반기보고서' in text,'contains_annual':'사업보고서' in text,
+                  'node_count':len(nodes),'selected':selected,
+              }
           (out/'probe.json').write_text(json.dumps(result,ensure_ascii=False,indent=2),encoding='utf-8')
-          print(json.dumps(result,ensure_ascii=False)[:12000])
+          print(json.dumps(result,ensure_ascii=False)[:45000])
           PY
       - uses: actions/upload-artifact@v4
         with:
