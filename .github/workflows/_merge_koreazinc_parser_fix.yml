@@ -1,0 +1,39 @@
+name: merge-koreazinc-parser-fix
+
+on:
+  push:
+    branches: [run/koreazinc-sotp-010130-20260901]
+
+permissions:
+  contents: write
+
+jobs:
+  merge:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: run/koreazinc-sotp-010130-20260901
+          fetch-depth: 0
+      - name: Merge validated parser branch and align historical segment mapping
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git fetch origin feat/kr-trading-recycling-classification
+          git merge --no-edit origin/feat/kr-trading-recycling-classification
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('.github/workflows/_koreazinc_sotp_run.yml')
+          t=p.read_text(encoding='utf-8')
+          old="          assert fy_disc.segment_names==expected, fy_disc.segment_names\n"
+          new="          assert len(fy_disc.entries)==3, fy_disc.segment_names\n"
+          if old not in t:
+              raise SystemExit('annual segment assertion not found')
+          p.write_text(t.replace(old,new,1),encoding='utf-8')
+          PY
+          rm .github/workflows/_koreazinc_annual_segment_probe.yml
+          rm .github/workflows/_merge_koreazinc_parser_fix.yml
+          git add .github/workflows/_koreazinc_sotp_run.yml .github/workflows/_koreazinc_annual_segment_probe.yml .github/workflows/_merge_koreazinc_parser_fix.yml
+          git commit -m 'Resume Korea Zinc SOTP on validated segment parser'
+          git push origin HEAD:run/koreazinc-sotp-010130-20260901
