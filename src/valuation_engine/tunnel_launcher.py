@@ -103,7 +103,13 @@ def _filesystem_type_for_path(
     *,
     mountinfo_text: str | None = None,
 ) -> tuple[str, Path]:
-    """Return the most-specific Linux mount and its filesystem type for root."""
+    """Return the uniquely most-specific Linux mount servicing root.
+
+    Stacked mounts at the same most-specific mount point are deliberately
+    ambiguous here. `/proc/self/mountinfo` ordering is not treated as an
+    authorization primitive, so ambiguity fails closed rather than guessing
+    which stacked layer currently services pathname lookup.
+    """
     resolved = root.resolve()
     text = _read_mountinfo() if mountinfo_text is None else mountinfo_text
     matches: list[tuple[int, str, Path]] = []
@@ -125,7 +131,17 @@ def _filesystem_type_for_path(
         raise PrismTunnelError(
             f"{_STATE_ROOT_ENV} filesystem mount cannot be resolved from /proc/self/mountinfo"
         )
-    _, fs_type, mount_point = max(matches, key=lambda item: item[0])
+    max_depth = max(item[0] for item in matches)
+    most_specific = tuple(item for item in matches if item[0] == max_depth)
+    if len(most_specific) != 1:
+        mounts = ", ".join(
+            f"{fs_type}@{mount_point}" for _, fs_type, mount_point in most_specific
+        )
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} filesystem mount is ambiguous due to stacked/equally "
+            f"specific mounts: {mounts}"
+        )
+    _, fs_type, mount_point = most_specific[0]
     return fs_type, mount_point
 
 
