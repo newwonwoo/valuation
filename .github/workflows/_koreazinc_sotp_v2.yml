@@ -35,6 +35,11 @@ jobs:
               "assert fy_disc.segment_names==expected, fy_disc.segment_names",
               "assert len(fy_disc.entries)==3, fy_disc.segment_names",
           )
+          old = '''def first_metric(path, labels):\n    parser=_SegmentTableParser(); parser.feed(path.read_text(encoding='utf-8'))\n    for table in parser.tables:\n        for row in _expand_table(table):\n            if not row: continue\n            if re.sub(r'\\s+','',row[0] or '') in {re.sub(r'\\s+','',x) for x in labels}:\n                for cell in row[1:]:\n                    v=amount(cell)\n                    if v is not None: return v\n    raise RuntimeError(f'metric not found: {labels}')\n'''
+          new = '''def first_metric(path, labels):\n    parser=_SegmentTableParser(); parser.feed(path.read_text(encoding='utf-8'))\n    wanted={re.sub(r'\\s+','',x) for x in labels}\n    for table in parser.tables:\n        for row in _expand_table(table):\n            if not row: continue\n            for idx, cell in enumerate(row):\n                if re.sub(r'\\s+','',cell or '') not in wanted:\n                    continue\n                for value_cell in row[idx+1:]:\n                    v=amount(value_cell)\n                    if v is not None: return v\n    raise RuntimeError(f'metric not found: {labels}')\n'''
+          if old not in body:
+              raise SystemExit('first_metric block not found in recovered recipe')
+          body = body.replace(old, new, 1)
           Path('/tmp/prepare_koreazinc.py').write_text(body, encoding='utf-8')
           PY
           python /tmp/prepare_koreazinc.py
