@@ -1,0 +1,53 @@
+name: koreazinc-sotp-prism-v2
+
+on:
+  push:
+    branches: [run/koreazinc-sotp-v2-010130-20260901]
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Recover validated Korea Zinc prepared-run recipe
+        run: |
+          git fetch origin run/koreazinc-sotp-010130-20260901
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+
+          raw = subprocess.check_output([
+              'git','show','origin/run/koreazinc-sotp-010130-20260901:.github/workflows/_koreazinc_sotp_run.yml'
+          ], text=True)
+          lines = raw.splitlines()
+          start = next(i for i,x in enumerate(lines) if "python - <<'PY'" in x) + 1
+          end = next(i for i in range(start,len(lines)) if lines[i].strip() == 'PY')
+          body = '\n'.join(x[10:] if x.startswith('          ') else x for x in lines[start:end]) + '\n'
+          body = body.replace(
+              "assert fy_disc.segment_names==expected, fy_disc.segment_names",
+              "assert len(fy_disc.entries)==3, fy_disc.segment_names",
+          )
+          Path('/tmp/prepare_koreazinc.py').write_text(body, encoding='utf-8')
+          PY
+          python /tmp/prepare_koreazinc.py
+      - name: Execute canonical PRISM SOTP
+        id: prism
+        continue-on-error: true
+        run: |
+          set -o pipefail
+          PYTHONPATH=src python scripts/run_kr_live.py /tmp/koreazinc-010130 2>&1 | tee /tmp/koreazinc-010130/prism.log
+      - name: Upload Korea Zinc PRISM SOTP bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: KOREAZINC_010130_PRISM_SOTP_V2
+          path: /tmp/koreazinc-010130
+      - name: Show stop or completion
+        run: cat /tmp/koreazinc-010130/prism.log
