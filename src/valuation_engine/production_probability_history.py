@@ -84,7 +84,18 @@ def _absolute_path(value: str | Path, *, label: str) -> Path:
     path = Path(value).expanduser()
     if not path.is_absolute():
         raise ProductionProbabilityHistoryError(f"{label} must be absolute")
-    return path.resolve(strict=False)
+    absolute = Path(os.path.abspath(path))
+    for component in (absolute, *absolute.parents):
+        try:
+            if component.is_symlink():
+                raise ProductionProbabilityHistoryError(
+                    f"{label} must not contain symbolic-link components"
+                )
+        except OSError as exc:
+            raise ProductionProbabilityHistoryError(
+                f"{label} symlink state cannot be verified ({type(exc).__name__})"
+            ) from exc
+    return absolute
 
 
 def _hash_fields(
@@ -522,8 +533,9 @@ def _load_unlocked(
 
 
 def _prepare_parent(path: Path) -> None:
+    existed = path.parent.exists()
     path.parent.mkdir(parents=True, mode=0o700, exist_ok=True)
-    if os.name == "posix":
+    if not existed and os.name == "posix":
         os.chmod(path.parent, 0o700)
     _require_owned_private_directory(path.parent)
 
@@ -532,14 +544,19 @@ def _no_follow(flags: int) -> int:
     return flags | int(getattr(os, "O_NOFOLLOW", 0))
 
 
-def _require_owned_regular_descriptor(descriptor: int, *, label: str) -> None:
+def _require_owned_private_descriptor(descriptor: int, *, label: str) -> None:
     metadata = os.fstat(descriptor)
     if not stat.S_ISREG(metadata.st_mode):
         raise ProductionProbabilityHistoryError(f"{label} must be a regular file")
-    if os.name == "posix" and metadata.st_uid != os.geteuid():
-        raise ProductionProbabilityHistoryError(
-            f"{label} must be owned by the current user"
-        )
+    if os.name == "posix":
+        if metadata.st_uid != os.geteuid():
+            raise ProductionProbabilityHistoryError(
+                f"{label} must be owned by the current user"
+            )
+        if stat.S_IMODE(metadata.st_mode) & 0o077:
+            raise ProductionProbabilityHistoryError(
+                f"{label} must not grant group/other permissions"
+            )
 
 
 @contextmanager
@@ -556,11 +573,10 @@ def _locked(path: Path) -> Iterator[None]:
         0o600,
     )
     try:
-        _require_owned_regular_descriptor(
+        _require_owned_private_descriptor(
             descriptor,
             label="production history lock",
         )
-        os.fchmod(descriptor, 0o600)
         fcntl.flock(descriptor, fcntl.LOCK_EX)
         yield
     finally:
@@ -583,7 +599,7 @@ def _create_empty(path: Path) -> None:
         0o600,
     )
     try:
-        _require_owned_regular_descriptor(
+        _require_owned_private_descriptor(
             descriptor,
             label="production probability history",
         )
@@ -599,7 +615,6 @@ def initialize_production_history(path: str | Path) -> dict[str, Any]:
     )
     with _locked(history_path):
         _create_empty(history_path)
-        os.chmod(history_path, 0o600)
         snapshot = _load_unlocked(history_path)
     return {**snapshot.summary(), "status": "INITIALIZED"}
 
@@ -680,11 +695,10 @@ def _append(
             0o600,
         )
         try:
-            _require_owned_regular_descriptor(
+            _require_owned_private_descriptor(
                 descriptor,
                 label="production probability history",
             )
-            os.fchmod(descriptor, 0o600)
             _write_all(descriptor, encoded)
             os.fsync(descriptor)
         finally:
