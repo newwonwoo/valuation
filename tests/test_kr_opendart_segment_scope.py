@@ -87,15 +87,37 @@ def test_mismatched_segment_is_rejected_before_collection_planning(tmp_path):
         config.providers.segment_decomposer(None, None)
 
 
-def test_multi_segment_output_is_rejected_before_collection_planning(tmp_path):
+def test_multi_segment_output_must_still_contain_the_filing_scope(tmp_path):
+    """The foundation no longer forces one segment — the decomposed set may
+    carry one descriptor per declared reportable segment — but the filing
+    KPI collector's scope must name a real member of it, and duplicate
+    segment ids stay rejected."""
     config = _factory(
         lambda *_: (
             _segment("company"),
             _segment("other"),
         )
     )(_request(tmp_path))
-    with pytest.raises(ValueError, match="exactly one segment"):
-        config.providers.segment_decomposer(None, None)
+    segments = config.providers.segment_decomposer(None, None)
+    assert tuple(item.segment_id for item in segments) == ("company", "other")
+
+    missing_scope = _factory(
+        lambda *_: (
+            _segment("steel"),
+            _segment("other"),
+        )
+    )(_request(tmp_path))
+    with pytest.raises(ValueError, match="names no decomposed segment"):
+        missing_scope.providers.segment_decomposer(None, None)
+
+    duplicated = _factory(
+        lambda *_: (
+            _segment("company"),
+            _segment("company"),
+        )
+    )(_request(tmp_path))
+    with pytest.raises(ValueError, match="duplicate segment ids"):
+        duplicated.providers.segment_decomposer(None, None)
 
 
 def test_non_descriptor_output_is_rejected(tmp_path):

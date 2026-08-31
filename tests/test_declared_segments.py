@@ -264,7 +264,7 @@ def test_each_declared_segment_becomes_its_own_typed_descriptor():
     by_segment = {item.segment_id: item for item in profiles}
     assert EconomicArchetype.COMMODITY_PRICE_TAKER in by_segment["steel"].archetypes
     assert by_segment["transport"].archetypes == (
-        EconomicArchetype.CAPACITY_MANUFACTURING,
+        EconomicArchetype.PROCESS_SPREAD,
     )
     assert by_segment["other"].archetypes == (EconomicArchetype.ASSET_YIELD_NAV,)
 

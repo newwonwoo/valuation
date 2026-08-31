@@ -1,0 +1,26 @@
+# 보고부문의 존재는 반기보고서(2026.06)의 영업부문 정보 주석(IFRS 8)이 정한다
+# (제강부문·운송부문·기타부문, raw/filing_20260814003201/20260814003201_45.xml).
+# 각 부문의 경제 성격은 회사 단위 KSIC(제강업)로는 정할 수 없으므로 여기서
+# 선언한다 — 운송부문에 철강 원형을 물려주는 것이 바로 뭉개기다.
+target_id: KR:DART:00113225
+as_of: "2026-08-29"
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003201
+segments:
+  - segment_id: steel
+    disclosed_name: 제강부문
+    ksic_code: "2411"
+    rationale: >-
+      대한제강·와이케이스틸의 전기로 제강과 철근 압연 — 스크랩-철근
+      스프레드가 지배하는 철강 원형(commodity_price_taker/process_spread).
+  - segment_id: transport
+    disclosed_name: 운송부문
+    ksic_code: "4930"
+    rationale: >-
+      종속 물류회사의 화물 운송 용역 — 차량·설비 capacity 가동률 경제
+      (capacity_manufacturing). 주석 기준 연결 매출의 약 2.5%.
+  - segment_id: other
+    disclosed_name: 기타부문
+    ksic_code: "6811"
+    rationale: >-
+      임대업 중심의 기타 사업 — 보유 부동산의 임대수익 구조라 자산수익
+      원형(asset_yield_nav)으로 평가한다. 주석 기준 연결 매출의 약 1.7%.

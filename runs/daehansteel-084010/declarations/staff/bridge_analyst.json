@@ -1,12 +1,12 @@
 {
- "rationale": "Evidence-backed pass-through of the declared mid-cycle FCFF envelope.",
+ "rationale": "Evidence-backed pass-through of the declared three-segment envelope: the steel cycle carries the scenarios, transport and leasing stay at their declared levels.",
  "drafts": [
   {
-   "assumption_key": "fcff_year_1",
+   "assumption_key": "steel_fcff_year_1",
    "scenario_id": "Down",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:down_fcff_year_1"
+    "UW:KR:DART:00113225:down_steel_fcff_year_1"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -18,14 +18,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_1"
+   "economic_path_id": "path:steel_fcff_year_1"
   },
   {
-   "assumption_key": "fcff_year_2",
+   "assumption_key": "steel_fcff_year_2",
    "scenario_id": "Down",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:down_fcff_year_2"
+    "UW:KR:DART:00113225:down_steel_fcff_year_2"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -37,14 +37,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_2"
+   "economic_path_id": "path:steel_fcff_year_2"
   },
   {
-   "assumption_key": "fcff_year_3",
+   "assumption_key": "steel_fcff_year_3",
    "scenario_id": "Down",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:down_fcff_year_3"
+    "UW:KR:DART:00113225:down_steel_fcff_year_3"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -56,14 +56,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_3"
+   "economic_path_id": "path:steel_fcff_year_3"
   },
   {
-   "assumption_key": "fcff_year_4",
+   "assumption_key": "steel_fcff_year_4",
    "scenario_id": "Down",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:down_fcff_year_4"
+    "UW:KR:DART:00113225:down_steel_fcff_year_4"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -75,14 +75,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_4"
+   "economic_path_id": "path:steel_fcff_year_4"
   },
   {
-   "assumption_key": "fcff_year_5",
+   "assumption_key": "steel_fcff_year_5",
    "scenario_id": "Down",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:down_fcff_year_5"
+    "UW:KR:DART:00113225:down_steel_fcff_year_5"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -94,14 +94,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_5"
+   "economic_path_id": "path:steel_fcff_year_5"
   },
   {
-   "assumption_key": "terminal_growth",
+   "assumption_key": "steel_terminal_growth",
    "scenario_id": "Down",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:down_terminal_growth"
+    "UW:KR:DART:00113225:down_steel_terminal_growth"
    ],
    "affected_variable": "segment_value",
    "direction": "unchanged",
@@ -113,14 +113,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:terminal_growth"
+   "economic_path_id": "path:steel_terminal_growth"
   },
   {
-   "assumption_key": "terminal_roic",
+   "assumption_key": "steel_terminal_roic",
    "scenario_id": "Down",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:terminal_roic"
+    "UW:KR:DART:00113225:steel_terminal_roic"
    ],
    "affected_variable": "yield",
    "direction": "unchanged",
@@ -132,14 +132,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:terminal_roic"
+   "economic_path_id": "path:steel_terminal_roic"
   },
   {
-   "assumption_key": "ownership",
+   "assumption_key": "steel_ownership",
    "scenario_id": "Down",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:ownership"
+    "UW:KR:DART:00113225:steel_ownership"
    ],
    "affected_variable": "segment_value",
    "direction": "unchanged",
@@ -151,14 +151,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:ownership"
+   "economic_path_id": "path:steel_ownership"
   },
   {
-   "assumption_key": "ev_adjustment",
+   "assumption_key": "steel_ev_adjustment",
    "scenario_id": "Down",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:ev_adjustment"
+    "UW:KR:DART:00113225:steel_ev_adjustment"
    ],
    "affected_variable": "net_debt",
    "direction": "unchanged",
@@ -170,7 +170,7 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:ev_adjustment"
+   "economic_path_id": "path:steel_ev_adjustment"
   },
   {
    "assumption_key": "diluted_shares",
@@ -189,14 +189,242 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:diluted_shares"
+   "economic_path_id": "path:diluted_shares"
   },
   {
-   "assumption_key": "fcff_year_1",
+   "assumption_key": "transport_fcff_year_1",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_1"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 0.3,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_1"
+  },
+  {
+   "assumption_key": "transport_fcff_year_2",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_2"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 0.5,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_2"
+  },
+  {
+   "assumption_key": "transport_fcff_year_3",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_3"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 0.8,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_3"
+  },
+  {
+   "assumption_key": "transport_fcff_year_4",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_4"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_4"
+  },
+  {
+   "assumption_key": "transport_fcff_year_5",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_5"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 1.2,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_5"
+  },
+  {
+   "assumption_key": "transport_terminal_growth",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_terminal_growth"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_terminal_growth"
+  },
+  {
+   "assumption_key": "transport_terminal_roic",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_terminal_roic"
+   ],
+   "affected_variable": "yield",
+   "direction": "unchanged",
+   "value": 0.06,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_terminal_roic"
+  },
+  {
+   "assumption_key": "transport_ownership",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_ownership"
+  },
+  {
+   "assumption_key": "transport_ev_adjustment",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_ev_adjustment"
+  },
+  {
+   "assumption_key": "other_gross_asset_value",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:other_gross_asset_value"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 84.7,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:other_gross_asset_value"
+  },
+  {
+   "assumption_key": "other_liabilities",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:other_liabilities"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 39.0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:other_liabilities"
+  },
+  {
+   "assumption_key": "other_ownership",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:other_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:other_ownership"
+  },
+  {
+   "assumption_key": "steel_fcff_year_1",
    "scenario_id": "Base",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:fcff_year_1"
+    "UW:KR:DART:00113225:steel_fcff_year_1"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -208,14 +436,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_1"
+   "economic_path_id": "path:steel_fcff_year_1"
   },
   {
-   "assumption_key": "fcff_year_2",
+   "assumption_key": "steel_fcff_year_2",
    "scenario_id": "Base",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:fcff_year_2"
+    "UW:KR:DART:00113225:steel_fcff_year_2"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -227,14 +455,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_2"
+   "economic_path_id": "path:steel_fcff_year_2"
   },
   {
-   "assumption_key": "fcff_year_3",
+   "assumption_key": "steel_fcff_year_3",
    "scenario_id": "Base",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:fcff_year_3"
+    "UW:KR:DART:00113225:steel_fcff_year_3"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -246,14 +474,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_3"
+   "economic_path_id": "path:steel_fcff_year_3"
   },
   {
-   "assumption_key": "fcff_year_4",
+   "assumption_key": "steel_fcff_year_4",
    "scenario_id": "Base",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:fcff_year_4"
+    "UW:KR:DART:00113225:steel_fcff_year_4"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -265,14 +493,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_4"
+   "economic_path_id": "path:steel_fcff_year_4"
   },
   {
-   "assumption_key": "fcff_year_5",
+   "assumption_key": "steel_fcff_year_5",
    "scenario_id": "Base",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:fcff_year_5"
+    "UW:KR:DART:00113225:steel_fcff_year_5"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -284,14 +512,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_5"
+   "economic_path_id": "path:steel_fcff_year_5"
   },
   {
-   "assumption_key": "terminal_growth",
+   "assumption_key": "steel_terminal_growth",
    "scenario_id": "Base",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:terminal_growth"
+    "UW:KR:DART:00113225:steel_terminal_growth"
    ],
    "affected_variable": "segment_value",
    "direction": "unchanged",
@@ -303,14 +531,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:terminal_growth"
+   "economic_path_id": "path:steel_terminal_growth"
   },
   {
-   "assumption_key": "terminal_roic",
+   "assumption_key": "steel_terminal_roic",
    "scenario_id": "Base",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:terminal_roic"
+    "UW:KR:DART:00113225:steel_terminal_roic"
    ],
    "affected_variable": "yield",
    "direction": "unchanged",
@@ -322,14 +550,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:terminal_roic"
+   "economic_path_id": "path:steel_terminal_roic"
   },
   {
-   "assumption_key": "ownership",
+   "assumption_key": "steel_ownership",
    "scenario_id": "Base",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:ownership"
+    "UW:KR:DART:00113225:steel_ownership"
    ],
    "affected_variable": "segment_value",
    "direction": "unchanged",
@@ -341,14 +569,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:ownership"
+   "economic_path_id": "path:steel_ownership"
   },
   {
-   "assumption_key": "ev_adjustment",
+   "assumption_key": "steel_ev_adjustment",
    "scenario_id": "Base",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:ev_adjustment"
+    "UW:KR:DART:00113225:steel_ev_adjustment"
    ],
    "affected_variable": "net_debt",
    "direction": "unchanged",
@@ -360,7 +588,7 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:ev_adjustment"
+   "economic_path_id": "path:steel_ev_adjustment"
   },
   {
    "assumption_key": "diluted_shares",
@@ -379,14 +607,242 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:diluted_shares"
+   "economic_path_id": "path:diluted_shares"
   },
   {
-   "assumption_key": "fcff_year_1",
+   "assumption_key": "transport_fcff_year_1",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_1"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 0.3,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_1"
+  },
+  {
+   "assumption_key": "transport_fcff_year_2",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_2"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 0.5,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_2"
+  },
+  {
+   "assumption_key": "transport_fcff_year_3",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_3"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 0.8,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_3"
+  },
+  {
+   "assumption_key": "transport_fcff_year_4",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_4"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_4"
+  },
+  {
+   "assumption_key": "transport_fcff_year_5",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_5"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 1.2,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_5"
+  },
+  {
+   "assumption_key": "transport_terminal_growth",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_terminal_growth"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_terminal_growth"
+  },
+  {
+   "assumption_key": "transport_terminal_roic",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_terminal_roic"
+   ],
+   "affected_variable": "yield",
+   "direction": "unchanged",
+   "value": 0.06,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_terminal_roic"
+  },
+  {
+   "assumption_key": "transport_ownership",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_ownership"
+  },
+  {
+   "assumption_key": "transport_ev_adjustment",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_ev_adjustment"
+  },
+  {
+   "assumption_key": "other_gross_asset_value",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:other_gross_asset_value"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 84.7,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:other_gross_asset_value"
+  },
+  {
+   "assumption_key": "other_liabilities",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:other_liabilities"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 39.0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:other_liabilities"
+  },
+  {
+   "assumption_key": "other_ownership",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:other_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:other_ownership"
+  },
+  {
+   "assumption_key": "steel_fcff_year_1",
    "scenario_id": "Bull",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:bull_fcff_year_1"
+    "UW:KR:DART:00113225:bull_steel_fcff_year_1"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -398,14 +854,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_1"
+   "economic_path_id": "path:steel_fcff_year_1"
   },
   {
-   "assumption_key": "fcff_year_2",
+   "assumption_key": "steel_fcff_year_2",
    "scenario_id": "Bull",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:bull_fcff_year_2"
+    "UW:KR:DART:00113225:bull_steel_fcff_year_2"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -417,14 +873,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_2"
+   "economic_path_id": "path:steel_fcff_year_2"
   },
   {
-   "assumption_key": "fcff_year_3",
+   "assumption_key": "steel_fcff_year_3",
    "scenario_id": "Bull",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:bull_fcff_year_3"
+    "UW:KR:DART:00113225:bull_steel_fcff_year_3"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -436,14 +892,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_3"
+   "economic_path_id": "path:steel_fcff_year_3"
   },
   {
-   "assumption_key": "fcff_year_4",
+   "assumption_key": "steel_fcff_year_4",
    "scenario_id": "Bull",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:bull_fcff_year_4"
+    "UW:KR:DART:00113225:bull_steel_fcff_year_4"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -455,14 +911,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_4"
+   "economic_path_id": "path:steel_fcff_year_4"
   },
   {
-   "assumption_key": "fcff_year_5",
+   "assumption_key": "steel_fcff_year_5",
    "scenario_id": "Bull",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:bull_fcff_year_5"
+    "UW:KR:DART:00113225:bull_steel_fcff_year_5"
    ],
    "affected_variable": "margin",
    "direction": "unchanged",
@@ -474,14 +930,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:fcff_year_5"
+   "economic_path_id": "path:steel_fcff_year_5"
   },
   {
-   "assumption_key": "terminal_growth",
+   "assumption_key": "steel_terminal_growth",
    "scenario_id": "Bull",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:bull_terminal_growth"
+    "UW:KR:DART:00113225:bull_steel_terminal_growth"
    ],
    "affected_variable": "segment_value",
    "direction": "unchanged",
@@ -493,14 +949,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:terminal_growth"
+   "economic_path_id": "path:steel_terminal_growth"
   },
   {
-   "assumption_key": "terminal_roic",
+   "assumption_key": "steel_terminal_roic",
    "scenario_id": "Bull",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:terminal_roic"
+    "UW:KR:DART:00113225:steel_terminal_roic"
    ],
    "affected_variable": "yield",
    "direction": "unchanged",
@@ -512,14 +968,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:terminal_roic"
+   "economic_path_id": "path:steel_terminal_roic"
   },
   {
-   "assumption_key": "ownership",
+   "assumption_key": "steel_ownership",
    "scenario_id": "Bull",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:ownership"
+    "UW:KR:DART:00113225:steel_ownership"
    ],
    "affected_variable": "segment_value",
    "direction": "unchanged",
@@ -531,14 +987,14 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:ownership"
+   "economic_path_id": "path:steel_ownership"
   },
   {
-   "assumption_key": "ev_adjustment",
+   "assumption_key": "steel_ev_adjustment",
    "scenario_id": "Bull",
    "hypothesis_id": "H:DAEHAN:MIDCYCLE",
    "evidence_ids": [
-    "UW:KR:DART:00113225:ev_adjustment"
+    "UW:KR:DART:00113225:steel_ev_adjustment"
    ],
    "affected_variable": "net_debt",
    "direction": "unchanged",
@@ -550,7 +1006,7 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:ev_adjustment"
+   "economic_path_id": "path:steel_ev_adjustment"
   },
   {
    "assumption_key": "diluted_shares",
@@ -569,7 +1025,235 @@
    "confidence": 0.6,
    "kill_condition": "underwriting revision or contradicting filing",
    "verification_event": "next periodic filing",
-   "economic_path_id": "path:core:diluted_shares"
+   "economic_path_id": "path:diluted_shares"
+  },
+  {
+   "assumption_key": "transport_fcff_year_1",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_1"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 0.3,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_1"
+  },
+  {
+   "assumption_key": "transport_fcff_year_2",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_2"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 0.5,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_2"
+  },
+  {
+   "assumption_key": "transport_fcff_year_3",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_3"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 0.8,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_3"
+  },
+  {
+   "assumption_key": "transport_fcff_year_4",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_4"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_4"
+  },
+  {
+   "assumption_key": "transport_fcff_year_5",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_fcff_year_5"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 1.2,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_fcff_year_5"
+  },
+  {
+   "assumption_key": "transport_terminal_growth",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_terminal_growth"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_terminal_growth"
+  },
+  {
+   "assumption_key": "transport_terminal_roic",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_terminal_roic"
+   ],
+   "affected_variable": "yield",
+   "direction": "unchanged",
+   "value": 0.06,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_terminal_roic"
+  },
+  {
+   "assumption_key": "transport_ownership",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_ownership"
+  },
+  {
+   "assumption_key": "transport_ev_adjustment",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:transport_ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:transport_ev_adjustment"
+  },
+  {
+   "assumption_key": "other_gross_asset_value",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:other_gross_asset_value"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 84.7,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:other_gross_asset_value"
+  },
+  {
+   "assumption_key": "other_liabilities",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:other_liabilities"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 39.0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:other_liabilities"
+  },
+  {
+   "assumption_key": "other_ownership",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:DAEHAN:MIDCYCLE",
+   "evidence_ids": [
+    "UW:KR:DART:00113225:other_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "declared underwriting carried through unchanged",
+   "confidence": 0.6,
+   "kill_condition": "underwriting revision or contradicting filing",
+   "verification_event": "next periodic filing",
+   "economic_path_id": "path:other_ownership"
   }
  ]
 }

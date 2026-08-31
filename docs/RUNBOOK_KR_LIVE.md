@@ -10,11 +10,13 @@
   (normalized_multiple), 캘리브레이션 포함(기대값까지).
 - `runs/shinhanalpha-293940/` — 신한알파리츠: **3월 결산** REIT, **자본가치
   산출 방법**(nav), 리츠 코호트 캘리브레이션(기대값까지).
-- `runs/daehansteel-084010/` — 대한제강: **리스크팩 요구 방법**
-  (midcycle_price_volume_dcf) — L1~L4 피어 회귀베타는 커밋된 공개 시세에서
-  `scripts/compute_peer_betas.py`로 재현, 코호트는 타깃 제외 재적합. 다만 연결
-  공시의 `제강/압연`·`기타` 부문을 현재 단일세그먼트 런 선언으로 축약할 수
-  없어 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`에서 의도대로 중단한다.
+- `runs/daehansteel-084010/` — 대한제강: **최초의 진짜 다부문 SOTP** —
+  IFRS 8 영업부문 주석이 제강/운송/기타 3개 부문의 존재를 정하고,
+  `declarations/segments.yaml`이 각 부문의 경제 성격(KSIC)을 선언하며,
+  부문마다 자기 방법(철강 DCF·운송 스프레드 DCF·임대 NAV)과 자기 가정
+  이름공간(`steel_fcff_…`)으로 평가돼 합산된다. 리스크팩 요구 방법 —
+  L1~L4 피어 회귀베타는 커밋된 공개 시세에서
+  `scripts/compute_peer_betas.py`로 재현, 코호트는 타깃 제외 재적합.
 
 **실행자가 LLM 세션이라면**: `.claude/skills/kr-live-run`이 이 절차의 요약을
 자동 로드한다. 이 문서는 그 스킬의 원본이다.
@@ -60,6 +62,26 @@ runs/<종목>-<코드>/
    로 각 섹션 HTML을 받아 `filing_<rcept_no>/<rcept_no>_<eleId>.xml` 로 저장.
    러너가 이 디렉토리를 원문 아카이브로 조립하고, 추출 영수증(멤버 SHA-256·
    스팬)은 평소처럼 남는다.
+
+### 2.2 다부문 회사라면 (스크린이 "multiple operating segments"로 멈출 때)
+
+1. 최신 정기보고서의 **연결재무제표 주석 "영업부문 정보"** 섹션을 §2.1
+   방법으로 받아 `filing_<rcept>/` 에 추가한다 — 부문의 존재와 부문별
+   매출·영업이익의 유일한 정본이다 (스크린이 뱉는 목록은 경보이지 부문
+   목록이 아니다: 공정명·소계행·업종명이 섞여 있다).
+2. `declarations/segments.yaml` 을 쓴다: 주석의 부문명과 **정확히 일대일**로
+   `segment_id / disclosed_name / ksic_code / rationale`. 회사 KSIC는 회사를
+   타이핑할 뿐 운송부문을 타이핑하지 못하므로, 부문별 KSIC 선언이 곧 부문별
+   원형 라우팅이다 (미등재 KSIC는 분류맵 추가 — 리뷰되는 데이터 변경).
+3. run.yaml은 `method:` 대신 `segments:` 목록으로 부문별 방법을 적는다.
+   `filing.segment_id`는 공시 KPI 추출(단가·가동률 표)이 붙을 부문이다.
+4. **가정 키는 부문 이름공간을 쓴다**: `steel_fcff_year_1`,
+   `transport_ownership` 처럼 `<segment_id>_<키>`. 시나리오 변형은 한정어를
+   앞에 — `down_steel_fcff_year_1`. 언더라이팅 각 행에 `segment:` 필드를
+   달고, 두 부문이 같은 지표(input_price 등)를 가지면 그 지표를 **행
+   리스트**로 선언한다 (증거 ID는 `UW:<타깃>:<지표>:<부문>`이 된다).
+5. 부문 합산(SOTP)의 잔차 — 부문합계와 연결 전체의 차이(내부거래 제거) — 는
+   엔진이 명시적으로 들고 다닌다. 잔차를 무시한 합산은 구조적으로 불가능하다.
 
 ## 3. 오퍼레이터 선언 → `declarations/`
 

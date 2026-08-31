@@ -497,3 +497,56 @@ def withheld_per_loader():
         )
 
     return load
+
+
+def generic_capacity_commitment_loader():
+    """CapacityCommitmentLoader for cold starts: read the ledger's own answer.
+
+    The Capacity Commitment Gate asks one question per capacity_manufacturing
+    segment: is there an active expansion whose gates must be verified, or has
+    the operator explicitly declared there is none? A cold start has exactly
+    one honest source for the answer — the declared-underwriting Evidence in
+    the ledger. A truthy ``no_active_capacity_expansion`` record bound to the
+    segment becomes the input's explicit no-expansion Evidence; a declared
+    ACTIVE expansion cannot be composed generically yet, so it fails closed by
+    name rather than gate-walking a project this loader did not type.
+    """
+    from .capacity_commitment import (
+        CapacityCommitmentInput,
+        CapacitySegmentCommitmentInput,
+    )
+    from .industry_dna import EconomicArchetype
+
+    def load(context: OrchestratorContext) -> CapacityCommitmentInput:
+        plan = context.data.get("module_requirement_plan")
+        ledger = context.data.get("evidence_ledger")
+        segments: list[CapacitySegmentCommitmentInput] = []
+        for segment in plan.segments:
+            if EconomicArchetype.CAPACITY_MANUFACTURING not in segment.archetypes:
+                continue
+            declared_none = tuple(
+                record.id
+                for record in ledger.active()
+                if record.metric == "no_active_capacity_expansion"
+                and record.segment == segment.segment_id
+                and bool(record.value)
+            )
+            if not declared_none:
+                raise GenericValuationPlanError(
+                    f"segment {segment.segment_id} runs the "
+                    "capacity_manufacturing route but the ledger carries no "
+                    "truthy no_active_capacity_expansion declaration for it; "
+                    "declare the no-expansion state, or an active expansion "
+                    "needs a typed project loader this cold start does not "
+                    "compose"
+                )
+            segments.append(
+                CapacitySegmentCommitmentInput(
+                    segment.segment_id,
+                    (),
+                    declared_none,
+                )
+            )
+        return CapacityCommitmentInput(tuple(segments))
+
+    return load

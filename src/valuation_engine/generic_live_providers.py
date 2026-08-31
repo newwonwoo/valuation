@@ -349,6 +349,16 @@ def build_generic_kr_runtime_factory(
         method_registry.get(choice.archetype, choice.method).execution_family
         for choice in spec.method_choices
     }
+    if any(
+        choice.archetype == "capacity_manufacturing"
+        for choice in spec.method_choices
+    ):
+        from .generic_valuation_plan import generic_capacity_commitment_loader
+
+        extensions = replace(
+            extensions,
+            capacity_commitment_loader=generic_capacity_commitment_loader(),
+        )
     if "contracted_backlog_dcf" in families:
         extensions = replace(
             extensions,

@@ -14,9 +14,12 @@ description: 이 레포에서 실제 한국 상장 종목의 라이브 밸류에
   코호트(기대값). 비12월 결산이면 business_year는 회계연도가 **끝나는** 해;
   fnltt 응답의 rcept_no를 채택 보고서와 대조. 자본가치 방법은
   `ev_adjustment` 키가 없다 — 선언 만들지 마라.
-- `runs/daehansteel-084010/` — 리스크팩 요구 DCF · 피어 회귀베타는
-  `scripts/compute_peer_betas.py`로 커밋된 공개 시세에서 재현. 피어는 레벨
-  간 중복 불가; 코호트는 타깃 제외 재적합.
+- `runs/daehansteel-084010/` — **다부문 SOTP** (제강 DCF + 운송 스프레드
+  DCF + 임대 NAV) · 리스크팩 요구 · 피어 회귀베타는
+  `scripts/compute_peer_betas.py`로 커밋된 공개 시세에서 재현. 다부문이면:
+  영업부문 주석 섹션 추가 → `declarations/segments.yaml`(주석 부문명과
+  일대일) → run.yaml `segments:` 목록 → 가정 키는 `<부문>_<키>` 이름공간,
+  변형은 `down_<부문>_<키>`. 상세: 런북 §2.2.
 
 ## 순서 (요약)
 
