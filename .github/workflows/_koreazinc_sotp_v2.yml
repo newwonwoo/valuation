@@ -35,6 +35,11 @@ jobs:
               "assert fy_disc.segment_names==expected, fy_disc.segment_names",
               "assert len(fy_disc.entries)==3, fy_disc.segment_names",
           )
+          old_fetch = '''def fetch(url):\n    return urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0'}),timeout=30).read()\n'''
+          new_fetch = '''def fetch(url):\n    import time\n    last=None\n    for attempt in range(4):\n        try:\n            return urlopen(Request(url,headers={'User-Agent':'Mozilla/5.0'}),timeout=60).read()\n        except Exception as exc:\n            last=exc\n            if attempt == 3:\n                raise\n            time.sleep(2 * (attempt + 1))\n    raise last\n'''
+          if old_fetch not in body:
+              raise SystemExit('fetch block not found in recovered recipe')
+          body = body.replace(old_fetch, new_fetch, 1)
           old = '''def first_metric(path, labels):\n    parser=_SegmentTableParser(); parser.feed(path.read_text(encoding='utf-8'))\n    for table in parser.tables:\n        for row in _expand_table(table):\n            if not row: continue\n            if re.sub(r'\\s+','',row[0] or '') in {re.sub(r'\\s+','',x) for x in labels}:\n                for cell in row[1:]:\n                    v=amount(cell)\n                    if v is not None: return v\n    raise RuntimeError(f'metric not found: {labels}')\n'''
           new = '''def first_metric(path, labels):\n    parser=_SegmentTableParser(); parser.feed(path.read_text(encoding='utf-8'))\n    wanted={re.sub(r'\\s+','',x) for x in labels}\n    for table in parser.tables:\n        for row in _expand_table(table):\n            if not row: continue\n            for idx, cell in enumerate(row):\n                if re.sub(r'\\s+','',cell or '') not in wanted:\n                    continue\n                for value_cell in row[idx+1:]:\n                    v=amount(value_cell)\n                    if v is not None: return v\n    raise RuntimeError(f'metric not found: {labels}')\n'''
           if old not in body:
