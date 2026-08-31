@@ -18,6 +18,8 @@ _ALIAS_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _DEFAULT_ALIAS = "prism-valuation"
 _REQUIRED_PRISM_ENV = ("DART_API_KEY", "VALUATION_LLM_TRANSPORT")
 _STATE_ROOT_ENV = "VALUATION_MCP_STATE_ROOT"
+_SUPPORTED_NATIVE_LINUX_FILESYSTEMS = frozenset({"ext2", "ext3", "ext4", "xfs", "btrfs"})
+_MOUNTINFO_ESCAPE_RE = re.compile(r"\\([0-7]{3})")
 
 
 class PrismTunnelError(RuntimeError):
@@ -79,6 +81,65 @@ def _supports_private_posix_permissions() -> bool:
     return sys.platform.startswith("linux") and not _is_wsl_runtime()
 
 
+def _decode_mountinfo_path(value: str) -> str:
+    """Decode Linux mountinfo's octal path escapes (space, tab, newline, backslash)."""
+    return _MOUNTINFO_ESCAPE_RE.sub(
+        lambda match: chr(int(match.group(1), 8)),
+        value,
+    )
+
+
+def _read_mountinfo() -> str:
+    try:
+        return Path("/proc/self/mountinfo").read_text(encoding="utf-8")
+    except OSError as exc:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} filesystem type cannot be verified ({type(exc).__name__})"
+        ) from exc
+
+
+def _filesystem_type_for_path(
+    root: Path,
+    *,
+    mountinfo_text: str | None = None,
+) -> tuple[str, Path]:
+    """Return the most-specific Linux mount and its filesystem type for root."""
+    resolved = root.resolve()
+    text = _read_mountinfo() if mountinfo_text is None else mountinfo_text
+    matches: list[tuple[int, str, Path]] = []
+    for line in text.splitlines():
+        if " - " not in line:
+            continue
+        before, after = line.split(" - ", 1)
+        left = before.split()
+        right = after.split()
+        if len(left) < 5 or not right:
+            continue
+        mount_point = Path(_decode_mountinfo_path(left[4]))
+        try:
+            resolved.relative_to(mount_point)
+        except ValueError:
+            continue
+        matches.append((len(mount_point.parts), right[0], mount_point))
+    if not matches:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} filesystem mount cannot be resolved from /proc/self/mountinfo"
+        )
+    _, fs_type, mount_point = max(matches, key=lambda item: item[0])
+    return fs_type, mount_point
+
+
+def _require_supported_linux_filesystem(root: Path) -> str:
+    fs_type, mount_point = _filesystem_type_for_path(root)
+    if fs_type not in _SUPPORTED_NATIVE_LINUX_FILESYSTEMS:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} must reside on a verified local Linux filesystem; "
+            f"got {fs_type} at {mount_point}. Supported: "
+            + ", ".join(sorted(_SUPPORTED_NATIVE_LINUX_FILESYSTEMS))
+        )
+    return fs_type
+
+
 def _reject_linux_extended_acls(root: Path) -> None:
     """Refuse state roots carrying any ACL-like extended attribute.
 
@@ -129,6 +190,10 @@ def _private_persistent_state_root(env: Mapping[str, str]) -> Path:
         root.mkdir(parents=True, mode=0o700, exist_ok=True)
         if not root.is_dir():
             raise PrismTunnelError(f"{_STATE_ROOT_ENV} is not a directory")
+        # Reject CIFS/NFS/FUSE/overlay/foreign bind mounts before trusting mode
+        # bits or xattrs. Only the deliberately small local-filesystem allowlist
+        # below is part of the current security contract.
+        _require_supported_linux_filesystem(root)
         # `mkdir(mode=...)` is umask-dependent and does not repair an existing
         # permissive directory. Tunnel state contains reports, history and
         # attestations, so make the single-writer root private and verify it.
