@@ -1,0 +1,38 @@
+name: koreazinc-final-prism
+
+on:
+  push:
+    branches: [run/koreazinc-sotp-final-010130-20260901]
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Restore frozen Korea Zinc prepared run
+        uses: actions/download-artifact@v4
+        with:
+          name: KOREAZINC_010130_PRISM_SOTP_FAST
+          path: /tmp/koreazinc-010130
+          github-token: ${{ github.token }}
+          run-id: 33428566520
+      - name: Execute canonical PRISM
+        id: prism
+        continue-on-error: true
+        run: |
+          rm -rf /tmp/koreazinc-010130/out
+          set -o pipefail
+          PYTHONPATH=src python scripts/run_kr_live.py /tmp/koreazinc-010130 2>&1 | tee /tmp/koreazinc-010130/prism-final.log
+      - name: Upload final/next-gate bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: KOREAZINC_010130_PRISM_FINAL
+          path: /tmp/koreazinc-010130
+      - name: Show PRISM result
+        run: cat /tmp/koreazinc-010130/prism-final.log
