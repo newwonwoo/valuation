@@ -3,8 +3,8 @@
 이 문서는 절차서다. 엔진 설계는 다른 문서들이 설명한다; 여기는 **"종목 X를
 지금 돌리려면 정확히 무엇을 하는가"** 만 다룬다. 이 절차 전체가 세 번 실행되어
 리포에 박제되어 있고 (회귀: `tests/test_kr_live_runbook.py`), 아래 모든 단계는
-그 실행에서 실제로 밟은 것이다. 앞의 두 런은 완주 회귀이고, 대한제강 런은
-연결 다부문을 단일 `core`로 축약하지 않는 실패 폐쇄 회귀다:
+그 실행에서 실제로 밟은 것이다. 세 런 모두 완주 회귀이고, 대한제강 런은
+다부문 선언을 지우면 산업 스냅샷 단계에서 다시 정지하는 실패 폐쇄 회귀도 겸한다:
 
 - `runs/kisco-104700/` — 한국철강: 12월 결산, EV 산출 방법
   (normalized_multiple), 캘리브레이션 포함(기대값까지).
@@ -170,7 +170,7 @@ PYTHONPATH=src python scripts/run_kr_live.py runs/<종목>-<코드>
 |---|---|---|
 | `PRIMARY_EVIDENCE_COLLECTION` — required … missing: metrics=… | 이름 나온 지표의 증거가 없다 | 공시에 있으면 §2.1 섹션 추가+로케이터, 판단이면 §3 선언 추가 |
 | `INDUSTRY_DNA_ROUTE` — unmapped KSIC | 분류맵에 없는 업종 | `config/kr_industry_classification_map.yaml`에 prefix 행 추가 (리뷰되는 데이터 변경) |
-| `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT` — multiple operating segments | 연결 공시가 둘 이상의 부문을 명시 | 단일 `core`로 축약하지 말고 다부문 방법 의도·입력 지원 전까지 중단 |
+| `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT` — multiple operating segments | 연결 공시가 둘 이상의 부문을 명시 | 단일 `core`로 축약하지 말고 §2.2 절차대로 영업부문 주석 + `declarations/segments.yaml` + run.yaml `segments:` 를 갖춘다 |
 | `RESEARCHER_A/BRIDGE` — proposal failed: … | 스태프 제안이 계약 위반 | 메시지의 사유대로 §4 파일 수정 (없는 ID 인용, 값 불일치 등) |
 | `HIERARCHICAL_BETA_ESTIMATION` — no LIVE_PRIMARY provider | 베타 요구 방법인데 리스크팩 없음 | §3의 risk_pack.yaml |
 | `STREET_REFERENCE_LOAD` — not configured | street.json 자체가 없음 | 무커버리지면 빈 reports로 선언 |
