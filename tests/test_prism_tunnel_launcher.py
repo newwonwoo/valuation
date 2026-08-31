@@ -98,6 +98,40 @@ def test_prepare_runtime_environment_rejects_relative_state_root(monkeypatch):
         launcher._prepare_runtime_environment(env)
 
 
+def test_mountinfo_uses_the_most_specific_mount():
+    text = (
+        "20 1 8:1 / / rw,relatime - ext4 /dev/root rw\n"
+        "21 20 0:44 / /mnt/data rw,relatime - cifs //server/share rw\n"
+    )
+    fs_type, mount_point = launcher._filesystem_type_for_path(
+        Path("/mnt/data/prism/state"), mountinfo_text=text
+    )
+    assert fs_type == "cifs"
+    assert mount_point == Path("/mnt/data")
+
+
+def test_mountinfo_decodes_escaped_mount_paths():
+    text = "20 1 8:1 / /mnt/private\\040data rw - ext4 /dev/root rw\n"
+    fs_type, mount_point = launcher._filesystem_type_for_path(
+        Path("/mnt/private data/prism"), mountinfo_text=text
+    )
+    assert fs_type == "ext4"
+    assert mount_point == Path("/mnt/private data")
+
+
+def test_foreign_filesystem_fails_closed(monkeypatch, tmp_path):
+    monkeypatch.setattr(launcher, "_supports_private_posix_permissions", lambda: True)
+    monkeypatch.setattr(
+        launcher,
+        "_filesystem_type_for_path",
+        lambda root: ("cifs", Path("/mnt/share")),
+    )
+    with pytest.raises(launcher.PrismTunnelError, match="verified local Linux filesystem"):
+        launcher._prepare_runtime_environment(
+            {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state")}
+        )
+
+
 @pytest.mark.skipif(not _NATIVE_LINUX, reason="native Linux tunnel security contract")
 def test_prepare_runtime_environment_resolves_persistent_state_root(tmp_path):
     env = launcher._prepare_runtime_environment(
