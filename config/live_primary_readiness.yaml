@@ -37,7 +37,7 @@ stages:
   INDUSTRY_DNA_ROUTE:
     status: PARTIAL_LIVE
     reason: >-
-      generic classified_industry_dna_router assigns archetypes from config/kr_industry_classification_map.yaml by longest KSIC prefix and fails closed on unmapped codes; the map covers 16 KSIC prefixes and widening it is a reviewed data change.
+      generic classified_industry_dna_router assigns archetypes from config/kr_industry_classification_map.yaml by longest KSIC prefix and fails closed on unmapped codes; the map covers 18 KSIC prefixes and widening it is a reviewed data change.
 
   MODULE_REQUIREMENT_PLAN:
     status: RUNTIME_READY
