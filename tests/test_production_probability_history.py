@@ -34,7 +34,7 @@ OUTCOME_RECORDED = datetime(2026, 7, 1, 9, 0, tzinfo=timezone.utc)
 
 
 def _history(tmp_path: Path) -> Path:
-    return (tmp_path / "probability" / "history.jsonl").resolve()
+    return (tmp_path / "probability" / "history.jsonl").absolute()
 
 
 def _set_clock(monkeypatch, value: datetime) -> None:
@@ -103,7 +103,7 @@ def test_initialize_append_resolve_and_export_round_trip(tmp_path, monkeypatch):
     assert len(snapshot.ledger.outcomes) == 1
     assert snapshot.events[1].previous_hash == snapshot.events[0].event_hash
 
-    output = (tmp_path / "export" / "ledger.json").resolve()
+    output = (tmp_path / "export" / "ledger.json").absolute()
     exported = export_production_ledger(path, output)
     assert exported["status"] == "EXPORTED"
     restored = ProbabilityCalibrationLedger.from_payload(
@@ -256,6 +256,56 @@ def test_permissive_history_mode_fails_validation(tmp_path, monkeypatch):
         match="group/other permissions",
     ):
         load_production_history(path)
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX file modes required")
+def test_existing_shared_parent_is_rejected_without_chmod(tmp_path):
+    shared = tmp_path / "shared"
+    shared.mkdir(mode=0o755)
+    os.chmod(shared, 0o755)
+    path = (shared / "history.jsonl").absolute()
+    with pytest.raises(
+        ProductionProbabilityHistoryError,
+        match="parent must not grant group/other permissions",
+    ):
+        initialize_production_history(path)
+    assert stat.S_IMODE(shared.stat().st_mode) == 0o755
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX file modes required")
+def test_permissive_existing_lock_fails_closed(tmp_path):
+    parent = tmp_path / "private-lock"
+    parent.mkdir(mode=0o700)
+    os.chmod(parent, 0o700)
+    path = (parent / "history.jsonl").absolute()
+    lock = path.with_name(path.name + ".lock")
+    lock.write_text("", encoding="utf-8")
+    os.chmod(lock, 0o644)
+    with pytest.raises(
+        ProductionProbabilityHistoryError,
+        match="lock must not grant group/other permissions",
+    ):
+        initialize_production_history(path)
+
+
+@pytest.mark.skipif(
+    os.name == "nt" or not hasattr(os, "symlink"),
+    reason="POSIX symlink semantics required",
+)
+def test_symbolic_link_history_path_fails_closed(tmp_path):
+    parent = tmp_path / "private-symlink"
+    parent.mkdir(mode=0o700)
+    os.chmod(parent, 0o700)
+    target = parent / "target.jsonl"
+    target.write_text("", encoding="utf-8")
+    os.chmod(target, 0o600)
+    link = parent / "history.jsonl"
+    link.symlink_to(target)
+    with pytest.raises(
+        ProductionProbabilityHistoryError,
+        match="symbolic-link components",
+    ):
+        load_production_history(link.absolute())
 
 
 @pytest.mark.skipif(os.name == "nt", reason="POSIX file modes required")
