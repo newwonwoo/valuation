@@ -60,7 +60,7 @@ jobs:
               raise SystemExit('run.yaml write block not found')
           body = body.replace(
               run_write,
-              "run_yaml['extra_required_evidence']=[x for x in run_yaml.get('extra_required_evidence',[]) if 'manufacturing' in x]\n          " + run_write,
+              "run_yaml['extra_required_evidence']=[x for x in run_yaml.get('extra_required_evidence',[]) if 'manufacturing' in x]\n" + run_write,
               1,
           )
           underwriting_marker = "underwriting={'target_id'"
