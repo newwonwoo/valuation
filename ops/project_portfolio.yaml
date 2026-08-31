@@ -43,8 +43,9 @@ departments:
   name: Architecture & Program Office
   design_points: 5
   baseline_accepted_points: 5
-  current_work: MAINTENANCE — natural-language routing, PRISM MCP, KR live-run/SOTP and runtime hardening are accepted; only
-    repository-admin branch protection and real production-history accumulation remain
+  current_work: 'MAINTENANCE — natural-language routing, PRISM MCP, KR live-run/SOTP and runtime hardening are accepted; only
+    repository-admin branch protection, live-runtime credential provisioning (Issue #158), and real production-history accumulation
+    remain'
   accepted_milestones: []
 - id: evidence-industry-agent
   name: Evidence & Industry Intelligence
@@ -148,7 +149,7 @@ departments:
   design_points: 10
   baseline_accepted_points: 5
   current_work: MAINTENANCE — natural-language/MCP authority and native-Linux tunnel state authorization are accepted; main
-    branch protection remains repository-admin configuration
+    branch protection and live-runtime credentials remain external admin configuration
   accepted_milestones:
   - id: RUN-HASH-001
     title: Close the Evidence-to-Assumption-to-Audit-to-Freeze hash chain

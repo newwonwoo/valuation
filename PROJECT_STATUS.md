@@ -24,9 +24,9 @@ Progress is conservative: ACTIVE/READY/BLOCKED/BACKLOG/MERGED_PENDING_ACCEPTANCE
 ```mermaid
 flowchart TB
   PM["PM / Integrator<br/>Design 99% (68/69)<br/>Now: 0 ACTIVE workstreams coordinated"]
-  PM --> PMO["Architecture & Program Office<br/>Design 100% (5/5)<br/>Now: MAINTENANCE — natural-language routing, PRISM MCP, KR live-run/SOTP and runtime hardening are accepted; only repository-admin branch protection and real production-history accumulation remain"]
+  PM --> PMO["Architecture & Program Office<br/>Design 100% (5/5)<br/>Now: MAINTENANCE — natural-language routing, PRISM MCP, KR live-run/SOTP and runtime hardening are accepted; only repository-admin branch protection, live-runtime credential provisioning (Issue #158), and real production-history accumulation remain"]
   PM --> EVIDENCE["Evidence & Industry Intelligence<br/>Design 100% (13/13)<br/>Now: MAINTENANCE — source chronology and Sanil dependency coverage are accepted; design complete"]
-  PM --> RUNTIME["Runtime Safety & Control Plane<br/>Design 100% (10/10)<br/>Now: MAINTENANCE — natural-language/MCP authority and native-Linux tunnel state authorization are accepted; main branch protection remains repository-admin configuration"]
+  PM --> RUNTIME["Runtime Safety & Control Plane<br/>Design 100% (10/10)<br/>Now: MAINTENANCE — natural-language/MCP authority and native-Linux tunnel state authorization are accepted; main branch protection and live-runtime credentials remain external admin configuration"]
   PM --> VALUATION["Deterministic Valuation Engines<br/>Design 100% (8/8)<br/>Now: MAINTENANCE — exact evaluator coverage and evidence-bound multi-segment KR SOTP are accepted"]
   PM --> CALIBRATION["Risk, PER & Probability Calibration<br/>Design 90% (9/10)<br/>Now: BLOCKED CAL-PRODUCTION-COHORT-003 — append-only production capture is accepted; future real outcomes must accumulate to declared cohort thresholds"]
   PM --> POST_FREEZE["Post-Freeze Market & State<br/>Design 100% (6/6)<br/>Now: MAINTENANCE — accepted design complete"]
@@ -38,9 +38,9 @@ flowchart TB
 
 | Department | Design progress | Current work |
 |---|---:|---|
-| Architecture & Program Office (`pm-integrator`) | **100% (5/5)** | MAINTENANCE — natural-language routing, PRISM MCP, KR live-run/SOTP and runtime hardening are accepted; only repository-admin branch protection and real production-history accumulation remain |
+| Architecture & Program Office (`pm-integrator`) | **100% (5/5)** | MAINTENANCE — natural-language routing, PRISM MCP, KR live-run/SOTP and runtime hardening are accepted; only repository-admin branch protection, live-runtime credential provisioning (Issue #158), and real production-history accumulation remain |
 | Evidence & Industry Intelligence (`evidence-industry-agent`) | **100% (13/13)** | MAINTENANCE — source chronology and Sanil dependency coverage are accepted; design complete |
-| Runtime Safety & Control Plane (`runtime-safety-agent`) | **100% (10/10)** | MAINTENANCE — natural-language/MCP authority and native-Linux tunnel state authorization are accepted; main branch protection remains repository-admin configuration |
+| Runtime Safety & Control Plane (`runtime-safety-agent`) | **100% (10/10)** | MAINTENANCE — natural-language/MCP authority and native-Linux tunnel state authorization are accepted; main branch protection and live-runtime credentials remain external admin configuration |
 | Deterministic Valuation Engines (`valuation-engine-agent`) | **100% (8/8)** | MAINTENANCE — exact evaluator coverage and evidence-bound multi-segment KR SOTP are accepted |
 | Risk, PER & Probability Calibration (`calibration-risk-agent`) | **90% (9/10)** | BLOCKED CAL-PRODUCTION-COHORT-003 — append-only production capture is accepted; future real outcomes must accumulate to declared cohort thresholds |
 | Post-Freeze Market & State (`post-freeze-agent`) | **100% (6/6)** | MAINTENANCE — accepted design complete |
