@@ -57,6 +57,12 @@ jobs:
           Path('/tmp/prepare_koreazinc.py').write_text(body, encoding='utf-8')
           PY
           python /tmp/prepare_koreazinc.py
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('/tmp/koreazinc-010130/declarations/staff/filing_locator_analyst.json')
+          p.write_text(json.dumps({'locators': [], 'not_found': []}, ensure_ascii=False, indent=2), encoding='utf-8')
+          PY
       - name: Execute canonical PRISM SOTP
         id: prism
         continue-on-error: true
