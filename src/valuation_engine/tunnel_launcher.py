@@ -18,6 +18,10 @@ _ALIAS_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
 _DEFAULT_ALIAS = "prism-valuation"
 _REQUIRED_PRISM_ENV = ("DART_API_KEY", "VALUATION_LLM_TRANSPORT")
 _STATE_ROOT_ENV = "VALUATION_MCP_STATE_ROOT"
+_SUPPORTED_NATIVE_LINUX_FILESYSTEMS = frozenset(
+    {"ext2", "ext3", "ext4", "xfs", "btrfs"}
+)
+_MOUNTINFO_ESCAPE_RE = re.compile(r"\\([0-7]{3})")
 
 
 class PrismTunnelError(RuntimeError):
@@ -60,21 +64,137 @@ def _alias(env: Mapping[str, str]) -> str:
     return value
 
 
-def _supports_private_posix_permissions() -> bool:
-    """Whether this host can enforce the reviewed mode-only state-root contract.
+def _is_wsl_runtime() -> bool:
+    """Detect WSL without trusting only environment variables."""
+    if os.environ.get("WSL_INTEROP") or os.environ.get("WSL_DISTRO_NAME"):
+        return True
+    for path in (Path("/proc/sys/kernel/osrelease"), Path("/proc/version")):
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            continue
+        if "microsoft" in text.casefold():
+            return True
+    return False
 
-    Linux (including WSL2) is the only supported tunnel host today. Native
-    Windows needs ACL-aware checks, and macOS can retain extended ACL grants
-    that are not disproved by ``stat.S_IMODE(...)=0700`` alone.
+
+def _supports_private_posix_permissions() -> bool:
+    """Whether this host matches the native-Linux security contract."""
+    return sys.platform.startswith("linux") and not _is_wsl_runtime()
+
+
+def _decode_mountinfo_path(value: str) -> str:
+    """Decode Linux mountinfo's octal path escapes."""
+    return _MOUNTINFO_ESCAPE_RE.sub(
+        lambda match: chr(int(match.group(1), 8)),
+        value,
+    )
+
+
+def _read_mountinfo() -> str:
+    try:
+        return Path("/proc/self/mountinfo").read_text(encoding="utf-8")
+    except OSError as exc:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} filesystem type cannot be verified "
+            f"({type(exc).__name__})"
+        ) from exc
+
+
+def _filesystem_type_for_path(
+    root: Path,
+    *,
+    mountinfo_text: str | None = None,
+) -> tuple[str, Path]:
+    """Return the uniquely most-specific Linux mount servicing root.
+
+    Stacked mounts at the same most-specific mount point are deliberately
+    ambiguous. ``/proc/self/mountinfo`` ordering is not treated as an
+    authorization primitive, so ambiguity fails closed rather than guessing
+    which stacked layer currently services pathname lookup.
     """
-    return sys.platform.startswith("linux")
+    resolved = root.resolve()
+    text = _read_mountinfo() if mountinfo_text is None else mountinfo_text
+    matches: list[tuple[int, str, Path]] = []
+    for line in text.splitlines():
+        if " - " not in line:
+            continue
+        before, after = line.split(" - ", 1)
+        left = before.split()
+        right = after.split()
+        if len(left) < 5 or not right:
+            continue
+        mount_point = Path(_decode_mountinfo_path(left[4]))
+        try:
+            resolved.relative_to(mount_point)
+        except ValueError:
+            continue
+        matches.append((len(mount_point.parts), right[0], mount_point))
+    if not matches:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} filesystem mount cannot be resolved from "
+            "/proc/self/mountinfo"
+        )
+    max_depth = max(item[0] for item in matches)
+    most_specific = tuple(item for item in matches if item[0] == max_depth)
+    if len(most_specific) != 1:
+        mounts = ", ".join(
+            f"{fs_type}@{mount_point}"
+            for _, fs_type, mount_point in most_specific
+        )
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} filesystem mount is ambiguous due to "
+            f"stacked/equally specific mounts: {mounts}"
+        )
+    _, fs_type, mount_point = most_specific[0]
+    return fs_type, mount_point
+
+
+def _require_supported_linux_filesystem(root: Path) -> str:
+    fs_type, mount_point = _filesystem_type_for_path(root)
+    if fs_type not in _SUPPORTED_NATIVE_LINUX_FILESYSTEMS:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} must reside on a verified local Linux filesystem; "
+            f"got {fs_type} at {mount_point}. Supported: "
+            + ", ".join(sorted(_SUPPORTED_NATIVE_LINUX_FILESYSTEMS))
+        )
+    return fs_type
+
+
+def _reject_linux_extended_acls(root: Path) -> None:
+    """Refuse state roots carrying any ACL-like extended attribute.
+
+    Mode 0700 is not the complete authorization surface when a filesystem
+    carries POSIX, NFSv4, Samba/NT, or another ACL xattr. The launcher does not
+    rewrite operator ACL policy and then claim success; any ACL-like metadata,
+    or inability to inspect xattrs, keeps tunnel preflight fail-closed.
+    """
+    if not hasattr(os, "listxattr"):
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} ACL verification is unavailable on this Linux runtime"
+        )
+    try:
+        names = {str(name) for name in os.listxattr(root)}
+    except OSError as exc:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} ACL metadata cannot be verified "
+            f"({type(exc).__name__})"
+        ) from exc
+    found = tuple(sorted(name for name in names if "acl" in name.casefold()))
+    if found:
+        raise PrismTunnelError(
+            f"{_STATE_ROOT_ENV} contains extended ACL metadata: "
+            + ", ".join(found)
+            + "; use a private native-Linux root without ACL entries"
+        )
 
 
 def _private_persistent_state_root(env: Mapping[str, str]) -> Path:
     if not _supports_private_posix_permissions():
         raise PrismTunnelError(
             "Secure MCP Tunnel state permission enforcement currently requires a "
-            "Linux host (including WSL2); native Windows and macOS are unsupported"
+            "native Linux host; WSL, macOS, and Windows are fail-closed until "
+            "their alternate authorization surfaces are verified explicitly"
         )
     raw = env.get(_STATE_ROOT_ENV, "").strip()
     if not raw:
@@ -92,7 +212,11 @@ def _private_persistent_state_root(env: Mapping[str, str]) -> Path:
         root.mkdir(parents=True, mode=0o700, exist_ok=True)
         if not root.is_dir():
             raise PrismTunnelError(f"{_STATE_ROOT_ENV} is not a directory")
-        # `mkdir(mode=...)` is umask-dependent and does not repair an existing
+        # Reject CIFS/NFS/FUSE/overlay/foreign bind mounts before trusting mode
+        # bits or xattrs. Only the deliberately small local-filesystem allowlist
+        # below is part of the current security contract.
+        _require_supported_linux_filesystem(root)
+        # ``mkdir(mode=...)`` is umask-dependent and does not repair an existing
         # permissive directory. Tunnel state contains reports, history and
         # attestations, so make the single-writer root private and verify it.
         os.chmod(root, 0o700)
@@ -106,8 +230,10 @@ def _private_persistent_state_root(env: Mapping[str, str]) -> Path:
         ) from exc
     if mode & 0o077:
         raise PrismTunnelError(
-            f"{_STATE_ROOT_ENV} must not grant group/other permissions; current mode={mode:o}"
+            f"{_STATE_ROOT_ENV} must not grant group/other permissions; "
+            f"current mode={mode:o}"
         )
+    _reject_linux_extended_acls(root)
     return root
 
 
@@ -115,14 +241,17 @@ def _prepare_runtime_environment(
     environ: Mapping[str, str] | None = None,
 ) -> dict[str, str]:
     env = _environment(environ)
-    missing = tuple(name for name in _REQUIRED_PRISM_ENV if not env.get(name, "").strip())
+    missing = tuple(
+        name for name in _REQUIRED_PRISM_ENV if not env.get(name, "").strip()
+    )
     if missing:
         raise PrismTunnelError(
             "PRISM runtime environment is incomplete: " + ", ".join(missing)
         )
     if not env.get("CONTROL_PLANE_API_KEY", "").strip():
         raise PrismTunnelError(
-            "CONTROL_PLANE_API_KEY is required as the dedicated Tunnels Read + Use runtime key"
+            "CONTROL_PLANE_API_KEY is required as the dedicated Tunnels Read + Use "
+            "runtime key"
         )
     root = _private_persistent_state_root(env)
     env[_STATE_ROOT_ENV] = str(root)
@@ -175,7 +304,9 @@ def _run(command: tuple[str, ...], *, env: Mapping[str, str]) -> dict[str, objec
         check=False,
     )
     if completed.returncode != 0:
-        detail = (completed.stderr or completed.stdout or "tunnel-client failed").strip()
+        detail = (
+            completed.stderr or completed.stdout or "tunnel-client failed"
+        ).strip()
         raise PrismTunnelError(detail)
     text = completed.stdout.strip()
     if not text:
