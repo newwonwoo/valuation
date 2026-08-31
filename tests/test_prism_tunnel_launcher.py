@@ -107,7 +107,7 @@ def test_prepare_runtime_environment_resolves_persistent_state_root(tmp_path):
     assert env["VALUATION_MCP_JURISDICTION"] == "KR"
 
 
-@pytest.mark.skipif(os.name == "nt", reason="POSIX directory modes required")
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux/WSL2 tunnel host required")
 def test_new_tunnel_state_root_is_private(tmp_path):
     root = tmp_path / "private-state"
     launcher._prepare_runtime_environment(
@@ -116,7 +116,7 @@ def test_new_tunnel_state_root_is_private(tmp_path):
     assert stat.S_IMODE(root.stat().st_mode) == 0o700
 
 
-@pytest.mark.skipif(os.name == "nt", reason="POSIX directory modes required")
+@pytest.mark.skipif(not sys.platform.startswith("linux"), reason="Linux/WSL2 tunnel host required")
 def test_existing_permissive_state_root_is_repaired(tmp_path):
     root = tmp_path / "permissive-state"
     root.mkdir(mode=0o755)
