@@ -69,10 +69,17 @@ def test_prepare_runtime_environment_requires_separate_tunnel_key(tmp_path):
         launcher._prepare_runtime_environment(env)
 
 
-def test_prepare_runtime_environment_rejects_non_posix_permission_host(monkeypatch, tmp_path):
+def test_prepare_runtime_environment_rejects_non_linux_permission_host(monkeypatch, tmp_path):
     monkeypatch.setattr(launcher, "_supports_private_posix_permissions", lambda: False)
     env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state")}
-    with pytest.raises(launcher.PrismTunnelError, match="POSIX host"):
+    with pytest.raises(launcher.PrismTunnelError, match="Linux host"):
+        launcher._prepare_runtime_environment(env)
+
+
+def test_prepare_runtime_environment_rejects_macos(monkeypatch, tmp_path):
+    monkeypatch.setattr(launcher.sys, "platform", "darwin")
+    env = {**_base_env(), "VALUATION_MCP_STATE_ROOT": str(tmp_path / "state")}
+    with pytest.raises(launcher.PrismTunnelError, match="macOS"):
         launcher._prepare_runtime_environment(env)
 
 
