@@ -1,12 +1,64 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date, datetime, timezone
 from hashlib import sha256
 import json
 from typing import Protocol
 
 from .ledger import EvidenceLedger
 from .records import EvidenceRecord, EvidenceSourceLayer
+
+
+def _checked_at_temporal(value: str) -> date | datetime:
+    text = str(value or "").strip().replace("Z", "+00:00")
+    if not text:
+        raise ValueError("evidence batch checked_at is required")
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        pass
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise ValueError(
+            "evidence batch checked_at must be an ISO date/timestamp"
+        ) from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError(
+            "evidence batch checked_at timestamp must be timezone-aware"
+        )
+    return parsed
+
+
+def _observed_temporal(value: str) -> date | datetime:
+    text = str(value or "").strip().replace("Z", "+00:00")
+    try:
+        return date.fromisoformat(text)
+    except ValueError:
+        pass
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise ValueError(
+            "evidence observed_date must be an ISO date/timestamp"
+        ) from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError(
+            "evidence observed_date timestamp must be timezone-aware"
+        )
+    return parsed
+
+
+def _observed_after_checkpoint(
+    observed: date | datetime,
+    checked: date | datetime,
+) -> bool:
+    if isinstance(observed, datetime) and isinstance(checked, datetime):
+        return observed.astimezone(timezone.utc) > checked.astimezone(timezone.utc)
+    observed_date = observed.date() if isinstance(observed, datetime) else observed
+    checked_date = checked.date() if isinstance(checked, datetime) else checked
+    return observed_date > checked_date
 
 
 @dataclass(frozen=True)
@@ -38,6 +90,7 @@ class EvidenceCollectionBatch:
             raise ValueError(
                 "evidence batch requires source_id, checked_at and source_fingerprint"
             )
+        checked_temporal = _checked_at_temporal(self.checked_at)
         ids = tuple(item.id for item in self.records)
         if len(ids) != len(set(ids)):
             raise ValueError(
@@ -46,6 +99,11 @@ class EvidenceCollectionBatch:
         for item in self.records:
             if item.target == "":
                 raise ValueError("evidence target cannot be blank")
+            observed_temporal = _observed_temporal(item.observed_date)
+            if _observed_after_checkpoint(observed_temporal, checked_temporal):
+                raise ValueError(
+                    f"evidence {item.id} observed after source batch checked_at"
+                )
             if item.source_layer not in {
                 EvidenceSourceLayer.REALIZED_OR_FILING,
                 EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
