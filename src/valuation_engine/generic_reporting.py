@@ -33,6 +33,7 @@ from .probability_forecasting import (
     ProbabilityForecastHistoryStore,
     ScenarioProbabilityAssessment,
 )
+from .scenario_binding import BoundScenarioSet
 from .report_localization import (
     calibration_label_ko,
     currency_label_ko,
@@ -85,6 +86,29 @@ def _fmt_money(value: Decimal | float | int, unit: str) -> str:
 
 def _probability_percent(value: Decimal | float | int) -> str:
     return f"{Decimal(str(value)) * 100:.0f}%"
+
+
+def _scenario_probability_summary(
+    scenario_set: object,
+    probability_assessment: object,
+) -> str:
+    if (
+        isinstance(scenario_set, BoundScenarioSet)
+        and scenario_set.numeric_weighting_allowed
+        and scenario_set.scenarios
+        and all(item.probability is not None for item in scenario_set.scenarios)
+    ):
+        return " · ".join(
+            f"{scenario_label_ko(item.scenario_id)} "
+            f"{Decimal(str(item.probability)) * 100:.1f}%"
+            for item in scenario_set.scenarios
+        ) + " (보정 완료·수치 가중 적용)"
+    if isinstance(probability_assessment, ScenarioProbabilityAssessment):
+        return " · ".join(
+            f"{scenario_label_ko(item.scenario_id)} {_probability_percent(item.displayed_probability)}"
+            for item in probability_assessment.rows
+        ) + " (미보정·기대값 미적용)"
+    return "미산출"
 
 
 def _street_method_label_ko(value: str) -> str:
@@ -386,12 +410,9 @@ def render_generic_report(
         )
     )
     probability_assessment = data.get("scenario_probability_assessment")
-    probability_summary = "미산출"
-    if isinstance(probability_assessment, ScenarioProbabilityAssessment):
-        probability_summary = " · ".join(
-            f"{scenario_label_ko(item.scenario_id)} {_probability_percent(item.displayed_probability)}"
-            for item in probability_assessment.rows
-        ) + " (미보정·기대값 미적용)"
+    probability_summary = _scenario_probability_summary(
+        scenario_set, probability_assessment
+    )
     reference_label = "평가 완료 사업부 소계" if partial else "기준 내재가치"
     range_label = "평가 완료 사업부 범위" if partial else "가치평가 범위"
     lines = [
