@@ -95,22 +95,46 @@ class VariableSensitivity:
 
 
 @dataclass(frozen=True)
-class ScenarioSensitivity:
-    scenario_id: str
-    status: str
-    rationale: str
-    base_value_per_share: Decimal | None = None
-    variables: tuple[VariableSensitivity, ...] = ()
-
-    @property
-    def measured(self) -> bool:
-        return self.status == ReconstructionStatus.RECONSTRUCTED and bool(self.variables)
+class SegmentSensitivity:
+    asset_id: str
+    contribution_id: str
+    attributable_equity_value: Decimal
+    attributable_value_per_share: Decimal
+    ownership_ratio: Decimal
+    variables: tuple[VariableSensitivity, ...]
 
     @property
     def dominant(self) -> VariableSensitivity | None:
         if not self.variables:
             return None
         return max(self.variables, key=lambda item: item.max_abs_pct)
+
+
+@dataclass(frozen=True)
+class ScenarioSensitivity:
+    scenario_id: str
+    status: str
+    rationale: str
+    base_value_per_share: Decimal | None = None
+    variables: tuple[VariableSensitivity, ...] = ()
+    segments: tuple[SegmentSensitivity, ...] = ()
+
+    @property
+    def measured(self) -> bool:
+        return (
+            self.status == ReconstructionStatus.RECONSTRUCTED
+            and bool(self.variables or self.segments)
+        )
+
+    @property
+    def dominant(self) -> VariableSensitivity | None:
+        candidates = list(self.variables)
+        candidates.extend(
+            variable for segment in self.segments for variable in segment.variables
+        )
+        if not candidates:
+            return None
+        return max(candidates, key=lambda item: item.max_abs_pct)
 
 
 @dataclass(frozen=True)
@@ -138,8 +162,21 @@ class ValuationSensitivityReport:
             dominant = scenario.dominant
             if dominant is None:
                 continue
+            asset = next(
+                (
+                    segment.asset_id
+                    for segment in scenario.segments
+                    if any(dominant is item for item in segment.variables)
+                ),
+                None,
+            )
+            location = (
+                f"{scenario.scenario_id}/{asset}"
+                if asset is not None
+                else scenario.scenario_id
+            )
             parts.append(
-                f"{scenario.scenario_id}: {dominant.label} 최대 "
+                f"{location}: {dominant.label} 최대 "
                 f"{dominant.max_abs_pct * 100:.1f}%"
             )
         return "지배 변수 — " + " · ".join(parts)
@@ -217,6 +254,200 @@ def _variable(
     )
 
 
+def _sotp_component_sensitivity(
+    *,
+    component,
+    reporting_unit: str,
+    company_equity_value: Decimal,
+    diluted_shares: Decimal,
+    base_value_per_share: Decimal,
+    policy: SensitivityPolicy,
+) -> SegmentSensitivity | None:
+    diagnostics = component.diagnostics
+    ownership = component.ownership_ratio
+    if (
+        not isinstance(diagnostics, SegmentValuationDiagnostics)
+        or not isinstance(ownership, Decimal)
+        or not ownership.is_finite()
+        or ownership <= _ZERO
+    ):
+        return None
+    try:
+        diagnostics.validate()
+    except (TypeError, ValueError):
+        return None
+    if diagnostics.execution_family != "explicit_fcff_dcf":
+        return None
+    if diluted_shares <= 0:
+        raise ValuationSensitivityError("diluted shares must be positive")
+
+    def to_reporting(amount: Decimal) -> Decimal:
+        return Measure(amount, diagnostics.value_unit, "1970-01-01").convert_to(
+            reporting_unit
+        ).amount
+
+    published = to_reporting(diagnostics.enterprise_value)
+    recomputed = to_reporting(
+        enterprise_value(
+            fcff_path=diagnostics.fcff_path,
+            discount_rate=diagnostics.discount_rate,
+            terminal_growth=diagnostics.terminal_growth,
+        )
+    )
+    if (
+        published <= 0
+        or abs(recomputed - published)
+        > abs(published) * _RECONSTRUCTION_TOLERANCE
+    ):
+        return None
+
+    attributable = component.attributable_equity_value.convert_to(
+        reporting_unit
+    ).amount
+    full_equity = attributable / ownership
+    bridge = full_equity - published
+    other_equity = company_equity_value - attributable
+
+    def value_at(
+        *, discount_rate: Decimal, growth: Decimal, level: Decimal
+    ) -> Decimal:
+        raw = enterprise_value(
+            fcff_path=tuple(item * level for item in diagnostics.fcff_path),
+            discount_rate=discount_rate,
+            terminal_growth=growth,
+        )
+        perturbed_attributable = ownership * (to_reporting(raw) + bridge)
+        return (other_equity + perturbed_attributable) / diluted_shares
+
+    base_replayed = value_at(
+        discount_rate=diagnostics.discount_rate,
+        growth=diagnostics.terminal_growth,
+        level=_ONE,
+    )
+    if (
+        abs(base_replayed - base_value_per_share)
+        > max(abs(base_value_per_share), _ONE) * _RECONSTRUCTION_TOLERANCE
+    ):
+        return None
+
+    rate = diagnostics.discount_rate
+    growth = diagnostics.terminal_growth
+    variables: list[VariableSensitivity] = []
+
+    rate_low = rate - policy.discount_rate_delta
+    rate_high = rate + policy.discount_rate_delta
+    if rate_low > growth:
+        measured = _variable(
+            variable=DISCOUNT_RATE,
+            low_input=rate_low,
+            base_input=rate,
+            high_input=rate_high,
+            low_value=value_at(
+                discount_rate=rate_low, growth=growth, level=_ONE
+            ),
+            base_value=base_value_per_share,
+            high_value=value_at(
+                discount_rate=rate_high, growth=growth, level=_ONE
+            ),
+            expected_direction="down",
+        )
+        if measured is not None:
+            variables.append(measured)
+
+    growth_low = growth - policy.terminal_growth_delta
+    growth_high = growth + policy.terminal_growth_delta
+    if growth_high < rate:
+        measured = _variable(
+            variable=TERMINAL_GROWTH,
+            low_input=growth_low,
+            base_input=growth,
+            high_input=growth_high,
+            low_value=value_at(
+                discount_rate=rate, growth=growth_low, level=_ONE
+            ),
+            base_value=base_value_per_share,
+            high_value=value_at(
+                discount_rate=rate, growth=growth_high, level=_ONE
+            ),
+            expected_direction="up",
+        )
+        if measured is not None:
+            variables.append(measured)
+
+    level_low = _ONE - policy.fcff_level_delta
+    level_high = _ONE + policy.fcff_level_delta
+    measured = _variable(
+        variable=FCFF_LEVEL,
+        low_input=level_low,
+        base_input=_ONE,
+        high_input=level_high,
+        low_value=value_at(discount_rate=rate, growth=growth, level=level_low),
+        base_value=base_value_per_share,
+        high_value=value_at(discount_rate=rate, growth=growth, level=level_high),
+        expected_direction="up",
+    )
+    if measured is not None:
+        variables.append(measured)
+
+    if not variables:
+        return None
+    return SegmentSensitivity(
+        asset_id=component.asset_id,
+        contribution_id=component.contribution_id,
+        attributable_equity_value=attributable,
+        attributable_value_per_share=attributable / diluted_shares,
+        ownership_ratio=ownership,
+        variables=tuple(variables),
+    )
+
+
+def _sotp_scenario_sensitivity(
+    *,
+    scenario_id: str,
+    reporting_unit: str,
+    equity_value: Decimal,
+    diluted_shares: Decimal,
+    base_value_per_share: Decimal,
+    company_value: CompanyScenarioEquityValue,
+    policy: SensitivityPolicy,
+) -> ScenarioSensitivity:
+    segments = tuple(
+        measured
+        for component in company_value.components
+        if (
+            measured := _sotp_component_sensitivity(
+                component=component,
+                reporting_unit=reporting_unit,
+                company_equity_value=equity_value,
+                diluted_shares=diluted_shares,
+                base_value_per_share=base_value_per_share,
+                policy=policy,
+            )
+        )
+        is not None
+    )
+    if not segments:
+        return ScenarioSensitivity(
+            scenario_id=scenario_id,
+            status=ReconstructionStatus.NOT_RECONSTRUCTIBLE,
+            rationale=(
+                "SOTP 구성요소 중 동결 DCF 커널로 독립 재현 가능한 부문이 없어 "
+                "부문별 민감도를 산출하지 않았습니다"
+            ),
+        )
+    return ScenarioSensitivity(
+        scenario_id=scenario_id,
+        status=ReconstructionStatus.RECONSTRUCTED,
+        rationale=(
+            f"SOTP {len(company_value.components)}개 구성요소 중 "
+            f"{len(segments)}개 DCF 부문을 다른 부문·모회사 조정을 고정한 채 "
+            "독립적으로 3점 변동시켰습니다"
+        ),
+        base_value_per_share=base_value_per_share,
+        segments=segments,
+    )
+
+
 def _scenario_sensitivity(
     *,
     scenario_id: str,
@@ -227,6 +458,16 @@ def _scenario_sensitivity(
     company_value: CompanyScenarioEquityValue,
     policy: SensitivityPolicy,
 ) -> ScenarioSensitivity:
+    if len(company_value.components) != 1:
+        return _sotp_scenario_sensitivity(
+            scenario_id=scenario_id,
+            reporting_unit=reporting_unit,
+            equity_value=equity_value,
+            diluted_shares=diluted_shares,
+            base_value_per_share=base_value_per_share,
+            company_value=company_value,
+            policy=policy,
+        )
     reconstructible = reconstructible_dcf_component(company_value)
     if reconstructible is None:
         return ScenarioSensitivity(
@@ -361,10 +602,23 @@ def _findings(
     if not measured:
         return tuple(findings)
 
-    non_monotonic = tuple(
-        f"{scenario.scenario_id}/{item.variable}"
+    variable_rows = tuple(
+        (scenario.scenario_id, None, item)
         for scenario in measured
         for item in scenario.variables
+    ) + tuple(
+        (scenario.scenario_id, segment.asset_id, item)
+        for scenario in measured
+        for segment in scenario.segments
+        for item in segment.variables
+    )
+    non_monotonic = tuple(
+        (
+            f"{scenario_id}/{asset_id}/{item.variable}"
+            if asset_id is not None
+            else f"{scenario_id}/{item.variable}"
+        )
+        for scenario_id, asset_id, item in variable_rows
         if not item.monotonic
     )
     findings.append(
@@ -381,10 +635,9 @@ def _findings(
     )
 
     concentrated = tuple(
-        scenario
-        for scenario in measured
-        if scenario.dominant is not None
-        and scenario.dominant.max_abs_pct > policy.high_sensitivity_pct
+        (scenario_id, asset_id, item)
+        for scenario_id, asset_id, item in variable_rows
+        if item.max_abs_pct > policy.high_sensitivity_pct
     )
     findings.append(
         AuditFinding(
@@ -396,10 +649,13 @@ def _findings(
                 if not concentrated
                 else "소폭 변동만으로 가치가 크게 움직이는 변수가 있습니다: "
                 + " · ".join(
-                    f"{scenario.scenario_id} {scenario.dominant.label} "
-                    f"{scenario.dominant.max_abs_pct * 100:.1f}%"
-                    for scenario in concentrated
-                    if scenario.dominant is not None
+                    (
+                        f"{scenario_id}/{asset_id} {item.label} "
+                        if asset_id is not None
+                        else f"{scenario_id} {item.label} "
+                    )
+                    + f"{item.max_abs_pct * 100:.1f}%"
+                    for scenario_id, asset_id, item in concentrated
                 )
             ),
         )
@@ -414,7 +670,7 @@ def _report_hash(
     findings: tuple[AuditFinding, ...],
 ) -> str:
     payload = {
-        "contract": "valuation_sensitivity/v1",
+        "contract": "valuation_sensitivity/v2",
         "valuation_hash": valuation_hash,
         "scenarios": [
             {
@@ -430,6 +686,31 @@ def _report_hash(
                         "monotonic": item.monotonic,
                     }
                     for item in scenario.variables
+                ],
+                "segments": [
+                    {
+                        "asset_id": segment.asset_id,
+                        "contribution_id": segment.contribution_id,
+                        "attributable_equity_value": str(
+                            segment.attributable_equity_value
+                        ),
+                        "ownership_ratio": str(segment.ownership_ratio),
+                        "variables": [
+                            {
+                                "variable": item.variable,
+                                "low_input": str(item.low_input),
+                                "high_input": str(item.high_input),
+                                "low_value_per_share": str(item.low_value_per_share),
+                                "base_value_per_share": str(item.base_value_per_share),
+                                "high_value_per_share": str(item.high_value_per_share),
+                                "low_value_pct": str(item.low_value_pct),
+                                "high_value_pct": str(item.high_value_pct),
+                                "monotonic": item.monotonic,
+                            }
+                            for item in segment.variables
+                        ],
+                    }
+                    for segment in scenario.segments
                 ],
             }
             for scenario in scenarios
