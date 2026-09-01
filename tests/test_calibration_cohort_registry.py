@@ -106,3 +106,29 @@ def test_registered_cohort_accepts_the_exact_structural_binding():
             "external_probability_source": cohort.external_probability_source,
         },
     )
+
+def test_target_binding_rejects_other_issuer_exclusion():
+    registry = load_production_calibration_registry()
+    cohort = resolve_production_calibration_cohort(
+        registry,
+        ksic_code="2411",
+        forecast_years=5,
+        scenario_ids=("Down", "Base", "Bull"),
+    )
+    assert cohort is not None
+    with pytest.raises(CalibrationCohortRegistryError, match="CALIBRATION_TARGET_MISMATCH"):
+        validate_declared_calibration(
+            cohort,
+            {
+                "cohort_key": cohort.cohort_key,
+                "forecast_class": cohort.forecast_class,
+                "external_probability_source": cohort.external_probability_source,
+                "constants": {"excluded_ticker": "104700"},
+            },
+            target_ticker="084010",
+            target_corp_code="00113225",
+            conditioning_source_ref=(
+                "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?"
+                "corp_code=00113225&bsns_year=2025"
+            ),
+        )

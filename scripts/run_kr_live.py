@@ -73,6 +73,11 @@ from valuation_engine.calibration_cohort_registry import (  # noqa: E402
 )
 from valuation_engine.cli_runtime import LiveAnalysisRequest  # noqa: E402
 from valuation_engine.control_plane import StageStatus  # noqa: E402
+from valuation_engine.declared_segments import load_declared_segments  # noqa: E402
+from valuation_engine.generic_kr_industry import (  # noqa: E402
+    fetch_opendart_company_profile,
+    opendart_filing_snapshot_loader,
+)
 from valuation_engine.generic_live_providers import (  # noqa: E402
     GenericKRRuntimeSpec,
     build_generic_kr_runtime_factory,
@@ -80,6 +85,10 @@ from valuation_engine.generic_live_providers import (  # noqa: E402
 from valuation_engine.kr_opendart_provider import (  # noqa: E402
     OpenDartFilingSelection,
     OpenDartNetwork,
+)
+from valuation_engine.live_primary_adapters import (  # noqa: E402
+    CompanyResolutionRequest,
+    live_opendart_company_resolver,
 )
 from valuation_engine.strict_live_runtime import run_prism  # noqa: E402
 from valuation_engine.valuation_plan_compiler import SegmentMethodChoice  # noqa: E402
@@ -280,57 +289,186 @@ def _calibration_loader(run_dir: Path, calibration: dict):
     return load
 
 
-def _run_industry_code(run_dir: Path, config: dict) -> str | None:
-    """Return the deterministic KSIC anchor used for cohort matching."""
+def _resolved_target_context(run_dir: Path, config: dict, network: OpenDartNetwork):
+    resolver = live_opendart_company_resolver(
+        network.fetch_bytes, api_key=network.api_key
+    )
+    identity = resolver(
+        CompanyResolutionRequest(
+            query=str(config["company_query"]),
+            jurisdiction=str(config.get("jurisdiction", "KR")),
+        )
+    )
+    identity.validate()
+    corp_code = next(
+        (value for key, value in identity.external_ids if key == "opendart_corp_code"),
+        "",
+    )
+    if not corp_code:
+        raise RunbookError(
+            "resolved target carries no OpenDART corp code for calibration preflight"
+        )
+    profile = fetch_opendart_company_profile(
+        network.fetch_text,
+        corp_code=corp_code,
+        api_key=network.api_key,
+    )
+    if profile.stock_code and profile.stock_code != identity.ticker:
+        raise RunbookError(
+            "OpenDART company profile ticker disagrees with resolved target"
+        )
+    return identity, corp_code, profile
+
+
+def _run_industry_code(
+    run_dir: Path,
+    config: dict,
+    *,
+    identity,
+    network: OpenDartNetwork,
+    company_industry_code: str,
+) -> str | None:
+    """Return a cohort KSIC only after canonical scope validation succeeds.
+
+    If the existing company/IFRS 8 contract is missing or invalid,
+    return None so the ordinary Control Plane stage remains the owner
+    of that refusal. Calibration must never mask an earlier structural
+    blocker.
+    """
     filing = config.get("filing") or {}
     if config.get("segments"):
         declaration_path = run_dir / "declarations" / "segments.yaml"
         if not declaration_path.is_file():
             return None
-        payload = yaml.safe_load(declaration_path.read_text(encoding="utf-8"))
-        rows = payload.get("segments") if isinstance(payload, dict) else None
-        if not isinstance(rows, list):
+        try:
+            declared = load_declared_segments(declaration_path)
+            opendart_filing_snapshot_loader(
+                fetch_text=network.fetch_text,
+                fetch_bytes=network.fetch_bytes,
+                as_of=str(config["as_of"]),
+                api_key=network.api_key,
+                declared_segments=declared,
+            )(identity)
+        except Exception:
             return None
-        anchor_segment = str(filing.get("segment_id", ""))
+        anchor_segment = str(filing.get("segment_id", "core"))
         matches = tuple(
-            row
-            for row in rows
-            if isinstance(row, dict)
-            and str(row.get("segment_id", "")) == anchor_segment
+            item for item in declared.segments
+            if item.segment_id == anchor_segment
         )
         if len(matches) != 1:
             return None
-        code = str(matches[0].get("ksic_code", "")).strip()
-        return code or None
+        return matches[0].ksic_code
+    return company_industry_code or None
 
-    company_path = run_dir / "raw" / "company.json"
-    if not company_path.is_file():
-        return None
-    payload = json.loads(company_path.read_text(encoding="utf-8"))
-    code = (
-        str(payload.get("induty_code", "")).strip()
-        if isinstance(payload, dict)
-        else ""
+
+def _target_filing_receipts(run_dir: Path) -> tuple[str, ...]:
+    path = run_dir / "raw" / "list.json"
+    if not path.is_file():
+        return ()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ()
+    rows = payload.get("list") if isinstance(payload, dict) else None
+    if not isinstance(rows, list):
+        return ()
+    return tuple(
+        str(row.get("rcept_no"))
+        for row in rows
+        if isinstance(row, dict) and row.get("rcept_no")
     )
-    return code or None
 
 
-def _required_production_calibration(run_dir: Path, config: dict):
-    registry = load_production_calibration_registry()
+def _conditioning_source_ref(run_dir: Path, calibration: object) -> str:
+    if not isinstance(calibration, dict):
+        return ""
+    value = calibration.get("conditioning")
+    if not isinstance(value, str) or not value:
+        return ""
+    path = _resolve(run_dir, value)
+    if not path.is_file():
+        return ""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ""
+    return str(payload.get("source_ref") or "") if isinstance(payload, dict) else ""
+
+
+def _required_production_calibration(
+    run_dir: Path,
+    config: dict,
+    *,
+    identity=None,
+    network: OpenDartNetwork | None = None,
+    company_industry_code: str | None = None,
+):
+    # Optional arguments preserve the small helper's original testing
+    # surface while ensuring the real preflight passes one resolved
+    # target context through the whole decision.
+    if network is None:
+        network = _build_network(run_dir)
+    if identity is None or company_industry_code is None:
+        try:
+            resolved, _corp_code, profile = _resolved_target_context(
+                run_dir, config, network
+            )
+        except Exception:
+            return None
+        identity = identity or resolved
+        if company_industry_code is None:
+            company_industry_code = profile.induty_code
     return resolve_production_calibration_cohort(
-        registry,
-        ksic_code=_run_industry_code(run_dir, config),
+        load_production_calibration_registry(),
+        ksic_code=_run_industry_code(
+            run_dir,
+            config,
+            identity=identity,
+            network=network,
+            company_industry_code=company_industry_code or "",
+        ),
         forecast_years=int(config.get("forecast_years", 5)),
         scenario_ids=tuple(config.get("scenario_ids", ())),
     )
 
 
-def _enforce_production_calibration(run_dir: Path, config: dict) -> None:
-    cohort = _required_production_calibration(run_dir, config)
+def _enforce_production_calibration(
+    run_dir: Path,
+    config: dict,
+    *,
+    network: OpenDartNetwork,
+) -> None:
+    # Company resolution/profile/segment-declaration errors belong to
+    # their existing canonical stages. Defer silently here and let
+    # run_prism emit the established stop stage/rationale.
+    try:
+        identity, corp_code, profile = _resolved_target_context(
+            run_dir, config, network
+        )
+    except Exception:
+        return
+    cohort = _required_production_calibration(
+        run_dir,
+        config,
+        identity=identity,
+        network=network,
+        company_industry_code=profile.induty_code,
+    )
     if cohort is None:
         return
+    calibration = config.get("calibration")
     try:
-        validate_declared_calibration(cohort, config.get("calibration"))
+        validate_declared_calibration(
+            cohort,
+            calibration,
+            target_ticker=identity.ticker,
+            target_corp_code=corp_code,
+            conditioning_source_ref=_conditioning_source_ref(
+                run_dir, calibration
+            ),
+            target_filing_receipts=_target_filing_receipts(run_dir),
+        )
     except CalibrationCohortRegistryError as exc:
         raise RunbookError(str(exc)) from exc
 
@@ -777,7 +915,8 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
     run_dir = Path(run_dir).resolve()
     config = _load_run(run_dir)
     filing = config["filing"]
-    _enforce_production_calibration(run_dir, config)
+    network = _build_network(run_dir)
+    _enforce_production_calibration(run_dir, config, network=network)
 
     def _parse_method(text: str, label: str) -> tuple[str, str, str | None]:
         archetype, _, rest = str(text).partition("/")
@@ -845,7 +984,7 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
         **spec_kwargs,
     )
     factory = build_generic_kr_runtime_factory(
-        network=_build_network(run_dir),
+        network=network,
         transport=_StaffTransport(run_dir / "declarations" / "staff"),
         spec=spec,
     )

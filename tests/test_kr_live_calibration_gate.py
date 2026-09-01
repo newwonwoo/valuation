@@ -70,3 +70,49 @@ def test_unregistered_industry_does_not_require_calibration(tmp_path):
         encoding="utf-8",
     )
     assert run_kr_live._required_production_calibration(run_dir, payload) is None
+
+def test_registered_cohort_rejects_other_target_exclusion(tmp_path):
+    run_dir = _copy_kisco(tmp_path, "wrong-target-exclusion")
+    payload = run_kr_live._load_run(run_dir)
+    payload["calibration"]["constants"]["excluded_ticker"] = "084010"
+    source = ROOT / "config" / "kisco_conditioning_fy2025.json"
+    target = run_dir / "conditioning.json"
+    target.write_bytes(source.read_bytes())
+    payload["calibration"]["conditioning"] = "conditioning.json"
+    (run_dir / "run.yaml").write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(run_kr_live.RunbookError) as caught:
+        run_kr_live.execute_run(run_dir)
+    message = str(caught.value)
+    assert "CALIBRATION_TARGET_MISMATCH" in message
+    assert "104700" in message
+
+
+def test_invalid_multisegment_declaration_is_not_masked_by_calibration(tmp_path):
+    run_dir = tmp_path / "daehan-invalid-segments"
+    shutil.copytree(
+        ROOT / "runs" / "daehansteel-084010",
+        run_dir,
+        ignore=shutil.ignore_patterns("out"),
+    )
+    payload = run_kr_live._load_run(run_dir)
+    payload.pop("calibration", None)
+    (run_dir / "run.yaml").write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    segments_path = run_dir / "declarations" / "segments.yaml"
+    segments = yaml.safe_load(segments_path.read_text(encoding="utf-8"))
+    segments["segments"][0]["rationale"] = "too short"
+    segments_path.write_text(
+        yaml.safe_dump(segments, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(Exception) as caught:
+        run_kr_live.execute_run(run_dir)
+    message = str(caught.value)
+    assert "rationale" in message
+    assert "CALIBRATION_REQUIRED" not in message
+    assert "CALIBRATION_COHORT_MISMATCH" not in message
