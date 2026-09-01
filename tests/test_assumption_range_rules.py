@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 
+import valuation_engine.assumption_range_rules as range_rules_module
 from valuation_engine.assumption_compiler import (
     AssumptionSpec,
     CompilationStatus,
@@ -164,7 +165,7 @@ def test_range_rule_never_uses_another_targets_filing_history(tmp_path):
         )
 
 
-def test_compiler_ignores_unreviewed_llm_bounds_but_enforces_reviewed_rule(tmp_path):
+def test_compiler_ignores_unreviewed_llm_bounds_but_enforces_reviewed_rule(tmp_path, monkeypatch):
     direct = _evidence("E1", "utilization", "0.95", effective_date="2026-06-30")
     history = (
         _evidence("H1", "utilization_history", "0.70", effective_date="2023-12-31"),
@@ -215,6 +216,13 @@ def test_compiler_ignores_unreviewed_llm_bounds_but_enforces_reviewed_rule(tmp_p
     )
     assert unreviewed.status is CompilationStatus.COMPILED
 
+    # Test-only monkeypatch replaces the canonical frozen registry; production
+    # compilation exposes no registry-path override.
+    monkeypatch.setattr(
+        range_rules_module,
+        "DEFAULT_RANGE_RULE_REGISTRY_PATH",
+        _rule_file(tmp_path),
+    )
     # A reviewed filing-history rule derives 0.70..0.90 and blocks 0.95.
     reviewed = compile_assumptions(
         target_id="T",
@@ -223,7 +231,6 @@ def test_compiler_ignores_unreviewed_llm_bounds_but_enforces_reviewed_rule(tmp_p
         bridges=(bridge,),
         specs=(spec,),
         bridge_input_map={},
-        range_rule_registry_path=_rule_file(tmp_path),
     )
     assert reviewed.status is CompilationStatus.BLOCKED
     assert any(item.code == "DOMAIN_VIOLATION" for item in reviewed.findings)

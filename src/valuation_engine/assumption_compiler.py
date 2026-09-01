@@ -10,7 +10,6 @@ from typing import Callable
 from .actual_units import Measure, measure_from_raw, to_decimal
 from .ledger import EvidenceLedger
 from .assumption_range_rules import (
-    DEFAULT_RANGE_RULE_REGISTRY_PATH,
     AssumptionRangeReceipt,
     AssumptionRangeRuleError,
     apply_reviewed_assumption_ranges,
@@ -296,7 +295,6 @@ def compile_assumptions(
     bridges: tuple[BridgeRecord, ...],
     specs: tuple[AssumptionSpec, ...],
     bridge_input_map: dict[str, tuple[str, ...]],
-    range_rule_registry_path=None,
 ) -> CompilationResult:
     # An LLM may propose BridgeDraft objects, but it may never invoke the
     # committing compiler from inside its callback scope.
@@ -305,11 +303,7 @@ def compile_assumptions(
     # stripped first and may only be re-attached by a reviewed repository rule
     # derived from same-run realized/filing Evidence.
     try:
-        range_registry = load_assumption_range_rule_registry(
-            range_rule_registry_path
-            if range_rule_registry_path is not None
-            else DEFAULT_RANGE_RULE_REGISTRY_PATH
-        )
+        range_registry = load_assumption_range_rule_registry()
         llm_bounds = tuple(
             (
                 item.scenario_id,

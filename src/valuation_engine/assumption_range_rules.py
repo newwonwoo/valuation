@@ -182,9 +182,10 @@ class RangeApplicationResult:
 
 
 def load_assumption_range_rule_registry(
-    path: str | Path = DEFAULT_RANGE_RULE_REGISTRY_PATH,
+    path: str | Path | None = None,
 ) -> AssumptionRangeRuleRegistry:
-    raw = Path(path).read_text(encoding="utf-8")
+    resolved_path = DEFAULT_RANGE_RULE_REGISTRY_PATH if path is None else Path(path)
+    raw = Path(resolved_path).read_text(encoding="utf-8")
     payload = yaml.safe_load(raw)
     if not isinstance(payload, Mapping):
         raise AssumptionRangeRuleError("assumption range rule registry must be a mapping")
@@ -238,6 +239,85 @@ def load_assumption_range_rule_registry(
     return registry
 
 
+def derive_reviewed_assumption_range(
+    rule: AssumptionRangeRule,
+    *,
+    ledger: EvidenceLedger,
+    target_id: str,
+    scenario_id: str,
+    registry_hash: str,
+) -> AssumptionRangeReceipt:
+    """Re-derive one reviewed range from authoritative filing history."""
+    rule.validate()
+    if not target_id or not scenario_id or not registry_hash:
+        raise AssumptionRangeRuleError(
+            "range derivation requires target, scenario and registry hash"
+        )
+    active = tuple(item for item in ledger.active() if item.target == target_id)
+    candidates = tuple(
+        item
+        for item in active
+        if item.metric == rule.anchor_metric
+        and item.source_layer in rule.source_layers
+    )
+    by_date: dict[str, list] = {}
+    for item in candidates:
+        canonical_date = date.fromisoformat(item.effective_date[:10]).isoformat()
+        by_date.setdefault(canonical_date, []).append(item)
+    observations: list[tuple[str, Decimal, str, str]] = []
+    for canonical_date in sorted(by_date, reverse=True):
+        rows = by_date[canonical_date]
+        amounts: dict[Decimal, list] = {}
+        for item in rows:
+            measure = measure_from_raw(
+                item.value, item.unit, item.effective_date
+            ).convert_to(rule.canonical_unit)
+            amounts.setdefault(measure.amount, []).append(item)
+        if len(amounts) != 1:
+            raise AssumptionRangeRuleError(
+                f"range rule {rule.rule_id} has ambiguous {rule.anchor_metric} "
+                f"filing values for {canonical_date}"
+            )
+        amount, matching_rows = next(iter(amounts.items()))
+        chosen = sorted(matching_rows, key=lambda item: item.id)[0]
+        observations.append(
+            (canonical_date, amount, chosen.id, chosen.effective_date)
+        )
+        if len(observations) >= rule.lookback_observations:
+            break
+    if len(observations) < rule.min_observations:
+        raise AssumptionRangeRuleError(
+            f"range rule {rule.rule_id} requires {rule.min_observations} filing "
+            f"observations of {rule.anchor_metric}; found {len(observations)}"
+        )
+    values = tuple(item[1] for item in observations)
+    lower = min(values) * rule.lower_multiplier
+    upper = max(values) * rule.upper_multiplier
+    if rule.floor is not None:
+        lower = max(lower, rule.floor)
+    if rule.ceiling is not None:
+        upper = min(upper, rule.ceiling)
+    if lower > upper:
+        raise AssumptionRangeRuleError(
+            f"range rule {rule.rule_id} derived inverted bounds {lower}>{upper}"
+        )
+    return AssumptionRangeReceipt(
+        target_id=target_id,
+        rule_id=rule.rule_id,
+        assumption_key=rule.assumption_key,
+        scenario_id=scenario_id,
+        anchor_metric=rule.anchor_metric,
+        min_value=lower,
+        max_value=upper,
+        anchor_evidence_ids=tuple(item[2] for item in observations),
+        anchor_values=values,
+        anchor_effective_dates=tuple(item[3] for item in observations),
+        canonical_unit=rule.canonical_unit,
+        registry_hash=registry_hash,
+        review_ref=rule.review_ref,
+    )
+
+
 def apply_reviewed_assumption_ranges(
     specs: tuple[AssumptionSpec, ...],
     *,
@@ -246,21 +326,12 @@ def apply_reviewed_assumption_ranges(
     registry: AssumptionRangeRuleRegistry,
     llm_bounds: tuple[tuple[str, str, str | None, str | None], ...] = (),
 ) -> RangeApplicationResult:
-    """Attach only reviewed, evidence-derived bounds to compiler specs.
-
-    Any LLM-authored min/max values are audit-only inputs and never gain compiler
-    authority. A production rule is executable only from same-run filing evidence;
-    missing/ambiguous history blocks rather than silently falling back to the LLM.
-    """
+    """Attach only reviewed, evidence-derived bounds to compiler specs."""
     registry.validate()
     if not target_id:
         raise AssumptionRangeRuleError("range application requires target_id")
-    active = tuple(
-        item for item in ledger.active() if item.target == target_id
-    )
     receipts: list[AssumptionRangeReceipt] = []
     resolved: list[AssumptionSpec] = []
-
     for spec in specs:
         rule = registry.for_key(spec.key)
         if rule is None:
@@ -271,69 +342,17 @@ def apply_reviewed_assumption_ranges(
                 f"range rule {rule.rule_id} unit {rule.canonical_unit} does not match "
                 f"assumption {spec.key} unit {spec.canonical_unit}"
             )
-        candidates = tuple(
-            item
-            for item in active
-            if item.metric == rule.anchor_metric
-            and item.source_layer in rule.source_layers
+        receipt = derive_reviewed_assumption_range(
+            rule,
+            ledger=ledger,
+            target_id=target_id,
+            scenario_id=spec.scenario_id,
+            registry_hash=registry.registry_hash,
         )
-        by_date: dict[str, list] = {}
-        for item in candidates:
-            canonical_date = date.fromisoformat(item.effective_date[:10]).isoformat()
-            by_date.setdefault(canonical_date, []).append(item)
-        observations: list[tuple[str, Decimal, str, str]] = []
-        for canonical_date in sorted(by_date, reverse=True):
-            rows = by_date[canonical_date]
-            amounts: dict[Decimal, list] = {}
-            for item in rows:
-                measure = measure_from_raw(
-                    item.value, item.unit, item.effective_date
-                ).convert_to(rule.canonical_unit)
-                amounts.setdefault(measure.amount, []).append(item)
-            if len(amounts) != 1:
-                raise AssumptionRangeRuleError(
-                    f"range rule {rule.rule_id} has ambiguous {rule.anchor_metric} "
-                    f"filing values for {canonical_date}"
-                )
-            amount, matching_rows = next(iter(amounts.items()))
-            chosen = sorted(matching_rows, key=lambda item: item.id)[0]
-            observations.append((canonical_date, amount, chosen.id, chosen.effective_date))
-            if len(observations) >= rule.lookback_observations:
-                break
-        if len(observations) < rule.min_observations:
-            raise AssumptionRangeRuleError(
-                f"range rule {rule.rule_id} requires {rule.min_observations} filing "
-                f"observations of {rule.anchor_metric}; found {len(observations)}"
-            )
-        values = tuple(item[1] for item in observations)
-        lower = min(values) * rule.lower_multiplier
-        upper = max(values) * rule.upper_multiplier
-        if rule.floor is not None:
-            lower = max(lower, rule.floor)
-        if rule.ceiling is not None:
-            upper = min(upper, rule.ceiling)
-        if lower > upper:
-            raise AssumptionRangeRuleError(
-                f"range rule {rule.rule_id} derived inverted bounds {lower}>{upper}"
-            )
-        resolved.append(replace(spec, min_value=lower, max_value=upper))
-        receipts.append(
-            AssumptionRangeReceipt(
-                target_id=target_id,
-                rule_id=rule.rule_id,
-                assumption_key=spec.key,
-                scenario_id=spec.scenario_id,
-                anchor_metric=rule.anchor_metric,
-                min_value=lower,
-                max_value=upper,
-                anchor_evidence_ids=tuple(item[2] for item in observations),
-                anchor_values=values,
-                anchor_effective_dates=tuple(item[3] for item in observations),
-                canonical_unit=rule.canonical_unit,
-                registry_hash=registry.registry_hash,
-                review_ref=rule.review_ref,
-            )
+        resolved.append(
+            replace(spec, min_value=receipt.min_value, max_value=receipt.max_value)
         )
+        receipts.append(receipt)
     return RangeApplicationResult(
         specs=tuple(resolved),
         receipts=tuple(receipts),

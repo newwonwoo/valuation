@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-import valuation_engine.assumption_compiler as assumption_compiler_module
+import valuation_engine.assumption_range_rules as range_rules_module
 from tests import test_generic_audit_freeze_e2e as audit_e2e
 from valuation_engine.assumption_compiler import AssumptionSpec
 from valuation_engine.assumption_range_rules import (
@@ -105,7 +105,7 @@ def test_reviewed_range_provenance_replays_through_audit_and_freeze(tmp_path, mo
         unit="multiple",
     )
     monkeypatch.setattr(
-        assumption_compiler_module,
+        range_rules_module,
         "DEFAULT_RANGE_RULE_REGISTRY_PATH",
         path,
     )

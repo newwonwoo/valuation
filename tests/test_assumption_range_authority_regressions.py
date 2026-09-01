@@ -81,17 +81,6 @@ def _run_with_reviewed_range(tmp_path, monkeypatch):
     return audit_e2e.run_path()
 
 
-def _forge_compiled(compiled, *, replacement):
-    assumptions = tuple(
-        replacement if item is replacement[0] else item
-        for item in compiled.assumptions
-    )
-    return CompiledAssumptionSet(
-        target_id=compiled.target_id,
-        assumptions=assumptions,
-        assumption_set_hash=compiled.assumption_set_hash,
-    )
-
 
 def test_compile_api_has_no_runtime_registry_path_override():
     assert "range_rule_registry_path" not in inspect.signature(compile_assumptions).parameters

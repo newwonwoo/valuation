@@ -7,6 +7,9 @@ from .actual_units import measure_from_raw
 from .assumption_compiler import CompiledAssumptionSet
 from .assumption_range_rules import (
     AssumptionRangeReceipt,
+    AssumptionRangeRuleError,
+    derive_reviewed_assumption_range,
+    load_assumption_range_rule_registry,
     range_provenance_hash_part,
 )
 from .ledger import EvidenceLedger
@@ -194,16 +197,45 @@ def compiled_evidence_hash_mismatches(
 ) -> tuple[str, ...]:
     """Return scenario/key identities whose compiled Evidence hash no longer replays."""
     mismatches: list[str] = []
+    try:
+        registry = load_assumption_range_rule_registry()
+    except (AssumptionRangeRuleError, OSError, ValueError):
+        registry = None
     for item in compiled.assumptions:
         try:
-            if item.range_provenance is not None and item.range_provenance.target_id != compiled.target_id:
-                raise ValueError("range provenance target differs from compiled target")
+            replay_range = None
+            receipt = item.range_provenance
+            if receipt is not None:
+                if registry is None:
+                    raise ValueError("reviewed range registry unavailable at Audit")
+                if receipt.target_id != compiled.target_id:
+                    raise ValueError("range provenance target differs from compiled target")
+                if receipt.assumption_key != item.key:
+                    raise ValueError("range provenance assumption key mismatch")
+                if receipt.scenario_id != item.scenario_id:
+                    raise ValueError("range provenance scenario mismatch")
+                if receipt.canonical_unit != item.measure.unit:
+                    raise ValueError("range provenance canonical unit mismatch")
+                if receipt.registry_hash != registry.registry_hash:
+                    raise ValueError("range provenance registry hash mismatch")
+                rule = registry.for_key(item.key)
+                if rule is None:
+                    raise ValueError("compiled range has no reviewed canonical rule")
+                replay_range = derive_reviewed_assumption_range(
+                    rule,
+                    ledger=ledger,
+                    target_id=compiled.target_id,
+                    scenario_id=item.scenario_id,
+                    registry_hash=registry.registry_hash,
+                )
+                if replay_range != receipt:
+                    raise ValueError("range provenance differs from canonical re-derivation")
             replayed = compiled_input_evidence_hash(
                 ledger,
                 item.evidence_ids,
-                range_provenance=item.range_provenance,
+                range_provenance=replay_range,
             )
-        except ValueError:
+        except (AssumptionRangeRuleError, ValueError):
             mismatches.append(f"{item.scenario_id}/{item.key}")
             continue
         if replayed != item.input_evidence_hash:
