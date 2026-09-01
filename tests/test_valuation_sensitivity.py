@@ -214,17 +214,51 @@ def test_base_case_must_reproduce_the_published_enterprise_value():
     assert not scenario.variables
 
 
-def test_multi_component_scenarios_are_not_measurable():
-    extra = AggregationComponent(
+def test_dcf_plus_parent_adjustment_is_measurable_by_component():
+    diagnostics = _diagnostics()
+    base_ev = diagnostics.enterprise_value
+    parent_amount = Decimal("10")
+    core = AggregationComponent(
+        asset_id="ASSET",
+        contribution_id="ASSET:Core:seg.driver_dcf:v1",
+        attributable_equity_value=Measure(base_ev, "KRW_billion", "2026-08-27"),
+        economic_path_ids=("path:core",),
+        ownership_ratio=ONE,
+        diagnostics=diagnostics,
+    )
+    parent = AggregationComponent(
         asset_id="PARENT",
         contribution_id="parent:PARENT",
-        attributable_equity_value=Measure(Decimal("10"), "KRW_billion", "2026-08-27"),
+        attributable_equity_value=Measure(parent_amount, "KRW_billion", "2026-08-27"),
         economic_path_ids=("parent:PARENT",),
     )
-    report = build_valuation_sensitivity_report(
-        valuation=_valuation(diagnostics=_diagnostics(), extra_components=(extra,))
+    total = base_ev + parent_amount
+    company = CompanyScenarioEquityValue(
+        scenario_id="Core",
+        equity_value=Measure(total, "KRW_billion", "2026-08-27"),
+        components=(core, parent),
+        aggregation_hash="agg",
     )
-    assert not report.scenarios[0].measured
+    valuation = GenericValuationResult(
+        scenarios=(
+            ScenarioPerShareValue(
+                scenario_id="Core",
+                equity_value_amount=total,
+                reporting_unit="KRW_billion",
+                diluted_shares=SHARES,
+                value_per_share=total / SHARES,
+                aggregation_hash="agg",
+                economic_path_ids=("path:core", "parent:PARENT"),
+            ),
+        ),
+        equity_aggregation=ScenarioEquityAggregation((company,), None, False),
+        expected_value_per_share=None,
+        reporting_unit="KRW_billion",
+        valuation_hash="valuation-hash",
+    )
+    report = build_valuation_sensitivity_report(valuation=valuation)
+    assert report.scenarios[0].measured
+    assert len(report.scenarios[0].segments) == 1
 
 
 def test_non_dcf_scenarios_are_not_measurable():
