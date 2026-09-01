@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
+from urllib.parse import parse_qs, urlparse
 
 import yaml
 
@@ -152,9 +153,35 @@ def resolve_production_calibration_cohort(
     return finalists[0]
 
 
+def _conditioning_source_matches_target(
+    source_ref: str,
+    *,
+    target_corp_code: str,
+    target_filing_receipts: Iterable[str],
+) -> bool:
+    try:
+        parsed = urlparse(source_ref)
+    except ValueError:
+        return False
+    query = parse_qs(parsed.query)
+    corp_codes = tuple(query.get("corp_code") or ())
+    if corp_codes:
+        return len(corp_codes) == 1 and corp_codes[0] == target_corp_code
+    receipts = tuple(query.get("rcpNo") or query.get("rcept_no") or ())
+    if receipts:
+        known = {str(item) for item in target_filing_receipts if str(item)}
+        return len(receipts) == 1 and receipts[0] in known
+    return False
+
+
 def validate_declared_calibration(
     cohort: ProductionCalibrationCohort,
     calibration: object,
+    *,
+    target_ticker: str | None = None,
+    target_corp_code: str | None = None,
+    conditioning_source_ref: str | None = None,
+    target_filing_receipts: Iterable[str] = (),
 ) -> None:
     if not isinstance(calibration, dict):
         raise CalibrationCohortRegistryError(
@@ -176,4 +203,36 @@ def validate_declared_calibration(
         raise CalibrationCohortRegistryError(
             "CALIBRATION_COHORT_MISMATCH: production cohort "
             f"{cohort.registry_id} requires " + "; ".join(mismatches)
+        )
+
+    if target_ticker is None and target_corp_code is None:
+        return
+    ticker = str(target_ticker or "").strip()
+    corp_code = str(target_corp_code or "").strip()
+    if not ticker or not corp_code:
+        raise CalibrationCohortRegistryError(
+            "CALIBRATION_TARGET_MISMATCH: registered production calibration "
+            "requires the resolved ticker and OpenDART corp code"
+        )
+    constants = calibration.get("constants")
+    excluded = (
+        str(constants.get("excluded_ticker") or "").strip()
+        if isinstance(constants, dict)
+        else ""
+    )
+    if excluded != ticker:
+        raise CalibrationCohortRegistryError(
+            "CALIBRATION_TARGET_MISMATCH: production cohort "
+            f"{cohort.registry_id} excludes ticker {excluded!r}, not the "
+            f"resolved target {ticker!r}"
+        )
+    source_ref = str(conditioning_source_ref or "").strip()
+    if not _conditioning_source_matches_target(
+        source_ref,
+        target_corp_code=corp_code,
+        target_filing_receipts=target_filing_receipts,
+    ):
+        raise CalibrationCohortRegistryError(
+            "CALIBRATION_TARGET_MISMATCH: conditioning source is not bound to "
+            f"resolved target {ticker}/{corp_code}: {source_ref!r}"
         )
