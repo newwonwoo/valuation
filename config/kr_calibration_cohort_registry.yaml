@@ -1,0 +1,37 @@
+version: 1
+purpose: >-
+  Production calibration cohorts that the prepared KR live-run must bind when
+  a deterministic industry match exists. This registry answers only whether a
+  production cohort is mandatory; the target-excluded artifact, provenance,
+  conditioning and sealed hashes remain explicit per-run calibration inputs.
+match_policy:
+  industry: longest_ksic_prefix
+  forecast_years: exact
+  scenario_ids: exact_ordered_set
+  no_match: uncalibrated_allowed
+  ambiguous_match: fail_closed
+cohorts:
+  - registry_id: kr-steel-long-continuous-v1
+    status: PRODUCTION
+    ksic_prefix: "24"
+    forecast_years: 5
+    scenario_ids: [Down, Base, Bull]
+    cohort_key: kr.steel.long|5y_path|continuous_v1
+    forecast_class: kr.steel.long.continuous_financial_path
+    external_probability_source: continuous_financial_path_monte_carlo
+    rationale: >-
+      Listed Korean primary-metal manufacturers with the committed resolved
+      financial-path cohort. The target ticker must be excluded in the bound
+      artifact; this row does not authorize reuse of another target's artifact.
+  - registry_id: kr-reit-office-continuous-v1
+    status: PRODUCTION
+    ksic_prefix: "6811"
+    forecast_years: 5
+    scenario_ids: [Down, Base, Bull]
+    cohort_key: kr.reit.office|5y_path|continuous_v1
+    forecast_class: kr.reit.office.continuous_financial_path
+    external_probability_source: continuous_financial_path_monte_carlo
+    rationale: >-
+      Listed Korean office REIT cohort used by the accepted Shinhan Alpha REIT
+      run. Target exclusion and current conditioning remain run-specific and
+      are verified by the continuous probability assembly.
