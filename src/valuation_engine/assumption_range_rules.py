@@ -10,7 +10,6 @@ from typing import Mapping
 import yaml
 
 from .actual_units import measure_from_raw
-from .assumption_compiler import AssumptionSpec
 from .ledger import EvidenceLedger
 from .records import EvidenceSourceLayer
 from .runtime_resources import runtime_registry_path
