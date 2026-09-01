@@ -1,0 +1,88 @@
+name: apply-reviewed-range-rules-once
+
+on:
+  push:
+    branches:
+      - feat/reviewed-assumption-range-rules
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reviewed-assumption-range-rules
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Patch compiler authority boundary
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          range_path = Path('src/valuation_engine/assumption_range_rules.py')
+          text = range_path.read_text(encoding='utf-8')
+          text = text.replace('from .assumption_compiler import AssumptionSpec\n', '')
+          range_path.write_text(text, encoding='utf-8')
+
+          path = Path('src/valuation_engine/assumption_compiler.py')
+          text = path.read_text(encoding='utf-8')
+          marker = 'from .ledger import EvidenceLedger\n'
+          addition = '''from .assumption_range_rules import (\n    DEFAULT_RANGE_RULE_REGISTRY_PATH,\n    AssumptionRangeRuleError,\n    apply_reviewed_assumption_ranges,\n    load_assumption_range_rule_registry,\n)\n'''
+          if addition not in text:
+              if marker not in text:
+                  raise SystemExit('import marker missing')
+              text = text.replace(marker, marker + addition, 1)
+
+          old_sig = '''    specs: tuple[AssumptionSpec, ...],\n    bridge_input_map: dict[str, tuple[str, ...]],\n) -> CompilationResult:\n'''
+          new_sig = '''    specs: tuple[AssumptionSpec, ...],\n    bridge_input_map: dict[str, tuple[str, ...]],\n    range_rule_registry_path=None,\n) -> CompilationResult:\n'''
+          if old_sig in text:
+              text = text.replace(old_sig, new_sig, 1)
+          elif new_sig not in text:
+              raise SystemExit('compile signature marker missing')
+
+          marker = '''    forbid_llm_decision(DecisionDomain.ASSUMPTION_COMPILE)\n    findings: list[CompilationFinding] = []\n'''
+          replacement = '''    forbid_llm_decision(DecisionDomain.ASSUMPTION_COMPILE)\n    # min/max proposed by an LLM are never compiler authority. Bounds are\n    # stripped first and may only be re-attached by a reviewed repository rule\n    # derived from same-run realized/filing Evidence.\n    try:\n        range_registry = load_assumption_range_rule_registry(\n            range_rule_registry_path\n            if range_rule_registry_path is not None\n            else DEFAULT_RANGE_RULE_REGISTRY_PATH\n        )\n        llm_bounds = tuple(\n            (\n                item.scenario_id,\n                item.key,\n                str(item.min_value) if item.min_value is not None else None,\n                str(item.max_value) if item.max_value is not None else None,\n            )\n            for item in specs\n            if item.min_value is not None or item.max_value is not None\n        )\n        range_application = apply_reviewed_assumption_ranges(\n            specs,\n            ledger=ledger,\n            registry=range_registry,\n            llm_bounds=llm_bounds,\n        )\n        specs = range_application.specs\n        range_receipts_by_spec = {\n            (item.scenario_id, item.assumption_key): item\n            for item in range_application.receipts\n        }\n    except AssumptionRangeRuleError as exc:\n        return CompilationResult(\n            CompilationStatus.BLOCKED,\n            None,\n            (CompilationFinding('ASSUMPTION_RANGE_RULE_BLOCKED', str(exc)),),\n        )\n    findings: list[CompilationFinding] = []\n'''
+          if marker in text:
+              text = text.replace(marker, replacement, 1)
+          elif 'range_receipts_by_spec = {' not in text:
+              raise SystemExit('compiler authority marker missing')
+
+          marker = '''        evidence_hash = sha256("\\n".join(sorted(evidence_hash_parts)).encode("utf-8")).hexdigest()\n'''
+          replacement = '''        range_receipt = range_receipts_by_spec.get((spec.scenario_id, spec.key))\n        if range_receipt is not None:\n            evidence_hash_parts.append(\n                "RANGE|"\n                + "|".join(\n                    (\n                        range_receipt.rule_id,\n                        range_receipt.registry_hash,\n                        str(range_receipt.min_value),\n                        str(range_receipt.max_value),\n                        ",".join(range_receipt.anchor_evidence_ids),\n                        ",".join(str(value) for value in range_receipt.anchor_values),\n                        range_receipt.review_ref,\n                    )\n                )\n            )\n        evidence_hash = sha256("\\n".join(sorted(evidence_hash_parts)).encode("utf-8")).hexdigest()\n'''
+          if marker in text:
+              text = text.replace(marker, replacement, 1)
+          elif 'range_receipt = range_receipts_by_spec.get' not in text:
+              raise SystemExit('evidence hash marker missing')
+
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Focused regressions
+        run: >-
+          pytest -q
+          tests/test_assumption_range_rules.py
+          tests/test_assumption_compiler.py
+          tests/test_llm_staff_runtime.py
+          tests/test_generic_cold_start.py
+          tests/test_multi_segment_cold_start.py
+      - name: Full regression and PM validation
+        run: |
+          pytest -q
+          python scripts/validate_project_portfolio.py
+      - name: Commit clean change set
+        shell: bash
+        run: |
+          rm .github/workflows/apply-reviewed-range-rules-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add config/assumption_range_rule_registry.yaml src/valuation_engine/assumption_range_rules.py src/valuation_engine/assumption_compiler.py tests/test_assumption_range_rules.py .github/workflows/apply-reviewed-range-rules-once.yml
+          git diff --cached --check
+          git commit -m 'Make assumption ranges reviewed evidence-derived rules'
+          git push origin HEAD:feat/reviewed-assumption-range-rules
