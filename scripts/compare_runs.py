@@ -37,6 +37,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 STATUS_CONSISTENT = "CONSISTENT"
 STATUS_RECONCILIATION_REQUIRED = "RECONCILIATION_REQUIRED"
+EXIT_RECONCILIATION_REQUIRED = 3
 
 DEFAULT_BASE_THRESHOLD = Decimal("0.20")
 DEFAULT_PROBABILITY_THRESHOLD = Decimal("0.10")  # 10 percentage points
@@ -129,31 +130,36 @@ def _optional_yaml_digest(path: Path) -> str | None:
     return _digest(yaml.safe_load(path.read_text(encoding="utf-8")))
 
 
-def _calibration_signature(config: Mapping) -> dict:
+def _file_binding_signature(run_dir: Path, value: object) -> dict | None:
+    if not isinstance(value, str) or not value:
+        return None
+    declared = value
+    candidate = Path(declared)
+    resolved = candidate if candidate.is_absolute() else (run_dir / candidate)
+    return {
+        "path": declared,
+        "sha256": sha256(resolved.read_bytes()).hexdigest() if resolved.is_file() else None,
+    }
+
+
+def _normalize_contract(value: object) -> object:
+    if isinstance(value, Mapping):
+        return {str(key): _normalize_contract(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_normalize_contract(item) for item in value]
+    return value
+
+
+def _calibration_signature(run_dir: Path, config: Mapping) -> dict:
     calibration = config.get("calibration")
     if not isinstance(calibration, Mapping):
         return {"present": False}
-    constants = calibration.get("constants")
-    constants = constants if isinstance(constants, Mapping) else {}
     return {
         "present": True,
-        "cohort_key": calibration.get("cohort_key"),
-        "forecast_class": calibration.get("forecast_class"),
-        "external_probability_source": calibration.get("external_probability_source"),
-        "horizon": calibration.get("horizon"),
-        "method_version": calibration.get("method_version"),
-        "mapping_version": calibration.get("mapping_version"),
-        "driver_ids": tuple(calibration.get("driver_ids") or ()),
-        "scenario_ids": tuple(calibration.get("scenario_ids") or ()),
-        "path_length": calibration.get("path_length"),
-        "seed": calibration.get("seed"),
-        "outer_draws": calibration.get("outer_draws", 300),
-        "inner_draws": calibration.get("inner_draws", 200),
-        "expected_dataset_sha256": constants.get("expected_dataset_sha256"),
-        "expected_provenance_hash": constants.get("expected_provenance_hash"),
-        "expected_source_row_count": constants.get("expected_source_row_count"),
-        "expected_source_company_count": constants.get("expected_source_company_count"),
-        "excluded_ticker": constants.get("excluded_ticker"),
+        "contract": _normalize_contract(calibration),
+        "artifact_binding": _file_binding_signature(run_dir, calibration.get("artifact")),
+        "provenance_binding": _file_binding_signature(run_dir, calibration.get("provenance")),
+        "conditioning_binding": _file_binding_signature(run_dir, calibration.get("conditioning")),
     }
 
 
@@ -176,26 +182,11 @@ def _method_signature(config: Mapping) -> tuple[tuple[str, str], ...]:
     )
 
 
-def _segment_declaration_signature(run_dir: Path) -> tuple | None:
+def _segment_declaration_signature(run_dir: Path) -> dict | None:
     path = run_dir / "declarations" / "segments.yaml"
     if not path.is_file():
         return None
-    payload = _load_yaml_mapping(path)
-    rows = payload.get("segments")
-    if not isinstance(rows, list):
-        raise RunComparisonError("segments.yaml requires a segments list")
-    signature = []
-    for row in rows:
-        if not isinstance(row, Mapping):
-            raise RunComparisonError("segments.yaml rows must be mappings")
-        signature.append(
-            (
-                str(row.get("segment_id") or ""),
-                str(row.get("disclosed_name") or ""),
-                str(row.get("ksic_code") or ""),
-            )
-        )
-    return tuple(signature)
+    return _load_yaml_mapping(path)
 
 
 def _underwriting_payload(run_dir: Path) -> dict:
@@ -275,7 +266,7 @@ def _structural_signature(run_dir: Path) -> dict:
         },
         "methods": _method_signature(config),
         "segments": _segment_declaration_signature(run_dir),
-        "calibration": _calibration_signature(config),
+        "calibration": _calibration_signature(run_dir, config),
         "risk_pack_hash": _optional_yaml_digest(run_dir / "declarations" / "risk_pack.yaml"),
         "raw_source_hash": _tree_digest(run_dir / "raw"),
         "underwriting_contract": _underwriting_contract(run_dir),
@@ -551,6 +542,14 @@ def _waterfall(
         residual_scenarios = _delta_map(outcome_a, outcome_b)
         residual_expected = _optional_delta(outcome_a.expected_value, outcome_b.expected_value)
         residual_base = outcome_b.base_value - outcome_a.base_value
+        expected_material = (
+            residual_expected is not None
+            and abs(_decimal(residual_expected)) > residual_tolerance
+        )
+        scenario_material = any(
+            abs(_decimal(value)) > residual_tolerance
+            for value in residual_scenarios.values()
+        )
         return {
             "decomposition_order": [],
             "judgment_differences": [],
@@ -560,7 +559,11 @@ def _waterfall(
                 "expected_value_per_share": residual_expected,
                 "scenario_values": residual_scenarios,
             },
-            "residual_material": abs(residual_base) > residual_tolerance,
+            "residual_material": (
+                abs(residual_base) > residual_tolerance
+                or bool(expected_material)
+                or scenario_material
+            ),
             "attribution_error": None,
         }
 
@@ -757,6 +760,15 @@ def _format_money(value: object) -> str:
         return str(value)
 
 
+def _format_precise(value: object) -> str:
+    if value is None:
+        return "-"
+    try:
+        return f"{_decimal(value):,f}"
+    except Exception:
+        return str(value)
+
+
 def render_text_report(result: Mapping) -> str:
     lines = [f"STATUS: {result['status']}"]
     if result.get("outcome_a") and result.get("outcome_b"):
@@ -799,24 +811,53 @@ def render_text_report(result: Mapping) -> str:
                 f"{_format_money(item['expected_delta_per_share'])}"
             )
     if result.get("residual") is not None:
+        residual = result["residual"]
         lines.append(
             "RESIDUAL: Base "
-            + _format_money(result["residual"]["base_value_per_share"])
+            + _format_precise(residual["base_value_per_share"])
             + " / Expected "
-            + _format_money(result["residual"]["expected_value_per_share"])
+            + _format_precise(residual["expected_value_per_share"])
         )
+        scenario_values = residual.get("scenario_values") or {}
+        if scenario_values:
+            lines.append(
+                "RESIDUAL SCENARIOS: "
+                + ", ".join(
+                    f"{key}={_format_precise(value)}"
+                    for key, value in sorted(scenario_values.items())
+                )
+            )
     return "\n".join(lines)
 
 
 def _parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        epilog=(
+            "exit codes: 0 CONSISTENT, 3 RECONCILIATION_REQUIRED, "
+            "1 comparison/execution error; argparse usage errors remain 2"
+        ),
+    )
     parser.add_argument("run_a")
     parser.add_argument("run_b")
-    parser.add_argument("--base-threshold-pct", type=Decimal, default=DEFAULT_BASE_THRESHOLD)
     parser.add_argument(
-        "--probability-threshold-pp", type=Decimal, default=DEFAULT_PROBABILITY_THRESHOLD
+        "--base-threshold-pct",
+        type=Decimal,
+        default=DEFAULT_BASE_THRESHOLD * 100,
+        help="Base value gap in percent (default: 20)",
     )
-    parser.add_argument("--wacc-threshold-pp", type=Decimal, default=DEFAULT_WACC_THRESHOLD)
+    parser.add_argument(
+        "--probability-threshold-pp",
+        type=Decimal,
+        default=DEFAULT_PROBABILITY_THRESHOLD * 100,
+        help="scenario probability gap in percentage points (default: 10)",
+    )
+    parser.add_argument(
+        "--wacc-threshold-pp",
+        type=Decimal,
+        default=DEFAULT_WACC_THRESHOLD * 100,
+        help="WACC gap in percentage points (default: 1)",
+    )
     parser.add_argument(
         "--residual-tolerance", type=Decimal, default=DEFAULT_RESIDUAL_TOLERANCE
     )
@@ -831,9 +872,9 @@ def main(argv: list[str] | None = None) -> int:
         result = compare_run_directories(
             args.run_a,
             args.run_b,
-            base_threshold=args.base_threshold_pct,
-            probability_threshold=args.probability_threshold_pp,
-            wacc_threshold=args.wacc_threshold_pp,
+            base_threshold=args.base_threshold_pct / Decimal("100"),
+            probability_threshold=args.probability_threshold_pp / Decimal("100"),
+            wacc_threshold=args.wacc_threshold_pp / Decimal("100"),
             residual_tolerance=args.residual_tolerance,
         )
     except Exception as exc:
@@ -848,7 +889,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     else:
         print(render_text_report(result))
-    return 2 if result["status"] == STATUS_RECONCILIATION_REQUIRED else 0
+    return EXIT_RECONCILIATION_REQUIRED if result["status"] == STATUS_RECONCILIATION_REQUIRED else 0
 
 
 if __name__ == "__main__":
