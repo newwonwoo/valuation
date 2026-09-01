@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from decimal import Decimal
 
 from valuation_engine.actual_units import Measure
+from valuation_engine.report_form import _valuation_sensitivity_lines
 from valuation_engine.sotp import AggregationComponent
 from valuation_engine.valuation_sensitivity import build_valuation_sensitivity_report
 from tests.test_sotp_segment_sensitivity import _dcf_component, _diagnostics, _valuation
@@ -61,3 +63,35 @@ def test_untyped_diagnostics_object_is_not_treated_as_dcf_authority():
     )
     report = build_valuation_sensitivity_report(valuation=_valuation((fake, good)))
     assert tuple(item.asset_id for item in report.scenarios[0].segments) == ("GOOD",)
+
+
+def test_non_dcf_execution_family_is_not_perturbed():
+    bad_diagnostics = replace(
+        _diagnostics((Decimal("10"), Decimal("11"), Decimal("12"))),
+        execution_family="normalized_multiple",
+    )
+    bad = _dcf_component("BAD", bad_diagnostics)
+    good = _dcf_component(
+        "GOOD",
+        _diagnostics((Decimal("30"), Decimal("35"), Decimal("40"))),
+    )
+    report = build_valuation_sensitivity_report(valuation=_valuation((bad, good)))
+    assert tuple(item.asset_id for item in report.scenarios[0].segments) == ("GOOD",)
+
+
+def test_segment_variables_are_exposed_to_the_user_facing_renderer():
+    first = _dcf_component(
+        "FIRST",
+        _diagnostics((Decimal("30"), Decimal("35"), Decimal("40"))),
+    )
+    second = _dcf_component(
+        "SECOND",
+        _diagnostics((Decimal("20"), Decimal("24"), Decimal("28"))),
+    )
+    report = build_valuation_sensitivity_report(valuation=_valuation((first, second)))
+    assert not report.scenarios[0].variables
+    lines = _valuation_sensitivity_lines({"valuation_sensitivity_report": report})
+    detail = next(line for line in lines if line.startswith("- Core 기준"))
+    assert "FIRST 가중평균자본비용" in detail
+    assert "SECOND 가중평균자본비용" in detail
+    assert not detail.rstrip().endswith("—")

@@ -158,9 +158,9 @@
 - 세부 인사이트는 별도 분석 기록에 보관됩니다.
 
 ## 최종 요약 이미지
-![산일전기 주식회사 회사 강점·투자 결론·가치평가](PRISM_062040_01_summary_8040C5E4C0A8.svg)
+![산일전기 주식회사 회사 강점·투자 결론·가치평가](PRISM_062040_01_summary_B2A89633D570.svg)
 
-![산일전기 주식회사 가치평가 가정·위험·출처](PRISM_062040_02_assumptions_8040C5E4C0A8.svg)
+![산일전기 주식회사 가치평가 가정·위험·출처](PRISM_062040_02_assumptions_B2A89633D570.svg)
 
 ## 정보 출처 — 원문 바로 확인
 - **현재 시장가격** — 시장가격 기준일 2026-08-27 [원문 바로 열기](https://alphasquare.co.kr/home/stock-summary?code=062040)
@@ -274,17 +274,17 @@
 
 - 실행 식별자: `SANIL-062040-20260827-POLICY`
 - 실행 모드: `live_primary`
-- 작성 확인 해시: `8ded1d1bfd314cb6c0f7113665919622028304e7ac055214b278dfdfafb52078`
+- 작성 확인 해시: `dc69a3ecd8e4e2526437c66919ea413c92b562eddc2e0c62bd38b3888cdac86a`
 - 증거 해시: `4a9e4750e0d8b68668757c170360f289755773f85c0a0cf3bfd81e89ce73040c`
 - 가정 해시: `5e3b6aa039bb198dbe2837bec5b0827522d8fee6a6d5732cc406c9b68936b7cf`
 - 시나리오 해시: `bc60d594eefdb171fb842849a9b91fddff10f646e8128d832e3f208234acce83`
 - 가치평가 해시: `fe72b6ab611fdc0f355b9fa1630baf1e9ad147f132f51ba10488d893dbe19115`
-- 오류 점검 해시: `3dd53f584e7e519da7b68b08739ea19d470de2187bbc4e50a044da13707a393e`
-- 가치평가 확정 해시: `c02327183287852d2a5ea3f3936f7015aa9cea722c4afa752ead224c5c58a650`
+- 오류 점검 해시: `7402f21efbd85f85ff49c7b1dd0e33d3b3a918f2aecf6b756b9eaaf9a80b6a99`
+- 가치평가 확정 해시: `8c689acb78772ef531f846bf0cbc13da497b4682cf9463bf166ff43ec8b08a59`
 - 보조 결속정보: 베타 `567700b4b5094f7aaa61cc030d0c8758ed146e9a38a3be4f4d56c5999f0a121e` · 가중평균자본비용 `2beebb32d08c7f6e354a0771edba24e0f108aea78e9ba175b0b59de16257325b` · 생산능력 평가 `7dc9a1ca1e6475fd1c713a30825e71357bbafcf3f534fd785e77a892aac11086` · 생산능력 반영 `cb10c66669a6f7518ce9efc2a9a98d57d6a5e50267ac1be39aed065f3aef7602` · 생산능력 시나리오 `9bfd09371780785e50f9676b67652812b8031ea8a38aad20604cf725ddf9ff6e` · 생산능력 가치평가 `e859e337bf35779237e5886c2a396229aac26484ac54da8f47a98388ec3344fe` · 생산능력 주가수익비율 `58a36a8e4cb4d0b0f051a366d80023b5a5b0e8ca73fdc1ed0ab543816ef81c17` · 생산능력 정합성 `36867fb34f3a888c9652f07193b96dddc10c860c93544d6a2384d64d04b57250` · 생산능력 오류 점검 `f4f1e8901431ca246994a048dec89b0b3086dab3e75804b2ab1e46827b321b6a` · 사전 증권사 조사자료 `0a1f7098de7649a87b5a6637d4f64cdfbe40fa913d1073065bf1f5b8eabaa098` · 증권사 자료 확인 `8562adc356ac42fdb115dc85525871bf3eb52012f722fe5d949dc7e8434339b3`
 - 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=warning · 11 `UPSTREAM_FUNDING_SCAN`=pass · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=pass · 19 `WACC_VALIDATION`=pass · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=warning · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=warning · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
 
 </details>
 
 ---
-보고서 ID `SANIL_062040-20260827-TP242038-8040C5E4C0A8` · 기준 목표가 242,038원
+보고서 ID `SANIL_062040-20260827-TP242038-B2A89633D570` · 기준 목표가 242,038원

@@ -276,6 +276,8 @@ def _sotp_component_sensitivity(
         diagnostics.validate()
     except (TypeError, ValueError):
         return None
+    if diagnostics.execution_family != "explicit_fcff_dcf":
+        return None
     if diluted_shares <= 0:
         raise ValuationSensitivityError("diluted shares must be positive")
 

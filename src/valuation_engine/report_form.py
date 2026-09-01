@@ -185,10 +185,20 @@ def _valuation_sensitivity_lines(data: dict[str, Any]) -> list[str]:
             lines.append(f"- {scenario.scenario_id}: {scenario.rationale}")
             continue
         measured = True
+        move_items = (
+            tuple(
+                (segment.asset_id, item)
+                for segment in scenario.segments
+                for item in segment.variables
+            )
+            if scenario.segments
+            else tuple((None, item) for item in scenario.variables)
+        )
         moves = " · ".join(
-            f"{item.label} {_sensitivity_delta_ko(item.variable, item.base_input, item.high_input)}"
+            f"{(asset_id + ' ') if asset_id else ''}{item.label} "
+            f"{_sensitivity_delta_ko(item.variable, item.base_input, item.high_input)}"
             f" → {item.low_value_pct * 100:+.1f}%/{item.high_value_pct * 100:+.1f}%"
-            for item in scenario.variables
+            for asset_id, item in move_items
         )
         lines.append(
             f"- {scenario.scenario_id} 기준 "
