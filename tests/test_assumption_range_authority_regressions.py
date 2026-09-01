@@ -81,16 +81,29 @@ def _run_with_reviewed_range(tmp_path, monkeypatch):
     return audit_e2e.run_path()
 
 
+def _replace_assumption(compiled, original, forged):
+    return CompiledAssumptionSet(
+        target_id=compiled.target_id,
+        assumptions=tuple(
+            forged if item is original else item for item in compiled.assumptions
+        ),
+        assumption_set_hash=compiled.assumption_set_hash,
+    )
+
 
 def test_compile_api_has_no_runtime_registry_path_override():
     assert "range_rule_registry_path" not in inspect.signature(compile_assumptions).parameters
 
 
-def test_audit_rejects_hash_consistent_receipt_attached_to_wrong_assumption(tmp_path, monkeypatch):
+def test_audit_rejects_hash_consistent_receipt_attached_to_wrong_assumption(
+    tmp_path, monkeypatch
+):
     result = _run_with_reviewed_range(tmp_path, monkeypatch)
     compiled = result.data["compiled_assumption_set"]
     ledger = result.data["evidence_ledger"]
-    original = next(item for item in compiled.assumptions if item.range_provenance is not None)
+    original = next(
+        item for item in compiled.assumptions if item.range_provenance is not None
+    )
     receipt = original.range_provenance
     assert isinstance(receipt, AssumptionRangeReceipt)
     forged_receipt = replace(receipt, assumption_key="wrong_assumption")
@@ -104,21 +117,21 @@ def test_audit_rejects_hash_consistent_receipt_attached_to_wrong_assumption(tmp_
         range_provenance=forged_receipt,
         input_evidence_hash=forged_hash,
     )
-    forged_set = CompiledAssumptionSet(
-        target_id=compiled.target_id,
-        assumptions=tuple(forged if item is original else item for item in compiled.assumptions),
-        assumption_set_hash=compiled.assumption_set_hash,
-    )
+    forged_set = _replace_assumption(compiled, original, forged)
     assert f"{original.scenario_id}/{original.key}" in compiled_evidence_hash_mismatches(
         forged_set, ledger
     )
 
 
-def test_audit_rederives_bounds_instead_of_trusting_hash_consistent_receipt(tmp_path, monkeypatch):
+def test_audit_rederives_bounds_instead_of_trusting_hash_consistent_receipt(
+    tmp_path, monkeypatch
+):
     result = _run_with_reviewed_range(tmp_path, monkeypatch)
     compiled = result.data["compiled_assumption_set"]
     ledger = result.data["evidence_ledger"]
-    original = next(item for item in compiled.assumptions if item.range_provenance is not None)
+    original = next(
+        item for item in compiled.assumptions if item.range_provenance is not None
+    )
     receipt = original.range_provenance
     assert isinstance(receipt, AssumptionRangeReceipt)
     forged_receipt = replace(receipt, max_value=receipt.max_value + 100)
@@ -132,11 +145,66 @@ def test_audit_rederives_bounds_instead_of_trusting_hash_consistent_receipt(tmp_
         range_provenance=forged_receipt,
         input_evidence_hash=forged_hash,
     )
-    forged_set = CompiledAssumptionSet(
-        target_id=compiled.target_id,
-        assumptions=tuple(forged if item is original else item for item in compiled.assumptions),
-        assumption_set_hash=compiled.assumption_set_hash,
+    forged_set = _replace_assumption(compiled, original, forged)
+    assert f"{original.scenario_id}/{original.key}" in compiled_evidence_hash_mismatches(
+        forged_set, ledger
     )
+
+
+def test_audit_rejects_missing_receipt_when_canonical_rule_exists(
+    tmp_path, monkeypatch
+):
+    result = _run_with_reviewed_range(tmp_path, monkeypatch)
+    compiled = result.data["compiled_assumption_set"]
+    ledger = result.data["evidence_ledger"]
+    original = next(
+        item for item in compiled.assumptions if item.range_provenance is not None
+    )
+    receipt_free_hash = compiled_input_evidence_hash(ledger, original.evidence_ids)
+    forged = replace(
+        original,
+        range_provenance=None,
+        input_evidence_hash=receipt_free_hash,
+    )
+    forged_set = _replace_assumption(compiled, original, forged)
+    assert f"{original.scenario_id}/{original.key}" in compiled_evidence_hash_mismatches(
+        forged_set, ledger
+    )
+
+
+def test_audit_fails_closed_when_canonical_registry_is_unavailable(
+    tmp_path, monkeypatch
+):
+    result = _run_with_reviewed_range(tmp_path, monkeypatch)
+    compiled = result.data["compiled_assumption_set"]
+    ledger = result.data["evidence_ledger"]
+    monkeypatch.setattr(
+        range_rules_module,
+        "DEFAULT_RANGE_RULE_REGISTRY_PATH",
+        tmp_path / "missing-range-registry.yaml",
+    )
+    mismatches = compiled_evidence_hash_mismatches(compiled, ledger)
+    assert set(mismatches) == {
+        f"{item.scenario_id}/{item.key}" for item in compiled.assumptions
+    }
+
+
+def test_audit_rejects_measure_outside_rederived_reviewed_range(
+    tmp_path, monkeypatch
+):
+    result = _run_with_reviewed_range(tmp_path, monkeypatch)
+    compiled = result.data["compiled_assumption_set"]
+    ledger = result.data["evidence_ledger"]
+    original = next(
+        item for item in compiled.assumptions if item.range_provenance is not None
+    )
+    receipt = original.range_provenance
+    assert isinstance(receipt, AssumptionRangeReceipt)
+    forged = replace(
+        original,
+        measure=replace(original.measure, amount=receipt.max_value + 1),
+    )
+    forged_set = _replace_assumption(compiled, original, forged)
     assert f"{original.scenario_id}/{original.key}" in compiled_evidence_hash_mismatches(
         forged_set, ledger
     )
