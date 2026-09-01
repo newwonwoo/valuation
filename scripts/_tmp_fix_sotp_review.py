@@ -11,41 +11,6 @@ path = Path("src/valuation_engine/valuation_sensitivity.py")
 text = path.read_text(encoding="utf-8")
 text = replace_once(
     text,
-    "from dataclasses import dataclass\n",
-    "from dataclasses import dataclass, replace\n",
-    "dataclass import",
-)
-text = replace_once(
-    text,
-    """    @property
-    def dominant(self) -> VariableSensitivity | None:
-        candidates = list(self.variables)
-        candidates.extend(
-            variable for segment in self.segments for variable in segment.variables
-        )
-        if not candidates:
-            return None
-        return max(candidates, key=lambda item: item.max_abs_pct)
-""",
-    """    @property
-    def dominant(self) -> VariableSensitivity | None:
-        candidates = (
-            [
-                variable
-                for segment in self.segments
-                for variable in segment.variables
-            ]
-            if self.segments
-            else list(self.variables)
-        )
-        if not candidates:
-            return None
-        return max(candidates, key=lambda item: item.max_abs_pct)
-""",
-    "ScenarioSensitivity.dominant",
-)
-text = replace_once(
-    text,
     """    except (TypeError, ValueError):
         return None
     if diluted_shares <= 0:
@@ -58,24 +23,37 @@ text = replace_once(
 """,
     "execution family guard",
 )
-text = replace_once(
-    text,
-    """        base_value_per_share=base_value_per_share,
-        segments=segments,
-    )
-""",
-    """        base_value_per_share=base_value_per_share,
-        variables=tuple(
-            replace(variable, label=f"{segment.asset_id} {variable.label}")
-            for segment in segments
-            for variable in segment.variables
-        ),
-        segments=segments,
-    )
-""",
-    "SOTP rendered variables",
-)
 path.write_text(text, encoding="utf-8")
+
+report_form = Path("src/valuation_engine/report_form.py")
+r = report_form.read_text(encoding="utf-8")
+r = replace_once(
+    r,
+    '''        moves = " · ".join(
+            f"{item.label} {_sensitivity_delta_ko(item.variable, item.base_input, item.high_input)}"
+            f" → {item.low_value_pct * 100:+.1f}%/{item.high_value_pct * 100:+.1f}%"
+            for item in scenario.variables
+        )
+''',
+    '''        move_items = (
+            tuple(
+                (segment.asset_id, item)
+                for segment in scenario.segments
+                for item in segment.variables
+            )
+            if scenario.segments
+            else tuple((None, item) for item in scenario.variables)
+        )
+        moves = " · ".join(
+            f"{(asset_id + ' ') if asset_id else ''}{item.label} "
+            f"{_sensitivity_delta_ko(item.variable, item.base_input, item.high_input)}"
+            f" → {item.low_value_pct * 100:+.1f}%/{item.high_value_pct * 100:+.1f}%"
+            for asset_id, item in move_items
+        )
+''',
+    "user-facing SOTP sensitivity renderer",
+)
+report_form.write_text(r, encoding="utf-8")
 
 guards = Path("tests/test_sotp_segment_sensitivity_guards.py")
 g = guards.read_text(encoding="utf-8")
@@ -119,6 +97,7 @@ def test_segment_variables_are_exposed_to_the_user_facing_renderer():
         _diagnostics((Decimal("20"), Decimal("24"), Decimal("28"))),
     )
     report = build_valuation_sensitivity_report(valuation=_valuation((first, second)))
+    assert not report.scenarios[0].variables
     lines = _valuation_sensitivity_lines({"valuation_sensitivity_report": report})
     detail = next(line for line in lines if line.startswith("- Core 기준"))
     assert "FIRST 가중평균자본비용" in detail
