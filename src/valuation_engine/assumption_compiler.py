@@ -9,6 +9,13 @@ from typing import Callable
 
 from .actual_units import Measure, measure_from_raw, to_decimal
 from .ledger import EvidenceLedger
+from .assumption_range_rules import (
+    AssumptionRangeReceipt,
+    AssumptionRangeRuleError,
+    apply_reviewed_assumption_ranges,
+    load_assumption_range_rule_registry,
+    range_provenance_hash_part,
+)
 from .records import (
     AssumptionRecord,
     AffectedVariable,
@@ -63,6 +70,7 @@ class CompiledAssumption:
     transform_id: str
     input_evidence_hash: str
     calibration_status: CalibrationStatus | None = None
+    range_provenance: AssumptionRangeReceipt | None = None
 
 
 @dataclass(frozen=True)
@@ -291,6 +299,39 @@ def compile_assumptions(
     # An LLM may propose BridgeDraft objects, but it may never invoke the
     # committing compiler from inside its callback scope.
     forbid_llm_decision(DecisionDomain.ASSUMPTION_COMPILE)
+    # min/max proposed by an LLM are never compiler authority. Bounds are
+    # stripped first and may only be re-attached by a reviewed repository rule
+    # derived from same-run realized/filing Evidence.
+    try:
+        range_registry = load_assumption_range_rule_registry()
+        llm_bounds = tuple(
+            (
+                item.scenario_id,
+                item.key,
+                str(item.min_value) if item.min_value is not None else None,
+                str(item.max_value) if item.max_value is not None else None,
+            )
+            for item in specs
+            if item.min_value is not None or item.max_value is not None
+        )
+        range_application = apply_reviewed_assumption_ranges(
+            specs,
+            ledger=ledger,
+            target_id=target_id,
+            registry=range_registry,
+            llm_bounds=llm_bounds,
+        )
+        specs = range_application.specs
+        range_receipts_by_spec = {
+            (item.scenario_id, item.assumption_key): item
+            for item in range_application.receipts
+        }
+    except AssumptionRangeRuleError as exc:
+        return CompilationResult(
+            CompilationStatus.BLOCKED,
+            None,
+            (CompilationFinding('ASSUMPTION_RANGE_RULE_BLOCKED', str(exc)),),
+        )
     findings: list[CompilationFinding] = []
     if not target_id:
         findings.append(CompilationFinding("MISSING_TARGET", "target_id is required"))
@@ -420,6 +461,9 @@ def compile_assumptions(
             findings.append(CompilationFinding("DOMAIN_VIOLATION", f"{spec.key} above maximum"))
             continue
 
+        range_receipt = range_receipts_by_spec.get((spec.scenario_id, spec.key))
+        if range_receipt is not None:
+            evidence_hash_parts.append(range_provenance_hash_part(range_receipt))
         evidence_hash = sha256("\n".join(sorted(evidence_hash_parts)).encode("utf-8")).hexdigest()
         compiled.append(
             CompiledAssumption(
@@ -433,6 +477,7 @@ def compile_assumptions(
                 transform_id=spec.transform_id,
                 input_evidence_hash=evidence_hash,
                 calibration_status=hypothesis.calibration_status if spec.probability_only_if_calibrated else None,
+                range_provenance=range_receipt,
             )
         )
 

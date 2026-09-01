@@ -3,7 +3,15 @@ from __future__ import annotations
 from hashlib import sha256
 import json
 
+from .actual_units import measure_from_raw
 from .assumption_compiler import CompiledAssumptionSet
+from .assumption_range_rules import (
+    AssumptionRangeReceipt,
+    AssumptionRangeRuleError,
+    derive_reviewed_assumption_range,
+    load_assumption_range_rule_registry,
+    range_provenance_hash_part,
+)
 from .ledger import EvidenceLedger
 from .scenario_binding import BoundScenarioSet
 from .valuation_execution import GenericValuationResult
@@ -34,6 +42,8 @@ def evidence_ledger_snapshot_hash(ledger: EvidenceLedger) -> str:
 def compiled_input_evidence_hash(
     ledger: EvidenceLedger,
     evidence_ids: tuple[str, ...],
+    *,
+    range_provenance: AssumptionRangeReceipt | None = None,
 ) -> str:
     """Replay the exact Evidence input hash contract used by the assumption compiler."""
     if not evidence_ids:
@@ -44,6 +54,32 @@ def compiled_input_evidence_hash(
         parts.append(
             f"{evidence.id}|{evidence.metric}|{evidence.value}|{evidence.unit}|"
             f"{evidence.effective_date}|{evidence.source_ref}"
+        )
+    if range_provenance is not None:
+        if len(range_provenance.anchor_evidence_ids) != len(
+            range_provenance.anchor_effective_dates
+        ):
+            raise ValueError("range provenance anchor lengths disagree")
+        replayed_values = []
+        replayed_dates = []
+        for evidence_id in range_provenance.anchor_evidence_ids:
+            evidence = ledger.get(evidence_id)
+            if evidence.target != range_provenance.target_id:
+                raise ValueError("range provenance anchor target mismatch")
+            if evidence.metric != range_provenance.anchor_metric:
+                raise ValueError("range provenance anchor metric mismatch")
+            replayed_values.append(
+                measure_from_raw(evidence.value, evidence.unit, evidence.effective_date)
+                .convert_to(range_provenance.canonical_unit)
+                .amount
+            )
+            replayed_dates.append(evidence.effective_date)
+        parts.append(
+            range_provenance_hash_part(
+                range_provenance,
+                anchor_values=tuple(replayed_values),
+                anchor_effective_dates=tuple(replayed_dates),
+            )
         )
     return sha256("\n".join(sorted(parts)).encode("utf-8")).hexdigest()
 
@@ -161,14 +197,71 @@ def compiled_evidence_hash_mismatches(
     compiled: CompiledAssumptionSet,
     ledger: EvidenceLedger,
 ) -> tuple[str, ...]:
-    """Return scenario/key identities whose compiled Evidence hash no longer replays."""
+    """Return scenario/key identities whose compiled Evidence hash no longer replays.
+
+    The reviewed range registry is authority-bearing Audit input. If it cannot be
+    loaded, no compiled assumption can be certified because Audit cannot determine
+    whether a canonical rule should have governed that key. When a canonical rule
+    does exist, its typed receipt is mandatory and the stored measure must still
+    lie inside the independently re-derived range.
+    """
+    identities = tuple(
+        f"{item.scenario_id}/{item.key}" for item in compiled.assumptions
+    )
+    try:
+        registry = load_assumption_range_rule_registry()
+    except (AssumptionRangeRuleError, OSError, ValueError):
+        return identities
+
     mismatches: list[str] = []
     for item in compiled.assumptions:
+        identity = f"{item.scenario_id}/{item.key}"
         try:
-            replayed = compiled_input_evidence_hash(ledger, item.evidence_ids)
-        except ValueError:
-            mismatches.append(f"{item.scenario_id}/{item.key}")
+            replay_range = None
+            receipt = item.range_provenance
+            rule = registry.for_key(item.key)
+
+            if rule is not None and receipt is None:
+                raise ValueError("reviewed canonical range requires typed provenance")
+            if rule is None and receipt is not None:
+                raise ValueError("compiled range has no reviewed canonical rule")
+
+            if receipt is not None:
+                if receipt.target_id != compiled.target_id:
+                    raise ValueError("range provenance target differs from compiled target")
+                if receipt.assumption_key != item.key:
+                    raise ValueError("range provenance assumption key mismatch")
+                if receipt.scenario_id != item.scenario_id:
+                    raise ValueError("range provenance scenario mismatch")
+                if receipt.canonical_unit != item.measure.unit:
+                    raise ValueError("range provenance canonical unit mismatch")
+                if receipt.registry_hash != registry.registry_hash:
+                    raise ValueError("range provenance registry hash mismatch")
+                assert rule is not None
+                replay_range = derive_reviewed_assumption_range(
+                    rule,
+                    ledger=ledger,
+                    target_id=compiled.target_id,
+                    scenario_id=item.scenario_id,
+                    registry_hash=registry.registry_hash,
+                )
+                if replay_range != receipt:
+                    raise ValueError("range provenance differs from canonical re-derivation")
+                if not (
+                    replay_range.min_value
+                    <= item.measure.amount
+                    <= replay_range.max_value
+                ):
+                    raise ValueError("compiled measure violates reviewed canonical range")
+
+            replayed = compiled_input_evidence_hash(
+                ledger,
+                item.evidence_ids,
+                range_provenance=replay_range,
+            )
+        except (AssumptionRangeRuleError, ValueError):
+            mismatches.append(identity)
             continue
         if replayed != item.input_evidence_hash:
-            mismatches.append(f"{item.scenario_id}/{item.key}")
+            mismatches.append(identity)
     return tuple(mismatches)
