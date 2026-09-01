@@ -19,35 +19,38 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Patch runbook runner and regression
+      - name: Patch runner
         run: |
           python - <<'PY'
           from pathlib import Path
+          from textwrap import dedent
 
-          runner = Path('scripts/run_kr_live.py')
-          text = runner.read_text(encoding='utf-8')
+          path = Path('scripts/run_kr_live.py')
+          text = path.read_text(encoding='utf-8')
+
           import_anchor = 'from valuation_engine.cli_runtime import LiveAnalysisRequest  # noqa: E402\n'
-          import_block = '''from valuation_engine.calibration_cohort_registry import (  # noqa: E402
+          import_block = dedent('''\
+          from valuation_engine.calibration_cohort_registry import (  # noqa: E402
               CalibrationCohortRegistryError,
               load_production_calibration_registry,
               resolve_production_calibration_cohort,
               validate_declared_calibration,
           )
           from valuation_engine.cli_runtime import LiveAnalysisRequest  # noqa: E402
-          '''
-          import_block = '\n'.join(line[10:] if line.startswith('          ') else line for line in import_block.splitlines()) + '\n'
+          ''')
           if import_anchor not in text:
               raise SystemExit('runner import anchor missing')
           text = text.replace(import_anchor, import_block, 1)
 
-          helper_anchor = '''def _optional_path(run_dir: Path, name: str) -> str | None:
+          old_helper = dedent('''\
+          def _optional_path(run_dir: Path, name: str) -> str | None:
               path = run_dir / "declarations" / name
               return str(path) if path.exists() else None
 
 
-          '''
-          helper_anchor = '\n'.join(line[10:] if line.startswith('          ') else line for line in helper_anchor.splitlines()) + '\n'
-          helpers = '''def _run_industry_code(run_dir: Path, config: dict) -> str | None:
+          ''')
+          new_helper = dedent('''\
+          def _run_industry_code(run_dir: Path, config: dict) -> str | None:
               """Return the deterministic KSIC anchor used for cohort matching."""
               filing = config.get("filing") or {}
               if config.get("segments"):
@@ -107,82 +110,98 @@ jobs:
               return str(path) if path.exists() else None
 
 
-          '''
-          helpers = '\n'.join(line[10:] if line.startswith('          ') else line for line in helpers.splitlines()) + '\n'
-          if helper_anchor not in text:
+          ''')
+          if old_helper not in text:
               raise SystemExit('runner helper anchor missing')
-          text = text.replace(helper_anchor, helpers, 1)
+          text = text.replace(old_helper, new_helper, 1)
 
-          execute_anchor = '    config = _load_run(run_dir)\n    filing = config["filing"]\n\n    def _parse_method'
-          execute_replacement = '    config = _load_run(run_dir)\n    filing = config["filing"]\n    _enforce_production_calibration(run_dir, config)\n\n    def _parse_method'
-          if execute_anchor not in text:
+          old_execute = '    config = _load_run(run_dir)\n    filing = config["filing"]\n\n    def _parse_method'
+          new_execute = '    config = _load_run(run_dir)\n    filing = config["filing"]\n    _enforce_production_calibration(run_dir, config)\n\n    def _parse_method'
+          if old_execute not in text:
               raise SystemExit('execute_run anchor missing')
-          text = text.replace(execute_anchor, execute_replacement, 1)
-          runner.write_text(text, encoding='utf-8')
+          text = text.replace(old_execute, new_execute, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Create runner regression
+        run: |
+          cat > tests/test_kr_live_calibration_gate.py <<'PY'
+          from __future__ import annotations
 
-          test = Path('tests/test_kr_live_runbook.py')
-          existing = test.read_text(encoding='utf-8')
-          addition = '''
+          import importlib.util
+          from pathlib import Path
+          import shutil
 
-          def test_registered_production_cohort_cannot_complete_without_calibration(tmp_path):
-              run_copy = tmp_path / "kisco-no-calibration"
+          import pytest
+          import yaml
+
+          ROOT = Path(__file__).resolve().parents[1]
+          RUNNER = ROOT / "scripts" / "run_kr_live.py"
+          spec = importlib.util.spec_from_file_location("run_kr_live_cohort_gate", RUNNER)
+          assert spec and spec.loader
+          run_kr_live = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(run_kr_live)
+
+
+          def _copy_kisco(tmp_path: Path, name: str) -> Path:
+              target = tmp_path / name
               shutil.copytree(
                   ROOT / "runs" / "kisco-104700",
-                  run_copy,
+                  target,
                   ignore=shutil.ignore_patterns("out"),
               )
-              run_yaml = run_copy / "run.yaml"
-              payload = run_kr_live._load_run(run_copy)
+              return target
+
+
+          def test_registered_production_cohort_blocks_missing_calibration(tmp_path):
+              run_dir = _copy_kisco(tmp_path, "missing-calibration")
+              payload = run_kr_live._load_run(run_dir)
               payload.pop("calibration", None)
-              import yaml
-              run_yaml.write_text(
+              (run_dir / "run.yaml").write_text(
                   yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
                   encoding="utf-8",
               )
 
-              try:
-                  execute_run(run_copy)
-              except run_kr_live.RunbookError as exc:
-                  message = str(exc)
-              else:
-                  raise AssertionError("registered production cohort must block uncalibrated completion")
+              with pytest.raises(run_kr_live.RunbookError) as caught:
+                  run_kr_live.execute_run(run_dir)
+              message = str(caught.value)
               assert "CALIBRATION_REQUIRED" in message
               assert "kr-steel-long-continuous-v1" in message
               assert "kr.steel.long|5y_path|continuous_v1" in message
 
 
-          def test_registered_production_cohort_rejects_wrong_binding(tmp_path):
-              run_copy = tmp_path / "kisco-wrong-calibration"
-              shutil.copytree(
-                  ROOT / "runs" / "kisco-104700",
-                  run_copy,
-                  ignore=shutil.ignore_patterns("out"),
-              )
-              payload = run_kr_live._load_run(run_copy)
+          def test_registered_production_cohort_blocks_wrong_binding(tmp_path):
+              run_dir = _copy_kisco(tmp_path, "wrong-calibration")
+              payload = run_kr_live._load_run(run_dir)
               payload["calibration"]["cohort_key"] = "wrong.cohort"
-              import yaml
-              (run_copy / "run.yaml").write_text(
+              (run_dir / "run.yaml").write_text(
                   yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
                   encoding="utf-8",
               )
 
-              try:
-                  execute_run(run_copy)
-              except run_kr_live.RunbookError as exc:
-                  message = str(exc)
-              else:
-                  raise AssertionError("wrong production cohort must fail closed")
-              assert "CALIBRATION_COHORT_MISMATCH" in message
-              assert "kr-steel-long-continuous-v1" in message
-          '''
-          addition = '\n'.join(line[10:] if line.startswith('          ') else line for line in addition.splitlines()) + '\n'
-          if 'test_registered_production_cohort_cannot_complete_without_calibration' not in existing:
-              test.write_text(existing.rstrip() + addition, encoding='utf-8')
+              with pytest.raises(run_kr_live.RunbookError) as caught:
+                  run_kr_live.execute_run(run_dir)
+              assert "CALIBRATION_COHORT_MISMATCH" in str(caught.value)
+
+
+          def test_unregistered_industry_does_not_require_calibration(tmp_path):
+              run_dir = _copy_kisco(tmp_path, "unregistered-industry")
+              company_path = run_dir / "raw" / "company.json"
+              import json
+              company = json.loads(company_path.read_text(encoding="utf-8"))
+              company["induty_code"] = "2611"
+              company_path.write_text(json.dumps(company), encoding="utf-8")
+              payload = run_kr_live._load_run(run_dir)
+              payload.pop("calibration", None)
+              (run_dir / "run.yaml").write_text(
+                  yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+                  encoding="utf-8",
+              )
+              assert run_kr_live._required_production_calibration(run_dir, payload) is None
           PY
       - name: Validate focused and full suite
         run: |
           python -m pip install -e '.[dev]'
-          pytest -q tests/test_calibration_cohort_registry.py tests/test_kr_live_runbook.py
+          pytest -q tests/test_calibration_cohort_registry.py tests/test_kr_live_calibration_gate.py tests/test_kr_live_runbook.py
           pytest -q
           python scripts/validate_project_portfolio.py
           git diff --check
@@ -191,6 +210,6 @@ jobs:
           rm .github/workflows/_apply_calibration_cohort_gate_once.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add config/kr_calibration_cohort_registry.yaml src/valuation_engine/calibration_cohort_registry.py scripts/run_kr_live.py tests/test_calibration_cohort_registry.py tests/test_kr_live_runbook.py .github/workflows/_apply_calibration_cohort_gate_once.yml
+          git add config/kr_calibration_cohort_registry.yaml src/valuation_engine/calibration_cohort_registry.py scripts/run_kr_live.py tests/test_calibration_cohort_registry.py tests/test_kr_live_calibration_gate.py .github/workflows/_apply_calibration_cohort_gate_once.yml
           git commit -m 'Require registered production calibration cohorts'
           git push origin HEAD:feat/calibration-cohort-gate
