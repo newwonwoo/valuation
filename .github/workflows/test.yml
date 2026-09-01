@@ -83,101 +83,36 @@ jobs:
           path = Path('scripts/compare_runs.py')
           text = path.read_text(encoding='utf-8')
 
-          old = '''def _underwriting_payload(run_dir: Path) -> dict:\n    return _load_yaml_mapping(run_dir / "declarations" / "underwriting.yaml")\n\n\ndef _flatten_underwriting(payload: Mapping) -> dict[str, dict]:\n'''
-          new = '''def _underwriting_payload(run_dir: Path) -> dict:\n    return _load_yaml_mapping(run_dir / "declarations" / "underwriting.yaml")\n\n\ndef _underwriting_header_contract(run_dir: Path) -> dict:\n    payload = _underwriting_payload(run_dir)\n    return {\n        "target_id": str(payload.get("target_id") or ""),\n        "as_of": str(payload.get("as_of") or ""),\n    }\n\n\ndef _flatten_underwriting(payload: Mapping) -> dict[str, dict]:\n'''
-          if old not in text:
-              raise SystemExit('underwriting payload anchor not found')
-          text = text.replace(old, new, 1)
-
-          old = '''        "raw_source_hash": _tree_digest(run_dir / "raw"),\n        "underwriting_contract": _underwriting_contract(run_dir),\n'''
-          new = '''        "raw_source_hash": _tree_digest(run_dir / "raw"),\n        "underwriting_header_contract": _underwriting_header_contract(run_dir),\n        "underwriting_contract": _underwriting_contract(run_dir),\n'''
-          if old not in text:
-              raise SystemExit('structural signature anchor not found')
-          text = text.replace(old, new, 1)
-
-          old = '''        "raw_source_hash": "PRIMARY_SOURCE_SNAPSHOT_MISMATCH",\n        "underwriting_contract": "UNDERWRITING_CONTRACT_MISMATCH",\n'''
-          new = '''        "raw_source_hash": "PRIMARY_SOURCE_SNAPSHOT_MISMATCH",\n        "underwriting_header_contract": "UNDERWRITING_HEADER_CONTRACT_MISMATCH",\n        "underwriting_contract": "UNDERWRITING_CONTRACT_MISMATCH",\n'''
-          if old not in text:
-              raise SystemExit('structural finding label anchor not found')
-          text = text.replace(old, new, 1)
-
-          old = '''def _declaration_differences(run_a: Path, run_b: Path) -> list[dict]:\n    a = _flatten_underwriting(_underwriting_payload(run_a))\n    b = _flatten_underwriting(_underwriting_payload(run_b))\n    if set(a) != set(b):\n        raise RunComparisonError("underwriting contract changed after structural validation")\n    differences = []\n    for identity in sorted(a):\n'''
-          new = '''def _declaration_differences(run_a: Path, run_b: Path) -> list[dict]:\n    payload_a = _underwriting_payload(run_a)\n    payload_b = _underwriting_payload(run_b)\n    a = _flatten_underwriting(payload_a)\n    b = _flatten_underwriting(payload_b)\n    if set(a) != set(b):\n        raise RunComparisonError("underwriting contract changed after structural validation")\n    differences = []\n    source_a = str(payload_a.get("source_ref") or "")\n    source_b = str(payload_b.get("source_ref") or "")\n    if source_a != source_b:\n        differences.append(\n            {\n                "identity": "__underwriting_header__.source_ref",\n                "metric": "__underwriting_header__",\n                "segment": "header",\n                "multi": False,\n                "header_field": "source_ref",\n                "a_value": source_a,\n                "b_value": source_b,\n                "unit": "provenance_ref",\n                "metadata_only": True,\n            }\n        )\n    for identity in sorted(a):\n'''
-          if old not in text:
-              raise SystemExit('declaration differences anchor not found')
-          text = text.replace(old, new, 1)
-
-          old = '''def _replace_underwriting_row(payload: dict, difference: Mapping) -> None:\n    declarations = payload.get("declarations")\n'''
-          new = '''def _replace_underwriting_row(payload: dict, difference: Mapping) -> None:\n    header_field = difference.get("header_field")\n    if header_field:\n        payload[str(header_field)] = deepcopy(difference.get("b_value"))\n        return\n    declarations = payload.get("declarations")\n'''
-          if old not in text:
-              raise SystemExit('replacement anchor not found')
-          text = text.replace(old, new, 1)
+          replacements = [
+              (
+                  'def _underwriting_payload(run_dir: Path) -> dict:\n    return _load_yaml_mapping(run_dir / "declarations" / "underwriting.yaml")\n\n\ndef _flatten_underwriting(payload: Mapping) -> dict[str, dict]:\n',
+                  'def _underwriting_payload(run_dir: Path) -> dict:\n    return _load_yaml_mapping(run_dir / "declarations" / "underwriting.yaml")\n\n\ndef _underwriting_header_contract(run_dir: Path) -> dict:\n    payload = _underwriting_payload(run_dir)\n    return {\n        "target_id": str(payload.get("target_id") or ""),\n        "as_of": str(payload.get("as_of") or ""),\n    }\n\n\ndef _flatten_underwriting(payload: Mapping) -> dict[str, dict]:\n',
+              ),
+              (
+                  '        "raw_source_hash": _tree_digest(run_dir / "raw"),\n        "underwriting_contract": _underwriting_contract(run_dir),\n',
+                  '        "raw_source_hash": _tree_digest(run_dir / "raw"),\n        "underwriting_header_contract": _underwriting_header_contract(run_dir),\n        "underwriting_contract": _underwriting_contract(run_dir),\n',
+              ),
+              (
+                  '        "raw_source_hash": "PRIMARY_SOURCE_SNAPSHOT_MISMATCH",\n        "underwriting_contract": "UNDERWRITING_CONTRACT_MISMATCH",\n',
+                  '        "raw_source_hash": "PRIMARY_SOURCE_SNAPSHOT_MISMATCH",\n        "underwriting_header_contract": "UNDERWRITING_HEADER_CONTRACT_MISMATCH",\n        "underwriting_contract": "UNDERWRITING_CONTRACT_MISMATCH",\n',
+              ),
+              (
+                  'def _declaration_differences(run_a: Path, run_b: Path) -> list[dict]:\n    a = _flatten_underwriting(_underwriting_payload(run_a))\n    b = _flatten_underwriting(_underwriting_payload(run_b))\n    if set(a) != set(b):\n        raise RunComparisonError("underwriting contract changed after structural validation")\n    differences = []\n    for identity in sorted(a):\n',
+                  'def _declaration_differences(run_a: Path, run_b: Path) -> list[dict]:\n    payload_a = _underwriting_payload(run_a)\n    payload_b = _underwriting_payload(run_b)\n    a = _flatten_underwriting(payload_a)\n    b = _flatten_underwriting(payload_b)\n    if set(a) != set(b):\n        raise RunComparisonError("underwriting contract changed after structural validation")\n    differences = []\n    source_a = str(payload_a.get("source_ref") or "")\n    source_b = str(payload_b.get("source_ref") or "")\n    if source_a != source_b:\n        differences.append(\n            {\n                "identity": "__underwriting_header__.source_ref",\n                "metric": "__underwriting_header__",\n                "segment": "header",\n                "multi": False,\n                "header_field": "source_ref",\n                "a_value": source_a,\n                "b_value": source_b,\n                "unit": "provenance_ref",\n                "metadata_only": True,\n            }\n        )\n    for identity in sorted(a):\n',
+              ),
+              (
+                  'def _replace_underwriting_row(payload: dict, difference: Mapping) -> None:\n    declarations = payload.get("declarations")\n',
+                  'def _replace_underwriting_row(payload: dict, difference: Mapping) -> None:\n    header_field = difference.get("header_field")\n    if header_field:\n        payload[str(header_field)] = deepcopy(difference.get("b_value"))\n        return\n    declarations = payload.get("declarations")\n',
+              ),
+          ]
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit(f'patch anchor not found: {old[:80]!r}')
+              text = text.replace(old, new, 1)
           path.write_text(text, encoding='utf-8')
-
-          tests = Path('tests/test_compare_runs_review_regressions.py')
-          addition = r'''
-
-
-def _rewrite_underwriting_header(run_dir: Path, key: str, value: str) -> None:
-    path = run_dir / "declarations" / "underwriting.yaml"
-    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
-    payload[key] = value
-    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
-
-
-def test_underwriting_target_header_is_structural(tmp_path):
-    run_a = tmp_path / "a"
-    run_b = tmp_path / "b"
-    _write_run(run_a)
-    _write_run(run_b)
-    _rewrite_underwriting_header(run_b, "target_id", "KR:DART:99999999")
-
-    calls = 0
-
-    def should_not_run(_path):
-        nonlocal calls
-        calls += 1
-        raise AssertionError("underwriting header mismatch must stop before execution")
-
-    result = compare_runs.compare_run_directories(
-        run_a, run_b, executor=should_not_run
-    )
-
-    assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
-    assert calls == 0
-    assert any(
-        item["code"] == "UNDERWRITING_HEADER_CONTRACT_MISMATCH"
-        for item in result["structural_findings"]
-    )
-
-
-def test_inherited_underwriting_source_ref_is_metadata_difference(tmp_path):
-    run_a = tmp_path / "a"
-    run_b = tmp_path / "b"
-    _write_run(run_a)
-    _write_run(run_b)
-    _rewrite_underwriting_header(
-        run_b, "source_ref", "https://example.com/revised-source"
-    )
-
-    result = compare_runs.compare_run_directories(
-        run_a, run_b, executor=_fake_executor
-    )
-
-    assert result["status"] == compare_runs.STATUS_CONSISTENT
-    assert result["decomposition_order"][0] == "__underwriting_header__.source_ref"
-    diff = result["judgment_differences"][0]
-    assert diff["metadata_only"] is True
-    assert diff["a_value"] == "https://example.com/source"
-    assert diff["b_value"] == "https://example.com/revised-source"
-    attribution = result["attribution"][0]
-    assert attribution["base_delta_per_share"] == "0"
-    assert attribution["expected_delta_per_share"] == "0.0"
-'''
-          tests.write_text(tests.read_text(encoding='utf-8') + addition, encoding='utf-8')
           PY
       - name: Focused regressions
-        run: pytest -q tests/test_compare_runs.py tests/test_compare_runs_review_regressions.py
+        run: pytest -q tests/test_compare_runs.py tests/test_compare_runs_review_regressions.py tests/test_compare_runs_underwriting_header.py
       - name: Full regression
         run: pytest -q
       - name: PM validation
@@ -188,7 +123,7 @@ def test_inherited_underwriting_source_ref_is_metadata_difference(tmp_path):
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git checkout origin/main -- .github/workflows/test.yml
-          git add scripts/compare_runs.py tests/test_compare_runs_review_regressions.py .github/workflows/test.yml
+          git add scripts/compare_runs.py tests/test_compare_runs_underwriting_header.py .github/workflows/test.yml
           git diff --cached --check
           git commit -m 'Track underwriting header provenance in run comparison'
           git push origin HEAD:feat/compare-runs-variance-gate
