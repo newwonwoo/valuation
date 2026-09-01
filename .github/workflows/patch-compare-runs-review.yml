@@ -1,0 +1,278 @@
+name: patch-compare-runs-review
+
+on:
+  push:
+    branches:
+      - feat/compare-runs-variance-gate
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/compare-runs-variance-gate
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: pip install -e . pytest
+      - name: Apply review fixes
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/compare_runs.py')
+          text = path.read_text(encoding='utf-8')
+
+          def replace_between(text, start, end, replacement):
+              i = text.index(start)
+              j = text.index(end, i)
+              return text[:i] + replacement + text[j:]
+
+          text = text.replace(
+              'STATUS_RECONCILIATION_REQUIRED = "RECONCILIATION_REQUIRED"\n\nDEFAULT_BASE_THRESHOLD',
+              'STATUS_RECONCILIATION_REQUIRED = "RECONCILIATION_REQUIRED"\nEXIT_RECONCILIATION_REQUIRED = 3\n\nDEFAULT_BASE_THRESHOLD',
+              1,
+          )
+
+          new_calibration = '''def _file_binding_signature(run_dir: Path, value: object) -> dict | None:\n    if not isinstance(value, str) or not value:\n        return None\n    declared = value\n    candidate = Path(declared)\n    resolved = candidate if candidate.is_absolute() else (run_dir / candidate)\n    return {\n        "path": declared,\n        "sha256": sha256(resolved.read_bytes()).hexdigest() if resolved.is_file() else None,\n    }\n\n\ndef _normalize_contract(value: object) -> object:\n    if isinstance(value, Mapping):\n        return {str(key): _normalize_contract(item) for key, item in value.items()}\n    if isinstance(value, (list, tuple)):\n        return [_normalize_contract(item) for item in value]\n    return value\n\n\ndef _calibration_signature(run_dir: Path, config: Mapping) -> dict:\n    calibration = config.get("calibration")\n    if not isinstance(calibration, Mapping):\n        return {"present": False}\n    return {\n        "present": True,\n        "contract": _normalize_contract(calibration),\n        "artifact_binding": _file_binding_signature(run_dir, calibration.get("artifact")),\n        "provenance_binding": _file_binding_signature(run_dir, calibration.get("provenance")),\n        "conditioning_binding": _file_binding_signature(run_dir, calibration.get("conditioning")),\n    }\n\n\n'''
+          text = replace_between(
+              text,
+              'def _calibration_signature(config: Mapping) -> dict:\n',
+              'def _method_signature(config: Mapping)',
+              new_calibration,
+          )
+
+          new_segments = '''def _segment_declaration_signature(run_dir: Path) -> dict | None:\n    path = run_dir / "declarations" / "segments.yaml"\n    if not path.is_file():\n        return None\n    return _load_yaml_mapping(path)\n\n\n'''
+          text = replace_between(
+              text,
+              'def _segment_declaration_signature(run_dir: Path)',
+              'def _underwriting_payload(run_dir: Path)',
+              new_segments,
+          )
+          text = text.replace(
+              '"calibration": _calibration_signature(config),',
+              '"calibration": _calibration_signature(run_dir, config),',
+              1,
+          )
+
+          old = '''        return {\n            "decomposition_order": [],\n            "judgment_differences": [],\n            "attribution": [],\n            "residual": {\n                "base_value_per_share": str(residual_base),\n                "expected_value_per_share": residual_expected,\n                "scenario_values": residual_scenarios,\n            },\n            "residual_material": abs(residual_base) > residual_tolerance,\n            "attribution_error": None,\n        }\n'''
+          new = '''        expected_material = (\n            residual_expected is not None\n            and abs(_decimal(residual_expected)) > residual_tolerance\n        )\n        scenario_material = any(\n            abs(_decimal(value)) > residual_tolerance\n            for value in residual_scenarios.values()\n        )\n        return {\n            "decomposition_order": [],\n            "judgment_differences": [],\n            "attribution": [],\n            "residual": {\n                "base_value_per_share": str(residual_base),\n                "expected_value_per_share": residual_expected,\n                "scenario_values": residual_scenarios,\n            },\n            "residual_material": (\n                abs(residual_base) > residual_tolerance\n                or bool(expected_material)\n                or scenario_material\n            ),\n            "attribution_error": None,\n        }\n'''
+          if old not in text:
+              raise SystemExit('no-difference residual block not found')
+          text = text.replace(old, new, 1)
+
+          marker = '''def render_text_report(result: Mapping) -> str:\n'''
+          precise = '''def _format_precise(value: object) -> str:\n    if value is None:\n        return "-"\n    try:\n        return f"{_decimal(value):,f}"\n    except Exception:\n        return str(value)\n\n\n'''
+          text = text.replace(marker, precise + marker, 1)
+
+          old_residual = '''    if result.get("residual") is not None:\n        lines.append(\n            "RESIDUAL: Base "\n            + _format_money(result["residual"]["base_value_per_share"])\n            + " / Expected "\n            + _format_money(result["residual"]["expected_value_per_share"])\n        )\n'''
+          new_residual = '''    if result.get("residual") is not None:\n        residual = result["residual"]\n        lines.append(\n            "RESIDUAL: Base "\n            + _format_precise(residual["base_value_per_share"])\n            + " / Expected "\n            + _format_precise(residual["expected_value_per_share"])\n        )\n        scenario_values = residual.get("scenario_values") or {}\n        if scenario_values:\n            lines.append(\n                "RESIDUAL SCENARIOS: "\n                + ", ".join(\n                    f"{key}={_format_precise(value)}"\n                    for key, value in sorted(scenario_values.items())\n                )\n            )\n'''
+          if old_residual not in text:
+              raise SystemExit('residual render block not found')
+          text = text.replace(old_residual, new_residual, 1)
+
+          old_parser = '''def _parser() -> argparse.ArgumentParser:\n    parser = argparse.ArgumentParser(description=__doc__)\n    parser.add_argument("run_a")\n    parser.add_argument("run_b")\n    parser.add_argument("--base-threshold-pct", type=Decimal, default=DEFAULT_BASE_THRESHOLD)\n    parser.add_argument(\n        "--probability-threshold-pp", type=Decimal, default=DEFAULT_PROBABILITY_THRESHOLD\n    )\n    parser.add_argument("--wacc-threshold-pp", type=Decimal, default=DEFAULT_WACC_THRESHOLD)\n'''
+          new_parser = '''def _parser() -> argparse.ArgumentParser:\n    parser = argparse.ArgumentParser(\n        description=__doc__,\n        epilog=(\n            "exit codes: 0 CONSISTENT, 3 RECONCILIATION_REQUIRED, "\n            "1 comparison/execution error; argparse usage errors remain 2"\n        ),\n    )\n    parser.add_argument("run_a")\n    parser.add_argument("run_b")\n    parser.add_argument(\n        "--base-threshold-pct",\n        type=Decimal,\n        default=DEFAULT_BASE_THRESHOLD * 100,\n        help="Base value gap in percent (default: 20)",\n    )\n    parser.add_argument(\n        "--probability-threshold-pp",\n        type=Decimal,\n        default=DEFAULT_PROBABILITY_THRESHOLD * 100,\n        help="scenario probability gap in percentage points (default: 10)",\n    )\n    parser.add_argument(\n        "--wacc-threshold-pp",\n        type=Decimal,\n        default=DEFAULT_WACC_THRESHOLD * 100,\n        help="WACC gap in percentage points (default: 1)",\n    )\n'''
+          if old_parser not in text:
+              raise SystemExit('parser block not found')
+          text = text.replace(old_parser, new_parser, 1)
+
+          text = text.replace(
+              'base_threshold=args.base_threshold_pct,\n            probability_threshold=args.probability_threshold_pp,\n            wacc_threshold=args.wacc_threshold_pp,',
+              'base_threshold=args.base_threshold_pct / Decimal("100"),\n            probability_threshold=args.probability_threshold_pp / Decimal("100"),\n            wacc_threshold=args.wacc_threshold_pp / Decimal("100"),',
+              1,
+          )
+          text = text.replace(
+              'return 2 if result["status"] == STATUS_RECONCILIATION_REQUIRED else 0',
+              'return EXIT_RECONCILIATION_REQUIRED if result["status"] == STATUS_RECONCILIATION_REQUIRED else 0',
+              1,
+          )
+          path.write_text(text, encoding='utf-8')
+
+          tests = Path('tests/test_compare_runs_review_regressions.py')
+          tests.write_text(r'''from __future__ import annotations
+
+from decimal import Decimal
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
+import yaml
+
+from tests.test_compare_runs import _fake_executor, _write_run, compare_runs
+
+
+def _set_calibration(run_dir: Path, artifact_body: str) -> None:
+    config_path = run_dir / "run.yaml"
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config["calibration"] = {
+        "cohort_key": "kr.test.cohort",
+        "forecast_class": "5y_path",
+        "external_probability_source": "continuous_v1",
+        "artifact": "calibration.json",
+        "provenance": "provenance.json",
+        "conditioning": "conditioning.json",
+        "credible_level": "0.90",
+        "constants": {
+            "expected_artifact_sha256": "artifact-hash",
+            "expected_provenance_artifact_sha256": "provenance-artifact-hash",
+            "expected_dataset_sha256": "dataset-hash",
+            "expected_provenance_hash": "provenance-hash",
+            "expected_source_row_count": 10,
+            "expected_source_company_count": 5,
+            "excluded_ticker": "010130",
+        },
+    }
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+    (run_dir / "calibration.json").write_text(artifact_body, encoding="utf-8")
+    (run_dir / "provenance.json").write_text('{"same": true}', encoding="utf-8")
+    (run_dir / "conditioning.json").write_text('{"same": true}', encoding="utf-8")
+
+
+def test_complete_calibration_file_identity_is_structural(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(run_a)
+    _write_run(run_b)
+    _set_calibration(run_a, '{"version": 1}')
+    _set_calibration(run_b, '{"version": 2}')
+
+    calls = 0
+    def should_not_run(_path):
+        nonlocal calls
+        calls += 1
+        raise AssertionError("calibration mismatch must stop before execution")
+
+    result = compare_runs.compare_run_directories(run_a, run_b, executor=should_not_run)
+    assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
+    assert calls == 0
+    assert any(item["code"] == "CALIBRATION_CONTRACT_MISMATCH" for item in result["structural_findings"])
+
+
+def test_complete_segment_declaration_is_structural(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(run_a)
+    _write_run(run_b)
+    base = {
+        "target_id": "KR:DART:00000000",
+        "as_of": "2026-09-01",
+        "source_ref": "https://example.com/filing",
+        "segments": [
+            {"segment_id": "core", "disclosed_name": "철강부문", "ksic_code": "241", "rationale": "classification rationale long enough A"},
+            {"segment_id": "other", "disclosed_name": "기타부문", "ksic_code": "521", "rationale": "classification rationale long enough B"},
+        ],
+    }
+    (run_a / "declarations" / "segments.yaml").write_text(yaml.safe_dump(base, sort_keys=False), encoding="utf-8")
+    changed = dict(base)
+    changed["source_ref"] = "https://example.com/other-filing"
+    (run_b / "declarations" / "segments.yaml").write_text(yaml.safe_dump(changed, sort_keys=False), encoding="utf-8")
+
+    result = compare_runs.compare_run_directories(run_a, run_b, executor=lambda _p: (_ for _ in ()).throw(AssertionError("must not execute")))
+    assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
+    assert any(item["code"] == "SEGMENT_CONTRACT_MISMATCH" for item in result["structural_findings"])
+
+
+def test_no_underwriting_difference_checks_non_base_residuals(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(run_a)
+    _write_run(run_b)
+
+    def scenario_shift_executor(run_dir: Path):
+        response = _fake_executor(run_dir)
+        result = response[3]
+        if run_dir.name == "b":
+            scenarios = result.data["generic_valuation_result"].scenarios
+            scenarios[0].value_per_share += Decimal("0.02")
+            probs = result.data["bound_scenario_set"].scenarios
+            values = {row.scenario_id: row.value_per_share for row in scenarios}
+            result.data["generic_valuation_result"].expected_value_per_share = sum(
+                values[row.scenario_id] * row.probability for row in probs
+            )
+        return response
+
+    result = compare_runs.compare_run_directories(
+        run_a,
+        run_b,
+        executor=scenario_shift_executor,
+        residual_tolerance=Decimal("0.01"),
+    )
+    assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
+    assert result["residual"]["base_value_per_share"] == "0"
+    assert result["residual"]["scenario_values"]["Down"] == "0.02"
+    assert any(item["code"] == "UNATTRIBUTED_VALUATION_RESIDUAL" for item in result["threshold_findings"])
+
+
+def test_text_report_preserves_residual_precision_and_scenarios():
+    report = compare_runs.render_text_report(
+        {
+            "status": compare_runs.STATUS_RECONCILIATION_REQUIRED,
+            "structural_findings": [],
+            "threshold_findings": [],
+            "attribution": [],
+            "residual": {
+                "base_value_per_share": "0.02",
+                "expected_value_per_share": "0.03",
+                "scenario_values": {"Down": "0.02", "Base": "0", "Bull": "-0.04"},
+            },
+        }
+    )
+    assert "Base 0.02 / Expected 0.03" in report
+    assert "Down=0.02" in report
+    assert "Bull=-0.04" in report
+
+
+def test_cli_threshold_flags_are_human_units_and_reconciliation_exit_is_distinct(monkeypatch):
+    captured = {}
+    def fake_compare(_a, _b, **kwargs):
+        captured.update(kwargs)
+        return {"status": compare_runs.STATUS_RECONCILIATION_REQUIRED}
+
+    monkeypatch.setattr(compare_runs, "compare_run_directories", fake_compare)
+    exit_code = compare_runs.main(
+        [
+            "a",
+            "b",
+            "--base-threshold-pct",
+            "20",
+            "--probability-threshold-pp",
+            "10",
+            "--wacc-threshold-pp",
+            "1",
+            "--json",
+        ]
+    )
+    assert captured["base_threshold"] == Decimal("0.20")
+    assert captured["probability_threshold"] == Decimal("0.10")
+    assert captured["wacc_threshold"] == Decimal("0.01")
+    assert exit_code == compare_runs.EXIT_RECONCILIATION_REQUIRED == 3
+    with pytest.raises(SystemExit) as exc:
+        compare_runs._parser().parse_args([])
+    assert exc.value.code == 2
+''', encoding='utf-8')
+          PY
+      - name: Focused regressions
+        run: pytest -q tests/test_compare_runs.py tests/test_compare_runs_review_regressions.py
+      - name: Full regression
+        run: pytest -q
+      - name: PM validation
+        run: python scripts/validate_project_portfolio.py
+      - name: Commit clean review fixes
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/patch-compare-runs-review.yml
+          git add scripts/compare_runs.py tests/test_compare_runs_review_regressions.py
+          git diff --cached --check
+          git commit -m 'Fix compare-runs reconciliation review findings'
+          git push origin HEAD:feat/compare-runs-variance-gate
