@@ -154,8 +154,8 @@ def test_same_contract_gets_exact_ordered_underwriting_waterfall(tmp_path):
         "-2",
     ]
     assert [row["expected_delta_per_share"] for row in result["attribution"]] == [
-        "5.000",
-        "-2.000",
+        "5.00",
+        "-2.00",
     ]
     assert Decimal(result["residual"]["base_value_per_share"]) == 0
     assert Decimal(result["residual"]["expected_value_per_share"]) == 0
