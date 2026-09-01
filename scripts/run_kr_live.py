@@ -65,6 +65,12 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from valuation_engine.calibration_cohort_registry import (  # noqa: E402
+    CalibrationCohortRegistryError,
+    load_production_calibration_registry,
+    resolve_production_calibration_cohort,
+    validate_declared_calibration,
+)
 from valuation_engine.cli_runtime import LiveAnalysisRequest  # noqa: E402
 from valuation_engine.control_plane import StageStatus  # noqa: E402
 from valuation_engine.generic_live_providers import (  # noqa: E402
@@ -272,6 +278,61 @@ def _calibration_loader(run_dir: Path, calibration: dict):
         return lambda _context: snapshot
 
     return load
+
+
+def _run_industry_code(run_dir: Path, config: dict) -> str | None:
+    """Return the deterministic KSIC anchor used for cohort matching."""
+    filing = config.get("filing") or {}
+    if config.get("segments"):
+        declaration_path = run_dir / "declarations" / "segments.yaml"
+        if not declaration_path.is_file():
+            return None
+        payload = yaml.safe_load(declaration_path.read_text(encoding="utf-8"))
+        rows = payload.get("segments") if isinstance(payload, dict) else None
+        if not isinstance(rows, list):
+            return None
+        anchor_segment = str(filing.get("segment_id", ""))
+        matches = tuple(
+            row
+            for row in rows
+            if isinstance(row, dict)
+            and str(row.get("segment_id", "")) == anchor_segment
+        )
+        if len(matches) != 1:
+            return None
+        code = str(matches[0].get("ksic_code", "")).strip()
+        return code or None
+
+    company_path = run_dir / "raw" / "company.json"
+    if not company_path.is_file():
+        return None
+    payload = json.loads(company_path.read_text(encoding="utf-8"))
+    code = (
+        str(payload.get("induty_code", "")).strip()
+        if isinstance(payload, dict)
+        else ""
+    )
+    return code or None
+
+
+def _required_production_calibration(run_dir: Path, config: dict):
+    registry = load_production_calibration_registry()
+    return resolve_production_calibration_cohort(
+        registry,
+        ksic_code=_run_industry_code(run_dir, config),
+        forecast_years=int(config.get("forecast_years", 5)),
+        scenario_ids=tuple(config.get("scenario_ids", ())),
+    )
+
+
+def _enforce_production_calibration(run_dir: Path, config: dict) -> None:
+    cohort = _required_production_calibration(run_dir, config)
+    if cohort is None:
+        return
+    try:
+        validate_declared_calibration(cohort, config.get("calibration"))
+    except CalibrationCohortRegistryError as exc:
+        raise RunbookError(str(exc)) from exc
 
 
 def _optional_path(run_dir: Path, name: str) -> str | None:
@@ -716,6 +777,7 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
     run_dir = Path(run_dir).resolve()
     config = _load_run(run_dir)
     filing = config["filing"]
+    _enforce_production_calibration(run_dir, config)
 
     def _parse_method(text: str, label: str) -> tuple[str, str, str | None]:
         archetype, _, rest = str(text).partition("/")
