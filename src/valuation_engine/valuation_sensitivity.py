@@ -166,7 +166,7 @@ class ValuationSensitivityReport:
                 (
                     segment.asset_id
                     for segment in scenario.segments
-                    if dominant in segment.variables
+                    if any(dominant is item for item in segment.variables)
                 ),
                 None,
             )
@@ -265,7 +265,12 @@ def _sotp_component_sensitivity(
 ) -> SegmentSensitivity | None:
     diagnostics = component.diagnostics
     ownership = component.ownership_ratio
-    if diagnostics is None or ownership is None or ownership <= _ZERO:
+    if (
+        not isinstance(diagnostics, SegmentValuationDiagnostics)
+        or not isinstance(ownership, Decimal)
+        or not ownership.is_finite()
+        or ownership <= _ZERO
+    ):
         return None
     try:
         diagnostics.validate()
