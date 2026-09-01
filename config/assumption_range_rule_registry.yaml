@@ -1,0 +1,8 @@
+schema_version: assumption_range_rule_registry/v1
+
+# Production rules are intentionally empty until the financial relation,
+# lookback window and multipliers have been reviewed as data. An LLM may not
+# populate min/max bounds in their place. Add a rule here only when the rule
+# itself has a reviewable economic basis and enough same-run filing history is
+# collected to derive its envelope deterministically.
+rules: []
