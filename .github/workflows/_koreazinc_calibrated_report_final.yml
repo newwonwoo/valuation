@@ -1,0 +1,39 @@
+name: koreazinc-calibrated-report-final
+
+on:
+  push:
+    branches:
+      - run/koreazinc-calibrated-report-final-20260901
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  run:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Restore calibrated Korea Zinc run
+        uses: actions/download-artifact@v4
+        with:
+          name: KOREAZINC_010130_PRISM_CALIBRATED
+          path: /tmp/koreazinc-010130
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: 33452788383
+      - name: Execute canonical PRISM with corrected generic report
+        run: |
+          rm -rf /tmp/koreazinc-010130/out
+          set -o pipefail
+          PYTHONPATH=src python scripts/run_kr_live.py /tmp/koreazinc-010130 2>&1 | tee /tmp/koreazinc-010130/prism-final.log
+          grep -n -E '시나리오 가능성|확률가중 기대값|확률 보정' /tmp/koreazinc-010130/out/final_report.md
+      - name: Upload final calibrated report bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: KOREAZINC_010130_PRISM_CALIBRATED_FINAL
+          path: /tmp/koreazinc-010130
