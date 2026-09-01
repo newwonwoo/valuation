@@ -3,6 +3,7 @@ from __future__ import annotations
 from decimal import Decimal
 import importlib.util
 from pathlib import Path
+import sys
 from types import SimpleNamespace
 
 import yaml
@@ -13,6 +14,7 @@ SCRIPT = ROOT / "scripts" / "compare_runs.py"
 SPEC = importlib.util.spec_from_file_location("compare_runs_test_module", SCRIPT)
 assert SPEC and SPEC.loader
 compare_runs = importlib.util.module_from_spec(SPEC)
+sys.modules[SPEC.name] = compare_runs
 SPEC.loader.exec_module(compare_runs)
 
 
