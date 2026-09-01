@@ -320,6 +320,7 @@ def compile_assumptions(
         range_application = apply_reviewed_assumption_ranges(
             specs,
             ledger=ledger,
+            target_id=target_id,
             registry=range_registry,
             llm_bounds=llm_bounds,
         )

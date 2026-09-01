@@ -196,6 +196,7 @@ def apply_reviewed_assumption_ranges(
     specs: tuple[AssumptionSpec, ...],
     *,
     ledger: EvidenceLedger,
+    target_id: str,
     registry: AssumptionRangeRuleRegistry,
     llm_bounds: tuple[tuple[str, str, str | None, str | None], ...] = (),
 ) -> RangeApplicationResult:
@@ -206,7 +207,11 @@ def apply_reviewed_assumption_ranges(
     missing/ambiguous history blocks rather than silently falling back to the LLM.
     """
     registry.validate()
-    active = tuple(ledger.active())
+    if not target_id:
+        raise AssumptionRangeRuleError("range application requires target_id")
+    active = tuple(
+        item for item in ledger.active() if item.target == target_id
+    )
     receipts: list[AssumptionRangeReceipt] = []
     resolved: list[AssumptionSpec] = []
 

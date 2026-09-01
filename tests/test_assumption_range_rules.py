@@ -31,10 +31,11 @@ def _evidence(
     *,
     effective_date: str,
     layer: EvidenceSourceLayer = EvidenceSourceLayer.REALIZED_OR_FILING,
+    target: str = "T",
 ) -> EvidenceRecord:
     return EvidenceRecord(
         id=evidence_id,
-        target="T",
+        target=target,
         metric=metric,
         value=value,
         unit="ratio",
@@ -96,6 +97,7 @@ def test_reviewed_rule_derives_min_max_from_recent_filing_history(tmp_path):
     applied = apply_reviewed_assumption_ranges(
         (spec,),
         ledger=ledger,
+        target_id="T",
         registry=registry,
         llm_bounds=(("Base", "utilization", "0.99", "1.00"),),
     )
@@ -131,6 +133,33 @@ def test_range_rule_fails_closed_when_required_history_is_missing(tmp_path):
                 ),
             ),
             ledger=ledger,
+            target_id="T",
+            registry=registry,
+        )
+
+
+def test_range_rule_never_uses_another_targets_filing_history(tmp_path):
+    registry = load_assumption_range_rule_registry(_rule_file(tmp_path))
+    ledger = EvidenceLedger(
+        (
+            _evidence("U1", "utilization_history", "0.70", effective_date="2023-12-31", target="U"),
+            _evidence("U2", "utilization_history", "0.80", effective_date="2024-12-31", target="U"),
+            _evidence("U3", "utilization_history", "0.90", effective_date="2025-12-31", target="U"),
+        )
+    )
+    with pytest.raises(AssumptionRangeRuleError, match="found 0"):
+        apply_reviewed_assumption_ranges(
+            (
+                AssumptionSpec(
+                    "utilization",
+                    "Base",
+                    "B1",
+                    "ratio",
+                    "identity_observation",
+                ),
+            ),
+            ledger=ledger,
+            target_id="T",
             registry=registry,
         )
 
