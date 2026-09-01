@@ -25,11 +25,11 @@ jobs:
           python - <<'PY'
           from pathlib import Path
 
-          # P2: canonical dates, finite rule multipliers, and typed replay provenance.
           path = Path('src/valuation_engine/assumption_range_rules.py')
           text = path.read_text(encoding='utf-8')
           if 'from datetime import date\n' not in text:
               text = text.replace('from dataclasses import dataclass, replace\n', 'from dataclasses import dataclass, replace\nfrom datetime import date\n', 1)
+
           old = '''        if self.lower_multiplier < 0 or self.upper_multiplier < 0:\n            raise AssumptionRangeRuleError(\n                f"range rule {self.rule_id} multipliers must be non-negative"\n            )\n'''
           new = '''        if (\n            not self.lower_multiplier.is_finite()\n            or not self.upper_multiplier.is_finite()\n        ):\n            raise AssumptionRangeRuleError(\n                f"range rule {self.rule_id} multipliers must be finite"\n            )\n        if self.lower_multiplier < 0 or self.upper_multiplier < 0:\n            raise AssumptionRangeRuleError(\n                f"range rule {self.rule_id} multipliers must be non-negative"\n            )\n'''
           if old in text:
@@ -38,14 +38,14 @@ jobs:
               raise SystemExit('multiplier validation marker missing')
 
           old = '''class AssumptionRangeReceipt:\n    rule_id: str\n    assumption_key: str\n    scenario_id: str\n    min_value: Decimal\n    max_value: Decimal\n    anchor_evidence_ids: tuple[str, ...]\n    anchor_values: tuple[Decimal, ...]\n    canonical_unit: str\n    registry_hash: str\n    review_ref: str\n\n\n@dataclass(frozen=True)\nclass RangeApplicationResult:\n'''
-          new = '''class AssumptionRangeReceipt:\n    target_id: str\n    rule_id: str\n    assumption_key: str\n    scenario_id: str\n    anchor_metric: str\n    min_value: Decimal\n    max_value: Decimal\n    anchor_evidence_ids: tuple[str, ...]\n    anchor_values: tuple[Decimal, ...]\n    anchor_effective_dates: tuple[str, ...]\n    canonical_unit: str\n    registry_hash: str\n    review_ref: str\n\n\ndef range_provenance_hash_part(\n    receipt: AssumptionRangeReceipt,\n    *,\n    anchor_values: tuple[Decimal, ...] | None = None,\n    anchor_effective_dates: tuple[str, ...] | None = None,\n) -> str:\n    values = receipt.anchor_values if anchor_values is None else anchor_values\n    dates = (\n        receipt.anchor_effective_dates\n        if anchor_effective_dates is None\n        else anchor_effective_dates\n    )\n    if len(receipt.anchor_evidence_ids) != len(values) or len(values) != len(dates):\n        raise AssumptionRangeRuleError(\n            f"range receipt {receipt.rule_id} anchor provenance lengths disagree"\n        )\n    payload = {\n        "target_id": receipt.target_id,\n        "rule_id": receipt.rule_id,\n        "assumption_key": receipt.assumption_key,\n        "scenario_id": receipt.scenario_id,\n        "anchor_metric": receipt.anchor_metric,\n        "min_value": str(receipt.min_value),\n        "max_value": str(receipt.max_value),\n        "anchor_evidence_ids": list(receipt.anchor_evidence_ids),\n        "anchor_values": [str(value) for value in values],\n        "anchor_effective_dates": list(dates),\n        "canonical_unit": receipt.canonical_unit,\n        "registry_hash": receipt.registry_hash,\n        "review_ref": receipt.review_ref,\n    }\n    return "RANGE|" + json.dumps(\n        payload,\n        ensure_ascii=False,\n        sort_keys=True,\n        separators=(",", ":"),\n    )\n\n\n@dataclass(frozen=True)\nclass RangeApplicationResult:\n'''
+          new = '''class AssumptionRangeReceipt:\n    target_id: str\n    rule_id: str\n    assumption_key: str\n    scenario_id: str\n    anchor_metric: str\n    min_value: Decimal\n    max_value: Decimal\n    anchor_evidence_ids: tuple[str, ...]\n    anchor_values: tuple[Decimal, ...]\n    anchor_effective_dates: tuple[str, ...]\n    canonical_unit: str\n    registry_hash: str\n    review_ref: str\n\n\ndef range_provenance_hash_part(\n    receipt: AssumptionRangeReceipt,\n    *,\n    anchor_values: tuple[Decimal, ...] | None = None,\n    anchor_effective_dates: tuple[str, ...] | None = None,\n) -> str:\n    values = receipt.anchor_values if anchor_values is None else anchor_values\n    dates = receipt.anchor_effective_dates if anchor_effective_dates is None else anchor_effective_dates\n    if len(receipt.anchor_evidence_ids) != len(values) or len(values) != len(dates):\n        raise AssumptionRangeRuleError(\n            f"range receipt {receipt.rule_id} anchor provenance lengths disagree"\n        )\n    payload = {\n        "target_id": receipt.target_id,\n        "rule_id": receipt.rule_id,\n        "assumption_key": receipt.assumption_key,\n        "scenario_id": receipt.scenario_id,\n        "anchor_metric": receipt.anchor_metric,\n        "min_value": str(receipt.min_value),\n        "max_value": str(receipt.max_value),\n        "anchor_evidence_ids": list(receipt.anchor_evidence_ids),\n        "anchor_values": [str(value) for value in values],\n        "anchor_effective_dates": list(dates),\n        "canonical_unit": receipt.canonical_unit,\n        "registry_hash": receipt.registry_hash,\n        "review_ref": receipt.review_ref,\n    }\n    return "RANGE|" + json.dumps(\n        payload,\n        ensure_ascii=False,\n        sort_keys=True,\n        separators=(",", ":"),\n    )\n\n\n@dataclass(frozen=True)\nclass RangeApplicationResult:\n'''
           if old in text:
               text = text.replace(old, new, 1)
           elif 'def range_provenance_hash_part' not in text:
               raise SystemExit('range receipt marker missing')
 
           old = '''        by_date: dict[str, list] = {}\n        for item in candidates:\n            by_date.setdefault(item.effective_date, []).append(item)\n        observations: list[tuple[str, Decimal, str]] = []\n        for effective_date in sorted(by_date, reverse=True):\n            rows = by_date[effective_date]\n            amounts: dict[Decimal, list[str]] = {}\n            for item in rows:\n                measure = measure_from_raw(\n                    item.value, item.unit, item.effective_date\n                ).convert_to(rule.canonical_unit)\n                amounts.setdefault(measure.amount, []).append(item.id)\n            if len(amounts) != 1:\n                raise AssumptionRangeRuleError(\n                    f"range rule {rule.rule_id} has ambiguous {rule.anchor_metric} "\n                    f"filing values for {effective_date}"\n                )\n            amount, ids = next(iter(amounts.items()))\n            observations.append((effective_date, amount, sorted(ids)[0]))\n            if len(observations) >= rule.lookback_observations:\n                break\n'''
-          new = '''        by_date: dict[str, list] = {}\n        for item in candidates:\n            canonical_date = date.fromisoformat(item.effective_date[:10]).isoformat()\n            by_date.setdefault(canonical_date, []).append(item)\n        observations: list[tuple[str, Decimal, str, str]] = []\n        for canonical_date in sorted(by_date, reverse=True):\n            rows = by_date[canonical_date]\n            amounts: dict[Decimal, list] = {}\n            for item in rows:\n                measure = measure_from_raw(\n                    item.value, item.unit, item.effective_date\n                ).convert_to(rule.canonical_unit)\n                amounts.setdefault(measure.amount, []).append(item)\n            if len(amounts) != 1:\n                raise AssumptionRangeRuleError(\n                    f"range rule {rule.rule_id} has ambiguous {rule.anchor_metric} "\n                    f"filing values for {canonical_date}"\n                )\n            amount, matching_rows = next(iter(amounts.items()))\n            chosen = sorted(matching_rows, key=lambda item: item.id)[0]\n            observations.append(\n                (canonical_date, amount, chosen.id, chosen.effective_date)\n            )\n            if len(observations) >= rule.lookback_observations:\n                break\n'''
+          new = '''        by_date: dict[str, list] = {}\n        for item in candidates:\n            canonical_date = date.fromisoformat(item.effective_date[:10]).isoformat()\n            by_date.setdefault(canonical_date, []).append(item)\n        observations: list[tuple[str, Decimal, str, str]] = []\n        for canonical_date in sorted(by_date, reverse=True):\n            rows = by_date[canonical_date]\n            amounts: dict[Decimal, list] = {}\n            for item in rows:\n                measure = measure_from_raw(\n                    item.value, item.unit, item.effective_date\n                ).convert_to(rule.canonical_unit)\n                amounts.setdefault(measure.amount, []).append(item)\n            if len(amounts) != 1:\n                raise AssumptionRangeRuleError(\n                    f"range rule {rule.rule_id} has ambiguous {rule.anchor_metric} "\n                    f"filing values for {canonical_date}"\n                )\n            amount, matching_rows = next(iter(amounts.items()))\n            chosen = sorted(matching_rows, key=lambda item: item.id)[0]\n            observations.append((canonical_date, amount, chosen.id, chosen.effective_date))\n            if len(observations) >= rule.lookback_observations:\n                break\n'''
           if old in text:
               text = text.replace(old, new, 1)
           elif 'canonical_date = date.fromisoformat' not in text:
@@ -55,29 +55,21 @@ jobs:
           new = '''            AssumptionRangeReceipt(\n                target_id=target_id,\n                rule_id=rule.rule_id,\n                assumption_key=spec.key,\n                scenario_id=spec.scenario_id,\n                anchor_metric=rule.anchor_metric,\n                min_value=lower,\n                max_value=upper,\n                anchor_evidence_ids=tuple(item[2] for item in observations),\n                anchor_values=values,\n                anchor_effective_dates=tuple(item[3] for item in observations),\n                canonical_unit=rule.canonical_unit,\n                registry_hash=registry.registry_hash,\n                review_ref=rule.review_ref,\n            )\n'''
           if old in text:
               text = text.replace(old, new, 1)
-          elif 'target_id=target_id' not in text or 'anchor_effective_dates=' not in text:
+          elif 'anchor_effective_dates=tuple(item[3]' not in text:
               raise SystemExit('receipt construction marker missing')
 
-          # Keep diagnostic receipt hash complete after the typed provenance extension.
           old = '''        {\n            "rule_id": item.rule_id,\n            "assumption_key": item.assumption_key,\n            "scenario_id": item.scenario_id,\n            "min_value": str(item.min_value),\n            "max_value": str(item.max_value),\n            "anchor_evidence_ids": list(item.anchor_evidence_ids),\n            "anchor_values": [str(value) for value in item.anchor_values],\n            "canonical_unit": item.canonical_unit,\n            "registry_hash": item.registry_hash,\n            "review_ref": item.review_ref,\n        }\n'''
           new = '''        {\n            "target_id": item.target_id,\n            "rule_id": item.rule_id,\n            "assumption_key": item.assumption_key,\n            "scenario_id": item.scenario_id,\n            "anchor_metric": item.anchor_metric,\n            "min_value": str(item.min_value),\n            "max_value": str(item.max_value),\n            "anchor_evidence_ids": list(item.anchor_evidence_ids),\n            "anchor_values": [str(value) for value in item.anchor_values],\n            "anchor_effective_dates": list(item.anchor_effective_dates),\n            "canonical_unit": item.canonical_unit,\n            "registry_hash": item.registry_hash,\n            "review_ref": item.review_ref,\n        }\n'''
           if old in text:
               text = text.replace(old, new, 1)
           path.write_text(text, encoding='utf-8')
 
-          # P1: carry typed range provenance on CompiledAssumption and use one hash serializer.
           path = Path('src/valuation_engine/assumption_compiler.py')
           text = path.read_text(encoding='utf-8')
-          text = text.replace(
-              '    AssumptionRangeRuleError,\n    apply_reviewed_assumption_ranges,\n',
-              '    AssumptionRangeReceipt,\n    AssumptionRangeRuleError,\n    apply_reviewed_assumption_ranges,\n',
-              1,
-          )
-          text = text.replace(
-              '    load_assumption_range_rule_registry,\n)',
-              '    load_assumption_range_rule_registry,\n    range_provenance_hash_part,\n)',
-              1,
-          )
+          if '    AssumptionRangeReceipt,\n' not in text:
+              text = text.replace('    AssumptionRangeRuleError,\n', '    AssumptionRangeReceipt,\n    AssumptionRangeRuleError,\n', 1)
+          if '    range_provenance_hash_part,\n' not in text:
+              text = text.replace('    load_assumption_range_rule_registry,\n', '    load_assumption_range_rule_registry,\n    range_provenance_hash_part,\n', 1)
           old = '''    input_evidence_hash: str\n    calibration_status: CalibrationStatus | None = None\n'''
           new = '''    input_evidence_hash: str\n    calibration_status: CalibrationStatus | None = None\n    range_provenance: AssumptionRangeReceipt | None = None\n'''
           if old in text:
@@ -85,10 +77,10 @@ jobs:
           elif 'range_provenance: AssumptionRangeReceipt' not in text:
               raise SystemExit('compiled assumption field marker missing')
 
-          start = '''        if range_receipt is not None:\n            evidence_hash_parts.append(\n                "RANGE|"\n                + "|".join(\n                    (\n                        range_receipt.rule_id,\n                        range_receipt.registry_hash,\n                        str(range_receipt.min_value),\n                        str(range_receipt.max_value),\n                        ",".join(range_receipt.anchor_evidence_ids),\n                        ",".join(str(value) for value in range_receipt.anchor_values),\n                        range_receipt.review_ref,\n                    )\n                )\n            )\n'''
-          replacement = '''        if range_receipt is not None:\n            evidence_hash_parts.append(range_provenance_hash_part(range_receipt))\n'''
-          if start in text:
-              text = text.replace(start, replacement, 1)
+          old = '''        if range_receipt is not None:\n            evidence_hash_parts.append(\n                "RANGE|"\n                + "|".join(\n                    (\n                        range_receipt.rule_id,\n                        range_receipt.registry_hash,\n                        str(range_receipt.min_value),\n                        str(range_receipt.max_value),\n                        ",".join(range_receipt.anchor_evidence_ids),\n                        ",".join(str(value) for value in range_receipt.anchor_values),\n                        range_receipt.review_ref,\n                    )\n                )\n            )\n'''
+          new = '''        if range_receipt is not None:\n            evidence_hash_parts.append(range_provenance_hash_part(range_receipt))\n'''
+          if old in text:
+              text = text.replace(old, new, 1)
           elif 'range_provenance_hash_part(range_receipt)' not in text:
               raise SystemExit('compiler range hash marker missing')
           old = '''                input_evidence_hash=evidence_hash,\n                calibration_status=hypothesis.calibration_status if spec.probability_only_if_calibrated else None,\n            )\n'''
@@ -99,132 +91,32 @@ jobs:
               raise SystemExit('compiled receipt assignment marker missing')
           path.write_text(text, encoding='utf-8')
 
-          # Independent Audit replay includes the selected filing anchors and their current values.
           path = Path('src/valuation_engine/run_hash.py')
           text = path.read_text(encoding='utf-8')
           if 'from .actual_units import measure_from_raw\n' not in text:
               text = text.replace('import json\n\n', 'import json\n\nfrom .actual_units import measure_from_raw\n', 1)
-          if 'from .assumption_range_rules import' not in text:
-              text = text.replace(
-                  'from .assumption_compiler import CompiledAssumptionSet\n',
-                  'from .assumption_compiler import CompiledAssumptionSet\nfrom .assumption_range_rules import (\n    AssumptionRangeReceipt,\n    range_provenance_hash_part,\n)\n',
-                  1,
-              )
+          if 'from .assumption_range_rules import (' not in text:
+              text = text.replace('from .assumption_compiler import CompiledAssumptionSet\n', 'from .assumption_compiler import CompiledAssumptionSet\nfrom .assumption_range_rules import (\n    AssumptionRangeReceipt,\n    range_provenance_hash_part,\n)\n', 1)
           old = '''def compiled_input_evidence_hash(\n    ledger: EvidenceLedger,\n    evidence_ids: tuple[str, ...],\n) -> str:\n'''
           new = '''def compiled_input_evidence_hash(\n    ledger: EvidenceLedger,\n    evidence_ids: tuple[str, ...],\n    *,\n    range_provenance: AssumptionRangeReceipt | None = None,\n) -> str:\n'''
           if old in text:
               text = text.replace(old, new, 1)
           elif 'range_provenance: AssumptionRangeReceipt' not in text:
               raise SystemExit('replay signature marker missing')
+
           old = '''    for evidence_id in evidence_ids:\n        evidence = ledger.get(evidence_id)\n        parts.append(\n            f"{evidence.id}|{evidence.metric}|{evidence.value}|{evidence.unit}|"\n            f"{evidence.effective_date}|{evidence.source_ref}"\n        )\n    return sha256("\\n".join(sorted(parts)).encode("utf-8")).hexdigest()\n'''
-          new = '''    for evidence_id in evidence_ids:\n        evidence = ledger.get(evidence_id)\n        parts.append(\n            f"{evidence.id}|{evidence.metric}|{evidence.value}|{evidence.unit}|"\n            f"{evidence.effective_date}|{evidence.source_ref}"\n        )\n    if range_provenance is not None:\n        if len(range_provenance.anchor_evidence_ids) != len(\n            range_provenance.anchor_effective_dates\n        ):\n            raise ValueError("range provenance anchor lengths disagree")\n        replayed_values = []\n        replayed_dates = []\n        for evidence_id in range_provenance.anchor_evidence_ids:\n            evidence = ledger.get(evidence_id)\n            if evidence.target != range_provenance.target_id:\n                raise ValueError("range provenance anchor target mismatch")\n            if evidence.metric != range_provenance.anchor_metric:\n                raise ValueError("range provenance anchor metric mismatch")\n            replayed_values.append(\n                measure_from_raw(\n                    evidence.value, evidence.unit, evidence.effective_date\n                ).convert_to(range_provenance.canonical_unit).amount\n            )\n            replayed_dates.append(evidence.effective_date)\n        parts.append(\n            range_provenance_hash_part(\n                range_provenance,\n                anchor_values=tuple(replayed_values),\n                anchor_effective_dates=tuple(replayed_dates),\n            )\n        )\n    return sha256("\\n".join(sorted(parts)).encode("utf-8")).hexdigest()\n'''
+          new = '''    for evidence_id in evidence_ids:\n        evidence = ledger.get(evidence_id)\n        parts.append(\n            f"{evidence.id}|{evidence.metric}|{evidence.value}|{evidence.unit}|"\n            f"{evidence.effective_date}|{evidence.source_ref}"\n        )\n    if range_provenance is not None:\n        if len(range_provenance.anchor_evidence_ids) != len(range_provenance.anchor_effective_dates):\n            raise ValueError("range provenance anchor lengths disagree")\n        replayed_values = []\n        replayed_dates = []\n        for evidence_id in range_provenance.anchor_evidence_ids:\n            evidence = ledger.get(evidence_id)\n            if evidence.target != range_provenance.target_id:\n                raise ValueError("range provenance anchor target mismatch")\n            if evidence.metric != range_provenance.anchor_metric:\n                raise ValueError("range provenance anchor metric mismatch")\n            replayed_values.append(\n                measure_from_raw(evidence.value, evidence.unit, evidence.effective_date)\n                .convert_to(range_provenance.canonical_unit)\n                .amount\n            )\n            replayed_dates.append(evidence.effective_date)\n        parts.append(\n            range_provenance_hash_part(\n                range_provenance,\n                anchor_values=tuple(replayed_values),\n                anchor_effective_dates=tuple(replayed_dates),\n            )\n        )\n    return sha256("\\n".join(sorted(parts)).encode("utf-8")).hexdigest()\n'''
           if old in text:
               text = text.replace(old, new, 1)
           elif 'range provenance anchor target mismatch' not in text:
               raise SystemExit('replay body marker missing')
+
           old = '''            replayed = compiled_input_evidence_hash(ledger, item.evidence_ids)\n'''
-          new = '''            if (\n                item.range_provenance is not None\n                and item.range_provenance.target_id != compiled.target_id\n            ):\n                raise ValueError("range provenance target differs from compiled target")\n            replayed = compiled_input_evidence_hash(\n                ledger,\n                item.evidence_ids,\n                range_provenance=item.range_provenance,\n            )\n'''
+          new = '''            if item.range_provenance is not None and item.range_provenance.target_id != compiled.target_id:\n                raise ValueError("range provenance target differs from compiled target")\n            replayed = compiled_input_evidence_hash(\n                ledger,\n                item.evidence_ids,\n                range_provenance=item.range_provenance,\n            )\n'''
           if old in text:
               text = text.replace(old, new, 1)
           elif 'range provenance target differs from compiled target' not in text:
               raise SystemExit('mismatch replay marker missing')
-          path.write_text(text, encoding='utf-8')
-
-          # Focused regressions for P2 and typed replay.
-          path = Path('tests/test_assumption_range_rules.py')
-          text = path.read_text(encoding='utf-8')
-          marker = '\ndef test_compiler_ignores_unreviewed_llm_bounds_but_enforces_reviewed_rule(tmp_path):\n'
-          added = r'''
-def test_range_rule_normalizes_effective_date_before_counting_history(tmp_path):
-    registry = load_assumption_range_rule_registry(_rule_file(tmp_path))
-    ledger = EvidenceLedger(
-        (
-            _evidence("H1", "utilization_history", "0.70", effective_date="2024-12-31"),
-            _evidence("H2", "utilization_history", "0.80", effective_date="2025-12-31T01:00:00Z"),
-            _evidence("H3", "utilization_history", "0.90", effective_date="2025-12-31T02:00:00Z"),
-        )
-    )
-    with pytest.raises(AssumptionRangeRuleError, match="ambiguous.*2025-12-31"):
-        apply_reviewed_assumption_ranges(
-            (AssumptionSpec("utilization", "Base", "B1", "ratio", "identity_observation"),),
-            ledger=ledger,
-            target_id="T",
-            registry=registry,
-        )
-
-
-def test_range_rule_rejects_non_finite_multiplier(tmp_path):
-    rule_path = _rule_file(tmp_path)
-    text = rule_path.read_text(encoding="utf-8").replace(
-        "    upper_multiplier: 1", "    upper_multiplier: .inf"
-    )
-    rule_path.write_text(text, encoding="utf-8")
-    with pytest.raises(AssumptionRangeRuleError, match="multipliers must be finite"):
-        load_assumption_range_rule_registry(rule_path)
-
-'''
-          if 'test_range_rule_normalizes_effective_date_before_counting_history' not in text:
-              if marker not in text:
-                  raise SystemExit('range test insertion marker missing')
-              text = text.replace(marker, added + marker, 1)
-          path.write_text(text, encoding='utf-8')
-
-          # Audit/Freeze e2e: a non-empty reviewed rule must replay through the hash chain.
-          path = Path('tests/test_generic_audit_freeze_e2e.py')
-          text = path.read_text(encoding='utf-8')
-          old = 'def run_path(*, leak_market_price: bool = False, mutate_ledger_after_compile: bool = False):\n'
-          new = '''def run_path(\n    *,\n    leak_market_price: bool = False,\n    mutate_ledger_after_compile: bool = False,\n    include_range_history: bool = False,\n):\n'''
-          if old in text:
-              text = text.replace(old, new, 1)
-          elif 'include_range_history: bool = False' not in text:
-              raise SystemExit('run_path signature marker missing')
-          old = '''    ledger, hypotheses, bridges, specs = build_inputs()\n    initial_data = {\n'''
-          new = '''    ledger, hypotheses, bridges, specs = build_inputs()\n    if include_range_history:\n        for index, (effective_date, value) in enumerate(\n            (("2023-12-31", 7), ("2024-12-31", 8), ("2025-12-31", 9)),\n            start=1,\n        ):\n            ledger.append(\n                EvidenceRecord(\n                    id=f"E:RANGE:{index}",\n                    target="T",\n                    metric="normalized_multiple_history",\n                    value=value,\n                    unit="multiple",\n                    source_layer=EvidenceSourceLayer.REALIZED_OR_FILING,\n                    effective_date=effective_date,\n                    observed_date="2026-07-01",\n                    source_name="filing history",\n                    source_ref=f"filing#range/{index}",\n                    source_grade="A",\n                    confidence=1.0,\n                    segment="core",\n                )\n            )\n    initial_data = {\n'''
-          if old in text:
-              text = text.replace(old, new, 1)
-          elif 'metric="normalized_multiple_history"' not in text:
-              raise SystemExit('range history insertion marker missing')
-          marker = '\ndef test_evidence_ledger_drift_after_compilation_is_rejected_at_mutation_boundary():\n'
-          added = r'''
-def test_reviewed_range_provenance_replays_through_audit_and_freeze(tmp_path, monkeypatch):
-    rule_path = tmp_path / "range_rules.yaml"
-    rule_path.write_text(
-        "\n".join(
-            (
-                "schema_version: assumption_range_rule_registry/v1",
-                "rules:",
-                "  - rule_id: normalized-multiple-history-v1",
-                "    assumption_key: normalized_multiple",
-                "    anchor_metric: normalized_multiple_history",
-                "    canonical_unit: multiple",
-                "    lookback_observations: 3",
-                "    min_observations: 3",
-                "    lower_multiplier: 1",
-                "    upper_multiplier: 1",
-                "    source_layers:",
-                "      - realized_or_filing",
-                "    review_ref: docs/ASSUMPTION_RANGE_RULES.md#normalized-multiple-history-v1",
-            )
-        )
-        + "\n",
-        encoding="utf-8",
-    )
-    monkeypatch.setattr(
-        "valuation_engine.assumption_compiler.DEFAULT_RANGE_RULE_REGISTRY_PATH",
-        rule_path,
-    )
-    result = run_path(include_range_history=True)
-    assert result.blocked_reasons == ()
-    assert result.freeze_token is not None
-    compiled = result.data["compiled_assumption_set"]
-    ranged = tuple(item for item in compiled.assumptions if item.key == "normalized_multiple")
-    assert ranged and all(item.range_provenance is not None for item in ranged)
-
-'''
-          if 'test_reviewed_range_provenance_replays_through_audit_and_freeze' not in text:
-              if marker not in text:
-                  raise SystemExit('audit e2e insertion marker missing')
-              text = text.replace(marker, added + marker, 1)
           path.write_text(text, encoding='utf-8')
           PY
       - name: Install
@@ -233,6 +125,7 @@ def test_reviewed_range_provenance_replays_through_audit_and_freeze(tmp_path, mo
         run: >-
           pytest -q
           tests/test_assumption_range_rules.py
+          tests/test_assumption_range_review_regressions.py
           tests/test_assumption_compiler.py
           tests/test_run_hash.py
           tests/test_generic_audit_freeze_e2e.py
@@ -248,7 +141,7 @@ def test_reviewed_range_provenance_replays_through_audit_and_freeze(tmp_path, mo
           rm .github/workflows/fix-range-review-findings-once.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add src/valuation_engine/assumption_range_rules.py src/valuation_engine/assumption_compiler.py src/valuation_engine/run_hash.py tests/test_assumption_range_rules.py tests/test_generic_audit_freeze_e2e.py .github/workflows/fix-range-review-findings-once.yml
+          git add src/valuation_engine/assumption_range_rules.py src/valuation_engine/assumption_compiler.py src/valuation_engine/run_hash.py tests/test_assumption_range_review_regressions.py .github/workflows/fix-range-review-findings-once.yml
           git diff --cached --check
           git commit -m 'Make reviewed range provenance audit-replayable'
           git push origin HEAD:feat/reviewed-assumption-range-rules
