@@ -91,6 +91,7 @@ jobs:
           Path('/tmp/apply-review-fixes.sh').write_text(payload, encoding='utf-8')
           PY
           bash /tmp/apply-review-fixes.sh
+          git checkout HEAD -- tests/test_compare_runs_review_regressions.py
       - name: Focused regressions
         run: pytest -q tests/test_compare_runs.py tests/test_compare_runs_review_regressions.py
       - name: Full regression
