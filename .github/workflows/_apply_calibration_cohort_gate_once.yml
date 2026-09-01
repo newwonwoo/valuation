@@ -26,20 +26,95 @@ jobs:
 
           runner = Path('scripts/run_kr_live.py')
           text = runner.read_text(encoding='utf-8')
-          import_anchor = '''from valuation_engine.cli_runtime import LiveAnalysisRequest  # noqa: E402\n'''
-          import_block = '''from valuation_engine.calibration_cohort_registry import (  # noqa: E402\n    CalibrationCohortRegistryError,\n    load_production_calibration_registry,\n    resolve_production_calibration_cohort,\n    validate_declared_calibration,\n)\nfrom valuation_engine.cli_runtime import LiveAnalysisRequest  # noqa: E402\n'''
+          import_anchor = 'from valuation_engine.cli_runtime import LiveAnalysisRequest  # noqa: E402\n'
+          import_block = '''from valuation_engine.calibration_cohort_registry import (  # noqa: E402
+              CalibrationCohortRegistryError,
+              load_production_calibration_registry,
+              resolve_production_calibration_cohort,
+              validate_declared_calibration,
+          )
+          from valuation_engine.cli_runtime import LiveAnalysisRequest  # noqa: E402
+          '''
+          import_block = '\n'.join(line[10:] if line.startswith('          ') else line for line in import_block.splitlines()) + '\n'
           if import_anchor not in text:
               raise SystemExit('runner import anchor missing')
           text = text.replace(import_anchor, import_block, 1)
 
-          helper_anchor = '''def _optional_path(run_dir: Path, name: str) -> str | None:\n    path = run_dir / "declarations" / name\n    return str(path) if path.exists() else None\n\n\n'''
-          helpers = '''def _run_industry_code(run_dir: Path, config: dict) -> str | None:\n    \"\"\"Return the deterministic KSIC anchor for the probability cohort.\n\n    Single-segment runs use OpenDART's company industry code. Multi-segment\n    runs use the exact declared segment bound by filing.segment_id. If the\n    required segment declaration is absent, return None so the existing IFRS 8\n    declaration gate remains the authority that stops the run.\n    \"\"\"\n    filing = config.get("filing") or {}\n    segments = config.get("segments")\n    if segments:\n        declaration_path = run_dir / "declarations" / "segments.yaml"\n        if not declaration_path.is_file():\n            return None\n        payload = yaml.safe_load(declaration_path.read_text(encoding="utf-8"))\n        rows = payload.get("segments") if isinstance(payload, dict) else None\n        if not isinstance(rows, list):\n            return None\n        anchor_segment = str(filing.get("segment_id", ""))\n        matches = tuple(\n            row for row in rows\n            if isinstance(row, dict) and str(row.get("segment_id", "")) == anchor_segment\n        )\n        if len(matches) != 1:\n            return None\n        code = str(matches[0].get("ksic_code", "")).strip()\n        return code or None\n\n    company_path = run_dir / "raw" / "company.json"\n    if not company_path.is_file():\n        return None\n    payload = json.loads(company_path.read_text(encoding="utf-8"))\n    code = str(payload.get("induty_code", "")).strip() if isinstance(payload, dict) else ""\n    return code or None\n\n\ndef _required_production_calibration(run_dir: Path, config: dict):\n    registry = load_production_calibration_registry()\n    return resolve_production_calibration_cohort(\n        registry,\n        ksic_code=_run_industry_code(run_dir, config),\n        forecast_years=int(config.get("forecast_years", 5)),\n        scenario_ids=tuple(config.get("scenario_ids", ())),\n    )\n\n\ndef _enforce_production_calibration(run_dir: Path, config: dict) -> None:\n    cohort = _required_production_calibration(run_dir, config)\n    if cohort is None:\n        return\n    try:\n        validate_declared_calibration(cohort, config.get("calibration"))\n    except CalibrationCohortRegistryError as exc:\n        raise RunbookError(str(exc)) from exc\n\n\ndef _optional_path(run_dir: Path, name: str) -> str | None:\n    path = run_dir / "declarations" / name\n    return str(path) if path.exists() else None\n\n\n'''
+          helper_anchor = '''def _optional_path(run_dir: Path, name: str) -> str | None:
+              path = run_dir / "declarations" / name
+              return str(path) if path.exists() else None
+
+
+          '''
+          helper_anchor = '\n'.join(line[10:] if line.startswith('          ') else line for line in helper_anchor.splitlines()) + '\n'
+          helpers = '''def _run_industry_code(run_dir: Path, config: dict) -> str | None:
+              """Return the deterministic KSIC anchor used for cohort matching."""
+              filing = config.get("filing") or {}
+              if config.get("segments"):
+                  declaration_path = run_dir / "declarations" / "segments.yaml"
+                  if not declaration_path.is_file():
+                      return None
+                  payload = yaml.safe_load(declaration_path.read_text(encoding="utf-8"))
+                  rows = payload.get("segments") if isinstance(payload, dict) else None
+                  if not isinstance(rows, list):
+                      return None
+                  anchor_segment = str(filing.get("segment_id", ""))
+                  matches = tuple(
+                      row
+                      for row in rows
+                      if isinstance(row, dict)
+                      and str(row.get("segment_id", "")) == anchor_segment
+                  )
+                  if len(matches) != 1:
+                      return None
+                  code = str(matches[0].get("ksic_code", "")).strip()
+                  return code or None
+
+              company_path = run_dir / "raw" / "company.json"
+              if not company_path.is_file():
+                  return None
+              payload = json.loads(company_path.read_text(encoding="utf-8"))
+              code = (
+                  str(payload.get("induty_code", "")).strip()
+                  if isinstance(payload, dict)
+                  else ""
+              )
+              return code or None
+
+
+          def _required_production_calibration(run_dir: Path, config: dict):
+              registry = load_production_calibration_registry()
+              return resolve_production_calibration_cohort(
+                  registry,
+                  ksic_code=_run_industry_code(run_dir, config),
+                  forecast_years=int(config.get("forecast_years", 5)),
+                  scenario_ids=tuple(config.get("scenario_ids", ())),
+              )
+
+
+          def _enforce_production_calibration(run_dir: Path, config: dict) -> None:
+              cohort = _required_production_calibration(run_dir, config)
+              if cohort is None:
+                  return
+              try:
+                  validate_declared_calibration(cohort, config.get("calibration"))
+              except CalibrationCohortRegistryError as exc:
+                  raise RunbookError(str(exc)) from exc
+
+
+          def _optional_path(run_dir: Path, name: str) -> str | None:
+              path = run_dir / "declarations" / name
+              return str(path) if path.exists() else None
+
+
+          '''
+          helpers = '\n'.join(line[10:] if line.startswith('          ') else line for line in helpers.splitlines()) + '\n'
           if helper_anchor not in text:
               raise SystemExit('runner helper anchor missing')
           text = text.replace(helper_anchor, helpers, 1)
 
-          execute_anchor = '''    config = _load_run(run_dir)\n    filing = config["filing"]\n\n    def _parse_method'''
-          execute_replacement = '''    config = _load_run(run_dir)\n    filing = config["filing"]\n    _enforce_production_calibration(run_dir, config)\n\n    def _parse_method'''
+          execute_anchor = '    config = _load_run(run_dir)\n    filing = config["filing"]\n\n    def _parse_method'
+          execute_replacement = '    config = _load_run(run_dir)\n    filing = config["filing"]\n    _enforce_production_calibration(run_dir, config)\n\n    def _parse_method'
           if execute_anchor not in text:
               raise SystemExit('execute_run anchor missing')
           text = text.replace(execute_anchor, execute_replacement, 1)
@@ -47,9 +122,62 @@ jobs:
 
           test = Path('tests/test_kr_live_runbook.py')
           existing = test.read_text(encoding='utf-8')
-          addition = r'''\n\ndef test_registered_production_cohort_cannot_complete_without_calibration(tmp_path):\n    run_copy = tmp_path / "kisco-no-calibration"\n    shutil.copytree(\n        ROOT / "runs" / "kisco-104700",\n        run_copy,\n        ignore=shutil.ignore_patterns("out"),\n    )\n    run_yaml = run_copy / "run.yaml"\n    payload = run_kr_live._load_run(run_copy)\n    payload.pop("calibration", None)\n    import yaml\n    run_yaml.write_text(\n        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),\n        encoding="utf-8",\n    )\n\n    try:\n        execute_run(run_copy)\n    except run_kr_live.RunbookError as exc:\n        message = str(exc)\n    else:\n        raise AssertionError("registered production cohort must block uncalibrated completion")\n    assert "CALIBRATION_REQUIRED" in message\n    assert "kr-steel-long-continuous-v1" in message\n    assert "kr.steel.long|5y_path|continuous_v1" in message\n\n\ndef test_registered_production_cohort_rejects_wrong_binding(tmp_path):\n    run_copy = tmp_path / "kisco-wrong-calibration"\n    shutil.copytree(\n        ROOT / "runs" / "kisco-104700",\n        run_copy,\n        ignore=shutil.ignore_patterns("out"),\n    )\n    payload = run_kr_live._load_run(run_copy)\n    payload["calibration"]["cohort_key"] = "wrong.cohort"\n    import yaml\n    (run_copy / "run.yaml").write_text(\n        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),\n        encoding="utf-8",\n    )\n\n    try:\n        execute_run(run_copy)\n    except run_kr_live.RunbookError as exc:\n        message = str(exc)\n    else:\n        raise AssertionError("wrong production cohort must fail closed")\n    assert "CALIBRATION_COHORT_MISMATCH" in message\n    assert "kr-steel-long-continuous-v1" in message\n'''
+          addition = '''
+
+          def test_registered_production_cohort_cannot_complete_without_calibration(tmp_path):
+              run_copy = tmp_path / "kisco-no-calibration"
+              shutil.copytree(
+                  ROOT / "runs" / "kisco-104700",
+                  run_copy,
+                  ignore=shutil.ignore_patterns("out"),
+              )
+              run_yaml = run_copy / "run.yaml"
+              payload = run_kr_live._load_run(run_copy)
+              payload.pop("calibration", None)
+              import yaml
+              run_yaml.write_text(
+                  yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+                  encoding="utf-8",
+              )
+
+              try:
+                  execute_run(run_copy)
+              except run_kr_live.RunbookError as exc:
+                  message = str(exc)
+              else:
+                  raise AssertionError("registered production cohort must block uncalibrated completion")
+              assert "CALIBRATION_REQUIRED" in message
+              assert "kr-steel-long-continuous-v1" in message
+              assert "kr.steel.long|5y_path|continuous_v1" in message
+
+
+          def test_registered_production_cohort_rejects_wrong_binding(tmp_path):
+              run_copy = tmp_path / "kisco-wrong-calibration"
+              shutil.copytree(
+                  ROOT / "runs" / "kisco-104700",
+                  run_copy,
+                  ignore=shutil.ignore_patterns("out"),
+              )
+              payload = run_kr_live._load_run(run_copy)
+              payload["calibration"]["cohort_key"] = "wrong.cohort"
+              import yaml
+              (run_copy / "run.yaml").write_text(
+                  yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+                  encoding="utf-8",
+              )
+
+              try:
+                  execute_run(run_copy)
+              except run_kr_live.RunbookError as exc:
+                  message = str(exc)
+              else:
+                  raise AssertionError("wrong production cohort must fail closed")
+              assert "CALIBRATION_COHORT_MISMATCH" in message
+              assert "kr-steel-long-continuous-v1" in message
+          '''
+          addition = '\n'.join(line[10:] if line.startswith('          ') else line for line in addition.splitlines()) + '\n'
           if 'test_registered_production_cohort_cannot_complete_without_calibration' not in existing:
-              test.write_text(existing.rstrip() + addition + '\n', encoding='utf-8')
+              test.write_text(existing.rstrip() + addition, encoding='utf-8')
           PY
       - name: Validate focused and full suite
         run: |
