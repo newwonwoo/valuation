@@ -1,0 +1,126 @@
+name: apply-sotp-segment-sensitivity-once
+
+on:
+  push:
+    branches:
+      - feat/sotp-segment-sensitivity
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/sotp-segment-sensitivity
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Patch SOTP sensitivity
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/valuation_engine/valuation_sensitivity.py')
+          text = path.read_text(encoding='utf-8')
+
+          marker = '''@dataclass(frozen=True)\nclass ScenarioSensitivity:\n'''
+          addition = '''@dataclass(frozen=True)\nclass SegmentSensitivity:\n    asset_id: str\n    contribution_id: str\n    attributable_equity_value: Decimal\n    attributable_value_per_share: Decimal\n    ownership_ratio: Decimal\n    variables: tuple[VariableSensitivity, ...]\n\n    @property\n    def dominant(self) -> VariableSensitivity | None:\n        if not self.variables:\n            return None\n        return max(self.variables, key=lambda item: item.max_abs_pct)\n\n\n'''
+          if addition not in text:
+              if marker not in text:
+                  raise SystemExit('ScenarioSensitivity marker missing')
+              text = text.replace(marker, addition + marker, 1)
+
+          old = '''class ScenarioSensitivity:\n    scenario_id: str\n    status: str\n    rationale: str\n    base_value_per_share: Decimal | None = None\n    variables: tuple[VariableSensitivity, ...] = ()\n\n    @property\n    def measured(self) -> bool:\n        return self.status == ReconstructionStatus.RECONSTRUCTED and bool(self.variables)\n\n    @property\n    def dominant(self) -> VariableSensitivity | None:\n        if not self.variables:\n            return None\n        return max(self.variables, key=lambda item: item.max_abs_pct)\n'''
+          new = '''class ScenarioSensitivity:\n    scenario_id: str\n    status: str\n    rationale: str\n    base_value_per_share: Decimal | None = None\n    variables: tuple[VariableSensitivity, ...] = ()\n    segments: tuple[SegmentSensitivity, ...] = ()\n\n    @property\n    def measured(self) -> bool:\n        return (\n            self.status == ReconstructionStatus.RECONSTRUCTED\n            and bool(self.variables or self.segments)\n        )\n\n    @property\n    def dominant(self) -> VariableSensitivity | None:\n        candidates = list(self.variables)\n        candidates.extend(\n            variable for segment in self.segments for variable in segment.variables\n        )\n        if not candidates:\n            return None\n        return max(candidates, key=lambda item: item.max_abs_pct)\n'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif 'segments: tuple[SegmentSensitivity' not in text:
+              raise SystemExit('ScenarioSensitivity block missing')
+
+          old = '''        for scenario in measured:\n            dominant = scenario.dominant\n            if dominant is None:\n                continue\n            parts.append(\n                f"{scenario.scenario_id}: {dominant.label} 최대 "\n                f"{dominant.max_abs_pct * 100:.1f}%"\n            )\n'''
+          new = '''        for scenario in measured:\n            dominant = scenario.dominant\n            if dominant is None:\n                continue\n            asset = next(\n                (\n                    segment.asset_id\n                    for segment in scenario.segments\n                    if dominant in segment.variables\n                ),\n                None,\n            )\n            location = (\n                f"{scenario.scenario_id}/{asset}"\n                if asset is not None\n                else scenario.scenario_id\n            )\n            parts.append(\n                f"{location}: {dominant.label} 최대 "\n                f"{dominant.max_abs_pct * 100:.1f}%"\n            )\n'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif 'location = (' not in text:
+              raise SystemExit('summary block missing')
+
+          marker = '''def _scenario_sensitivity(\n'''
+          helper = '''def _sotp_component_sensitivity(\n    *,\n    component,\n    reporting_unit: str,\n    company_equity_value: Decimal,\n    diluted_shares: Decimal,\n    base_value_per_share: Decimal,\n    policy: SensitivityPolicy,\n) -> SegmentSensitivity | None:\n    diagnostics = component.diagnostics\n    ownership = component.ownership_ratio\n    if diagnostics is None or ownership is None or ownership <= _ZERO:\n        return None\n    try:\n        diagnostics.validate()\n    except (TypeError, ValueError):\n        return None\n    if diluted_shares <= 0:\n        raise ValuationSensitivityError("diluted shares must be positive")\n\n    def to_reporting(amount: Decimal) -> Decimal:\n        return Measure(amount, diagnostics.value_unit, "1970-01-01").convert_to(\n            reporting_unit\n        ).amount\n\n    published = to_reporting(diagnostics.enterprise_value)\n    recomputed = to_reporting(\n        enterprise_value(\n            fcff_path=diagnostics.fcff_path,\n            discount_rate=diagnostics.discount_rate,\n            terminal_growth=diagnostics.terminal_growth,\n        )\n    )\n    if (\n        published <= 0\n        or abs(recomputed - published)\n        > abs(published) * _RECONSTRUCTION_TOLERANCE\n    ):\n        return None\n\n    attributable = component.attributable_equity_value.convert_to(\n        reporting_unit\n    ).amount\n    full_equity = attributable / ownership\n    bridge = full_equity - published\n    other_equity = company_equity_value - attributable\n\n    def value_at(\n        *, discount_rate: Decimal, growth: Decimal, level: Decimal\n    ) -> Decimal:\n        raw = enterprise_value(\n            fcff_path=tuple(item * level for item in diagnostics.fcff_path),\n            discount_rate=discount_rate,\n            terminal_growth=growth,\n        )\n        perturbed_attributable = ownership * (to_reporting(raw) + bridge)\n        return (other_equity + perturbed_attributable) / diluted_shares\n\n    base_replayed = value_at(\n        discount_rate=diagnostics.discount_rate,\n        growth=diagnostics.terminal_growth,\n        level=_ONE,\n    )\n    if (\n        abs(base_replayed - base_value_per_share)\n        > max(abs(base_value_per_share), _ONE) * _RECONSTRUCTION_TOLERANCE\n    ):\n        return None\n\n    rate = diagnostics.discount_rate\n    growth = diagnostics.terminal_growth\n    variables: list[VariableSensitivity] = []\n\n    rate_low = rate - policy.discount_rate_delta\n    rate_high = rate + policy.discount_rate_delta\n    if rate_low > growth:\n        measured = _variable(\n            variable=DISCOUNT_RATE,\n            low_input=rate_low,\n            base_input=rate,\n            high_input=rate_high,\n            low_value=value_at(\n                discount_rate=rate_low, growth=growth, level=_ONE\n            ),\n            base_value=base_value_per_share,\n            high_value=value_at(\n                discount_rate=rate_high, growth=growth, level=_ONE\n            ),\n            expected_direction="down",\n        )\n        if measured is not None:\n            variables.append(measured)\n\n    growth_low = growth - policy.terminal_growth_delta\n    growth_high = growth + policy.terminal_growth_delta\n    if growth_high < rate:\n        measured = _variable(\n            variable=TERMINAL_GROWTH,\n            low_input=growth_low,\n            base_input=growth,\n            high_input=growth_high,\n            low_value=value_at(\n                discount_rate=rate, growth=growth_low, level=_ONE\n            ),\n            base_value=base_value_per_share,\n            high_value=value_at(\n                discount_rate=rate, growth=growth_high, level=_ONE\n            ),\n            expected_direction="up",\n        )\n        if measured is not None:\n            variables.append(measured)\n\n    level_low = _ONE - policy.fcff_level_delta\n    level_high = _ONE + policy.fcff_level_delta\n    measured = _variable(\n        variable=FCFF_LEVEL,\n        low_input=level_low,\n        base_input=_ONE,\n        high_input=level_high,\n        low_value=value_at(discount_rate=rate, growth=growth, level=level_low),\n        base_value=base_value_per_share,\n        high_value=value_at(discount_rate=rate, growth=growth, level=level_high),\n        expected_direction="up",\n    )\n    if measured is not None:\n        variables.append(measured)\n\n    if not variables:\n        return None\n    return SegmentSensitivity(\n        asset_id=component.asset_id,\n        contribution_id=component.contribution_id,\n        attributable_equity_value=attributable,\n        attributable_value_per_share=attributable / diluted_shares,\n        ownership_ratio=ownership,\n        variables=tuple(variables),\n    )\n\n\ndef _sotp_scenario_sensitivity(\n    *,\n    scenario_id: str,\n    reporting_unit: str,\n    equity_value: Decimal,\n    diluted_shares: Decimal,\n    base_value_per_share: Decimal,\n    company_value: CompanyScenarioEquityValue,\n    policy: SensitivityPolicy,\n) -> ScenarioSensitivity:\n    segments = tuple(\n        measured\n        for component in company_value.components\n        if (\n            measured := _sotp_component_sensitivity(\n                component=component,\n                reporting_unit=reporting_unit,\n                company_equity_value=equity_value,\n                diluted_shares=diluted_shares,\n                base_value_per_share=base_value_per_share,\n                policy=policy,\n            )\n        )\n        is not None\n    )\n    if not segments:\n        return ScenarioSensitivity(\n            scenario_id=scenario_id,\n            status=ReconstructionStatus.NOT_RECONSTRUCTIBLE,\n            rationale=(\n                "SOTP 구성요소 중 동결 DCF 커널로 독립 재현 가능한 부문이 없어 "\n                "부문별 민감도를 산출하지 않았습니다"\n            ),\n        )\n    return ScenarioSensitivity(\n        scenario_id=scenario_id,\n        status=ReconstructionStatus.RECONSTRUCTED,\n        rationale=(\n            f"SOTP {len(company_value.components)}개 구성요소 중 "\n            f"{len(segments)}개 DCF 부문을 다른 부문·모회사 조정을 고정한 채 "\n            "독립적으로 3점 변동시켰습니다"\n        ),\n        base_value_per_share=base_value_per_share,\n        segments=segments,\n    )\n\n\n'''
+          if helper not in text:
+              if marker not in text:
+                  raise SystemExit('_scenario_sensitivity marker missing')
+              text = text.replace(marker, helper + marker, 1)
+
+          marker = '''    reconstructible = reconstructible_dcf_component(company_value)\n'''
+          replacement = '''    if len(company_value.components) != 1:\n        return _sotp_scenario_sensitivity(\n            scenario_id=scenario_id,\n            reporting_unit=reporting_unit,\n            equity_value=equity_value,\n            diluted_shares=diluted_shares,\n            base_value_per_share=base_value_per_share,\n            company_value=company_value,\n            policy=policy,\n        )\n    reconstructible = reconstructible_dcf_component(company_value)\n'''
+          if marker in text:
+              text = text.replace(marker, replacement, 1)
+          elif 'return _sotp_scenario_sensitivity(' not in text:
+              raise SystemExit('scenario SOTP routing marker missing')
+
+          old = '''    non_monotonic = tuple(\n        f"{scenario.scenario_id}/{item.variable}"\n        for scenario in measured\n        for item in scenario.variables\n        if not item.monotonic\n    )\n'''
+          new = '''    variable_rows = tuple(\n        (scenario.scenario_id, None, item)\n        for scenario in measured\n        for item in scenario.variables\n    ) + tuple(\n        (scenario.scenario_id, segment.asset_id, item)\n        for scenario in measured\n        for segment in scenario.segments\n        for item in segment.variables\n    )\n    non_monotonic = tuple(\n        (\n            f"{scenario_id}/{asset_id}/{item.variable}"\n            if asset_id is not None\n            else f"{scenario_id}/{item.variable}"\n        )\n        for scenario_id, asset_id, item in variable_rows\n        if not item.monotonic\n    )\n'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif 'variable_rows = tuple(' not in text:
+              raise SystemExit('monotonic flatten marker missing')
+
+          old = '''    concentrated = tuple(\n        scenario\n        for scenario in measured\n        if scenario.dominant is not None\n        and scenario.dominant.max_abs_pct > policy.high_sensitivity_pct\n    )\n    findings.append(\n        AuditFinding(\n            "valuation_sensitivity_concentration",\n            not concentrated,\n            False,\n            (\n                "단일 커널 변수의 소폭 변동이 가치를 크게 바꾸지 않습니다"\n                if not concentrated\n                else "소폭 변동만으로 가치가 크게 움직이는 변수가 있습니다: "\n                + " · ".join(\n                    f"{scenario.scenario_id} {scenario.dominant.label} "\n                    f"{scenario.dominant.max_abs_pct * 100:.1f}%"\n                    for scenario in concentrated\n                    if scenario.dominant is not None\n                )\n            ),\n        )\n    )\n'''
+          new = '''    concentrated = tuple(\n        (scenario_id, asset_id, item)\n        for scenario_id, asset_id, item in variable_rows\n        if item.max_abs_pct > policy.high_sensitivity_pct\n    )\n    findings.append(\n        AuditFinding(\n            "valuation_sensitivity_concentration",\n            not concentrated,\n            False,\n            (\n                "단일 커널 변수의 소폭 변동이 가치를 크게 바꾸지 않습니다"\n                if not concentrated\n                else "소폭 변동만으로 가치가 크게 움직이는 변수가 있습니다: "\n                + " · ".join(\n                    (\n                        f"{scenario_id}/{asset_id} {item.label} "\n                        if asset_id is not None\n                        else f"{scenario_id} {item.label} "\n                    )\n                    + f"{item.max_abs_pct * 100:.1f}%"\n                    for scenario_id, asset_id, item in concentrated\n                )\n            ),\n        )\n    )\n'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif 'for scenario_id, asset_id, item in concentrated' not in text:
+              raise SystemExit('concentration block missing')
+
+          text = text.replace(
+              '"contract": "valuation_sensitivity/v1",',
+              '"contract": "valuation_sensitivity/v2",',
+              1,
+          )
+          old = '''                "variables": [\n                    {\n                        "variable": item.variable,\n                        "low_input": str(item.low_input),\n                        "high_input": str(item.high_input),\n                        "low_value_pct": str(item.low_value_pct),\n                        "high_value_pct": str(item.high_value_pct),\n                        "monotonic": item.monotonic,\n                    }\n                    for item in scenario.variables\n                ],\n'''
+          new = '''                "variables": [\n                    {\n                        "variable": item.variable,\n                        "low_input": str(item.low_input),\n                        "high_input": str(item.high_input),\n                        "low_value_pct": str(item.low_value_pct),\n                        "high_value_pct": str(item.high_value_pct),\n                        "monotonic": item.monotonic,\n                    }\n                    for item in scenario.variables\n                ],\n                "segments": [\n                    {\n                        "asset_id": segment.asset_id,\n                        "contribution_id": segment.contribution_id,\n                        "attributable_equity_value": str(\n                            segment.attributable_equity_value\n                        ),\n                        "ownership_ratio": str(segment.ownership_ratio),\n                        "variables": [\n                            {\n                                "variable": item.variable,\n                                "low_input": str(item.low_input),\n                                "high_input": str(item.high_input),\n                                "low_value_per_share": str(item.low_value_per_share),\n                                "base_value_per_share": str(item.base_value_per_share),\n                                "high_value_per_share": str(item.high_value_per_share),\n                                "low_value_pct": str(item.low_value_pct),\n                                "high_value_pct": str(item.high_value_pct),\n                                "monotonic": item.monotonic,\n                            }\n                            for item in segment.variables\n                        ],\n                    }\n                    for segment in scenario.segments\n                ],\n'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif '"segments": [' not in text:
+              raise SystemExit('report hash scenario block missing')
+
+          path.write_text(text, encoding='utf-8')
+
+          path = Path('tests/test_valuation_sensitivity.py')
+          text = path.read_text(encoding='utf-8')
+          old = '''def test_multi_component_scenarios_are_not_measurable():\n    extra = AggregationComponent(\n        asset_id="PARENT",\n        contribution_id="parent:PARENT",\n        attributable_equity_value=Measure(Decimal("10"), "KRW_billion", "2026-08-27"),\n        economic_path_ids=("parent:PARENT",),\n    )\n    report = build_valuation_sensitivity_report(\n        valuation=_valuation(diagnostics=_diagnostics(), extra_components=(extra,))\n    )\n    assert not report.scenarios[0].measured\n'''
+          new = '''def test_dcf_plus_parent_adjustment_is_measurable_by_component():\n    diagnostics = _diagnostics()\n    base_ev = diagnostics.enterprise_value\n    parent_amount = Decimal("10")\n    core = AggregationComponent(\n        asset_id="ASSET",\n        contribution_id="ASSET:Core:seg.driver_dcf:v1",\n        attributable_equity_value=Measure(base_ev, "KRW_billion", "2026-08-27"),\n        economic_path_ids=("path:core",),\n        ownership_ratio=ONE,\n        diagnostics=diagnostics,\n    )\n    parent = AggregationComponent(\n        asset_id="PARENT",\n        contribution_id="parent:PARENT",\n        attributable_equity_value=Measure(parent_amount, "KRW_billion", "2026-08-27"),\n        economic_path_ids=("parent:PARENT",),\n    )\n    total = base_ev + parent_amount\n    company = CompanyScenarioEquityValue(\n        scenario_id="Core",\n        equity_value=Measure(total, "KRW_billion", "2026-08-27"),\n        components=(core, parent),\n        aggregation_hash="agg",\n    )\n    valuation = GenericValuationResult(\n        scenarios=(\n            ScenarioPerShareValue(\n                scenario_id="Core",\n                equity_value_amount=total,\n                reporting_unit="KRW_billion",\n                diluted_shares=SHARES,\n                value_per_share=total / SHARES,\n                aggregation_hash="agg",\n                economic_path_ids=("path:core", "parent:PARENT"),\n            ),\n        ),\n        equity_aggregation=ScenarioEquityAggregation((company,), None, False),\n        expected_value_per_share=None,\n        reporting_unit="KRW_billion",\n        valuation_hash="valuation-hash",\n    )\n    report = build_valuation_sensitivity_report(valuation=valuation)\n    assert report.scenarios[0].measured\n    assert len(report.scenarios[0].segments) == 1\n'''
+          if old in text:
+              text = text.replace(old, new, 1)
+          elif 'test_dcf_plus_parent_adjustment_is_measurable_by_component' not in text:
+              raise SystemExit('old multi component regression marker missing')
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Focused regressions
+        run: >-
+          pytest -q
+          tests/test_valuation_sensitivity.py
+          tests/test_sotp_segment_sensitivity.py
+          tests/test_generic_audit_freeze_e2e.py
+          tests/test_generic_evaluator_sotp.py
+      - name: Full regression and PM validation
+        run: |
+          pytest -q
+          python scripts/validate_project_portfolio.py
+      - name: Commit clean change set
+        shell: bash
+        run: |
+          rm .github/workflows/apply-sotp-segment-sensitivity-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/valuation_engine/valuation_sensitivity.py tests/test_valuation_sensitivity.py tests/test_sotp_segment_sensitivity.py .github/workflows/apply-sotp-segment-sensitivity-once.yml
+          git diff --cached --check
+          git commit -m 'Add per-segment SOTP DCF sensitivity'
+          git push origin HEAD:feat/sotp-segment-sensitivity
