@@ -33,9 +33,14 @@ reviewing the canonical registry in the repository.
 - Non-finite multipliers and inverted bounds are rejected.
 - Insufficient history blocks the rule instead of falling back to proposal bounds.
 - Typed range provenance is included in the compiled Evidence hash.
+- If a canonical rule exists for an assumption, its typed range receipt is mandatory;
+  deleting the receipt cannot turn a governed assumption back into an unbounded one.
+- If the canonical registry cannot be loaded at Audit, the compiled assumption set is
+  not certifiable and fails closed rather than assuming that no range rule applies.
 - Audit reloads the canonical reviewed registry, binds the receipt to the compiled
-  target/key/scenario/unit, and re-derives the range from the current Evidence before
-  Intrinsic Value Freeze; a self-consistent forged receipt is therefore insufficient.
+  target/key/scenario/unit, re-derives the range from the current Evidence, and checks
+  the compiled value still lies inside that range before Intrinsic Value Freeze; a
+  self-consistent forged or deleted receipt is therefore insufficient.
 
 ## Example review shape
 
