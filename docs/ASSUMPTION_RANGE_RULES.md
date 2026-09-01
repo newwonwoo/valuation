@@ -19,7 +19,9 @@ A rule may be added only when review can answer all of the following from the di
 
 The registry intentionally starts with no production rules. Do not seed a multiplier
 or lookback merely because a range would be convenient. The reviewed rule is the
-judgment; deterministic code only executes it.
+judgment; deterministic code only executes it. Production compilation exposes no
+runtime registry-path override: changing range authority requires changing and
+reviewing the canonical registry in the repository.
 
 ## Runtime containment
 
@@ -30,8 +32,10 @@ judgment; deterministic code only executes it.
 - Units are converted through the canonical unit system before min/max derivation.
 - Non-finite multipliers and inverted bounds are rejected.
 - Insufficient history blocks the rule instead of falling back to proposal bounds.
-- Typed range provenance is included in the compiled Evidence hash and independently
-  replayed at Audit before Intrinsic Value Freeze.
+- Typed range provenance is included in the compiled Evidence hash.
+- Audit reloads the canonical reviewed registry, binds the receipt to the compiled
+  target/key/scenario/unit, and re-derives the range from the current Evidence before
+  Intrinsic Value Freeze; a self-consistent forged receipt is therefore insufficient.
 
 ## Example review shape
 
