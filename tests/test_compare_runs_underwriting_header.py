@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from decimal import Decimal
 from pathlib import Path
 
 import yaml
@@ -60,5 +61,5 @@ def test_inherited_underwriting_source_ref_is_metadata_difference(tmp_path):
     assert diff["a_value"] == "https://example.com/source"
     assert diff["b_value"] == "https://example.com/revised-source"
     attribution = result["attribution"][0]
-    assert attribution["base_delta_per_share"] == "0"
-    assert attribution["expected_delta_per_share"] == "0.0"
+    assert Decimal(attribution["base_delta_per_share"]) == 0
+    assert Decimal(attribution["expected_delta_per_share"]) == 0
