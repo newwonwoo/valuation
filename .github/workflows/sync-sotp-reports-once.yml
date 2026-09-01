@@ -1,0 +1,49 @@
+name: sync-sotp-reports-once
+
+on:
+  push:
+    branches:
+      - feat/sotp-segment-sensitivity
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/sotp-segment-sensitivity
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Merge latest main
+        run: |
+          git fetch origin main
+          git merge --no-edit origin/main
+      - name: Install
+        run: python -m pip install -e '.[dev]'
+      - name: Regenerate canonical report fixtures
+        run: |
+          PYTHONPATH=src:. python scripts/render_verified_runtime_fixture.py --output examples/report_forms/PRISM_ACTUAL_RUNTIME_REPORT.md
+          PYTHONPATH=src python scripts/run_sanil_live_primary.py \
+            --output examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.html \
+            --markdown-output examples/report_forms/SANIL_062040_LIVE_PRIMARY_REPORT.md
+          PYTHONPATH=src python scripts/run_sanil_live_primary.py --check
+      - name: Validate focused and full suite
+        run: |
+          pytest -q tests/test_valuation_sensitivity.py tests/test_sotp_segment_sensitivity.py tests/test_sotp_segment_sensitivity_guards.py tests/test_generic_audit_freeze_e2e.py tests/test_generic_evaluator_sotp.py tests/test_sanil_live_primary.py
+          pytest -q
+          python scripts/validate_project_portfolio.py
+      - name: Commit clean change set
+        run: |
+          rm .github/workflows/sync-sotp-reports-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'Sync SOTP sensitivity report fixtures'
+          git push origin HEAD:feat/sotp-segment-sensitivity
