@@ -193,6 +193,14 @@ def _underwriting_payload(run_dir: Path) -> dict:
     return _load_yaml_mapping(run_dir / "declarations" / "underwriting.yaml")
 
 
+def _underwriting_header_contract(run_dir: Path) -> dict:
+    payload = _underwriting_payload(run_dir)
+    return {
+        "target_id": str(payload.get("target_id") or ""),
+        "as_of": str(payload.get("as_of") or ""),
+    }
+
+
 def _flatten_underwriting(payload: Mapping) -> dict[str, dict]:
     declarations = payload.get("declarations")
     if not isinstance(declarations, Mapping) or not declarations:
@@ -269,6 +277,7 @@ def _structural_signature(run_dir: Path) -> dict:
         "calibration": _calibration_signature(run_dir, config),
         "risk_pack_hash": _optional_yaml_digest(run_dir / "declarations" / "risk_pack.yaml"),
         "raw_source_hash": _tree_digest(run_dir / "raw"),
+        "underwriting_header_contract": _underwriting_header_contract(run_dir),
         "underwriting_contract": _underwriting_contract(run_dir),
     }
 
@@ -286,6 +295,7 @@ def _structural_findings(a: Mapping, b: Mapping) -> list[dict]:
         "calibration": "CALIBRATION_CONTRACT_MISMATCH",
         "risk_pack_hash": "WACC_INPUT_CONTRACT_MISMATCH",
         "raw_source_hash": "PRIMARY_SOURCE_SNAPSHOT_MISMATCH",
+        "underwriting_header_contract": "UNDERWRITING_HEADER_CONTRACT_MISMATCH",
         "underwriting_contract": "UNDERWRITING_CONTRACT_MISMATCH",
     }
     for key, code in labels.items():
@@ -446,11 +456,29 @@ def _threshold_findings(
 
 
 def _declaration_differences(run_a: Path, run_b: Path) -> list[dict]:
-    a = _flatten_underwriting(_underwriting_payload(run_a))
-    b = _flatten_underwriting(_underwriting_payload(run_b))
+    payload_a = _underwriting_payload(run_a)
+    payload_b = _underwriting_payload(run_b)
+    a = _flatten_underwriting(payload_a)
+    b = _flatten_underwriting(payload_b)
     if set(a) != set(b):
         raise RunComparisonError("underwriting contract changed after structural validation")
     differences = []
+    source_a = str(payload_a.get("source_ref") or "")
+    source_b = str(payload_b.get("source_ref") or "")
+    if source_a != source_b:
+        differences.append(
+            {
+                "identity": "__underwriting_header__.source_ref",
+                "metric": "__underwriting_header__",
+                "segment": "header",
+                "multi": False,
+                "header_field": "source_ref",
+                "a_value": source_a,
+                "b_value": source_b,
+                "unit": "provenance_ref",
+                "metadata_only": True,
+            }
+        )
     for identity in sorted(a):
         row_a = a[identity]["row"]
         row_b = b[identity]["row"]
@@ -478,6 +506,10 @@ def _declaration_differences(run_a: Path, run_b: Path) -> list[dict]:
 
 
 def _replace_underwriting_row(payload: dict, difference: Mapping) -> None:
+    header_field = difference.get("header_field")
+    if header_field:
+        payload[str(header_field)] = deepcopy(difference.get("b_value"))
+        return
     declarations = payload.get("declarations")
     if not isinstance(declarations, dict):
         raise RunComparisonError("working underwriting declarations are invalid")
