@@ -79,10 +79,15 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import yaml
-          workflow = yaml.safe_load(Path('.github/workflows/patch-compare-runs-review.yml').read_text(encoding='utf-8'))
-          steps = workflow['jobs']['patch']['steps']
-          payload = next(step['run'] for step in steps if step.get('name') == 'Apply review fixes')
+          raw = Path('.github/workflows/patch-compare-runs-review.yml').read_text(encoding='utf-8')
+          anchor = raw.index('      - name: Apply review fixes')
+          start = raw.index('        run: |\n', anchor) + len('        run: |\n')
+          end = raw.index('      - name: Focused regressions', start)
+          block = raw[start:end]
+          payload = '\n'.join(
+              line[10:] if line.startswith('          ') else line
+              for line in block.splitlines()
+          ) + '\n'
           Path('/tmp/apply-review-fixes.sh').write_text(payload, encoding='utf-8')
           PY
           bash /tmp/apply-review-fixes.sh
