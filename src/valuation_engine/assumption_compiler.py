@@ -11,9 +11,11 @@ from .actual_units import Measure, measure_from_raw, to_decimal
 from .ledger import EvidenceLedger
 from .assumption_range_rules import (
     DEFAULT_RANGE_RULE_REGISTRY_PATH,
+    AssumptionRangeReceipt,
     AssumptionRangeRuleError,
     apply_reviewed_assumption_ranges,
     load_assumption_range_rule_registry,
+    range_provenance_hash_part,
 )
 from .records import (
     AssumptionRecord,
@@ -69,6 +71,7 @@ class CompiledAssumption:
     transform_id: str
     input_evidence_hash: str
     calibration_status: CalibrationStatus | None = None
+    range_provenance: AssumptionRangeReceipt | None = None
 
 
 @dataclass(frozen=True)
@@ -466,20 +469,7 @@ def compile_assumptions(
 
         range_receipt = range_receipts_by_spec.get((spec.scenario_id, spec.key))
         if range_receipt is not None:
-            evidence_hash_parts.append(
-                "RANGE|"
-                + "|".join(
-                    (
-                        range_receipt.rule_id,
-                        range_receipt.registry_hash,
-                        str(range_receipt.min_value),
-                        str(range_receipt.max_value),
-                        ",".join(range_receipt.anchor_evidence_ids),
-                        ",".join(str(value) for value in range_receipt.anchor_values),
-                        range_receipt.review_ref,
-                    )
-                )
-            )
+            evidence_hash_parts.append(range_provenance_hash_part(range_receipt))
         evidence_hash = sha256("\n".join(sorted(evidence_hash_parts)).encode("utf-8")).hexdigest()
         compiled.append(
             CompiledAssumption(
@@ -493,6 +483,7 @@ def compile_assumptions(
                 transform_id=spec.transform_id,
                 input_evidence_hash=evidence_hash,
                 calibration_status=hypothesis.calibration_status if spec.probability_only_if_calibrated else None,
+                range_provenance=range_receipt,
             )
         )
 

@@ -3,7 +3,12 @@ from __future__ import annotations
 from hashlib import sha256
 import json
 
+from .actual_units import measure_from_raw
 from .assumption_compiler import CompiledAssumptionSet
+from .assumption_range_rules import (
+    AssumptionRangeReceipt,
+    range_provenance_hash_part,
+)
 from .ledger import EvidenceLedger
 from .scenario_binding import BoundScenarioSet
 from .valuation_execution import GenericValuationResult
@@ -34,6 +39,8 @@ def evidence_ledger_snapshot_hash(ledger: EvidenceLedger) -> str:
 def compiled_input_evidence_hash(
     ledger: EvidenceLedger,
     evidence_ids: tuple[str, ...],
+    *,
+    range_provenance: AssumptionRangeReceipt | None = None,
 ) -> str:
     """Replay the exact Evidence input hash contract used by the assumption compiler."""
     if not evidence_ids:
@@ -44,6 +51,30 @@ def compiled_input_evidence_hash(
         parts.append(
             f"{evidence.id}|{evidence.metric}|{evidence.value}|{evidence.unit}|"
             f"{evidence.effective_date}|{evidence.source_ref}"
+        )
+    if range_provenance is not None:
+        if len(range_provenance.anchor_evidence_ids) != len(range_provenance.anchor_effective_dates):
+            raise ValueError("range provenance anchor lengths disagree")
+        replayed_values = []
+        replayed_dates = []
+        for evidence_id in range_provenance.anchor_evidence_ids:
+            evidence = ledger.get(evidence_id)
+            if evidence.target != range_provenance.target_id:
+                raise ValueError("range provenance anchor target mismatch")
+            if evidence.metric != range_provenance.anchor_metric:
+                raise ValueError("range provenance anchor metric mismatch")
+            replayed_values.append(
+                measure_from_raw(evidence.value, evidence.unit, evidence.effective_date)
+                .convert_to(range_provenance.canonical_unit)
+                .amount
+            )
+            replayed_dates.append(evidence.effective_date)
+        parts.append(
+            range_provenance_hash_part(
+                range_provenance,
+                anchor_values=tuple(replayed_values),
+                anchor_effective_dates=tuple(replayed_dates),
+            )
         )
     return sha256("\n".join(sorted(parts)).encode("utf-8")).hexdigest()
 
@@ -165,7 +196,13 @@ def compiled_evidence_hash_mismatches(
     mismatches: list[str] = []
     for item in compiled.assumptions:
         try:
-            replayed = compiled_input_evidence_hash(ledger, item.evidence_ids)
+            if item.range_provenance is not None and item.range_provenance.target_id != compiled.target_id:
+                raise ValueError("range provenance target differs from compiled target")
+            replayed = compiled_input_evidence_hash(
+                ledger,
+                item.evidence_ids,
+                range_provenance=item.range_provenance,
+            )
         except ValueError:
             mismatches.append(f"{item.scenario_id}/{item.key}")
             continue
