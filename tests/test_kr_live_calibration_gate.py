@@ -116,3 +116,47 @@ def test_invalid_multisegment_declaration_is_not_masked_by_calibration(tmp_path)
     assert "rationale" in message
     assert "CALIBRATION_REQUIRED" not in message
     assert "CALIBRATION_COHORT_MISMATCH" not in message
+
+
+def test_target_profile_ticker_mismatch_cannot_disable_calibration_gate(tmp_path):
+    run_dir = _copy_kisco(tmp_path, "target-profile-ticker-mismatch")
+    company_path = run_dir / "raw" / "company.json"
+    import json
+    company = json.loads(company_path.read_text(encoding="utf-8"))
+    company["stock_code"] = "084010"
+    company_path.write_text(json.dumps(company), encoding="utf-8")
+    payload = run_kr_live._load_run(run_dir)
+    payload.pop("calibration", None)
+    (run_dir / "run.yaml").write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(run_kr_live.RunbookError) as caught:
+        run_kr_live.execute_run(run_dir)
+    message = str(caught.value)
+    assert "profile ticker disagrees with resolved target" in message
+    assert "084010" in message
+    assert "104700" in message
+
+
+def test_target_profile_corp_code_mismatch_cannot_disable_calibration_gate(tmp_path):
+    run_dir = _copy_kisco(tmp_path, "target-profile-corp-mismatch")
+    company_path = run_dir / "raw" / "company.json"
+    import json
+    company = json.loads(company_path.read_text(encoding="utf-8"))
+    company["corp_code"] = "00111111"
+    company_path.write_text(json.dumps(company), encoding="utf-8")
+    payload = run_kr_live._load_run(run_dir)
+    payload.pop("calibration", None)
+    (run_dir / "run.yaml").write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(run_kr_live.RunbookError) as caught:
+        run_kr_live.execute_run(run_dir)
+    message = str(caught.value)
+    assert "profile corp code disagrees with resolved target" in message
+    assert "00111111" in message
+    assert "00687711" in message
