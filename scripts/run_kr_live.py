@@ -106,6 +106,12 @@ class RunbookError(ValueError):
     pass
 
 
+class _TargetProfileMismatchError(RunbookError):
+    """Resolved target and OpenDART company profile identify different issuers."""
+
+    pass
+
+
 def _load_run(run_dir: Path) -> dict:
     payload = yaml.safe_load((run_dir / "run.yaml").read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
@@ -313,9 +319,15 @@ def _resolved_target_context(run_dir: Path, config: dict, network: OpenDartNetwo
         corp_code=corp_code,
         api_key=network.api_key,
     )
+    if profile.corp_code and profile.corp_code != corp_code:
+        raise _TargetProfileMismatchError(
+            "OpenDART company profile corp code disagrees with resolved target: "
+            f"profile={profile.corp_code}, resolved={corp_code}"
+        )
     if profile.stock_code and profile.stock_code != identity.ticker:
-        raise RunbookError(
-            "OpenDART company profile ticker disagrees with resolved target"
+        raise _TargetProfileMismatchError(
+            "OpenDART company profile ticker disagrees with resolved target: "
+            f"profile={profile.stock_code}, resolved={identity.ticker}"
         )
     return identity, corp_code, profile
 
@@ -446,6 +458,11 @@ def _enforce_production_calibration(
         identity, corp_code, profile = _resolved_target_context(
             run_dir, config, network
         )
+    except _TargetProfileMismatchError:
+        # This mismatch is not guaranteed to be rejected later by the canonical
+        # profile fetcher. Swallowing it would disable a mandatory cohort for a
+        # run whose raw company payload belongs to another issuer.
+        raise
     except Exception:
         return
     cohort = _required_production_calibration(
