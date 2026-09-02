@@ -13,14 +13,21 @@ match_policy:
 cohorts:
   - registry_id: kr-steel-long-continuous-v1
     status: PRODUCTION
-    ksic_prefix: "24"
+    # KSIC 241 (1차 철강 제조업), not the whole division 24: every company in
+    # the committed steel cohort is a steel maker, and every accepted steel run
+    # (KISCO, Daehan Steel) resolves to 2411. Division 24 also covers 242
+    # (1차 비철금속 제조업 — zinc, lead, copper smelting), whose price cycle is
+    # not the steel cohort's; a prefix of "24" would make this gate *mandate*
+    # the wrong cohort for a nonferrous smelter, the exact failure it exists
+    # to prevent. A nonferrous production cohort gets its own row once accepted.
+    ksic_prefix: "241"
     forecast_years: 5
     scenario_ids: [Down, Base, Bull]
     cohort_key: kr.steel.long|5y_path|continuous_v1
     forecast_class: kr.steel.long.continuous_financial_path
     external_probability_source: continuous_financial_path_monte_carlo
     rationale: >-
-      Listed Korean primary-metal manufacturers with the committed resolved
+      Listed Korean steel manufacturers (KSIC 241) with the committed resolved
       financial-path cohort. The target ticker must be excluded in the bound
       artifact; this row does not authorize reuse of another target's artifact.
   - registry_id: kr-reit-office-continuous-v1
