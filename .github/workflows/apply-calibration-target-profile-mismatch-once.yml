@@ -1,0 +1,155 @@
+name: apply-calibration-target-profile-mismatch-once
+
+on:
+  push:
+    branches:
+      - fix/calibration-target-profile-mismatch
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Patch fail-closed target/profile binding
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          runner = Path('scripts/run_kr_live.py')
+          text = runner.read_text(encoding='utf-8')
+
+          old = '''class RunbookError(ValueError):
+    pass
+
+'''
+          new = '''class RunbookError(ValueError):
+    pass
+
+
+class _TargetProfileMismatchError(RunbookError):
+    """Resolved target and OpenDART company profile identify different issuers."""
+
+    pass
+
+'''
+          assert text.count(old) == 1, 'RunbookError insertion anchor changed'
+          text = text.replace(old, new, 1)
+
+          old = '''    if profile.stock_code and profile.stock_code != identity.ticker:
+        raise RunbookError(
+            "OpenDART company profile ticker disagrees with resolved target"
+        )
+    return identity, corp_code, profile
+'''
+          new = '''    if profile.corp_code and profile.corp_code != corp_code:
+        raise _TargetProfileMismatchError(
+            "OpenDART company profile corp code disagrees with resolved target: "
+            f"profile={profile.corp_code}, resolved={corp_code}"
+        )
+    if profile.stock_code and profile.stock_code != identity.ticker:
+        raise _TargetProfileMismatchError(
+            "OpenDART company profile ticker disagrees with resolved target: "
+            f"profile={profile.stock_code}, resolved={identity.ticker}"
+        )
+    return identity, corp_code, profile
+'''
+          assert text.count(old) == 1, 'target/profile validation anchor changed'
+          text = text.replace(old, new, 1)
+
+          old = '''    try:
+        identity, corp_code, profile = _resolved_target_context(
+            run_dir, config, network
+        )
+    except Exception:
+        return
+'''
+          new = '''    try:
+        identity, corp_code, profile = _resolved_target_context(
+            run_dir, config, network
+        )
+    except _TargetProfileMismatchError:
+        # Unlike ordinary company-resolution/profile failures, this mismatch is
+        # not guaranteed to be rejected later by the canonical profile fetcher.
+        # Swallowing it would disable a mandatory production cohort for a run
+        # whose raw company payload belongs to another issuer.
+        raise
+    except Exception:
+        return
+'''
+          assert text.count(old) == 1, 'calibration preflight exception anchor changed'
+          text = text.replace(old, new, 1)
+          runner.write_text(text, encoding='utf-8')
+
+          tests = Path('tests/test_kr_live_calibration_gate.py')
+          t = tests.read_text(encoding='utf-8')
+          addition = r'''
+
+def test_target_profile_ticker_mismatch_cannot_disable_calibration_gate(tmp_path):
+    run_dir = _copy_kisco(tmp_path, "target-profile-ticker-mismatch")
+    company_path = run_dir / "raw" / "company.json"
+    import json
+    company = json.loads(company_path.read_text(encoding="utf-8"))
+    company["stock_code"] = "084010"
+    company_path.write_text(json.dumps(company), encoding="utf-8")
+    payload = run_kr_live._load_run(run_dir)
+    payload.pop("calibration", None)
+    (run_dir / "run.yaml").write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(run_kr_live.RunbookError) as caught:
+        run_kr_live.execute_run(run_dir)
+    message = str(caught.value)
+    assert "profile ticker disagrees with resolved target" in message
+    assert "084010" in message
+    assert "104700" in message
+
+
+def test_target_profile_corp_code_mismatch_cannot_disable_calibration_gate(tmp_path):
+    run_dir = _copy_kisco(tmp_path, "target-profile-corp-mismatch")
+    company_path = run_dir / "raw" / "company.json"
+    import json
+    company = json.loads(company_path.read_text(encoding="utf-8"))
+    company["corp_code"] = "00111111"
+    company_path.write_text(json.dumps(company), encoding="utf-8")
+    payload = run_kr_live._load_run(run_dir)
+    payload.pop("calibration", None)
+    (run_dir / "run.yaml").write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(run_kr_live.RunbookError) as caught:
+        run_kr_live.execute_run(run_dir)
+    message = str(caught.value)
+    assert "profile corp code disagrees with resolved target" in message
+    assert "00111111" in message
+    assert "00687711" in message
+'''
+          assert 'test_target_profile_ticker_mismatch_cannot_disable_calibration_gate' not in t
+          tests.write_text(t.rstrip() + addition + '\n', encoding='utf-8')
+          PY
+      - name: Validate focused and full suite
+        run: |
+          python -m pip install -e . >/dev/null
+          pytest -q tests/test_kr_live_calibration_gate.py
+          pytest -q
+          python scripts/validate_project_portfolio.py
+      - name: Commit clean fix
+        run: |
+          rm .github/workflows/apply-calibration-target-profile-mismatch-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/run_kr_live.py tests/test_kr_live_calibration_gate.py .github/workflows/apply-calibration-target-profile-mismatch-once.yml
+          git commit -m 'Fail closed on calibration target profile mismatch'
+          git push origin HEAD:fix/calibration-target-profile-mismatch
