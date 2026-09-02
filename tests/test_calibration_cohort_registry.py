@@ -132,3 +132,30 @@ def test_target_binding_rejects_other_issuer_exclusion():
                 "corp_code=00113225&bsns_year=2025"
             ),
         )
+
+
+def test_nonferrous_primary_metal_is_not_bound_to_the_steel_cohort():
+    """The steel row is keyed to KSIC 241 (steel making), not the whole
+    division 24. A zinc smelter (24213, 고려아연) shares the division but not
+    the steel cohort's price cycle; binding it to the steel cohort would make
+    the gate mandate the wrong cohort. With no accepted nonferrous production
+    cohort registered, that industry stays on the uncalibrated-allowed path
+    while steel makers (2411) remain bound."""
+    registry = load_production_calibration_registry()
+    assert (
+        resolve_production_calibration_cohort(
+            registry,
+            ksic_code="24213",
+            forecast_years=5,
+            scenario_ids=("Down", "Base", "Bull"),
+        )
+        is None
+    )
+    steel = resolve_production_calibration_cohort(
+        registry,
+        ksic_code="24112",
+        forecast_years=5,
+        scenario_ids=("Down", "Base", "Bull"),
+    )
+    assert steel is not None
+    assert steel.cohort_key == "kr.steel.long|5y_path|continuous_v1"
