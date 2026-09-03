@@ -177,3 +177,17 @@ def test_two_tier_reportable_segment_header_is_reconciled():
     assert disclosure.total_revenue == Decimal("13289522354")
     assert disclosure.total_operating_income == Decimal("1282869886")
     assert disclosure.entries[2].operating_income == Decimal("-13599031")
+
+
+def test_two_tier_placeholder_segment_name_is_refused():
+    """A dash is a filed placeholder, never an economic segment identity."""
+    text = """
+    <table>
+      <tr><td></td><td>보고부문</td><td>보고부문</td><td>기타부문</td><td>부문 합계</td></tr>
+      <tr><td></td><td>제조 및 판매</td><td>-</td><td>기타부문</td><td>부문 합계</td></tr>
+      <tr><td>매출액</td><td>100</td><td>20</td><td>3</td><td>123</td></tr>
+      <tr><td>영업이익</td><td>10</td><td>2</td><td>1</td><td>13</td></tr>
+    </table>
+    """
+    with pytest.raises(SegmentNoteError, match="no reconciled operating-segment"):
+        parse_operating_segment_note(text)
