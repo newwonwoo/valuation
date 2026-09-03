@@ -444,6 +444,7 @@ def test_committed_runtime_receipt_binds_evaluator_and_registries():
     assert "pyproject.toml" in paths
     assert "scripts/compare_runs.py" in paths
     assert "scripts/run_kr_live.py" in paths
+    assert "scripts/render_verified_report_form.py" in paths
     assert any(path.startswith("src/valuation_engine/") for path in paths)
     assert any(path.startswith("config/") for path in paths)
 

@@ -50,8 +50,7 @@ DEFAULT_WACC_THRESHOLD = Decimal("0.01")  # 1 percentage point
 DEFAULT_RESIDUAL_TOLERANCE = Decimal("0.01")  # KRW/share or reporting currency/share
 RUNTIME_INPUT_PATHS = (
     "pyproject.toml",
-    "scripts/compare_runs.py",
-    "scripts/run_kr_live.py",
+    "scripts",
     "src/valuation_engine",
     "config",
 )
@@ -174,7 +173,7 @@ def _head_commit() -> str:
 
 
 def _committed_runtime_receipt() -> dict:
-    """Attest the canonical evaluator and runtime registries used by comparison."""
+    """Attest importable scripts, the evaluator, and runtime registries."""
 
     repository_root = _repository_root()
     status = _git(
