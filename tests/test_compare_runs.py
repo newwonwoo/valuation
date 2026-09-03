@@ -441,6 +441,7 @@ def test_committed_runtime_receipt_binds_evaluator_and_registries():
     assert len(receipt["commit"]) == 40
     assert len(receipt["input_tree_sha256"]) == 64
     paths = {item["path"] for item in receipt["inputs"]}
+    assert "pyproject.toml" in paths
     assert "scripts/compare_runs.py" in paths
     assert "scripts/run_kr_live.py" in paths
     assert any(path.startswith("src/valuation_engine/") for path in paths)

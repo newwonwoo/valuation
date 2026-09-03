@@ -49,6 +49,7 @@ DEFAULT_PROBABILITY_THRESHOLD = Decimal("0.10")  # 10 percentage points
 DEFAULT_WACC_THRESHOLD = Decimal("0.01")  # 1 percentage point
 DEFAULT_RESIDUAL_TOLERANCE = Decimal("0.01")  # KRW/share or reporting currency/share
 RUNTIME_INPUT_PATHS = (
+    "pyproject.toml",
     "scripts/compare_runs.py",
     "scripts/run_kr_live.py",
     "src/valuation_engine",
