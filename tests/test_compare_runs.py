@@ -282,6 +282,36 @@ def test_probability_gap_over_ten_points_requires_reconciliation(tmp_path):
     )
 
 
+def test_probability_gap_at_ten_points_keeps_existing_exclusive_boundary(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(
+        run_a,
+        x="0",
+        y="0",
+        probabilities=("0.2", "0.6", "0.2"),
+    )
+    _write_run(
+        run_b,
+        x="0",
+        y="0",
+        probabilities=("0.1", "0.6", "0.3"),
+    )
+
+    result = _compare(
+        run_a,
+        run_b,
+        executor=_fake_executor,
+        probability_threshold=Decimal("0.10"),
+    )
+
+    assert result["status"] == compare_runs.STATUS_CONSISTENT
+    assert not any(
+        item["code"] == "PROBABILITY_VARIANCE_EXCEEDED"
+        for item in result["threshold_findings"]
+    )
+
+
 def test_wacc_gap_over_one_point_requires_reconciliation(tmp_path):
     run_a = tmp_path / "a"
     run_b = tmp_path / "b"
@@ -385,6 +415,60 @@ def test_committed_prism_run_receipt_binds_head_and_inputs():
     assert len(receipt["commit"]) == 40
     assert len(receipt["input_tree_sha256"]) == 64
     assert any(item["path"].endswith("/run.yaml") for item in receipt["inputs"])
+
+
+def test_missing_file_from_committed_run_tree_is_rejected(monkeypatch):
+    original_git = compare_runs._git
+
+    def committed_tree_with_missing_file(*args):
+        result = original_git(*args)
+        if args and args[0] == "ls-tree":
+            result.stdout += "runs/kisco-104700/raw/deleted-from-worktree.json\0"
+        return result
+
+    monkeypatch.setattr(compare_runs, "_git", committed_tree_with_missing_file)
+    with pytest.raises(
+        compare_runs.RunComparisonError,
+        match="committed run input is missing from worktree",
+    ):
+        compare_runs._committed_run_receipt(ROOT / "runs" / "kisco-104700")
+
+
+def test_symlinked_run_argument_is_not_comparable(tmp_path):
+    linked_run = tmp_path / "linked-run"
+    linked_run.symlink_to(ROOT / "runs" / "kisco-104700", target_is_directory=True)
+
+    def should_not_run(_path):
+        raise AssertionError("symlinked run must not execute")
+
+    result = compare_runs.compare_run_directories(
+        linked_run,
+        linked_run,
+        executor=should_not_run,
+    )
+
+    assert result["status"] == compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE
+    assert all(
+        "may not use symlinks" in item["detail"]
+        for item in result["comparability_findings"]
+    )
+
+
+def test_symlinked_calibration_binding_is_rejected(tmp_path):
+    artifact_link = tmp_path / "artifact-link.json"
+    artifact_link.symlink_to(ROOT / "config" / "kr_steel_calibration_artifact.json")
+    original_load = compare_runs._load_yaml_mapping
+
+    def calibration_with_symlink(path: Path) -> dict:
+        payload = original_load(path)
+        if path.name == "run.yaml":
+            payload["calibration"] = dict(payload["calibration"])
+            payload["calibration"]["artifact"] = str(artifact_link)
+        return payload
+
+    with patch.object(compare_runs, "_load_yaml_mapping", calibration_with_symlink):
+        with pytest.raises(compare_runs.RunComparisonError, match="may not use symlinks"):
+            compare_runs._committed_run_receipt(ROOT / "runs" / "kisco-104700")
 
 
 def test_uncommitted_run_inside_repository_is_not_comparable():

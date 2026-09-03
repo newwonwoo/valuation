@@ -26,6 +26,7 @@ from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 import importlib.util
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -123,9 +124,26 @@ def _git(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def _absolute_without_resolving(path: Path) -> Path:
+    return Path(os.path.abspath(os.fspath(path.expanduser())))
+
+
+def _reject_symlink_components(path: Path) -> Path:
+    absolute = _absolute_without_resolving(path)
+    for component in (absolute, *absolute.parents):
+        if component.is_symlink():
+            raise RunComparisonError(f"run inputs may not use symlinks: {component}")
+    return absolute
+
+
+def _resolved_run_input(path: Path) -> Path:
+    return _reject_symlink_components(path).resolve()
+
+
 def _committed_run_receipt(run_dir: Path) -> dict:
     """Bind a comparison input to clean files committed in this repository."""
 
+    run_dir = _resolved_run_input(run_dir)
     repository = _git("rev-parse", "--show-toplevel")
     if repository.returncode != 0:
         raise RunComparisonError("comparison runner is not inside a Git repository")
@@ -152,7 +170,35 @@ def _committed_run_receipt(run_dir: Path) -> dict:
             + ", ".join(str(path.relative_to(run_dir)) for path in missing)
         )
 
+    run_relative = run_dir.relative_to(repository_root).as_posix()
+    committed_tree = _git(
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        "HEAD",
+        "--",
+        run_relative,
+    )
+    if committed_tree.returncode != 0:
+        raise RunComparisonError(f"cannot enumerate committed run tree: {run_relative}")
+
     files: set[Path] = set()
+    for relative in filter(None, committed_tree.stdout.split("\0")):
+        path = repository_root / relative
+        within_run = path.relative_to(run_dir).parts
+        if within_run and within_run[0] == "out":
+            continue
+        if not path.exists():
+            raise RunComparisonError(
+                f"committed run input is missing from worktree: {relative}"
+            )
+        if path.is_symlink():
+            raise RunComparisonError(f"run inputs may not be symlinks: {path}")
+        if not path.is_file():
+            raise RunComparisonError(f"committed run input is not a file: {relative}")
+        files.add(path.resolve())
+
     for path in run_dir.rglob("*"):
         relative_parts = path.relative_to(run_dir).parts
         if relative_parts and relative_parts[0] == "out":
@@ -170,9 +216,8 @@ def _committed_run_receipt(run_dir: Path) -> dict:
             if not isinstance(declared, str) or not declared:
                 continue
             candidate = Path(declared)
-            resolved = (
-                candidate if candidate.is_absolute() else run_dir / candidate
-            ).resolve()
+            unresolved = candidate if candidate.is_absolute() else run_dir / candidate
+            resolved = _reject_symlink_components(unresolved).resolve()
             try:
                 resolved.relative_to(repository_root)
             except ValueError as exc:
@@ -536,7 +581,7 @@ def _threshold_findings(
             )
         else:
             max_gap = max(abs(a_probs[key] - b_probs[key]) for key in a_probs)
-            if max_gap >= probability_threshold:
+            if max_gap > probability_threshold:
                 findings.append(
                     {
                         "code": "PROBABILITY_VARIANCE_EXCEEDED",
@@ -793,12 +838,17 @@ def compare_run_directories(
     wacc_threshold: Decimal = DEFAULT_WACC_THRESHOLD,
     residual_tolerance: Decimal = DEFAULT_RESIDUAL_TOLERANCE,
 ) -> dict:
-    a_dir = Path(run_a).resolve()
-    b_dir = Path(run_b).resolve()
+    a_dir = _absolute_without_resolving(Path(run_a))
+    b_dir = _absolute_without_resolving(Path(run_b))
     receipts: dict[str, Mapping] = {}
     comparability_findings: list[dict[str, str]] = []
     for label, run_dir in (("run_a", a_dir), ("run_b", b_dir)):
         try:
+            run_dir = _resolved_run_input(run_dir)
+            if label == "run_a":
+                a_dir = run_dir
+            else:
+                b_dir = run_dir
             receipts[label] = _committed_run_receipt(run_dir)
         except (OSError, RunComparisonError) as exc:
             comparability_findings.append(
