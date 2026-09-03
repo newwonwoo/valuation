@@ -129,16 +129,9 @@ class OperatingSegmentDisclosure:
             raise SegmentNoteError(f"duplicate reportable segment names: {names}")
         revenue = sum((entry.revenue for entry in self.entries), Decimal(0))
         income = sum((entry.operating_income for entry in self.entries), Decimal(0))
-        # Statutory tables can round each displayed segment independently. A one-unit
-        # residual in the table's own disclosed unit (for example KRW thousand) is
-        # presentation rounding, not evidence that a segment is missing. Anything
-        # larger remains fail-closed; the disclosed total stays authoritative.
-        if (
-            abs(revenue - self.total_revenue) > Decimal("1")
-            or abs(income - self.total_operating_income) > Decimal("1")
-        ):
+        if revenue != self.total_revenue or income != self.total_operating_income:
             raise SegmentNoteError(
-                "reportable segment values do not sum and do not reconcile to the disclosed segment total"
+                "reportable segment values do not sum to the disclosed segment total"
             )
 
 
@@ -176,7 +169,7 @@ def _segment_columns(grid: list[list[str]]) -> tuple[int, tuple[tuple[int, str],
                 column_index
                 for column_index in range(1, total_column)
                 if (
-                    _squeeze(row[column_index]) in {"보고부문", "부문"}
+                    _squeeze(row[column_index]) == "보고부문"
                     or (
                         _SEGMENT_NAME.match(_squeeze(row[column_index]))
                         and _squeeze(row[column_index]) not in _SEGMENT_TOTAL_CELLS
