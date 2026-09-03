@@ -3,6 +3,8 @@
 
 The comparison deliberately separates two domains:
 
+* only clean PRISM run inputs committed at the current repository HEAD are
+  comparable; external or uncommitted numbers fail closed before execution;
 * structural contract differences (segment/method/calibration/risk/source scope)
   are not averaged or decomposed; they immediately require reconciliation;
 * judgment differences inside the same underwriting contract are decomposed by
@@ -17,6 +19,44 @@ average.
 
 from __future__ import annotations
 
+# ``sys`` is built in and ``os`` is frozen in the supported CPython runtime.
+# Remove repository import roots before any ordinary import so an ignored local
+# module cannot execute, erase itself, and evade the runtime receipt.
+import os as _bootstrap_os
+import sys as _bootstrap_sys
+
+if __name__ == "__main__" and not _bootstrap_sys.flags.isolated:
+    print("STATUS: EXTERNAL_RUN_NOT_COMPARABLE")
+    print("COMPARABILITY:")
+    print(
+        "  - PRISM_ISOLATED_INTERPRETER_REQUIRED (runtime): "
+        "invoke with `python -I scripts/compare_runs.py ...`"
+    )
+    raise SystemExit(4)
+
+if __name__ == "__main__":
+    _bootstrap_script_dir = _bootstrap_os.path.realpath(
+        _bootstrap_os.path.dirname(__file__)
+    )
+    _bootstrap_repository_root = _bootstrap_os.path.dirname(_bootstrap_script_dir)
+    def _bootstrap_outside_repository(entry: str) -> bool:
+        resolved = _bootstrap_os.path.realpath(entry or _bootstrap_os.getcwd())
+        try:
+            return (
+                _bootstrap_os.path.commonpath(
+                    (_bootstrap_repository_root, resolved)
+                )
+                != _bootstrap_repository_root
+            )
+        except ValueError:
+            return True
+
+    _bootstrap_sys.path[:] = [
+        entry
+        for entry in _bootstrap_sys.path
+        if _bootstrap_outside_repository(entry)
+    ]
+
 import argparse
 from copy import deepcopy
 from dataclasses import dataclass
@@ -26,6 +66,7 @@ import importlib.util
 import json
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 from typing import Callable, Mapping
@@ -37,12 +78,22 @@ ROOT = Path(__file__).resolve().parents[1]
 
 STATUS_CONSISTENT = "CONSISTENT"
 STATUS_RECONCILIATION_REQUIRED = "RECONCILIATION_REQUIRED"
+STATUS_EXTERNAL_RUN_NOT_COMPARABLE = "EXTERNAL_RUN_NOT_COMPARABLE"
 EXIT_RECONCILIATION_REQUIRED = 3
+EXIT_EXTERNAL_RUN_NOT_COMPARABLE = 4
 
 DEFAULT_BASE_THRESHOLD = Decimal("0.20")
 DEFAULT_PROBABILITY_THRESHOLD = Decimal("0.10")  # 10 percentage points
 DEFAULT_WACC_THRESHOLD = Decimal("0.01")  # 1 percentage point
 DEFAULT_RESIDUAL_TOLERANCE = Decimal("0.01")  # KRW/share or reporting currency/share
+RUNTIME_INPUT_PATHS = (
+    "pyproject.toml",
+    "scripts",
+    "src/valuation_engine",
+    "config",
+)
+RUNTIME_IMPORT_ROOTS = ("scripts", "src")
+IMPORTABLE_SUFFIXES = frozenset({".py", ".pyc", ".pyo", ".so", ".pyd"})
 
 
 class RunComparisonError(ValueError):
@@ -107,6 +158,247 @@ def _stable_json(value: object) -> str:
 
 def _digest(value: object) -> str:
     return sha256(_stable_json(value).encode("utf-8")).hexdigest()
+
+
+def _git(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ("git", "-C", str(ROOT), *args),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _provided_absolute(path: Path) -> Path:
+    expanded = path.expanduser()
+    return expanded if expanded.is_absolute() else Path.cwd() / expanded
+
+
+def _reject_symlink_components(path: Path) -> Path:
+    provided = _provided_absolute(path)
+    current = Path(provided.anchor)
+    for component in provided.parts[1:]:
+        if component in ("", "."):
+            continue
+        if component == "..":
+            current = current.parent
+            continue
+        current = current / component
+        if current.is_symlink():
+            raise RunComparisonError(f"run inputs may not use symlinks: {current}")
+        if not current.exists():
+            raise RunComparisonError(f"run input path component does not exist: {current}")
+    return current
+
+
+def _resolved_run_input(path: Path) -> Path:
+    return _reject_symlink_components(path).resolve()
+
+
+def _repository_root() -> Path:
+    repository = _git("rev-parse", "--show-toplevel")
+    if repository.returncode != 0:
+        raise RunComparisonError("comparison runner is not inside a Git repository")
+    repository_root = Path(repository.stdout.strip()).resolve()
+    if repository_root != ROOT.resolve():
+        raise RunComparisonError("comparison runner repository identity is ambiguous")
+    return repository_root
+
+
+def _head_commit() -> str:
+    commit = _git("rev-parse", "HEAD")
+    if commit.returncode != 0:
+        raise RunComparisonError("cannot resolve PRISM repository HEAD")
+    return commit.stdout.strip()
+
+
+def _committed_runtime_receipt() -> dict:
+    """Attest importable scripts, the evaluator, and runtime registries."""
+
+    repository_root = _repository_root()
+    status = _git(
+        "status",
+        "--porcelain=v1",
+        "-z",
+        "--untracked-files=all",
+        "--",
+        *RUNTIME_INPUT_PATHS,
+    )
+    if status.returncode != 0:
+        raise RunComparisonError("cannot verify PRISM runtime worktree state")
+    if status.stdout:
+        raise RunComparisonError(
+            "PRISM evaluator or runtime registry differs from repository HEAD"
+        )
+
+    committed_tree = _git(
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        "HEAD",
+        "--",
+        *RUNTIME_INPUT_PATHS,
+    )
+    if committed_tree.returncode != 0:
+        raise RunComparisonError("cannot enumerate committed PRISM runtime inputs")
+    receipts: list[dict[str, str]] = []
+    committed_paths = frozenset(filter(None, committed_tree.stdout.split("\0")))
+    for relative in sorted(committed_paths):
+        path = repository_root / relative
+        if not path.exists():
+            raise RunComparisonError(
+                f"committed PRISM runtime input is missing from worktree: {relative}"
+            )
+        if path.is_symlink():
+            raise RunComparisonError(f"runtime inputs may not be symlinks: {path}")
+        if not path.is_file():
+            raise RunComparisonError(f"committed runtime input is not a file: {relative}")
+        head_object = _git("rev-parse", f"HEAD:{relative}")
+        working_object = _git("hash-object", str(path))
+        if head_object.returncode != 0 or working_object.returncode != 0:
+            raise RunComparisonError(f"cannot verify committed runtime input: {relative}")
+        if head_object.stdout.strip() != working_object.stdout.strip():
+            raise RunComparisonError(f"runtime input differs from HEAD: {relative}")
+        receipts.append(
+            {"path": relative, "sha256": sha256(path.read_bytes()).hexdigest()}
+        )
+
+    for import_root in RUNTIME_IMPORT_ROOTS:
+        root = repository_root / import_root
+        for path in root.rglob("*"):
+            relative = path.relative_to(repository_root)
+            if "__pycache__" in relative.parts:
+                continue
+            if path.suffix.lower() not in IMPORTABLE_SUFFIXES:
+                continue
+            relative_text = relative.as_posix()
+            if relative_text not in committed_paths:
+                raise RunComparisonError(
+                    "importable runtime input is not committed at HEAD: "
+                    f"{relative_text}"
+                )
+    if not receipts:
+        raise RunComparisonError("committed PRISM runtime input tree is empty")
+    return {
+        "repository": "current_prism_repository",
+        "commit": _head_commit(),
+        "input_tree_sha256": _digest(receipts),
+        "inputs": receipts,
+    }
+
+
+def _committed_run_receipt(run_dir: Path) -> dict:
+    """Bind a comparison input to clean files committed in this repository."""
+
+    run_dir = _resolved_run_input(run_dir)
+    repository_root = _repository_root()
+    if not run_dir.is_dir():
+        raise RunComparisonError(f"run directory does not exist: {run_dir}")
+    try:
+        run_dir.relative_to(repository_root)
+    except ValueError as exc:
+        raise RunComparisonError(
+            f"run directory is outside the PRISM repository: {run_dir}"
+        ) from exc
+
+    required = (
+        run_dir / "run.yaml",
+        run_dir / "declarations" / "underwriting.yaml",
+    )
+    missing = tuple(path for path in required if not path.is_file())
+    if missing:
+        raise RunComparisonError(
+            "not a prepared PRISM run; missing "
+            + ", ".join(str(path.relative_to(run_dir)) for path in missing)
+        )
+
+    run_relative = run_dir.relative_to(repository_root).as_posix()
+    committed_tree = _git(
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        "HEAD",
+        "--",
+        run_relative,
+    )
+    if committed_tree.returncode != 0:
+        raise RunComparisonError(f"cannot enumerate committed run tree: {run_relative}")
+
+    files: set[Path] = set()
+    for relative in filter(None, committed_tree.stdout.split("\0")):
+        path = repository_root / relative
+        within_run = path.relative_to(run_dir).parts
+        if within_run and within_run[0] == "out":
+            continue
+        if not path.exists():
+            raise RunComparisonError(
+                f"committed run input is missing from worktree: {relative}"
+            )
+        if path.is_symlink():
+            raise RunComparisonError(f"run inputs may not be symlinks: {path}")
+        if not path.is_file():
+            raise RunComparisonError(f"committed run input is not a file: {relative}")
+        files.add(path.resolve())
+
+    for path in run_dir.rglob("*"):
+        relative_parts = path.relative_to(run_dir).parts
+        if relative_parts and relative_parts[0] == "out":
+            continue
+        if path.is_symlink():
+            raise RunComparisonError(f"run inputs may not be symlinks: {path}")
+        if path.is_file():
+            files.add(path.resolve())
+    files.update(path.resolve() for path in required)
+    config = _load_yaml_mapping(run_dir / "run.yaml")
+    calibration = config.get("calibration")
+    if isinstance(calibration, Mapping):
+        for key in ("artifact", "provenance", "conditioning"):
+            declared = calibration.get(key)
+            if not isinstance(declared, str) or not declared:
+                continue
+            candidate = Path(declared)
+            unresolved = candidate if candidate.is_absolute() else run_dir / candidate
+            resolved = _reject_symlink_components(unresolved).resolve()
+            try:
+                resolved.relative_to(repository_root)
+            except ValueError as exc:
+                raise RunComparisonError(
+                    f"calibration {key} is outside the PRISM repository: {declared}"
+                ) from exc
+            if not resolved.is_file():
+                raise RunComparisonError(f"calibration {key} is missing: {declared}")
+            files.add(resolved)
+
+    receipts: list[dict[str, str]] = []
+    for path in sorted(files):
+        try:
+            relative = path.relative_to(repository_root).as_posix()
+        except ValueError as exc:
+            raise RunComparisonError(
+                f"run input resolves outside the PRISM repository: {path}"
+            ) from exc
+        committed = _git("cat-file", "-e", f"HEAD:{relative}")
+        if committed.returncode != 0:
+            raise RunComparisonError(f"run input is not committed at HEAD: {relative}")
+        head_object = _git("rev-parse", f"HEAD:{relative}")
+        working_object = _git("hash-object", str(path))
+        if head_object.returncode != 0 or working_object.returncode != 0:
+            raise RunComparisonError(f"cannot verify committed run input: {relative}")
+        if head_object.stdout.strip() != working_object.stdout.strip():
+            raise RunComparisonError(f"run input differs from HEAD: {relative}")
+        receipts.append(
+            {"path": relative, "sha256": sha256(path.read_bytes()).hexdigest()}
+        )
+
+    return {
+        "repository": "current_prism_repository",
+        "run_path": run_dir.relative_to(repository_root).as_posix(),
+        "commit": _head_commit(),
+        "input_tree_sha256": _digest(receipts),
+        "inputs": receipts,
+    }
 
 
 def _tree_digest(path: Path) -> str | None:
@@ -308,12 +600,33 @@ def _structural_findings(a: Mapping, b: Mapping) -> list[dict]:
 
 def _load_runner_executor() -> Executor:
     path = ROOT / "scripts" / "run_kr_live.py"
+    cache_root = tempfile.TemporaryDirectory(prefix="prism-compare-import-")
+
+    def source_only(action: Callable[[], object]) -> object:
+        previous_prefix = sys.pycache_prefix
+        previous_write_policy = sys.dont_write_bytecode
+        sys.pycache_prefix = cache_root.name
+        sys.dont_write_bytecode = True
+        try:
+            return action()
+        finally:
+            sys.pycache_prefix = previous_prefix
+            sys.dont_write_bytecode = previous_write_policy
+
     spec = importlib.util.spec_from_file_location("prism_compare_run_kr_live", path)
     if spec is None or spec.loader is None:
+        cache_root.cleanup()
         raise RunComparisonError("cannot load scripts/run_kr_live.py")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.execute_run
+    source_only(lambda: spec.loader.exec_module(module))
+    canonical_execute = module.execute_run
+
+    def execute(run_dir: Path) -> tuple:
+        # Retain the empty cache root in this closure for any lazy imports made
+        # while the canonical runner executes.
+        return source_only(lambda: canonical_execute(run_dir))  # type: ignore[return-value]
+
+    return execute
 
 
 def _extract_outcome(result: object) -> Outcome:
@@ -399,7 +712,7 @@ def _threshold_findings(
 ) -> list[dict]:
     findings: list[dict] = []
     base_gap = _relative_gap(a.base_value, b.base_value)
-    if base_gap > base_threshold:
+    if base_gap >= base_threshold:
         findings.append(
             {
                 "code": "BASE_VALUE_VARIANCE_EXCEEDED",
@@ -444,7 +757,7 @@ def _threshold_findings(
         )
     elif a.wacc is not None and b.wacc is not None:
         gap = abs(a.wacc - b.wacc)
-        if gap > wacc_threshold:
+        if gap >= wacc_threshold:
             findings.append(
                 {
                     "code": "WACC_VARIANCE_EXCEEDED",
@@ -686,16 +999,83 @@ def compare_run_directories(
     wacc_threshold: Decimal = DEFAULT_WACC_THRESHOLD,
     residual_tolerance: Decimal = DEFAULT_RESIDUAL_TOLERANCE,
 ) -> dict:
-    a_dir = Path(run_a).resolve()
-    b_dir = Path(run_b).resolve()
-    signature_a = _structural_signature(a_dir)
-    signature_b = _structural_signature(b_dir)
+    a_dir = _provided_absolute(Path(run_a))
+    b_dir = _provided_absolute(Path(run_b))
+    receipts: dict[str, Mapping] = {}
+    comparability_findings: list[dict[str, str]] = []
+    try:
+        receipts["runtime"] = _committed_runtime_receipt()
+    except (OSError, TypeError, ValueError, yaml.YAMLError) as exc:
+        comparability_findings.append(
+            {
+                "code": "PRISM_COMMITTED_RUNTIME_REQUIRED",
+                "run": "runtime",
+                "detail": str(exc),
+            }
+        )
+    for label, run_dir in (("run_a", a_dir), ("run_b", b_dir)):
+        try:
+            run_dir = _resolved_run_input(run_dir)
+            if label == "run_a":
+                a_dir = run_dir
+            else:
+                b_dir = run_dir
+            receipts[label] = _committed_run_receipt(run_dir)
+        except (OSError, TypeError, ValueError, yaml.YAMLError) as exc:
+            comparability_findings.append(
+                {
+                    "code": "PRISM_COMMITTED_RUN_REQUIRED",
+                    "run": label,
+                    "detail": str(exc),
+                }
+            )
+    if comparability_findings:
+        return {
+            "status": STATUS_EXTERNAL_RUN_NOT_COMPARABLE,
+            "run_a": str(a_dir),
+            "run_b": str(b_dir),
+            "comparability_findings": comparability_findings,
+            "repository_receipts": receipts,
+            "structural_findings": [],
+            "threshold_findings": [],
+            "judgment_differences": [],
+            "attribution": [],
+            "residual": None,
+            "decomposition_order": [],
+            "note": "only clean PRISM run inputs committed at repository HEAD are comparable",
+        }
+
+    try:
+        signature_a = _structural_signature(a_dir)
+        signature_b = _structural_signature(b_dir)
+    except (OSError, TypeError, ValueError, yaml.YAMLError) as exc:
+        return {
+            "status": STATUS_EXTERNAL_RUN_NOT_COMPARABLE,
+            "run_a": str(a_dir),
+            "run_b": str(b_dir),
+            "comparability_findings": [
+                {
+                    "code": "PRISM_RUN_CONTRACT_INVALID",
+                    "run": "comparison_input",
+                    "detail": str(exc),
+                }
+            ],
+            "repository_receipts": receipts,
+            "structural_findings": [],
+            "threshold_findings": [],
+            "judgment_differences": [],
+            "attribution": [],
+            "residual": None,
+            "decomposition_order": [],
+            "note": "a committed path is not comparable unless it satisfies the PRISM run contract",
+        }
     structural = _structural_findings(signature_a, signature_b)
     if structural:
         return {
             "status": STATUS_RECONCILIATION_REQUIRED,
             "run_a": str(a_dir),
             "run_b": str(b_dir),
+            "repository_receipts": receipts,
             "structural_findings": structural,
             "threshold_findings": [],
             "judgment_differences": [],
@@ -713,6 +1093,7 @@ def compare_run_directories(
             "status": STATUS_RECONCILIATION_REQUIRED,
             "run_a": str(a_dir),
             "run_b": str(b_dir),
+            "repository_receipts": receipts,
             "outcome_a": _outcome_summary(outcome_a),
             "outcome_b": _outcome_summary(outcome_b),
             "structural_findings": [
@@ -764,6 +1145,7 @@ def compare_run_directories(
         ),
         "run_a": str(a_dir),
         "run_b": str(b_dir),
+        "repository_receipts": receipts,
         "outcome_a": _outcome_summary(outcome_a),
         "outcome_b": _outcome_summary(outcome_b),
         "base_gap_ratio": str(_relative_gap(outcome_a.base_value, outcome_b.base_value)),
@@ -803,6 +1185,13 @@ def _format_precise(value: object) -> str:
 
 def render_text_report(result: Mapping) -> str:
     lines = [f"STATUS: {result['status']}"]
+    if result.get("comparability_findings"):
+        lines.append("COMPARABILITY:")
+        for item in result["comparability_findings"]:
+            lines.append(
+                f"  - {item['code']} ({item.get('run', '')}): "
+                f"{item.get('detail', '')}"
+            )
     if result.get("outcome_a") and result.get("outcome_b"):
         a = result["outcome_a"]
         b = result["outcome_b"]
@@ -866,8 +1255,10 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=__doc__,
         epilog=(
+            "invoke this CLI with Python isolated mode (-I); "
             "exit codes: 0 CONSISTENT, 3 RECONCILIATION_REQUIRED, "
-            "1 comparison/execution error; argparse usage errors remain 2"
+            "4 EXTERNAL_RUN_NOT_COMPARABLE, 1 comparison/execution error; "
+            "argparse usage errors remain 2"
         ),
     )
     parser.add_argument("run_a")
@@ -921,7 +1312,11 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     else:
         print(render_text_report(result))
-    return EXIT_RECONCILIATION_REQUIRED if result["status"] == STATUS_RECONCILIATION_REQUIRED else 0
+    if result["status"] == STATUS_RECONCILIATION_REQUIRED:
+        return EXIT_RECONCILIATION_REQUIRED
+    if result["status"] == STATUS_EXTERNAL_RUN_NOT_COMPARABLE:
+        return EXIT_EXTERNAL_RUN_NOT_COMPARABLE
+    return 0
 
 
 if __name__ == "__main__":

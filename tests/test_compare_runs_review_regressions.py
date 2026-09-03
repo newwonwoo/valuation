@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from tests.test_compare_runs import _fake_executor, _write_run, compare_runs
+from tests.test_compare_runs import _compare, _fake_executor, _write_run, compare_runs
 
 
 def _set_calibration(run_dir: Path, artifact_body: str) -> None:
@@ -57,7 +57,7 @@ def test_complete_calibration_file_identity_is_structural(tmp_path):
         calls += 1
         raise AssertionError("calibration mismatch must stop before execution")
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a, run_b, executor=should_not_run
     )
 
@@ -105,7 +105,7 @@ def test_complete_segment_declaration_is_structural(tmp_path):
     def should_not_run(_path):
         raise AssertionError("segment mismatch must stop before execution")
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a, run_b, executor=should_not_run
     )
 
@@ -138,7 +138,7 @@ def test_no_underwriting_difference_checks_non_base_residuals(tmp_path):
             )
         return response
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a,
         run_b,
         executor=scenario_shift_executor,
@@ -208,3 +208,16 @@ def test_cli_threshold_flags_are_human_units_and_exit_is_distinct(monkeypatch):
     with pytest.raises(SystemExit) as exc:
         compare_runs._parser().parse_args([])
     assert exc.value.code == 2
+
+
+def test_cli_external_run_status_has_distinct_exit_code(monkeypatch):
+    monkeypatch.setattr(
+        compare_runs,
+        "compare_run_directories",
+        lambda *_args, **_kwargs: {
+            "status": compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE,
+            "comparability_findings": [],
+        },
+    )
+
+    assert compare_runs.main(["a", "b"]) == 4

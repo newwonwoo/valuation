@@ -2,10 +2,17 @@ from __future__ import annotations
 
 from decimal import Decimal
 import importlib.util
+import os
 from pathlib import Path
+import py_compile
+import subprocess
 import sys
+import tempfile
 from types import SimpleNamespace
+from unittest.mock import patch
+from zipfile import ZipFile
 
+import pytest
 import yaml
 
 
@@ -137,15 +144,45 @@ def _fake_executor(run_dir: Path):
     return ((), None, "", result)
 
 
+def _trusted_repository_validator(run_dir: Path) -> dict:
+    return {
+        "repository": "TEST",
+        "run_path": run_dir.name,
+        "commit": "TEST",
+        "input_tree_sha256": run_dir.name,
+        "inputs": [],
+    }
+
+
+def _trusted_runtime_validator() -> dict:
+    return {
+        "repository": "TEST",
+        "commit": "TEST",
+        "input_tree_sha256": "TEST",
+        "inputs": [],
+    }
+
+
+def _compare(run_a: Path, run_b: Path, **kwargs):
+    with patch.object(
+        compare_runs,
+        "_committed_run_receipt",
+        _trusted_repository_validator,
+    ), patch.object(
+        compare_runs,
+        "_committed_runtime_receipt",
+        _trusted_runtime_validator,
+    ):
+        return compare_runs.compare_run_directories(run_a, run_b, **kwargs)
+
+
 def test_same_contract_gets_exact_ordered_underwriting_waterfall(tmp_path):
     run_a = tmp_path / "a"
     run_b = tmp_path / "b"
     _write_run(run_a, x="10", y="20")
     _write_run(run_b, x="15", y="18")
 
-    result = compare_runs.compare_run_directories(
-        run_a, run_b, executor=_fake_executor
-    )
+    result = _compare(run_a, run_b, executor=_fake_executor)
 
     assert result["status"] == compare_runs.STATUS_CONSISTENT
     assert result["decomposition_order"] == ["x", "y"]
@@ -174,7 +211,7 @@ def test_method_mismatch_stops_before_any_attribution_execution(tmp_path):
         calls += 1
         raise AssertionError("structural mismatch must not execute attribution")
 
-    result = compare_runs.compare_run_directories(run_a, run_b, executor=should_not_run)
+    result = _compare(run_a, run_b, executor=should_not_run)
 
     assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
     assert calls == 0
@@ -188,7 +225,7 @@ def test_risk_pack_difference_is_structural_not_judgment(tmp_path):
     _write_run(run_a, risk_pack={"risk_free_rate": 0.03})
     _write_run(run_b, risk_pack={"risk_free_rate": 0.04})
 
-    result = compare_runs.compare_run_directories(run_a, run_b, executor=_fake_executor)
+    result = _compare(run_a, run_b, executor=_fake_executor)
 
     assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
     assert any(
@@ -204,7 +241,7 @@ def test_base_variance_threshold_triggers_reconciliation_with_attribution(tmp_pa
     _write_run(run_a, x="10", y="20")
     _write_run(run_b, x="30", y="20")
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a,
         run_b,
         executor=_fake_executor,
@@ -221,13 +258,34 @@ def test_base_variance_threshold_triggers_reconciliation_with_attribution(tmp_pa
     assert Decimal(result["residual"]["base_value_per_share"]) == 0
 
 
+def test_base_variance_at_twenty_percent_boundary_requires_reconciliation(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(run_a, x="10", y="20")
+    _write_run(run_b, x="16", y="20")
+
+    result = _compare(
+        run_a,
+        run_b,
+        executor=_fake_executor,
+        base_threshold=Decimal("0.20"),
+    )
+
+    assert result["base_gap_ratio"] == "0.2"
+    assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
+    assert any(
+        item["code"] == "BASE_VALUE_VARIANCE_EXCEEDED"
+        for item in result["threshold_findings"]
+    )
+
+
 def test_probability_gap_over_ten_points_requires_reconciliation(tmp_path):
     run_a = tmp_path / "a"
     run_b = tmp_path / "b"
     _write_run(run_a, probabilities=("0.2", "0.6", "0.2"))
     _write_run(run_b, probabilities=("0.05", "0.55", "0.40"))
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a,
         run_b,
         executor=_fake_executor,
@@ -241,13 +299,43 @@ def test_probability_gap_over_ten_points_requires_reconciliation(tmp_path):
     )
 
 
+def test_probability_gap_at_ten_points_keeps_existing_exclusive_boundary(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(
+        run_a,
+        x="0",
+        y="0",
+        probabilities=("0.2", "0.6", "0.2"),
+    )
+    _write_run(
+        run_b,
+        x="0",
+        y="0",
+        probabilities=("0.1", "0.6", "0.3"),
+    )
+
+    result = _compare(
+        run_a,
+        run_b,
+        executor=_fake_executor,
+        probability_threshold=Decimal("0.10"),
+    )
+
+    assert result["status"] == compare_runs.STATUS_CONSISTENT
+    assert not any(
+        item["code"] == "PROBABILITY_VARIANCE_EXCEEDED"
+        for item in result["threshold_findings"]
+    )
+
+
 def test_wacc_gap_over_one_point_requires_reconciliation(tmp_path):
     run_a = tmp_path / "a"
     run_b = tmp_path / "b"
     _write_run(run_a, wacc="0.09")
     _write_run(run_b, wacc="0.105")
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a,
         run_b,
         executor=_fake_executor,
@@ -261,13 +349,34 @@ def test_wacc_gap_over_one_point_requires_reconciliation(tmp_path):
     )
 
 
+def test_wacc_gap_at_one_point_boundary_requires_reconciliation(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(run_a, wacc="0.09")
+    _write_run(run_b, wacc="0.10")
+
+    result = _compare(
+        run_a,
+        run_b,
+        executor=_fake_executor,
+        wacc_threshold=Decimal("0.01"),
+    )
+
+    assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
+    assert any(
+        item["code"] == "WACC_VARIANCE_EXCEEDED"
+        and item["actual"] == "0.01"
+        for item in result["threshold_findings"]
+    )
+
+
 def test_metadata_only_judgment_change_is_visible_but_has_zero_value_delta(tmp_path):
     run_a = tmp_path / "a"
     run_b = tmp_path / "b"
     _write_run(run_a)
     _write_run(run_b, rationale_suffix=" with a different LLM explanation")
 
-    result = compare_runs.compare_run_directories(run_a, run_b, executor=_fake_executor)
+    result = _compare(run_a, run_b, executor=_fake_executor)
 
     assert result["status"] == compare_runs.STATUS_CONSISTENT
     assert len(result["attribution"]) == 1
@@ -282,8 +391,343 @@ def test_target_mismatch_is_structural_after_canonical_execution(tmp_path):
     _write_run(run_a, ticker="010130")
     _write_run(run_b, ticker="000660")
 
-    result = compare_runs.compare_run_directories(run_a, run_b, executor=_fake_executor)
+    result = _compare(run_a, run_b, executor=_fake_executor)
 
     assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
     assert result["structural_findings"][0]["code"] == "TARGET_MISMATCH"
     assert result["attribution"] == []
+
+
+def test_external_runs_are_rejected_before_execution(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(run_a)
+    _write_run(run_b)
+    calls = 0
+
+    def should_not_run(_path):
+        nonlocal calls
+        calls += 1
+        raise AssertionError("external runs must not execute")
+
+    with patch.object(
+        compare_runs,
+        "_committed_runtime_receipt",
+        _trusted_runtime_validator,
+    ):
+        result = compare_runs.compare_run_directories(
+            run_a, run_b, executor=should_not_run
+        )
+
+    assert result["status"] == compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE
+    assert calls == 0
+    assert {item["run"] for item in result["comparability_findings"]} == {
+        "run_a",
+        "run_b",
+    }
+    assert all(
+        item["code"] == "PRISM_COMMITTED_RUN_REQUIRED"
+        for item in result["comparability_findings"]
+    )
+
+
+def test_committed_prism_run_receipt_binds_head_and_inputs():
+    receipt = compare_runs._committed_run_receipt(ROOT / "runs" / "kisco-104700")
+
+    assert len(receipt["commit"]) == 40
+    assert len(receipt["input_tree_sha256"]) == 64
+    assert any(item["path"].endswith("/run.yaml") for item in receipt["inputs"])
+
+
+def test_committed_runtime_receipt_binds_evaluator_and_registries():
+    receipt = compare_runs._committed_runtime_receipt()
+
+    assert len(receipt["commit"]) == 40
+    assert len(receipt["input_tree_sha256"]) == 64
+    paths = {item["path"] for item in receipt["inputs"]}
+    assert "pyproject.toml" in paths
+    assert "scripts/compare_runs.py" in paths
+    assert "scripts/run_kr_live.py" in paths
+    assert "scripts/render_verified_report_form.py" in paths
+    assert any(path.startswith("src/valuation_engine/") for path in paths)
+    assert any(path.startswith("config/") for path in paths)
+
+
+def test_dirty_runtime_is_rejected_before_receipt(monkeypatch):
+    original_git = compare_runs._git
+
+    def runtime_with_dirty_source(*args):
+        if args and args[0] == "status":
+            return compare_runs.subprocess.CompletedProcess(
+                args,
+                0,
+                stdout=" M src/valuation_engine/valuation_execution.py\0",
+                stderr="",
+            )
+        return original_git(*args)
+
+    monkeypatch.setattr(compare_runs, "_git", runtime_with_dirty_source)
+    with pytest.raises(
+        compare_runs.RunComparisonError,
+        match="runtime registry differs from repository HEAD",
+    ):
+        compare_runs._committed_runtime_receipt()
+
+
+def test_runtime_blob_is_checked_even_when_status_reports_clean(monkeypatch):
+    original_git = compare_runs._git
+
+    def runtime_with_hidden_blob_change(*args):
+        if (
+            args
+            and args[0] == "hash-object"
+            and str(args[1]).endswith("scripts/run_kr_live.py")
+        ):
+            return compare_runs.subprocess.CompletedProcess(
+                args,
+                0,
+                stdout="assume-unchanged-worktree-blob\n",
+                stderr="",
+            )
+        return original_git(*args)
+
+    monkeypatch.setattr(compare_runs, "_git", runtime_with_hidden_blob_change)
+    with pytest.raises(
+        compare_runs.RunComparisonError,
+        match="runtime input differs from HEAD: scripts/run_kr_live.py",
+    ):
+        compare_runs._committed_runtime_receipt()
+
+
+def test_ignored_importable_runtime_file_is_rejected():
+    probe = ROOT / "scripts" / "compare_runs_ignored_probe.pyc"
+    assert not probe.exists()
+    probe.write_bytes(b"ignored import probe")
+    try:
+        with pytest.raises(
+            compare_runs.RunComparisonError,
+            match=(
+                "importable runtime input is not committed at HEAD: "
+                "scripts/compare_runs_ignored_probe.pyc"
+            ),
+        ):
+            compare_runs._committed_runtime_receipt()
+    finally:
+        probe.unlink(missing_ok=True)
+
+
+def test_isolated_cli_blocks_local_module_execution_before_imports(tmp_path):
+    probe = ROOT / "scripts" / "yaml.pyc"
+    marker = tmp_path / "local-module-executed"
+    source = tmp_path / "yaml_probe.py"
+    assert not probe.exists()
+    source.write_text(
+        "from pathlib import Path\n"
+        f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n"
+        "Path(__file__).unlink(missing_ok=True)\n",
+        encoding="utf-8",
+    )
+    py_compile.compile(str(source), cfile=str(probe), doraise=True)
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = os.pathsep.join(
+        filter(None, (str(ROOT / "scripts"), environment.get("PYTHONPATH", "")))
+    )
+    try:
+        completed = subprocess.run(
+            [
+                getattr(sys, "_base_executable", sys.executable),
+                "-I",
+                str(SCRIPT),
+                "--help",
+            ],
+            cwd=ROOT,
+            env=environment,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert completed.returncode == 0
+        assert "Compare two prepared PRISM runs" in completed.stdout
+        assert not marker.exists()
+        assert probe.exists()
+    finally:
+        probe.unlink(missing_ok=True)
+
+
+def test_isolated_cli_blocks_nested_repository_import_archive(tmp_path):
+    probe = ROOT / ".compare_runs_import_probe.zip"
+    marker = tmp_path / "archive-module-executed"
+    assert not probe.exists()
+    with ZipFile(probe, "w") as archive:
+        archive.writestr(
+            "yaml.py",
+            "from pathlib import Path\n"
+            f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n"
+            f"Path({str(probe)!r}).unlink(missing_ok=True)\n",
+        )
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = os.pathsep.join(
+        filter(None, (str(probe), environment.get("PYTHONPATH", "")))
+    )
+    try:
+        completed = subprocess.run(
+            [
+                getattr(sys, "_base_executable", sys.executable),
+                "-I",
+                str(SCRIPT),
+                "--help",
+            ],
+            cwd=ROOT,
+            env=environment,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert completed.returncode == 0
+        assert "Compare two prepared PRISM runs" in completed.stdout
+        assert not marker.exists()
+        assert probe.exists()
+    finally:
+        probe.unlink(missing_ok=True)
+
+
+def test_nonisolated_cli_fails_closed_after_startup_customization(tmp_path):
+    probe = tmp_path / "startup-probe.zip"
+    marker = tmp_path / "startup-customization-executed"
+    with ZipFile(probe, "w") as archive:
+        archive.writestr(
+            "sitecustomize.py",
+            "from pathlib import Path\n"
+            f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n",
+        )
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(probe)
+
+    completed = subprocess.run(
+        [
+            getattr(sys, "_base_executable", sys.executable),
+            str(SCRIPT),
+            "runs/kisco-104700",
+            "runs/kisco-104700",
+            "--json",
+        ],
+        cwd=ROOT,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert marker.is_file()
+    assert completed.returncode == compare_runs.EXIT_EXTERNAL_RUN_NOT_COMPARABLE
+    assert completed.stdout.startswith(
+        f"STATUS: {compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE}\n"
+    )
+    assert "PRISM_ISOLATED_INTERPRETER_REQUIRED" in completed.stdout
+
+
+def test_malformed_run_yaml_returns_external_not_comparable_status():
+    def should_not_run(_path):
+        raise AssertionError("malformed run must not execute")
+
+    with patch.object(
+        compare_runs,
+        "_committed_runtime_receipt",
+        _trusted_runtime_validator,
+    ), patch.object(
+        compare_runs,
+        "_load_yaml_mapping",
+        side_effect=yaml.YAMLError("invalid YAML"),
+    ):
+        result = compare_runs.compare_run_directories(
+            ROOT / "runs" / "kisco-104700",
+            ROOT / "runs" / "kisco-104700",
+            executor=should_not_run,
+        )
+
+    assert result["status"] == compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE
+    assert all(
+        item["code"] == "PRISM_COMMITTED_RUN_REQUIRED"
+        for item in result["comparability_findings"]
+    )
+
+
+def test_missing_file_from_committed_run_tree_is_rejected(monkeypatch):
+    original_git = compare_runs._git
+
+    def committed_tree_with_missing_file(*args):
+        result = original_git(*args)
+        if args and args[0] == "ls-tree":
+            result.stdout += "runs/kisco-104700/raw/deleted-from-worktree.json\0"
+        return result
+
+    monkeypatch.setattr(compare_runs, "_git", committed_tree_with_missing_file)
+    with pytest.raises(
+        compare_runs.RunComparisonError,
+        match="committed run input is missing from worktree",
+    ):
+        compare_runs._committed_run_receipt(ROOT / "runs" / "kisco-104700")
+
+
+def test_symlinked_run_argument_is_not_comparable(tmp_path):
+    linked_run = tmp_path / "linked-run"
+    linked_run.symlink_to(ROOT / "runs" / "kisco-104700", target_is_directory=True)
+
+    def should_not_run(_path):
+        raise AssertionError("symlinked run must not execute")
+
+    with patch.object(
+        compare_runs,
+        "_committed_runtime_receipt",
+        _trusted_runtime_validator,
+    ):
+        result = compare_runs.compare_run_directories(
+            linked_run,
+            linked_run,
+            executor=should_not_run,
+        )
+
+    assert result["status"] == compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE
+    assert all(
+        "may not use symlinks" in item["detail"]
+        for item in result["comparability_findings"]
+    )
+
+
+def test_symlink_is_rejected_before_following_parent_component(tmp_path):
+    target = tmp_path / "target"
+    target.mkdir()
+    alias = tmp_path / "alias"
+    alias.symlink_to(target, target_is_directory=True)
+
+    with pytest.raises(compare_runs.RunComparisonError, match="may not use symlinks"):
+        compare_runs._resolved_run_input(alias / ".." / "run")
+
+
+def test_symlinked_calibration_binding_is_rejected(tmp_path):
+    artifact_link = tmp_path / "artifact-link.json"
+    artifact_link.symlink_to(ROOT / "config" / "kr_steel_calibration_artifact.json")
+    original_load = compare_runs._load_yaml_mapping
+
+    def calibration_with_symlink(path: Path) -> dict:
+        payload = original_load(path)
+        if path.name == "run.yaml":
+            payload["calibration"] = dict(payload["calibration"])
+            payload["calibration"]["artifact"] = str(artifact_link)
+        return payload
+
+    with patch.object(compare_runs, "_load_yaml_mapping", calibration_with_symlink):
+        with pytest.raises(compare_runs.RunComparisonError, match="may not use symlinks"):
+            compare_runs._committed_run_receipt(ROOT / "runs" / "kisco-104700")
+
+
+def test_uncommitted_run_inside_repository_is_not_comparable():
+    with tempfile.TemporaryDirectory(prefix=".compare-runs-", dir=ROOT / "runs") as name:
+        run_dir = Path(name) / "run"
+        _write_run(run_dir)
+
+        with pytest.raises(
+            compare_runs.RunComparisonError,
+            match="not committed at HEAD",
+        ):
+            compare_runs._committed_run_receipt(run_dir)

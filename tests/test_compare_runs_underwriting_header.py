@@ -5,7 +5,7 @@ from pathlib import Path
 
 import yaml
 
-from tests.test_compare_runs import _fake_executor, _write_run, compare_runs
+from tests.test_compare_runs import _compare, _fake_executor, _write_run, compare_runs
 
 
 def _rewrite_underwriting_header(run_dir: Path, key: str, value: str) -> None:
@@ -29,7 +29,7 @@ def test_underwriting_target_header_is_structural(tmp_path):
         calls += 1
         raise AssertionError("underwriting header mismatch must stop before execution")
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a, run_b, executor=should_not_run
     )
 
@@ -50,7 +50,7 @@ def test_inherited_underwriting_source_ref_is_metadata_difference(tmp_path):
         run_b, "source_ref", "https://example.com/revised-source"
     )
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a, run_b, executor=_fake_executor
     )
 
