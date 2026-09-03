@@ -30,16 +30,22 @@ if __name__ == "__main__":
         _bootstrap_os.path.dirname(__file__)
     )
     _bootstrap_repository_root = _bootstrap_os.path.dirname(_bootstrap_script_dir)
-    _bootstrap_blocked_import_roots = {
-        _bootstrap_script_dir,
-        _bootstrap_repository_root,
-        _bootstrap_os.path.join(_bootstrap_repository_root, "src"),
-    }
+    def _bootstrap_outside_repository(entry: str) -> bool:
+        resolved = _bootstrap_os.path.realpath(entry or _bootstrap_os.getcwd())
+        try:
+            return (
+                _bootstrap_os.path.commonpath(
+                    (_bootstrap_repository_root, resolved)
+                )
+                != _bootstrap_repository_root
+            )
+        except ValueError:
+            return True
+
     _bootstrap_sys.path[:] = [
         entry
         for entry in _bootstrap_sys.path
-        if _bootstrap_os.path.realpath(entry or _bootstrap_os.getcwd())
-        not in _bootstrap_blocked_import_roots
+        if _bootstrap_outside_repository(entry)
     ]
 
 import argparse

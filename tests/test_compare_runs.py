@@ -10,6 +10,7 @@ import sys
 import tempfile
 from types import SimpleNamespace
 from unittest.mock import patch
+from zipfile import ZipFile
 
 import pytest
 import yaml
@@ -534,7 +535,43 @@ def test_cli_bootstrap_blocks_local_module_execution_before_imports(tmp_path):
     try:
         completed = subprocess.run(
             [
-                sys.executable,
+                getattr(sys, "_base_executable", sys.executable),
+                str(SCRIPT),
+                "--help",
+            ],
+            cwd=ROOT,
+            env=environment,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert completed.returncode == 0
+        assert "Compare two prepared PRISM runs" in completed.stdout
+        assert not marker.exists()
+        assert probe.exists()
+    finally:
+        probe.unlink(missing_ok=True)
+
+
+def test_cli_bootstrap_blocks_nested_repository_import_archive(tmp_path):
+    probe = ROOT / ".compare_runs_import_probe.zip"
+    marker = tmp_path / "archive-module-executed"
+    assert not probe.exists()
+    with ZipFile(probe, "w") as archive:
+        archive.writestr(
+            "yaml.py",
+            "from pathlib import Path\n"
+            f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n"
+            f"Path({str(probe)!r}).unlink(missing_ok=True)\n",
+        )
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = os.pathsep.join(
+        filter(None, (str(probe), environment.get("PYTHONPATH", "")))
+    )
+    try:
+        completed = subprocess.run(
+            [
+                getattr(sys, "_base_executable", sys.executable),
                 str(SCRIPT),
                 "--help",
             ],
