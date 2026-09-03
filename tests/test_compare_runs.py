@@ -4,8 +4,11 @@ from decimal import Decimal
 import importlib.util
 from pathlib import Path
 import sys
+import tempfile
 from types import SimpleNamespace
+from unittest.mock import patch
 
+import pytest
 import yaml
 
 
@@ -137,15 +140,32 @@ def _fake_executor(run_dir: Path):
     return ((), None, "", result)
 
 
+def _trusted_repository_validator(run_dir: Path) -> dict:
+    return {
+        "repository": "TEST",
+        "run_path": run_dir.name,
+        "commit": "TEST",
+        "input_tree_sha256": run_dir.name,
+        "inputs": [],
+    }
+
+
+def _compare(run_a: Path, run_b: Path, **kwargs):
+    with patch.object(
+        compare_runs,
+        "_committed_run_receipt",
+        _trusted_repository_validator,
+    ):
+        return compare_runs.compare_run_directories(run_a, run_b, **kwargs)
+
+
 def test_same_contract_gets_exact_ordered_underwriting_waterfall(tmp_path):
     run_a = tmp_path / "a"
     run_b = tmp_path / "b"
     _write_run(run_a, x="10", y="20")
     _write_run(run_b, x="15", y="18")
 
-    result = compare_runs.compare_run_directories(
-        run_a, run_b, executor=_fake_executor
-    )
+    result = _compare(run_a, run_b, executor=_fake_executor)
 
     assert result["status"] == compare_runs.STATUS_CONSISTENT
     assert result["decomposition_order"] == ["x", "y"]
@@ -174,7 +194,7 @@ def test_method_mismatch_stops_before_any_attribution_execution(tmp_path):
         calls += 1
         raise AssertionError("structural mismatch must not execute attribution")
 
-    result = compare_runs.compare_run_directories(run_a, run_b, executor=should_not_run)
+    result = _compare(run_a, run_b, executor=should_not_run)
 
     assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
     assert calls == 0
@@ -188,7 +208,7 @@ def test_risk_pack_difference_is_structural_not_judgment(tmp_path):
     _write_run(run_a, risk_pack={"risk_free_rate": 0.03})
     _write_run(run_b, risk_pack={"risk_free_rate": 0.04})
 
-    result = compare_runs.compare_run_directories(run_a, run_b, executor=_fake_executor)
+    result = _compare(run_a, run_b, executor=_fake_executor)
 
     assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
     assert any(
@@ -204,7 +224,7 @@ def test_base_variance_threshold_triggers_reconciliation_with_attribution(tmp_pa
     _write_run(run_a, x="10", y="20")
     _write_run(run_b, x="30", y="20")
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a,
         run_b,
         executor=_fake_executor,
@@ -221,13 +241,34 @@ def test_base_variance_threshold_triggers_reconciliation_with_attribution(tmp_pa
     assert Decimal(result["residual"]["base_value_per_share"]) == 0
 
 
+def test_base_variance_at_twenty_percent_boundary_requires_reconciliation(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(run_a, x="10", y="20")
+    _write_run(run_b, x="16", y="20")
+
+    result = _compare(
+        run_a,
+        run_b,
+        executor=_fake_executor,
+        base_threshold=Decimal("0.20"),
+    )
+
+    assert result["base_gap_ratio"] == "0.2"
+    assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
+    assert any(
+        item["code"] == "BASE_VALUE_VARIANCE_EXCEEDED"
+        for item in result["threshold_findings"]
+    )
+
+
 def test_probability_gap_over_ten_points_requires_reconciliation(tmp_path):
     run_a = tmp_path / "a"
     run_b = tmp_path / "b"
     _write_run(run_a, probabilities=("0.2", "0.6", "0.2"))
     _write_run(run_b, probabilities=("0.05", "0.55", "0.40"))
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a,
         run_b,
         executor=_fake_executor,
@@ -247,7 +288,7 @@ def test_wacc_gap_over_one_point_requires_reconciliation(tmp_path):
     _write_run(run_a, wacc="0.09")
     _write_run(run_b, wacc="0.105")
 
-    result = compare_runs.compare_run_directories(
+    result = _compare(
         run_a,
         run_b,
         executor=_fake_executor,
@@ -261,13 +302,34 @@ def test_wacc_gap_over_one_point_requires_reconciliation(tmp_path):
     )
 
 
+def test_wacc_gap_at_one_point_boundary_requires_reconciliation(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(run_a, wacc="0.09")
+    _write_run(run_b, wacc="0.10")
+
+    result = _compare(
+        run_a,
+        run_b,
+        executor=_fake_executor,
+        wacc_threshold=Decimal("0.01"),
+    )
+
+    assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
+    assert any(
+        item["code"] == "WACC_VARIANCE_EXCEEDED"
+        and item["actual"] == "0.01"
+        for item in result["threshold_findings"]
+    )
+
+
 def test_metadata_only_judgment_change_is_visible_but_has_zero_value_delta(tmp_path):
     run_a = tmp_path / "a"
     run_b = tmp_path / "b"
     _write_run(run_a)
     _write_run(run_b, rationale_suffix=" with a different LLM explanation")
 
-    result = compare_runs.compare_run_directories(run_a, run_b, executor=_fake_executor)
+    result = _compare(run_a, run_b, executor=_fake_executor)
 
     assert result["status"] == compare_runs.STATUS_CONSISTENT
     assert len(result["attribution"]) == 1
@@ -282,8 +344,56 @@ def test_target_mismatch_is_structural_after_canonical_execution(tmp_path):
     _write_run(run_a, ticker="010130")
     _write_run(run_b, ticker="000660")
 
-    result = compare_runs.compare_run_directories(run_a, run_b, executor=_fake_executor)
+    result = _compare(run_a, run_b, executor=_fake_executor)
 
     assert result["status"] == compare_runs.STATUS_RECONCILIATION_REQUIRED
     assert result["structural_findings"][0]["code"] == "TARGET_MISMATCH"
     assert result["attribution"] == []
+
+
+def test_external_runs_are_rejected_before_execution(tmp_path):
+    run_a = tmp_path / "a"
+    run_b = tmp_path / "b"
+    _write_run(run_a)
+    _write_run(run_b)
+    calls = 0
+
+    def should_not_run(_path):
+        nonlocal calls
+        calls += 1
+        raise AssertionError("external runs must not execute")
+
+    result = compare_runs.compare_run_directories(
+        run_a, run_b, executor=should_not_run
+    )
+
+    assert result["status"] == compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE
+    assert calls == 0
+    assert {item["run"] for item in result["comparability_findings"]} == {
+        "run_a",
+        "run_b",
+    }
+    assert all(
+        item["code"] == "PRISM_COMMITTED_RUN_REQUIRED"
+        for item in result["comparability_findings"]
+    )
+
+
+def test_committed_prism_run_receipt_binds_head_and_inputs():
+    receipt = compare_runs._committed_run_receipt(ROOT / "runs" / "kisco-104700")
+
+    assert len(receipt["commit"]) == 40
+    assert len(receipt["input_tree_sha256"]) == 64
+    assert any(item["path"].endswith("/run.yaml") for item in receipt["inputs"])
+
+
+def test_uncommitted_run_inside_repository_is_not_comparable():
+    with tempfile.TemporaryDirectory(prefix=".compare-runs-", dir=ROOT / "runs") as name:
+        run_dir = Path(name) / "run"
+        _write_run(run_dir)
+
+        with pytest.raises(
+            compare_runs.RunComparisonError,
+            match="not committed at HEAD",
+        ):
+            compare_runs._committed_run_receipt(run_dir)

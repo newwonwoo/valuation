@@ -3,6 +3,8 @@
 
 The comparison deliberately separates two domains:
 
+* only clean PRISM run inputs committed at the current repository HEAD are
+  comparable; external or uncommitted numbers fail closed before execution;
 * structural contract differences (segment/method/calibration/risk/source scope)
   are not averaged or decomposed; they immediately require reconciliation;
 * judgment differences inside the same underwriting contract are decomposed by
@@ -26,6 +28,7 @@ import importlib.util
 import json
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 from typing import Callable, Mapping
@@ -37,7 +40,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 STATUS_CONSISTENT = "CONSISTENT"
 STATUS_RECONCILIATION_REQUIRED = "RECONCILIATION_REQUIRED"
+STATUS_EXTERNAL_RUN_NOT_COMPARABLE = "EXTERNAL_RUN_NOT_COMPARABLE"
 EXIT_RECONCILIATION_REQUIRED = 3
+EXIT_EXTERNAL_RUN_NOT_COMPARABLE = 4
 
 DEFAULT_BASE_THRESHOLD = Decimal("0.20")
 DEFAULT_PROBABILITY_THRESHOLD = Decimal("0.10")  # 10 percentage points
@@ -107,6 +112,108 @@ def _stable_json(value: object) -> str:
 
 def _digest(value: object) -> str:
     return sha256(_stable_json(value).encode("utf-8")).hexdigest()
+
+
+def _git(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ("git", "-C", str(ROOT), *args),
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _committed_run_receipt(run_dir: Path) -> dict:
+    """Bind a comparison input to clean files committed in this repository."""
+
+    repository = _git("rev-parse", "--show-toplevel")
+    if repository.returncode != 0:
+        raise RunComparisonError("comparison runner is not inside a Git repository")
+    repository_root = Path(repository.stdout.strip()).resolve()
+    if repository_root != ROOT.resolve():
+        raise RunComparisonError("comparison runner repository identity is ambiguous")
+    if not run_dir.is_dir():
+        raise RunComparisonError(f"run directory does not exist: {run_dir}")
+    try:
+        run_dir.relative_to(repository_root)
+    except ValueError as exc:
+        raise RunComparisonError(
+            f"run directory is outside the PRISM repository: {run_dir}"
+        ) from exc
+
+    required = (
+        run_dir / "run.yaml",
+        run_dir / "declarations" / "underwriting.yaml",
+    )
+    missing = tuple(path for path in required if not path.is_file())
+    if missing:
+        raise RunComparisonError(
+            "not a prepared PRISM run; missing "
+            + ", ".join(str(path.relative_to(run_dir)) for path in missing)
+        )
+
+    files: set[Path] = set()
+    for path in run_dir.rglob("*"):
+        relative_parts = path.relative_to(run_dir).parts
+        if relative_parts and relative_parts[0] == "out":
+            continue
+        if path.is_symlink():
+            raise RunComparisonError(f"run inputs may not be symlinks: {path}")
+        if path.is_file():
+            files.add(path.resolve())
+    files.update(path.resolve() for path in required)
+    config = _load_yaml_mapping(run_dir / "run.yaml")
+    calibration = config.get("calibration")
+    if isinstance(calibration, Mapping):
+        for key in ("artifact", "provenance", "conditioning"):
+            declared = calibration.get(key)
+            if not isinstance(declared, str) or not declared:
+                continue
+            candidate = Path(declared)
+            resolved = (
+                candidate if candidate.is_absolute() else run_dir / candidate
+            ).resolve()
+            try:
+                resolved.relative_to(repository_root)
+            except ValueError as exc:
+                raise RunComparisonError(
+                    f"calibration {key} is outside the PRISM repository: {declared}"
+                ) from exc
+            if not resolved.is_file():
+                raise RunComparisonError(f"calibration {key} is missing: {declared}")
+            files.add(resolved)
+
+    receipts: list[dict[str, str]] = []
+    for path in sorted(files):
+        try:
+            relative = path.relative_to(repository_root).as_posix()
+        except ValueError as exc:
+            raise RunComparisonError(
+                f"run input resolves outside the PRISM repository: {path}"
+            ) from exc
+        committed = _git("cat-file", "-e", f"HEAD:{relative}")
+        if committed.returncode != 0:
+            raise RunComparisonError(f"run input is not committed at HEAD: {relative}")
+        head_object = _git("rev-parse", f"HEAD:{relative}")
+        working_object = _git("hash-object", str(path))
+        if head_object.returncode != 0 or working_object.returncode != 0:
+            raise RunComparisonError(f"cannot verify committed run input: {relative}")
+        if head_object.stdout.strip() != working_object.stdout.strip():
+            raise RunComparisonError(f"run input differs from HEAD: {relative}")
+        receipts.append(
+            {"path": relative, "sha256": sha256(path.read_bytes()).hexdigest()}
+        )
+
+    commit = _git("rev-parse", "HEAD")
+    if commit.returncode != 0:
+        raise RunComparisonError("cannot resolve PRISM repository HEAD")
+    return {
+        "repository": "current_prism_repository",
+        "run_path": run_dir.relative_to(repository_root).as_posix(),
+        "commit": commit.stdout.strip(),
+        "input_tree_sha256": _digest(receipts),
+        "inputs": receipts,
+    }
 
 
 def _tree_digest(path: Path) -> str | None:
@@ -399,7 +506,7 @@ def _threshold_findings(
 ) -> list[dict]:
     findings: list[dict] = []
     base_gap = _relative_gap(a.base_value, b.base_value)
-    if base_gap > base_threshold:
+    if base_gap >= base_threshold:
         findings.append(
             {
                 "code": "BASE_VALUE_VARIANCE_EXCEEDED",
@@ -429,7 +536,7 @@ def _threshold_findings(
             )
         else:
             max_gap = max(abs(a_probs[key] - b_probs[key]) for key in a_probs)
-            if max_gap > probability_threshold:
+            if max_gap >= probability_threshold:
                 findings.append(
                     {
                         "code": "PROBABILITY_VARIANCE_EXCEEDED",
@@ -444,7 +551,7 @@ def _threshold_findings(
         )
     elif a.wacc is not None and b.wacc is not None:
         gap = abs(a.wacc - b.wacc)
-        if gap > wacc_threshold:
+        if gap >= wacc_threshold:
             findings.append(
                 {
                     "code": "WACC_VARIANCE_EXCEEDED",
@@ -688,14 +795,66 @@ def compare_run_directories(
 ) -> dict:
     a_dir = Path(run_a).resolve()
     b_dir = Path(run_b).resolve()
-    signature_a = _structural_signature(a_dir)
-    signature_b = _structural_signature(b_dir)
+    receipts: dict[str, Mapping] = {}
+    comparability_findings: list[dict[str, str]] = []
+    for label, run_dir in (("run_a", a_dir), ("run_b", b_dir)):
+        try:
+            receipts[label] = _committed_run_receipt(run_dir)
+        except (OSError, RunComparisonError) as exc:
+            comparability_findings.append(
+                {
+                    "code": "PRISM_COMMITTED_RUN_REQUIRED",
+                    "run": label,
+                    "detail": str(exc),
+                }
+            )
+    if comparability_findings:
+        return {
+            "status": STATUS_EXTERNAL_RUN_NOT_COMPARABLE,
+            "run_a": str(a_dir),
+            "run_b": str(b_dir),
+            "comparability_findings": comparability_findings,
+            "repository_receipts": receipts,
+            "structural_findings": [],
+            "threshold_findings": [],
+            "judgment_differences": [],
+            "attribution": [],
+            "residual": None,
+            "decomposition_order": [],
+            "note": "only clean PRISM run inputs committed at repository HEAD are comparable",
+        }
+
+    try:
+        signature_a = _structural_signature(a_dir)
+        signature_b = _structural_signature(b_dir)
+    except (OSError, TypeError, ValueError, yaml.YAMLError) as exc:
+        return {
+            "status": STATUS_EXTERNAL_RUN_NOT_COMPARABLE,
+            "run_a": str(a_dir),
+            "run_b": str(b_dir),
+            "comparability_findings": [
+                {
+                    "code": "PRISM_RUN_CONTRACT_INVALID",
+                    "run": "comparison_input",
+                    "detail": str(exc),
+                }
+            ],
+            "repository_receipts": receipts,
+            "structural_findings": [],
+            "threshold_findings": [],
+            "judgment_differences": [],
+            "attribution": [],
+            "residual": None,
+            "decomposition_order": [],
+            "note": "a committed path is not comparable unless it satisfies the PRISM run contract",
+        }
     structural = _structural_findings(signature_a, signature_b)
     if structural:
         return {
             "status": STATUS_RECONCILIATION_REQUIRED,
             "run_a": str(a_dir),
             "run_b": str(b_dir),
+            "repository_receipts": receipts,
             "structural_findings": structural,
             "threshold_findings": [],
             "judgment_differences": [],
@@ -713,6 +872,7 @@ def compare_run_directories(
             "status": STATUS_RECONCILIATION_REQUIRED,
             "run_a": str(a_dir),
             "run_b": str(b_dir),
+            "repository_receipts": receipts,
             "outcome_a": _outcome_summary(outcome_a),
             "outcome_b": _outcome_summary(outcome_b),
             "structural_findings": [
@@ -764,6 +924,7 @@ def compare_run_directories(
         ),
         "run_a": str(a_dir),
         "run_b": str(b_dir),
+        "repository_receipts": receipts,
         "outcome_a": _outcome_summary(outcome_a),
         "outcome_b": _outcome_summary(outcome_b),
         "base_gap_ratio": str(_relative_gap(outcome_a.base_value, outcome_b.base_value)),
@@ -803,6 +964,13 @@ def _format_precise(value: object) -> str:
 
 def render_text_report(result: Mapping) -> str:
     lines = [f"STATUS: {result['status']}"]
+    if result.get("comparability_findings"):
+        lines.append("COMPARABILITY:")
+        for item in result["comparability_findings"]:
+            lines.append(
+                f"  - {item['code']} ({item.get('run', '')}): "
+                f"{item.get('detail', '')}"
+            )
     if result.get("outcome_a") and result.get("outcome_b"):
         a = result["outcome_a"]
         b = result["outcome_b"]
@@ -867,7 +1035,8 @@ def _parser() -> argparse.ArgumentParser:
         description=__doc__,
         epilog=(
             "exit codes: 0 CONSISTENT, 3 RECONCILIATION_REQUIRED, "
-            "1 comparison/execution error; argparse usage errors remain 2"
+            "4 EXTERNAL_RUN_NOT_COMPARABLE, 1 comparison/execution error; "
+            "argparse usage errors remain 2"
         ),
     )
     parser.add_argument("run_a")
@@ -921,7 +1090,11 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     else:
         print(render_text_report(result))
-    return EXIT_RECONCILIATION_REQUIRED if result["status"] == STATUS_RECONCILIATION_REQUIRED else 0
+    if result["status"] == STATUS_RECONCILIATION_REQUIRED:
+        return EXIT_RECONCILIATION_REQUIRED
+    if result["status"] == STATUS_EXTERNAL_RUN_NOT_COMPARABLE:
+        return EXIT_EXTERNAL_RUN_NOT_COMPARABLE
+    return 0
 
 
 if __name__ == "__main__":
