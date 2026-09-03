@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from decimal import Decimal
 import importlib.util
+import os
 from pathlib import Path
+import py_compile
+import subprocess
 import sys
 import tempfile
 from types import SimpleNamespace
@@ -508,6 +511,43 @@ def test_ignored_importable_runtime_file_is_rejected():
             ),
         ):
             compare_runs._committed_runtime_receipt()
+    finally:
+        probe.unlink(missing_ok=True)
+
+
+def test_cli_bootstrap_blocks_local_module_execution_before_imports(tmp_path):
+    probe = ROOT / "scripts" / "yaml.pyc"
+    marker = tmp_path / "local-module-executed"
+    source = tmp_path / "yaml_probe.py"
+    assert not probe.exists()
+    source.write_text(
+        "from pathlib import Path\n"
+        f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n"
+        "Path(__file__).unlink(missing_ok=True)\n",
+        encoding="utf-8",
+    )
+    py_compile.compile(str(source), cfile=str(probe), doraise=True)
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = os.pathsep.join(
+        filter(None, (str(ROOT / "scripts"), environment.get("PYTHONPATH", "")))
+    )
+    try:
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "--help",
+            ],
+            cwd=ROOT,
+            env=environment,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert completed.returncode == 0
+        assert "Compare two prepared PRISM runs" in completed.stdout
+        assert not marker.exists()
+        assert probe.exists()
     finally:
         probe.unlink(missing_ok=True)
 

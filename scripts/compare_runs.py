@@ -19,6 +19,29 @@ average.
 
 from __future__ import annotations
 
+# ``sys`` is built in and ``os`` is frozen in the supported CPython runtime.
+# Remove repository import roots before any ordinary import so an ignored local
+# module cannot execute, erase itself, and evade the runtime receipt.
+import os as _bootstrap_os
+import sys as _bootstrap_sys
+
+if __name__ == "__main__":
+    _bootstrap_script_dir = _bootstrap_os.path.realpath(
+        _bootstrap_os.path.dirname(__file__)
+    )
+    _bootstrap_repository_root = _bootstrap_os.path.dirname(_bootstrap_script_dir)
+    _bootstrap_blocked_import_roots = {
+        _bootstrap_script_dir,
+        _bootstrap_repository_root,
+        _bootstrap_os.path.join(_bootstrap_repository_root, "src"),
+    }
+    _bootstrap_sys.path[:] = [
+        entry
+        for entry in _bootstrap_sys.path
+        if _bootstrap_os.path.realpath(entry or _bootstrap_os.getcwd())
+        not in _bootstrap_blocked_import_roots
+    ]
+
 import argparse
 from copy import deepcopy
 from dataclasses import dataclass
@@ -54,7 +77,7 @@ RUNTIME_INPUT_PATHS = (
     "src/valuation_engine",
     "config",
 )
-RUNTIME_IMPORT_ROOTS = ("scripts", "src/valuation_engine")
+RUNTIME_IMPORT_ROOTS = ("scripts", "src")
 IMPORTABLE_SUFFIXES = frozenset({".py", ".pyc", ".pyo", ".so", ".pyd"})
 
 
@@ -562,12 +585,33 @@ def _structural_findings(a: Mapping, b: Mapping) -> list[dict]:
 
 def _load_runner_executor() -> Executor:
     path = ROOT / "scripts" / "run_kr_live.py"
+    cache_root = tempfile.TemporaryDirectory(prefix="prism-compare-import-")
+
+    def source_only(action: Callable[[], object]) -> object:
+        previous_prefix = sys.pycache_prefix
+        previous_write_policy = sys.dont_write_bytecode
+        sys.pycache_prefix = cache_root.name
+        sys.dont_write_bytecode = True
+        try:
+            return action()
+        finally:
+            sys.pycache_prefix = previous_prefix
+            sys.dont_write_bytecode = previous_write_policy
+
     spec = importlib.util.spec_from_file_location("prism_compare_run_kr_live", path)
     if spec is None or spec.loader is None:
+        cache_root.cleanup()
         raise RunComparisonError("cannot load scripts/run_kr_live.py")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module.execute_run
+    source_only(lambda: spec.loader.exec_module(module))
+    canonical_execute = module.execute_run
+
+    def execute(run_dir: Path) -> tuple:
+        # Retain the empty cache root in this closure for any lazy imports made
+        # while the canonical runner executes.
+        return source_only(lambda: canonical_execute(run_dir))  # type: ignore[return-value]
+
+    return execute
 
 
 def _extract_outcome(result: object) -> Outcome:
