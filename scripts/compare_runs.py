@@ -54,6 +54,8 @@ RUNTIME_INPUT_PATHS = (
     "src/valuation_engine",
     "config",
 )
+RUNTIME_IMPORT_ROOTS = ("scripts", "src/valuation_engine")
+IMPORTABLE_SUFFIXES = frozenset({".py", ".pyc", ".pyo", ".so", ".pyd"})
 
 
 class RunComparisonError(ValueError):
@@ -203,7 +205,8 @@ def _committed_runtime_receipt() -> dict:
     if committed_tree.returncode != 0:
         raise RunComparisonError("cannot enumerate committed PRISM runtime inputs")
     receipts: list[dict[str, str]] = []
-    for relative in filter(None, committed_tree.stdout.split("\0")):
+    committed_paths = frozenset(filter(None, committed_tree.stdout.split("\0")))
+    for relative in sorted(committed_paths):
         path = repository_root / relative
         if not path.exists():
             raise RunComparisonError(
@@ -222,6 +225,21 @@ def _committed_runtime_receipt() -> dict:
         receipts.append(
             {"path": relative, "sha256": sha256(path.read_bytes()).hexdigest()}
         )
+
+    for import_root in RUNTIME_IMPORT_ROOTS:
+        root = repository_root / import_root
+        for path in root.rglob("*"):
+            relative = path.relative_to(repository_root)
+            if "__pycache__" in relative.parts:
+                continue
+            if path.suffix.lower() not in IMPORTABLE_SUFFIXES:
+                continue
+            relative_text = relative.as_posix()
+            if relative_text not in committed_paths:
+                raise RunComparisonError(
+                    "importable runtime input is not committed at HEAD: "
+                    f"{relative_text}"
+                )
     if not receipts:
         raise RunComparisonError("committed PRISM runtime input tree is empty")
     return {
