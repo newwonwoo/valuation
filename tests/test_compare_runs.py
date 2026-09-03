@@ -468,6 +468,31 @@ def test_dirty_runtime_is_rejected_before_receipt(monkeypatch):
         compare_runs._committed_runtime_receipt()
 
 
+def test_runtime_blob_is_checked_even_when_status_reports_clean(monkeypatch):
+    original_git = compare_runs._git
+
+    def runtime_with_hidden_blob_change(*args):
+        if (
+            args
+            and args[0] == "hash-object"
+            and str(args[1]).endswith("scripts/run_kr_live.py")
+        ):
+            return compare_runs.subprocess.CompletedProcess(
+                args,
+                0,
+                stdout="assume-unchanged-worktree-blob\n",
+                stderr="",
+            )
+        return original_git(*args)
+
+    monkeypatch.setattr(compare_runs, "_git", runtime_with_hidden_blob_change)
+    with pytest.raises(
+        compare_runs.RunComparisonError,
+        match="runtime input differs from HEAD: scripts/run_kr_live.py",
+    ):
+        compare_runs._committed_runtime_receipt()
+
+
 def test_malformed_run_yaml_returns_external_not_comparable_status():
     def should_not_run(_path):
         raise AssertionError("malformed run must not execute")

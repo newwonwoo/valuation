@@ -213,6 +213,12 @@ def _committed_runtime_receipt() -> dict:
             raise RunComparisonError(f"runtime inputs may not be symlinks: {path}")
         if not path.is_file():
             raise RunComparisonError(f"committed runtime input is not a file: {relative}")
+        head_object = _git("rev-parse", f"HEAD:{relative}")
+        working_object = _git("hash-object", str(path))
+        if head_object.returncode != 0 or working_object.returncode != 0:
+            raise RunComparisonError(f"cannot verify committed runtime input: {relative}")
+        if head_object.stdout.strip() != working_object.stdout.strip():
+            raise RunComparisonError(f"runtime input differs from HEAD: {relative}")
         receipts.append(
             {"path": relative, "sha256": sha256(path.read_bytes()).hexdigest()}
         )
