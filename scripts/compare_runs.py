@@ -26,7 +26,6 @@ from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 import importlib.util
 import json
-import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -124,16 +123,26 @@ def _git(*args: str) -> subprocess.CompletedProcess[str]:
     )
 
 
-def _absolute_without_resolving(path: Path) -> Path:
-    return Path(os.path.abspath(os.fspath(path.expanduser())))
+def _provided_absolute(path: Path) -> Path:
+    expanded = path.expanduser()
+    return expanded if expanded.is_absolute() else Path.cwd() / expanded
 
 
 def _reject_symlink_components(path: Path) -> Path:
-    absolute = _absolute_without_resolving(path)
-    for component in (absolute, *absolute.parents):
-        if component.is_symlink():
-            raise RunComparisonError(f"run inputs may not use symlinks: {component}")
-    return absolute
+    provided = _provided_absolute(path)
+    current = Path(provided.anchor)
+    for component in provided.parts[1:]:
+        if component in ("", "."):
+            continue
+        if component == "..":
+            current = current.parent
+            continue
+        current = current / component
+        if current.is_symlink():
+            raise RunComparisonError(f"run inputs may not use symlinks: {current}")
+        if not current.exists():
+            raise RunComparisonError(f"run input path component does not exist: {current}")
+    return current
 
 
 def _resolved_run_input(path: Path) -> Path:
@@ -838,8 +847,8 @@ def compare_run_directories(
     wacc_threshold: Decimal = DEFAULT_WACC_THRESHOLD,
     residual_tolerance: Decimal = DEFAULT_RESIDUAL_TOLERANCE,
 ) -> dict:
-    a_dir = _absolute_without_resolving(Path(run_a))
-    b_dir = _absolute_without_resolving(Path(run_b))
+    a_dir = _provided_absolute(Path(run_a))
+    b_dir = _provided_absolute(Path(run_b))
     receipts: dict[str, Mapping] = {}
     comparability_findings: list[dict[str, str]] = []
     for label, run_dir in (("run_a", a_dir), ("run_b", b_dir)):

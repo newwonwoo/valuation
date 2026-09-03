@@ -454,6 +454,16 @@ def test_symlinked_run_argument_is_not_comparable(tmp_path):
     )
 
 
+def test_symlink_is_rejected_before_following_parent_component(tmp_path):
+    target = tmp_path / "target"
+    target.mkdir()
+    alias = tmp_path / "alias"
+    alias.symlink_to(target, target_is_directory=True)
+
+    with pytest.raises(compare_runs.RunComparisonError, match="may not use symlinks"):
+        compare_runs._resolved_run_input(alias / ".." / "run")
+
+
 def test_symlinked_calibration_binding_is_rejected(tmp_path):
     artifact_link = tmp_path / "artifact-link.json"
     artifact_link.symlink_to(ROOT / "config" / "kr_steel_calibration_artifact.json")
