@@ -48,6 +48,12 @@ DEFAULT_BASE_THRESHOLD = Decimal("0.20")
 DEFAULT_PROBABILITY_THRESHOLD = Decimal("0.10")  # 10 percentage points
 DEFAULT_WACC_THRESHOLD = Decimal("0.01")  # 1 percentage point
 DEFAULT_RESIDUAL_TOLERANCE = Decimal("0.01")  # KRW/share or reporting currency/share
+RUNTIME_INPUT_PATHS = (
+    "scripts/compare_runs.py",
+    "scripts/run_kr_live.py",
+    "src/valuation_engine",
+    "config",
+)
 
 
 class RunComparisonError(ValueError):
@@ -149,16 +155,82 @@ def _resolved_run_input(path: Path) -> Path:
     return _reject_symlink_components(path).resolve()
 
 
-def _committed_run_receipt(run_dir: Path) -> dict:
-    """Bind a comparison input to clean files committed in this repository."""
-
-    run_dir = _resolved_run_input(run_dir)
+def _repository_root() -> Path:
     repository = _git("rev-parse", "--show-toplevel")
     if repository.returncode != 0:
         raise RunComparisonError("comparison runner is not inside a Git repository")
     repository_root = Path(repository.stdout.strip()).resolve()
     if repository_root != ROOT.resolve():
         raise RunComparisonError("comparison runner repository identity is ambiguous")
+    return repository_root
+
+
+def _head_commit() -> str:
+    commit = _git("rev-parse", "HEAD")
+    if commit.returncode != 0:
+        raise RunComparisonError("cannot resolve PRISM repository HEAD")
+    return commit.stdout.strip()
+
+
+def _committed_runtime_receipt() -> dict:
+    """Attest the canonical evaluator and runtime registries used by comparison."""
+
+    repository_root = _repository_root()
+    status = _git(
+        "status",
+        "--porcelain=v1",
+        "-z",
+        "--untracked-files=all",
+        "--",
+        *RUNTIME_INPUT_PATHS,
+    )
+    if status.returncode != 0:
+        raise RunComparisonError("cannot verify PRISM runtime worktree state")
+    if status.stdout:
+        raise RunComparisonError(
+            "PRISM evaluator or runtime registry differs from repository HEAD"
+        )
+
+    committed_tree = _git(
+        "ls-tree",
+        "-r",
+        "--name-only",
+        "-z",
+        "HEAD",
+        "--",
+        *RUNTIME_INPUT_PATHS,
+    )
+    if committed_tree.returncode != 0:
+        raise RunComparisonError("cannot enumerate committed PRISM runtime inputs")
+    receipts: list[dict[str, str]] = []
+    for relative in filter(None, committed_tree.stdout.split("\0")):
+        path = repository_root / relative
+        if not path.exists():
+            raise RunComparisonError(
+                f"committed PRISM runtime input is missing from worktree: {relative}"
+            )
+        if path.is_symlink():
+            raise RunComparisonError(f"runtime inputs may not be symlinks: {path}")
+        if not path.is_file():
+            raise RunComparisonError(f"committed runtime input is not a file: {relative}")
+        receipts.append(
+            {"path": relative, "sha256": sha256(path.read_bytes()).hexdigest()}
+        )
+    if not receipts:
+        raise RunComparisonError("committed PRISM runtime input tree is empty")
+    return {
+        "repository": "current_prism_repository",
+        "commit": _head_commit(),
+        "input_tree_sha256": _digest(receipts),
+        "inputs": receipts,
+    }
+
+
+def _committed_run_receipt(run_dir: Path) -> dict:
+    """Bind a comparison input to clean files committed in this repository."""
+
+    run_dir = _resolved_run_input(run_dir)
+    repository_root = _repository_root()
     if not run_dir.is_dir():
         raise RunComparisonError(f"run directory does not exist: {run_dir}")
     try:
@@ -258,13 +330,10 @@ def _committed_run_receipt(run_dir: Path) -> dict:
             {"path": relative, "sha256": sha256(path.read_bytes()).hexdigest()}
         )
 
-    commit = _git("rev-parse", "HEAD")
-    if commit.returncode != 0:
-        raise RunComparisonError("cannot resolve PRISM repository HEAD")
     return {
         "repository": "current_prism_repository",
         "run_path": run_dir.relative_to(repository_root).as_posix(),
-        "commit": commit.stdout.strip(),
+        "commit": _head_commit(),
         "input_tree_sha256": _digest(receipts),
         "inputs": receipts,
     }
@@ -851,6 +920,16 @@ def compare_run_directories(
     b_dir = _provided_absolute(Path(run_b))
     receipts: dict[str, Mapping] = {}
     comparability_findings: list[dict[str, str]] = []
+    try:
+        receipts["runtime"] = _committed_runtime_receipt()
+    except (OSError, TypeError, ValueError, yaml.YAMLError) as exc:
+        comparability_findings.append(
+            {
+                "code": "PRISM_COMMITTED_RUNTIME_REQUIRED",
+                "run": "runtime",
+                "detail": str(exc),
+            }
+        )
     for label, run_dir in (("run_a", a_dir), ("run_b", b_dir)):
         try:
             run_dir = _resolved_run_input(run_dir)
@@ -859,7 +938,7 @@ def compare_run_directories(
             else:
                 b_dir = run_dir
             receipts[label] = _committed_run_receipt(run_dir)
-        except (OSError, RunComparisonError) as exc:
+        except (OSError, TypeError, ValueError, yaml.YAMLError) as exc:
             comparability_findings.append(
                 {
                     "code": "PRISM_COMMITTED_RUN_REQUIRED",

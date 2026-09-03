@@ -150,11 +150,24 @@ def _trusted_repository_validator(run_dir: Path) -> dict:
     }
 
 
+def _trusted_runtime_validator() -> dict:
+    return {
+        "repository": "TEST",
+        "commit": "TEST",
+        "input_tree_sha256": "TEST",
+        "inputs": [],
+    }
+
+
 def _compare(run_a: Path, run_b: Path, **kwargs):
     with patch.object(
         compare_runs,
         "_committed_run_receipt",
         _trusted_repository_validator,
+    ), patch.object(
+        compare_runs,
+        "_committed_runtime_receipt",
+        _trusted_runtime_validator,
     ):
         return compare_runs.compare_run_directories(run_a, run_b, **kwargs)
 
@@ -393,9 +406,14 @@ def test_external_runs_are_rejected_before_execution(tmp_path):
         calls += 1
         raise AssertionError("external runs must not execute")
 
-    result = compare_runs.compare_run_directories(
-        run_a, run_b, executor=should_not_run
-    )
+    with patch.object(
+        compare_runs,
+        "_committed_runtime_receipt",
+        _trusted_runtime_validator,
+    ):
+        result = compare_runs.compare_run_directories(
+            run_a, run_b, executor=should_not_run
+        )
 
     assert result["status"] == compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE
     assert calls == 0
@@ -415,6 +433,65 @@ def test_committed_prism_run_receipt_binds_head_and_inputs():
     assert len(receipt["commit"]) == 40
     assert len(receipt["input_tree_sha256"]) == 64
     assert any(item["path"].endswith("/run.yaml") for item in receipt["inputs"])
+
+
+def test_committed_runtime_receipt_binds_evaluator_and_registries():
+    receipt = compare_runs._committed_runtime_receipt()
+
+    assert len(receipt["commit"]) == 40
+    assert len(receipt["input_tree_sha256"]) == 64
+    paths = {item["path"] for item in receipt["inputs"]}
+    assert "scripts/compare_runs.py" in paths
+    assert "scripts/run_kr_live.py" in paths
+    assert any(path.startswith("src/valuation_engine/") for path in paths)
+    assert any(path.startswith("config/") for path in paths)
+
+
+def test_dirty_runtime_is_rejected_before_receipt(monkeypatch):
+    original_git = compare_runs._git
+
+    def runtime_with_dirty_source(*args):
+        if args and args[0] == "status":
+            return compare_runs.subprocess.CompletedProcess(
+                args,
+                0,
+                stdout=" M src/valuation_engine/valuation_execution.py\0",
+                stderr="",
+            )
+        return original_git(*args)
+
+    monkeypatch.setattr(compare_runs, "_git", runtime_with_dirty_source)
+    with pytest.raises(
+        compare_runs.RunComparisonError,
+        match="runtime registry differs from repository HEAD",
+    ):
+        compare_runs._committed_runtime_receipt()
+
+
+def test_malformed_run_yaml_returns_external_not_comparable_status():
+    def should_not_run(_path):
+        raise AssertionError("malformed run must not execute")
+
+    with patch.object(
+        compare_runs,
+        "_committed_runtime_receipt",
+        _trusted_runtime_validator,
+    ), patch.object(
+        compare_runs,
+        "_load_yaml_mapping",
+        side_effect=yaml.YAMLError("invalid YAML"),
+    ):
+        result = compare_runs.compare_run_directories(
+            ROOT / "runs" / "kisco-104700",
+            ROOT / "runs" / "kisco-104700",
+            executor=should_not_run,
+        )
+
+    assert result["status"] == compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE
+    assert all(
+        item["code"] == "PRISM_COMMITTED_RUN_REQUIRED"
+        for item in result["comparability_findings"]
+    )
 
 
 def test_missing_file_from_committed_run_tree_is_rejected(monkeypatch):
@@ -441,11 +518,16 @@ def test_symlinked_run_argument_is_not_comparable(tmp_path):
     def should_not_run(_path):
         raise AssertionError("symlinked run must not execute")
 
-    result = compare_runs.compare_run_directories(
-        linked_run,
-        linked_run,
-        executor=should_not_run,
-    )
+    with patch.object(
+        compare_runs,
+        "_committed_runtime_receipt",
+        _trusted_runtime_validator,
+    ):
+        result = compare_runs.compare_run_directories(
+            linked_run,
+            linked_run,
+            executor=should_not_run,
+        )
 
     assert result["status"] == compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE
     assert all(
