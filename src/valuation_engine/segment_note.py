@@ -67,6 +67,7 @@ _OPERATING_INCOME_LABELS = frozenset(
 )
 
 _SEGMENT_NAME = re.compile(r"^\S.*부문$")
+_HEADER_PLACEHOLDERS = frozenset({"-", "—"})
 
 
 def _squeeze(cell: str) -> str:
@@ -193,6 +194,7 @@ def _segment_columns(grid: list[list[str]]) -> tuple[int, tuple[tuple[int, str],
                     if (
                         not candidate
                         or squeezed in _STRUCTURAL_CELLS
+                        or squeezed in _HEADER_PLACEHOLDERS
                         or _amount(candidate) is not None
                     ):
                         valid = False
@@ -207,6 +209,7 @@ def _segment_columns(grid: list[list[str]]) -> tuple[int, tuple[tuple[int, str],
                 if len(named) >= 2 and len(set(canonical)) == len(named):
                     return name_row_index, tuple(named), total_column
     return None
+
 
 def _metric_row(
     grid: list[list[str]], labels: frozenset[str], header_row: int
