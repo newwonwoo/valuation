@@ -25,6 +25,15 @@ from __future__ import annotations
 import os as _bootstrap_os
 import sys as _bootstrap_sys
 
+if __name__ == "__main__" and not _bootstrap_sys.flags.isolated:
+    print("STATUS: EXTERNAL_RUN_NOT_COMPARABLE")
+    print("COMPARABILITY:")
+    print(
+        "  - PRISM_ISOLATED_INTERPRETER_REQUIRED (runtime): "
+        "invoke with `python -I scripts/compare_runs.py ...`"
+    )
+    raise SystemExit(4)
+
 if __name__ == "__main__":
     _bootstrap_script_dir = _bootstrap_os.path.realpath(
         _bootstrap_os.path.dirname(__file__)
@@ -1246,6 +1255,7 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=__doc__,
         epilog=(
+            "invoke this CLI with Python isolated mode (-I); "
             "exit codes: 0 CONSISTENT, 3 RECONCILIATION_REQUIRED, "
             "4 EXTERNAL_RUN_NOT_COMPARABLE, 1 comparison/execution error; "
             "argparse usage errors remain 2"

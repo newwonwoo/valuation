@@ -516,7 +516,7 @@ def test_ignored_importable_runtime_file_is_rejected():
         probe.unlink(missing_ok=True)
 
 
-def test_cli_bootstrap_blocks_local_module_execution_before_imports(tmp_path):
+def test_isolated_cli_blocks_local_module_execution_before_imports(tmp_path):
     probe = ROOT / "scripts" / "yaml.pyc"
     marker = tmp_path / "local-module-executed"
     source = tmp_path / "yaml_probe.py"
@@ -536,6 +536,7 @@ def test_cli_bootstrap_blocks_local_module_execution_before_imports(tmp_path):
         completed = subprocess.run(
             [
                 getattr(sys, "_base_executable", sys.executable),
+                "-I",
                 str(SCRIPT),
                 "--help",
             ],
@@ -553,7 +554,7 @@ def test_cli_bootstrap_blocks_local_module_execution_before_imports(tmp_path):
         probe.unlink(missing_ok=True)
 
 
-def test_cli_bootstrap_blocks_nested_repository_import_archive(tmp_path):
+def test_isolated_cli_blocks_nested_repository_import_archive(tmp_path):
     probe = ROOT / ".compare_runs_import_probe.zip"
     marker = tmp_path / "archive-module-executed"
     assert not probe.exists()
@@ -572,6 +573,7 @@ def test_cli_bootstrap_blocks_nested_repository_import_archive(tmp_path):
         completed = subprocess.run(
             [
                 getattr(sys, "_base_executable", sys.executable),
+                "-I",
                 str(SCRIPT),
                 "--help",
             ],
@@ -587,6 +589,41 @@ def test_cli_bootstrap_blocks_nested_repository_import_archive(tmp_path):
         assert probe.exists()
     finally:
         probe.unlink(missing_ok=True)
+
+
+def test_nonisolated_cli_fails_closed_after_startup_customization(tmp_path):
+    probe = tmp_path / "startup-probe.zip"
+    marker = tmp_path / "startup-customization-executed"
+    with ZipFile(probe, "w") as archive:
+        archive.writestr(
+            "sitecustomize.py",
+            "from pathlib import Path\n"
+            f"Path({str(marker)!r}).write_text('executed', encoding='utf-8')\n",
+        )
+    environment = os.environ.copy()
+    environment["PYTHONPATH"] = str(probe)
+
+    completed = subprocess.run(
+        [
+            getattr(sys, "_base_executable", sys.executable),
+            str(SCRIPT),
+            "runs/kisco-104700",
+            "runs/kisco-104700",
+            "--json",
+        ],
+        cwd=ROOT,
+        env=environment,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert marker.is_file()
+    assert completed.returncode == compare_runs.EXIT_EXTERNAL_RUN_NOT_COMPARABLE
+    assert completed.stdout.startswith(
+        f"STATUS: {compare_runs.STATUS_EXTERNAL_RUN_NOT_COMPARABLE}\n"
+    )
+    assert "PRISM_ISOLATED_INTERPRETER_REQUIRED" in completed.stdout
 
 
 def test_malformed_run_yaml_returns_external_not_comparable_status():
