@@ -6,6 +6,7 @@ import pytest
 
 from valuation_engine.actual_units import Measure
 from valuation_engine.assumption_compiler import CompiledAssumption, CompiledAssumptionSet
+from valuation_engine.backlog_evaluators import BacklogBurnDCFEvaluator
 from valuation_engine.control_plane import (
     DoctrineCoverageEntry,
     ExecutionMode,
@@ -13,7 +14,10 @@ from valuation_engine.control_plane import (
     issue_freeze_token,
 )
 from valuation_engine.evaluator_registry import EvaluatorRegistry, NormalizedMultipleEvaluator
-from valuation_engine.generic_reporting import render_generic_report
+from valuation_engine.generic_reporting import (
+    _scenario_assumptions_line,
+    render_generic_report,
+)
 from valuation_engine.impact_adapter import build_generic_decision_outcome
 from valuation_engine.method_capabilities import load_default_method_capability_registry
 from valuation_engine.module_plan import ModuleRequirementPlan, SegmentModuleRequirementPlan
@@ -31,6 +35,7 @@ from valuation_engine.valuation_execution import (
 )
 from valuation_engine.valuation_plan_compiler import (
     CompanyValuationPlanInputs,
+    SegmentMethodChoice,
     SegmentValueBinding,
     ValuationPlanStatus,
     compile_company_valuation_plan,
@@ -104,8 +109,8 @@ def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
         "구분",
         "배수평가 부문",
         "NAV 부문",
-        "DCF FCFF 1→5",
-        "DCF g/ROIC",
+        "현금흐름/NPV 부문",
+        "영구/기타 입력",
         "EV→지분 조정",
     )
     rendered = " | ".join(rows[0])
@@ -140,6 +145,187 @@ def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
     assert "DCF 가중평균자본비용" in svg
     assert "9.00%" in svg
     assert "[DCF 가치+부문 EBITDA×배수 합+유형자산 NAV+EV→지분 조정]" in svg
+
+
+def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
+    backlog = BacklogBurnDCFEvaluator(
+        archetype="contracted_backlog",
+        method="backlog_burn_dcf",
+        version="1",
+        forecast_years=2,
+        discount_rate=Decimal("0.09"),
+        discount_rate_path_id="WACC:TEST",
+        assumption_prefix="transport_",
+    )
+    assumptions = [
+        _assumption("manufacturing_normalized_ebitda", "100", "KRW_billion"),
+        _assumption("manufacturing_normalized_multiple", "8", "multiple"),
+        _assumption("manufacturing_ownership", "1", "ratio"),
+        _assumption("manufacturing_ev_adjustment", "-10", "KRW_billion"),
+        _assumption("transport_ownership", "1", "ratio"),
+        _assumption("transport_ev_adjustment", "-2", "KRW_billion"),
+        _assumption("diluted_shares", "10", "shares"),
+    ]
+    for key in backlog.required_assumption_keys:
+        unit = (
+            "KRW_billion"
+            if key.endswith("opening_backlog")
+            or key.endswith("opening_revenue")
+            or "new_orders_year_" in key
+            else "ratio"
+        )
+        value = "100" if unit == "KRW_billion" else "0.1"
+        if "backlog_burn_rate_year_" in key:
+            value = "0.5"
+        elif "operating_margin_year_" in key:
+            value = "0.2"
+        elif key.endswith("terminal_growth"):
+            value = "0.02"
+        elif key.endswith("terminal_roic"):
+            value = "0.12"
+        assumptions.append(_assumption(key, value, unit))
+    scenario = BoundScenario("BASE", tuple(assumptions))
+    scenario_set = BoundScenarioSet(
+        target_id="MIXED-BACKLOG",
+        scenarios=(scenario,),
+        calibration_status=CalibrationStatus.UNCALIBRATED,
+        numeric_weighting_allowed=False,
+        scenario_set_hash="MIXED-BACKLOG-HASH",
+    )
+    registry = EvaluatorRegistry()
+    registry.register(
+        NormalizedMultipleEvaluator(
+            "commodity_price_taker",
+            ebitda_key="manufacturing_normalized_ebitda",
+            multiple_key="manufacturing_normalized_multiple",
+        )
+    )
+    registry.register(backlog)
+    module_plan = ModuleRequirementPlan(
+        segments=(
+            _segment(
+                "manufacturing",
+                "commodity_price_taker",
+                ("normalized_multiple",),
+            ),
+            _segment(
+                "transport",
+                "contracted_backlog",
+                ("backlog_burn_dcf",),
+            ),
+        ),
+        common_core_modules=("evidence_gate",),
+        required_evidence=("revenue",),
+        required_kpis=("revenue",),
+        mandatory_scanners=("TEST_SCANNER",),
+        kill_conditions=("test kill",),
+        scenario_variables=("revenue",),
+        double_count_traps=(),
+        forbidden_methods=(),
+    )
+    module_plan.validate()
+    compilation = compile_company_valuation_plan(
+        module_plan,
+        scenario_set,
+        evaluator_registry=registry,
+        capability_registry=load_default_method_capability_registry(),
+        inputs=CompanyValuationPlanInputs(
+            reporting_unit="KRW_billion",
+            diluted_shares_key="diluted_shares",
+            segment_bindings=(
+                SegmentValueBinding(
+                    "manufacturing",
+                    "manufacturing",
+                    "manufacturing_ownership",
+                    "manufacturing_ev_adjustment",
+                ),
+                SegmentValueBinding(
+                    "transport",
+                    "transport",
+                    "transport_ownership",
+                    "transport_ev_adjustment",
+                ),
+            ),
+        ),
+        method_choices=(
+            SegmentMethodChoice(
+                "manufacturing",
+                "commodity_price_taker",
+                "normalized_multiple",
+                "1",
+            ),
+            SegmentMethodChoice(
+                "transport",
+                "contracted_backlog",
+                "backlog_burn_dcf",
+                "1",
+            ),
+        ),
+    )
+    assert compilation.ready
+    assert tuple(
+        item.execution_family for item in compilation.evaluator_contracts
+    ) == ("normalized_multiple", "contracted_backlog_dcf")
+
+    table = _multiple_assumption_table(
+        (scenario,),
+        evaluator_contracts=compilation.evaluator_contracts,
+        valuation_plan=compilation.plan,
+    )
+    assert table is not None
+    rendered_table = " | ".join(table[1][0])
+    assert "제조 1,000억원×8배" in rendered_table
+    assert "운송 수주잔고 DCF" in rendered_table
+    assert "잔고 1,000억원" in rendered_table
+
+    svg = _assumptions_card(
+        {
+            "company": "Mixed Backlog",
+            "ticker": "MIXED-BACKLOG",
+            "bound_scenario_set": scenario_set,
+            "valuation_plan_compilation": compilation,
+            "selected_methods": (
+                "commodity_price_taker/normalized_multiple/1",
+                "contracted_backlog/backlog_burn_dcf/1",
+            ),
+            "live_wacc_result": SimpleNamespace(
+                wacc_result=SimpleNamespace(wacc=Decimal("0.09"))
+            ),
+        },
+        "mixed-backlog.svg",
+    ).svg
+    assert "운송 수주잔고 DCF" in svg
+    assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in svg
+
+    line = _scenario_assumptions_line(
+        scenario,
+        evaluator_contracts=compilation.evaluator_contracts,
+        valuation_plan=compilation.plan,
+    )
+    assert "운송 수주잔고 DCF" in line
+    assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in line
+
+    valuation = execute_company_valuation(
+        scenario_set,
+        plan=compilation.plan,
+        registry=registry,
+    )
+    report = render_generic_report(
+        {
+            "company": "Mixed Backlog",
+            "bound_scenario_set": scenario_set,
+            "generic_valuation_result": valuation,
+            "generic_audit_report": AuditReport(()),
+            "doctrine_coverage": (),
+            "valuation_plan_compilation": compilation,
+            "selected_methods": (
+                "commodity_price_taker/normalized_multiple/1",
+                "contracted_backlog/backlog_burn_dcf/1",
+            ),
+        }
+    )
+    assert "운송 수주잔고 DCF" in report
+    assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in report
 
 
 def test_pure_multiple_visual_table_has_a_bounded_column_contract():

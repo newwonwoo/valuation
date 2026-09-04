@@ -300,6 +300,37 @@ class SegmentPlanResolution:
 
 
 @dataclass(frozen=True)
+class SegmentEvaluatorContract:
+    """Exact evaluator contract selected for one valued segment.
+
+    Reporting must consume this typed binding instead of inferring valuation
+    families from assumption-key suffixes.  The required keys come from the
+    registered evaluator that the compiler actually selected.
+    """
+
+    segment_id: str
+    model_key: ModelKey
+    execution_family: str
+    output_kind: str
+    required_assumption_keys: tuple[str, ...]
+
+    def validate(self) -> None:
+        if (
+            not self.segment_id
+            or not self.execution_family
+            or not self.output_kind
+            or not self.required_assumption_keys
+        ):
+            raise ValueError("segment evaluator contract is incomplete")
+        if len(self.required_assumption_keys) != len(
+            set(self.required_assumption_keys)
+        ):
+            raise ValueError(
+                "segment evaluator contract has duplicate required assumptions"
+            )
+
+
+@dataclass(frozen=True)
 class ValuationPlanCompilation:
     status: ValuationPlanStatus
     plan: CompanyValuationPlan | None
@@ -309,6 +340,7 @@ class ValuationPlanCompilation:
     evaluator_registry_hash: str
     method_choices_hash: str
     segment_resolutions: tuple[SegmentPlanResolution, ...]
+    evaluator_contracts: tuple[SegmentEvaluatorContract, ...]
     warranted_per_segments: tuple[str, ...]
     aggregator_bindings: tuple[str, ...]
     missing_assumptions: tuple[str, ...]
@@ -346,6 +378,7 @@ def compile_company_valuation_plan(
     aggregator_bindings: list[str] = []
     resolutions: list[SegmentPlanResolution] = []
     compiled_segments: list[SegmentValuationPlan] = []
+    evaluator_contracts: list[SegmentEvaluatorContract] = []
 
     for segment in module_plan.segments:
         capabilities = _segment_capabilities(segment, capability_registry)
@@ -428,6 +461,19 @@ def compile_company_valuation_plan(
                 ev_to_equity_adjustment_key=ev_adjustment,
             )
         )
+        evaluator = evaluator_registry.get(
+            resolution.selected_model_key,
+            segment_id=segment.segment_id,
+        )
+        evaluator_contract = SegmentEvaluatorContract(
+            segment_id=segment.segment_id,
+            model_key=resolution.selected_model_key,
+            execution_family=capability.execution_family,
+            output_kind=capability.output_kind,
+            required_assumption_keys=tuple(evaluator.required_assumption_keys),
+        )
+        evaluator_contract.validate()
+        evaluator_contracts.append(evaluator_contract)
 
     missing_global = _missing_plan_assumptions(
         scenario_set,
@@ -460,6 +506,7 @@ def compile_company_valuation_plan(
         evaluator_registry_hash=evaluator_hash,
         method_choices_hash=method_choice_hash,
         segment_resolutions=tuple(resolutions),
+        evaluator_contracts=tuple(evaluator_contracts),
         warranted_per_segments=tuple(dict.fromkeys(warranted_per_segments)),
         aggregator_bindings=tuple(dict.fromkeys(aggregator_bindings)),
         missing_assumptions=missing_all,

@@ -8,8 +8,17 @@ import textwrap
 from typing import Any
 
 from .context_strength_reporting import resolve_context_strength_linkage
+from .report_localization import valuation_family_value_term_ko
 from .source_reporting import build_source_link_index
-from .valuation_execution import GenericValuationResult, IntrinsicValuationScope
+from .valuation_execution import (
+    CompanyValuationPlan,
+    GenericValuationResult,
+    IntrinsicValuationScope,
+)
+from .valuation_plan_compiler import (
+    SegmentEvaluatorContract,
+    ValuationPlanCompilation,
+)
 
 
 _SAFE_FILE_PART = re.compile(r"[^A-Za-z0-9._-]+")
@@ -374,33 +383,89 @@ def _scenario_total_fcff(scenario: Any, year: int) -> str:
 
 def _multiple_assumption_table(
     scenarios: tuple[Any, ...],
+    *,
+    evaluator_contracts: tuple[SegmentEvaluatorContract, ...] = (),
+    valuation_plan: CompanyValuationPlan | None = None,
 ) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...]] | None:
     if not scenarios:
         return None
     first_keys = tuple(item.key for item in scenarios[0].assumptions)
-    ebitda_keys = tuple(
-        key for key in first_keys if key.endswith("normalized_ebitda")
+    multiple_families = {
+        "normalized_multiple",
+        "normalized_ebitda_multiple",
+        "ffo_multiple",
+    }
+    nav_families = {"net_asset_value"}
+    multiple_contracts = tuple(
+        item
+        for item in evaluator_contracts
+        if item.execution_family in multiple_families
     )
-    multiple_keys = tuple(
-        key
-        for key in first_keys
-        if key.endswith(("normalized_multiple", "normalized_ebitda_multiple"))
+    nav_contracts = tuple(
+        item
+        for item in evaluator_contracts
+        if item.execution_family in nav_families
+    )
+    discounted_contracts = tuple(
+        item
+        for item in evaluator_contracts
+        if item.execution_family not in multiple_families | nav_families
+    )
+    if (
+        evaluator_contracts
+        and not multiple_contracts
+        and not nav_contracts
+        and len(discounted_contracts) == 1
+    ):
+        # Preserve the established dedicated DCF card for a single-family run.
+        # The generalized table is needed when SOTP mixes evaluator families.
+        return None
+
+    # Legacy direct-plan callers do not carry a compilation artifact.  Their
+    # historical table remains available, but every compiled runtime report
+    # below is driven by exact selected evaluator contracts.
+    ebitda_keys = (
+        tuple(
+            item.required_assumption_keys[0]
+            for item in multiple_contracts
+            if len(item.required_assumption_keys) >= 2
+        )
+        if evaluator_contracts
+        else tuple(
+            key for key in first_keys if key.endswith("normalized_ebitda")
+        )
+    )
+    multiple_keys = (
+        tuple(
+            item.required_assumption_keys[1]
+            for item in multiple_contracts
+            if len(item.required_assumption_keys) >= 2
+        )
+        if evaluator_contracts
+        else tuple(
+            key
+            for key in first_keys
+            if key.endswith(
+                ("normalized_multiple", "normalized_ebitda_multiple")
+            )
+        )
     )
     if not ebitda_keys or not multiple_keys:
-        return None
-    nav_asset_keys = tuple(
-        key for key in first_keys if key.endswith("gross_asset_value")
-    )
-    dcf_prefixes = tuple(
-        dict.fromkeys(
-            key.removesuffix("fcff_year_1")
-            for key in first_keys
-            if key.endswith("fcff_year_1")
+        if not evaluator_contracts:
+            return None
+    nav_asset_keys = (
+        tuple(
+            item.required_assumption_keys[0]
+            for item in nav_contracts
+            if len(item.required_assumption_keys) >= 2
+        )
+        if evaluator_contracts
+        else tuple(
+            key for key in first_keys if key.endswith("gross_asset_value")
         )
     )
 
-    def segment_label(key: str) -> str:
-        segment = key.removesuffix("_normalized_ebitda")
+    def segment_label(segment: str) -> str:
         return {
             "manufacturing": "제조",
             "trading": "수출입",
@@ -410,12 +475,29 @@ def _multiple_assumption_table(
             "uhv": "초고압",
         }.get(segment, segment or "핵심")
 
+    def segment_from_key(key: str, suffix: str) -> str:
+        return key.removesuffix(suffix).rstrip("_")
+
     def adjustment_text(scenario: Any) -> str:
-        adjustments = tuple(
-            item.measure
-            for item in scenario.assumptions
-            if item.key.endswith("ev_adjustment")
+        adjustment_keys = (
+            tuple(
+                item.ev_to_equity_adjustment_key
+                for item in valuation_plan.segments
+                if item.ev_to_equity_adjustment_key is not None
+            )
+            if valuation_plan is not None
+            else tuple(
+                item.key
+                for item in scenario.assumptions
+                if item.key.endswith("ev_adjustment")
+            )
         )
+        adjustments = []
+        for key in adjustment_keys:
+            try:
+                adjustments.append(scenario.get(key).measure)
+            except KeyError:
+                continue
         if not adjustments:
             return "—"
         unit = adjustments[0].unit
@@ -424,67 +506,242 @@ def _multiple_assumption_table(
         )
         return _measure_value_text(total, unit)
 
-    if dcf_prefixes:
+    def multiple_values(scenario: Any) -> list[str]:
+        values: list[str] = []
+        if evaluator_contracts:
+            for contract in multiple_contracts:
+                if len(contract.required_assumption_keys) < 2:
+                    continue
+                value_key, multiple_key = contract.required_assumption_keys[:2]
+                values.append(
+                    f"{segment_label(contract.segment_id)} "
+                    f"{_scenario_assumption(scenario, value_key)}"
+                    f"×{_scenario_assumption(scenario, multiple_key)}"
+                )
+            return values
+        for key in ebitda_keys:
+            prefix = key.removesuffix("normalized_ebitda")
+            multiple_key = next(
+                (item for item in multiple_keys if item.startswith(prefix)),
+                None,
+            )
+            if multiple_key is None:
+                continue
+            values.append(
+                f"{segment_label(segment_from_key(key, 'normalized_ebitda'))} "
+                f"{_scenario_assumption(scenario, key)}"
+                f"×{_scenario_assumption(scenario, multiple_key)}"
+            )
+        return values
+
+    def nav_values(scenario: Any) -> list[str]:
+        values: list[str] = []
+        if evaluator_contracts:
+            contracts_and_keys = tuple(
+                (item, item.required_assumption_keys[:2])
+                for item in nav_contracts
+                if len(item.required_assumption_keys) >= 2
+            )
+        else:
+            contracts_and_keys = tuple(
+                (
+                    None,
+                    (
+                        key,
+                        f"{key.removesuffix('gross_asset_value')}liabilities",
+                    ),
+                )
+                for key in nav_asset_keys
+            )
+        for contract, (asset_key, liability_key) in contracts_and_keys:
+            try:
+                asset = scenario.get(asset_key).measure
+                liability = scenario.get(liability_key).measure.convert_to(
+                    asset.unit
+                )
+            except KeyError:
+                continue
+            label = (
+                segment_label(contract.segment_id)
+                if contract is not None
+                else segment_label(
+                    segment_from_key(asset_key, "gross_asset_value")
+                )
+            )
+            values.append(
+                f"{label} "
+                f"{_measure_value_text(asset.amount - liability.amount, asset.unit)}"
+            )
+        return values
+
+    def annual_keys(
+        contract: SegmentEvaluatorContract,
+        token: str,
+    ) -> tuple[str, ...]:
+        matches = tuple(
+            key
+            for key in contract.required_assumption_keys
+            if token in key and re.search(r"_year_\d+$", key)
+        )
+        return tuple(
+            sorted(
+                matches,
+                key=lambda key: int(key.rsplit("_year_", 1)[1]),
+            )
+        )
+
+    def annual_total(
+        scenario: Any,
+        contract: SegmentEvaluatorContract,
+        token: str,
+        year: int,
+    ) -> str:
+        keys = tuple(
+            key
+            for key in contract.required_assumption_keys
+            if token in key and key.endswith(f"_year_{year}")
+        )
+        measures = []
+        for key in keys:
+            try:
+                measures.append(scenario.get(key).measure)
+            except KeyError:
+                continue
+        if not measures:
+            return "—"
+        unit = measures[0].unit
+        total = sum(
+            (measure.convert_to(unit).amount for measure in measures),
+            Decimal(0),
+        )
+        return _measure_value_text(total, unit)
+
+    def discounted_values(scenario: Any) -> tuple[list[str], list[str]]:
+        paths: list[str] = []
+        terminal: list[str] = []
+        for contract in discounted_contracts:
+            label = segment_label(contract.segment_id)
+            family = contract.execution_family
+            if family == "contracted_backlog_dcf":
+                backlog_key = next(
+                    (
+                        key
+                        for key in contract.required_assumption_keys
+                        if key.endswith("opening_backlog")
+                    ),
+                    None,
+                )
+                burns = annual_keys(contract, "backlog_burn_rate")
+                orders = annual_keys(contract, "new_orders")
+                detail = f"{label} 수주잔고 DCF"
+                if backlog_key is not None:
+                    detail += f" 잔고 {_scenario_assumption(scenario, backlog_key)}"
+                if burns:
+                    detail += (
+                        f"; 소진 {_scenario_assumption(scenario, burns[0])}"
+                        f"→{_scenario_assumption(scenario, burns[-1])}"
+                    )
+                if orders:
+                    detail += (
+                        f"; 신규수주 {_scenario_assumption(scenario, orders[0])}"
+                        f"→{_scenario_assumption(scenario, orders[-1])}"
+                    )
+                paths.append(detail)
+            else:
+                cashflows = annual_keys(contract, "fcff")
+                family_label = {
+                    "explicit_fcff_dcf": "FCFF DCF",
+                    "finite_life_npv": "유한수명 NPV",
+                    "gordon_ddm": "배당할인",
+                    "justified_pb_roe": "PBR·ROE",
+                    "residual_income": "잔여이익",
+                    "rate_base_roe": "요금기반 ROE",
+                    "calibrated_single_event_rnpv": "확률조정 NPV",
+                }.get(family, contract.model_key.method)
+                detail = f"{label} {family_label}"
+                if cashflows:
+                    first_year = int(cashflows[0].rsplit("_year_", 1)[1])
+                    last_year = int(cashflows[-1].rsplit("_year_", 1)[1])
+                    detail += (
+                        f" {annual_total(scenario, contract, 'fcff', first_year)}"
+                        f"→{annual_total(scenario, contract, 'fcff', last_year)}"
+                    )
+                paths.append(detail)
+
+            growth_key = next(
+                (
+                    key
+                    for key in contract.required_assumption_keys
+                    if key.endswith("terminal_growth")
+                ),
+                None,
+            )
+            roic_key = next(
+                (
+                    key
+                    for key in contract.required_assumption_keys
+                    if key.endswith("terminal_roic")
+                ),
+                None,
+            )
+            terminal_detail = f"{label} {family}"
+            if growth_key is not None:
+                terminal_detail = (
+                    f"{label} g {_scenario_assumption(scenario, growth_key)}"
+                )
+            if roic_key is not None:
+                terminal_detail += (
+                    f"/ROIC {_scenario_assumption(scenario, roic_key)}"
+                )
+            terminal.append(terminal_detail)
+        return paths, terminal
+
+    if discounted_contracts or (
+        not evaluator_contracts
+        and any(key.endswith("fcff_year_1") for key in first_keys)
+    ):
         headers = (
             "구분",
             "배수평가 부문",
             "NAV 부문",
-            "DCF FCFF 1→5",
-            "DCF g/ROIC",
+            "현금흐름/NPV 부문",
+            "영구/기타 입력",
             "EV→지분 조정",
         )
         rows = []
         for scenario in scenarios[:3]:
-            multiple_values = []
-            for key in ebitda_keys:
-                prefix = key.removesuffix("normalized_ebitda")
-                multiple_key = next(
-                    (item for item in multiple_keys if item.startswith(prefix)),
-                    None,
+            row_multiples = multiple_values(scenario)
+            row_nav = nav_values(scenario)
+            if evaluator_contracts:
+                dcf_values, terminal_values = discounted_values(scenario)
+            else:
+                prefixes = tuple(
+                    dict.fromkeys(
+                        key.removesuffix("fcff_year_1")
+                        for key in first_keys
+                        if key.endswith("fcff_year_1")
+                    )
                 )
-                if multiple_key is None:
-                    continue
-                multiple_values.append(
-                    f"{segment_label(key)} {_scenario_assumption(scenario, key)}"
-                    f"×{_scenario_assumption(scenario, multiple_key)}"
-                )
-
-            nav_values = []
-            for key in nav_asset_keys:
-                prefix = key.removesuffix("gross_asset_value")
-                try:
-                    asset = scenario.get(key).measure
-                    liability = scenario.get(
-                        f"{prefix}liabilities"
-                    ).measure.convert_to(asset.unit)
-                except KeyError:
-                    continue
-                label_key = f"{prefix}normalized_ebitda"
-                nav_values.append(
-                    f"{segment_label(label_key)} "
-                    f"{_measure_value_text(asset.amount - liability.amount, asset.unit)}"
-                )
-
-            dcf_values = []
-            terminal_values = []
-            for prefix in dcf_prefixes:
-                label = segment_label(f"{prefix.rstrip('_')}_normalized_ebitda")
-                dcf_values.append(
-                    f"{label} {_scenario_assumption(scenario, f'{prefix}fcff_year_1')}"
+                dcf_values = [
+                    f"{segment_label(prefix.rstrip('_'))} "
+                    f"{_scenario_assumption(scenario, f'{prefix}fcff_year_1')}"
                     f"→{_scenario_assumption(scenario, f'{prefix}fcff_year_5')}"
-                )
-                terminal_values.append(
-                    f"{label} g {_scenario_assumption(scenario, f'{prefix}terminal_growth')}"
+                    for prefix in prefixes
+                ]
+                terminal_values = [
+                    f"{segment_label(prefix.rstrip('_'))} g "
+                    f"{_scenario_assumption(scenario, f'{prefix}terminal_growth')}"
                     f"/ROIC {_scenario_assumption(scenario, f'{prefix}terminal_roic')}"
-                )
+                    for prefix in prefixes
+                ]
 
             rows.append(
                 (
                     f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
-                    "; ".join(multiple_values) or "—",
-                    "; ".join(nav_values) or "—",
-                    "; ".join(dcf_values),
-                    "; ".join(terminal_values),
+                    "; ".join(row_multiples) or "—",
+                    "; ".join(row_nav) or "—",
+                    "; ".join(dcf_values) or "—",
+                    "; ".join(terminal_values) or "—",
                     adjustment_text(scenario),
                 )
             )
@@ -501,42 +758,15 @@ def _multiple_assumption_table(
 
     rows = []
     for scenario in scenarios[:3]:
-        multiple_values = []
-        for key in ebitda_keys:
-            prefix = key.removesuffix("normalized_ebitda")
-            multiple_key = next(
-                (
-                    item
-                    for item in multiple_keys
-                    if item.startswith(prefix)
-                ),
-                None,
-            )
-            if multiple_key is None:
-                continue
-            multiple_values.append(
-                f"{segment_label(key)} {_scenario_assumption(scenario, key)}"
-                f"×{_scenario_assumption(scenario, multiple_key)}"
-            )
-        nav_values = []
-        for key in nav_asset_keys:
-            prefix = key.removesuffix("gross_asset_value")
-            try:
-                asset = scenario.get(key).measure
-                liability = scenario.get(f"{prefix}liabilities").measure.convert_to(asset.unit)
-            except KeyError:
-                continue
-            nav_values.append(
-                f"{segment_label(f'{prefix}normalized_ebitda')} "
-                f"{_measure_value_text(asset.amount - liability.amount, asset.unit)}"
-            )
+        row_multiples = multiple_values(scenario)
+        row_nav = nav_values(scenario)
         rows.append(
             (
                 f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
-                multiple_values[0] if multiple_values else "—",
-                multiple_values[1] if len(multiple_values) > 1 else "—",
-                "; ".join(multiple_values[2:]) or "—",
-                "; ".join(nav_values) or "—",
+                row_multiples[0] if row_multiples else "—",
+                row_multiples[1] if len(row_multiples) > 1 else "—",
+                "; ".join(row_multiples[2:]) or "—",
+                "; ".join(row_nav) or "—",
                 adjustment_text(scenario),
             )
         )
@@ -552,7 +782,18 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     beta = getattr(beta_result, "target_levered_beta", None)
     wacc = getattr(getattr(wacc_result, "wacc_result", None), "wacc", None)
     calibration = getattr(getattr(scenario_set, "calibration_status", None), "value", "UNCALIBRATED")
-    multiple_table = _multiple_assumption_table(scenarios)
+    compilation = data.get("valuation_plan_compilation")
+    if not isinstance(compilation, ValuationPlanCompilation):
+        compilation = None
+    valuation_plan = compilation.plan if compilation is not None else None
+    evaluator_contracts = (
+        compilation.evaluator_contracts if compilation is not None else ()
+    )
+    multiple_table = _multiple_assumption_table(
+        scenarios,
+        evaluator_contracts=evaluator_contracts,
+        valuation_plan=valuation_plan,
+    )
     core = next(
         (item for item in scenarios if item.scenario_id in {"Core", "Base"}),
         scenarios[0] if scenarios else None,
@@ -562,38 +803,110 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     core_adjustment = "—"
     core_shares = "—"
     formula = ""
-    dcf_present = bool(
-        core is not None
-        and any(
-            item.key.endswith("fcff_year_1") for item in core.assumptions
+    discounted_families = {
+        "contracted_backlog_dcf",
+        "explicit_fcff_dcf",
+        "finite_life_npv",
+        "calibrated_single_event_rnpv",
+        "gordon_ddm",
+        "justified_pb_roe",
+        "residual_income",
+        "rate_base_roe",
+    }
+    dcf_present = (
+        any(
+            item.execution_family in discounted_families
+            for item in evaluator_contracts
+        )
+        if evaluator_contracts
+        else bool(
+            core is not None
+            and any(
+                item.key.endswith("fcff_year_1")
+                for item in core.assumptions
+            )
+        )
+    )
+    component_sotp_present = bool(
+        multiple_table is not None
+        and (
+            not evaluator_contracts
+            or any(
+                item.execution_family
+                in {
+                    "normalized_multiple",
+                    "normalized_ebitda_multiple",
+                    "ffo_multiple",
+                    "net_asset_value",
+                }
+                for item in evaluator_contracts
+            )
         )
     )
     if multiple_table is not None and core is not None:
+        ownership_keys = (
+            tuple(item.ownership_key for item in valuation_plan.segments)
+            if valuation_plan is not None
+            else tuple(
+                item.key
+                for item in core.assumptions
+                if item.key.endswith("ownership")
+            )
+        )
         ownership_values = tuple(
-            item.measure.convert_to("ratio").amount
-            for item in core.assumptions
-            if item.key.endswith("ownership")
+            core.get(key).measure.convert_to("ratio").amount
+            for key in ownership_keys
         )
         if ownership_values and len(set(ownership_values)) == 1:
             common_ownership = ownership_values[0]
-        adjustments = tuple(
-            item.measure
-            for item in core.assumptions
-            if item.key.endswith("ev_adjustment")
+        adjustment_keys = (
+            tuple(
+                item.ev_to_equity_adjustment_key
+                for item in valuation_plan.segments
+                if item.ev_to_equity_adjustment_key is not None
+            )
+            if valuation_plan is not None
+            else tuple(
+                item.key
+                for item in core.assumptions
+                if item.key.endswith("ev_adjustment")
+            )
         )
+        adjustments = tuple(core.get(key).measure for key in adjustment_keys)
         if adjustments:
             unit = adjustments[0].unit
             total = sum(
                 (item.convert_to(unit).amount for item in adjustments), Decimal(0)
             )
             core_adjustment = _measure_value_text(total, unit)
+        share_key = (
+            valuation_plan.diluted_shares_key
+            if valuation_plan is not None
+            else "diluted_shares"
+        )
         try:
-            shares = core.get("diluted_shares").measure.convert_to("shares").amount
+            shares = core.get(share_key).measure.convert_to("shares").amount
         except KeyError:
             shares = None
         if shares is not None:
             core_shares = f"{shares / Decimal('1000000'):,.3f}백만주"
-        if common_ownership is not None and shares is not None:
+        if evaluator_contracts and shares is not None:
+            value_terms = tuple(
+                dict.fromkeys(
+                    valuation_family_value_term_ko(
+                        item.execution_family,
+                        item.model_key.method,
+                    )
+                    for item in evaluator_contracts
+                )
+            )
+            if valuation_plan is not None and valuation_plan.parent_adjustments:
+                value_terms = (*value_terms, "모회사 조정")
+            formula = (
+                f"[{'+'.join(value_terms)}]÷{shares:,.0f}주 "
+                "(각 부문 EV→지분 조정·귀속률 반영)"
+            )
+        elif common_ownership is not None and shares is not None:
             nav_present = any(
                 item.key.endswith("gross_asset_value")
                 for item in core.assumptions
@@ -630,7 +943,7 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             ),
             ("주당 분모", core_shares),
         )
-        if multiple_table is not None and dcf_present
+        if component_sotp_present and dcf_present
         else
         (
             (
@@ -642,7 +955,7 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             ("EV→지분 조정", core_adjustment),
             ("주당 분모", core_shares),
         )
-        if multiple_table is not None
+        if component_sotp_present
         else (
             ("계층형 베타", f"{beta:.3f}" if beta is not None else "비적용"),
             ("가중평균자본비용", f"{wacc:.2%}" if wacc is not None else "비적용"),
@@ -710,7 +1023,7 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             ("확률 보정", "완료" if calibration == "CALIBRATED" else "미완료"),
             ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
         )
-        if multiple_table is not None
+        if component_sotp_present
         else (
             ("평가방법", method_text),
             ("핵심 자본적지출", capex),

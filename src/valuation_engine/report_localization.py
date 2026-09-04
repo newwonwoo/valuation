@@ -30,6 +30,21 @@ _VALUATION_SCOPE_LABELS = {
     "PARTIAL_INTRINSIC": "평가 완료 사업부 소계",
 }
 
+_VALUATION_FAMILY_VALUE_TERMS = {
+    "normalized_multiple": "배수평가 부문 귀속 지분가치",
+    "normalized_ebitda_multiple": "배수평가 부문 귀속 지분가치",
+    "ffo_multiple": "배수평가 부문 귀속 지분가치",
+    "net_asset_value": "NAV 부문 귀속 지분가치",
+    "contracted_backlog_dcf": "DCF 부문 귀속 지분가치",
+    "explicit_fcff_dcf": "DCF 부문 귀속 지분가치",
+    "finite_life_npv": "NPV 부문 귀속 지분가치",
+    "calibrated_single_event_rnpv": "rNPV 부문 귀속 지분가치",
+    "gordon_ddm": "배당할인 부문 귀속 지분가치",
+    "justified_pb_roe": "PBR·ROE 부문 귀속 지분가치",
+    "residual_income": "잔여이익 부문 귀속 지분가치",
+    "rate_base_roe": "요금기반 ROE 부문 귀속 지분가치",
+}
+
 _GATE_LABELS = {
     "G1_EVIDENCE_ROUTING": "증거 수집·산업 라우팅",
     "G2_INSIGHT_CHALLENGE": "인사이트 도출·반증 검토",
@@ -177,6 +192,17 @@ def calibration_label_ko(value: object) -> str:
 def valuation_scope_label_ko(value: object) -> str:
     text = str(value)
     return _VALUATION_SCOPE_LABELS.get(text, text)
+
+
+def valuation_family_value_term_ko(
+    execution_family: object,
+    method: object,
+) -> str:
+    family = str(execution_family)
+    return _VALUATION_FAMILY_VALUE_TERMS.get(
+        family,
+        f"{method} 부문 귀속 지분가치",
+    )
 
 
 def status_label_ko(value: object) -> str:
