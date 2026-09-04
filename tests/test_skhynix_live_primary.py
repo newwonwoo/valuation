@@ -3,10 +3,12 @@ from decimal import Decimal
 from hashlib import sha256
 import json
 from pathlib import Path
+import shutil
 
 import pytest
 import yaml
 
+import valuation_engine.skhynix_live_primary as skhynix_live_primary_module
 from valuation_engine.continuous_probability_snapshot import ContinuousProbabilityCalibrationSnapshot
 from valuation_engine.records import CalibrationStatus, EvidenceSourceLayer
 from valuation_engine.risk_adapters import TargetCapitalStructureMethod
@@ -206,7 +208,10 @@ def test_skhynix_market_and_beta_inputs_use_original_exchange_sources(tmp_path: 
             )
 
 
-def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(tmp_path: Path):
+def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(
+    tmp_path: Path,
+    monkeypatch,
+):
     payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
     payload["market"]["as_of"] = "2026-09-03"
     relabelled_market = tmp_path / "relabelled_market.yaml"
@@ -216,6 +221,54 @@ def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(tmp_path: Path)
     )
     with pytest.raises(ValueError, match="market observation binding mismatch"):
         load_skhynix_snapshot(relabelled_market)
+
+    copied_root = tmp_path / "copied-repository"
+    copied_config = copied_root / "config"
+    copied_config.mkdir(parents=True)
+    shutil.copyfile(
+        DEFAULT_BETA_SNAPSHOT_PATH,
+        copied_config / "skhynix_beta_snapshot.json",
+    )
+    market_path = DEFAULT_SNAPSHOT_PATH.parent / "skhynix_market_snapshot.json"
+    market_payload = json.loads(market_path.read_text(encoding="utf-8"))
+    market_payload["price"] = 9999999
+    mutated_market = json.dumps(market_payload, ensure_ascii=False, indent=2).encode(
+        "utf-8"
+    )
+    (copied_config / "skhynix_market_snapshot.json").write_bytes(mutated_market)
+    payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload["market"]["price"] = 9999999
+    payload["market"]["snapshot_sha256"] = sha256(mutated_market).hexdigest()
+    copied_snapshot = tmp_path / "copied_snapshot.yaml"
+    copied_snapshot.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(skhynix_live_primary_module, "_REPO_ROOT", copied_root)
+    with pytest.raises(ValueError, match="market snapshot is not independently registered"):
+        load_skhynix_snapshot(copied_snapshot)
+
+    monkeypatch.setattr(
+        skhynix_live_primary_module,
+        "_REPO_ROOT",
+        DEFAULT_SNAPSHOT_PATH.parents[1],
+    )
+
+    payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload["street"].update(
+        consensus_target_price=99999999,
+        median_target_price=99999999,
+        min_target_price=99999999,
+        max_target_price=99999999,
+        as_of="2026-09-04",
+    )
+    relabelled_street = tmp_path / "relabelled_street.yaml"
+    relabelled_street.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="Street record is not independently registered"):
+        load_skhynix_snapshot(relabelled_street)
 
     payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
     payload["risk"]["target_debt_weight"] = 0.1

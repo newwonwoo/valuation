@@ -68,6 +68,15 @@ SEGMENT_ID = "memory"
 SCENARIOS = ("Down", "Core", "Bull")
 FORECAST_YEARS = 9
 MANDATORY_SCANNERS = ("CYCLE_NORMALIZATION", "COST_CURVE", "INVENTORY", "TRADE_FLOW")
+_REGISTERED_MARKET_SNAPSHOT_SHA256 = (
+    "f6bcc877a33984cfe192967f5f426a5f7e2f93a5ac2dd4c1dadde6b44cb7f09d"
+)
+_REGISTERED_STREET_SOURCE_SHA256 = (
+    "621f75776bf9c44f06f28884e473683ac2dbfe5b3fcd8afd73f2c158fa8f53f8"
+)
+_REGISTERED_STREET_RECORD_SHA256 = (
+    "da275819b336fa27392ca6fdf40fefeb24d1bcb53fd70489ca737e97d9005eb9"
+)
 PEER_FILED_SHARE_COUNT_SHA256 = {
     "INTC": "4c7d76c3248b0122090ba718306ecc7e248c1d23f5e85fd70be2167a89245106",
     "AVGO": "9651d88f4da975242261e16bc2b90b8353891ad0f45fff6919ab1708433ee7f3",
@@ -226,8 +235,11 @@ def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
     if _REPO_ROOT.resolve() not in market_path.parents:
         raise ValueError("SK hynix market snapshot must remain inside the repository")
     market_raw = market_path.read_bytes()
-    if sha256(market_raw).hexdigest() != market.get("snapshot_sha256"):
+    market_snapshot_hash = sha256(market_raw).hexdigest()
+    if market_snapshot_hash != market.get("snapshot_sha256"):
         raise ValueError("SK hynix market snapshot hash mismatch")
+    if market_snapshot_hash != _REGISTERED_MARKET_SNAPSHOT_SHA256:
+        raise ValueError("SK hynix market snapshot is not independently registered")
     market_snapshot = json.loads(market_raw)
     frozen_response = str(market_snapshot.get("raw_response", ""))
     if sha256(frozen_response.encode("utf-8")).hexdigest() != market_snapshot.get(
@@ -271,6 +283,37 @@ def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
         != payload.get("sources", {}).get("market")
     ):
         raise ValueError("SK hynix market observation binding mismatch")
+
+    street = payload.get("street")
+    source_ref = payload.get("sources", {}).get("street")
+    if not isinstance(street, dict) or not isinstance(source_ref, str):
+        raise ValueError("SK hynix Street structured record is missing")
+    source_hash = str(street.get("source_sha256", ""))
+    structured_street_record = {
+        "broker": "Samsung Securities",
+        "published_date": str(street.get("as_of", "")),
+        "target_price": int(street.get("consensus_target_price", 0)),
+        "target_price_currency": "KRW",
+        "report_count": int(street.get("report_count", 0)),
+        "median_target_price": int(street.get("median_target_price", 0)),
+        "min_target_price": int(street.get("min_target_price", 0)),
+        "max_target_price": int(street.get("max_target_price", 0)),
+        "source_ref": source_ref,
+        "source_sha256": source_hash,
+    }
+    structured_street_hash = sha256(
+        json.dumps(
+            structured_street_record,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
+    if (
+        source_hash != _REGISTERED_STREET_SOURCE_SHA256
+        or structured_street_hash != _REGISTERED_STREET_RECORD_SHA256
+    ):
+        raise ValueError("SK hynix Street record is not independently registered")
 
     official_facts = payload.get("official_facts", {})
     income_tax = float(official_facts["income_tax_expense_h1_2026"][0])
