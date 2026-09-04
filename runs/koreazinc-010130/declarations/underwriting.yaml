@@ -105,15 +105,64 @@ declarations:
     - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958
     - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
     rationale: 2025 연간 부문 영업이익에 2026 상반기 공시 감가상각·상각비의 연환산 run-rate를 해당 연간 매출비중으로 배분한
-      EBITDA와, 2026 상반기 동일 산식의 연환산 EBITDA를 산술평균한 정상화 기준값입니다. 2025 부문별 D&A가 별도 공시되지
-      않아 현 run-rate proxy를 썼음을 명시합니다.
-  recycling_normalized_multiple:
-    value: 4.0
-    unit: multiple
+      EBITDA와, 2026 상반기 동일 산식의 연환산 EBITDA를 산술평균한 관측값입니다. 이 값이 음수이고 기타부문의 세부 자산·현금흐름이
+      분리 공시되지 않아 양(+) EV/EBITDA 배수를 적용하지 않고, 확인 가능한 유형자산 장부가 기반 NAV로 평가합니다.
+  recycling_gross_asset_value:
+    value: 147.556
+    unit: KRW_billion
     segment: recycling
-    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958
-    rationale: 현재 spot 이익을 영구화하지 않고 자본집약도·상품 스프레드 변동성과 사업의 지속성을 함께 반영한 through-cycle
-      EV/EBITDA 판단 배수입니다.
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
+    rationale: 2025 사업보고서 IFRS 8 표의 폐기물처리 및 기타사업 유형자산 147,555,847천원을 장부가 기반의 보수적 영업자산
+      floor로 사용합니다. 적자 EBITDA에 배수를 적용하지 않고 확인 가능한 유형자산만 평가합니다.
+  recycling_liabilities:
+    value: 0
+    unit: KRW_billion
+    segment: recycling
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
+    rationale: 별도 부문가치에는 유형자산만 넣고 연결 금융부채·현금은 제조부문에 배치한 단일 EV→지분 브리지에서 이미 전액 반영하므로
+      여기서 다시 차감하지 않습니다. 이는 부채가 없다는 주장이 아니라 중복 차감 방지용 배분입니다.
+  asset_value:
+    value: 147.556
+    unit: KRW_billion
+    segment: recycling
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
+    rationale: 2025 사업보고서 IFRS 8 표의 폐기물처리 및 기타사업 유형자산 147,555,847천원입니다.
+  noi_or_ffo:
+    value: -31.779
+    unit: KRW_billion
+    segment: recycling
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
+    rationale: 2025 사업보고서 IFRS 8 표의 폐기물처리 및 기타사업 영업손실 31,778,827천원을 현금수익력 경고지표로 보존합니다.
+  occupancy:
+    value: NOT_APPLICABLE
+    unit: status
+    segment: recycling
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
+    rationale: 폐기물 처리설비는 임대부동산이 아니므로 임대율은 적용하지 않습니다.
+  rent:
+    value: NOT_APPLICABLE
+    unit: status
+    segment: recycling
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
+    rationale: 폐기물 처리설비는 임대부동산이 아니므로 임대료 지표는 적용하지 않습니다.
+  cap_rate:
+    value: NOT_APPLICABLE
+    unit: status
+    segment: recycling
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
+    rationale: 유형자산 장부가 floor를 사용하며 부동산 cap rate를 적용하지 않습니다.
+  debt:
+    value: NOT_DISCLOSED
+    unit: status
+    segment: recycling
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
+    rationale: 부문별 금융부채는 별도 공시되지 않았고 연결 금융부채는 단일 EV→지분 브리지에서 반영합니다.
+  maturities:
+    value: NOT_DISCLOSED
+    unit: status
+    segment: recycling
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
+    rationale: 부문별 금융부채 만기는 별도 공시되지 않았고 연결 금융부채는 단일 EV→지분 브리지에서 반영합니다.
   recycling_ownership:
     value: 0.978364
     unit: ratio

@@ -236,6 +236,8 @@ def method_label_ko(value: object) -> str:
         return "핵심동인 현금흐름할인법"
     if "normalized_multiple" in text:
         return "정상화 이익배수법"
+    if "asset_yield_nav/nav" in text or text.endswith("/nav/1"):
+        return "유형자산 순자산가치법"
     if "finite_life_npv" in text:
         return "유한수명 순현재가치법"
     if "rnvp" in text.casefold() or "rnpv" in text.casefold():

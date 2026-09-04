@@ -386,6 +386,9 @@ def _multiple_assumption_table(
     )
     if not ebitda_keys or not multiple_keys:
         return None
+    nav_asset_keys = tuple(
+        key for key in first_keys if key.endswith("gross_asset_value")
+    )
 
     def segment_label(key: str) -> str:
         segment = key.removesuffix("_normalized_ebitda")
@@ -405,12 +408,17 @@ def _multiple_assumption_table(
         multiple_keys[0],
     )
     secondary_ebitda = ebitda_keys[1:3]
+    nav_asset_keys = nav_asset_keys[:2]
     headers = (
         "구분",
         f"{segment_label(primary_ebitda)} EBITDA",
         f"{segment_label(primary_ebitda)} 배수",
         *(
-            f"{segment_label(key)} EBITDA" for key in secondary_ebitda
+            f"{segment_label(key)} EBITDA×배수" for key in secondary_ebitda
+        ),
+        *(
+            f"{segment_label(key.removesuffix('gross_asset_value') + 'normalized_ebitda')} NAV"
+            for key in nav_asset_keys
         ),
         "EV→지분 조정",
     )
@@ -429,15 +437,40 @@ def _multiple_assumption_table(
                 (item.convert_to(unit).amount for item in adjustments), Decimal(0)
             )
             adjustment_text = _measure_value_text(total, unit)
+        secondary_values = []
+        for key in secondary_ebitda:
+            prefix = key.removesuffix("normalized_ebitda")
+            multiple_key = next(
+                (
+                    item
+                    for item in multiple_keys
+                    if item.startswith(prefix)
+                ),
+                None,
+            )
+            detail = _scenario_assumption(scenario, key)
+            if multiple_key is not None:
+                detail += f" × {_scenario_assumption(scenario, multiple_key)}"
+            secondary_values.append(detail)
+        nav_values = []
+        for key in nav_asset_keys:
+            prefix = key.removesuffix("gross_asset_value")
+            try:
+                asset = scenario.get(key).measure
+                liability = scenario.get(f"{prefix}liabilities").measure.convert_to(asset.unit)
+            except KeyError:
+                nav_values.append("—")
+                continue
+            nav_values.append(
+                _measure_value_text(asset.amount - liability.amount, asset.unit)
+            )
         rows.append(
             (
                 f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
                 _scenario_assumption(scenario, primary_ebitda),
                 _scenario_assumption(scenario, primary_multiple),
-                *(
-                    _scenario_assumption(scenario, key)
-                    for key in secondary_ebitda
-                ),
+                *secondary_values,
+                *nav_values,
                 adjustment_text,
             )
         )
@@ -489,8 +522,17 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
         if shares is not None:
             core_shares = f"{shares / Decimal('1000000'):,.3f}백만주"
         if common_ownership is not None and shares is not None:
+            nav_present = any(
+                item.key.endswith("gross_asset_value")
+                for item in core.assumptions
+            )
+            value_terms = ["부문 EBITDA×배수 합"]
+            if nav_present:
+                value_terms.append("유형자산 NAV")
+            if adjustments:
+                value_terms.append("EV→지분 조정")
             formula = (
-                "[(부문 EBITDA×배수 합)+EV→지분 조정]"
+                f"[{'+'.join(value_terms)}]"
                 f"×{common_ownership * 100:.4f}%÷{shares:,.0f}주"
             )
 

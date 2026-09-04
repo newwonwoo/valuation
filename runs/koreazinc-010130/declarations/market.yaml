@@ -1,4 +1,4 @@
 market_comparison:
   price: 1223000
   as_of: '2026-09-04'
-  source_ref: https://kr.investing.com/equities/korea-zinc-inc-historical-data
+  source_ref: https://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020103

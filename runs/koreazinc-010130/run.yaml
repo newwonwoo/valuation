@@ -9,7 +9,7 @@ segments:
   - segment_id: trading
     method: process_spread/normalized_multiple
   - segment_id: recycling
-    method: process_spread/normalized_multiple
+    method: asset_yield_nav/nav
 market_currency: KRW
 filing:
   business_year: "2026"

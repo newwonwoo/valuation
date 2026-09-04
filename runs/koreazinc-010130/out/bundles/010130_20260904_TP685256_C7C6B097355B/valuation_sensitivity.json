@@ -1,0 +1,38 @@
+{
+  "findings": [
+    {
+      "blocking": false,
+      "check": "valuation_sensitivity_measured",
+      "detail": "단일 DCF 기여분으로 재구성 가능한 시나리오가 없어 민감도를 산출하지 못했습니다",
+      "passed": false
+    }
+  ],
+  "report_hash": "74bccffd41c837f28620fc62bdb55ae92ebc38bcb4d87391f2c8de62a696cf28",
+  "reporting_unit": "KRW",
+  "scenarios": [
+    {
+      "base_value_per_share": null,
+      "rationale": "SOTP 구성요소 중 동결 DCF 커널로 독립 재현 가능한 부문이 없어 부문별 민감도를 산출하지 않았습니다",
+      "scenario_id": "Down",
+      "segments": [],
+      "status": "NOT_RECONSTRUCTIBLE",
+      "variables": []
+    },
+    {
+      "base_value_per_share": null,
+      "rationale": "SOTP 구성요소 중 동결 DCF 커널로 독립 재현 가능한 부문이 없어 부문별 민감도를 산출하지 않았습니다",
+      "scenario_id": "Base",
+      "segments": [],
+      "status": "NOT_RECONSTRUCTIBLE",
+      "variables": []
+    },
+    {
+      "base_value_per_share": null,
+      "rationale": "SOTP 구성요소 중 동결 DCF 커널로 독립 재현 가능한 부문이 없어 부문별 민감도를 산출하지 않았습니다",
+      "scenario_id": "Bull",
+      "segments": [],
+      "status": "NOT_RECONSTRUCTIBLE",
+      "variables": []
+    }
+  ]
+}

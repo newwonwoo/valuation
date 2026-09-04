@@ -261,7 +261,7 @@ classifications:
   - ksic_prefix: "38220"
     label: 지정 폐기물 처리업
     sector_adapter: environmental.waste_processing
-    archetypes: [process_spread]
+    archetypes: [process_spread, asset_yield_nav]
     structure:
       revenue_recognition: service_delivery
       price_formation: treatment fee over collection and processing cost

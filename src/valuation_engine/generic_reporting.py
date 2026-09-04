@@ -231,6 +231,23 @@ def _scenario_assumptions_line(scenario: object) -> str:
         if multiple is not None:
             detail += f" × {_measure_text(multiple)}"
         values.append(detail)
+    nav_asset_keys = tuple(
+        key for key in by_key if key.endswith("gross_asset_value")
+    )
+    for asset_key in nav_asset_keys:
+        prefix = asset_key.removesuffix("gross_asset_value")
+        liabilities = by_key.get(f"{prefix}liabilities")
+        if liabilities is None:
+            continue
+        asset_measure = by_key[asset_key].measure
+        liability_measure = liabilities.measure.convert_to(asset_measure.unit)
+        nav_amount = asset_measure.amount - liability_measure.amount
+        segment_id = prefix.rstrip("_")
+        label = segment_labels.get(segment_id, segment_id or "핵심")
+        values.append(
+            f"{label} 유형자산 NAV "
+            f"{_amount_unit_text(nav_amount, asset_measure.unit)}"
+        )
     ownerships = tuple(
         item for key, item in by_key.items() if key.endswith("ownership")
     )
@@ -272,9 +289,16 @@ def _scenario_assumptions_line(scenario: object) -> str:
     if shares is not None:
         share_count = Decimal(str(shares.measure.amount))
         values.append(f"주당 분모 {share_count / Decimal('1000000'):,.3f}백만주")
-        if len(ebitda_keys) > 1 and common_ownership is not None:
+        if len(ebitda_keys) + len(nav_asset_keys) > 1 and common_ownership is not None:
+            value_terms: list[str] = []
+            if ebitda_keys:
+                value_terms.append("부문 EBITDA×배수 합")
+            if nav_asset_keys:
+                value_terms.append("유형자산 NAV")
+            if adjustments:
+                value_terms.append("EV→지분 조정")
             values.append(
-                "산식 [(부문 EBITDA×배수 합)+EV→지분 조정]"
+                f"산식 [{'+'.join(value_terms)}]"
                 f"×{common_ownership * 100:.4f}%÷{share_count:,.0f}주"
             )
 

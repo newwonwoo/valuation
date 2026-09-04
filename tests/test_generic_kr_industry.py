@@ -338,3 +338,7 @@ def test_longest_ksic_prefix_wins():
     assert classification.lookup("58229").sector_adapter == "software.application"
     assert classification.lookup("24213").sector_adapter == "metals.nonferrous_smelting"
     assert classification.lookup("38220").sector_adapter == "environmental.waste_processing"
+    assert classification.lookup("38220").archetypes == (
+        EconomicArchetype.PROCESS_SPREAD,
+        EconomicArchetype.ASSET_YIELD_NAV,
+    )
