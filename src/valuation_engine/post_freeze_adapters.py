@@ -262,6 +262,12 @@ def reverse_dcf_expectations_adapter(
                 "동결 모델을 고정한 채 시장 함의 영구성장률·현금흐름 배율·시나리오 위치를 역산했습니다",
                 outputs,
             )
+        if not any(item.reconstructed for item in result.scenarios):
+            return StageExecutionResult(
+                StageStatus.WARNING,
+                "역산 가능한 단일 DCF 시나리오가 없어 시장 함의 영구성장률·현금흐름 배율을 산출하지 않았습니다",
+                outputs,
+            )
         return StageExecutionResult(
             StageStatus.WARNING,
             "시장 함의 기대치가 동결 가정과 다른 요구조건을 담고 있습니다: "
