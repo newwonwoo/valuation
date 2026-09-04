@@ -127,6 +127,9 @@ def test_the_committed_koreazinc_run_replays_llm_bound_ifrs8_sotp():
             if item.asset_id == "parent_noncontrolling_interest"
         )
         assert parent.ownership_ratio is None
+        assert parent.economic_path_ids == (
+            "path:parent:noncontrolling_interest",
+        )
         assert parent.attributable_equity_value.amount == Decimal(
             "-250847127410.00"
         )

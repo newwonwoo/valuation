@@ -93,12 +93,40 @@ def test_sotp_requires_explicit_ev_to_equity_bridge_and_applies_ownership():
         scenario_id="Base",
         reporting_unit="KRW_billion",
         parent_adjustments=(
-            ParentAdjustment("parent_cash", Measure(Decimal("100"), "KRW_billion", "2026-06-30")),
+            ParentAdjustment(
+                "parent_cash",
+                Measure(Decimal("100"), "KRW_billion", "2026-06-30"),
+                "PATH:PARENT:CASH",
+            ),
         ),
     )
     # (1000 - 200) * 80% + 100 = 740
     assert result.equity_value.amount == Decimal("740.0")
+    assert result.components[-1].economic_path_ids == ("PATH:PARENT:CASH",)
     assert result.aggregation_hash
+
+
+def test_sotp_blocks_parent_adjustment_path_reuse():
+    inputs = (
+        SegmentAggregationInput(
+            "asset:A", segment_value("A", "Base", "100", "PATH:SAME"),
+            Decimal("1"),
+            Measure(Decimal("0"), "KRW_billion", "2026-06-30"),
+        ),
+    )
+    with pytest.raises(ValueError, match="duplicate economic value path"):
+        aggregate_sotp(
+            inputs,
+            scenario_id="Base",
+            reporting_unit="KRW_billion",
+            parent_adjustments=(
+                ParentAdjustment(
+                    "parent_cash",
+                    Measure(Decimal("100"), "KRW_billion", "2026-06-30"),
+                    "PATH:SAME",
+                ),
+            ),
+        )
 
 
 def test_sotp_blocks_duplicate_economic_paths():

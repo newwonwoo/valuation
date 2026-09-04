@@ -39,7 +39,7 @@ _REPORTING_UNITS = frozenset({"원", "천원", "백만원", "억원"})
 _MAX_BOUND_REGION_CHARS = 16_384
 _TABLE_ROW = re.compile(r"<TR\b[^>]*>(?P<body>.*?)</TR\s*>", re.IGNORECASE | re.DOTALL)
 _TABLE_CELL = re.compile(
-    r"<(?:TH|TD)\b(?P<attrs>[^>]*)>(?P<body>.*?)</(?:TH|TD)\s*>",
+    r"<(?P<tag>TH|TD)\b(?P<attrs>[^>]*)>(?P<body>.*?)</(?P=tag)\s*>",
     re.IGNORECASE | re.DOTALL,
 )
 _ROWSPAN = re.compile(r"\browspan\s*=\s*['\"]?(\d+)", re.IGNORECASE)
@@ -77,6 +77,7 @@ class _SourceCellPosition:
     row: int
     column: int
     visible_text: str
+    is_header: bool
 
 
 def _visible_cell_text(body: str) -> str:
@@ -136,6 +137,7 @@ def _source_cell_positions(
                     row_index,
                     column,
                     _visible_cell_text(cell_match.group("body")),
+                    cell_match.group("tag").upper() == "TH",
                 )
                 pending.remove(offset)
             for future_row in range(row_index + 1, row_index + rowspan):
@@ -368,6 +370,11 @@ class SourceBoundSegmentExtraction:
                 raise DeclaredSegmentsError(
                     f"segment extraction name {entry.disclosed_name!r} must "
                     "precede the metric rows as a source-table header"
+                )
+            if not name_position.is_header:
+                raise DeclaredSegmentsError(
+                    f"segment extraction name {entry.disclosed_name!r} must "
+                    "belong to an actual TH source-table header cell"
                 )
         for label, value, offset in (
             (

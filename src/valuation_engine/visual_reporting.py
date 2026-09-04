@@ -357,6 +357,13 @@ def _measure_value_text(amount: Decimal, unit: str) -> str:
     return f"{amount:g} {unit}"
 
 
+def _compact_adjustment_text(amount: Decimal, unit: str) -> str:
+    """Fit a bridge amount in the narrow final column of the SVG table."""
+    if unit == "KRW_billion":
+        return f"{amount * 10:,.0f}억"
+    return _measure_value_text(amount, unit)
+
+
 def _scenario_assumption(scenario: Any, key: str) -> str:
     try:
         return _measure_text(scenario.get(key))
@@ -498,26 +505,30 @@ def _multiple_assumption_table(
                 adjustments.append(scenario.get(key).measure)
             except KeyError:
                 continue
-        details: list[str] = []
-        if adjustments:
-            unit = adjustments[0].unit
-            total = sum(
-                (item.convert_to(unit).amount for item in adjustments), Decimal(0)
-            )
-            details.append(f"EV→지분 {_measure_value_text(total, unit)}")
         parent = []
         for item in valuation_plan.parent_adjustments if valuation_plan else ():
             try:
                 parent.append(scenario.get(item.assumption_key).measure)
             except KeyError:
                 continue
+        details: list[str] = []
+        if adjustments:
+            unit = adjustments[0].unit
+            total = sum(
+                (item.convert_to(unit).amount for item in adjustments), Decimal(0)
+            )
+            details.append(
+                f"EV {_compact_adjustment_text(total, unit)}"
+                if parent
+                else _measure_value_text(total, unit)
+            )
         if parent:
             unit = parent[0].unit
             total = sum(
                 (item.convert_to(unit).amount for item in parent), Decimal(0)
             )
-            details.append(f"모회사 {_measure_value_text(total, unit)}")
-        return "; ".join(details) or "—"
+            details.append(f"모 {_compact_adjustment_text(total, unit)}")
+        return "\n".join(details) or "—"
 
     def multiple_values(scenario: Any) -> list[str]:
         values: list[str] = []
@@ -710,7 +721,7 @@ def _multiple_assumption_table(
         return paths, terminal
 
     adjustment_header = (
-        "EV→지분·모회사 조정"
+        "EV→지분\n모회사 조정"
         if valuation_plan is not None and valuation_plan.parent_adjustments
         else "EV→지분 조정"
     )
@@ -820,6 +831,7 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
 
     common_ownership: Decimal | None = None
     core_adjustment = "—"
+    parent_adjustment_text = "—"
     core_shares = "—"
     formula = ""
     discounted_families = {
@@ -862,6 +874,16 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             )
         )
     )
+    if core is not None and valuation_plan is not None and valuation_plan.parent_adjustments:
+        parent = tuple(
+            core.get(item.assumption_key).measure
+            for item in valuation_plan.parent_adjustments
+        )
+        unit = parent[0].unit
+        parent_total = sum(
+            (item.convert_to(unit).amount for item in parent), Decimal(0)
+        )
+        parent_adjustment_text = _measure_value_text(parent_total, unit)
     if multiple_table is not None and core is not None:
         ownership_keys = (
             tuple(item.ownership_key for item in valuation_plan.segments)
@@ -898,21 +920,6 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
                 (item.convert_to(unit).amount for item in adjustments), Decimal(0)
             )
             core_adjustment = _measure_value_text(total, unit)
-        if valuation_plan is not None and valuation_plan.parent_adjustments:
-            parent = tuple(
-                core.get(item.assumption_key).measure
-                for item in valuation_plan.parent_adjustments
-            )
-            unit = parent[0].unit
-            parent_total = sum(
-                (item.convert_to(unit).amount for item in parent), Decimal(0)
-            )
-            parent_text = f"모회사 {_measure_value_text(parent_total, unit)}"
-            core_adjustment = (
-                f"EV {core_adjustment} / {parent_text}"
-                if adjustments
-                else parent_text
-            )
         share_key = (
             valuation_plan.diluted_shares_key
             if valuation_plan is not None
@@ -987,10 +994,12 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
                 else "개별 적용",
             ),
             (
-                "EV→지분·모회사 조정"
+                "모회사 조정"
                 if valuation_plan is not None and valuation_plan.parent_adjustments
                 else "EV→지분 조정",
-                core_adjustment,
+                parent_adjustment_text
+                if valuation_plan is not None and valuation_plan.parent_adjustments
+                else core_adjustment,
             ),
             ("주당 분모", core_shares),
         )
@@ -998,7 +1007,14 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
         else (
             ("계층형 베타", f"{beta:.3f}" if beta is not None else "비적용"),
             ("가중평균자본비용", f"{wacc:.2%}" if wacc is not None else "비적용"),
-            ("확률 보정", "완료" if calibration == "CALIBRATED" else "미완료"),
+            (
+                "모회사 조정"
+                if valuation_plan is not None and valuation_plan.parent_adjustments
+                else "확률 보정",
+                parent_adjustment_text
+                if valuation_plan is not None and valuation_plan.parent_adjustments
+                else ("완료" if calibration == "CALIBRATED" else "미완료"),
+            ),
         )
     )
     for index, (label, value) in enumerate(metric_rows):
@@ -1021,7 +1037,19 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     )
     x_positions = (100, 270, 470, 675, 855, 1015)
     for x, header in zip(x_positions, headers):
-        parts.append(_svg_text(header, x=x, y=table_y + 48, size=19, weight=800, fill="#607582"))
+        header_lines = str(header).splitlines()
+        header_y = table_y + (37 if len(header_lines) > 1 else 48)
+        for line_index, line in enumerate(header_lines):
+            parts.append(
+                _svg_text(
+                    line,
+                    x=x,
+                    y=header_y + line_index * 21,
+                    size=16 if len(header_lines) > 1 else 19,
+                    weight=800,
+                    fill="#607582",
+                )
+            )
     parts.append(f'<line x1="95" y1="{table_y + 68}" x2="1105" y2="{table_y + 68}" stroke="#D6DFE3" stroke-width="2"/>')
     table_rows = (
         multiple_table[1]
@@ -1041,7 +1069,19 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     for index, values in enumerate(table_rows):
         row_y = table_y + 125 + index * 85
         for x, value in zip(x_positions, values):
-            parts.append(_svg_text(value, x=x, y=row_y, size=21, weight=700 if x == 100 else 500, fill="#142A3A"))
+            value_lines = str(value).splitlines()
+            value_y = row_y - (11 if len(value_lines) > 1 else 0)
+            for line_index, line in enumerate(value_lines):
+                parts.append(
+                    _svg_text(
+                        line,
+                        x=x,
+                        y=value_y + line_index * 24,
+                        size=16 if len(value_lines) > 1 else 21,
+                        weight=700 if x == 100 else 500,
+                        fill="#142A3A",
+                    )
+                )
         if index < len(table_rows) - 1:
             parts.append(f'<line x1="95" y1="{row_y + 28}" x2="1105" y2="{row_y + 28}" stroke="#E9EEF0" stroke-width="2"/>')
 

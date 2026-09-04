@@ -36,10 +36,13 @@ class SegmentAggregationInput:
 class ParentAdjustment:
     asset_id: str
     amount: Measure
+    economic_path_id: str
 
     def __post_init__(self) -> None:
-        if not self.asset_id:
-            raise ValueError("parent adjustment requires asset_id")
+        if not self.asset_id or not self.economic_path_id:
+            raise ValueError(
+                "parent adjustment requires asset_id and economic_path_id"
+            )
 
 
 @dataclass(frozen=True)
@@ -127,7 +130,13 @@ def aggregate_sotp(
     for adjustment in parent_adjustments:
         if adjustment.asset_id in asset_ids:
             raise ValueError(f"parent adjustment duplicates SOTP asset_id: {adjustment.asset_id}")
+        if adjustment.economic_path_id in economic_paths:
+            raise ValueError(
+                "duplicate economic value path in SOTP: "
+                f"{[adjustment.economic_path_id]}"
+            )
         asset_ids.add(adjustment.asset_id)
+        economic_paths.add(adjustment.economic_path_id)
         amount = adjustment.amount.convert_to(reporting_unit)
         as_of = max(as_of, amount.as_of)
         total += amount.amount
@@ -136,7 +145,7 @@ def aggregate_sotp(
                 asset_id=adjustment.asset_id,
                 contribution_id=f"parent:{adjustment.asset_id}",
                 attributable_equity_value=amount,
-                economic_path_ids=(f"parent:{adjustment.asset_id}",),
+                economic_path_ids=(adjustment.economic_path_id,),
             )
         )
 

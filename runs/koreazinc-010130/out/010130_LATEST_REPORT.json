@@ -1,13 +1,13 @@
 {
-  "artifact_id": "010130-20260904-TP688109-DE0416DF324D",
+  "artifact_id": "010130-20260904-TP688109-6479B013901B",
   "as_of": "2026-09-04",
-  "audit_hash": "c85369b3e8fc797326b9c6199f0ec71cfb3a89572704bf62665a6a1ce76720ef",
-  "bundle_directory": "bundles/010130_20260904_TP688109_DE0416DF324D",
-  "bundle_manifest": "bundles/010130_20260904_TP688109_DE0416DF324D/report_bundle_manifest.json",
-  "bundle_manifest_sha256": "68bd94a90380c84e6db59e730d40f7460064a9bfd300d3f0e42918c8108037cd",
-  "report_filename": "bundles/010130_20260904_TP688109_DE0416DF324D/010130_20260904_TP688109_DE0416DF324D.md",
-  "report_sha256": "e0e564cdc8838f9673c862cdcd1ff07328ae37b08bbcae07d80b8353a17eb0f4",
-  "run_input_sha256": "70a29dbf4ffbdf92c3ad7003139ab89f4a9c9d49dbfd0c06c21bd8434c75ddd6",
+  "audit_hash": "58337b5d7fab12341a1a737be77afedd5bfd2f3ed9a91315e52c194c7851aab9",
+  "bundle_directory": "bundles/010130_20260904_TP688109_6479B013901B",
+  "bundle_manifest": "bundles/010130_20260904_TP688109_6479B013901B/report_bundle_manifest.json",
+  "bundle_manifest_sha256": "73a15eb8304d63cd1fcf2398c02a1fcaa174cd58368f39381d9dee874c46c8f8",
+  "report_filename": "bundles/010130_20260904_TP688109_6479B013901B/010130_20260904_TP688109_6479B013901B.md",
+  "report_sha256": "ef43a1f4cb8ffd8a7dc53efe5f68108874093fd2f156c747aff95d0024223a64",
+  "run_input_sha256": "917c349500db57edb45c0020848b51ac69e3d69dcc4edf94cee9a422e7082e06",
   "schema_version": "kr-live-latest-report/v1",
-  "valuation_hash": "dd8a2d1a669f8dc1b754dc66e94f222ecaef0634ba7a58671883c652c0a840c8"
+  "valuation_hash": "11aed17f87e2d6d041dcd50a7c3ca7453a50b368339175fe9ef6450d9646162e"
 }

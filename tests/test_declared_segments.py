@@ -418,6 +418,49 @@ def test_source_bound_extraction_requires_names_to_precede_metric_rows():
         )
 
 
+def test_source_bound_extraction_rejects_pre_metric_memo_cells_as_names():
+    source = """단위:천원
+<TABLE><THEAD><TR><TH>구분</TH><TH>실제 A</TH><TH>실제 B</TH><TH>합계</TH></TR></THEAD>
+<TBODY><TR><TD>메모</TD><TD>발명 A</TD><TD>발명 B</TD><TD>해당 없음</TD></TR>
+<TR><TD>매출액</TD><TD>100</TD><TD>200</TD><TD>300</TD></TR>
+<TR><TD>영업이익</TD><TD>10</TD><TD>20</TD><TD>30</TD></TR></TBODY></TABLE>"""
+    extraction = SourceBoundSegmentExtraction(
+        extractor="llm_reviewed",
+        document_id="DART_20260814003201",
+        member_path="llm_source.xml",
+        member_sha256=sha256(source.encode("utf-8")).hexdigest(),
+        reporting_unit="천원",
+        entries=(
+            SourceBoundSegmentEntry(
+                "발명 A", Decimal("100"), Decimal("10"),
+                source.index("발명 A"), source.index(">100<") + 1,
+                source.index(">10<") + 1,
+            ),
+            SourceBoundSegmentEntry(
+                "발명 B", Decimal("200"), Decimal("20"),
+                source.index("발명 B"), source.index(">200<") + 1,
+                source.index(">20<") + 1,
+            ),
+        ),
+        filed_total_revenue=Decimal("300"),
+        filed_total_operating_income=Decimal("30"),
+        filed_total_revenue_offset=source.index(">300<") + 1,
+        filed_total_operating_income_offset=source.index(">30<") + 1,
+        revenue_row_label="매출액",
+        revenue_row_label_offset=source.index("매출액"),
+        operating_income_row_label="영업이익",
+        operating_income_row_label_offset=source.index("영업이익"),
+    )
+
+    with pytest.raises(DeclaredSegmentsError, match="actual TH source-table header"):
+        extraction.bind_source_member(
+            document_id="DART_20260814003201",
+            member_path="llm_source.xml",
+            member_sha256=sha256(source.encode("utf-8")).hexdigest(),
+            text=source,
+        )
+
+
 def test_a_declaration_on_a_whole_company_filing_is_refused():
     with pytest.raises(GenericKRIndustryError, match="remove the declaration"):
         _load_snapshot(_fetch_bytes_single, _declaration())

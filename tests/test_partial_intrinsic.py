@@ -13,7 +13,11 @@ from valuation_engine.control_plane import (
     StageStatus,
     issue_freeze_token,
 )
-from valuation_engine.evaluator_registry import EvaluatorRegistry, NormalizedMultipleEvaluator
+from valuation_engine.evaluator_registry import (
+    EvaluatorRegistry,
+    ModelKey,
+    NormalizedMultipleEvaluator,
+)
 from valuation_engine.generic_reporting import (
     _scenario_assumptions_line,
     render_generic_report,
@@ -29,15 +33,19 @@ from valuation_engine.records import AuditReport, CalibrationStatus, MarketObser
 from valuation_engine.scenario_binding import BoundScenario, BoundScenarioSet
 from valuation_engine.valuation_adapter import deterministic_valuation_adapter
 from valuation_engine.valuation_execution import (
+    CompanyValuationPlan,
     IntrinsicValuationScope,
     ParentAdjustmentPlan,
+    SegmentValuationPlan,
     UnvaluedSegmentStatus,
     execute_company_valuation,
 )
 from valuation_engine.valuation_plan_compiler import (
     CompanyValuationPlanInputs,
+    SegmentEvaluatorContract,
     SegmentMethodChoice,
     SegmentValueBinding,
+    ValuationPlanCompilation,
     ValuationPlanStatus,
     compile_company_valuation_plan,
 )
@@ -282,7 +290,7 @@ def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
     assert "제조 1,000억원×8배" in rendered_table
     assert "운송 수주잔고 DCF" in rendered_table
     assert "잔고 1,000억원" in rendered_table
-    assert "모회사 -30억원" in rendered_table
+    assert "EV -120억\n모 -30억" in rendered_table
 
     svg = _assumptions_card(
         {
@@ -302,7 +310,8 @@ def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
     ).svg
     assert "운송 수주잔고 DCF" in svg
     assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in svg
-    assert "모회사 -30억원" in svg
+    assert "모회사 조정" in svg
+    assert "모 -30억" in svg
 
     line = _scenario_assumptions_line(
         scenario,
@@ -335,6 +344,83 @@ def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
     assert "운송 수주잔고 DCF" in report
     assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in report
     assert "모회사 조정 -30억원" in report
+
+
+def test_single_dcf_assumptions_card_shows_parent_adjustment():
+    scenario = BoundScenario(
+        "Base",
+        (
+            _assumption("fcff_year_1", "10", "KRW_billion"),
+            _assumption("fcff_year_5", "15", "KRW_billion"),
+            _assumption("terminal_growth", "0.02", "ratio"),
+            _assumption("terminal_roic", "0.12", "ratio"),
+            _assumption("ownership", "1", "ratio"),
+            _assumption("ev_adjustment", "-2", "KRW_billion"),
+            _assumption("parent_nci", "-3", "KRW_billion"),
+            _assumption("diluted_shares", "10", "shares"),
+        ),
+    )
+    scenario_set = BoundScenarioSet(
+        target_id="SINGLE-DCF",
+        scenarios=(scenario,),
+        calibration_status=CalibrationStatus.UNCALIBRATED,
+        numeric_weighting_allowed=False,
+        scenario_set_hash="SINGLE-DCF-HASH",
+    )
+    model_key = ModelKey("capacity_manufacturing", "driver_dcf", "1")
+    plan = CompanyValuationPlan(
+        segments=(
+            SegmentValuationPlan(
+                "core", "core", model_key, "ownership", "ev_adjustment"
+            ),
+        ),
+        reporting_unit="KRW_billion",
+        diluted_shares_key="diluted_shares",
+        parent_adjustments=(ParentAdjustmentPlan("parent_nci", "parent_nci"),),
+    )
+    compilation = ValuationPlanCompilation(
+        status=ValuationPlanStatus.READY,
+        plan=plan,
+        scenario_set_hash="SINGLE-DCF-HASH",
+        module_plan_hash="MODULE",
+        capability_registry_hash="CAPABILITY",
+        evaluator_registry_hash="EVALUATOR",
+        method_choices_hash="METHOD",
+        segment_resolutions=(),
+        evaluator_contracts=(
+            SegmentEvaluatorContract(
+                segment_id="core",
+                model_key=model_key,
+                execution_family="explicit_fcff_dcf",
+                output_kind="enterprise_value",
+                required_assumption_keys=(
+                    "fcff_year_1",
+                    "fcff_year_5",
+                    "terminal_growth",
+                    "terminal_roic",
+                ),
+            ),
+        ),
+        warranted_per_segments=(),
+        aggregator_bindings=(),
+        missing_assumptions=(),
+    )
+
+    svg = _assumptions_card(
+        {
+            "company": "Single DCF",
+            "bound_scenario_set": scenario_set,
+            "valuation_plan_compilation": compilation,
+            "live_beta_result": SimpleNamespace(target_levered_beta=Decimal("1.1")),
+            "live_wacc_result": SimpleNamespace(
+                wacc_result=SimpleNamespace(wacc=Decimal("0.09"))
+            ),
+        },
+        "single-dcf.svg",
+    ).svg
+
+    assert "모회사 조정" in svg
+    assert "-30억원" in svg
 
 
 def test_pure_multiple_visual_table_has_a_bounded_column_contract():
