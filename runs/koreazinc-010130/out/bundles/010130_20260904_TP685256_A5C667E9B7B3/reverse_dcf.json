@@ -1,0 +1,125 @@
+{
+  "findings": [
+    {
+      "blocking": false,
+      "check": "reverse_dcf_reconstruction",
+      "detail": "역산 가능한 단일 DCF 시나리오가 없어 시장 함의값을 산출하지 않았습니다",
+      "passed": false
+    },
+    {
+      "blocking": false,
+      "check": "reverse_dcf_terminal_value_share",
+      "detail": "영구가치 비중이 기준 이하입니다",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "reverse_dcf_implied_growth_gap",
+      "detail": "시장 함의 영구성장률이 동결 가정과 기준 이내로 일치합니다",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "reverse_dcf_implied_reinvestment_feasibility",
+      "detail": "시장 함의 영구성장률이 재투자 항등식 안에서 실현 가능합니다",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "reverse_dcf_terminal_solution_exists",
+      "detail": "모든 재구성 시나리오에서 시장 함의 영구가치가 양수입니다",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "reverse_dcf_implied_fcff_scale",
+      "detail": "시장가를 정당화하는 현금흐름 배율이 기준 이내입니다",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "reverse_dcf_scenario_position",
+      "detail": "현재가가 동결 시나리오 범위를 벗어났습니다: ABOVE_ALL",
+      "passed": false
+    }
+  ],
+  "market_as_of": "2026-09-04",
+  "market_price": "1223000.0",
+  "probability_requirement": {
+    "lower_scenario_id": null,
+    "lower_value_per_share": null,
+    "lower_weight": null,
+    "market_value_per_share": "1223000.0",
+    "position": "ABOVE_ALL",
+    "upper_scenario_id": "Bull",
+    "upper_value_per_share": "1117290.587263068453298623779",
+    "upper_weight": null
+  },
+  "reporting_unit": "KRW",
+  "result_hash": "d80b48a356c55ed9bd016ec66ff202553eac1f890da9c8a7c25ea0e03ad1535b",
+  "scenarios": [
+    {
+      "discount_rate": null,
+      "implied_fcff_scale": null,
+      "implied_terminal_growth": null,
+      "implied_terminal_growth_gap": null,
+      "implied_terminal_reinvestment_rate": null,
+      "market_enterprise_value": null,
+      "market_equity_value": "24940922736000.0",
+      "model_enterprise_value": null,
+      "model_equity_value": "6317760092536.0000000000",
+      "model_terminal_growth": null,
+      "model_terminal_roic": null,
+      "ownership_ratio": null,
+      "present_value_explicit": null,
+      "present_value_terminal": null,
+      "rationale": "시나리오 가치가 단일 DCF 기여분으로 구성되지 않아 시장 함의 영구성장률을 단일 변수로 역산할 수 없습니다",
+      "reporting_unit": "KRW",
+      "scenario_id": "Down",
+      "status": "NOT_RECONSTRUCTIBLE",
+      "terminal_value_share": null
+    },
+    {
+      "discount_rate": null,
+      "implied_fcff_scale": null,
+      "implied_terminal_growth": null,
+      "implied_terminal_growth_gap": null,
+      "implied_terminal_reinvestment_rate": null,
+      "market_enterprise_value": null,
+      "market_equity_value": "24940922736000.0",
+      "model_enterprise_value": null,
+      "model_equity_value": "13974579108498.0000000000",
+      "model_terminal_growth": null,
+      "model_terminal_roic": null,
+      "ownership_ratio": null,
+      "present_value_explicit": null,
+      "present_value_terminal": null,
+      "rationale": "시나리오 가치가 단일 DCF 기여분으로 구성되지 않아 시장 함의 영구성장률을 단일 변수로 역산할 수 없습니다",
+      "reporting_unit": "KRW",
+      "scenario_id": "Base",
+      "status": "NOT_RECONSTRUCTIBLE",
+      "terminal_value_share": null
+    },
+    {
+      "discount_rate": null,
+      "implied_fcff_scale": null,
+      "implied_terminal_growth": null,
+      "implied_terminal_growth_gap": null,
+      "implied_terminal_reinvestment_rate": null,
+      "market_enterprise_value": null,
+      "market_equity_value": "24940922736000.0",
+      "model_enterprise_value": null,
+      "model_equity_value": "22785166157472.0000000000",
+      "model_terminal_growth": null,
+      "model_terminal_roic": null,
+      "ownership_ratio": null,
+      "present_value_explicit": null,
+      "present_value_terminal": null,
+      "rationale": "시나리오 가치가 단일 DCF 기여분으로 구성되지 않아 시장 함의 영구성장률을 단일 변수로 역산할 수 없습니다",
+      "reporting_unit": "KRW",
+      "scenario_id": "Bull",
+      "status": "NOT_RECONSTRUCTIBLE",
+      "terminal_value_share": null
+    }
+  ]
+}

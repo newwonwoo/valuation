@@ -389,6 +389,13 @@ def _multiple_assumption_table(
     nav_asset_keys = tuple(
         key for key in first_keys if key.endswith("gross_asset_value")
     )
+    dcf_prefixes = tuple(
+        dict.fromkeys(
+            key.removesuffix("fcff_year_1")
+            for key in first_keys
+            if key.endswith("fcff_year_1")
+        )
+    )
 
     def segment_label(key: str) -> str:
         segment = key.removesuffix("_normalized_ebitda")
@@ -396,7 +403,90 @@ def _multiple_assumption_table(
             "manufacturing": "제조",
             "trading": "수출입",
             "recycling": "기타",
+            "transport": "운송",
+            "core": "핵심",
+            "uhv": "초고압",
         }.get(segment, segment or "핵심")
+
+    def adjustment_text(scenario: Any) -> str:
+        adjustments = tuple(
+            item.measure
+            for item in scenario.assumptions
+            if item.key.endswith("ev_adjustment")
+        )
+        if not adjustments:
+            return "—"
+        unit = adjustments[0].unit
+        total = sum(
+            (item.convert_to(unit).amount for item in adjustments), Decimal(0)
+        )
+        return _measure_value_text(total, unit)
+
+    if dcf_prefixes:
+        headers = (
+            "구분",
+            "배수평가 부문",
+            "NAV 부문",
+            "DCF FCFF 1→5",
+            "DCF g/ROIC",
+            "EV→지분 조정",
+        )
+        rows = []
+        for scenario in scenarios[:3]:
+            multiple_values = []
+            for key in ebitda_keys:
+                prefix = key.removesuffix("normalized_ebitda")
+                multiple_key = next(
+                    (item for item in multiple_keys if item.startswith(prefix)),
+                    None,
+                )
+                if multiple_key is None:
+                    continue
+                multiple_values.append(
+                    f"{segment_label(key)} {_scenario_assumption(scenario, key)}"
+                    f"×{_scenario_assumption(scenario, multiple_key)}"
+                )
+
+            nav_values = []
+            for key in nav_asset_keys:
+                prefix = key.removesuffix("gross_asset_value")
+                try:
+                    asset = scenario.get(key).measure
+                    liability = scenario.get(
+                        f"{prefix}liabilities"
+                    ).measure.convert_to(asset.unit)
+                except KeyError:
+                    continue
+                label_key = f"{prefix}normalized_ebitda"
+                nav_values.append(
+                    f"{segment_label(label_key)} "
+                    f"{_measure_value_text(asset.amount - liability.amount, asset.unit)}"
+                )
+
+            dcf_values = []
+            terminal_values = []
+            for prefix in dcf_prefixes:
+                label = segment_label(f"{prefix.rstrip('_')}_normalized_ebitda")
+                dcf_values.append(
+                    f"{label} {_scenario_assumption(scenario, f'{prefix}fcff_year_1')}"
+                    f"→{_scenario_assumption(scenario, f'{prefix}fcff_year_5')}"
+                )
+                terminal_values.append(
+                    f"{label} g {_scenario_assumption(scenario, f'{prefix}terminal_growth')}"
+                    f"/ROIC {_scenario_assumption(scenario, f'{prefix}terminal_roic')}"
+                )
+
+            rows.append(
+                (
+                    f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
+                    "; ".join(multiple_values) or "—",
+                    "; ".join(nav_values) or "—",
+                    "; ".join(dcf_values),
+                    "; ".join(terminal_values),
+                    adjustment_text(scenario),
+                )
+            )
+        return headers, tuple(rows)
 
     primary_ebitda = ebitda_keys[0]
     primary_multiple = next(
@@ -425,18 +515,6 @@ def _multiple_assumption_table(
 
     rows = []
     for scenario in scenarios[:3]:
-        adjustments = tuple(
-            item.measure
-            for item in scenario.assumptions
-            if item.key.endswith("ev_adjustment")
-        )
-        adjustment_text = "—"
-        if adjustments:
-            unit = adjustments[0].unit
-            total = sum(
-                (item.convert_to(unit).amount for item in adjustments), Decimal(0)
-            )
-            adjustment_text = _measure_value_text(total, unit)
         secondary_values = []
         for key in secondary_ebitda:
             prefix = key.removesuffix("normalized_ebitda")
@@ -471,7 +549,7 @@ def _multiple_assumption_table(
                 _scenario_assumption(scenario, primary_multiple),
                 *secondary_values,
                 *nav_values,
-                adjustment_text,
+                adjustment_text(scenario),
             )
         )
     return headers, tuple(rows)
@@ -496,6 +574,12 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     core_adjustment = "—"
     core_shares = "—"
     formula = ""
+    dcf_present = bool(
+        core is not None
+        and any(
+            item.key.endswith("fcff_year_1") for item in core.assumptions
+        )
+    )
     if multiple_table is not None and core is not None:
         ownership_values = tuple(
             item.measure.convert_to("ratio").amount
@@ -526,7 +610,10 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
                 item.key.endswith("gross_asset_value")
                 for item in core.assumptions
             )
-            value_terms = ["부문 EBITDA×배수 합"]
+            value_terms = []
+            if dcf_present:
+                value_terms.append("DCF 가치")
+            value_terms.append("부문 EBITDA×배수 합")
             if nav_present:
                 value_terms.append("유형자산 NAV")
             if adjustments:
@@ -545,6 +632,18 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
         _svg_text("핵심 위험 입력", x=70, y=315, size=30, weight=800, fill="#102D3E"),
     ]
     metric_rows = (
+        (
+            ("DCF 가중평균자본비용", f"{wacc:.2%}" if wacc is not None else "미확보"),
+            (
+                "지배주주 귀속률",
+                f"{common_ownership * 100:.4f}%"
+                if common_ownership is not None
+                else "개별 적용",
+            ),
+            ("주당 분모", core_shares),
+        )
+        if multiple_table is not None and dcf_present
+        else
         (
             (
                 "지배주주 귀속률",

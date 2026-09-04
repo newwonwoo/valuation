@@ -119,6 +119,7 @@ def test_the_committed_koreazinc_run_replays_llm_bound_ifrs8_sotp():
         "**상방 시나리오:** 내재가치 주당 1,117,291원",
         "**확률가중 기대값:** 미산출",
         "**현재가:** 1,223,000원 (2026-09-04)",
+        "**가치동인:** 공시된 IFRS 8 3부문의 경제구조와 순금융부채를 분리해 제조·수출입의 정상화 수익력과 적자 기타부문의 유형자산 가치를 검증한다.",
         "**기준 가정:** 제조 EBITDA 21,441억원 × 7.5배",
         "기타 유형자산 NAV 1,476억원",
         "공통 지배주주 귀속률 97.8364%",
@@ -127,6 +128,22 @@ def test_the_committed_koreazinc_run_replays_llm_bound_ifrs8_sotp():
         "REFERENCE_ONLY",
     ):
         assert line in report, line
+
+    leading_conclusion = report.split("### 밸류에이션", 1)[0]
+    assert "미래 프로젝트" not in leading_conclusion
+    red_team = json.loads(
+        (
+            ROOT
+            / "runs"
+            / "koreazinc-010130"
+            / "declarations"
+            / "staff"
+            / "red_team_officer.json"
+        ).read_text(encoding="utf-8")
+    )
+    counter_thesis = str(red_team["counter_thesis"]).lower()
+    for forbidden_market_premise in ("현재 가격", "현재가", "current price", "current-price"):
+        assert forbidden_market_premise not in counter_thesis
 
 
 def test_a_multi_segment_filing_without_a_declaration_still_fails_closed(tmp_path):

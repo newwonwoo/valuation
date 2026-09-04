@@ -1,5 +1,6 @@
 from dataclasses import replace
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 
@@ -34,7 +35,11 @@ from valuation_engine.valuation_plan_compiler import (
     ValuationPlanStatus,
     compile_company_valuation_plan,
 )
-from valuation_engine.visual_reporting import render_report_visuals
+from valuation_engine.visual_reporting import (
+    _assumptions_card,
+    _multiple_assumption_table,
+    render_report_visuals,
+)
 
 
 def _assumption(key: str, value: str, unit: str, *, scenario: str = "BASE") -> CompiledAssumption:
@@ -69,6 +74,72 @@ def _scenario_set(*, include_shares: bool = True, include_unvalued_ownership: bo
         numeric_weighting_allowed=False,
         scenario_set_hash="SCENARIO-HASH",
     )
+
+
+def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
+    scenario = BoundScenario(
+        "BASE",
+        (
+            _assumption("manufacturing_normalized_ebitda", "100", "KRW_billion"),
+            _assumption("manufacturing_normalized_multiple", "8", "multiple"),
+            _assumption("recycling_gross_asset_value", "20", "KRW_billion"),
+            _assumption("recycling_liabilities", "5", "KRW_billion"),
+            _assumption("transport_fcff_year_1", "10", "KRW_billion"),
+            _assumption("transport_fcff_year_5", "15", "KRW_billion"),
+            _assumption("transport_terminal_growth", "0.02", "ratio"),
+            _assumption("transport_terminal_roic", "0.12", "ratio"),
+            _assumption("manufacturing_ev_adjustment", "-10", "KRW_billion"),
+            _assumption("manufacturing_ownership", "1", "ratio"),
+            _assumption("recycling_ownership", "1", "ratio"),
+            _assumption("transport_ownership", "1", "ratio"),
+            _assumption("diluted_shares", "10", "shares"),
+        ),
+    )
+
+    table = _multiple_assumption_table((scenario,))
+
+    assert table is not None
+    headers, rows = table
+    assert headers == (
+        "구분",
+        "배수평가 부문",
+        "NAV 부문",
+        "DCF FCFF 1→5",
+        "DCF g/ROIC",
+        "EV→지분 조정",
+    )
+    rendered = " | ".join(rows[0])
+    assert "제조 1,000억원×8 multiple" in rendered
+    assert "기타 150억원" in rendered
+    assert "운송 100억원→150억원" in rendered
+    assert "운송 g 2.0%/ROIC 12.0%" in rendered
+
+    scenario_set = BoundScenarioSet(
+        target_id="MIXED",
+        scenarios=(scenario,),
+        calibration_status=CalibrationStatus.UNCALIBRATED,
+        numeric_weighting_allowed=False,
+        scenario_set_hash="MIXED-SCENARIO-HASH",
+    )
+    svg = _assumptions_card(
+        {
+            "company": "Mixed Method",
+            "ticker": "MIXED",
+            "bound_scenario_set": scenario_set,
+            "selected_methods": (
+                "normalized_multiple",
+                "asset_yield_nav",
+                "driver_dcf",
+            ),
+            "live_wacc_result": SimpleNamespace(
+                wacc_result=SimpleNamespace(wacc=Decimal("0.09"))
+            ),
+        },
+        "mixed.svg",
+    ).svg
+    assert "DCF 가중평균자본비용" in svg
+    assert "9.00%" in svg
+    assert "[DCF 가치+부문 EBITDA×배수 합+유형자산 NAV+EV→지분 조정]" in svg
 
 
 def _segment(

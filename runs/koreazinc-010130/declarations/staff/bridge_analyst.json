@@ -1,5 +1,5 @@
 {
-  "rationale": "Evidence-backed pass-through of the manufacturing and trading valuation envelope; recycling is withheld because disclosed normalized EBITDA is negative and standalone asset/FCFF evidence is unavailable.",
+  "rationale": "Evidence-backed pass-through of the manufacturing and trading normalized-multiple envelope; recycling is valued with the existing asset-yield NAV method using disclosed segment PPE, while consolidated debt and cash remain handled once in the manufacturing EV-to-equity bridge.",
   "drafts": [
     {
       "assumption_key": "manufacturing_normalized_ebitda",
