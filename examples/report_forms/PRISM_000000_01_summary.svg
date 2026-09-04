@@ -30,6 +30,6 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="105" y="1221" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">참고값으로만 표시합니다.</text>
 <rect x="0" y="1370" width="1200" height="130" rx="0" fill="#102D3E"/>
 <text x="70" y="1415" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
-<text x="140" y="1415" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">모든 수치의 원문 주소는 보고서 본문 ‘정보 출처’에서 직접 검증할 수 있습니다.</text>
+<text x="140" y="1415" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">공시 사실과 분석가 가정의 근거 주소는 보고서 본문 ‘정보 출처’에서 확인할 수 있습니다.</text>
 <a href="https://github.com/newwonwoo/valuation/blob/main/tests/test_full_live_primary_runtime.py" target="_blank"><text x="70" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
 </svg>
