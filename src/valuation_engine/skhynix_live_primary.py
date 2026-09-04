@@ -7,6 +7,7 @@ import json
 from math import isclose
 from pathlib import Path
 import re
+from statistics import fmean
 from typing import Any
 
 import yaml
@@ -48,6 +49,7 @@ from .risk_adapters import (
 from .scanner_runtime import ScannerFinding, ScannerFindingStatus
 from .scenario_binding import ScenarioBindingSpec
 from .skhynix_beta_snapshot import (
+    PEER_IDS,
     SKHynixBetaSnapshot,
     load_skhynix_beta_snapshot,
 )
@@ -65,6 +67,50 @@ SEGMENT_ID = "memory"
 SCENARIOS = ("Down", "Core", "Bull")
 FORECAST_YEARS = 9
 MANDATORY_SCANNERS = ("CYCLE_NORMALIZATION", "COST_CURVE", "INVENTORY", "TRADE_FLOW")
+
+
+def _peer_market_structure(
+    risk: dict[str, Any],
+    beta_snapshot: SKHynixBetaSnapshot,
+) -> tuple[dict[str, float], float, float, tuple[str, ...]]:
+    peer_rows = risk.get("peer_market_capital")
+    if not isinstance(peer_rows, dict) or tuple(peer_rows) != PEER_IDS:
+        raise ValueError("SK hynix peer market-capital set must be INTC/AVGO/MRVL/MU")
+    ratios: dict[str, float] = {}
+    debt_weights: list[float] = []
+    source_refs: set[str] = set()
+    for peer_id in PEER_IDS:
+        row = peer_rows[peer_id]
+        if not isinstance(row, dict):
+            raise ValueError(f"SK hynix {peer_id} market-capital row is malformed")
+        record = str(row.get("share_count_record", ""))
+        if sha256(record.encode("utf-8")).hexdigest() != row.get(
+            "share_count_record_sha256"
+        ):
+            raise ValueError(f"SK hynix {peer_id} share-count record hash mismatch")
+        match = re.fullmatch(
+            rf"{peer_id} \| ([0-9,]+) shares outstanding \| As of "
+            r"([A-Za-z]+ [0-9]{1,2}, [0-9]{4})",
+            record,
+        )
+        if match is None:
+            raise ValueError(f"SK hynix {peer_id} share-count record is malformed")
+        shares = int(match.group(1).replace(",", ""))
+        shares_as_of = datetime.strptime(match.group(2), "%B %d, %Y").date()
+        estimate = beta_snapshot.estimate(peer_id)
+        if (
+            shares <= 0
+            or shares_as_of > datetime.strptime(estimate.end_date, "%Y-%m-%d").date()
+            or row.get("filing_source_ref") != estimate.capital_source_ref
+        ):
+            raise ValueError(f"SK hynix {peer_id} peer market-capital binding mismatch")
+        market_equity = shares * estimate.ending_price
+        debt_to_equity = estimate.debt / market_equity
+        ratios[peer_id] = debt_to_equity
+        debt_weights.append(estimate.debt / (estimate.debt + market_equity))
+        source_refs.update((estimate.price_source_ref, estimate.capital_source_ref))
+    debt_weight = fmean(debt_weights)
+    return ratios, 1.0 - debt_weight, debt_weight, tuple(sorted(source_refs))
 
 
 @dataclass(frozen=True)
@@ -186,14 +232,15 @@ def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
         raise ValueError("SK hynix market observation binding mismatch")
 
     official_facts = payload.get("official_facts", {})
-    debt = float(official_facts["borrowings_q2_2026"][0])
-    equity = float(official_facts["total_equity_q2_2026"][0])
     income_tax = float(official_facts["income_tax_expense_h1_2026"][0])
     pre_tax_income = float(official_facts["profit_before_income_tax_h1_2026"][0])
-    capital_total = debt + equity
+    _, peer_equity_weight, peer_debt_weight, _ = _peer_market_structure(
+        risk,
+        beta_snapshot,
+    )
     expected_risk = (
-        equity / capital_total,
-        debt / capital_total,
+        peer_equity_weight,
+        peer_debt_weight,
         income_tax / pre_tax_income,
     )
     recorded_risk = (
@@ -201,8 +248,6 @@ def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
         float(risk.get("target_debt_weight", -1)),
         float(risk.get("tax_rate", -1)),
     )
-    if risk.get("capital_structure_as_of") != "2026-06-30":
-        raise ValueError("SK hynix filed capital-structure date mismatch")
     if any(
         not isclose(actual, expected, rel_tol=0.0, abs_tol=1e-15)
         for actual, expected in zip(recorded_risk, expected_risk)
@@ -636,22 +681,33 @@ def _bridge_analyst(context, hypotheses, red_team) -> BridgeProposalBundle:
 
 def _target_structure(snapshot: SKHynixSnapshot) -> LiveCapitalStructureObservation:
     risk = snapshot.risk
+    _, equity_weight, debt_weight, peer_source_refs = _peer_market_structure(
+        risk,
+        snapshot.beta_snapshot,
+    )
     return LiveCapitalStructureObservation(
-        equity_weight=float(risk["target_equity_weight"]),
-        debt_weight=float(risk["target_debt_weight"]),
+        equity_weight=equity_weight,
+        debt_weight=debt_weight,
         tax_rate=float(risk["tax_rate"]),
-        method=TargetCapitalStructureMethod.COMPILED_SCENARIO,
-        as_of=str(risk["capital_structure_as_of"]),
-        source_refs=(snapshot.sources["half_year_filing"],),
+        method=TargetCapitalStructureMethod.PEER_NORMALIZED_MARKET_VALUE,
+        as_of=snapshot.beta_snapshot.as_of,
+        source_refs=tuple(
+            sorted((*peer_source_refs, snapshot.sources["half_year_filing"]))
+        ),
         rationale=(
-            "filed 2026H1 borrowings/equity weights and effective income-tax rate; "
-            "target market value is not used"
+            "equal-weighted peer debt/(debt+market-equity) structure using frozen "
+            "Nasdaq closes and latest filed shares; target current market "
+            "capitalization is not used; tax is the target's filed H1 effective rate"
         ),
     )
 
 
 def _beta_loader(snapshot: SKHynixSnapshot):
     def load(context) -> LiveBetaUniverse:
+        peer_ratios, _, _, _ = _peer_market_structure(
+            snapshot.risk,
+            snapshot.beta_snapshot,
+        )
         levels: list[LiveBetaLevelObservation] = []
         for level in BetaLevelName:
             row = snapshot.risk["beta_levels"][level.value]
@@ -663,7 +719,7 @@ def _beta_loader(snapshot: SKHynixSnapshot):
                         LivePeerBetaObservation(
                             peer_id=str(row["peer_id"]),
                             levered_beta=estimate.beta,
-                            debt=estimate.debt_to_equity,
+                            debt=peer_ratios[estimate.peer_id],
                             equity=1.0,
                             tax_rate=0.21,
                             benchmark_id="NASDAQ_COMP_5Y_WEEKLY",

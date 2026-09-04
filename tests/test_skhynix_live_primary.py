@@ -8,6 +8,7 @@ import yaml
 
 from valuation_engine.continuous_probability_snapshot import ContinuousProbabilityCalibrationSnapshot
 from valuation_engine.records import CalibrationStatus
+from valuation_engine.risk_adapters import TargetCapitalStructureMethod
 from valuation_engine.skhynix_continuous_live_primary import (
     EXTERNAL_PROBABILITY_SOURCE,
     build_skhynix_live_primary_config,
@@ -138,12 +139,23 @@ def test_skhynix_wacc_inputs_use_original_public_sources(tmp_path: Path):
     assert inputs.equity_risk_premium.source_ref != snapshot.sources["underwriting"]
     assert inputs.marginal_pre_tax_cost_of_debt.source_ref != snapshot.sources["underwriting"]
     structure = inputs.target_capital_structure
-    debt = Decimal(str(snapshot.official_facts["borrowings_q2_2026"][0]))
-    equity = Decimal(str(snapshot.official_facts["total_equity_q2_2026"][0]))
-    assert structure.source_refs == (snapshot.sources["half_year_filing"],)
-    assert structure.as_of == "2026-06-30"
-    assert structure.equity_weight == pytest.approx(float(equity / (debt + equity)))
-    assert structure.debt_weight == pytest.approx(float(debt / (debt + equity)))
+    peer_capital = (
+        (50537000000, 5044000000, 89.47),
+        (66720000000, 4757580198, 368.79),
+        (4962900000, 876900000, 216.62),
+        (5140000000, 1129393151, 932.86),
+    )
+    expected_debt_weight = sum(
+        debt / (debt + shares * price)
+        for debt, shares, price in peer_capital
+    ) / len(peer_capital)
+    assert structure.method is TargetCapitalStructureMethod.PEER_NORMALIZED_MARKET_VALUE
+    assert structure.as_of == "2026-08-28"
+    assert snapshot.sources["half_year_filing"] in structure.source_refs
+    assert sum("api.nasdaq.com/api/quote/" in ref for ref in structure.source_refs) == 4
+    assert sum("sec.gov/Archives/edgar/data/" in ref for ref in structure.source_refs) == 5
+    assert structure.equity_weight == pytest.approx(1 - expected_debt_weight)
+    assert structure.debt_weight == pytest.approx(expected_debt_weight)
     assert structure.tax_rate == pytest.approx(
         28785762 / 122708355
     )
@@ -179,6 +191,17 @@ def test_skhynix_market_and_beta_inputs_use_original_exchange_sources(tmp_path: 
         for peer in level.peers
     )
     assert any("sec.gov/Archives/edgar/data/" in ref for ref in beta.source_refs)
+    expected_market_debt_to_equity = {
+        "INTC": 50537000000 / (5044000000 * 89.47),
+        "AVGO": 66720000000 / (4757580198 * 368.79),
+        "MRVL": 4962900000 / (876900000 * 216.62),
+        "MU": 5140000000 / (1129393151 * 932.86),
+    }
+    for level in beta.levels:
+        for peer in level.peers:
+            assert peer.debt / peer.equity == pytest.approx(
+                expected_market_debt_to_equity[peer.peer_id]
+            )
 
 
 def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(tmp_path: Path):
@@ -202,6 +225,18 @@ def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(tmp_path: Path)
     with pytest.raises(ValueError, match="capital-structure or tax binding mismatch"):
         load_skhynix_snapshot(relabelled_wacc)
 
+    payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload["risk"]["peer_market_capital"]["MU"]["share_count_record"] = (
+        "MU | 1 shares outstanding | As of June 17, 2026"
+    )
+    relabelled_shares = tmp_path / "relabelled_shares.yaml"
+    relabelled_shares.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="share-count record hash mismatch"):
+        load_skhynix_snapshot(relabelled_shares)
+
 
 def test_skhynix_beta_snapshot_replays_frozen_nasdaq_series_and_sec_capital():
     snapshot = load_skhynix_beta_snapshot()
@@ -216,7 +251,9 @@ def test_skhynix_beta_snapshot_replays_frozen_nasdaq_series_and_sec_capital():
         estimate = snapshot.estimate(peer_id)
         assert estimate.observations == 260
         assert estimate.beta == pytest.approx(beta, abs=1e-12)
-        assert estimate.debt_to_equity == pytest.approx(debt_to_equity, abs=1e-12)
+        assert estimate.book_debt_to_equity == pytest.approx(debt_to_equity, abs=1e-12)
+        assert estimate.debt >= 0
+        assert estimate.ending_price > 0
         assert estimate.series_hash
 
 

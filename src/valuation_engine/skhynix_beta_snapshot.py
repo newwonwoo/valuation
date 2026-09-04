@@ -23,7 +23,9 @@ class FrozenBetaEstimate:
     start_date: str
     end_date: str
     series_hash: str
-    debt_to_equity: float
+    debt: float
+    book_debt_to_equity: float
+    ending_price: float
     price_source_ref: str
     capital_source_ref: str
 
@@ -147,10 +149,8 @@ def load_skhynix_beta_snapshot(
         row = peer_rows[peer_id]
         if not isinstance(row, dict):
             raise ValueError(f"{peer_id} Beta row must be a mapping")
-        calculated = calculate_beta(
-            _canonical_points(row.get("weekly_close"), label=peer_id),
-            benchmark,
-        )
+        stock_points = _canonical_points(row.get("weekly_close"), label=peer_id)
+        calculated = calculate_beta(stock_points, benchmark)
         frozen = row.get("ols")
         capital = row.get("capital")
         if not isinstance(frozen, dict) or not isinstance(capital, dict):
@@ -191,7 +191,9 @@ def load_skhynix_beta_snapshot(
                 start_date=str(frozen["start_date"]),
                 end_date=str(frozen["end_date"]),
                 series_hash=str(frozen["series_hash"]),
-                debt_to_equity=ratio,
+                debt=debt,
+                book_debt_to_equity=ratio,
+                ending_price=stock_points[-1][1],
                 price_source_ref=price_source_ref,
                 capital_source_ref=capital_source_ref,
             )
@@ -207,4 +209,3 @@ def load_skhynix_beta_snapshot(
         estimates=tuple(estimates),
         raw_hash=sha256(raw).hexdigest(),
     )
-

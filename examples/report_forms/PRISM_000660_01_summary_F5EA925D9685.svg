@@ -25,20 +25,20 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="1090" y="690" font-size="20" font-weight="400" fill="#607582" text-anchor="end">확정된 개별 시나리오</text>
 <rect x="70" y="725" width="320" height="150" rx="20" fill="#FFFFFF"/>
 <text x="94" y="773" font-size="22" font-weight="700" fill="#607582" text-anchor="start">하방</text>
-<text x="94" y="833" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">1,223,546원</text>
+<text x="94" y="833" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">1,339,511원</text>
 <rect x="408" y="725" width="320" height="150" rx="20" fill="#FFFFFF"/>
 <text x="432" y="773" font-size="22" font-weight="700" fill="#607582" text-anchor="start">기준</text>
-<text x="432" y="833" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">4,442,401원</text>
+<text x="432" y="833" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">5,170,059원</text>
 <rect x="746" y="725" width="320" height="150" rx="20" fill="#FFFFFF"/>
 <text x="770" y="773" font-size="22" font-weight="700" fill="#607582" text-anchor="start">상방</text>
-<text x="770" y="833" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">6,362,926원</text>
+<text x="770" y="833" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">7,530,592원</text>
 <rect x="70" y="925" width="1060" height="170" rx="24" fill="#DDEAE7"/>
 <text x="105" y="977" font-size="24" font-weight="800" fill="#167C72" text-anchor="start">현재가</text>
 <text x="105" y="1037" font-size="38" font-weight="800" fill="#102D3E" text-anchor="start">1,647,000원</text>
 <text x="1095" y="1037" font-size="21" font-weight="400" fill="#607582" text-anchor="end">기준일 2026-09-04</text>
 <text x="70" y="1145" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">행동 기준</text>
 <rect x="70" y="1173" width="1060" height="145" rx="22" fill="#FFF4DE"/>
-<text x="105" y="1223" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">확률가중 기대값은 4,710,856원입니다. 다만 별도 매수 규칙이 등록되지 않아 특정 매수가는</text>
+<text x="105" y="1223" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">확률가중 기대값은 5,519,812원입니다. 다만 별도 매수 규칙이 등록되지 않아 특정 매수가는</text>
 <text x="105" y="1261" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">제시하지 않습니다.</text>
 <rect x="0" y="1370" width="1200" height="130" rx="0" fill="#102D3E"/>
 <text x="70" y="1415" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
