@@ -498,6 +498,21 @@ def _multiple_assumption_table(
     def segment_from_key(key: str, suffix: str) -> str:
         return key.removesuffix(suffix).rstrip("_")
 
+    def segment_label_with_ownership(scenario: Any, segment: str) -> str:
+        label = segment_label(segment)
+        if valuation_plan is None:
+            return label
+        ownership_by_segment = {
+            item.segment_id: scenario.get(item.ownership_key)
+            .measure.convert_to("ratio")
+            .amount
+            for item in valuation_plan.segments
+        }
+        if len(set(ownership_by_segment.values())) <= 1:
+            return label
+        ownership = ownership_by_segment[segment]
+        return f"{label} · 귀속 {ownership * 100:.4f}%"
+
     def adjustment_text(scenario: Any) -> str:
         adjustment_keys = (
             tuple(
@@ -551,7 +566,7 @@ def _multiple_assumption_table(
                     continue
                 value_key, multiple_key = contract.required_assumption_keys[:2]
                 values.append(
-                    f"{segment_label(contract.segment_id)} "
+                    f"{segment_label_with_ownership(scenario, contract.segment_id)} "
                     f"{_scenario_assumption(scenario, value_key)}"
                     f"×{_scenario_assumption(scenario, multiple_key)}"
                 )
@@ -599,7 +614,7 @@ def _multiple_assumption_table(
             except KeyError:
                 continue
             label = (
-                segment_label(contract.segment_id)
+                segment_label_with_ownership(scenario, contract.segment_id)
                 if contract is not None
                 else segment_label(
                     segment_from_key(asset_key, "gross_asset_value")
@@ -615,7 +630,7 @@ def _multiple_assumption_table(
         paths: list[str] = []
         terminal: list[str] = []
         for contract in discounted_contracts:
-            label = segment_label(contract.segment_id)
+            label = segment_label_with_ownership(scenario, contract.segment_id)
             family = contract.execution_family
             family_label = {
                 "explicit_fcff_dcf": "FCFF DCF",

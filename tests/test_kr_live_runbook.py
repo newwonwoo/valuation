@@ -59,15 +59,15 @@ def test_the_committed_shinhanalpha_run_replays_to_the_attested_nav_envelope():
     ):
         assert line in report, line
 
-
-def test_the_committed_daehan_run_replays_as_a_three_segment_sotp():
+def test_the_committed_daehan_run_replays_as_a_three_segment_sotp(tmp_path):
     """The third committed run is now the first true sum-of-the-parts: the
     IFRS 8 note names 제강/운송/기타, declarations/segments.yaml types each
     one (steel DCF at 0.8603 ownership, transport spread-DCF, leasing NAV),
     and every component carries its own key namespace and economic paths —
     wacc:...:steel is not wacc:...:transport."""
     reached, stop_stage, stop_reason, result = execute_run(
-        ROOT / "runs" / "daehansteel-084010"
+        ROOT / "runs" / "daehansteel-084010",
+        state_root=str(tmp_path / "state"),
     )
     assert stop_stage is None, stop_reason
     assert len(reached) == len(result.stage_traces)
@@ -99,6 +99,14 @@ def test_the_committed_daehan_run_replays_as_a_three_segment_sotp():
         "**현재가:** 8,420원 (2026-08-28)",
     ):
         assert line in report, line
+
+    visual_root = Path(result.data["saved_run_dir"])
+    assumption_svg = (visual_root / result.data["saved_report_visuals"][1]).read_text(
+        encoding="utf-8"
+    )
+    assert "귀속" in assumption_svg
+    assert "86.0300%" in assumption_svg
+    assert "100.0000%" in assumption_svg
 
 
 def test_the_committed_koreazinc_run_preserves_llm_bound_ifrs8_refusal():
@@ -153,6 +161,18 @@ def test_koreazinc_market_quote_is_bound_to_issuer_price_ticker_and_timestamp(tm
     )
     with pytest.raises(ValueError, match="not independently registered in code"):
         market_loader_from_config(self_authenticated)()
+
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    payload["market_comparison"].pop("source_contract")
+    payload["market_comparison"]["price"] = 1223000
+    payload["market_comparison"]["as_of"] = "2026-09-05"
+    missing_contract = tmp_path / "missing_contract_market.yaml"
+    missing_contract.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="registered issuer quote requires"):
+        market_loader_from_config(missing_contract)()
 
 
 def test_a_multi_segment_filing_without_a_declaration_still_fails_closed(tmp_path):

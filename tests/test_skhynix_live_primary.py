@@ -292,6 +292,16 @@ def test_skhynix_beta_snapshot_rejects_relabelled_or_tampered_numbers(tmp_path: 
     with pytest.raises(ValueError, match="frozen beta does not replay"):
         load_skhynix_beta_snapshot(mutated)
 
+    payload = json.loads(DEFAULT_BETA_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    capital = payload["peers"]["INTC"]["capital"]
+    capital["debt_facts"][0]["value"] *= 10
+    capital["debt"] = sum(item["value"] for item in capital["debt_facts"])
+    capital["debt_to_equity"] = capital["debt"] / capital["equity"]
+    mutated_capital = tmp_path / "capital.json"
+    mutated_capital.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="capital fact records are not registered"):
+        load_skhynix_beta_snapshot(mutated_capital)
+
 
 def test_skhynix_strict_live_run_freezes_continuous_probability_weighting(tmp_path: Path):
     authority = run_skhynix_live_primary(tmp_path)

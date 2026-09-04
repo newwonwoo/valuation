@@ -12,6 +12,28 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BETA_SNAPSHOT_PATH = _REPO_ROOT / "config" / "skhynix_beta_snapshot.json"
 PEER_IDS = ("INTC", "AVGO", "MRVL", "MU")
 BENCHMARK_ID = "COMP"
+_PEER_CAPITAL_FACT_BINDINGS = {
+    "INTC": {
+        "company_facts_source_ref": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000050863.json",
+        "company_facts_raw_sha256": "70056711b8b04d3a27e4a42b6d86e26f85ddaa3d59e480039d66ccfb353eb0b8",
+        "capital_facts_sha256": "23b53b019310070bd4caed5697dc221c197a19fc145ea2af50ace75312328a4f",
+    },
+    "AVGO": {
+        "company_facts_source_ref": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001730168.json",
+        "company_facts_raw_sha256": "b6399ff9bc3e4047dfe955ad7866ca51208a9f617457e7b917cbfc2effcbc916",
+        "capital_facts_sha256": "750aef77aa9736be41004075d9e99ac885274245e2fe7537e135cfca4ab6fab6",
+    },
+    "MRVL": {
+        "company_facts_source_ref": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001835632.json",
+        "company_facts_raw_sha256": "2190d7525c2749e96636b0f95376c5f7d73d9cb47a7452b3a94f70e156ec1169",
+        "capital_facts_sha256": "42ab5df203294ff9932f10b945ce3188913c350e45b700b2f079601b06156485",
+    },
+    "MU": {
+        "company_facts_source_ref": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000723125.json",
+        "company_facts_raw_sha256": "a8b088c2111daef36536e53c81fef4c0f01220c64933e126a665b00a9257f882",
+        "capital_facts_sha256": "bc2b5dc24bc003443ea32ce72f1e29b19ff74e972ad4cb3ce08fe7bd9d82ba1b",
+    },
+}
 
 
 @dataclass(frozen=True)
@@ -166,8 +188,43 @@ def load_skhynix_beta_snapshot(
         for key in ("observations", "start_date", "end_date", "series_hash"):
             if frozen[key] != calculated[key]:
                 raise ValueError(f"{peer_id} frozen {key} does not replay")
-        debt = float(capital["debt"])
-        equity = float(capital["equity"])
+        fact_binding = _PEER_CAPITAL_FACT_BINDINGS[peer_id]
+        if any(
+            capital.get(key) != expected
+            for key, expected in fact_binding.items()
+            if key != "capital_facts_sha256"
+        ):
+            raise ValueError(f"{peer_id} SEC company-facts source binding mismatch")
+        debt_facts = capital.get("debt_facts")
+        equity_fact = capital.get("equity_fact")
+        if (
+            not isinstance(debt_facts, list)
+            or not debt_facts
+            or not all(isinstance(item, dict) for item in debt_facts)
+            or not isinstance(equity_fact, dict)
+        ):
+            raise ValueError(f"{peer_id} SEC capital fact records are missing")
+        fact_payload = {
+            "debt_facts": debt_facts,
+            "equity_fact": equity_fact,
+        }
+        fact_hash = sha256(
+            json.dumps(
+                fact_payload,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+        if fact_hash != fact_binding["capital_facts_sha256"]:
+            raise ValueError(f"{peer_id} SEC capital fact records are not registered")
+        debt = fsum(float(item["value"]) for item in debt_facts)
+        equity = float(equity_fact["value"])
+        if not isclose(
+            float(capital["debt"]), debt, rel_tol=0.0, abs_tol=1e-9
+        ) or not isclose(
+            float(capital["equity"]), equity, rel_tol=0.0, abs_tol=1e-9
+        ):
+            raise ValueError(f"{peer_id} SEC capital totals do not replay")
         ratio = float(capital["debt_to_equity"])
         if debt < 0 or equity <= 0 or not isclose(
             debt / equity,
