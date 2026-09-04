@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 from decimal import Decimal
+from hashlib import sha256
 import importlib
 from pathlib import Path
 import shutil
@@ -136,6 +137,22 @@ def test_koreazinc_market_quote_is_bound_to_issuer_price_ticker_and_timestamp(tm
     )
     with pytest.raises(ValueError, match="ticker/price/timestamp binding mismatch"):
         market_loader_from_config(tampered)()
+
+    source = payload["market_comparison"]["source_record"].replace(
+        "1,222,000원", "1,223,000원"
+    )
+    payload["market_comparison"].update(
+        price=1223000,
+        source_record=source,
+        source_record_sha256=sha256(source.encode("utf-8")).hexdigest(),
+    )
+    self_authenticated = tmp_path / "self_authenticated_market.yaml"
+    self_authenticated.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="not independently registered in code"):
+        market_loader_from_config(self_authenticated)()
 
 
 def test_a_multi_segment_filing_without_a_declaration_still_fails_closed(tmp_path):
