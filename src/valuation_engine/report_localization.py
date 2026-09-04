@@ -205,6 +205,124 @@ def valuation_family_value_term_ko(
     )
 
 
+def evaluator_assumption_groups_ko(
+    execution_family: object,
+    required_assumption_keys: tuple[str, ...],
+) -> tuple[
+    tuple[tuple[str, tuple[str, ...]], ...],
+    tuple[tuple[str, tuple[str, ...]], ...],
+]:
+    """Group a typed evaluator's exact inputs for compact public reporting.
+
+    Prefixes are registration-specific, so selectors bind by canonical suffix
+    and the returned keys always come from the compiled evaluator contract.
+    """
+
+    family = str(execution_family)
+
+    def ending(suffix: str) -> tuple[str, ...]:
+        return tuple(key for key in required_assumption_keys if key.endswith(suffix))
+
+    def annual(token: str) -> tuple[str, ...]:
+        matches = tuple(
+            key
+            for key in required_assumption_keys
+            if re.search(rf"{re.escape(token)}_year_\d+$", key)
+        )
+        return tuple(
+            sorted(matches, key=lambda key: int(key.rsplit("_year_", 1)[1]))
+        )
+
+    primary: tuple[tuple[str, tuple[str, ...]], ...]
+    secondary: tuple[tuple[str, tuple[str, ...]], ...]
+    if family == "explicit_fcff_dcf":
+        primary = (("FCFF", annual("fcff")),)
+        secondary = (
+            ("영구성장률", ending("terminal_growth")),
+            ("영구 ROIC", ending("terminal_roic")),
+        )
+    elif family == "contracted_backlog_dcf":
+        primary = (
+            ("기초 수주잔고", ending("opening_backlog")),
+            ("기초 매출", ending("opening_revenue")),
+            ("소진률", annual("backlog_burn_rate")),
+            ("신규수주", annual("new_orders")),
+            ("영업이익률", annual("operating_margin")),
+            ("영업세율", ending("operating_tax_rate")),
+            ("감가상각률", ending("depreciation_rate_of_revenue")),
+            ("유지보수 투자율", ending("maintenance_capex_rate_of_revenue")),
+            ("증분 운전자본률", ending("incremental_working_capital_rate")),
+        )
+        secondary = (
+            ("영구성장률", ending("terminal_growth")),
+            ("영구 ROIC", ending("terminal_roic")),
+        )
+    elif family == "finite_life_npv":
+        primary = (("현금흐름", annual("cashflow")),)
+        secondary = ()
+    elif family == "gordon_ddm":
+        primary = (("선행 배당", ending("forward_distribution")),)
+        secondary = (("영구성장률", ending("terminal_growth")),)
+    elif family == "justified_pb_roe":
+        primary = (
+            ("현재 장부가치", ending("current_book_value")),
+            ("선행 ROE", ending("forward_roe")),
+        )
+        secondary = (("영구성장률", ending("terminal_growth")),)
+    elif family == "residual_income":
+        primary = (
+            ("기초 장부가치", ending("beginning_book_value")),
+            ("ROE", annual("roe")),
+            ("배당", annual("distribution")),
+        )
+        secondary = (
+            ("영구 ROE", ending("terminal_roe")),
+            ("영구성장률", ending("terminal_growth")),
+        )
+    elif family == "rate_base_roe":
+        primary = (
+            ("요금기반 자산", ending("rate_base")),
+            ("자기자본비율", ending("equity_ratio")),
+            ("허용 ROE", ending("allowed_roe")),
+        )
+        secondary = (("영구성장률", ending("terminal_growth")),)
+    elif family == "calibrated_single_event_rnpv":
+        primary = (
+            ("기본 현금흐름", annual("unconditional_cashflow")),
+            ("조건부 현금흐름", annual("contingent_cashflow")),
+        )
+        probability_keys = tuple(
+            key
+            for key in required_assumption_keys
+            if key not in {item for _, keys in primary for item in keys}
+        )
+        secondary = (("보정 사건확률", probability_keys),)
+    else:
+        primary = tuple(
+            (f"입력 {index}", (key,))
+            for index, key in enumerate(required_assumption_keys, start=1)
+        )
+        secondary = ()
+
+    grouped_keys = tuple(
+        key for _, keys in (*primary, *secondary) for key in keys
+    )
+    if len(grouped_keys) != len(set(grouped_keys)):
+        raise ValueError(
+            f"duplicate public-report assumption grouping for {family}"
+        )
+    unmatched = tuple(
+        key for key in required_assumption_keys if key not in set(grouped_keys)
+    )
+    if unmatched:
+        primary = (*primary, ("기타 입력", unmatched))
+
+    return (
+        tuple(item for item in primary if item[1]),
+        tuple(item for item in secondary if item[1]),
+    )
+
+
 def status_label_ko(value: object) -> str:
     text = str(getattr(value, "value", value))
     return _STATUS_LABELS.get(text, text)

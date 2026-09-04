@@ -8,7 +8,10 @@ import textwrap
 from typing import Any
 
 from .context_strength_reporting import resolve_context_strength_linkage
-from .report_localization import valuation_family_value_term_ko
+from .report_localization import (
+    evaluator_assumption_groups_ko,
+    valuation_family_value_term_ko,
+)
 from .source_reporting import build_source_link_index
 from .valuation_execution import (
     CompanyValuationPlan,
@@ -423,6 +426,7 @@ def _multiple_assumption_table(
         and not multiple_contracts
         and not nav_contracts
         and len(discounted_contracts) == 1
+        and discounted_contracts[0].execution_family == "explicit_fcff_dcf"
     ):
         # Preserve the established dedicated DCF card for a single-family run.
         # The generalized table is needed when SOTP mixes evaluator families.
@@ -598,126 +602,45 @@ def _multiple_assumption_table(
             )
         return values
 
-    def annual_keys(
-        contract: SegmentEvaluatorContract,
-        token: str,
-    ) -> tuple[str, ...]:
-        matches = tuple(
-            key
-            for key in contract.required_assumption_keys
-            if token in key and re.search(r"_year_\d+$", key)
-        )
-        return tuple(
-            sorted(
-                matches,
-                key=lambda key: int(key.rsplit("_year_", 1)[1]),
-            )
-        )
-
-    def annual_total(
-        scenario: Any,
-        contract: SegmentEvaluatorContract,
-        token: str,
-        year: int,
-    ) -> str:
-        keys = tuple(
-            key
-            for key in contract.required_assumption_keys
-            if token in key and key.endswith(f"_year_{year}")
-        )
-        measures = []
-        for key in keys:
-            try:
-                measures.append(scenario.get(key).measure)
-            except KeyError:
-                continue
-        if not measures:
-            return "—"
-        unit = measures[0].unit
-        total = sum(
-            (measure.convert_to(unit).amount for measure in measures),
-            Decimal(0),
-        )
-        return _measure_value_text(total, unit)
-
     def discounted_values(scenario: Any) -> tuple[list[str], list[str]]:
         paths: list[str] = []
         terminal: list[str] = []
         for contract in discounted_contracts:
             label = segment_label(contract.segment_id)
             family = contract.execution_family
-            if family == "contracted_backlog_dcf":
-                backlog_key = next(
-                    (
-                        key
-                        for key in contract.required_assumption_keys
-                        if key.endswith("opening_backlog")
-                    ),
-                    None,
-                )
-                burns = annual_keys(contract, "backlog_burn_rate")
-                orders = annual_keys(contract, "new_orders")
-                detail = f"{label} 수주잔고 DCF"
-                if backlog_key is not None:
-                    detail += f" 잔고 {_scenario_assumption(scenario, backlog_key)}"
-                if burns:
-                    detail += (
-                        f"; 소진 {_scenario_assumption(scenario, burns[0])}"
-                        f"→{_scenario_assumption(scenario, burns[-1])}"
-                    )
-                if orders:
-                    detail += (
-                        f"; 신규수주 {_scenario_assumption(scenario, orders[0])}"
-                        f"→{_scenario_assumption(scenario, orders[-1])}"
-                    )
-                paths.append(detail)
-            else:
-                cashflows = annual_keys(contract, "fcff")
-                family_label = {
-                    "explicit_fcff_dcf": "FCFF DCF",
-                    "finite_life_npv": "유한수명 NPV",
-                    "gordon_ddm": "배당할인",
-                    "justified_pb_roe": "PBR·ROE",
-                    "residual_income": "잔여이익",
-                    "rate_base_roe": "요금기반 ROE",
-                    "calibrated_single_event_rnpv": "확률조정 NPV",
-                }.get(family, contract.model_key.method)
-                detail = f"{label} {family_label}"
-                if cashflows:
-                    first_year = int(cashflows[0].rsplit("_year_", 1)[1])
-                    last_year = int(cashflows[-1].rsplit("_year_", 1)[1])
-                    detail += (
-                        f" {annual_total(scenario, contract, 'fcff', first_year)}"
-                        f"→{annual_total(scenario, contract, 'fcff', last_year)}"
-                    )
-                paths.append(detail)
+            family_label = {
+                "explicit_fcff_dcf": "FCFF DCF",
+                "contracted_backlog_dcf": "수주잔고 DCF",
+                "finite_life_npv": "유한수명 NPV",
+                "gordon_ddm": "배당할인",
+                "justified_pb_roe": "PBR·ROE",
+                "residual_income": "잔여이익",
+                "rate_base_roe": "요금기반 ROE",
+                "calibrated_single_event_rnpv": "확률조정 NPV",
+            }.get(family, contract.model_key.method)
+            primary, secondary = evaluator_assumption_groups_ko(
+                family,
+                contract.required_assumption_keys,
+            )
 
-            growth_key = next(
-                (
-                    key
-                    for key in contract.required_assumption_keys
-                    if key.endswith("terminal_growth")
-                ),
-                None,
-            )
-            roic_key = next(
-                (
-                    key
-                    for key in contract.required_assumption_keys
-                    if key.endswith("terminal_roic")
-                ),
-                None,
-            )
-            terminal_detail = f"{label} {family}"
-            if growth_key is not None:
-                terminal_detail = (
-                    f"{label} g {_scenario_assumption(scenario, growth_key)}"
+            def group_text(group: tuple[str, tuple[str, ...]]) -> str:
+                group_label, keys = group
+                rendered = tuple(
+                    _scenario_assumption(scenario, key) for key in keys
                 )
-            if roic_key is not None:
-                terminal_detail += (
-                    f"/ROIC {_scenario_assumption(scenario, roic_key)}"
+                value = (
+                    rendered[0]
+                    if len(rendered) == 1
+                    else " / ".join(rendered)
+                    if len(rendered) <= 3
+                    else f"{rendered[0]}→{rendered[-1]} ({len(rendered)}개)"
                 )
-            terminal.append(terminal_detail)
+                return f"{group_label} {value}"
+
+            path_lines = tuple(group_text(group) for group in primary)
+            paths.append(" · ".join((f"{label} {family_label}", *path_lines)))
+            terminal_lines = tuple(group_text(group) for group in secondary)
+            terminal.append(" · ".join(terminal_lines) or "—")
         return paths, terminal
 
     adjustment_header = (
@@ -811,6 +734,11 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     wacc_result = data.get("live_wacc_result")
     beta = getattr(beta_result, "target_levered_beta", None)
     wacc = getattr(getattr(wacc_result, "wacc_result", None), "wacc", None)
+    cost_of_equity = getattr(
+        getattr(wacc_result, "wacc_result", None),
+        "cost_of_equity",
+        None,
+    )
     calibration = getattr(getattr(scenario_set, "calibration_status", None), "value", "UNCALIBRATED")
     compilation = data.get("valuation_plan_compilation")
     if not isinstance(compilation, ValuationPlanCompilation):
@@ -819,6 +747,42 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     evaluator_contracts = (
         compilation.evaluator_contracts if compilation is not None else ()
     )
+    equity_discount_families = {
+        "gordon_ddm",
+        "justified_pb_roe",
+        "residual_income",
+        "rate_base_roe",
+    }
+    enterprise_discount_families = {
+        "contracted_backlog_dcf",
+        "explicit_fcff_dcf",
+        "finite_life_npv",
+        "calibrated_single_event_rnpv",
+    }
+    selected_families = {
+        item.execution_family for item in evaluator_contracts
+    }
+    uses_equity_discount = bool(
+        selected_families.intersection(equity_discount_families)
+    )
+    uses_enterprise_discount = bool(
+        selected_families.intersection(enterprise_discount_families)
+    )
+    if uses_equity_discount and uses_enterprise_discount:
+        discount_label = "할인율"
+        discount_value = (
+            f"WACC {wacc:.2%} / Ke {cost_of_equity:.2%}"
+            if wacc is not None and cost_of_equity is not None
+            else "미확보"
+        )
+    elif uses_equity_discount:
+        discount_label = "자기자본비용"
+        discount_value = (
+            f"{cost_of_equity:.2%}" if cost_of_equity is not None else "미확보"
+        )
+    else:
+        discount_label = "가중평균자본비용"
+        discount_value = f"{wacc:.2%}" if wacc is not None else "비적용"
     multiple_table = _multiple_assumption_table(
         scenarios,
         evaluator_contracts=evaluator_contracts,
@@ -975,7 +939,12 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     ]
     metric_rows = (
         (
-            ("DCF 가중평균자본비용", f"{wacc:.2%}" if wacc is not None else "미확보"),
+            (
+                "DCF 가중평균자본비용"
+                if discount_label == "가중평균자본비용"
+                else discount_label,
+                discount_value,
+            ),
             (
                 "지배주주 귀속률",
                 f"{common_ownership * 100:.4f}%"
@@ -1006,7 +975,7 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
         if component_sotp_present
         else (
             ("계층형 베타", f"{beta:.3f}" if beta is not None else "비적용"),
-            ("가중평균자본비용", f"{wacc:.2%}" if wacc is not None else "비적용"),
+            (discount_label, discount_value),
             (
                 "모회사 조정"
                 if valuation_plan is not None and valuation_plan.parent_adjustments
@@ -1030,10 +999,21 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     parts.append(_svg_text("시나리오별 핵심 가정", x=70, y=560, size=30, weight=800, fill="#102D3E"))
     table_y = 600
     parts.append(_rect(70, table_y, 1060, 390, fill="#FFFFFF", radius=22))
+    has_numeric_probabilities = bool(scenarios) and all(
+        getattr(scenario, "probability", None) is not None
+        for scenario in scenarios[:3]
+    )
     headers = (
         multiple_table[0]
         if multiple_table is not None
-        else ("구분", "1년 DCF FCFF", "5년 DCF FCFF", "영구성장률", "영구 ROIC", "UHV 5년 증분")
+        else (
+            "구분",
+            "1년 DCF FCFF",
+            "5년 DCF FCFF",
+            "영구성장률",
+            "영구 ROIC",
+            "시나리오 확률" if has_numeric_probabilities else "UHV 5년 증분",
+        )
     )
     x_positions = (100, 270, 470, 675, 855, 1015)
     for x, header in zip(x_positions, headers):
@@ -1061,29 +1041,57 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
                 _scenario_total_fcff(scenario, 5),
                 _scenario_assumption(scenario, "terminal_growth"),
                 _scenario_assumption(scenario, "terminal_roic"),
-                _scenario_assumption(scenario, "uhv_fcff_year_5"),
+                f"{scenario.probability:.1%}"
+                if has_numeric_probabilities
+                else _scenario_assumption(scenario, "uhv_fcff_year_5"),
             )
             for scenario in scenarios[:3]
         )
     )
     for index, values in enumerate(table_rows):
-        row_y = table_y + 125 + index * 85
-        for x, value in zip(x_positions, values):
-            value_lines = str(value).splitlines()
-            value_y = row_y - (11 if len(value_lines) > 1 else 0)
-            for line_index, line in enumerate(value_lines):
-                parts.append(
-                    _svg_text(
-                        line,
-                        x=x,
-                        y=value_y + line_index * 24,
-                        size=16 if len(value_lines) > 1 else 21,
-                        weight=700 if x == 100 else 500,
-                        fill="#142A3A",
+        if multiple_table is None:
+            # Keep the established single FCFF card byte-for-byte stable.
+            row_y = table_y + 125 + index * 85
+            for x, value in zip(x_positions, values):
+                value_lines = str(value).splitlines()
+                value_y = row_y - (11 if len(value_lines) > 1 else 0)
+                for line_index, line in enumerate(value_lines):
+                    parts.append(
+                        _svg_text(
+                            line,
+                            x=x,
+                            y=value_y + line_index * 24,
+                            size=16 if len(value_lines) > 1 else 21,
+                            weight=700 if x == 100 else 500,
+                            fill="#142A3A",
+                        )
                     )
+            if index < len(table_rows) - 1:
+                parts.append(
+                    f'<line x1="95" y1="{row_y + 28}" x2="1105" '
+                    f'y2="{row_y + 28}" stroke="#E9EEF0" stroke-width="2"/>'
                 )
-        if index < len(table_rows) - 1:
-            parts.append(f'<line x1="95" y1="{row_y + 28}" x2="1105" y2="{row_y + 28}" stroke="#E9EEF0" stroke-width="2"/>')
+        else:
+            row_y = table_y + 112 + index * 98
+            cell_widths = (11, 17, 17, 19, 17, 11)
+            for x, width, value in zip(x_positions, cell_widths, values):
+                rendered, _ = _wrapped_text(
+                    value,
+                    x=x,
+                    y=row_y,
+                    width=width,
+                    size=14 if x != 100 else 16,
+                    line_height=18,
+                    max_lines=4,
+                    weight=700 if x == 100 else 500,
+                    fill="#142A3A",
+                )
+                parts.append(rendered)
+            if index < len(table_rows) - 1:
+                parts.append(
+                    f'<line x1="95" y1="{row_y + 69}" x2="1105" '
+                    f'y2="{row_y + 69}" stroke="#E9EEF0" stroke-width="2"/>'
+                )
 
     capex = "—"
     if core is not None:
@@ -1102,7 +1110,7 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             ("확률 보정", "완료" if calibration == "CALIBRATED" else "미완료"),
             ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
         )
-        if component_sotp_present
+        if multiple_table is not None
         else (
             ("평가방법", method_text),
             ("핵심 자본적지출", capex),

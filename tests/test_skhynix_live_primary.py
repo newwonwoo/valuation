@@ -19,6 +19,10 @@ from valuation_engine.skhynix_continuous_probability import (
     CurrentConditioning,
     build_skhynix_continuous_probability_snapshot,
 )
+from valuation_engine.skhynix_beta_snapshot import (
+    DEFAULT_BETA_SNAPSHOT_PATH,
+    load_skhynix_beta_snapshot,
+)
 from valuation_engine.skhynix_live_primary import load_skhynix_snapshot
 from valuation_engine.street import summarize_street_reports
 from valuation_engine.strict_live_runtime import CANONICAL_ENTRYPOINT_ID, require_canonical_live_result
@@ -131,14 +135,62 @@ def test_skhynix_wacc_inputs_use_original_public_sources(tmp_path: Path):
     assert inputs.marginal_pre_tax_cost_of_debt.source_ref != snapshot.sources["underwriting"]
 
 
-def test_skhynix_street_loader_preserves_aggregate_consensus(tmp_path: Path):
+def test_skhynix_street_loader_uses_original_broker_report(tmp_path: Path):
     config = build_skhynix_live_primary_config(tmp_path)
-    consensus = summarize_street_reports(config.providers.street_loader())
-    assert consensus.report_count == 39
-    assert consensus.mean_target_price == 3164332
-    assert consensus.median_target_price == 3150000
-    assert consensus.min_target_price == 1200000
-    assert consensus.max_target_price == 5300000
+    reports = config.providers.street_loader()
+    consensus = summarize_street_reports(reports)
+    assert len(reports) == 1
+    assert reports[0].broker == "Samsung Securities"
+    assert "samsungpop.com" in reports[0].source_ref
+    assert reports[0].published_date == "2026-07-30"
+    assert consensus.report_count == 1
+    assert consensus.mean_target_price == 3000000
+    assert consensus.median_target_price == 3000000
+    assert consensus.min_target_price == 3000000
+    assert consensus.max_target_price == 3000000
+
+
+def test_skhynix_market_and_beta_inputs_use_original_exchange_sources(tmp_path: Path):
+    config = build_skhynix_live_primary_config(tmp_path)
+    market = config.providers.market_loader()
+    beta = config.providers.beta_loader(None)
+    assert market.source_ref == "https://www.skhynix.com/ir/UI-FR-IR02/"
+    assert market.price == 1647000
+    assert market.as_of == "2026-09-04"
+    assert all(
+        "api.nasdaq.com/api/quote/" in peer.source_ref
+        and peer.beta_standard_error is not None
+        and "frozen series" in peer.estimation_method
+        for level in beta.levels
+        for peer in level.peers
+    )
+    assert any("sec.gov/Archives/edgar/data/" in ref for ref in beta.source_refs)
+
+
+def test_skhynix_beta_snapshot_replays_frozen_nasdaq_series_and_sec_capital():
+    snapshot = load_skhynix_beta_snapshot()
+    expected = {
+        "INTC": (1.2146946732804864, 0.4899702354982888),
+        "AVGO": (1.5087543224655808, 0.7608534513233969),
+        "MRVL": (1.6711366521783315, 0.2678074208379201),
+        "MU": (1.514005608055587, 0.05103053889837576),
+    }
+    assert snapshot.as_of == "2026-08-28"
+    for peer_id, (beta, debt_to_equity) in expected.items():
+        estimate = snapshot.estimate(peer_id)
+        assert estimate.observations == 260
+        assert estimate.beta == pytest.approx(beta, abs=1e-12)
+        assert estimate.debt_to_equity == pytest.approx(debt_to_equity, abs=1e-12)
+        assert estimate.series_hash
+
+
+def test_skhynix_beta_snapshot_rejects_relabelled_or_tampered_numbers(tmp_path: Path):
+    payload = json.loads(DEFAULT_BETA_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload["peers"]["INTC"]["weekly_close"][100][1] = "9999"
+    mutated = tmp_path / "beta.json"
+    mutated.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="frozen beta does not replay"):
+        load_skhynix_beta_snapshot(mutated)
 
 
 def test_skhynix_strict_live_run_freezes_continuous_probability_weighting(tmp_path: Path):
@@ -161,8 +213,8 @@ def test_skhynix_strict_live_run_freezes_continuous_probability_weighting(tmp_pa
     assert result.data["probability_distribution_status"] == "CALIBRATED"
     assert result.data.get("probability_calibration_snapshot_hash")
     assert result.data.get("probability_calibration_dataset_hash") == EXPECTED_DATASET_SHA256
-    assert result.data["street_comparison"].consensus.report_count == 39
-    assert result.data["market_comparison"].observation.price == 1653000
+    assert result.data["street_comparison"].consensus.report_count == 1
+    assert result.data["market_comparison"].observation.price == 1647000
     assert result.data.get("final_report")
 
 

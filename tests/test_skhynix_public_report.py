@@ -12,6 +12,7 @@ from valuation_engine.skhynix_public_report import (
     PUBLIC_REQUIRED_HEADINGS,
     render_skhynix_public_report,
     render_skhynix_public_visual,
+    skhynix_public_source_links,
 )
 from valuation_engine.strict_live_runtime import require_canonical_live_result
 
@@ -25,13 +26,19 @@ def test_skhynix_public_report_uses_korean_standard_form(tmp_path: Path):
         probability_snapshot,
         result.data.get("probability_distribution_status"),
     )
-    report = render_skhynix_public_report(report)
+    source_links = skhynix_public_source_links(result.data)
+    report = render_skhynix_public_report(
+        report,
+        data=result.data,
+        source_links=source_links,
+    )
 
     assert report.startswith("# SK하이닉스(000660) 투자보고서")
     positions = [report.index(heading) for heading in PUBLIC_REQUIRED_HEADINGS]
     assert positions == sorted(positions)
     assert "하방 15.7% · 기준 43.9% · 상방 40.4%" in report
-    assert "확률가중 기대값:** 주당 3,726,580원" in report
+    assert "확률가중 기대값:** 주당 5,519,812원" in report
+    assert "기준 내재가치는 5,170,059원" in report
     assert "사업모델과 강점" in report
     assert "고대역폭메모리" in report
     assert "현금흐름할인법" in report
@@ -45,6 +52,13 @@ def test_skhynix_public_report_uses_korean_standard_form(tmp_path: Path):
     assert "E:SKHYNIX:" not in report
     assert "COMPANY_RESOLUTION" not in report
     assert "github.com/newwonwoo/valuation" not in report
+    assert "stockanalysis.com" not in report.casefold()
+    assert "investing.com" not in report.casefold()
+    assert "skhynix.com/ir/UI-FR-IR02" in report
+    assert "samsungpop.com" in report
+    assert "api.nasdaq.com/api/quote/" in report
+    assert "sec.gov/Archives/edgar/data/" in report
+    assert all(f"]({link.url})" in report for link in source_links)
     assert "초고압" not in report
 
     run_dir = Path(str(result.data["saved_run_dir"]))
@@ -78,6 +92,7 @@ def test_skhynix_public_report_uses_korean_standard_form(tmp_path: Path):
         assumptions_filename=visual_names[1],
         as_of="2026-08-28",
         markdown_filename="SKHYNIX_000660_LIVE_PRIMARY_REPORT.md",
+        source_links=source_links,
     )
     validate_skhynix_brokerage_html(html)
     assert "*{box-sizing:border-box}" in html

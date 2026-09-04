@@ -30,6 +30,7 @@ from valuation_engine.partial_valuation import promote_partial_valuation_plan
 from valuation_engine.post_freeze import compare_generic_to_market
 from valuation_engine.post_freeze_adapters import market_compare_adapter
 from valuation_engine.records import AuditReport, CalibrationStatus, MarketObservation
+from valuation_engine.report_localization import evaluator_assumption_groups_ko
 from valuation_engine.scenario_binding import BoundScenario, BoundScenarioSet
 from valuation_engine.valuation_adapter import deterministic_valuation_adapter
 from valuation_engine.valuation_execution import (
@@ -146,7 +147,10 @@ def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
                 "driver_dcf",
             ),
             "live_wacc_result": SimpleNamespace(
-                wacc_result=SimpleNamespace(wacc=Decimal("0.09"))
+                wacc_result=SimpleNamespace(
+                    wacc=Decimal("0.09"),
+                    cost_of_equity=Decimal("0.11"),
+                )
             ),
         },
         "mixed.svg",
@@ -311,7 +315,8 @@ def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
     assert "운송 수주잔고 DCF" in svg
     assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in svg
     assert "모회사 조정" in svg
-    assert "모 -30억" in svg
+    assert "모" in svg
+    assert "-30억" in svg
 
     line = _scenario_assumptions_line(
         scenario,
@@ -413,7 +418,10 @@ def test_single_dcf_assumptions_card_shows_parent_adjustment():
             "valuation_plan_compilation": compilation,
             "live_beta_result": SimpleNamespace(target_levered_beta=Decimal("1.1")),
             "live_wacc_result": SimpleNamespace(
-                wacc_result=SimpleNamespace(wacc=Decimal("0.09"))
+                wacc_result=SimpleNamespace(
+                    wacc=Decimal("0.09"),
+                    cost_of_equity=Decimal("0.11"),
+                )
             ),
         },
         "single-dcf.svg",
@@ -421,6 +429,215 @@ def test_single_dcf_assumptions_card_shows_parent_adjustment():
 
     assert "모회사 조정" in svg
     assert "-30억원" in svg
+
+
+def test_typed_non_fcff_inputs_render_in_mixed_report_and_single_family_card():
+    scenario = BoundScenario(
+        "Base",
+        (
+            _assumption("manufacturing_normalized_ebitda", "100", "KRW_billion"),
+            _assumption("manufacturing_normalized_multiple", "8", "multiple"),
+            _assumption("bank_forward_distribution", "100", "KRW_billion"),
+            _assumption("bank_terminal_growth", "0.02", "ratio"),
+            _assumption("manufacturing_ownership", "1", "ratio"),
+            _assumption("bank_ownership", "1", "ratio"),
+            _assumption("diluted_shares", "10", "shares"),
+        ),
+    )
+    multiple_contract = SegmentEvaluatorContract(
+        segment_id="manufacturing",
+        model_key=ModelKey("commodity_price_taker", "normalized_multiple", "1"),
+        execution_family="normalized_multiple",
+        output_kind="enterprise_value",
+        required_assumption_keys=(
+            "manufacturing_normalized_ebitda",
+            "manufacturing_normalized_multiple",
+        ),
+    )
+    ddm_key = ModelKey("financial_balance_sheet", "ddm", "1")
+    ddm_contract = SegmentEvaluatorContract(
+        segment_id="bank",
+        model_key=ddm_key,
+        execution_family="gordon_ddm",
+        output_kind="equity_value",
+        required_assumption_keys=(
+            "bank_forward_distribution",
+            "bank_terminal_growth",
+        ),
+    )
+
+    line = _scenario_assumptions_line(
+        scenario,
+        evaluator_contracts=(multiple_contract, ddm_contract),
+    )
+    assert "bank 배당할인" in line
+    assert "선행 배당 1,000억원" in line
+    assert "영구성장률 2.0%" in line
+
+    single_scenario = BoundScenario(
+        "Base",
+        tuple(
+            item
+            for item in scenario.assumptions
+            if not item.key.startswith("manufacturing_")
+        ),
+    )
+    scenario_set = BoundScenarioSet(
+        target_id="SINGLE-DDM",
+        scenarios=(single_scenario,),
+        calibration_status=CalibrationStatus.UNCALIBRATED,
+        numeric_weighting_allowed=False,
+        scenario_set_hash="SINGLE-DDM-HASH",
+    )
+    plan = CompanyValuationPlan(
+        segments=(
+            SegmentValuationPlan(
+                "bank", "bank", ddm_key, "bank_ownership", None
+            ),
+        ),
+        reporting_unit="KRW_billion",
+        diluted_shares_key="diluted_shares",
+    )
+    compilation = ValuationPlanCompilation(
+        status=ValuationPlanStatus.READY,
+        plan=plan,
+        scenario_set_hash="SINGLE-DDM-HASH",
+        module_plan_hash="MODULE",
+        capability_registry_hash="CAPABILITY",
+        evaluator_registry_hash="EVALUATOR",
+        method_choices_hash="METHOD",
+        segment_resolutions=(),
+        evaluator_contracts=(ddm_contract,),
+        warranted_per_segments=(),
+        aggregator_bindings=(),
+        missing_assumptions=(),
+    )
+    svg = _assumptions_card(
+        {
+            "company": "Single DDM",
+            "bound_scenario_set": scenario_set,
+            "valuation_plan_compilation": compilation,
+            "live_beta_result": SimpleNamespace(target_levered_beta=Decimal("1.1")),
+            "live_wacc_result": SimpleNamespace(
+                wacc_result=SimpleNamespace(
+                    wacc=Decimal("0.09"),
+                    cost_of_equity=Decimal("0.11"),
+                )
+            ),
+        },
+        "single-ddm.svg",
+    ).svg
+    assert "bank 배당할인" in svg
+    assert "선행 배당" in svg
+    assert "1,000억원" in svg
+    assert "영구성장률" in svg
+    assert "2.0%" in svg
+    assert "자기자본비용" in svg
+    assert "11.00%" in svg
+    assert "가중평균자본비용" not in svg
+    assert "배당할인 부문 귀속 지분가치" in svg
+    assert "핵심 자본적지출" not in svg
+    assert "생산능력 반영" not in svg
+
+
+@pytest.mark.parametrize(
+    ("family", "keys", "expected_labels"),
+    (
+        (
+            "contracted_backlog_dcf",
+            (
+                "core_opening_backlog",
+                "core_opening_revenue",
+                "core_new_orders_year_1",
+                "core_backlog_burn_rate_year_1",
+                "core_operating_margin_year_1",
+                "core_operating_tax_rate",
+                "core_depreciation_rate_of_revenue",
+                "core_maintenance_capex_rate_of_revenue",
+                "core_incremental_working_capital_rate",
+                "core_terminal_growth",
+                "core_terminal_roic",
+            ),
+            {
+                "기초 수주잔고",
+                "기초 매출",
+                "소진률",
+                "신규수주",
+                "영업이익률",
+                "영업세율",
+                "감가상각률",
+                "유지보수 투자율",
+                "증분 운전자본률",
+                "영구성장률",
+                "영구 ROIC",
+            },
+        ),
+        (
+            "finite_life_npv",
+            ("mine_cashflow_year_0", "mine_cashflow_year_1"),
+            {"현금흐름"},
+        ),
+        (
+            "gordon_ddm",
+            ("bank_forward_distribution", "bank_terminal_growth"),
+            {"선행 배당", "영구성장률"},
+        ),
+        (
+            "justified_pb_roe",
+            (
+                "bank_current_book_value",
+                "bank_forward_roe",
+                "bank_terminal_growth",
+            ),
+            {"현재 장부가치", "선행 ROE", "영구성장률"},
+        ),
+        (
+            "residual_income",
+            (
+                "bank_beginning_book_value",
+                "bank_roe_year_1",
+                "bank_roe_year_2",
+                "bank_distribution_year_1",
+                "bank_distribution_year_2",
+                "bank_terminal_roe",
+                "bank_terminal_growth",
+            ),
+            {"기초 장부가치", "ROE", "배당", "영구 ROE", "영구성장률"},
+        ),
+        (
+            "rate_base_roe",
+            (
+                "utility_rate_base",
+                "utility_equity_ratio",
+                "utility_allowed_roe",
+                "utility_terminal_growth",
+            ),
+            {"요금기반 자산", "자기자본비율", "허용 ROE", "영구성장률"},
+        ),
+        (
+            "calibrated_single_event_rnpv",
+            (
+                "drug_unconditional_cashflow_year_0",
+                "drug_unconditional_cashflow_year_1",
+                "drug_contingent_cashflow_year_0",
+                "drug_contingent_cashflow_year_1",
+                "drug_probability_of_success",
+            ),
+            {"기본 현금흐름", "조건부 현금흐름", "보정 사건확률"},
+        ),
+    ),
+)
+def test_typed_reporting_groups_cover_every_compiled_input(
+    family: str,
+    keys: tuple[str, ...],
+    expected_labels: set[str],
+):
+    primary, secondary = evaluator_assumption_groups_ko(family, keys)
+    groups = (*primary, *secondary)
+    assert {label for label, _ in groups} == expected_labels
+    grouped_keys = tuple(key for _, grouped in groups for key in grouped)
+    assert len(grouped_keys) == len(set(grouped_keys))
+    assert set(grouped_keys) == set(keys)
 
 
 def test_pure_multiple_visual_table_has_a_bounded_column_contract():

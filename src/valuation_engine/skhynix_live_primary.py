@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from hashlib import sha256
+import json
 from pathlib import Path
 from typing import Any
 
@@ -43,6 +44,10 @@ from .risk_adapters import (
 )
 from .scanner_runtime import ScannerFinding, ScannerFindingStatus
 from .scenario_binding import ScenarioBindingSpec
+from .skhynix_beta_snapshot import (
+    SKHynixBetaSnapshot,
+    load_skhynix_beta_snapshot,
+)
 from .source_watch import WatchFinding, WatchStatus
 from .street import StreetResearchReport
 from .valuation_execution import ParentAdjustmentPlan
@@ -63,6 +68,7 @@ MANDATORY_SCANNERS = ("CYCLE_NORMALIZATION", "COST_CURVE", "INVENTORY", "TRADE_F
 class SKHynixSnapshot:
     payload: dict[str, Any]
     raw_hash: str
+    beta_snapshot: SKHynixBetaSnapshot
 
     @property
     def as_of(self) -> str:
@@ -111,7 +117,57 @@ def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
     payload = yaml.safe_load(raw)
     if not isinstance(payload, dict):
         raise ValueError("SK hynix snapshot must be a mapping")
-    snapshot = SKHynixSnapshot(payload=payload, raw_hash=sha256(raw).hexdigest())
+    risk = payload.get("risk")
+    if not isinstance(risk, dict):
+        raise ValueError("SK hynix snapshot risk block must be a mapping")
+    beta_path = (_REPO_ROOT / str(risk.get("beta_snapshot_path", ""))).resolve()
+    if _REPO_ROOT.resolve() not in beta_path.parents:
+        raise ValueError("SK hynix Beta snapshot must remain inside the repository")
+    beta_snapshot = load_skhynix_beta_snapshot(beta_path)
+    if beta_snapshot.raw_hash != risk.get("beta_snapshot_sha256"):
+        raise ValueError("SK hynix Beta snapshot hash mismatch")
+    if beta_snapshot.as_of != str(risk.get("as_of")):
+        raise ValueError("SK hynix Beta snapshot as-of mismatch")
+
+    market = payload.get("market")
+    if not isinstance(market, dict):
+        raise ValueError("SK hynix market block must be a mapping")
+    market_path = (_REPO_ROOT / str(market.get("snapshot_path", ""))).resolve()
+    if _REPO_ROOT.resolve() not in market_path.parents:
+        raise ValueError("SK hynix market snapshot must remain inside the repository")
+    market_raw = market_path.read_bytes()
+    if sha256(market_raw).hexdigest() != market.get("snapshot_sha256"):
+        raise ValueError("SK hynix market snapshot hash mismatch")
+    market_snapshot = json.loads(market_raw)
+    frozen_response = str(market_snapshot.get("raw_response", ""))
+    if sha256(frozen_response.encode("utf-8")).hexdigest() != market_snapshot.get(
+        "raw_response_sha256"
+    ):
+        raise ValueError("SK hynix market raw-response hash mismatch")
+    response = json.loads(frozen_response)
+    price_rows = tuple(
+        item
+        for item in response.get("Values", ())
+        if isinstance(item, dict) and item.get("name") == "last"
+    )
+    if len(price_rows) != 1:
+        raise ValueError("SK hynix issuer market snapshot has no unique last price")
+    formats = price_rows[0].get("Formats", ())
+    if not formats or float(formats[0]["rawValue"]) != float(market.get("price")):
+        raise ValueError("SK hynix market price does not match the frozen issuer feed")
+    if (
+        market_snapshot.get("as_of") != market.get("as_of")
+        or market_snapshot.get("price") != market.get("price")
+        or market_snapshot.get("issuer_source_ref")
+        != payload.get("sources", {}).get("market")
+    ):
+        raise ValueError("SK hynix market observation binding mismatch")
+
+    snapshot = SKHynixSnapshot(
+        payload=payload,
+        raw_hash=sha256(raw).hexdigest(),
+        beta_snapshot=beta_snapshot,
+    )
     if snapshot.identity.get("ticker") != TICKER or snapshot.identity.get("target_id") != TARGET_ID:
         raise ValueError("SK hynix snapshot identity mismatch")
     if tuple(snapshot.scenarios) != SCENARIOS:
@@ -284,6 +340,7 @@ def _all_records(snapshot: SKHynixSnapshot) -> tuple[EvidenceRecord, ...]:
             )
 
     for level_name, peer in snapshot.risk["beta_levels"].items():
+        estimate = snapshot.beta_snapshot.estimate(str(peer["peer_id"]))
         rows.append(
             _record(
                 snapshot,
@@ -291,9 +348,13 @@ def _all_records(snapshot: SKHynixSnapshot) -> tuple[EvidenceRecord, ...]:
                 value=str(peer["peer_id"]),
                 unit="identifier",
                 layer=EvidenceSourceLayer.AUTHORIZED_MARKET_DATA,
-                source_ref=sources[str(peer["source_key"])],
-                notes="public 5Y Beta/debt-equity peer observation used only by the hierarchical Beta stage",
-                confidence=0.75,
+                source_ref=estimate.price_source_ref,
+                notes=(
+                    "five-year weekly-return Beta replayed from a frozen Nasdaq "
+                    f"series ({estimate.observations} observations; {estimate.series_hash}); "
+                    "debt-equity replayed from the linked SEC filing"
+                ),
+                confidence=0.90,
             )
         )
     return tuple(rows)
@@ -545,22 +606,27 @@ def _beta_loader(snapshot: SKHynixSnapshot):
         levels: list[LiveBetaLevelObservation] = []
         for level in BetaLevelName:
             row = snapshot.risk["beta_levels"][level.value]
+            estimate = snapshot.beta_snapshot.estimate(str(row["peer_id"]))
             levels.append(
                 LiveBetaLevelObservation(
                     level=level,
                     peers=(
                         LivePeerBetaObservation(
                             peer_id=str(row["peer_id"]),
-                            levered_beta=float(row["levered_beta"]),
-                            debt=float(row["debt_to_equity"]),
+                            levered_beta=estimate.beta,
+                            debt=estimate.debt_to_equity,
                             equity=1.0,
                             tax_rate=0.21,
-                            benchmark_id="STOCKANALYSIS_US_MARKET_BETA_5Y",
-                            return_frequency="vendor_5y_beta",
+                            benchmark_id="NASDAQ_COMP_5Y_WEEKLY",
+                            return_frequency="weekly",
                             estimation_window_months=60,
-                            as_of=str(snapshot.risk["as_of"]),
-                            source_ref=snapshot.sources[str(row["source_key"])],
-                            estimation_method="StockAnalysis public 5Y Beta observation",
+                            as_of=estimate.end_date,
+                            source_ref=estimate.price_source_ref,
+                            beta_standard_error=estimate.standard_error,
+                            estimation_method=(
+                                "5Y weekly close-to-close OLS with intercept; "
+                                f"frozen series {estimate.series_hash}"
+                            ),
                         ),
                     ),
                     selection_rationale="progressively closer semiconductor and memory-cycle systematic-risk exposure, not valuation similarity",
@@ -571,8 +637,16 @@ def _beta_loader(snapshot: SKHynixSnapshot):
         return LiveBetaUniverse(
             levels=tuple(levels),
             target_capital_structure=_target_structure(snapshot),
-            universe_rationale="L1→L4 narrows from broad semiconductor exposure to a memory economic twin under one public 5Y Beta convention",
-            source_refs=tuple(snapshot.sources[str(snapshot.risk["beta_levels"][level.value]["source_key"])] for level in BetaLevelName),
+            universe_rationale="L1→L4 narrows from broad semiconductor exposure to a memory economic twin under one five-year weekly exchange-return convention",
+            source_refs=tuple(
+                estimate.price_source_ref
+                for estimate in snapshot.beta_snapshot.estimates
+            )
+            + (snapshot.beta_snapshot.benchmark_source_ref,)
+            + tuple(
+                estimate.capital_source_ref
+                for estimate in snapshot.beta_snapshot.estimates
+            ),
         )
 
     return load
@@ -638,12 +712,12 @@ def _street_reports(snapshot: SKHynixSnapshot) -> tuple[StreetResearchReport, ..
     street = snapshot.street
     return (
         StreetResearchReport(
-            broker="S&P Global consensus via StockAnalysis",
-            analyst="39-analyst aggregate",
+            broker="Samsung Securities",
+            analyst="Jongwook Lee and Kyoungbeen Kim",
             published_date=str(street["as_of"]),
             target_price=float(street["consensus_target_price"]),
             target_price_currency="KRW",
-            valuation_method="post-freeze consensus reference only",
+            valuation_method="post-freeze broker reference only",
             base_year="2026",
             estimates=(),
             source_ref=snapshot.sources["street"],

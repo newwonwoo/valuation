@@ -1,6 +1,13 @@
 from __future__ import annotations
 
 import re
+from typing import Mapping
+
+from .source_reporting import (
+    SourceLink,
+    build_source_link_index,
+    render_source_link_section,
+)
 
 
 PUBLIC_REQUIRED_HEADINGS = (
@@ -76,7 +83,72 @@ def validate_skhynix_public_report(report: str) -> None:
         raise RuntimeError("공개 보고서에는 내부 가치평가 저장소 링크를 노출하지 않습니다")
 
 
-def render_skhynix_public_report(report: str) -> str:
+def skhynix_public_source_links(data: Mapping[str, object]) -> tuple[SourceLink, ...]:
+    """Select public links from the same post-freeze run authority."""
+
+    links = build_source_link_index(dict(data), require_all_http=True)
+    public_authority = tuple(
+        link
+        for link in links
+        if "github.com/newwonwoo/valuation" not in link.url
+    )
+    public: list[SourceLink] = []
+    for link in public_authority:
+        if "api.nasdaq.com/api/quote/" in link.url:
+            label = "나스닥 베타 시계열 원자료"
+        elif "sec.gov/Archives/edgar/data/2120882/" in link.url:
+            label = "SK하이닉스 미국 증권거래위원회 공시"
+        elif "sec.gov/Archives/edgar/data/" in link.url:
+            label = "베타 비교기업 미국 증권거래위원회 공시"
+        elif "samsungpop.com" in link.url:
+            label = "삼성증권 원문 리서치"
+        elif "skhynix.com/ir/UI-FR-IR02" in link.url:
+            label = "SK하이닉스 주가정보"
+        elif "news.skhynix.com" in link.url:
+            label = "SK하이닉스 실적 발표"
+        else:
+            label = " / ".join(link.labels).replace(
+                "SK hynix frozen LIVE source pack",
+                "SK하이닉스 원문 근거 묶음",
+            )
+        coverage = tuple(
+            "공시·평가 입력 근거" if row.startswith("근거 ") else row
+            for row in link.coverage
+        )
+        public.append(
+            SourceLink(
+                url=link.url,
+                labels=(label,),
+                coverage=tuple(dict.fromkeys(coverage)),
+            )
+        )
+    public_links = tuple(public)
+    urls = {link.url for link in public_links}
+    required = {
+        str(data["market_observation"].source_ref),
+        *(str(item.source_ref) for item in data.get("street_reports", ())),
+        *(str(item) for item in data.get("beta_source_refs", ())),
+    }
+    required = {
+        url
+        for url in required
+        if "github.com/newwonwoo/valuation" not in url
+    }
+    missing = required - urls
+    if missing:
+        raise ValueError(
+            "SK hynix public source authority is incomplete: "
+            + ", ".join(sorted(missing))
+        )
+    return public_links
+
+
+def render_skhynix_public_report(
+    report: str,
+    *,
+    data: Mapping[str, object],
+    source_links: tuple[SourceLink, ...],
+) -> str:
     """Convert the frozen canonical report into the Korean public standard form.
 
     This layer changes presentation only. It does not recompute or alter assumptions,
@@ -90,9 +162,10 @@ def render_skhynix_public_report(report: str) -> str:
     common_replacements = {
         "# SK hynix Inc. 투자보고서": "# SK하이닉스(000660) 투자보고서",
         "SK hynix Inc.": "SK하이닉스",
-        "S&P Global consensus via StockAnalysis": "에스앤피 글로벌 컨센서스(스톡애널리시스 집계)",
-        "2026년 기준 · post-freeze consensus reference only": "2026년 기준 · 가치평가 확정 후 참고용 컨센서스",
-        "2026년 post-freeze consensus reference only": "2026년 가치평가 확정 후 참고용 컨센서스",
+        "Samsung Securities": "삼성증권",
+        "Jongwook Lee and Kyoungbeen Kim": "이종욱·김경빈",
+        "2026년 기준 · post-freeze broker reference only": "2026년 기준 · 가치평가 확정 후 참고용 증권사 자료",
+        "2026년 post-freeze broker reference only": "2026년 가치평가 확정 후 참고용 증권사 자료",
         "SK hynix frozen LIVE source pack": "SK하이닉스 원문 근거 묶음",
         "1년차 DCF 사용 FCFF": "1년차 현금흐름할인법 적용 기업잉여현금흐름",
         "5년차 DCF 사용 FCFF": "5년차 현금흐름할인법 적용 기업잉여현금흐름",
@@ -113,9 +186,24 @@ def render_skhynix_public_report(report: str) -> str:
     rendered = re.sub(r"\bROIC\b", "투하자본이익률", rendered)
     rendered = re.sub(r"\bCAPA\b", "생산능력", rendered)
 
-    conclusion = """### 한 문장 결론
+    valuation = data.get("generic_valuation_result")
+    scenarios = {
+        str(item.scenario_id): item.value_per_share
+        for item in getattr(valuation, "scenarios", ())
+    }
+    if set(scenarios) != {"Down", "Core", "Bull"}:
+        raise ValueError("SK hynix public report requires Down/Core/Bull values")
+    expected_value = getattr(valuation, "expected_value_per_share", None)
+    if expected_value is None:
+        raise ValueError("SK hynix public report requires calibrated expected value")
+    down_value = f"{scenarios['Down']:,.0f}"
+    core_value = f"{scenarios['Core']:,.0f}"
+    bull_value = f"{scenarios['Bull']:,.0f}"
+    expected_text = f"{expected_value:,.0f}"
 
-4세대 고대역폭메모리 양산 출하, 높은 설비가동률, 주요 고객과의 장기계약이 인공지능 메모리 수요를 현금흐름으로 전환하는 핵심 축입니다. 기준 내재가치는 3,542,393원, 확률가중 기대값은 3,726,580원이며, 현재가에서는 메모리 업황 정상화·대규모 설비투자·현금전환 지속 여부를 함께 확인해야 합니다."""
+    conclusion = f"""### 한 문장 결론
+
+4세대 고대역폭메모리 양산 출하, 높은 설비가동률, 주요 고객과의 장기계약이 인공지능 메모리 수요를 현금흐름으로 전환하는 핵심 축입니다. 기준 내재가치는 {core_value}원, 확률가중 기대값은 {expected_text}원이며, 현재가에서는 메모리 업황 정상화·대규모 설비투자·현금전환 지속 여부를 함께 확인해야 합니다."""
     rendered = _replace_block(
         rendered,
         "### 한 문장 결론",
@@ -123,11 +211,11 @@ def render_skhynix_public_report(report: str) -> str:
         conclusion,
     )
 
-    investment_points = """### 투자포인트
+    investment_points = f"""### 투자포인트
 
 - **사업모델과 강점:** 고대역폭메모리·디램·기업용 저장장치를 인공지능·서버 고객에 공급하며, 4세대 고대역폭메모리 양산 출하와 주요 고객 접근성이 핵심 경쟁력입니다.
 - **가치동인:** 매출 성장률·영업이익률·현금전환율·설비투자 비중의 연속 경로가 현금흐름과 내재가치를 좌우합니다.
-- **가치평가:** 하방 1,069,224원 · 기준 3,542,393원 · 상방 4,963,295원, 확률가중 기대값 3,726,580원입니다.
+- **가치평가:** 하방 {down_value}원 · 기준 {core_value}원 · 상방 {bull_value}원, 확률가중 기대값 {expected_text}원입니다.
 - **핵심 위험:** 메모리 가격 정상화, 고대역폭메모리 수율·고객 인증, 대규모 설비투자의 현금흐름 부담, 높은 이익률의 정상화 속도를 함께 봐야 합니다.
 - **행동 기준:** 별도 진입 규칙이 확정되지 않아 특정 매수가는 제시하지 않습니다."""
     rendered = _replace_block(
@@ -164,17 +252,7 @@ def render_skhynix_public_report(report: str) -> str:
         insight,
     )
 
-    sources = """## 정보 출처 — 원문 바로 확인
-
-- **SK하이닉스 2026년 2분기 실적 발표:** 4세대 고대역폭메모리 양산 출하, 주요 고객 장기계약, 실적과 설비가동 관련 회사 발표 — [원문 바로 열기](https://news.skhynix.com/en/q2-2026-business-results/)
-- **미국 증권거래위원회 공시:** 용인 반도체 클러스터 생산능력 투자 관련 이사회 승인 — [원문 바로 열기](https://www.sec.gov/Archives/edgar/data/2120882/000119312526311230/d121520d6k.htm)
-- **미국 증권거래위원회 공시:** 재무상태·현금흐름·생산 관련 공시 — [원문 바로 열기](https://www.sec.gov/Archives/edgar/data/2120882/000119312526354777/d147827d6k.htm)
-- **미국 증권거래위원회 공시:** 자사주 취득·주식수 관련 공시 — [원문 바로 열기](https://www.sec.gov/Archives/edgar/data/2120882/000119312526356141/d436722d6k.htm)
-- **할인율 입력 근거:** 대한민국 정부 금리 자료 — [원문 바로 열기](https://english.mofe.go.kr/?boardCd=P0002&seq=2052)
-- **시장위험 입력 근거:** 뉴욕대학교 다모다란 국가위험프리미엄 자료 — [원문 바로 열기](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctrypremtable.htm)
-- **현재 시장가격:** 인베스팅닷컴 2026년 8월 28일 종가 자료 — [원문 바로 열기](https://kr.investing.com/equities/sk-hynix-inc-historical-data)
-- **증권사 컨센서스:** 스톡애널리시스 집계 자료 — [원문 바로 열기](https://stockanalysis.com/quote/krx/000660/forecast/)
-- **베타 비교군:** 브로드컴 · 인텔 · 마벨 · 마이크론 통계 자료 — [브로드컴](https://stockanalysis.com/stocks/avgo/statistics/) · [인텔](https://stockanalysis.com/stocks/intc/statistics/) · [마벨](https://stockanalysis.com/stocks/mrvl/statistics/) · [마이크론](https://stockanalysis.com/stocks/mu/statistics/)"""
+    sources = "\n".join(render_source_link_section(source_links))
     rendered = _replace_section(
         rendered,
         "## 정보 출처 — 원문 바로 확인",
@@ -209,6 +287,7 @@ def render_skhynix_public_report(report: str) -> str:
         "### 증권사별 목표가와 PRISM의 차이",
         "### 증권사별 목표가와 프리즘의 차이",
     )
+    rendered = rendered.replace("증권사 평균 목표가", "증권사 참고 목표가")
     rendered = rendered.replace(
         "PRISM 결과와의 차이 자체가 계산 오류를 뜻하지는 않습니다.",
         "프리즘 결과와의 차이 자체가 계산 오류를 뜻하지는 않습니다.",
@@ -256,13 +335,6 @@ def render_skhynix_public_visual(svg: str, *, card_number: int) -> str:
             "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지": "별도 진입 규칙 확정 전 특정 매수구간 미제시",
         }
         for source, target in replacements.items():
-            rendered = rendered.replace(source, target)
-        dash_values = (
-            ('<text x="1015" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">—</text>', '<text x="1015" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">15.7%</text>'),
-            ('<text x="1015" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">—</text>', '<text x="1015" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">43.9%</text>'),
-            ('<text x="1015" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">—</text>', '<text x="1015" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">40.4%</text>'),
-        )
-        for source, target in dash_values:
             rendered = rendered.replace(source, target)
     else:
         raise ValueError("SK하이닉스 공개 요약 이미지는 1번 또는 2번 카드만 허용합니다")

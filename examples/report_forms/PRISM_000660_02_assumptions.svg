@@ -12,10 +12,10 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="70" y="315" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">핵심 위험 입력</text>
 <rect x="70" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
 <text x="94" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">계층형 베타</text>
-<text x="94" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">1.801</text>
+<text x="94" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">0.960</text>
 <rect x="425" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
 <text x="449" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">가중평균자본비용</text>
-<text x="449" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">12.58%</text>
+<text x="449" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">8.55%</text>
 <rect x="780" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
 <text x="804" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">모회사 조정</text>
 <text x="804" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">1,482,266억원</text>
@@ -59,9 +59,9 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <rect x="0" y="1370" width="1200" height="130" rx="0" fill="#102D3E"/>
 <text x="70" y="1415" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
 <text x="140" y="1415" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">공시 사실과 분석가 가정의 근거 주소는 보고서 본문 ‘정보 출처’에서 확인할 수 있습니다.</text>
-<a href="https://english.mofe.go.kr/?boardCd=P0002&amp;seq=2052" target="_blank"><text x="70" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
-<a href="https://www.sec.gov/Archives/edgar/data/2120882/000119312526354777/d147827d6k.htm" target="_blank"><text x="170" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 2</text></a>
-<a href="https://kr.investing.com/equities/sk-hynix-inc-historical-data" target="_blank"><text x="270" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 3</text></a>
-<a href="https://news.skhynix.com/en/q2-2026-business-results/" target="_blank"><text x="370" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 4</text></a>
-<a href="https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctrypremtable.htm" target="_blank"><text x="470" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 5</text></a>
+<a href="https://api.nasdaq.com/api/quote/AVGO/historical?assetclass=STOCKS&amp;fromdate=2021-08-28&amp;limit=5000&amp;todate=2026-08-28" target="_blank"><text x="70" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
+<a href="https://api.nasdaq.com/api/quote/COMP/historical?assetclass=INDEX&amp;fromdate=2021-08-28&amp;limit=5000&amp;todate=2026-08-28" target="_blank"><text x="170" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 2</text></a>
+<a href="https://api.nasdaq.com/api/quote/INTC/historical?assetclass=STOCKS&amp;fromdate=2021-08-28&amp;limit=5000&amp;todate=2026-08-28" target="_blank"><text x="270" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 3</text></a>
+<a href="https://api.nasdaq.com/api/quote/MRVL/historical?assetclass=STOCKS&amp;fromdate=2021-08-28&amp;limit=5000&amp;todate=2026-08-28" target="_blank"><text x="370" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 4</text></a>
+<a href="https://api.nasdaq.com/api/quote/MU/historical?assetclass=STOCKS&amp;fromdate=2021-08-28&amp;limit=5000&amp;todate=2026-08-28" target="_blank"><text x="470" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 5</text></a>
 </svg>

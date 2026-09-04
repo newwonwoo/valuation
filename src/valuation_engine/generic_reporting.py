@@ -36,6 +36,7 @@ from .probability_forecasting import (
 from .report_localization import (
     calibration_label_ko,
     currency_label_ko,
+    evaluator_assumption_groups_ko,
     identifier_label_ko,
     method_label_ko,
     module_label_ko,
@@ -416,126 +417,16 @@ def _scenario_assumptions_line(
                 f"×{common_ownership * 100:.4f}%÷{share_count:,.0f}주"
             )
 
-    def annual_keys(
-        contract: SegmentEvaluatorContract,
-        token: str,
-    ) -> tuple[str, ...]:
-        matches = tuple(
-            key
-            for key in contract.required_assumption_keys
-            if token in key and re.search(r"_year_\d+$", key)
-        )
-        return tuple(
-            sorted(
-                matches,
-                key=lambda key: int(key.rsplit("_year_", 1)[1]),
-            )
-        )
-
-    def terminal_detail(contract: SegmentEvaluatorContract) -> str:
-        growth_key = next(
-            (
-                key
-                for key in contract.required_assumption_keys
-                if key.endswith("terminal_growth")
-            ),
-            None,
-        )
-        roic_key = next(
-            (
-                key
-                for key in contract.required_assumption_keys
-                if key.endswith("terminal_roic")
-            ),
-            None,
-        )
-        details = []
-        if growth_key in by_key:
-            details.append(f"영구성장률 {_measure_text(by_key[growth_key])}")
-        if roic_key in by_key:
-            details.append(f"영구 ROIC {_measure_text(by_key[roic_key])}")
-        return (" · " + " · ".join(details)) if details else ""
-
-    def annual_total(
-        contract: SegmentEvaluatorContract,
-        token: str,
-        year: int,
-    ) -> str:
-        keys = tuple(
-            key
-            for key in contract.required_assumption_keys
-            if token in key and key.endswith(f"_year_{year}")
-        )
-        measures = tuple(
-            by_key[key].measure for key in keys if key in by_key
-        )
-        if not measures:
-            return "—"
-        unit = measures[0].unit
-        total = sum(
-            (measure.convert_to(unit).amount for measure in measures),
-            Decimal(0),
-        )
-        return _amount_unit_text(total, unit)
-
-    def annual_components(
-        contract: SegmentEvaluatorContract,
-        token: str,
-        year: int,
-    ) -> str:
-        keys = tuple(
-            key
-            for key in contract.required_assumption_keys
-            if token in key and key.endswith(f"_year_{year}") and key in by_key
-        )
-        if len(keys) != 2 or f"fcff_year_{year}" not in keys:
-            return ""
-        base_key = f"fcff_year_{year}"
-        incremental_key = next(key for key in keys if key != base_key)
-        return (
-            f" (기존 {_measure_text(by_key[base_key])} + "
-            f"증분 {_measure_text(by_key[incremental_key])})"
-        )
-
-    use_typed_discounting = bool(discounted_contracts) and (
-        len(evaluator_contracts) > 1
-        or any(
-            item.execution_family == "contracted_backlog_dcf"
-            for item in discounted_contracts
-        )
+    use_typed_discounting = bool(discounted_contracts) and not (
+        len(evaluator_contracts) == 1
+        and discounted_contracts[0].execution_family == "explicit_fcff_dcf"
     )
     for contract in discounted_contracts if use_typed_discounting else ():
         label = segment_labels.get(contract.segment_id, contract.segment_id)
-        if contract.execution_family == "contracted_backlog_dcf":
-            backlog_key = next(
-                (
-                    key
-                    for key in contract.required_assumption_keys
-                    if key.endswith("opening_backlog")
-                ),
-                None,
-            )
-            burns = annual_keys(contract, "backlog_burn_rate")
-            orders = annual_keys(contract, "new_orders")
-            detail = f"{label} 수주잔고 DCF"
-            if backlog_key in by_key:
-                detail += f" 최초 잔고 {_measure_text(by_key[backlog_key])}"
-            if burns:
-                detail += (
-                    f" · 소진률 {_measure_text(by_key[burns[0]])}"
-                    f"→{_measure_text(by_key[burns[-1]])}"
-                )
-            if orders:
-                detail += (
-                    f" · 신규수주 {_measure_text(by_key[orders[0]])}"
-                    f"→{_measure_text(by_key[orders[-1]])}"
-                )
-            detail += terminal_detail(contract)
-            values.append(detail)
-        elif evaluator_contracts:
-            cashflows = annual_keys(contract, "fcff")
+        if evaluator_contracts:
             method_label = {
                 "explicit_fcff_dcf": "FCFF DCF",
+                "contracted_backlog_dcf": "수주잔고 DCF",
                 "finite_life_npv": "유한수명 NPV",
                 "gordon_ddm": "배당할인",
                 "justified_pb_roe": "PBR·ROE",
@@ -544,27 +435,37 @@ def _scenario_assumptions_line(
                 "calibrated_single_event_rnpv": "확률조정 NPV",
             }.get(contract.execution_family, contract.model_key.method)
             detail = f"{label} {method_label}"
-            if cashflows:
-                first_year = int(cashflows[0].rsplit("_year_", 1)[1])
-                last_year = int(cashflows[-1].rsplit("_year_", 1)[1])
-                detail += (
-                    f" {annual_total(contract, 'fcff', first_year)}"
-                    f"→{annual_total(contract, 'fcff', last_year)}"
+            primary, secondary = evaluator_assumption_groups_ko(
+                contract.execution_family,
+                contract.required_assumption_keys,
+            )
+
+            def group_text(
+                group: tuple[str, tuple[str, ...]],
+            ) -> str:
+                group_label, keys = group
+                present = tuple(key for key in keys if key in by_key)
+                if not present:
+                    return ""
+                rendered = tuple(_measure_text(by_key[key]) for key in present)
+                value = (
+                    rendered[0]
+                    if len(rendered) == 1
+                    else " / ".join(rendered)
                 )
-            detail += terminal_detail(contract)
+                return f"{group_label} {value}"
+
+            input_details = tuple(
+                text
+                for text in (
+                    group_text(group)
+                    for group in (*primary, *secondary)
+                )
+                if text
+            )
+            if input_details:
+                detail += " · " + " · ".join(input_details)
             values.append(detail)
-            if contract.execution_family == "explicit_fcff_dcf" and cashflows:
-                values.append(
-                    f"{first_year}년차 DCF 사용 FCFF "
-                    f"{annual_total(contract, 'fcff', first_year)}"
-                    f"{annual_components(contract, 'fcff', first_year)}"
-                )
-                if last_year != first_year:
-                    values.append(
-                        f"{last_year}년차 DCF 사용 FCFF "
-                        f"{annual_total(contract, 'fcff', last_year)}"
-                        f"{annual_components(contract, 'fcff', last_year)}"
-                    )
 
     for year in (() if use_typed_discounting else (1, 5)):
         key = f"fcff_year_{year}"
@@ -853,15 +754,11 @@ def render_generic_report(
     wacc_result = data.get("live_wacc_result")
     beta = getattr(beta_result, "target_levered_beta", None)
     wacc = getattr(getattr(wacc_result, "wacc_result", None), "wacc", None)
-    lines.extend((
-        "",
-        "## 핵심 가정과 위험",
-        f"- **평가방법:** {', '.join(method_labels) if method_labels else '등록된 결정론적 가치평가법'}",
-        f"- **위험 입력:** 계층형 베타 {beta:.3f} · 가중평균자본비용 {wacc:.3%}"
-        if beta is not None and wacc is not None
-        else "- **위험 입력:** 선택된 평가방법에서 별도 베타·가중평균자본비용을 요구하지 않습니다.",
-        f"- **확률 보정:** {calibration_label_ko(calibration_status)} · 수치 가중 {'적용' if calibration_applied else '보류'}",
-    ))
+    cost_of_equity = getattr(
+        getattr(wacc_result, "wacc_result", None),
+        "cost_of_equity",
+        None,
+    )
     compilation = data.get("valuation_plan_compilation")
     if not isinstance(compilation, ValuationPlanCompilation):
         compilation = None
@@ -869,6 +766,39 @@ def render_generic_report(
     evaluator_contracts = (
         compilation.evaluator_contracts if compilation is not None else ()
     )
+    equity_discount_families = {
+        "gordon_ddm",
+        "justified_pb_roe",
+        "residual_income",
+        "rate_base_roe",
+    }
+    enterprise_discount_families = {
+        "contracted_backlog_dcf",
+        "explicit_fcff_dcf",
+        "finite_life_npv",
+        "calibrated_single_event_rnpv",
+    }
+    selected_families = {
+        item.execution_family for item in evaluator_contracts
+    }
+    risk_inputs = []
+    if beta is not None:
+        risk_inputs.append(f"계층형 베타 {beta:.3f}")
+    if selected_families.intersection(enterprise_discount_families) and wacc is not None:
+        risk_inputs.append(f"가중평균자본비용 {wacc:.3%}")
+    if selected_families.intersection(equity_discount_families) and cost_of_equity is not None:
+        risk_inputs.append(f"자기자본비용 {cost_of_equity:.3%}")
+    if not evaluator_contracts and wacc is not None:
+        risk_inputs.append(f"가중평균자본비용 {wacc:.3%}")
+    lines.extend((
+        "",
+        "## 핵심 가정과 위험",
+        f"- **평가방법:** {', '.join(method_labels) if method_labels else '등록된 결정론적 가치평가법'}",
+        f"- **위험 입력:** {' · '.join(risk_inputs)}"
+        if risk_inputs
+        else "- **위험 입력:** 선택된 평가방법에서 별도 베타·가중평균자본비용을 요구하지 않습니다.",
+        f"- **확률 보정:** {calibration_label_ko(calibration_status)} · 수치 가중 {'적용' if calibration_applied else '보류'}",
+    ))
     for scenario in tuple(getattr(scenario_set, "scenarios", ()))[:3]:
         assumptions = _scenario_assumptions_line(
             scenario,
