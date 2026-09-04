@@ -62,6 +62,9 @@ from .valuation_plan_compiler import CompanyValuationPlanInputs, SegmentMethodCh
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SNAPSHOT_PATH = _REPO_ROOT / "config" / "skhynix_live_snapshot.yaml"
+DEFAULT_POST_FREEZE_SNAPSHOT_PATH = (
+    _REPO_ROOT / "config" / "skhynix_post_freeze_snapshot.yaml"
+)
 TICKER = "000660"
 TARGET_ID = "KR:DART:00164779"
 SEGMENT_ID = "memory"
@@ -201,6 +204,16 @@ class SKHynixSnapshot:
     def risk(self) -> dict[str, Any]:
         return dict(self.payload["risk"])
 
+
+
+@dataclass(frozen=True)
+class SKHynixPostFreezeSnapshot:
+    payload: dict[str, Any]
+
+    @property
+    def sources(self) -> dict[str, str]:
+        return {str(k): str(v) for k, v in self.payload["sources"].items()}
+
     @property
     def market(self) -> dict[str, Any]:
         return dict(self.payload["market"])
@@ -228,9 +241,56 @@ def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
     if beta_snapshot.as_of != str(risk.get("as_of")):
         raise ValueError("SK hynix Beta snapshot as-of mismatch")
 
+    official_facts = payload.get("official_facts", {})
+    income_tax = float(official_facts["income_tax_expense_h1_2026"][0])
+    pre_tax_income = float(official_facts["profit_before_income_tax_h1_2026"][0])
+    _, peer_equity_weight, peer_debt_weight, _ = _peer_market_structure(
+        risk,
+        beta_snapshot,
+    )
+    expected_risk = (
+        peer_equity_weight,
+        peer_debt_weight,
+        income_tax / pre_tax_income,
+    )
+    recorded_risk = (
+        float(risk.get("target_equity_weight", -1)),
+        float(risk.get("target_debt_weight", -1)),
+        float(risk.get("tax_rate", -1)),
+    )
+    if any(
+        not isclose(actual, expected, rel_tol=0.0, abs_tol=1e-15)
+        for actual, expected in zip(recorded_risk, expected_risk)
+    ):
+        raise ValueError("SK hynix filed capital-structure or tax binding mismatch")
+
+    snapshot = SKHynixSnapshot(
+        payload=payload,
+        raw_hash=sha256(raw).hexdigest(),
+        beta_snapshot=beta_snapshot,
+    )
+    if snapshot.identity.get("ticker") != TICKER or snapshot.identity.get("target_id") != TARGET_ID:
+        raise ValueError("SK hynix snapshot identity mismatch")
+    if tuple(snapshot.scenarios) != SCENARIOS:
+        raise ValueError("SK hynix snapshot scenarios must be Down/Core/Bull")
+    if any(len(snapshot.scenarios[name]["fcff_krw_billion"]) != FORECAST_YEARS for name in SCENARIOS):
+        raise ValueError("SK hynix FCFF paths must contain nine forecast years")
+    return snapshot
+
+
+def load_skhynix_post_freeze_snapshot(
+    path: str | Path | None = None,
+) -> SKHynixPostFreezeSnapshot:
+    resolved = Path(path or DEFAULT_POST_FREEZE_SNAPSHOT_PATH)
+    payload = yaml.safe_load(resolved.read_bytes())
+    if (
+        not isinstance(payload, dict)
+        or payload.get("contract") != "skhynix_post_freeze_snapshot/v1"
+    ):
+        raise ValueError("SK hynix post-freeze snapshot contract mismatch")
     market = payload.get("market")
     if not isinstance(market, dict):
-        raise ValueError("SK hynix market block must be a mapping")
+        raise ValueError("SK hynix post-freeze market block must be a mapping")
     market_path = (_REPO_ROOT / str(market.get("snapshot_path", ""))).resolve()
     if _REPO_ROOT.resolve() not in market_path.parents:
         raise ValueError("SK hynix market snapshot must remain inside the repository")
@@ -273,19 +333,18 @@ def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
     dated_as_of = datetime.strptime(
         dated_match.group(3), "%B %d, %Y"
     ).date().isoformat()
+    sources = payload.get("sources", {})
     if (
         dated_as_of != market.get("as_of")
         or dated_price != market.get("price")
         or market_snapshot.get("price") != market.get("price")
-        or market_snapshot.get("issuer_source_ref")
-        != payload.get("sources", {}).get("market")
-        or market_snapshot.get("dated_source_ref")
-        != payload.get("sources", {}).get("market")
+        or market_snapshot.get("issuer_source_ref") != sources.get("market")
+        or market_snapshot.get("dated_source_ref") != sources.get("market")
     ):
         raise ValueError("SK hynix market observation binding mismatch")
 
     street = payload.get("street")
-    source_ref = payload.get("sources", {}).get("street")
+    source_ref = sources.get("street")
     if not isinstance(street, dict) or not isinstance(source_ref, str):
         raise ValueError("SK hynix Street structured record is missing")
     source_hash = str(street.get("source_sha256", ""))
@@ -314,42 +373,7 @@ def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
         or structured_street_hash != _REGISTERED_STREET_RECORD_SHA256
     ):
         raise ValueError("SK hynix Street record is not independently registered")
-
-    official_facts = payload.get("official_facts", {})
-    income_tax = float(official_facts["income_tax_expense_h1_2026"][0])
-    pre_tax_income = float(official_facts["profit_before_income_tax_h1_2026"][0])
-    _, peer_equity_weight, peer_debt_weight, _ = _peer_market_structure(
-        risk,
-        beta_snapshot,
-    )
-    expected_risk = (
-        peer_equity_weight,
-        peer_debt_weight,
-        income_tax / pre_tax_income,
-    )
-    recorded_risk = (
-        float(risk.get("target_equity_weight", -1)),
-        float(risk.get("target_debt_weight", -1)),
-        float(risk.get("tax_rate", -1)),
-    )
-    if any(
-        not isclose(actual, expected, rel_tol=0.0, abs_tol=1e-15)
-        for actual, expected in zip(recorded_risk, expected_risk)
-    ):
-        raise ValueError("SK hynix filed capital-structure or tax binding mismatch")
-
-    snapshot = SKHynixSnapshot(
-        payload=payload,
-        raw_hash=sha256(raw).hexdigest(),
-        beta_snapshot=beta_snapshot,
-    )
-    if snapshot.identity.get("ticker") != TICKER or snapshot.identity.get("target_id") != TARGET_ID:
-        raise ValueError("SK hynix snapshot identity mismatch")
-    if tuple(snapshot.scenarios) != SCENARIOS:
-        raise ValueError("SK hynix snapshot scenarios must be Down/Core/Bull")
-    if any(len(snapshot.scenarios[name]["fcff_krw_billion"]) != FORECAST_YEARS for name in SCENARIOS):
-        raise ValueError("SK hynix FCFF paths must contain nine forecast years")
-    return snapshot
+    return SKHynixPostFreezeSnapshot(payload)
 
 
 def _eid(metric: str) -> str:
@@ -912,7 +936,9 @@ def _valuation_plan_inputs(context) -> CompanyValuationPlanInputs:
     )
 
 
-def _street_reports(snapshot: SKHynixSnapshot) -> tuple[StreetResearchReport, ...]:
+def _street_reports(
+    snapshot: SKHynixPostFreezeSnapshot,
+) -> tuple[StreetResearchReport, ...]:
     street = snapshot.street
     return (
         StreetResearchReport(
@@ -933,11 +959,20 @@ def _street_reports(snapshot: SKHynixSnapshot) -> tuple[StreetResearchReport, ..
     )
 
 
+def _market_observation(snapshot: SKHynixPostFreezeSnapshot) -> MarketObservation:
+    return MarketObservation(
+        float(snapshot.market["price"]),
+        str(snapshot.market["as_of"]),
+        snapshot.sources["market"],
+    )
+
+
 def build_skhynix_live_primary_config(
     state_root: str | Path,
     *,
     run_id: str = "SKHYNIX-000660-20260829-CANONICAL",
     snapshot_path: str | Path | None = None,
+    post_freeze_snapshot_path: str | Path | None = None,
 ) -> LivePrimaryRuntimeConfig:
     snapshot = load_skhynix_snapshot(snapshot_path)
     records = _all_records(snapshot)
@@ -1027,11 +1062,11 @@ def build_skhynix_live_primary_config(
         valuation_plan_inputs_loader=_valuation_plan_inputs,
         beta_loader=_beta_loader(snapshot),
         wacc_loader=_wacc_loader(snapshot),
-        street_loader=lambda: _street_reports(snapshot),
-        market_loader=lambda: MarketObservation(
-            float(snapshot.market["price"]),
-            str(snapshot.market["as_of"]),
-            snapshot.sources["market"],
+        street_loader=lambda: _street_reports(
+            load_skhynix_post_freeze_snapshot(post_freeze_snapshot_path)
+        ),
+        market_loader=lambda: _market_observation(
+            load_skhynix_post_freeze_snapshot(post_freeze_snapshot_path)
         ),
     )
     required_keys = tuple(

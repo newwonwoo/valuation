@@ -3,7 +3,6 @@ from decimal import Decimal
 from hashlib import sha256
 import json
 from pathlib import Path
-import shutil
 
 import pytest
 import yaml
@@ -30,7 +29,9 @@ from valuation_engine.skhynix_beta_snapshot import (
     load_skhynix_beta_snapshot,
 )
 from valuation_engine.skhynix_live_primary import (
+    DEFAULT_POST_FREEZE_SNAPSHOT_PATH,
     DEFAULT_SNAPSHOT_PATH,
+    load_skhynix_post_freeze_snapshot,
     load_skhynix_snapshot,
 )
 from valuation_engine.street import summarize_street_reports
@@ -79,6 +80,27 @@ def test_skhynix_config_is_price_isolated_before_runtime(tmp_path: Path):
     assert not field_names.intersection(forbidden_tokens)
     assert snapshot.dataset_hash == EXPECTED_DATASET_SHA256
     assert not snapshot.integrity_findings
+
+
+def test_skhynix_post_freeze_sources_are_not_loaded_during_config_build(
+    tmp_path: Path,
+    monkeypatch,
+):
+    calls = []
+
+    def prohibited_early_load(path=None):
+        calls.append(path)
+        raise AssertionError("post-freeze snapshot loaded before its provider stage")
+
+    monkeypatch.setattr(
+        skhynix_live_primary_module,
+        "load_skhynix_post_freeze_snapshot",
+        prohibited_early_load,
+    )
+    config = build_skhynix_live_primary_config(tmp_path)
+    assert calls == []
+    with pytest.raises(AssertionError, match="post-freeze snapshot loaded"):
+        config.providers.street_loader()
 
 
 def test_skhynix_continuous_probability_snapshot_replaces_legacy_boolean_mapping(tmp_path: Path):
@@ -212,7 +234,9 @@ def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(
     tmp_path: Path,
     monkeypatch,
 ):
-    payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload = yaml.safe_load(
+        DEFAULT_POST_FREEZE_SNAPSHOT_PATH.read_text(encoding="utf-8")
+    )
     payload["market"]["as_of"] = "2026-09-03"
     relabelled_market = tmp_path / "relabelled_market.yaml"
     relabelled_market.write_text(
@@ -220,15 +244,11 @@ def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="market observation binding mismatch"):
-        load_skhynix_snapshot(relabelled_market)
+        load_skhynix_post_freeze_snapshot(relabelled_market)
 
     copied_root = tmp_path / "copied-repository"
     copied_config = copied_root / "config"
     copied_config.mkdir(parents=True)
-    shutil.copyfile(
-        DEFAULT_BETA_SNAPSHOT_PATH,
-        copied_config / "skhynix_beta_snapshot.json",
-    )
     market_path = DEFAULT_SNAPSHOT_PATH.parent / "skhynix_market_snapshot.json"
     market_payload = json.loads(market_path.read_text(encoding="utf-8"))
     market_payload["price"] = 9999999
@@ -236,7 +256,9 @@ def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(
         "utf-8"
     )
     (copied_config / "skhynix_market_snapshot.json").write_bytes(mutated_market)
-    payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload = yaml.safe_load(
+        DEFAULT_POST_FREEZE_SNAPSHOT_PATH.read_text(encoding="utf-8")
+    )
     payload["market"]["price"] = 9999999
     payload["market"]["snapshot_sha256"] = sha256(mutated_market).hexdigest()
     copied_snapshot = tmp_path / "copied_snapshot.yaml"
@@ -246,7 +268,7 @@ def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(
     )
     monkeypatch.setattr(skhynix_live_primary_module, "_REPO_ROOT", copied_root)
     with pytest.raises(ValueError, match="market snapshot is not independently registered"):
-        load_skhynix_snapshot(copied_snapshot)
+        load_skhynix_post_freeze_snapshot(copied_snapshot)
 
     monkeypatch.setattr(
         skhynix_live_primary_module,
@@ -254,7 +276,9 @@ def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(
         DEFAULT_SNAPSHOT_PATH.parents[1],
     )
 
-    payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload = yaml.safe_load(
+        DEFAULT_POST_FREEZE_SNAPSHOT_PATH.read_text(encoding="utf-8")
+    )
     payload["street"].update(
         consensus_target_price=99999999,
         median_target_price=99999999,
@@ -268,7 +292,7 @@ def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(
         encoding="utf-8",
     )
     with pytest.raises(ValueError, match="Street record is not independently registered"):
-        load_skhynix_snapshot(relabelled_street)
+        load_skhynix_post_freeze_snapshot(relabelled_street)
 
     payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
     payload["risk"]["target_debt_weight"] = 0.1

@@ -1,0 +1,17 @@
+contract: skhynix_post_freeze_snapshot/v1
+sources:
+  market: 'https://www.skhynix.com/ir/UI-FR-IR01/'
+  street: 'https://www.samsungpop.com/common.do?cmd=down&contentType=application%2Fpdf&fileName=2010%2F2026072908131231K_02_04.pdf&inlineYn=Y&saveKey=research.pdf'
+market:
+  price: 1647000
+  as_of: '2026-09-04'
+  snapshot_path: 'config/skhynix_market_snapshot.json'
+  snapshot_sha256: 'f6bcc877a33984cfe192967f5f426a5f7e2f93a5ac2dd4c1dadde6b44cb7f09d'
+street:
+  consensus_target_price: 3000000
+  report_count: 1
+  median_target_price: 3000000
+  min_target_price: 3000000
+  max_target_price: 3000000
+  as_of: '2026-07-30'
+  source_sha256: '621f75776bf9c44f06f28884e473683ac2dbfe5b3fcd8afd73f2c158fa8f53f8'
