@@ -142,6 +142,38 @@ from .valuation_plan_compiler import (
 
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
+PREFREEZE_COMPARISON_FIELDS = frozenset(
+    {
+        "consensus_target",
+        "consensus_target_price",
+        "current_market_price",
+        "current_price",
+        "market",
+        "market_comparison",
+        "market_currency",
+        "market_observation",
+        "market_price",
+        "market_reference",
+        "market_reference_hash",
+        "max_target_price",
+        "median_target_price",
+        "min_target_price",
+        "price",
+        "rating",
+        "share_price",
+        "street",
+        "street_comparison",
+        "street_consensus",
+        "street_reference",
+        "street_reference_hash",
+        "street_reports",
+        "target_company_consensus",
+        "target_market_cap",
+        "target_multiple",
+        "target_price",
+        "target_price_currency",
+    }
+)
 ValuationPlanInputsLoader = Callable[[OrchestratorContext], CompanyValuationPlanInputs]
 
 _BLOCKED_RESULT_INTRINSIC_KEYS = frozenset(
@@ -312,15 +344,7 @@ class LivePrimaryRuntimeConfig:
             raise ValueError("LIVE_PRIMARY market_loader requires market_currency")
         if self.major_gate_reporter is not None and not callable(self.major_gate_reporter):
             raise TypeError("major_gate_reporter must be callable")
-        prohibited = {
-            "current_market_price",
-            "market_price",
-            "market_observation",
-            "target_price",
-            "target_multiple",
-            "street_reference",
-            "street_reports",
-        }.intersection(self.initial_data)
+        prohibited = PREFREEZE_COMPARISON_FIELDS.intersection(self.initial_data)
         if prohibited:
             raise PermissionError(
                 "LIVE_PRIMARY initial_data cannot contain pre-freeze target market/Street fields: "

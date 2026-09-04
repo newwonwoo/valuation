@@ -9,6 +9,7 @@ import yaml
 
 import valuation_engine.skhynix_live_primary as skhynix_live_primary_module
 from valuation_engine.continuous_probability_snapshot import ContinuousProbabilityCalibrationSnapshot
+from valuation_engine.live_runtime import PREFREEZE_COMPARISON_FIELDS
 from valuation_engine.records import CalibrationStatus, EvidenceSourceLayer
 from valuation_engine.risk_adapters import TargetCapitalStructureMethod
 from valuation_engine.skhynix_continuous_live_primary import (
@@ -103,26 +104,14 @@ def test_skhynix_post_freeze_sources_are_not_loaded_during_config_build(
         config.providers.street_loader()
 
 
-@pytest.mark.parametrize(
-    ("location", "field"),
-    (
-        ("top_level", "market"),
-        ("top_level", "street"),
-        ("sources", "market"),
-        ("sources", "street"),
-    ),
-)
+@pytest.mark.parametrize("field", sorted(PREFREEZE_COMPARISON_FIELDS))
 def test_skhynix_intrinsic_snapshot_rejects_post_freeze_comparison_fields(
     tmp_path: Path,
-    location: str,
     field: str,
 ):
     payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
-    if location == "top_level":
-        payload[field] = {"value": "legacy comparison input"}
-    else:
-        payload["sources"][field] = "https://example.invalid/comparison"
-    legacy_snapshot = tmp_path / f"legacy-{location}-{field}.yaml"
+    payload["legacy_extension"] = {"nested": [{field: "legacy comparison input"}]}
+    legacy_snapshot = tmp_path / f"legacy-{field}.yaml"
     legacy_snapshot.write_text(
         yaml.safe_dump(payload, sort_keys=False),
         encoding="utf-8",

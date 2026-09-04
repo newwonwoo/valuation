@@ -26,7 +26,12 @@ from .live_primary_adapters import (
     ResolvedCompanyIdentity,
     SegmentDescriptor,
 )
-from .live_runtime import LiveCollectorProvider, LivePrimaryProviders, LivePrimaryRuntimeConfig
+from .live_runtime import (
+    PREFREEZE_COMPARISON_FIELDS,
+    LiveCollectorProvider,
+    LivePrimaryProviders,
+    LivePrimaryRuntimeConfig,
+)
 from .llm_staff import BridgeDraft, BridgeProposalBundle, IntelligenceProposal, RedTeamProposal
 from .records import (
     AffectedVariable,
@@ -223,20 +228,31 @@ class SKHynixPostFreezeSnapshot:
         return dict(self.payload["street"])
 
 
+def _find_prefreeze_comparison_fields(value: Any) -> tuple[str, ...]:
+    found: set[str] = set()
+    if isinstance(value, dict):
+        for key, item in value.items():
+            normalized = str(key).strip().casefold()
+            if normalized in PREFREEZE_COMPARISON_FIELDS:
+                found.add(normalized)
+            found.update(_find_prefreeze_comparison_fields(item))
+    elif isinstance(value, (list, tuple)):
+        for item in value:
+            found.update(_find_prefreeze_comparison_fields(item))
+    return tuple(sorted(found))
+
+
 def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
     resolved = Path(path or DEFAULT_SNAPSHOT_PATH)
     raw = resolved.read_bytes()
     payload = yaml.safe_load(raw)
     if not isinstance(payload, dict):
         raise ValueError("SK hynix snapshot must be a mapping")
-    sources = payload.get("sources")
-    comparison_fields = {"market", "street"}
-    if (
-        comparison_fields.intersection(payload)
-        or isinstance(sources, dict) and comparison_fields.intersection(sources)
-    ):
+    leaked_comparison_fields = _find_prefreeze_comparison_fields(payload)
+    if leaked_comparison_fields:
         raise ValueError(
-            "SK hynix intrinsic snapshot must not contain post-freeze comparison inputs"
+            "SK hynix intrinsic snapshot must not contain post-freeze comparison inputs: "
+            + ", ".join(leaked_comparison_fields)
         )
     risk = payload.get("risk")
     if not isinstance(risk, dict):
