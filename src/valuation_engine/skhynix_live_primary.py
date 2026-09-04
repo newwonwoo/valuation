@@ -229,6 +229,15 @@ def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
     payload = yaml.safe_load(raw)
     if not isinstance(payload, dict):
         raise ValueError("SK hynix snapshot must be a mapping")
+    sources = payload.get("sources")
+    comparison_fields = {"market", "street"}
+    if (
+        comparison_fields.intersection(payload)
+        or isinstance(sources, dict) and comparison_fields.intersection(sources)
+    ):
+        raise ValueError(
+            "SK hynix intrinsic snapshot must not contain post-freeze comparison inputs"
+        )
     risk = payload.get("risk")
     if not isinstance(risk, dict):
         raise ValueError("SK hynix snapshot risk block must be a mapping")

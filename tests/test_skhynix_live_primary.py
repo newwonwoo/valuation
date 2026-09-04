@@ -103,6 +103,35 @@ def test_skhynix_post_freeze_sources_are_not_loaded_during_config_build(
         config.providers.street_loader()
 
 
+@pytest.mark.parametrize(
+    ("location", "field"),
+    (
+        ("top_level", "market"),
+        ("top_level", "street"),
+        ("sources", "market"),
+        ("sources", "street"),
+    ),
+)
+def test_skhynix_intrinsic_snapshot_rejects_post_freeze_comparison_fields(
+    tmp_path: Path,
+    location: str,
+    field: str,
+):
+    payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    if location == "top_level":
+        payload[field] = {"value": "legacy comparison input"}
+    else:
+        payload["sources"][field] = "https://example.invalid/comparison"
+    legacy_snapshot = tmp_path / f"legacy-{location}-{field}.yaml"
+    legacy_snapshot.write_text(
+        yaml.safe_dump(payload, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="post-freeze comparison inputs"):
+        load_skhynix_snapshot(legacy_snapshot)
+
+
 def test_skhynix_continuous_probability_snapshot_replaces_legacy_boolean_mapping(tmp_path: Path):
     config = build_skhynix_live_primary_config(tmp_path)
     snapshot = config.providers.calibration_loader(None)
