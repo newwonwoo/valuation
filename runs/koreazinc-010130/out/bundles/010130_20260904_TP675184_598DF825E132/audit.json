@@ -1,0 +1,160 @@
+{
+  "findings": [
+    {
+      "blocking": true,
+      "check": "run_identity_binding",
+      "detail": "audit hash must be bound to a non-empty run_id",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "pre_freeze_market_isolation",
+      "detail": "no target Street/current-price key may exist before freeze",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "ledger_snapshot_integrity",
+      "detail": "EvidenceLedger replay matches the hash frozen at EVIDENCE_LEDGER",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "compiled_traceability",
+      "detail": "every compiled assumption must preserve Evidence→Hypothesis→Bridge→Transform→EconomicPath trace",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "evidence_assumption_hash_binding",
+      "detail": "compiled Evidence input hashes replay against the frozen EvidenceLedger",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "assumption_hash_integrity",
+      "detail": "CompiledAssumptionSet hash replays from immutable assumption contents",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "target_identity_consistency",
+      "detail": "compiled/scenario target IDs must match",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "scenario_valuation_coverage",
+      "detail": "valuation must cover each bound scenario exactly once",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "scenario_hash_integrity",
+      "detail": "BoundScenarioSet hash replays from the compiled assumption parent and scenario contents",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "probability_integrity",
+      "detail": "uncalibrated/descriptive scenarios must not emit numeric expected value",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "valuation_path_trace",
+      "detail": "each scenario value must preserve unique economic paths including ownership/debt/dilution",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "valuation_hash_integrity",
+      "detail": "GenericValuationResult hash replays from the bound scenario parent and valuation contents",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "risk_to_valuation_consumption",
+      "detail": "selected valuation methods do not require a discount-rate risk chain",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "immutable_hash_chain",
+      "detail": "EvidenceLedger→Assumption→Scenario→Valuation hashes replay as one immutable chain",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "doctrine_coverage",
+      "detail": "pre-audit doctrine coverage complete",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "decision_impact_trace",
+      "detail": "decision-impact measurement completed; explicit NOT_MEASURABLE: INDUSTRY_DNA_ROUTER, KNOWLEDGE_PLACEMENT_GATE, PRIMARY_EVIDENCE_COLLECTION, INDUSTRY_KNOWLEDGE, BROKER_RESEARCH, SIGNAL_INTELLIGENCE, EVIDENCE_LEDGER, ROCKET_INSIGHT_SCAN, LLM_STAFF, BLIND_RED_TEAM_B, EVIDENCE_TO_ASSUMPTION_BRIDGE, ASSUMPTION_COMPILER, SCENARIO_ENGINE, WARRANTED_PER_ENGINE, SOTP_AGGREGATOR",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "material_capacity_evidence_consumed",
+      "detail": "every Core-required project has capacity/CAPEX/ramp consumption",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "capacity_commitment_hash_binding",
+      "detail": "one capacity assessment hash is shared across all downstream artifacts",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "core_capacity_floor_respected",
+      "detail": "valuation consumed the complete mandatory Core capacity path",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "baseline_capacity_not_double_counted",
+      "detail": "baseline-included projects are not added again",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "dcf_per_capacity_consistency",
+      "detail": "PER is bound to the same capacity valuation identity",
+      "passed": true
+    },
+    {
+      "blocking": true,
+      "check": "capacity_double_count",
+      "detail": "Core capacity Evidence is not reused as Expansion PER evidence",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "evidence_composition_measured",
+      "detail": "가치 투입 근거 17건의 출처 계층을 집계했습니다",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "evidence_composition_primary_backing",
+      "detail": "가치 투입 근거 중 공시·회사 공식계획 직접 인용이 0.0%로 기준(20%)에 미달합니다",
+      "passed": false
+    },
+    {
+      "blocking": false,
+      "check": "evidence_composition_underwriting_concentration",
+      "detail": "가치 투입 근거의 100.0%가 분석가 추정입니다. 이 결과는 공시 사실의 정리가 아니라 추정 위에 세워진 모델입니다",
+      "passed": false
+    },
+    {
+      "blocking": false,
+      "check": "valuation_sensitivity_measured",
+      "detail": "단일 DCF 기여분으로 재구성 가능한 시나리오가 없어 민감도를 산출하지 못했습니다",
+      "passed": false
+    }
+  ]
+}

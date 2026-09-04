@@ -1,0 +1,110 @@
+{
+  "artifact_id": "010130-20260904-TP675184-BB6593B0C094",
+  "as_of": "2026-09-04",
+  "audit_hash": "1eec22287f8e3ad59d861749fed35ded61ac07004bf0b5f5facdd8b4da4a10dc",
+  "files": [
+    {
+      "filename": "010130_20260904_TP675184_BB6593B0C094.md",
+      "sha256": "02c38da858291eacdca46f0881ac4558e07a47c587536bf2d3fa448ae1f8b8b3"
+    },
+    {
+      "filename": "PRISM_010130_01_summary.svg",
+      "sha256": "5adeb3a33046ee87fdded9e5c147de17340663bd407e759d19706f8377900fba"
+    },
+    {
+      "filename": "PRISM_010130_02_assumptions.svg",
+      "sha256": "d44fbee2d8526576cd9cd9e5aeba29676f676c33c2c0c80f96643b2c1091ce20"
+    },
+    {
+      "filename": "audit.json",
+      "sha256": "019d650c952fbcc0281268b60573133aa9d93c14ce5222205d5d0e48214038ec"
+    },
+    {
+      "filename": "calibration_certificate.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "compiled_assumptions.json",
+      "sha256": "9b2826282250f7d823e751c2f7ec89334b0858d42ce7c1dafa7421ef40cd0a0e"
+    },
+    {
+      "filename": "context_strength_linkages.json",
+      "sha256": "7632a8fd48b367273358b8c73d4ee88cd6233f5577582af116b227a17d9e401d"
+    },
+    {
+      "filename": "control_plane_trace.json",
+      "sha256": "6f7609a4e0244e6a5971b9bb62328f692bde9b24ac2918292eee8e367a70d1b4"
+    },
+    {
+      "filename": "doctrine_coverage.json",
+      "sha256": "655245540cc3a2d0c7480b37f40d638b0cc85ea08e2672a332d582b2a1cd3404"
+    },
+    {
+      "filename": "evidence_composition.json",
+      "sha256": "d6fa8b661b86d73e21d5ddc9efd8e8ce851f00381097e40ad33eadea9f911320"
+    },
+    {
+      "filename": "execution_attestation.json",
+      "sha256": "fb2e2de3dfa9f4665fd06cca8fda73f069cfbd3e4e9e1ae1869d875866c3ea0a"
+    },
+    {
+      "filename": "final_report.md",
+      "sha256": "ea56933cad5ad97b941d39afb1291d9d6b04bc2d30c32ba682a60e375bdcd4fd"
+    },
+    {
+      "filename": "freeze_token.json",
+      "sha256": "563e44d14c7e138b339e5e0a7642e7144592a8562c0219f1290a541c56adf21a"
+    },
+    {
+      "filename": "manifest.json",
+      "sha256": "f5ac05345a91cd3596ce3ab1f87086833f5181bba88af407a420a0955cc5d37c"
+    },
+    {
+      "filename": "market_compare.json",
+      "sha256": "871bf2eea330f2d38344ceff7d1d8c655e1faa4171342af2954a291d083aee52"
+    },
+    {
+      "filename": "module_impact.json",
+      "sha256": "a5fdb2252af25a488a59d9b62bdeeec83e3436c2bfe322dcb0bf552fc3ae6dd6"
+    },
+    {
+      "filename": "probability_forecast_drafts.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "filename": "reverse_dcf.json",
+      "sha256": "ebb8309cb7d43345d1b9be4bb6d8aec89af090fa0ea3ac3fab594c17fd0a663b"
+    },
+    {
+      "filename": "scenario_probability_assessment.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "scenario_set.json",
+      "sha256": "9920a386c72a8f57cb6e19192280a929a6c97e9e98bb02f79b50b7ee785e84f0"
+    },
+    {
+      "filename": "street_compare.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "thesis_delta.json",
+      "sha256": "4ed75e152723761459848c2ca8adef962a5136078175643e0f7df6c0f7cb4b14"
+    },
+    {
+      "filename": "valuation.json",
+      "sha256": "d30e07cb26bf4cedb701d1dee9bc497ee5e848a3e99c1ff099fabcdd684f8b4d"
+    },
+    {
+      "filename": "valuation_sensitivity.json",
+      "sha256": "83ac46224da2a1afe853a38edfc79418d1f22863a3b5f69cbd64e64b9c0f10c0"
+    }
+  ],
+  "reference_value_per_share": "675183.6813743893071976035971",
+  "report_filename": "010130_20260904_TP675184_BB6593B0C094.md",
+  "run_id": "LIVE-KOREAZINC-2",
+  "run_input_sha256": "544715a4494cc8ff73a5e6c664adb49bfe42ff578094eda0ccc2fadbd0e22bf9",
+  "schema_version": "kr-live-report-bundle/v1",
+  "ticker": "010130",
+  "valuation_hash": "d12c5766ed56af72fd29d23f97d8e8d2011e7751d145220c33d30372b070cffe"
+}

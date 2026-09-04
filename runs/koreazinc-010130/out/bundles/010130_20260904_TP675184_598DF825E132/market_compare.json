@@ -1,0 +1,37 @@
+{
+  "envelope": {
+    "comparison_hash": "9a700cc67315735789bcf2c8ad3b0ecb54d7ccba09ca08bc1d0729b7c3a1f01c",
+    "currency": "KRW",
+    "expected_gap": null,
+    "reference_as_of": "2026-09-04",
+    "reference_name": "Current market price",
+    "scenario_gaps": [
+      {
+        "gap_pct_of_reference": "-0.7549265315634310860406331680",
+        "gap_per_share": "-923275.1481020762182276943645",
+        "intrinsic_value_per_share": "299724.8518979237817723056355",
+        "reference_value_per_share": "1223000.0",
+        "scenario_id": "Down"
+      },
+      {
+        "gap_pct_of_reference": "-0.4479283063169343358972987759",
+        "gap_per_share": "-547816.3186256106928023964029",
+        "intrinsic_value_per_share": "675183.6813743893071976035971",
+        "reference_value_per_share": "1223000.0",
+        "scenario_id": "Base"
+      },
+      {
+        "gap_pct_of_reference": "-0.09467004309090290587875866312",
+        "gap_per_share": "-115781.462700174253889721845",
+        "intrinsic_value_per_share": "1107218.537299825746110278155",
+        "reference_value_per_share": "1223000.0",
+        "scenario_id": "Bull"
+      }
+    ]
+  },
+  "observation": {
+    "as_of": "2026-09-04",
+    "price": 1223000.0,
+    "source_ref": "https://kr.investing.com/equities/korea-zinc-inc-historical-data"
+  }
+}

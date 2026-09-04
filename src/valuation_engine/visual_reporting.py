@@ -126,7 +126,7 @@ def _source_footer(data: dict[str, Any], *, y: int) -> str:
     lines = [
         _svg_text("출처", x=70, y=y, size=22, weight=700, fill="#D9E7EC"),
         _svg_text(
-            "모든 수치의 원문 주소는 보고서 본문 ‘정보 출처’에서 직접 검증할 수 있습니다.",
+            "공시 사실과 분석가 가정의 근거 주소는 보고서 본문 ‘정보 출처’에서 확인할 수 있습니다.",
             x=140,
             y=y,
             size=20,
@@ -370,6 +370,80 @@ def _scenario_total_fcff(scenario: Any, year: int) -> str:
     )
 
 
+def _multiple_assumption_table(
+    scenarios: tuple[Any, ...],
+) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...]] | None:
+    if not scenarios:
+        return None
+    first_keys = tuple(item.key for item in scenarios[0].assumptions)
+    ebitda_keys = tuple(
+        key for key in first_keys if key.endswith("normalized_ebitda")
+    )
+    multiple_keys = tuple(
+        key
+        for key in first_keys
+        if key.endswith(("normalized_multiple", "normalized_ebitda_multiple"))
+    )
+    if not ebitda_keys or not multiple_keys:
+        return None
+
+    def segment_label(key: str) -> str:
+        segment = key.removesuffix("_normalized_ebitda")
+        return {
+            "manufacturing": "제조",
+            "trading": "수출입",
+            "recycling": "기타",
+        }.get(segment, segment or "핵심")
+
+    primary_ebitda = ebitda_keys[0]
+    primary_multiple = next(
+        (
+            key
+            for key in multiple_keys
+            if key.startswith(primary_ebitda.removesuffix("normalized_ebitda"))
+        ),
+        multiple_keys[0],
+    )
+    secondary_ebitda = ebitda_keys[1:3]
+    headers = (
+        "구분",
+        f"{segment_label(primary_ebitda)} EBITDA",
+        f"{segment_label(primary_ebitda)} 배수",
+        *(
+            f"{segment_label(key)} EBITDA" for key in secondary_ebitda
+        ),
+        "EV→지분 조정",
+    )
+
+    rows = []
+    for scenario in scenarios[:3]:
+        adjustments = tuple(
+            item.measure
+            for item in scenario.assumptions
+            if item.key.endswith("ev_adjustment")
+        )
+        adjustment_text = "—"
+        if adjustments:
+            unit = adjustments[0].unit
+            total = sum(
+                (item.convert_to(unit).amount for item in adjustments), Decimal(0)
+            )
+            adjustment_text = _measure_value_text(total, unit)
+        rows.append(
+            (
+                f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
+                _scenario_assumption(scenario, primary_ebitda),
+                _scenario_assumption(scenario, primary_multiple),
+                *(
+                    _scenario_assumption(scenario, key)
+                    for key in secondary_ebitda
+                ),
+                adjustment_text,
+            )
+        )
+    return headers, tuple(rows)
+
+
 def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     company = str(data.get("company") or data.get("target_id") or "분석 대상")
     scenario_set = data.get("bound_scenario_set")
@@ -379,6 +453,46 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     beta = getattr(beta_result, "target_levered_beta", None)
     wacc = getattr(getattr(wacc_result, "wacc_result", None), "wacc", None)
     calibration = getattr(getattr(scenario_set, "calibration_status", None), "value", "UNCALIBRATED")
+    multiple_table = _multiple_assumption_table(scenarios)
+    core = next(
+        (item for item in scenarios if item.scenario_id in {"Core", "Base"}),
+        scenarios[0] if scenarios else None,
+    )
+
+    common_ownership: Decimal | None = None
+    core_adjustment = "—"
+    core_shares = "—"
+    formula = ""
+    if multiple_table is not None and core is not None:
+        ownership_values = tuple(
+            item.measure.convert_to("ratio").amount
+            for item in core.assumptions
+            if item.key.endswith("ownership")
+        )
+        if ownership_values and len(set(ownership_values)) == 1:
+            common_ownership = ownership_values[0]
+        adjustments = tuple(
+            item.measure
+            for item in core.assumptions
+            if item.key.endswith("ev_adjustment")
+        )
+        if adjustments:
+            unit = adjustments[0].unit
+            total = sum(
+                (item.convert_to(unit).amount for item in adjustments), Decimal(0)
+            )
+            core_adjustment = _measure_value_text(total, unit)
+        try:
+            shares = core.get("diluted_shares").measure.convert_to("shares").amount
+        except KeyError:
+            shares = None
+        if shares is not None:
+            core_shares = f"{shares / Decimal('1000000'):,.3f}백만주"
+        if common_ownership is not None and shares is not None:
+            formula = (
+                "[(부문 EBITDA×배수 합)+EV→지분 조정]"
+                f"×{common_ownership * 100:.4f}%÷{shares:,.0f}주"
+            )
 
     parts = [
         _rect(0, 0, _CARD_WIDTH, _CARD_HEIGHT, fill="#F3F0E8", radius=0),
@@ -389,9 +503,22 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
         _svg_text("핵심 위험 입력", x=70, y=315, size=30, weight=800, fill="#102D3E"),
     ]
     metric_rows = (
-        ("계층형 베타", f"{beta:.3f}" if beta is not None else "비적용"),
-        ("가중평균자본비용", f"{wacc:.2%}" if wacc is not None else "비적용"),
-        ("확률 보정", "완료" if calibration == "CALIBRATED" else "미완료"),
+        (
+            (
+                "지배주주 귀속률",
+                f"{common_ownership * 100:.4f}%"
+                if common_ownership is not None
+                else "개별 적용",
+            ),
+            ("EV→지분 조정", core_adjustment),
+            ("주당 분모", core_shares),
+        )
+        if multiple_table is not None
+        else (
+            ("계층형 베타", f"{beta:.3f}" if beta is not None else "비적용"),
+            ("가중평균자본비용", f"{wacc:.2%}" if wacc is not None else "비적용"),
+            ("확률 보정", "완료" if calibration == "CALIBRATED" else "미완료"),
+        )
     )
     for index, (label, value) in enumerate(metric_rows):
         x = 70 + index * 355
@@ -406,27 +533,37 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     parts.append(_svg_text("시나리오별 핵심 가정", x=70, y=560, size=30, weight=800, fill="#102D3E"))
     table_y = 600
     parts.append(_rect(70, table_y, 1060, 390, fill="#FFFFFF", radius=22))
-    headers = ("구분", "1년 DCF FCFF", "5년 DCF FCFF", "영구성장률", "영구 ROIC", "UHV 5년 증분")
+    headers = (
+        multiple_table[0]
+        if multiple_table is not None
+        else ("구분", "1년 DCF FCFF", "5년 DCF FCFF", "영구성장률", "영구 ROIC", "UHV 5년 증분")
+    )
     x_positions = (100, 270, 470, 675, 855, 1015)
     for x, header in zip(x_positions, headers):
         parts.append(_svg_text(header, x=x, y=table_y + 48, size=19, weight=800, fill="#607582"))
     parts.append(f'<line x1="95" y1="{table_y + 68}" x2="1105" y2="{table_y + 68}" stroke="#D6DFE3" stroke-width="2"/>')
-    for index, scenario in enumerate(scenarios[:3]):
-        row_y = table_y + 125 + index * 85
-        values = (
-            f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
-            _scenario_total_fcff(scenario, 1),
-            _scenario_total_fcff(scenario, 5),
-            _scenario_assumption(scenario, "terminal_growth"),
-            _scenario_assumption(scenario, "terminal_roic"),
-            _scenario_assumption(scenario, "uhv_fcff_year_5"),
+    table_rows = (
+        multiple_table[1]
+        if multiple_table is not None
+        else tuple(
+            (
+                f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
+                _scenario_total_fcff(scenario, 1),
+                _scenario_total_fcff(scenario, 5),
+                _scenario_assumption(scenario, "terminal_growth"),
+                _scenario_assumption(scenario, "terminal_roic"),
+                _scenario_assumption(scenario, "uhv_fcff_year_5"),
+            )
+            for scenario in scenarios[:3]
         )
+    )
+    for index, values in enumerate(table_rows):
+        row_y = table_y + 125 + index * 85
         for x, value in zip(x_positions, values):
             parts.append(_svg_text(value, x=x, y=row_y, size=21, weight=700 if x == 100 else 500, fill="#142A3A"))
-        if index < min(len(scenarios), 3) - 1:
+        if index < len(table_rows) - 1:
             parts.append(f'<line x1="95" y1="{row_y + 28}" x2="1105" y2="{row_y + 28}" stroke="#E9EEF0" stroke-width="2"/>')
 
-    core = next((item for item in scenarios if item.scenario_id in {"Core", "Base"}), None)
     capex = "—"
     if core is not None:
         expansion = _scenario_assumption(core, "expansion_capex")
@@ -438,10 +575,19 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     projects = tuple(getattr(capacity, "core_inclusion_required_projects", ()))
     project_text = ", ".join(projects) if projects else "별도 핵심 생산능력 프로젝트 없음"
     detail_rows = (
-        ("평가방법", method_text),
-        ("핵심 자본적지출", capex),
-        ("생산능력 반영", project_text),
-        ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
+        (
+            ("평가방법", method_text),
+            ("정확한 계산식", formula or "부문별 가치·귀속률·주식수로 결정론적 재계산"),
+            ("확률 보정", "완료" if calibration == "CALIBRATED" else "미완료"),
+            ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
+        )
+        if multiple_table is not None
+        else (
+            ("평가방법", method_text),
+            ("핵심 자본적지출", capex),
+            ("생산능력 반영", project_text),
+            ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
+        )
     )
     y = 1050
     for label, detail in detail_rows:

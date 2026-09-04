@@ -1,0 +1,589 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>1. 연결회사의 개요 (연결)</A></P>
+<TABLE class='nb' width='639'>
+<COLGROUP>
+<COL width='639'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='494'>
+  <TD width='630' height='487'>
+<P><BR/>(1) 지배기업의 개요</P>
+<P>지배기업인 고려아연주식회사(이하 &quot;지배기업&quot;)는 1974년 8월 1일 설립되어 아연괴 제조 및 판매를 주요 사업으로 영위하고 있으며, 울산광역시 울주군 온산읍에 제조시설을 가지고 있습니다. 지배기업은 1990년 7월 28일 주식을 한국거래소(구: 한국증권선물거래소)가 개설하는 유가증권시장에 상장하였으며, 수차의 증자를 거쳐 당반기말 현재 자본금은 115,591,520천원입니다.</P>
+<P><BR/></P>
+<P>2026년 6월 30일로 종료하는 보고기간에 대한 연결재무제표는 지배기업과 지배기업의 종속기업(이하 통칭하여 &quot;연결실체&quot;), 연결실체의 관계기업 및 공동기업에 대한 지분으로 구성되어 있습니다.</P>
+<P><BR/></P>
+<P>당반기말 현재 지배기업의 주요 주주는 다음과 같습니다.</P>
+<TABLE border='1' width='630'>
+<COLGROUP>
+<COL width='315'></COL>
+<COL width='315'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='306' height='23'>주주명</TH>
+  <TH width='306' height='23'>지분율(%)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='306' height='23'>(유)와이피씨</TD>
+  <TD width='306' height='23' align='CENTER'>25.21</TD>
+</TR>
+<TR height='30'>
+  <TD width='306' height='23'>고려아연 및 ㈜영풍의 특수관계자</TD>
+  <TD width='306' height='23' align='CENTER'>33.45</TD>
+</TR>
+<TR height='30'>
+  <TD width='306' height='23'>기타의 주주</TD>
+  <TD width='306' height='23' align='CENTER'>39.04</TD>
+</TR>
+<TR height='30'>
+  <TD width='306' height='23'>자기주식</TD>
+  <TD width='306' height='23' align='CENTER'>2.30</TD>
+</TR>
+<TR height='30'>
+  <TD width='306' height='23' align='CENTER'>합계</TD>
+  <TD width='306' height='23' align='CENTER'>100.00</TD>
+</TR>
+</TBODY>
+</TABLE><BR/>
+</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1125'>
+<COLGROUP>
+<COL width='1125'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='2136'>
+  <TD width='1116' height='2129'>
+<P><BR/></P>
+<P>(2) 종속기업의 현황</P>
+<P>당반기말 현재 연결대상 종속기업 및 지분율은 당반기 중 연결대상범위의 변동에 해당되는 종속기업을 제외하고 전기말 공시된 내용과 중요한 차이가 없습니다.<BR/><BR/>(3) 연결대상범위의 변동</P>
+<TABLE border='1' width='1007'>
+<COLGROUP>
+<COL width='349'></COL>
+<COL width='93'></COL>
+<COL width='63'></COL>
+<COL width='63'></COL>
+<COL width='283'></COL>
+<COL width='78'></COL>
+<COL width='78'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='340' height='23'>종속기업명</TH>
+  <TH width='84' height='23'>소유지분율</TH>
+  <TH width='54' height='23'>소재지</TH>
+  <TH width='54' height='23'>결산월</TH>
+  <TH width='274' height='23'>업종</TH>
+  <TH width='69' height='23'>변동내역</TH>
+  <TH width='69' height='23'>사유</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='340' height='23'>PedalPoint TSG, LLC&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>100%</TD>
+  <TD width='54' height='23' align='CENTER'>미국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='274' height='23'>전자폐기물 수거, 해체, 파쇄 및 처리업</TD>
+  <TD width='69' height='23' align='CENTER'>연결포함</TD>
+  <TD width='69' height='23' align='CENTER'>신규설립</TD>
+</TR>
+<TR height='30'>
+  <TD width='340' height='23'>RVER Holdings Pty Ltd</TD>
+  <TD width='84' height='23' align='CENTER'>100%</TD>
+  <TD width='54' height='23' align='CENTER'>호주</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='274' height='23'>지주회사</TD>
+  <TD width='69' height='23' align='CENTER'>연결포함</TD>
+  <TD width='69' height='23' align='CENTER'>신규설립</TD>
+</TR>
+<TR height='30'>
+  <TD width='340' height='23'>Richmond Valley Energy Reserve Holdings Pty Ltd</TD>
+  <TD width='84' height='23' align='CENTER'>100%</TD>
+  <TD width='54' height='23' align='CENTER'>호주</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='274' height='23'>신재생에너지개발</TD>
+  <TD width='69' height='23' align='CENTER'>연결포함</TD>
+  <TD width='69' height='23' align='CENTER'>신규설립</TD>
+</TR>
+<TR height='30'>
+  <TD width='340' height='23'>RVER Pty Ltd</TD>
+  <TD width='84' height='23' align='CENTER'>100%</TD>
+  <TD width='54' height='23' align='CENTER'>호주</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='274' height='23'>신재생에너지개발</TD>
+  <TD width='69' height='23' align='CENTER'>연결포함</TD>
+  <TD width='69' height='23' align='CENTER'>신규설립</TD>
+</TR>
+<TR height='30'>
+  <TD width='340' height='23'>RVER Holdings Unit Trust</TD>
+  <TD width='84' height='23' align='CENTER'>100%</TD>
+  <TD width='54' height='23' align='CENTER'>호주</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='274' height='23'>신재생에너지개발</TD>
+  <TD width='69' height='23' align='CENTER'>연결포함</TD>
+  <TD width='69' height='23' align='CENTER'>신규설립</TD>
+</TR>
+<TR height='30'>
+  <TD width='340' height='23'>RVER Unit Trust</TD>
+  <TD width='84' height='23' align='CENTER'>100%</TD>
+  <TD width='54' height='23' align='CENTER'>호주</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='274' height='23'>신재생에너지개발</TD>
+  <TD width='69' height='23' align='CENTER'>연결포함</TD>
+  <TD width='69' height='23' align='CENTER'>신규설립</TD>
+</TR>
+<TR height='30'>
+  <TD width='340' height='23'>Crucible Zinc</TD>
+  <TD width='84' height='23' align='CENTER'>100%</TD>
+  <TD width='54' height='23' align='CENTER'>미국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='274' height='23'>제련업</TD>
+  <TD width='69' height='23' align='CENTER'>연결포함</TD>
+  <TD width='69' height='23' align='CENTER'>신규취득</TD>
+</TR>
+<TR height='30'>
+  <TD width='340' height='23'>Crucible ETN</TD>
+  <TD width='84' height='23' align='CENTER'>100%</TD>
+  <TD width='54' height='23' align='CENTER'>미국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='274' height='23'>제련업</TD>
+  <TD width='69' height='23' align='CENTER'>연결포함</TD>
+  <TD width='69' height='23' align='CENTER'>신규취득</TD>
+</TR>
+<TR height='30'>
+  <TD width='340' height='23'>Crucible MTN</TD>
+  <TD width='84' height='23' align='CENTER'>100%</TD>
+  <TD width='54' height='23' align='CENTER'>미국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='274' height='23'>제련업</TD>
+  <TD width='69' height='23' align='CENTER'>연결포함</TD>
+  <TD width='69' height='23' align='CENTER'>신규취득</TD>
+</TR>
+<TR height='30'>
+  <TD width='340' height='23'>Crucible US Trading</TD>
+  <TD width='84' height='23' align='CENTER'>100%</TD>
+  <TD width='54' height='23' align='CENTER'>미국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='274' height='23'>제련업</TD>
+  <TD width='69' height='23' align='CENTER'>연결포함</TD>
+  <TD width='69' height='23' align='CENTER'>신규취득</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P>(4) 주요 종속기업 관련 재무정보 요약<BR/><BR/></P>
+<P>① 당반기말 및 당반기</P>
+<TABLE border='1' width='1115'>
+<COLGROUP>
+<COL width='397'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='119'></COL>
+<COL width='119'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='1106' height='23' colspan='7' align='RIGHT'>(단위: 천원)</TH>
+</TR>
+<TR height='30'>
+  <TH width='388' height='23'>회사명</TH>
+  <TH width='111' height='23'>자산</TH>
+  <TH width='111' height='23'>부채</TH>
+  <TH width='111' height='23'>자본</TH>
+  <TH width='111' height='23'>매출</TH>
+  <TH width='110' height='23'>당반기순손익</TH>
+  <TH width='110' height='23'>총포괄손익</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='388' height='23'>케이지트레이딩㈜(*)</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>537,557,003</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>238,442,807</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>299,114,196</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>793,220,742</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>18,431,739</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>26,105,827</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>㈜케이지엑스</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>45,038,951</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>13,583,606</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>31,455,345</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>64,565,410</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>2,672,935</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>2,672,935</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>케이지그린텍㈜</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>4,169,932</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>1,800,982</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>2,368,950</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>7,107,204</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>244,878</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>244,878</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>스틸싸이클㈜(*)</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>291,703,654</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>34,122,044</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>257,581,610</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>163,026,617</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>12,532,237</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>12,532,237</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Sun Metals Holdings Ltd.(*)</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>3,572,578,798</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>1,512,287,446</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>2,060,291,352</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>870,167,603</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>27,863,938</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>160,930,793</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Pan-Pacific Metal Mining Corporation</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>6,392,820</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>4,834,324</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>1,558,496</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>-</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(821,814)</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(499,270)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>KZ Minerals Holdings PTE Ltd.(*)</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>177,292,164</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>17,106,625</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>160,185,539</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>-</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(3,122,612)</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>7,807,314</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Townsville Logistics Pty., Ltd.</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>45,032,300</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>41,736,371</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>3,295,929</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>16,054,766</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>1,915,696</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>2,080,450</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Townsville Marine Logistics Pty., Ltd.</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>29,986,744</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>4,725,813</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>25,260,931</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>25,038,334</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>861,489</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>3,192,320</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Zinc Oxide Corporation Vietnam Limited Liability Company</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>151,830,251</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>1,679,018</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>150,151,233</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>23,347,537</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>2,692,644</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>12,851,326</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Zinc Oxide Corporation (Thailand) Ltd.</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>769,020</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>3,026</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>765,994</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>-</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(647)</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>11,263</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>코리아 그로쓰 제1호 사모투자합자회사(*)</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>111,467,433</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>8,297,812</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>103,169,621</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>3,239,025</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(8,091,461)</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(8,091,461)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>케이잼㈜</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>330,246,040</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>181,947,756</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>148,298,284</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>271,561</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(6,713,390)</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(6,713,390)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Pedalpoint Holdings, LLC.(*)</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>1,735,889,123</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>1,075,977,439</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>659,911,684</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>2,685,641,210</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>1,196,138</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>50,905,896</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>그레이 제1호 사모투자합자회사(*)</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>24,411,363</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>-</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>24,411,363</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>-</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(1,041,639)</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(1,041,639)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>켐코㈜</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>611,784,400</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>452,287,180</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>159,497,220</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>119,143,697</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(11,122,222)</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(11,122,222)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>㈜로보원</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>3,091,489</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>7,289,088</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>(4,197,599)</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>1,340,002</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(1,065,213)</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(1,065,213)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Crucible Metals Holdings, LLC(*)</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>4,038,947,349</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>625,837,807</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>3,413,109,542</TD>
+  <TD width='111' height='23' align='RIGHT' style='color:#2D2D2D;'>176,960,589</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>(110,111,213)</TD>
+  <TD width='110' height='23' align='RIGHT' style='color:#2D2D2D;'>89,339,354</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1103'>
+<COLGROUP>
+<COL width='1103'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='168'>
+  <TD width='1094' height='161'>(*) 케이지트레이딩㈜, 스틸싸이클㈜, Sun Metals Holdings Ltd., KZ Minerals Holdings PTE Ltd., 코리아 그로쓰 제1호 사모투자합자회사, Pedalpoint Holdings, LLC. , 그레이 제1호 사모투자합자회사 및 Crucible Metals Holdings, LLC의 재무정보는 연결재무제표상의 요약재무정보입니다. 케이지트레이딩㈜는 에스아이앤엘㈜, KZ Trading Singapore Pte. Ltd. 및 그 종속기업의 재무정보를 포함하고 있으며, 스틸싸이클㈜는 스틸싸이클에스씨㈜의 재무정보를 포함하고 있고, Sun Metals HoldingsLtd.는 Sun Metals Corporation Pty., Ltd., Ark Energy Corporation Pty Ltd. 및 그 종속기업의 재무정보를 포함하고 있습니다. KZ Minerals Holdings PTE Ltd.는 ICM Pachapaqui S.A.C. 및 그 종속기업의 재무정보를 포함하고 있고, Pedalpoint Holdings, LLC.는 Pedalpoint Igneo Holdings, LLC. 및 그 종속기업의 재무정보를 포함하고 있습니다. Crucible Metals Holdings, LLC는 Crucible Metals, LLC 및 그 종속기업의 재무정보를 포함하고 있습니다. 또한, 코리아 그로쓰 제1호 사모투자합자회사는 ㈜씬앤스튜디오(구. 아크미디어㈜)의 재무정보를, 그레이 제1호 사모투자합자회사는 가젤 제1호 유한회사의 재무정보를 각각 포함하고 있습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P>② 전기말 및 전반기</P>
+<TABLE border='1' width='1115'>
+<COLGROUP>
+<COL width='397'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='119'></COL>
+<COL width='119'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='1106' height='23' colspan='7' align='RIGHT'>(단위: 천원)</TH>
+</TR>
+<TR height='30'>
+  <TH width='388' height='23'>회사명</TH>
+  <TH width='111' height='23'>자산</TH>
+  <TH width='111' height='23'>부채</TH>
+  <TH width='111' height='23'>자본</TH>
+  <TH width='111' height='23'>매출</TH>
+  <TH width='110' height='23'>당기순손익</TH>
+  <TH width='110' height='23'>총포괄손익</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='388' height='23'>케이지트레이딩㈜(*)</TD>
+  <TD width='111' height='23' align='RIGHT'>438,668,429</TD>
+  <TD width='111' height='23' align='RIGHT'>162,258,441</TD>
+  <TD width='111' height='23' align='RIGHT'>276,409,988</TD>
+  <TD width='111' height='23' align='RIGHT'>642,962,855</TD>
+  <TD width='110' height='23' align='RIGHT'>1,708,698</TD>
+  <TD width='110' height='23' align='RIGHT'>(8,314,588)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>㈜케이지엑스</TD>
+  <TD width='111' height='23' align='RIGHT'>40,740,697</TD>
+  <TD width='111' height='23' align='RIGHT'>11,958,286</TD>
+  <TD width='111' height='23' align='RIGHT'>28,782,411</TD>
+  <TD width='111' height='23' align='RIGHT'>48,214,694</TD>
+  <TD width='110' height='23' align='RIGHT'>2,213,616</TD>
+  <TD width='110' height='23' align='RIGHT'>2,213,616</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>케이지그린텍㈜</TD>
+  <TD width='111' height='23' align='RIGHT'>3,984,249</TD>
+  <TD width='111' height='23' align='RIGHT'>1,860,177</TD>
+  <TD width='111' height='23' align='RIGHT'>2,124,072</TD>
+  <TD width='111' height='23' align='RIGHT'>6,743,215</TD>
+  <TD width='110' height='23' align='RIGHT'>231,712</TD>
+  <TD width='110' height='23' align='RIGHT'>231,712</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>스틸싸이클㈜(*)</TD>
+  <TD width='111' height='23' align='RIGHT'>289,317,801</TD>
+  <TD width='111' height='23' align='RIGHT'>44,268,426</TD>
+  <TD width='111' height='23' align='RIGHT'>245,049,375</TD>
+  <TD width='111' height='23' align='RIGHT'>118,654,621</TD>
+  <TD width='110' height='23' align='RIGHT'>11,596,052</TD>
+  <TD width='110' height='23' align='RIGHT'>11,596,052</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Sun Metals Holdings Ltd.(*)</TD>
+  <TD width='111' height='23' align='RIGHT'>3,158,198,037</TD>
+  <TD width='111' height='23' align='RIGHT'>1,258,837,478</TD>
+  <TD width='111' height='23' align='RIGHT'>1,899,360,559</TD>
+  <TD width='111' height='23' align='RIGHT'>589,518,257</TD>
+  <TD width='110' height='23' align='RIGHT'>(24,843,773)</TD>
+  <TD width='110' height='23' align='RIGHT'>(104,826,448)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Pan-Pacific Metal Mining Corporation</TD>
+  <TD width='111' height='23' align='RIGHT'>5,922,137</TD>
+  <TD width='111' height='23' align='RIGHT'>3,864,371</TD>
+  <TD width='111' height='23' align='RIGHT'>2,057,766</TD>
+  <TD width='111' height='23' align='RIGHT'>-</TD>
+  <TD width='110' height='23' align='RIGHT'>(2,813,572)</TD>
+  <TD width='110' height='23' align='RIGHT'>(2,933,027)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>KZ Minerals Holdings PTE Ltd.(*)</TD>
+  <TD width='111' height='23' align='RIGHT'>154,202,735</TD>
+  <TD width='111' height='23' align='RIGHT'>15,173,894</TD>
+  <TD width='111' height='23' align='RIGHT'>139,028,841</TD>
+  <TD width='111' height='23' align='RIGHT'>-</TD>
+  <TD width='110' height='23' align='RIGHT'>(2,059,284)</TD>
+  <TD width='110' height='23' align='RIGHT'>9,926,469</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Townsville Logistics Pty., Ltd.</TD>
+  <TD width='111' height='23' align='RIGHT'>35,701,458</TD>
+  <TD width='111' height='23' align='RIGHT'>34,485,978</TD>
+  <TD width='111' height='23' align='RIGHT'>1,215,480</TD>
+  <TD width='111' height='23' align='RIGHT'>13,777,559</TD>
+  <TD width='110' height='23' align='RIGHT'>1,496,655</TD>
+  <TD width='110' height='23' align='RIGHT'>1,537,184</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Townsville Marine Logistics Pty., Ltd.</TD>
+  <TD width='111' height='23' align='RIGHT'>27,265,616</TD>
+  <TD width='111' height='23' align='RIGHT'>5,197,005</TD>
+  <TD width='111' height='23' align='RIGHT'>22,068,611</TD>
+  <TD width='111' height='23' align='RIGHT'>18,439,343</TD>
+  <TD width='110' height='23' align='RIGHT'>351,065</TD>
+  <TD width='110' height='23' align='RIGHT'>(226,974)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Zinc Oxide Corporation Vietnam Limited Liability Company</TD>
+  <TD width='111' height='23' align='RIGHT'>138,951,580</TD>
+  <TD width='111' height='23' align='RIGHT'>1,651,672</TD>
+  <TD width='111' height='23' align='RIGHT'>137,299,908</TD>
+  <TD width='111' height='23' align='RIGHT'>16,796,459</TD>
+  <TD width='110' height='23' align='RIGHT'>(1,774,005)</TD>
+  <TD width='110' height='23' align='RIGHT'>(16,553,476)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Zinc Oxide Corporation (Thailand) Ltd.</TD>
+  <TD width='111' height='23' align='RIGHT'>757,240</TD>
+  <TD width='111' height='23' align='RIGHT'>2,509</TD>
+  <TD width='111' height='23' align='RIGHT'>754,731</TD>
+  <TD width='111' height='23' align='RIGHT'>-</TD>
+  <TD width='110' height='23' align='RIGHT'>(99)</TD>
+  <TD width='110' height='23' align='RIGHT'>(24,056)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>코리아 그로쓰 제1호 사모투자합자회사(*)</TD>
+  <TD width='111' height='23' align='RIGHT'>123,532,256</TD>
+  <TD width='111' height='23' align='RIGHT'>12,763,631</TD>
+  <TD width='111' height='23' align='RIGHT'>110,768,625</TD>
+  <TD width='111' height='23' align='RIGHT'>24,477,145</TD>
+  <TD width='110' height='23' align='RIGHT'>(3,439,177)</TD>
+  <TD width='110' height='23' align='RIGHT'>(3,439,177)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>케이잼㈜</TD>
+  <TD width='111' height='23' align='RIGHT'>328,984,329</TD>
+  <TD width='111' height='23' align='RIGHT'>173,972,655</TD>
+  <TD width='111' height='23' align='RIGHT'>155,011,674</TD>
+  <TD width='111' height='23' align='RIGHT'>-</TD>
+  <TD width='110' height='23' align='RIGHT'>(7,256,441)</TD>
+  <TD width='110' height='23' align='RIGHT'>(7,256,441)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>Pedalpoint Holdings, LLC.(*)</TD>
+  <TD width='111' height='23' align='RIGHT'>1,494,073,103</TD>
+  <TD width='111' height='23' align='RIGHT'>885,067,314</TD>
+  <TD width='111' height='23' align='RIGHT'>609,005,789</TD>
+  <TD width='111' height='23' align='RIGHT'>1,536,757,426</TD>
+  <TD width='110' height='23' align='RIGHT'>(4,584,165)</TD>
+  <TD width='110' height='23' align='RIGHT'>(37,663,976)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>그레이 제1호 사모투자합자회사(*)</TD>
+  <TD width='111' height='23' align='RIGHT'>25,479,546</TD>
+  <TD width='111' height='23' align='RIGHT'>26,544</TD>
+  <TD width='111' height='23' align='RIGHT'>25,453,002</TD>
+  <TD width='111' height='23' align='RIGHT'>-</TD>
+  <TD width='110' height='23' align='RIGHT'>(1,043,342)</TD>
+  <TD width='110' height='23' align='RIGHT'>(1,043,342)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>켐코㈜</TD>
+  <TD width='111' height='23' align='RIGHT'>531,222,606</TD>
+  <TD width='111' height='23' align='RIGHT'>360,603,164</TD>
+  <TD width='111' height='23' align='RIGHT'>170,619,442</TD>
+  <TD width='111' height='23' align='RIGHT'>195,732,948</TD>
+  <TD width='110' height='23' align='RIGHT'>(4,530,633)</TD>
+  <TD width='110' height='23' align='RIGHT'>(4,530,633)</TD>
+</TR>
+<TR height='30'>
+  <TD width='388' height='23'>㈜로보원</TD>
+  <TD width='111' height='23' align='RIGHT'>4,601,007</TD>
+  <TD width='111' height='23' align='RIGHT'>7,733,394</TD>
+  <TD width='111' height='23' align='RIGHT'>(3,132,387)</TD>
+  <TD width='111' height='23' align='RIGHT'>636,353</TD>
+  <TD width='110' height='23' align='RIGHT'>(1,915,281)</TD>
+  <TD width='110' height='23' align='RIGHT'>(1,915,281)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1116'>
+<COLGROUP>
+<COL width='1116'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='168'>
+  <TD width='1107' height='161'>(*) 케이지트레이딩㈜, 스틸싸이클㈜, Sun Metals Holdings Ltd., KZ Minerals Holdings PTE Ltd., 코리아 그로쓰 제1호 사모투자합자회사, Pedalpoint Holdings, LLC 및 그레이 제1호 사모투자합자회사의 재무정보는 연결재무제표상의 요약재무정보입니다. 케이지트레이딩㈜는 Sorin Shanghai Corporation Ltd., 에스아이앤엘㈜, KZ Trading Singapore Pte. Ltd. 및 그 종속기업의 재무정보를 포함하고 있으며, 스틸싸이클㈜는 스틸싸이클에스씨㈜의 재무정보를 포함하고 있고, Sun Metals Holdings Ltd.는 Sun Metals Corporation Pty., Ltd.,Ark Energy Corporation Pty Ltd. 및 그 종속기업의 재무정보를 포함하고 있습니다. KZ Minerals Holdings PTE Ltd.는 ICM Pachapaqui S.A.C. 및 그 종속기업의 재무정보를 포함하고있고, Pedalpoint Holdings, LLC.는 Pedalpoint Igneo Holdings, LLC. 및 그 종속기업의 재무정보를 포함하고 있습니다. 또한, 코리아 그로쓰 제1호 사모투자합자회사는 ㈜씬앤스튜디오(구. 아크미디어㈜)와 ㈜포커스이엔지의 재무정보를, 그레이 제1호 사모투자합자회사는 가젤 제1호 유한회사의 재무정보를 각각 포함하고 있습니다.</TD>
+</TR>
+</TBODY>
+</TABLE><BR/>
+</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

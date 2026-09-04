@@ -96,6 +96,38 @@ def test_the_committed_daehan_run_replays_as_a_three_segment_sotp():
         assert line in report, line
 
 
+def test_the_committed_koreazinc_run_replays_llm_bound_ifrs8_sotp():
+    """The Korea Zinc run proves the irregular-note boundary: an LLM-reviewed
+    extraction is bound to the immutable filing member, while deterministic
+    code verifies the disclosed labels and filed totals before valuation.
+
+    KSIC 24213 is not a registered steel calibration cohort, so the run must
+    preserve the three-scenario envelope without fabricating an expected value.
+    """
+    reached, stop_stage, stop_reason, result = execute_run(
+        ROOT / "runs" / "koreazinc-010130"
+    )
+    assert stop_stage is None, stop_reason
+    assert len(reached) == len(result.stage_traces) == 33
+    assert result.data["probability_weighting_allowed"] is False
+    assert result.data["generic_valuation_result"].expected_value_per_share is None
+
+    report = result.data["final_report"]
+    for line in (
+        "**하방 시나리오:** 내재가치 주당 299,725원",
+        "**기준 시나리오:** 내재가치 주당 675,184원",
+        "**상방 시나리오:** 내재가치 주당 1,107,219원",
+        "**확률가중 기대값:** 미산출",
+        "**현재가:** 1,223,000원 (2026-09-04)",
+        "**기준 가정:** 제조 EBITDA 21,441억원 × 7.5배",
+        "공통 지배주주 귀속률 97.8364%",
+        "산식 [(부문 EBITDA×배수 합)+EV→지분 조정]×97.8364%÷20,393,232주",
+        "**계산 확인:** 차단 점검 21/21개 통과 · 비차단 확인 필요 3건",
+        "REFERENCE_ONLY",
+    ):
+        assert line in report, line
+
+
 def test_a_multi_segment_filing_without_a_declaration_still_fails_closed(tmp_path):
     """Removing segments.yaml must put the refusal back: the screen stops the
     run at the industry snapshot and names the declaration to write."""

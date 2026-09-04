@@ -1,0 +1,24 @@
+company_query: 고려아연
+run_id: LIVE-KOREAZINC-2
+as_of: "2026-09-04"
+jurisdiction: KR
+scenario_ids: [Down, Base, Bull]
+segments:
+  - segment_id: manufacturing
+    method: commodity_price_taker/normalized_multiple
+  - segment_id: trading
+    method: process_spread/normalized_multiple
+  - segment_id: recycling
+    method: process_spread/normalized_multiple
+market_currency: KRW
+filing:
+  business_year: "2026"
+  report_code: "11012"
+  fs_div: CFS
+  fiscal_period_end: "2026-06-30"
+  segment_id: manufacturing
+extra_required_evidence:
+  - down_manufacturing_normalized_ebitda
+  - bull_manufacturing_normalized_ebitda
+  - down_manufacturing_normalized_multiple
+  - bull_manufacturing_normalized_multiple

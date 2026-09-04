@@ -199,11 +199,84 @@ def _amount_unit_text(amount: Decimal, unit: str) -> str:
         return f"{amount:g}년"
     if unit == "shares":
         return f"{amount:,.0f}주"
+    if unit == "multiple":
+        return f"{amount:g}배"
     return f"{amount:g} {unit}".strip()
 
 
 def _scenario_assumptions_line(scenario: object) -> str:
     values: list[str] = []
+    assumptions = tuple(getattr(scenario, "assumptions", ()))
+    by_key = {
+        str(getattr(item, "key", "")): item
+        for item in assumptions
+        if getattr(item, "key", None)
+    }
+    ebitda_keys = tuple(
+        key for key in by_key if key.endswith("normalized_ebitda")
+    )
+    segment_labels = {
+        "manufacturing": "제조",
+        "trading": "수출입",
+        "recycling": "기타",
+    }
+    for ebitda_key in ebitda_keys:
+        prefix = ebitda_key.removesuffix("normalized_ebitda")
+        multiple = by_key.get(f"{prefix}normalized_multiple") or by_key.get(
+            f"{prefix}normalized_ebitda_multiple"
+        )
+        segment_id = prefix.rstrip("_")
+        label = segment_labels.get(segment_id, segment_id or "핵심")
+        detail = f"{label} EBITDA {_measure_text(by_key[ebitda_key])}"
+        if multiple is not None:
+            detail += f" × {_measure_text(multiple)}"
+        values.append(detail)
+    ownerships = tuple(
+        item for key, item in by_key.items() if key.endswith("ownership")
+    )
+    common_ownership: Decimal | None = None
+    if ownerships:
+        ownership_values = tuple(
+            item.measure.convert_to("ratio").amount for item in ownerships
+        )
+        if len(set(ownership_values)) == 1:
+            common_ownership = ownership_values[0]
+            values.append(
+                f"공통 지배주주 귀속률 {common_ownership * 100:.4f}%"
+            )
+        else:
+            values.extend(
+                f"{key.removesuffix('_ownership')} 귀속률 "
+                f"{item.measure.convert_to('ratio').amount * 100:.4f}%"
+                for key, item in by_key.items()
+                if key.endswith("ownership")
+            )
+    adjustments = tuple(
+        item
+        for key, item in by_key.items()
+        if key.endswith("ev_adjustment")
+    )
+    if adjustments:
+        first_measure = adjustments[0].measure
+        total = sum(
+            (
+                item.measure.convert_to(first_measure.unit).amount
+                for item in adjustments
+            ),
+            Decimal(0),
+        )
+        values.append(
+            f"EV→지분 조정 {_amount_unit_text(total, first_measure.unit)}"
+        )
+    shares = by_key.get("diluted_shares")
+    if shares is not None:
+        share_count = Decimal(str(shares.measure.amount))
+        values.append(f"주당 분모 {share_count / Decimal('1000000'):,.3f}백만주")
+        if len(ebitda_keys) > 1 and common_ownership is not None:
+            values.append(
+                "산식 [(부문 EBITDA×배수 합)+EV→지분 조정]"
+                f"×{common_ownership * 100:.4f}%÷{share_count:,.0f}주"
+            )
 
     for year in (1, 5):
         key = f"fcff_year_{year}"
@@ -726,11 +799,18 @@ def render_generic_report(
         item for item in coverage
         if item.status not in {StageStatus.PASS, StageStatus.WARNING, StageStatus.SKIPPED_NOT_APPLICABLE}
     )
+    blocking_findings = tuple(item for item in audit.findings if item.blocking)
+    blocking_passed = sum(item.passed for item in blocking_findings)
+    nonblocking_failed = sum(
+        not item.passed and not item.blocking for item in audit.findings
+    )
     lines.extend((
         "",
         "## 분석 범위와 유의사항",
         f"- **평가범위:** {valuation_scope_label_ko(valuation.scope.value)}",
-        f"- **계산 확인:** 자동 오류 점검 {len(audit.findings)}개 통과 · 분석 원칙 {len(coverage) - len(non_pass)}/{len(coverage)}개 충족",
+        f"- **계산 확인:** 차단 점검 {blocking_passed}/{len(blocking_findings)}개 통과 · "
+        f"비차단 확인 필요 {nonblocking_failed}건 · "
+        f"분석 원칙 {len(coverage) - len(non_pass)}/{len(coverage)}개 충족",
         "- 회사 공시 사실, 분석가 가정, 인공지능 연결 인사이트를 구분해 표시했습니다.",
         "- 증권사 목표가와 현재가는 가치평가를 마친 뒤 참고했으며, 앞서 계산한 가정을 바꾸는 데 사용하지 않았습니다.",
     ))

@@ -1,0 +1,964 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='section-2'><A name='toc1'>4. 주식의 총수 등</A></P>
+<P><BR/><SPAN style='font-weight:bold;'>가. 주식의 총수<BR/></SPAN>보고서 작성기준일 현재 당사의 정관상 발행가능한 주식의 총수는 480,000,000주이나, 2025년 2월 28일 ㈜영풍 및 ㈜한국기업투자홀딩스가 제기한 서울중앙지방법원 2025가합9085 주주총회결의취소 청구의 소가 진행 중으로 이전 정관 기준 주식의 총수를 기재합니다.
+</P>
+<TABLE class='nb' width='663'>
+<COLGROUP>
+<COL width='80'></COL>
+<COL width='152'></COL>
+<COL width='106'></COL>
+<COL width='325'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='71' height='23' valign='BOTTOM'>(기준일 :&nbsp;</TD>
+  <TD width='143' height='23' align='CENTER' valign='BOTTOM'>2026년 06월 30일</TD>
+  <TD width='97' height='23' valign='BOTTOM'>)</TD>
+  <TD width='316' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 주, %)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='665'>
+<COLGROUP>
+<COL width='34'></COL>
+<COL width='213'></COL>
+<COL width='105'></COL>
+<COL width='105'></COL>
+<COL width='104'></COL>
+<COL width='104'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='238' height='53' colspan='2' rowspan='2'>구 &nbsp;분</TH>
+  <TH width='305' height='23' colspan='3'>주식의 종류</TH>
+  <TH width='95' height='53' rowspan='2'>비고</TH>
+</TR>
+<TR height='30'>
+  <TD width='96' height='23' align='CENTER'>보통주</TD>
+  <TD width='96' height='23' align='CENTER'>-</TD>
+  <TH width='95' height='23'>합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅰ. 발행할 주식의 총수</TD>
+  <TD width='96' height='23' align='RIGHT'>48,000,000</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>48,000,000</TD>
+  <TD width='95' height='23' align='CENTER'>주1)</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅱ. 현재까지 발행한 주식의 총수</TD>
+  <TD width='96' height='23' align='RIGHT'>23,118,304</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>23,118,304</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅲ. 현재까지 감소한 주식의 총수</TD>
+  <TD width='96' height='23' align='RIGHT'>2,245,335</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>2,245,335</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='25' height='113' rowspan='4'><BR/></TD>
+  <TD width='204' height='23'>&nbsp;1. 감자</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='204' height='23'>&nbsp;2. 이익소각</TD>
+  <TD width='96' height='23' align='RIGHT'>2,245,335</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>2,245,335</TD>
+  <TD width='95' height='23' align='CENTER' valign='TOP'>주2)</TD>
+</TR>
+<TR height='30'>
+  <TD width='204' height='23'>&nbsp;3. 상환주식의 상환</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='204' height='23'>&nbsp;4. 기타</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅳ. 발행주식의 총수(Ⅱ-Ⅲ)</TD>
+  <TD width='96' height='23' align='RIGHT'>20,872,969</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>20,872,969</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅴ. 자기주식수</TD>
+  <TD width='96' height='23' align='RIGHT'>479,737</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>479,737</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅵ. 유통주식수(Ⅳ-Ⅴ)</TD>
+  <TD width='96' height='23' align='RIGHT'>20,393,232</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>20,393,232</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>Ⅶ. 자기주식 보유비율</TD>
+  <TD width='96' height='23' align='RIGHT'>
+<P style='text-align:right;'>2.3</P>
+</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>2.3</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P style='font-family:DartNBSP, "굴림", Gulim;font-size:11pt;'>주1) 당사 정관에 따라 발행할 주식의 총수는 48,000,000주이며, 의결권 없는 우선주식을 12,000,000주가 초과하지 않는 범위에서 발행할 수 있습니다. 현재까지 발행한 우선주식은 없습니다.<BR/>주2) 2023년 11월 9일 1,000억원의 자기주식취득 신탁계약 결정 및 주식소각 결정 공시를 하였고, 2024년 5월 8일 취득 완료 및 전량(205,305주) 소각하였습니다. 또한 2025년 5월 8일 공개매수로 취득한 자기주식(2,040,030주)에 대한 주식소각 결정 공시를 하였고, 2025년 중 전량 소각하였습니다.<BR/><BR/><SPAN style='font-family:DartNBSP, "바탕", Batang;font-size:12pt;line-height:1.6em;font-weight:bold;'>나. 자기주식</SPAN><BR/>
+</P>
+<P>(1) 자기주식 취득 및 처분 현황</P>
+<TABLE class='nb' width='766'>
+<COLGROUP>
+<COL width='80'></COL>
+<COL width='152'></COL>
+<COL width='148'></COL>
+<COL width='386'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='71' height='23' valign='BOTTOM'>(기준일 :&nbsp;</TD>
+  <TD width='143' height='23' align='CENTER' valign='BOTTOM'>2026년 06월 30일</TD>
+  <TD width='139' height='23' valign='BOTTOM'>)</TD>
+  <TD width='377' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 주)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='767'>
+<COLGROUP>
+<COL width='62'></COL>
+<COL width='58'></COL>
+<COL width='123'></COL>
+<COL width='99'></COL>
+<COL width='71'></COL>
+<COL width='73'></COL>
+<COL width='74'></COL>
+<COL width='72'></COL>
+<COL width='69'></COL>
+<COL width='66'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='234' height='53' colspan='3' rowspan='2'>취득방법</TH>
+  <TH width='90' height='53' rowspan='2'>주식의 종류</TH>
+  <TH width='62' height='53' rowspan='2'>기초수량</TH>
+  <TH width='210' height='23' colspan='3'>변동 수량</TH>
+  <TH width='60' height='53' rowspan='2'>기말수량</TH>
+  <TH width='57' height='53' rowspan='2'>비고</TH>
+</TR>
+<TR height='30'>
+  <TH width='64' height='23'>취득(+)</TH>
+  <TH width='65' height='23'>처분(-)</TH>
+  <TH width='63' height='23'>소각(-)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='53' height='413' rowspan='14' align='CENTER'>배당<BR/>가능<BR/>이익<BR/>범위<BR/>이내<BR/>취득</TD>
+  <TD width='49' height='233' rowspan='8' align='CENTER'>직접<BR/>취득</TD>
+  <TD width='114' height='53' rowspan='2' align='CENTER'>장내 <BR/>직접 취득</TD>
+  <TD width='90' height='23' align='CENTER'>보통주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='90' height='23' align='CENTER'>우선주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='114' height='53' rowspan='2' align='CENTER'>장외<BR/>직접 취득</TD>
+  <TD width='90' height='23' align='CENTER'>보통주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='90' height='23' align='CENTER'>우선주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='114' height='53' rowspan='2' align='CENTER'>공개매수</TD>
+  <TD width='90' height='23' align='CENTER'>보통주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='90' height='23' align='CENTER'>우선주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='114' height='53' rowspan='2' align='CENTER'>소계(a)</TD>
+  <TD width='90' height='23' align='CENTER'>보통주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='90' height='23' align='CENTER'>우선주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='49' height='173' rowspan='6' align='CENTER'>신탁<BR/>계약에 의한<BR/>취득</TD>
+  <TD width='114' height='53' rowspan='2' align='CENTER'>수탁자 보유물량</TD>
+  <TD width='90' height='23' align='CENTER'>보통주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='90' height='23' align='CENTER'>우선주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='114' height='53' rowspan='2' align='CENTER'>현물보유물량</TD>
+  <TD width='90' height='23' align='CENTER'>보통주</TD>
+  <TD width='62' height='23' align='RIGHT'>479,737</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>479,737</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='90' height='23' align='CENTER'>우선주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='114' height='53' rowspan='2' align='CENTER'>소계(b)</TD>
+  <TD width='90' height='23' align='CENTER'>보통주</TD>
+  <TD width='62' height='23' align='RIGHT'>479,737</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>479,737</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='90' height='23' align='CENTER'>우선주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='234' height='53' colspan='3' rowspan='2' align='CENTER'>기타 취득(c)</TD>
+  <TD width='90' height='23' align='CENTER'>보통주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='90' height='23' align='CENTER'>우선주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='234' height='53' colspan='3' rowspan='2' align='CENTER'>총 계(a+b+c)</TD>
+  <TD width='90' height='23' align='CENTER'>보통주</TD>
+  <TD width='62' height='23' align='RIGHT'>479,737</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>479,737</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='90' height='23' align='CENTER'>우선주</TD>
+  <TD width='62' height='23' align='RIGHT'>-</TD>
+  <TD width='64' height='23' align='RIGHT'>-</TD>
+  <TD width='65' height='23' align='RIGHT'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='60' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>-</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P>(2) 자기주식 직접 취득ㆍ처분 이행현황</P>
+<TABLE class='nb' width='590'>
+<COLGROUP>
+<COL width='79'></COL>
+<COL width='151'></COL>
+<COL width='72'></COL>
+<COL width='288'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='70' height='23' valign='BOTTOM'>(기준일 :&nbsp;</TD>
+  <TD width='142' height='23' align='CENTER' valign='BOTTOM'>2026년 06월 30일</TD>
+  <TD width='63' height='23' valign='BOTTOM'>)</TD>
+  <TD width='279' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 백만원, %)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='590'>
+<COLGROUP>
+<COL width='83'></COL>
+<COL width='92'></COL>
+<COL width='92'></COL>
+<COL width='84'></COL>
+<COL width='84'></COL>
+<COL width='63'></COL>
+<COL width='92'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='74' height='53' rowspan='2'>구 분</TH>
+  <TH width='175' height='23' colspan='2'>예정기간</TH>
+  <TH width='75' height='53' rowspan='2'>예정금액<BR/>(A)</TH>
+  <TH width='75' height='53' rowspan='2'>이행금액<BR/>(B)</TH>
+  <TH width='54' height='53' rowspan='2'>이행률<BR/>(B/A)</TH>
+  <TH width='83' height='53' rowspan='2'>결과<BR/>보고일</TH>
+</TR>
+<TR height='30'>
+  <TH width='83' height='23'>시작일</TH>
+  <TH width='83' height='23'>종료일</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>직접 취득</TD>
+  <TD width='83' height='23' align='CENTER'>2024.10.04</TD>
+  <TD width='83' height='23' align='CENTER'>2024.10.23</TD>
+  <TD width='75' height='23' align='RIGHT'>3,224,537</TD>
+  <TD width='75' height='23' align='RIGHT'>1,815,627</TD>
+  <TD width='54' height='23' align='RIGHT'>56.3</TD>
+  <TD width='83' height='23' align='CENTER'>2024.10.28</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>직접 처분</TD>
+  <TD width='83' height='23' align='CENTER'>2025.02.06</TD>
+  <TD width='83' height='23' align='CENTER'>2025.02.07</TD>
+  <TD width='75' height='23' align='RIGHT'>4,996</TD>
+  <TD width='75' height='23' align='RIGHT'>4,996</TD>
+  <TD width='54' height='23' align='RIGHT'>100</TD>
+  <TD width='83' height='23' align='CENTER'>2025.02.10</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>직접 처분</TD>
+  <TD width='83' height='23' align='CENTER'>2025.03.14</TD>
+  <TD width='83' height='23' align='CENTER'>2025.03.17</TD>
+  <TD width='75' height='23' align='RIGHT'>7,116</TD>
+  <TD width='75' height='23' align='RIGHT'>7,116</TD>
+  <TD width='54' height='23' align='RIGHT'>100</TD>
+  <TD width='83' height='23' align='CENTER'>2025.03.18</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>직접 처분</TD>
+  <TD width='83' height='23' align='CENTER'>2025.09.22</TD>
+  <TD width='83' height='23' align='CENTER'>2025.09.26</TD>
+  <TD width='75' height='23' align='RIGHT'>5,508</TD>
+  <TD width='75' height='23' align='RIGHT'>5,508</TD>
+  <TD width='54' height='23' align='RIGHT'>100</TD>
+  <TD width='83' height='23' align='CENTER'>2025.09.29</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><SPAN style='font-family:DartNBSP, "굴림", Gulim;font-size:11pt;line-height:1.6em;'>주1) 상기 직접 취득건은 공개매수에 응모한 주식수가 매수 예정 수량을 하회하여 계획 대비 이행률이 낮습니다.<BR/>주2) 상기 직접 처분건은 우리사주조합 무상출연 방식으로, 예정금액(A) 및 이행금액(B)은 실제 처분일 종가 기준으로 작성하였습니다.</SPAN><BR/><BR/>
+</P>
+<P>(3) 자기주식 신탁계약 체결ㆍ해지 이행현황</P>
+<TABLE class='nb' width='590'>
+<COLGROUP>
+<COL width='80'></COL>
+<COL width='152'></COL>
+<COL width='63'></COL>
+<COL width='295'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='71' height='23' valign='BOTTOM'>(기준일 :&nbsp;</TD>
+  <TD width='143' height='23' align='CENTER' valign='BOTTOM'>2026년 06월 30일</TD>
+  <TD width='54' height='23' valign='BOTTOM'>)</TD>
+  <TD width='286' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 백만원, %)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='590'>
+<COLGROUP>
+<COL width='83'></COL>
+<COL width='92'></COL>
+<COL width='92'></COL>
+<COL width='84'></COL>
+<COL width='84'></COL>
+<COL width='63'></COL>
+<COL width='92'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='74' height='53' rowspan='2'>구 분</TH>
+  <TH width='175' height='23' colspan='2'>계약기간</TH>
+  <TH width='75' height='53' rowspan='2'>계약금액<BR/>(A)</TH>
+  <TH width='75' height='53' rowspan='2'>취득금액<BR/>(B)</TH>
+  <TH width='54' height='53' rowspan='2'>이행률<BR/>(B/A)</TH>
+  <TH width='83' height='53' rowspan='2'>결과<BR/>보고일</TH>
+</TR>
+<TR height='30'>
+  <TH width='83' height='23'>시작일</TH>
+  <TH width='83' height='23'>종료일</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>신탁 해지</TD>
+  <TD width='83' height='23' align='CENTER'>2023.11.09</TD>
+  <TD width='83' height='23' align='CENTER'>2024.05.08</TD>
+  <TD width='75' height='23' align='RIGHT'>100,000</TD>
+  <TD width='75' height='23' align='RIGHT'>99,046</TD>
+  <TD width='54' height='23' align='RIGHT'>99.0</TD>
+  <TD width='83' height='23' align='CENTER'>2024.05.08</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>신탁 해지</TD>
+  <TD width='83' height='23' align='CENTER'>2024.05.08</TD>
+  <TD width='83' height='23' align='CENTER'>2024.11.08</TD>
+  <TD width='75' height='23' align='RIGHT'>150,000</TD>
+  <TD width='75' height='23' align='RIGHT'>149,587</TD>
+  <TD width='54' height='23' align='RIGHT'>99.7</TD>
+  <TD width='83' height='23' align='CENTER'>2024.11.08</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>신탁 해지</TD>
+  <TD width='83' height='23' align='CENTER'>2024.08.07</TD>
+  <TD width='83' height='23' align='CENTER'>2025.05.07</TD>
+  <TD width='75' height='23' align='RIGHT'>400,000</TD>
+  <TD width='75' height='23' align='RIGHT'>112,506</TD>
+  <TD width='54' height='23' align='RIGHT'>28.1</TD>
+  <TD width='83' height='23' align='CENTER'>2025.05.07</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><SPAN style='font-family:DartNBSP, "굴림", Gulim;font-size:11pt;line-height:1.6em;'>주) 상기 2025년 5월 7일 해지한 자기주식 신탁계약은 경영권 분쟁으로 인한 주가 변동성 확대로 계획 대비 이행률이 낮습니다.</SPAN><SPAN><BR/></SPAN><BR/>
+</P>
+<P>(4) 자기주식 소각현황</P>
+<TABLE class='nb' width='598'>
+<COLGROUP>
+<COL width='358'></COL>
+<COL width='240'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='349' height='23' valign='BOTTOM'><BR/></TD>
+  <TD width='231' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 백만원, 주)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='599'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='119'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>소각일</TH>
+  <TH width='111' height='23'>소각방법</TH>
+  <TH width='111' height='23'>주식종류</TH>
+  <TH width='111' height='23'>소각수량</TH>
+  <TH width='110' height='23'>소각금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23' align='CENTER'>2024.05.08</TD>
+  <TD width='111' height='23' align='CENTER'>이익소각</TD>
+  <TD width='111' height='23' align='CENTER'>보통주</TD>
+  <TD width='111' height='23' align='RIGHT'>205,305</TD>
+  <TD width='110' height='23' align='RIGHT'>99,046</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23' align='CENTER'>2025.06.12</TD>
+  <TD width='111' height='23' align='CENTER'>이익소각</TD>
+  <TD width='111' height='23' align='CENTER'>보통주</TD>
+  <TD width='111' height='23' align='RIGHT'>680,010</TD>
+  <TD width='110' height='23' align='RIGHT'>605,209</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23' align='CENTER'>2025.09.11</TD>
+  <TD width='111' height='23' align='CENTER'>이익소각</TD>
+  <TD width='111' height='23' align='CENTER'>보통주</TD>
+  <TD width='111' height='23' align='RIGHT'>680,010</TD>
+  <TD width='110' height='23' align='RIGHT'>605,209</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23' align='CENTER'>2025.12.16</TD>
+  <TD width='111' height='23' align='CENTER'>이익소각</TD>
+  <TD width='111' height='23' align='CENTER'>보통주</TD>
+  <TD width='111' height='23' align='RIGHT'>680,010</TD>
+  <TD width='110' height='23' align='RIGHT'>605,209</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P style='font-family:DartNBSP, "굴림", Gulim;font-size:11pt;'>주) 상기 소각금액은 취득원가 기준입니다.<BR/><BR/></P>
+<P style='font-weight:bold;'>다. 자기주식 보유현황</P>
+<P>(1) 자기주식 보유현황</P>
+<TABLE class='nb' width='925'>
+<COLGROUP>
+<COL width='93'></COL>
+<COL width='172'></COL>
+<COL width='518'></COL>
+<COL width='142'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='84' height='23' valign='BOTTOM'>(기준일 :&nbsp;</TD>
+  <TD width='163' height='23' align='CENTER' valign='BOTTOM'>2026년 06월 30일</TD>
+  <TD width='509' height='23' valign='BOTTOM'>)</TD>
+  <TD width='133' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 주, %)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='926'>
+<COLGROUP>
+<COL width='80'></COL>
+<COL width='64'></COL>
+<COL width='62'></COL>
+<COL width='72'></COL>
+<COL width='80'></COL>
+<COL width='148'></COL>
+<COL width='70'></COL>
+<COL width='70'></COL>
+<COL width='70'></COL>
+<COL width='70'></COL>
+<COL width='70'></COL>
+<COL width='70'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='135' height='122' colspan='2' rowspan='2'>구분</TH>
+  <TH width='53' height='122' rowspan='2'>주식<BR/>종류</TH>
+  <TH width='63' height='122' rowspan='2'>보유<BR/>수량</TH>
+  <TH width='71' height='122' rowspan='2'>발행주식<BR/>총수대비<BR/>비중</TH>
+  <TH width='139' height='122' rowspan='2'>취득<BR/>목적</TH>
+  <TH width='61' height='122' rowspan='2'>취득<BR/>연도</TH>
+  <TH width='61' height='122' rowspan='2'>소각<BR/>기한</TH>
+  <TH width='201' height='46' colspan='3'>보유처분계획<BR/>승인내용</TH>
+  <TH width='61' height='122' rowspan='2'>비고</TH>
+</TR>
+<TR height='76'>
+  <TH width='61' height='69'>주총<BR/>승인일</TH>
+  <TH width='61' height='69'>보유<BR/>처분<BR/>기한</TH>
+  <TH width='61' height='69'>보유<BR/>처분<BR/>목적</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='71' height='159' rowspan='4' align='CENTER'>배당가능이익범위이내취득</TD>
+  <TD width='55' height='99' rowspan='2' align='CENTER'>직접<BR/>보유</TD>
+  <TD width='53' height='46' align='CENTER'>보통주</TD>
+  <TD width='63' height='46' align='RIGHT'>269,744</TD>
+  <TD width='71' height='46' align='RIGHT'>1.3</TD>
+  <TD width='139' height='46' align='CENTER'>주식 소각 및 <BR/>임직원 평가보상 등</TD>
+  <TD width='61' height='46' align='CENTER'>2024년</TD>
+  <TD width='61' height='46' align='CENTER'>2027년</TD>
+  <TD width='61' height='46' align='CENTER'>-</TD>
+  <TD width='61' height='46' align='CENTER'>-</TD>
+  <TD width='61' height='46' align='CENTER'>-</TD>
+  <TD width='61' height='46' align='CENTER'>-</TD>
+</TR>
+<TR height='53'>
+  <TD width='53' height='46' align='CENTER'>보통주</TD>
+  <TD width='63' height='46' align='RIGHT'>209,993</TD>
+  <TD width='71' height='46' align='RIGHT'>1.0</TD>
+  <TD width='139' height='46' align='CENTER'>소각 등을 포함한<BR/>주주가치 제고</TD>
+  <TD width='61' height='46' align='CENTER'>2025년</TD>
+  <TD width='61' height='46' align='CENTER'>2027년</TD>
+  <TD width='61' height='46' align='CENTER'>-</TD>
+  <TD width='61' height='46' align='CENTER'>-</TD>
+  <TD width='61' height='46' align='CENTER'>-</TD>
+  <TD width='61' height='46' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='55' height='53' rowspan='2' align='CENTER'>수탁자<BR/>보유</TD>
+  <TD width='53' height='23' align='CENTER'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='71' height='23' align='RIGHT'>-</TD>
+  <TD width='139' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='53' height='23' align='CENTER'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='71' height='23' align='RIGHT'>-</TD>
+  <TD width='139' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='135' height='53' colspan='2' rowspan='2' align='CENTER'>기타 취득</TD>
+  <TD width='53' height='23' align='CENTER'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='71' height='23' align='RIGHT'>-</TD>
+  <TD width='139' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='53' height='23' align='CENTER'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='71' height='23' align='RIGHT'>-</TD>
+  <TD width='139' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+  <TD width='61' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='135' height='53' colspan='2' rowspan='2' align='CENTER'>총계</TD>
+  <TD width='53' height='23' align='CENTER'>보통주</TD>
+  <TD width='63' height='23' align='RIGHT'>479,737</TD>
+  <TD width='71' height='23' align='RIGHT'>2.3</TD>
+  <TD width='559' height='53' colspan='7' rowspan='2' align='CENTER'><BR/></TD>
+</TR>
+<TR height='30'>
+  <TD width='53' height='23' align='CENTER'>-</TD>
+  <TD width='63' height='23' align='RIGHT'>-</TD>
+  <TD width='71' height='23' align='RIGHT'>-</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><SPAN style='font-family:DartNBSP, "굴림", Gulim;font-size:11pt;line-height:1.6em;'>주1) 상기 취득 연도는 신탁계약 해지에 따른 자기주식 취득일 기준으로 작성하였습니다.<BR/>주2) 자기주식 의무소각 관련 개정 상법 시행일(2026. 3. 6.)로부터 6개월이 경과한 날로부터 1년 이내 소각하는 것을 전제로 소각기한을 작성하였습니다.<BR/></SPAN><SPAN><BR/>(2) 자기주식 취득ㆍ처분ㆍ소각 관련 단기 계획</SPAN><BR/>
+</P>
+<TABLE class='nb' width='864'>
+<COLGROUP>
+<COL width='96'></COL>
+<COL width='162'></COL>
+<COL width='23'></COL>
+<COL width='169'></COL>
+<COL width='28'></COL>
+<COL width='386'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='87' height='23' valign='BOTTOM'>(대상기간 :&nbsp;</TD>
+  <TD width='153' height='23' align='CENTER' valign='TOP'>2026년 01월 01일</TD>
+  <TD width='14' height='23' valign='BOTTOM'>~</TD>
+  <TD width='160' height='23' align='CENTER' valign='TOP'>2026년 12월 31일</TD>
+  <TD width='19' height='23' valign='BOTTOM'>)</TD>
+  <TD width='377' height='23' align='RIGHT' valign='TOP'>(단위 : 주, %)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='866'>
+<COLGROUP>
+<COL width='102'></COL>
+<COL width='110'></COL>
+<COL width='109'></COL>
+<COL width='109'></COL>
+<COL width='109'></COL>
+<COL width='109'></COL>
+<COL width='109'></COL>
+<COL width='109'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='93' height='46'>구분</TH>
+  <TH width='101' height='46'>보유형태</TH>
+  <TH width='100' height='46'>주식종류</TH>
+  <TH width='100' height='46'>당초<BR/>취득목적</TH>
+  <TH width='100' height='46'>거래방법</TH>
+  <TH width='100' height='46'>수량</TH>
+  <TH width='100' height='46'>발행주식총수<BR/>대비 비중</TH>
+  <TH width='100' height='46'>결정사유</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='93' height='53' rowspan='2' align='CENTER'>취득</TD>
+  <TD width='101' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='101' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='53' rowspan='2' align='CENTER'>처분</TD>
+  <TD width='101' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='101' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='53' rowspan='2' align='CENTER'>소각</TD>
+  <TD width='101' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='101' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='53'>
+  <TD width='93' height='76' rowspan='2' align='CENTER'>계속보유</TD>
+  <TD width='101' height='46' align='CENTER'>배당가능이익-직접 보유</TD>
+  <TD width='100' height='46' align='CENTER'>보통주</TD>
+  <TD width='100' height='46' align='CENTER'>소각 및 임직원 평가보상 등</TD>
+  <TD width='100' height='46' align='CENTER'>보유</TD>
+  <TD width='100' height='46' align='RIGHT'>479,737</TD>
+  <TD width='100' height='46' align='RIGHT'>2.3</TD>
+  <TD width='100' height='46' align='CENTER'>주)</TD>
+</TR>
+<TR height='30'>
+  <TD width='101' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='RIGHT'>-</TD>
+  <TD width='100' height='23' align='CENTER'>-</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><SPAN style='font-family:DartNBSP, "굴림", Gulim;font-size:11pt;line-height:1.6em;'>주) 당사는 기업가치제고 및 주주권익 보호를 도모하고, 자기주식 소각을 통해 주주가치를 제고하며, 우리사주조합에 대한 처분 등 임직원 평가보상에 활용하기 위해 자기주식을 보유하고 있습니다.<BR/></SPAN><BR/>(3) 자기주식 취득ㆍ처분ㆍ소각 단기 계획 이행 현황
+</P>
+<TABLE class='nb' width='723'>
+<COLGROUP>
+<COL width='101'></COL>
+<COL width='158'></COL>
+<COL width='23'></COL>
+<COL width='152'></COL>
+<COL width='31'></COL>
+<COL width='258'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='92' height='23' valign='BOTTOM'>(대상기간 :&nbsp;</TD>
+  <TD width='149' height='23' align='CENTER' valign='TOP'>2026년 01월 01일</TD>
+  <TD width='14' height='23' valign='BOTTOM'>~</TD>
+  <TD width='143' height='23' align='CENTER' valign='TOP'>2026년 06월 30일</TD>
+  <TD width='22' height='23' valign='BOTTOM'>)</TD>
+  <TD width='249' height='23' align='RIGHT' valign='TOP'>(단위 : 주, %)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='724'>
+<COLGROUP>
+<COL width='102'></COL>
+<COL width='104'></COL>
+<COL width='104'></COL>
+<COL width='104'></COL>
+<COL width='104'></COL>
+<COL width='103'></COL>
+<COL width='103'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='93' height='46'>구분</TH>
+  <TH width='95' height='46'>보유<BR/>형태</TH>
+  <TH width='95' height='46'>주식<BR/>종류</TH>
+  <TH width='95' height='46'>전기 계획수량<BR/>(A)</TH>
+  <TH width='95' height='46'>당기 이행수량<BR/>(B)</TH>
+  <TH width='94' height='46'>이행률<BR/>(B/A)</TH>
+  <TH width='94' height='46'>차이발생<BR/>사유</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='93' height='53' rowspan='2' align='CENTER'>취득</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='53' rowspan='2' align='CENTER'>처분</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='53' rowspan='2' align='CENTER'>소각</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='53'>
+  <TD width='93' height='76' rowspan='2' align='CENTER'>계속보유</TD>
+  <TD width='95' height='46' align='CENTER'>배당가능이익-직접 보유</TD>
+  <TD width='95' height='46' align='CENTER'>보통주</TD>
+  <TD width='95' height='46' align='RIGHT'>479,737</TD>
+  <TD width='95' height='46' align='RIGHT'>479,737</TD>
+  <TD width='94' height='46' align='RIGHT'>100</TD>
+  <TD width='94' height='46' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='CENTER'>-</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P>(4) 자기주식 취득ㆍ처분ㆍ소각 관련 장기 계획</P>
+<P>당사가 보유한 자기주식 총 479,737주 중 246,665주(51.4%)에 해당하는 주식은 2027년 2월 말까지 소각할 예정이며, 나머지 233,072주(48.6%)는 임직원 보상 목적으로 활용하여 향후 약 10년간 주식보상 재원으로 처분할 계획입니다. 구체적인 소각 및 처분 일정은 확정되는 대로 관련 법령에 따라 공시 등 제반 절차를 적법하게 이행하도록 하겠습니다.<BR/><BR/></P>
+<P>(5) 기타 투자자 보호를 위해 필요한 사항<BR/>당사는 사업연도 개시일부터 6개월이 되는 날을 기준으로 자기주식을 보유하고 있는 바, 이사회의 승인을 거쳐 자기주식 보고서를 제출하며, 향후 자기주식을 취득, 처분 및 소각하는 경우 상법 및 자본시장법 등 관련 법령에 따라 공시 등의 제반 절차를 적법하게 이행하도록 하겠습니다.</P>
+<P class='pgbrk'></P>
+<P><BR/></P>
+</BODY>
+</HTML>

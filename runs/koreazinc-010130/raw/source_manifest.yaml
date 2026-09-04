@@ -1,0 +1,13 @@
+target_id: KR:DART:00102858
+company_name: 고려아연
+ticker: "010130"
+ksic_code: "24213"
+as_of: "2026-09-03"
+sources:
+  - artifact: filing_20260814003958/main.html
+    source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958
+    description: 반기보고서(2026.06) DART document index
+  - artifact: filing_20260814003958/20260814003958_24.xml
+    source_ref: https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814003958&dcmNo=11539212&eleId=24&offset=878637&length=1382323&dtd=dart4.xsd
+    description: 연결재무제표 주석 원문; IFRS 8 영업부문 표 포함
+

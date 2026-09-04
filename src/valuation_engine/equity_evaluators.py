@@ -459,6 +459,7 @@ class LiveEquityMethodRegistration:
     version: str = "1"
     forecast_years: int = 3
     assumption_prefix: str = ""
+    segment_id: str | None = None
 
     def validate(self) -> None:
         if not self.archetype or not self.method or not self.version:
@@ -467,6 +468,8 @@ class LiveEquityMethodRegistration:
             raise ValueError("equity-method forecast_years must be in [1, 30]")
         if any(character.isspace() for character in self.assumption_prefix):
             raise ValueError("equity-method assumption_prefix cannot contain whitespace")
+        if self.segment_id is not None and not self.segment_id:
+            raise ValueError("equity-method segment_id cannot be empty")
 
 
 BaseRegistryLoader = Callable[[OrchestratorContext], EvaluatorRegistry]
@@ -486,7 +489,7 @@ def live_equity_evaluator_registry_loader(
     if not registrations:
         raise ValueError("live equity evaluator loader requires registrations")
     effective_capabilities = capability_registry or load_default_method_capability_registry()
-    seen: set[ModelKey] = set()
+    seen: set[tuple[str | None, ModelKey]] = set()
     for registration in registrations:
         registration.validate()
         capability = effective_capabilities.get(
@@ -506,9 +509,10 @@ def live_equity_evaluator_registry_loader(
                 f"unsupported equity evaluator execution family {capability.execution_family}"
             )
         key = ModelKey(registration.archetype, registration.method, registration.version)
-        if key in seen:
+        scoped_key = (registration.segment_id, key)
+        if scoped_key in seen:
             raise ValueError(f"duplicate equity evaluator registration: {key}")
-        seen.add(key)
+        seen.add(scoped_key)
 
     def load(context: OrchestratorContext) -> EvaluatorRegistry:
         leaked = tuple(
@@ -627,7 +631,7 @@ def live_equity_evaluator_registry_loader(
                 )
             else:  # validated above
                 raise AssertionError(family)
-            registry.register(evaluator)
+            registry.register(evaluator, segment_id=registration.segment_id)
         return registry
 
     return load

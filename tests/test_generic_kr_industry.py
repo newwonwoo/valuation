@@ -336,3 +336,5 @@ def test_longest_ksic_prefix_wins():
     classification = load_kr_industry_classification()
     assert classification.lookup("58211").sector_adapter == "content.games"
     assert classification.lookup("58229").sector_adapter == "software.application"
+    assert classification.lookup("24213").sector_adapter == "metals.nonferrous_smelting"
+    assert classification.lookup("38220").sector_adapter == "environmental.waste_processing"

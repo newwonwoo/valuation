@@ -38,6 +38,7 @@ class FiniteLifeNPVRegistration:
     version: str
     final_year: int
     assumption_prefix: str = ""
+    segment_id: str | None = None
 
     def validate(self) -> None:
         if not all((self.archetype, self.method, self.version)):
@@ -46,6 +47,8 @@ class FiniteLifeNPVRegistration:
             raise ValueError("finite-life NPV final_year must be in [1, 60]")
         if any(character.isspace() for character in self.assumption_prefix):
             raise ValueError("assumption_prefix cannot contain whitespace")
+        if self.segment_id is not None and not self.segment_id:
+            raise ValueError("finite-life NPV segment_id cannot be empty")
 
 
 @dataclass(frozen=True)
@@ -152,7 +155,10 @@ def live_finite_npv_registry_loader(
             expected_family="finite_life_npv",
             registry=capability_registry,
         )
-    keys = tuple(ModelKey(item.archetype, item.method, item.version) for item in registrations)
+    keys = tuple(
+        (item.segment_id, ModelKey(item.archetype, item.method, item.version))
+        for item in registrations
+    )
     if len(keys) != len(set(keys)):
         raise ValueError("duplicate finite-life NPV ModelKey registration")
 
@@ -190,7 +196,8 @@ def live_finite_npv_registry_loader(
                     discount_rate_path_id=f"wacc:{wacc_result.snapshot_hash}",
                     beta_path_id=f"beta:{wacc_result.beta_result.snapshot_hash}",
                     assumption_prefix=item.assumption_prefix,
-                )
+                ),
+                segment_id=item.segment_id,
             )
         return registry
 

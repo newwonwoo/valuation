@@ -12,6 +12,8 @@ must stay byte-identical throughout; the three committed live runs pin that.
 
 from __future__ import annotations
 
+from decimal import Decimal
+from hashlib import sha256
 from io import BytesIO
 import json
 from pathlib import Path
@@ -23,6 +25,8 @@ from valuation_engine.declared_segments import (
     DeclaredSegment,
     DeclaredSegments,
     DeclaredSegmentsError,
+    SourceBoundSegmentEntry,
+    SourceBoundSegmentExtraction,
     load_declared_segments,
 )
 from valuation_engine.generic_kr_industry import (
@@ -134,6 +138,7 @@ def _declaration(**overrides) -> DeclaredSegments:
             "source_ref", "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003201"
         ),
         segments=tuple(rows),
+        source_bound_extraction=overrides.pop("source_bound_extraction", None),
     )
     declared.validate()
     return declared
@@ -183,6 +188,191 @@ def test_a_matching_declaration_yields_one_scope_receipt_per_segment():
         item.evidence_id.endswith(":SEGMENT_SCOPE:SINGLE")
         for item in snapshot.evidence_lineage
     )
+
+
+def test_source_bound_llm_extraction_handles_irregular_filing_layout():
+    """The LLM reads semantics; code verifies its exact source-table cells."""
+    source = """단위:천원
+<TABLE><THEAD><TR><TH>구분</TH><TH>제강부문</TH><TH>운송부문</TH><TH>기타부문</TH><TH>합계</TH></TR></THEAD>
+<TBODY><TR><TD>매출액</TD><TD>100</TD><TD>20</TD><TD>5</TD><TD>125</TD></TR>
+<TR><TD>영업이익</TD><TD>10</TD><TD>2</TD><TD>(1)</TD><TD>11</TD></TR></TBODY></TABLE>"""
+    extraction = SourceBoundSegmentExtraction(
+        extractor="llm_reviewed",
+        document_id="DART_20260814003201",
+        member_path="llm_source.xml",
+        member_sha256=sha256(source.encode("utf-8")).hexdigest(),
+        reporting_unit="천원",
+        entries=(
+            SourceBoundSegmentEntry(
+                "제강부문", Decimal("100"), Decimal("10"),
+                source.index("제강부문"), source.index(">100<") + 1,
+                source.index(">10<") + 1,
+            ),
+            SourceBoundSegmentEntry(
+                "운송부문", Decimal("20"), Decimal("2"),
+                source.index("운송부문"), source.index(">20<") + 1,
+                source.index(">2<") + 1,
+            ),
+            SourceBoundSegmentEntry(
+                "기타부문", Decimal("5"), Decimal("-1"),
+                source.index("기타부문"), source.index(">5<") + 1,
+                source.index(">(1)<") + 1,
+            ),
+        ),
+        filed_total_revenue=Decimal("125"),
+        filed_total_operating_income=Decimal("11"),
+        filed_total_revenue_offset=source.index(">125<") + 1,
+        filed_total_operating_income_offset=source.index(">11<") + 1,
+        revenue_row_label="매출액",
+        revenue_row_label_offset=source.index("매출액"),
+        operating_income_row_label="영업이익",
+        operating_income_row_label_offset=source.index("영업이익"),
+    )
+
+    def fetch_bytes(url: str) -> bytes:
+        assert "document.xml" in url
+        return _archive(
+            {"overview.xml": _SCREEN_TRIPPING_MEMBER, "llm_source.xml": source}
+        )
+
+    snapshot = _load_snapshot(
+        fetch_bytes, _declaration(source_bound_extraction=extraction)
+    )
+    assert any(
+        item.evidence_id.endswith(":SEGMENT_SCOPE:steel")
+        for item in snapshot.evidence_lineage
+    )
+
+
+def test_source_bound_llm_extraction_refuses_a_changed_member():
+    source = """단위:천원
+<TABLE><TR><TH>구분</TH><TH>제강부문</TH><TH>운송부문</TH><TH>기타부문</TH><TH>합계</TH></TR>
+<TR><TD>매출액</TD><TD>100</TD><TD>20</TD><TD>5</TD><TD>125</TD></TR>
+<TR><TD>영업이익</TD><TD>10</TD><TD>2</TD><TD>(1)</TD><TD>11</TD></TR></TABLE>"""
+    extraction = SourceBoundSegmentExtraction(
+        extractor="llm_reviewed",
+        document_id="DART_20260814003201",
+        member_path="llm_source.xml",
+        member_sha256="0" * 64,
+        reporting_unit="천원",
+        entries=(
+            SourceBoundSegmentEntry(
+                "제강부문", Decimal("100"), Decimal("10"), 1, 2, 3
+            ),
+            SourceBoundSegmentEntry(
+                "운송부문", Decimal("20"), Decimal("2"), 4, 5, 6
+            ),
+            SourceBoundSegmentEntry(
+                "기타부문", Decimal("5"), Decimal("-1"), 7, 8, 9
+            ),
+        ),
+        filed_total_revenue=Decimal("125"),
+        filed_total_operating_income=Decimal("11"),
+        filed_total_revenue_offset=10,
+        filed_total_operating_income_offset=11,
+        revenue_row_label="매출액",
+        revenue_row_label_offset=12,
+        operating_income_row_label="영업이익",
+        operating_income_row_label_offset=13,
+    )
+
+    def fetch_bytes(url: str) -> bytes:
+        assert "document.xml" in url
+        return _archive(
+            {"overview.xml": _SCREEN_TRIPPING_MEMBER, "llm_source.xml": source}
+        )
+
+    with pytest.raises(DeclaredSegmentsError, match="path/hash"):
+        _load_snapshot(fetch_bytes, _declaration(source_bound_extraction=extraction))
+
+
+def test_source_bound_llm_extraction_refuses_swapped_segment_economics():
+    source = """단위:천원
+<TABLE><TR><TH>구분</TH><TH>제강부문</TH><TH>운송부문</TH><TH>기타부문</TH><TH>합계</TH></TR>
+<TR><TD>매출액</TD><TD>100</TD><TD>20</TD><TD>5</TD><TD>125</TD></TR>
+<TR><TD>영업이익</TD><TD>10</TD><TD>2</TD><TD>(1)</TD><TD>11</TD></TR></TABLE>"""
+    extraction = SourceBoundSegmentExtraction(
+        extractor="llm_reviewed",
+        document_id="DART_20260814003201",
+        member_path="llm_source.xml",
+        member_sha256=sha256(source.encode("utf-8")).hexdigest(),
+        reporting_unit="천원",
+        entries=(
+            SourceBoundSegmentEntry(
+                "운송부문", Decimal("100"), Decimal("10"),
+                source.index("운송부문"), source.index(">100<") + 1,
+                source.index(">10<") + 1,
+            ),
+            SourceBoundSegmentEntry(
+                "제강부문", Decimal("20"), Decimal("2"),
+                source.index("제강부문"), source.index(">20<") + 1,
+                source.index(">2<") + 1,
+            ),
+            SourceBoundSegmentEntry(
+                "기타부문", Decimal("5"), Decimal("-1"),
+                source.index("기타부문"), source.index(">5<") + 1,
+                source.index(">(1)<") + 1,
+            ),
+        ),
+        filed_total_revenue=Decimal("125"),
+        filed_total_operating_income=Decimal("11"),
+        filed_total_revenue_offset=source.index(">125<") + 1,
+        filed_total_operating_income_offset=source.index(">11<") + 1,
+        revenue_row_label="매출액",
+        revenue_row_label_offset=source.index("매출액"),
+        operating_income_row_label="영업이익",
+        operating_income_row_label_offset=source.index("영업이익"),
+    )
+
+    with pytest.raises(DeclaredSegmentsError, match="source-table column"):
+        extraction.bind_source_member(
+            document_id="DART_20260814003201",
+            member_path="llm_source.xml",
+            member_sha256=sha256(source.encode("utf-8")).hexdigest(),
+            text=source,
+        )
+
+
+def test_source_bound_extraction_refuses_cell_prefixes_as_exact_values():
+    source = """단위:천원
+<TABLE><TR><TH>구분</TH><TH>Alpha Segment</TH><TH>Beta Segment</TH><TH>합계</TH></TR>
+<TR><TD>매출액</TD><TD>100</TD><TD>200</TD><TD>300</TD></TR>
+<TR><TD>영업이익</TD><TD>10</TD><TD>20</TD><TD>30</TD></TR></TABLE>"""
+    extraction = SourceBoundSegmentExtraction(
+        extractor="llm_reviewed",
+        document_id="DART_20260814003201",
+        member_path="llm_source.xml",
+        member_sha256=sha256(source.encode("utf-8")).hexdigest(),
+        reporting_unit="천원",
+        entries=(
+            SourceBoundSegmentEntry(
+                "Alpha", Decimal("10"), Decimal("1"),
+                source.index("Alpha"), source.index(">100<") + 1,
+                source.index(">10<") + 1,
+            ),
+            SourceBoundSegmentEntry(
+                "Beta", Decimal("20"), Decimal("2"),
+                source.index("Beta"), source.index(">200<") + 1,
+                source.index(">20<") + 1,
+            ),
+        ),
+        filed_total_revenue=Decimal("30"),
+        filed_total_operating_income=Decimal("3"),
+        filed_total_revenue_offset=source.index(">300<") + 1,
+        filed_total_operating_income_offset=source.index(">30<") + 1,
+        revenue_row_label="매출액",
+        revenue_row_label_offset=source.index("매출액"),
+        operating_income_row_label="영업이익",
+        operating_income_row_label_offset=source.index("영업이익"),
+    )
+
+    with pytest.raises(DeclaredSegmentsError, match="full visible source-table cell"):
+        extraction.bind_source_member(
+            document_id="DART_20260814003201",
+            member_path="llm_source.xml",
+            member_sha256=sha256(source.encode("utf-8")).hexdigest(),
+            text=source,
+        )
 
 
 def test_a_declaration_on_a_whole_company_filing_is_refused():

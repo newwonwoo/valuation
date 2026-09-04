@@ -17,6 +17,7 @@ missing was the glue a cold start needs. Two pieces:
 
 from __future__ import annotations
 
+from collections import Counter
 from decimal import Decimal
 from math import isfinite
 
@@ -277,6 +278,10 @@ def composed_generic_registry_loader(
     resolved: list[tuple[SegmentMethodChoice, str, str]] = []
     equity_registrations: list[LiveEquityMethodRegistration] = []
     finite_registrations: list[FiniteLifeNPVRegistration] = []
+    identity_counts = Counter(
+        (choice.archetype, choice.method, choice.version or "1")
+        for choice in method_choices
+    )
     for choice in method_choices:
         choice.validate()
         capability = registry.get(choice.archetype, choice.method)
@@ -288,6 +293,10 @@ def composed_generic_registry_loader(
                 "for it instead of widening this list silently"
             )
         version = choice.version or "1"
+        segment_scoped = identity_counts[
+            (choice.archetype, choice.method, version)
+        ] > 1
+        registration_segment = choice.segment_id if segment_scoped else None
         if family in _EQUITY_FAMILIES:
             equity_registrations.append(
                 LiveEquityMethodRegistration(
@@ -298,6 +307,7 @@ def composed_generic_registry_loader(
                     assumption_prefix=segment_assumption_prefix(
                         method_choices, choice.segment_id
                     ),
+                    segment_id=registration_segment,
                 )
             )
             continue
@@ -311,6 +321,7 @@ def composed_generic_registry_loader(
                     assumption_prefix=segment_assumption_prefix(
                         method_choices, choice.segment_id
                     ),
+                    segment_id=registration_segment,
                 )
             )
             continue
@@ -334,12 +345,15 @@ def composed_generic_registry_loader(
                 if wacc_result.beta_result is not None
                 else None
             )
-        seen: set[tuple[str, str, str]] = set()
+        seen_global: set[tuple[str, str, str]] = set()
         for choice, family, version in resolved:
             key = (choice.archetype, choice.method, version)
-            if key in seen:
-                continue
-            seen.add(key)
+            segment_scoped = identity_counts[key] > 1
+            if not segment_scoped:
+                if key in seen_global:
+                    continue
+                seen_global.add(key)
+            registration_segment = choice.segment_id if segment_scoped else None
             prefix = segment_assumption_prefix(method_choices, choice.segment_id)
             if family == "normalized_multiple":
                 evaluator_registry.register(
@@ -348,7 +362,8 @@ def composed_generic_registry_loader(
                         version=version,
                         ebitda_key=f"{prefix}normalized_ebitda",
                         multiple_key=f"{prefix}normalized_multiple",
-                    )
+                    ),
+                    segment_id=registration_segment,
                 )
             elif family == "explicit_fcff_dcf":
                 evaluator_registry.register(
@@ -361,7 +376,8 @@ def composed_generic_registry_loader(
                         discount_rate_path_id=rate_path,
                         beta_path_id=beta_path,
                         assumption_prefix=prefix,
-                    )
+                    ),
+                    segment_id=registration_segment,
                 )
             elif family == "contracted_backlog_dcf":
                 evaluator_registry.register(
@@ -374,7 +390,8 @@ def composed_generic_registry_loader(
                         discount_rate_path_id=rate_path,
                         beta_path_id=beta_path,
                         assumption_prefix=prefix,
-                    )
+                    ),
+                    segment_id=registration_segment,
                 )
         return evaluator_registry
 

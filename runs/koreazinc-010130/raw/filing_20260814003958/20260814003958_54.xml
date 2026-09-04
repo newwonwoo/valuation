@@ -1,0 +1,1214 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>27. 현금흐름표 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>영업활동현금흐름</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='200'></COL>
+<COL width='200'></COL>
+<COL width='200'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='391' height='23' colspan='2'>반기순이익</TD>
+  <TD width='191' height='23' align='RIGHT'>705,580,051</TD>
+</TR>
+<TR height='30'>
+  <TD width='391' height='23' colspan='2'>반기순이익조정을 위한 가감</TD>
+  <TD width='191' height='23' align='RIGHT'>807,366,350</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='1345' rowspan='42'>반기순이익조정을 위한 가감</TD>
+  <TD width='191' height='23'>법인세비용</TD>
+  <TD width='191' height='23' align='RIGHT'>318,960,912</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>퇴직급여</TD>
+  <TD width='191' height='23' align='RIGHT'>16,199,304</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>복리후생비</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>감가상각비</TD>
+  <TD width='191' height='23' align='RIGHT'>191,528,874</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>투자부동산감가상각비 조정</TD>
+  <TD width='191' height='23' align='RIGHT'>290,276</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>무형자산상각비</TD>
+  <TD width='191' height='23' align='RIGHT'>14,619,395</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>사용권자산상각비</TD>
+  <TD width='191' height='23' align='RIGHT'>14,813,404</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>유형자산처분손실</TD>
+  <TD width='191' height='23' align='RIGHT'>2,880,464</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>무형자산처분손실</TD>
+  <TD width='191' height='23' align='RIGHT'>7,102</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>무형자산손상차손</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>대손상각비 조정</TD>
+  <TD width='191' height='23' align='RIGHT'>1,519,719</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>재고자산평가손실</TD>
+  <TD width='191' height='23' align='RIGHT'>11,201,837</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>재고자산평가손실환입</TD>
+  <TD width='191' height='23' align='RIGHT'>(4,656,933)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>재고자산공정가치평가이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(2,001,931)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>외환차손</TD>
+  <TD width='191' height='23' align='RIGHT'>57,931,998</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>외화환산손실</TD>
+  <TD width='191' height='23' align='RIGHT'>95,469,778</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>지분법손실</TD>
+  <TD width='191' height='23' align='RIGHT'>34,798,081</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>충당부채전입액</TD>
+  <TD width='191' height='23' align='RIGHT'>825,506</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>이자비용</TD>
+  <TD width='191' height='23' align='RIGHT'>116,660,537</TD>
+</TR>
+<TR height='53'>
+  <TD width='191' height='46'>당기손익인식금융자산처분손실</TD>
+  <TD width='191' height='46' align='RIGHT'>6,794,333</TD>
+</TR>
+<TR height='53'>
+  <TD width='191' height='46'>당기손익-공정가치측정금융자산평가손실</TD>
+  <TD width='191' height='46' align='RIGHT'>16,370,545</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타비용</TD>
+  <TD width='191' height='23' align='RIGHT'>905,280</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>관계기업투자자산처분손실</TD>
+  <TD width='191' height='23' align='RIGHT'>7,907,753</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>파생상품거래손실</TD>
+  <TD width='191' height='23' align='RIGHT'>72,360,907</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>파생상품평가손실</TD>
+  <TD width='191' height='23' align='RIGHT'>53,223,190</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>사채상환손실 조정</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>리스해지손실 조정</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>외화환산이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(32,806,104)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>외환차익</TD>
+  <TD width='191' height='23' align='RIGHT'>(709,524)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>리스변경이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(2,672)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>이자수익</TD>
+  <TD width='191' height='23' align='RIGHT'>(39,561,307)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>배당금수익</TD>
+  <TD width='191' height='23' align='RIGHT'>(2,979,031)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>유형자산처분이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(743,543)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>무형자산처분이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(47,411)</TD>
+</TR>
+<TR height='53'>
+  <TD width='191' height='46'>당기손익-공정가치측정금융자산처분이익</TD>
+  <TD width='191' height='46' align='RIGHT'>(2,718,609)</TD>
+</TR>
+<TR height='53'>
+  <TD width='191' height='46'>당기손익-공정가치측정금융자산평가이익</TD>
+  <TD width='191' height='46' align='RIGHT'>(42,515,187)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>파생상품평가이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(64,294,618)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>파생상품거래이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(22,669,631)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>지분법이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(11,923,703)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>비지배지분부채평가이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(249,083)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>리스해지이익</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타수익</TD>
+  <TD width='191' height='23' align='RIGHT'>(23,558)</TD>
+</TR>
+<TR height='30'>
+  <TD width='391' height='23' colspan='2'>영업활동으로 인한 자산 부채의 변동</TD>
+  <TD width='191' height='23' align='RIGHT'>(1,399,923,347)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='916' rowspan='30'>영업활동으로 인한 자산 부채의 변동</TD>
+  <TD width='191' height='23'>매출채권</TD>
+  <TD width='191' height='23' align='RIGHT'>(498,345,328)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>미수금</TD>
+  <TD width='191' height='23' align='RIGHT'>(118,694,266)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>미수수익의 감소(증가)</TD>
+  <TD width='191' height='23' align='RIGHT'>(16,285,125)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>부가세대급금</TD>
+  <TD width='191' height='23' align='RIGHT'>(190,239,771)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>선급금</TD>
+  <TD width='191' height='23' align='RIGHT'>(31,570,464)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>선급비용</TD>
+  <TD width='191' height='23' align='RIGHT'>(55,063,291)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>확정계약자산</TD>
+  <TD width='191' height='23' align='RIGHT'>1,590,125</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타유동자산</TD>
+  <TD width='191' height='23' align='RIGHT'>(15,666,728)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>재고자산</TD>
+  <TD width='191' height='23' align='RIGHT'>(207,114,949)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타비유동자산</TD>
+  <TD width='191' height='23' align='RIGHT'>818,477</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>장기미수금</TD>
+  <TD width='191' height='23' align='RIGHT'>21,993,873</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>장기선급금</TD>
+  <TD width='191' height='23' align='RIGHT'>(418,925)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>매입채무</TD>
+  <TD width='191' height='23' align='RIGHT'>(366,670,616)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>미지급금</TD>
+  <TD width='191' height='23' align='RIGHT'>71,077,949</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>미지급비용</TD>
+  <TD width='191' height='23' align='RIGHT'>7,629,272</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타유동부채</TD>
+  <TD width='191' height='23' align='RIGHT'>(10,328,774)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>선수금</TD>
+  <TD width='191' height='23' align='RIGHT'>2,655,795</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>선수수익</TD>
+  <TD width='191' height='23' align='RIGHT'>(31,718)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>부가세예수금</TD>
+  <TD width='191' height='23' align='RIGHT'>(275,214)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>예수금</TD>
+  <TD width='191' height='23' align='RIGHT'>(2,928,796)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>장기미지급금의 증가(감소)</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>장기미지급비용</TD>
+  <TD width='191' height='23' align='RIGHT'>1,986,444</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>장기선수금의 증가(감소)</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>충당부채</TD>
+  <TD width='191' height='23' align='RIGHT'>19,422,634</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타비유동부채</TD>
+  <TD width='191' height='23' align='RIGHT'>(130,990)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>영업관련 파생상품자산</TD>
+  <TD width='191' height='23' align='RIGHT'>14,526,235</TD>
+</TR>
+<TR height='53'>
+  <TD width='191' height='46'>사외적립자산의공정가치의 감소(증가)</TD>
+  <TD width='191' height='46' align='RIGHT'>(13,190,558)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>퇴직금의지급</TD>
+  <TD width='191' height='23' align='RIGHT'>(12,211,038)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>확정기여형퇴직연금 전환</TD>
+  <TD width='191' height='23' align='RIGHT'>(4,107,415)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>관계사전출입</TD>
+  <TD width='191' height='23' align='RIGHT'>1,649,815</TD>
+</TR>
+<TR height='30'>
+  <TD width='391' height='23' colspan='2'>영업에서 창출된 현금흐름</TD>
+  <TD width='191' height='23' align='RIGHT'>113,023,054</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='200'></COL>
+<COL width='200'></COL>
+<COL width='200'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>　</TH>
+  <TH width='191' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='391' height='23' colspan='2'>반기순이익</TD>
+  <TD width='191' height='23' align='RIGHT'>492,213,326</TD>
+</TR>
+<TR height='30'>
+  <TD width='391' height='23' colspan='2'>반기순이익조정을 위한 가감</TD>
+  <TD width='191' height='23' align='RIGHT'>296,609,285</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='1345' rowspan='42'>반기순이익조정을 위한 가감</TD>
+  <TD width='191' height='23'>법인세비용</TD>
+  <TD width='191' height='23' align='RIGHT'>169,409,978</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>퇴직급여</TD>
+  <TD width='191' height='23' align='RIGHT'>18,247,614</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>복리후생비</TD>
+  <TD width='191' height='23' align='RIGHT'>12,111,882</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>감가상각비</TD>
+  <TD width='191' height='23' align='RIGHT'>170,154,210</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>투자부동산감가상각비 조정</TD>
+  <TD width='191' height='23' align='RIGHT'>290,275</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>무형자산상각비</TD>
+  <TD width='191' height='23' align='RIGHT'>5,878,819</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>사용권자산상각비</TD>
+  <TD width='191' height='23' align='RIGHT'>11,494,487</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>유형자산처분손실</TD>
+  <TD width='191' height='23' align='RIGHT'>10,403,955</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>무형자산처분손실</TD>
+  <TD width='191' height='23' align='RIGHT'>1,683</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>무형자산손상차손</TD>
+  <TD width='191' height='23' align='RIGHT'>808,811</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>대손상각비 조정</TD>
+  <TD width='191' height='23' align='RIGHT'>1,494,956</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>재고자산평가손실</TD>
+  <TD width='191' height='23' align='RIGHT'>12,972,716</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>재고자산평가손실환입</TD>
+  <TD width='191' height='23' align='RIGHT'>(8,820,979)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>재고자산공정가치평가이익</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>외환차손</TD>
+  <TD width='191' height='23' align='RIGHT'>79,002</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>외화환산손실</TD>
+  <TD width='191' height='23' align='RIGHT'>13,607,659</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>지분법손실</TD>
+  <TD width='191' height='23' align='RIGHT'>9,962,124</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>충당부채전입액</TD>
+  <TD width='191' height='23' align='RIGHT'>2,911,538</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>이자비용</TD>
+  <TD width='191' height='23' align='RIGHT'>105,928,800</TD>
+</TR>
+<TR height='53'>
+  <TD width='191' height='46'>당기손익인식금융자산처분손실</TD>
+  <TD width='191' height='46' align='RIGHT'>8,307,981</TD>
+</TR>
+<TR height='53'>
+  <TD width='191' height='46'>당기손익-공정가치측정금융자산평가손실</TD>
+  <TD width='191' height='46' align='RIGHT'>13,189,904</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타비용</TD>
+  <TD width='191' height='23' align='RIGHT'>420,274</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>관계기업투자자산처분손실</TD>
+  <TD width='191' height='23' align='RIGHT'>1,053,405</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>파생상품거래손실</TD>
+  <TD width='191' height='23' align='RIGHT'>17,981,562</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>파생상품평가손실</TD>
+  <TD width='191' height='23' align='RIGHT'>43,238,183</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>사채상환손실 조정</TD>
+  <TD width='191' height='23' align='RIGHT'>17,880,734</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>리스해지손실 조정</TD>
+  <TD width='191' height='23' align='RIGHT'>152</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>외화환산이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(105,143,277)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>외환차익</TD>
+  <TD width='191' height='23' align='RIGHT'>(44,707,479)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>리스변경이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(32,520)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>이자수익</TD>
+  <TD width='191' height='23' align='RIGHT'>(35,206,788)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>배당금수익</TD>
+  <TD width='191' height='23' align='RIGHT'>(2,572,966)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>유형자산처분이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(73,022)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>무형자산처분이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(1,148,776)</TD>
+</TR>
+<TR height='53'>
+  <TD width='191' height='46'>당기손익-공정가치측정금융자산처분이익</TD>
+  <TD width='191' height='46' align='RIGHT'>(2,754,972)</TD>
+</TR>
+<TR height='53'>
+  <TD width='191' height='46'>당기손익-공정가치측정금융자산평가이익</TD>
+  <TD width='191' height='46' align='RIGHT'>(70,590,612)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>파생상품평가이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(38,967,571)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>파생상품거래이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(18,257,086)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>지분법이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(22,787,945)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>비지배지분부채평가이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(125,351)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>리스해지이익</TD>
+  <TD width='191' height='23' align='RIGHT'>(15,911)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타수익</TD>
+  <TD width='191' height='23' align='RIGHT'>(16,164)</TD>
+</TR>
+<TR height='30'>
+  <TD width='391' height='23' colspan='2'>영업활동으로 인한 자산 부채의 변동</TD>
+  <TD width='191' height='23' align='RIGHT'>(1,309,348,975)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='916' rowspan='30'>영업활동으로 인한 자산 부채의 변동</TD>
+  <TD width='191' height='23'>매출채권</TD>
+  <TD width='191' height='23' align='RIGHT'>(92,471,227)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>미수금</TD>
+  <TD width='191' height='23' align='RIGHT'>(17,420,484)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>미수수익의 감소(증가)</TD>
+  <TD width='191' height='23' align='RIGHT'>(3,427,433)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>부가세대급금</TD>
+  <TD width='191' height='23' align='RIGHT'>(19,752,369)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>선급금</TD>
+  <TD width='191' height='23' align='RIGHT'>23,391,254</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>선급비용</TD>
+  <TD width='191' height='23' align='RIGHT'>(3,930,331)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>확정계약자산</TD>
+  <TD width='191' height='23' align='RIGHT'>(260,966)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타유동자산</TD>
+  <TD width='191' height='23' align='RIGHT'>(1,858,128)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>재고자산</TD>
+  <TD width='191' height='23' align='RIGHT'>(673,822,225)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타비유동자산</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>장기미수금</TD>
+  <TD width='191' height='23' align='RIGHT'>(2,828,649)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>장기선급금</TD>
+  <TD width='191' height='23' align='RIGHT'>(2,641,000)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>매입채무</TD>
+  <TD width='191' height='23' align='RIGHT'>(502,217,521)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>미지급금</TD>
+  <TD width='191' height='23' align='RIGHT'>(20,508,253)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>미지급비용</TD>
+  <TD width='191' height='23' align='RIGHT'>16,455,449</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타유동부채</TD>
+  <TD width='191' height='23' align='RIGHT'>(1,503,170)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>선수금</TD>
+  <TD width='191' height='23' align='RIGHT'>3,848,009</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>선수수익</TD>
+  <TD width='191' height='23' align='RIGHT'>(33,377)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>부가세예수금</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>예수금</TD>
+  <TD width='191' height='23' align='RIGHT'>(668,764)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>장기미지급금의 증가(감소)</TD>
+  <TD width='191' height='23' align='RIGHT'>(57,330)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>장기미지급비용</TD>
+  <TD width='191' height='23' align='RIGHT'>1,207,750</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>장기선수금의 증가(감소)</TD>
+  <TD width='191' height='23' align='RIGHT'>(366,545)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>충당부채</TD>
+  <TD width='191' height='23' align='RIGHT'>(955,862)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>기타비유동부채</TD>
+  <TD width='191' height='23' align='RIGHT'>13,599</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>영업관련 파생상품자산</TD>
+  <TD width='191' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='53'>
+  <TD width='191' height='46'>사외적립자산의공정가치의 감소(증가)</TD>
+  <TD width='191' height='46' align='RIGHT'>3,682,834</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>퇴직금의지급</TD>
+  <TD width='191' height='23' align='RIGHT'>(7,376,064)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>확정기여형퇴직연금 전환</TD>
+  <TD width='191' height='23' align='RIGHT'>(5,882,845)</TD>
+</TR>
+<TR height='30'>
+  <TD width='191' height='23'>관계사전출입</TD>
+  <TD width='191' height='23' align='RIGHT'>34,673</TD>
+</TR>
+<TR height='30'>
+  <TD width='391' height='23' colspan='2'>영업에서 창출된 현금흐름</TD>
+  <TD width='191' height='23' align='RIGHT'>(520,526,364)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>현금흐름표에 포함되지 않는 주요 비현금거래에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='291' height='46'>유형자산의 취득 관련 미지급금 변동, 비현금거래</TD>
+  <TD width='291' height='46' align='RIGHT'>(5,132,783)</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>사용권자산의 추가, 비현금거래</TD>
+  <TD width='291' height='23' align='RIGHT'>25,105,661</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>장기사채의 유동성 대체, 비현금거래</TD>
+  <TD width='291' height='23' align='RIGHT'>(389,512,304)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='291' height='46'>유형자산의 취득 관련 미지급금 변동, 비현금거래</TD>
+  <TD width='291' height='46' align='RIGHT'>12,237,291</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>사용권자산의 추가, 비현금거래</TD>
+  <TD width='291' height='23' align='RIGHT'>11,992,823</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>장기사채의 유동성 대체, 비현금거래</TD>
+  <TD width='291' height='23' align='RIGHT'>0</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='600'></COL>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23' colspan='2'>재무활동에서 생기는 부채의 조정에 관한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='591' height='23'>당반기</TD>
+  <TD width='591' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1200'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='168'>
+  <TH width='111' height='161'>　</TH>
+  <TH width='111' height='161'>　</TH>
+  <TH width='111' height='161'>　</TH>
+  <TH width='111' height='161'>　</TH>
+  <TH width='111' height='161'>재무활동에서 생기는 기초 부채</TH>
+  <TH width='111' height='161'>재무현금흐름을 통한 증가(감소), 재무활동에서 생기는 부채</TH>
+  <TH width='111' height='161'>종속기업이나 그 밖의 사업에 대한 지배력 획득 또는 상실을 통한 증가(감소), 재무활동에서 생기는 부채</TH>
+  <TH width='111' height='161'>새로운 리스, 재무활동에서 생기는 부채의 증가</TH>
+  <TH width='111' height='161'>기타 변동을 통한 증가(감소), 재무활동에서 생기는 부채의 증가(감소)</TH>
+  <TH width='111' height='161'>재무활동에서 생기는 기말 부채</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='111' height='629' rowspan='12'>재무활동에서 생기는 부채</TD>
+  <TD width='111' height='152' rowspan='3'>단기차입금</TD>
+  <TD width='111' height='99' rowspan='2'>자산부채변동의 유동비유동 분류</TD>
+  <TD width='111' height='46'>유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>비유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='231' height='46' colspan='2'>자산부채변동의 유동비유동 분류 &nbsp;합계</TD>
+  <TD width='111' height='46' align='RIGHT'>3,047,321,677</TD>
+  <TD width='111' height='46' align='RIGHT'>401,956,156</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>172,009,656</TD>
+  <TD width='111' height='46' align='RIGHT'>3,621,287,489</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>장기 차입금</TD>
+  <TD width='111' height='99' rowspan='2'>자산부채변동의 유동비유동 분류</TD>
+  <TD width='111' height='46'>유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>비유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='231' height='46' colspan='2'>자산부채변동의 유동비유동 분류 &nbsp;합계</TD>
+  <TD width='111' height='46' align='RIGHT'>1,154,147,160</TD>
+  <TD width='111' height='46' align='RIGHT'>545,137,321</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>74,612,277</TD>
+  <TD width='111' height='46' align='RIGHT'>1,773,896,758</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>리스 부채</TD>
+  <TD width='111' height='99' rowspan='2'>자산부채변동의 유동비유동 분류</TD>
+  <TD width='111' height='46'>유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>비유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='231' height='46' colspan='2'>자산부채변동의 유동비유동 분류 &nbsp;합계</TD>
+  <TD width='111' height='46' align='RIGHT'>155,205,961</TD>
+  <TD width='111' height='46' align='RIGHT'>(12,388,631)</TD>
+  <TD width='111' height='46' align='RIGHT'>11,380,403</TD>
+  <TD width='111' height='46' align='RIGHT'>25,105,661</TD>
+  <TD width='111' height='46' align='RIGHT'>4,763,727</TD>
+  <TD width='111' height='46' align='RIGHT'>184,067,121</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>사채</TD>
+  <TD width='111' height='99' rowspan='2'>자산부채변동의 유동비유동 분류</TD>
+  <TD width='111' height='46'>유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>494,255,503</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>3,295,512</TD>
+  <TD width='111' height='46' align='RIGHT'>497,551,015</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>비유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>1,603,541,258</TD>
+  <TD width='111' height='46' align='RIGHT'>(1,215,448)</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>867,505</TD>
+  <TD width='111' height='46' align='RIGHT'>1,603,193,315</TD>
+</TR>
+<TR height='53'>
+  <TD width='231' height='46' colspan='2'>자산부채변동의 유동비유동 분류 &nbsp;합계</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='471' height='23' colspan='4'>재무활동에서 생기는 부채 &nbsp;합계</TD>
+  <TD width='111' height='23' align='RIGHT'>5,960,216,056</TD>
+  <TD width='111' height='23' align='RIGHT'>1,427,744,901</TD>
+  <TD width='111' height='23' align='RIGHT'>11,380,403</TD>
+  <TD width='111' height='23' align='RIGHT'>25,105,661</TD>
+  <TD width='111' height='23' align='RIGHT'>255,548,677</TD>
+  <TD width='111' height='23' align='RIGHT'>7,679,995,698</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='1200'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='600'></COL>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>전반기</TD>
+  <TD width='591' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1200'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='168'>
+  <TH width='111' height='161'>　</TH>
+  <TH width='111' height='161'>　</TH>
+  <TH width='111' height='161'>　</TH>
+  <TH width='111' height='161'>　</TH>
+  <TH width='111' height='161'>재무활동에서 생기는 기초 부채</TH>
+  <TH width='111' height='161'>재무현금흐름을 통한 증가(감소), 재무활동에서 생기는 부채</TH>
+  <TH width='111' height='161'>종속기업이나 그 밖의 사업에 대한 지배력 획득 또는 상실을 통한 증가(감소), 재무활동에서 생기는 부채</TH>
+  <TH width='111' height='161'>새로운 리스, 재무활동에서 생기는 부채의 증가</TH>
+  <TH width='111' height='161'>기타 변동을 통한 증가(감소), 재무활동에서 생기는 부채의 증가(감소)</TH>
+  <TH width='111' height='161'>재무활동에서 생기는 기말 부채</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='111' height='629' rowspan='12'>재무활동에서 생기는 부채</TD>
+  <TD width='111' height='152' rowspan='3'>단기차입금</TD>
+  <TD width='111' height='99' rowspan='2'>자산부채변동의 유동비유동 분류</TD>
+  <TD width='111' height='46'>유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>비유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='231' height='46' colspan='2'>자산부채변동의 유동비유동 분류 &nbsp;합계</TD>
+  <TD width='111' height='46' align='RIGHT'>3,319,850,915</TD>
+  <TD width='111' height='46' align='RIGHT'>203,032,078</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>(150,560,685)</TD>
+  <TD width='111' height='46' align='RIGHT'>3,372,322,308</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>장기 차입금</TD>
+  <TD width='111' height='99' rowspan='2'>자산부채변동의 유동비유동 분류</TD>
+  <TD width='111' height='46'>유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>비유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='231' height='46' colspan='2'>자산부채변동의 유동비유동 분류 &nbsp;합계</TD>
+  <TD width='111' height='46' align='RIGHT'>494,115,379</TD>
+  <TD width='111' height='46' align='RIGHT'>480,675,940</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>(55,020,213)</TD>
+  <TD width='111' height='46' align='RIGHT'>919,771,106</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>리스 부채</TD>
+  <TD width='111' height='99' rowspan='2'>자산부채변동의 유동비유동 분류</TD>
+  <TD width='111' height='46'>유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>비유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='231' height='46' colspan='2'>자산부채변동의 유동비유동 분류 &nbsp;합계</TD>
+  <TD width='111' height='46' align='RIGHT'>148,835,646</TD>
+  <TD width='111' height='46' align='RIGHT'>(7,099,041)</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>11,992,823</TD>
+  <TD width='111' height='46' align='RIGHT'>(3,430,715)</TD>
+  <TD width='111' height='46' align='RIGHT'>150,298,713</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='152' rowspan='3'>사채</TD>
+  <TD width='111' height='99' rowspan='2'>자산부채변동의 유동비유동 분류</TD>
+  <TD width='111' height='46'>유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>996,799,310</TD>
+  <TD width='111' height='46' align='RIGHT'>(1,017,880,734)</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>21,081,424</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>비유동으로 분류되는 자산부채</TD>
+  <TD width='111' height='46' align='RIGHT'>12,459,501</TD>
+  <TD width='111' height='46' align='RIGHT'>692,366,535</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>466,105</TD>
+  <TD width='111' height='46' align='RIGHT'>705,292,141</TD>
+</TR>
+<TR height='53'>
+  <TD width='231' height='46' colspan='2'>자산부채변동의 유동비유동 분류 &nbsp;합계</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='471' height='23' colspan='4'>재무활동에서 생기는 부채 &nbsp;합계</TD>
+  <TD width='111' height='23' align='RIGHT'>4,972,060,751</TD>
+  <TD width='111' height='23' align='RIGHT'>351,094,778</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>11,992,823</TD>
+  <TD width='111' height='23' align='RIGHT'>(187,464,084)</TD>
+  <TD width='111' height='23' align='RIGHT'>5,147,684,268</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='1200'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

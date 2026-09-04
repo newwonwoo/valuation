@@ -194,3 +194,98 @@ def test_rnpv_stays_an_explicit_gap_naming_the_family():
             ),
             forecast_years=3,
         )
+
+
+def test_registry_scopes_duplicate_exact_model_key_by_segment():
+    loader = composed_generic_registry_loader(
+        method_choices=(
+            SegmentMethodChoice(
+                "trading", "process_spread", "normalized_multiple"
+            ),
+            SegmentMethodChoice(
+                "recycling", "process_spread", "normalized_multiple"
+            ),
+        ),
+        forecast_years=5,
+    )
+    registry = loader(_context({}))
+    key = ModelKey("process_spread", "normalized_multiple", "1")
+    assert registry.get(key, segment_id="trading").required_assumption_keys == (
+        "trading_normalized_ebitda",
+        "trading_normalized_multiple",
+    )
+    assert registry.get(key, segment_id="recycling").required_assumption_keys == (
+        "recycling_normalized_ebitda",
+        "recycling_normalized_multiple",
+    )
+    assert registry.keys_for_segment("trading") == (key,)
+    assert registry.keys_for_segment("recycling") == (key,)
+    assert registry.keys_for_segment("manufacturing") == ()
+    with pytest.raises(KeyError, match="no exact evaluator"):
+        registry.get(key)
+
+
+def test_unique_model_key_keeps_historical_global_registry_contract():
+    loader = composed_generic_registry_loader(
+        method_choices=(
+            SegmentMethodChoice(
+                "core", "process_spread", "normalized_multiple"
+            ),
+        ),
+        forecast_years=5,
+    )
+    registry = loader(_context({}))
+    key = ModelKey("process_spread", "normalized_multiple", "1")
+    assert not registry.has_scoped_registrations()
+    assert registry.get(key).required_assumption_keys == (
+        "normalized_ebitda",
+        "normalized_multiple",
+    )
+
+
+def test_registry_scopes_duplicate_equity_model_key_by_segment():
+    loader = composed_generic_registry_loader(
+        method_choices=(
+            SegmentMethodChoice("office", "asset_yield_nav", "ffo_multiple"),
+            SegmentMethodChoice("retail", "asset_yield_nav", "ffo_multiple"),
+        ),
+        forecast_years=3,
+    )
+    registry = loader(_context({}))
+    key = ModelKey("asset_yield_nav", "ffo_multiple", "1")
+    assert registry.get(key, segment_id="office").required_assumption_keys == (
+        "office_normalized_forward_ffo",
+        "office_ffo_multiple",
+    )
+    assert registry.get(key, segment_id="retail").required_assumption_keys == (
+        "retail_normalized_forward_ffo",
+        "retail_ffo_multiple",
+    )
+    with pytest.raises(KeyError, match="no exact evaluator"):
+        registry.get(key)
+
+
+def test_registry_scopes_duplicate_finite_life_model_key_by_segment():
+    loader = composed_generic_registry_loader(
+        method_choices=(
+            SegmentMethodChoice("mine_a", "reserve_depletion", "reserve_npv"),
+            SegmentMethodChoice("mine_b", "reserve_depletion", "reserve_npv"),
+        ),
+        forecast_years=3,
+    )
+    registry = loader(_context({"live_wacc_result": _live_wacc()}))
+    key = ModelKey("reserve_depletion", "reserve_npv", "1")
+    assert registry.get(key, segment_id="mine_a").required_assumption_keys == (
+        "mine_a_cashflow_year_0",
+        "mine_a_cashflow_year_1",
+        "mine_a_cashflow_year_2",
+        "mine_a_cashflow_year_3",
+    )
+    assert registry.get(key, segment_id="mine_b").required_assumption_keys == (
+        "mine_b_cashflow_year_0",
+        "mine_b_cashflow_year_1",
+        "mine_b_cashflow_year_2",
+        "mine_b_cashflow_year_3",
+    )
+    with pytest.raises(KeyError, match="no exact evaluator"):
+        registry.get(key)

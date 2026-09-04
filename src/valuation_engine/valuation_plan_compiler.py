@@ -107,9 +107,16 @@ def valuation_evaluator_registry_hash(
         raise TypeError(
             "valuation evaluator identity requires EvaluatorRegistry"
         )
+    if registry.has_scoped_registrations():
+        registrations = registry.registration_items()
+        contract = "valuation_evaluator_registry/v2"
+    else:
+        registrations = tuple(
+            (None, key, registry.get(key)) for key in registry.keys()
+        )
+        contract = "valuation_evaluator_registry/v1"
     rows: list[dict[str, object]] = []
-    for key in registry.keys():
-        evaluator = registry.get(key)
+    for segment_id, key, evaluator in registrations:
         required = tuple(evaluator.required_assumption_keys)
         if not required or not all(
             isinstance(item, str) and item for item in required
@@ -121,17 +128,18 @@ def valuation_evaluator_registry_hash(
             raise ValueError(
                 f"evaluator {key!r} declares duplicate required assumptions"
             )
-        rows.append(
-            {
-                "archetype": key.archetype,
-                "method": key.method,
-                "version": key.version,
-                "required_assumption_keys": required,
-            }
-        )
+        row: dict[str, object] = {
+            "archetype": key.archetype,
+            "method": key.method,
+            "version": key.version,
+            "required_assumption_keys": required,
+        }
+        if registry.has_scoped_registrations():
+            row["segment_id"] = segment_id
+        rows.append(row)
     return _stable_contract_hash(
         {
-            "contract": "valuation_evaluator_registry/v1",
+            "contract": contract,
             "evaluators": rows,
         }
     )
@@ -359,6 +367,7 @@ def compile_company_valuation_plan(
                 capability,
                 scenario_set=scenario_set,
                 evaluator_registry=evaluator_registry,
+                segment_id=segment.segment_id,
             )
             for capability in capabilities
             if capability.kind is MethodKind.SEGMENT_EVALUATOR
@@ -475,12 +484,13 @@ def _candidate_for(
     *,
     scenario_set: BoundScenarioSet,
     evaluator_registry: EvaluatorRegistry,
+    segment_id: str,
 ) -> SegmentMethodCandidate:
     registered = tuple(
         sorted(
             (
                 key
-                for key in evaluator_registry.keys()
+                for key in evaluator_registry.keys_for_segment(segment_id)
                 if key.archetype == capability.archetype
                 and key.method == capability.method
             ),
@@ -491,7 +501,7 @@ def _candidate_for(
     missing_union: list[str] = []
     missing_by_key: list[tuple[ModelKey, tuple[str, ...]]] = []
     for key in registered:
-        evaluator = evaluator_registry.get(key)
+        evaluator = evaluator_registry.get(key, segment_id=segment_id)
         key_missing: list[str] = []
         for scenario in scenario_set.scenarios:
             for assumption_key in evaluator.required_assumption_keys:
