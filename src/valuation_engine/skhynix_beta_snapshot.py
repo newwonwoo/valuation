@@ -10,6 +10,9 @@ from typing import Any
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_BETA_SNAPSHOT_PATH = _REPO_ROOT / "config" / "skhynix_beta_snapshot.json"
+_REGISTERED_BETA_SNAPSHOT_SHA256 = (
+    "2bc9eb5bc13658a910ecebc3e54fd79c7ed7f53b25e30d675d83c486b3bf44da"
+)
 PEER_IDS = ("INTC", "AVGO", "MRVL", "MU")
 BENCHMARK_ID = "COMP"
 _PEER_CAPITAL_FACT_BINDINGS = {
@@ -259,10 +262,13 @@ def load_skhynix_beta_snapshot(
     benchmark_source_ref = str(payload.get("benchmark_source_ref", ""))
     if "api.nasdaq.com/api/quote/COMP/historical" not in benchmark_source_ref:
         raise ValueError("SK hynix benchmark source is not the frozen Nasdaq query")
+    raw_hash = sha256(raw).hexdigest()
+    if raw_hash != _REGISTERED_BETA_SNAPSHOT_SHA256:
+        raise ValueError("SK hynix Beta snapshot is not independently registered")
     return SKHynixBetaSnapshot(
         as_of=str(payload["as_of"]),
         benchmark_id=BENCHMARK_ID,
         benchmark_source_ref=benchmark_source_ref,
         estimates=tuple(estimates),
-        raw_hash=sha256(raw).hexdigest(),
+        raw_hash=raw_hash,
     )

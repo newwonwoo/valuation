@@ -498,9 +498,20 @@ def _multiple_assumption_table(
     def segment_from_key(key: str, suffix: str) -> str:
         return key.removesuffix(suffix).rstrip("_")
 
+    ownership_rates_vary = False
+    if valuation_plan is not None:
+        ownership_rates = tuple(
+            scenario.get(segment.ownership_key)
+            .measure.convert_to("ratio")
+            .amount
+            for scenario in scenarios
+            for segment in valuation_plan.segments
+        )
+        ownership_rates_vary = len(set(ownership_rates)) > 1
+
     def segment_label_with_ownership(scenario: Any, segment: str) -> str:
         label = segment_label(segment)
-        if valuation_plan is None:
+        if valuation_plan is None or not ownership_rates_vary:
             return label
         ownership_by_segment = {
             item.segment_id: scenario.get(item.ownership_key)
@@ -508,8 +519,6 @@ def _multiple_assumption_table(
             .amount
             for item in valuation_plan.segments
         }
-        if len(set(ownership_by_segment.values())) <= 1:
-            return label
         ownership = ownership_by_segment[segment]
         return f"{label} · 귀속 {ownership * 100:.4f}%"
 
@@ -899,7 +908,8 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             )
         )
         ownership_values = tuple(
-            core.get(key).measure.convert_to("ratio").amount
+            scenario.get(key).measure.convert_to("ratio").amount
+            for scenario in scenarios
             for key in ownership_keys
         )
         if ownership_values and len(set(ownership_values)) == 1:

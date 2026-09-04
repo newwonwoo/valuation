@@ -166,6 +166,113 @@ def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
     assert "수출입 200억원×4배" in svg
 
 
+def test_visual_table_renders_common_ownership_that_varies_by_scenario():
+    def scenario(scenario_id: str, ownership: str) -> BoundScenario:
+        return BoundScenario(
+            scenario_id,
+            (
+                _assumption(
+                    "manufacturing_normalized_ebitda",
+                    "100",
+                    "KRW_billion",
+                    scenario=scenario_id,
+                ),
+                _assumption(
+                    "manufacturing_normalized_multiple",
+                    "8",
+                    "multiple",
+                    scenario=scenario_id,
+                ),
+                _assumption(
+                    "trading_normalized_ebitda",
+                    "20",
+                    "KRW_billion",
+                    scenario=scenario_id,
+                ),
+                _assumption(
+                    "trading_normalized_multiple",
+                    "4",
+                    "multiple",
+                    scenario=scenario_id,
+                ),
+                _assumption(
+                    "manufacturing_ownership",
+                    ownership,
+                    "ratio",
+                    scenario=scenario_id,
+                ),
+                _assumption(
+                    "trading_ownership",
+                    ownership,
+                    "ratio",
+                    scenario=scenario_id,
+                ),
+                _assumption("diluted_shares", "10", "shares", scenario=scenario_id),
+            ),
+        )
+
+    scenarios = (
+        scenario("Down", "0.8"),
+        scenario("Core", "0.9"),
+        scenario("Bull", "1"),
+    )
+    manufacturing_key = ModelKey(
+        "commodity_price_taker", "normalized_multiple", "1"
+    )
+    trading_key = ModelKey("trading", "normalized_multiple", "1")
+    plan = CompanyValuationPlan(
+        segments=(
+            SegmentValuationPlan(
+                "manufacturing",
+                "manufacturing",
+                manufacturing_key,
+                "manufacturing_ownership",
+                None,
+            ),
+            SegmentValuationPlan(
+                "trading",
+                "trading",
+                trading_key,
+                "trading_ownership",
+                None,
+            ),
+        ),
+        reporting_unit="KRW_billion",
+        diluted_shares_key="diluted_shares",
+    )
+    contracts = (
+        SegmentEvaluatorContract(
+            "manufacturing",
+            manufacturing_key,
+            "normalized_multiple",
+            "enterprise_value",
+            (
+                "manufacturing_normalized_ebitda",
+                "manufacturing_normalized_multiple",
+            ),
+        ),
+        SegmentEvaluatorContract(
+            "trading",
+            trading_key,
+            "normalized_multiple",
+            "enterprise_value",
+            ("trading_normalized_ebitda", "trading_normalized_multiple"),
+        ),
+    )
+
+    table = _multiple_assumption_table(
+        scenarios,
+        evaluator_contracts=contracts,
+        valuation_plan=plan,
+    )
+
+    assert table is not None
+    rendered_rows = tuple(" | ".join(row) for row in table[1])
+    assert "귀속 80.0000%" in rendered_rows[0]
+    assert "귀속 90.0000%" in rendered_rows[1]
+    assert "귀속 100.0000%" in rendered_rows[2]
+
+
 def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
     backlog = BacklogBurnDCFEvaluator(
         archetype="contracted_backlog",

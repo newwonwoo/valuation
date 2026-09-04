@@ -24,6 +24,7 @@ from valuation_engine.skhynix_continuous_probability import (
 )
 from valuation_engine.skhynix_beta_snapshot import (
     DEFAULT_BETA_SNAPSHOT_PATH,
+    calculate_beta,
     load_skhynix_beta_snapshot,
 )
 from valuation_engine.skhynix_live_primary import (
@@ -301,6 +302,22 @@ def test_skhynix_beta_snapshot_rejects_relabelled_or_tampered_numbers(tmp_path: 
     mutated_capital.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="capital fact records are not registered"):
         load_skhynix_beta_snapshot(mutated_capital)
+
+    payload = json.loads(DEFAULT_BETA_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload["peers"]["INTC"]["weekly_close"][100][1] = "9999"
+    stock = tuple(
+        (str(date), float(close))
+        for date, close in payload["peers"]["INTC"]["weekly_close"]
+    )
+    benchmark = tuple(
+        (str(date), float(close))
+        for date, close in payload["benchmark_weekly_close"]
+    )
+    payload["peers"]["INTC"]["ols"] = calculate_beta(stock, benchmark)
+    self_recomputed = tmp_path / "self_recomputed_beta.json"
+    self_recomputed.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="not independently registered"):
+        load_skhynix_beta_snapshot(self_recomputed)
 
 
 def test_skhynix_strict_live_run_freezes_continuous_probability_weighting(tmp_path: Path):
