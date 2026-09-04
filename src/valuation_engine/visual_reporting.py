@@ -337,6 +337,8 @@ def _measure_text(assumption: Any) -> str:
 def _measure_value_text(amount: Decimal, unit: str) -> str:
     if unit == "ratio":
         return f"{amount * 100:.1f}%"
+    if unit == "multiple":
+        return f"{amount:g}배"
     if unit == "KRW_billion":
         return f"{amount * 10:,.0f}억원"
     if unit == "years":
@@ -488,35 +490,19 @@ def _multiple_assumption_table(
             )
         return headers, tuple(rows)
 
-    primary_ebitda = ebitda_keys[0]
-    primary_multiple = next(
-        (
-            key
-            for key in multiple_keys
-            if key.startswith(primary_ebitda.removesuffix("normalized_ebitda"))
-        ),
-        multiple_keys[0],
-    )
-    secondary_ebitda = ebitda_keys[1:3]
-    nav_asset_keys = nav_asset_keys[:2]
     headers = (
         "구분",
-        f"{segment_label(primary_ebitda)} EBITDA",
-        f"{segment_label(primary_ebitda)} 배수",
-        *(
-            f"{segment_label(key)} EBITDA×배수" for key in secondary_ebitda
-        ),
-        *(
-            f"{segment_label(key.removesuffix('gross_asset_value') + 'normalized_ebitda')} NAV"
-            for key in nav_asset_keys
-        ),
+        "배수평가 1",
+        "배수평가 2",
+        "배수평가 3+",
+        "NAV 부문",
         "EV→지분 조정",
     )
 
     rows = []
     for scenario in scenarios[:3]:
-        secondary_values = []
-        for key in secondary_ebitda:
+        multiple_values = []
+        for key in ebitda_keys:
             prefix = key.removesuffix("normalized_ebitda")
             multiple_key = next(
                 (
@@ -526,10 +512,12 @@ def _multiple_assumption_table(
                 ),
                 None,
             )
-            detail = _scenario_assumption(scenario, key)
-            if multiple_key is not None:
-                detail += f" × {_scenario_assumption(scenario, multiple_key)}"
-            secondary_values.append(detail)
+            if multiple_key is None:
+                continue
+            multiple_values.append(
+                f"{segment_label(key)} {_scenario_assumption(scenario, key)}"
+                f"×{_scenario_assumption(scenario, multiple_key)}"
+            )
         nav_values = []
         for key in nav_asset_keys:
             prefix = key.removesuffix("gross_asset_value")
@@ -537,18 +525,18 @@ def _multiple_assumption_table(
                 asset = scenario.get(key).measure
                 liability = scenario.get(f"{prefix}liabilities").measure.convert_to(asset.unit)
             except KeyError:
-                nav_values.append("—")
                 continue
             nav_values.append(
-                _measure_value_text(asset.amount - liability.amount, asset.unit)
+                f"{segment_label(f'{prefix}normalized_ebitda')} "
+                f"{_measure_value_text(asset.amount - liability.amount, asset.unit)}"
             )
         rows.append(
             (
                 f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
-                _scenario_assumption(scenario, primary_ebitda),
-                _scenario_assumption(scenario, primary_multiple),
-                *secondary_values,
-                *nav_values,
+                multiple_values[0] if multiple_values else "—",
+                multiple_values[1] if len(multiple_values) > 1 else "—",
+                "; ".join(multiple_values[2:]) or "—",
+                "; ".join(nav_values) or "—",
                 adjustment_text(scenario),
             )
         )

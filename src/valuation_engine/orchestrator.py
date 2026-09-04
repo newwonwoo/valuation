@@ -298,8 +298,8 @@ def _stage_risk_ko(trace: StageTrace) -> str:
     if trace.stage == "MARKET_COMPARE":
         if "역산 가능한 단일 DCF 시나리오가 없어" in trace.rationale:
             return (
-                "시장 함의 기대치 역산: 복수 평가방법 SOTP라 단일 DCF로 "
-                "재구성할 수 없어 영구성장률·현금흐름 함의값을 산출하지 않았습니다"
+                "시장 함의 기대치 역산: 동결 가치가 단일 DCF 시나리오로 "
+                "재구성되지 않아 영구성장률·현금흐름 함의값을 산출하지 않았습니다"
             )
         return (
             "시장 함의 기대치 역산: 현재 시장가격이 요구하는 영구성장률·현금흐름 "

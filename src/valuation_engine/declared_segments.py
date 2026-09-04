@@ -361,6 +361,14 @@ class SourceBoundSegmentExtraction:
                     f"segment extraction values for {entry.disclosed_name!r} "
                     "are not bound to its source-table column"
                 )
+            if not (
+                name_position.row < revenue_position.row
+                and name_position.row < income_position.row
+            ):
+                raise DeclaredSegmentsError(
+                    f"segment extraction name {entry.disclosed_name!r} must "
+                    "precede the metric rows as a source-table header"
+                )
         for label, value, offset in (
             (
                 "revenue",

@@ -25,7 +25,7 @@ def test_non_reconstructible_reverse_dcf_is_reported_without_inventing_a_gap():
         )
     )
 
-    assert "단일 DCF로 재구성할 수 없어" in risk
+    assert "단일 DCF 시나리오로 재구성되지 않아" in risk
     assert "함의값을 산출하지 않았습니다" in risk
     assert "확정된 가정과 달라" not in risk
 

@@ -1,0 +1,428 @@
+[
+  {
+    "blocking": false,
+    "output_keys": [
+      "company",
+      "company_external_ids",
+      "company_resolution_source_refs",
+      "jurisdiction",
+      "resolved_company_identity",
+      "target_id",
+      "ticker"
+    ],
+    "rationale": "company identity resolved from a declared live resolver contract",
+    "stage": "COMPANY_RESOLUTION",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "company_state",
+      "module_impact_prior_history",
+      "prior_research_loadout_recommendations",
+      "research_learning_record_count"
+    ],
+    "rationale": "no prior company state; first-run empty state is valid | loaded 0 immutable module-impact learning record(s)",
+    "stage": "LOAD_COMPANY_STATE",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "industry_knowledge_snapshot",
+      "industry_snapshot_evidence_ids",
+      "industry_snapshot_hash",
+      "industry_snapshot_source_ids"
+    ],
+    "rationale": "versioned Industry Knowledge snapshot loaded and hash-verified",
+    "stage": "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "source_freshness_assessment",
+      "source_freshness_snapshot_hash"
+    ],
+    "rationale": "live source-watch precheck passed",
+    "stage": "SOURCE_FRESHNESS_PRECHECK",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "segment_descriptors",
+      "segment_evidence_lineage_hash",
+      "segment_ids"
+    ],
+    "rationale": "authoritative-lineage-backed segment decomposition completed",
+    "stage": "SEGMENT_DECOMPOSITION",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "industry_dna_profiles"
+    ],
+    "rationale": "all decomposed segments routed to evidence-backed multi-label Industry DNA profiles",
+    "stage": "INDUSTRY_DNA_ROUTE",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "active_optional_scanners",
+      "active_research_units",
+      "adaptive_research_loadout",
+      "conditional_research_units",
+      "expected_module_ids",
+      "kill_conditions",
+      "mandatory_research_units",
+      "mandatory_scanners",
+      "module_requirement_plan",
+      "optional_scanners",
+      "required_evidence",
+      "required_kpis",
+      "research_governance_review_units",
+      "sample_research_units",
+      "scenario_variables"
+    ],
+    "rationale": "compiled canonical Module Requirement Plan and non-destructive learned research loadout",
+    "stage": "MODULE_REQUIREMENT_PLAN",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "collection_missing_required_metrics",
+      "collection_missing_required_requirements",
+      "collection_no_source_required_metrics",
+      "collection_plan",
+      "collection_selected_collector_ids",
+      "evidence_collection_result",
+      "evidence_covered_metrics",
+      "evidence_ledger",
+      "evidence_missing_metrics",
+      "source_snapshot_hash"
+    ],
+    "rationale": "primary evidence collected with complete required segment/metric coverage and planned source lineage",
+    "stage": "PRIMARY_EVIDENCE_COLLECTION",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "active_evidence_ids",
+      "ledger_runtime_snapshot",
+      "ledger_snapshot_hash"
+    ],
+    "rationale": "append-only EvidenceLedger validated and canonical runtime snapshot frozen",
+    "stage": "EVIDENCE_LEDGER",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "rocket_context_plan",
+      "rocket_context_plan_hash",
+      "rocket_context_scanner_ids",
+      "rocket_insight_execution_mode",
+      "rocket_insight_warnings",
+      "scanner_findings",
+      "scanner_impact_traces",
+      "scanner_research_effort"
+    ],
+    "rationale": "RocketTesla Context Engine locked scanner routing | live Rocket Insight scanner dispatch completed with warnings",
+    "stage": "ROCKET_INSIGHT_SCAN",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "upstream_funding_scan_state"
+    ],
+    "rationale": "selected Industry DNA does not require a dedicated upstream funding scan",
+    "stage": "UPSTREAM_FUNDING_SCAN",
+    "status": "skipped_not_applicable"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "context_strength_linkage_decision",
+      "context_strength_linkage_not_applicable_reason",
+      "context_strength_linkage_status",
+      "context_strength_linkages",
+      "hypotheses",
+      "intelligence_proposal",
+      "llm_requested_evidence",
+      "scanner_reinforcements"
+    ],
+    "rationale": "LLM Intelligence Officer produced typed hypotheses and an auditable environment-change/corporate-strength linkage decision without committing assumptions",
+    "stage": "RESEARCHER_A",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "red_team_counter_thesis",
+      "red_team_proposal",
+      "red_team_requested_evidence"
+    ],
+    "rationale": "Blind Red Team completed with no unresolved blocker",
+    "stage": "BLIND_RED_TEAM_B",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "research_round_count"
+    ],
+    "rationale": "Blind Red Team left no unresolved blocking issue",
+    "stage": "RESEARCH_LOOP",
+    "status": "skipped_not_applicable"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "assumption_specs",
+      "bridge_input_map",
+      "bridge_proposal_bundle",
+      "bridges",
+      "capacity_commitment_assessment",
+      "capacity_commitment_assessment_hash",
+      "capacity_commitment_recovery_segments",
+      "core_capacity_inclusion_required_projects",
+      "core_capacity_inclusion_required_segments"
+    ],
+    "rationale": "no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed",
+    "stage": "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "assumption_set_hash",
+      "bound_scenario_set",
+      "capacity_bridge_consumption_required",
+      "capacity_scenario_binding_hash",
+      "capacity_scenario_binding_result",
+      "compiled_assumption_set",
+      "probability_calibration_status",
+      "probability_weighting_allowed",
+      "scenario_binding_findings",
+      "scenario_set_hash"
+    ],
+    "rationale": "no Core-inclusion capacity project requires bridge consumption | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding",
+    "stage": "SCENARIO_BUILD",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "planned_method_choices",
+      "risk_chain_requires_beta",
+      "risk_chain_requires_wacc",
+      "valuation_capability_registry_hash",
+      "valuation_method_choices_hash",
+      "valuation_method_intent",
+      "valuation_module_plan_hash",
+      "warranted_per_segments"
+    ],
+    "rationale": "economic valuation-method intent resolved before Beta/WACC; exact evaluator construction remains downstream",
+    "stage": "VALUATION_METHOD_INTENT",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [],
+    "rationale": "selected exact economic method path does not require Hierarchical Beta",
+    "stage": "HIERARCHICAL_BETA_ESTIMATION",
+    "status": "skipped_not_applicable"
+  },
+  {
+    "blocking": false,
+    "output_keys": [],
+    "rationale": "selected exact economic method path does not require WACC",
+    "stage": "WACC_VALIDATION",
+    "status": "skipped_not_applicable"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "capacity_valuation_binding_hash",
+      "capacity_valuation_binding_result",
+      "expected_value_per_share",
+      "full_company_intrinsic_available",
+      "generic_valuation_result",
+      "intrinsic_scenario_values",
+      "route_hash",
+      "selected_methods",
+      "unvalued_segments",
+      "valuation_aggregator_bindings",
+      "valuation_hash",
+      "valuation_plan_capability_registry_hash",
+      "valuation_plan_compilation",
+      "valuation_plan_evaluator_registry_hash",
+      "valuation_plan_method_choices_hash",
+      "valuation_plan_module_plan_hash",
+      "valuation_plan_scenario_set_hash",
+      "valuation_plan_warranted_per_segments",
+      "valuation_scope"
+    ],
+    "rationale": "registered deterministic evaluators and SOTP aggregation completed | no Warranted PER cross-check requires a DCF fingerprint | no Core-inclusion capacity project requires valuation binding",
+    "stage": "DETERMINISTIC_VALUATION",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "capacity_per_binding_hash",
+      "capacity_per_binding_result",
+      "warranted_per_applicable"
+    ],
+    "rationale": "selected Industry DNA does not route any segment to Warranted PER | Warranted PER is not applicable; capacity PER double-count path is closed",
+    "stage": "HIERARCHICAL_WARRANTED_PER",
+    "status": "skipped_not_applicable"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "capacity_consistency_hash"
+    ],
+    "rationale": "DCF-PER consistency gate is not applicable | capacity assessment, scenario, valuation and PER identities are consistent",
+    "stage": "DCF_PER_ASSUMPTION_CONSISTENCY_GATE",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [],
+    "rationale": "cross-method economic paths are unique",
+    "stage": "CROSS_METHOD_DOUBLE_COUNT_AUDIT",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "probability_distribution_status"
+    ],
+    "rationale": "scenario probabilities are not calibration-authorized; numeric expected value remains disabled",
+    "stage": "PROBABILITY_DISTRIBUTION_ANALYSIS",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "audit_hash",
+      "audit_passed",
+      "broker_research_audit_required",
+      "capacity_audit_hash",
+      "capacity_audit_passed",
+      "capacity_audit_report",
+      "capacity_audit_result",
+      "decision_impact_batch",
+      "decision_impact_completed",
+      "decision_impact_hash",
+      "decision_impact_measurement_clean",
+      "decision_impact_result",
+      "evidence_composition_hash",
+      "evidence_composition_report",
+      "evidence_composition_summary",
+      "generic_audit_report",
+      "module_impact_assessments",
+      "observed_risk_impact_traces",
+      "research_loadout_recommendations",
+      "retirement_review_candidates",
+      "valuation_sensitivity_hash",
+      "valuation_sensitivity_report",
+      "valuation_sensitivity_summary"
+    ],
+    "rationale": "pre-freeze Broker Research is not configured for this run | capacity omission, baseline and double-count audit passed | 가치 투입 근거 구성에 확인이 필요합니다: 가치 투입 근거 16건 — 분석가 추정 16건(100%) | 가치가 단일 변수에 민감합니다: 가치 민감도를 측정할 수 있는 시나리오가 없습니다 | decision-impact record and run-bound generic intrinsic audit passed; run is eligible for freeze if snapshot hashes are present",
+    "stage": "AUDIT_GATE",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "intrinsic_freeze_token",
+      "runtime_doctrine_coverage",
+      "runtime_expected_unit_ids"
+    ],
+    "rationale": "audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze",
+    "stage": "INTRINSIC_VALUE_FREEZE",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "street_reports"
+    ],
+    "rationale": "authorized Street export declares no sell-side coverage; Street reference withheld",
+    "stage": "STREET_REFERENCE_LOAD",
+    "status": "skipped_not_applicable"
+  },
+  {
+    "blocking": false,
+    "output_keys": [],
+    "rationale": "no sell-side coverage was declared for this target; there is no Street target to gap against",
+    "stage": "STREET_GAP_ANALYZER",
+    "status": "skipped_not_applicable"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "market_currency",
+      "market_observation",
+      "market_reference_hash"
+    ],
+    "rationale": "target-company market price loaded only after intrinsic freeze",
+    "stage": "MARKET_PRICE_LOAD",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "market_comparison",
+      "reverse_dcf_context",
+      "reverse_dcf_findings",
+      "reverse_dcf_result_hash"
+    ],
+    "rationale": "current price compared with each intrinsic scenario; no Expected Value fabricated | 역산 가능한 단일 DCF 시나리오가 없어 시장 함의 영구성장률·현금흐름 배율을 산출하지 않았습니다",
+    "stage": "MARKET_COMPARE",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "current_thesis",
+      "thesis_delta_result"
+    ],
+    "rationale": "현재 투자논지를 직전 불변 성공 상태와 비교했습니다",
+    "stage": "THESIS_DELTA",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "module_impact_summary",
+      "research_learning_record_hash",
+      "research_learning_record_path",
+      "research_learning_recorded_at",
+      "saved_current_state",
+      "saved_report_markdown",
+      "saved_report_visuals",
+      "saved_run_dir"
+    ],
+    "rationale": "불변 실행 산출물·한국어 보고서·요약 이미지 2장을 저장하고 감사 통과 상태로 승격했습니다",
+    "stage": "SAVE_STATE",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "output_keys": [
+      "final_report"
+    ],
+    "rationale": "동일한 불변 실행 데이터에서 한국어 최종보고서와 요약 이미지 2장을 생성했습니다",
+    "stage": "FINAL_REPORT",
+    "status": "pass"
+  }
+]

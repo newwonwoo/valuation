@@ -109,7 +109,7 @@ def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
         "EV→지분 조정",
     )
     rendered = " | ".join(rows[0])
-    assert "제조 1,000억원×8 multiple" in rendered
+    assert "제조 1,000억원×8배" in rendered
     assert "기타 150억원" in rendered
     assert "운송 100억원→150억원" in rendered
     assert "운송 g 2.0%/ROIC 12.0%" in rendered
@@ -140,6 +140,35 @@ def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
     assert "DCF 가중평균자본비용" in svg
     assert "9.00%" in svg
     assert "[DCF 가치+부문 EBITDA×배수 합+유형자산 NAV+EV→지분 조정]" in svg
+
+
+def test_pure_multiple_visual_table_has_a_bounded_column_contract():
+    scenario = BoundScenario(
+        "BASE",
+        (
+            _assumption("manufacturing_normalized_ebitda", "100", "KRW_billion"),
+            _assumption("manufacturing_normalized_multiple", "8", "multiple"),
+            _assumption("trading_normalized_ebitda", "20", "KRW_billion"),
+            _assumption("trading_normalized_multiple", "4", "multiple"),
+            _assumption("transport_normalized_ebitda", "10", "KRW_billion"),
+            _assumption("transport_normalized_multiple", "3", "multiple"),
+            _assumption("recycling_gross_asset_value", "20", "KRW_billion"),
+            _assumption("recycling_liabilities", "5", "KRW_billion"),
+            _assumption("manufacturing_ev_adjustment", "-10", "KRW_billion"),
+        ),
+    )
+
+    table = _multiple_assumption_table((scenario,))
+
+    assert table is not None
+    headers, rows = table
+    assert len(headers) == len(rows[0]) == 6
+    rendered = " | ".join(rows[0])
+    assert "제조 1,000억원×8배" in rendered
+    assert "수출입 200억원×4배" in rendered
+    assert "운송 100억원×3배" in rendered
+    assert "기타 150억원" in rendered
+    assert "-100억원" in rendered
 
 
 def _segment(
