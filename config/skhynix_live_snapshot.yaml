@@ -80,20 +80,20 @@ risk:
   peer_market_capital:
     INTC:
       filing_source_ref: 'https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm'
-      share_count_record: 'INTC | 5,044,000,000 shares outstanding | As of July 17, 2026'
-      share_count_record_sha256: '9c03d9c5a3c4ffb03a09cd2d4791bbc420ac3bee5ffea753eaf0f7a51b9a0c0c'
+      filed_share_count_text: 'As of July 17, 2026, the registrant had outstanding 5,044 million shares of common stock.'
+      filed_share_count_text_sha256: '4c7d76c3248b0122090ba718306ecc7e248c1d23f5e85fd70be2167a89245106'
     AVGO:
       filing_source_ref: 'https://www.sec.gov/Archives/edgar/data/1730168/000173016826000054/avgo-20260503.htm'
-      share_count_record: 'AVGO | 4,757,580,198 shares outstanding | As of May 29, 2026'
-      share_count_record_sha256: '4e69ca02d173e026231ba1107a1d4468147a0239a9d621ad08998201c4328b7c'
+      filed_share_count_text: 'As of May 29, 2026, there were 4,757,580,198 shares of our common stock outstanding.'
+      filed_share_count_text_sha256: '9651d88f4da975242261e16bc2b90b8353891ad0f45fff6919ab1708433ee7f3'
     MRVL:
       filing_source_ref: 'https://www.sec.gov/Archives/edgar/data/1835632/000183563226000025/mrvl-20260801.htm'
-      share_count_record: 'MRVL | 876,900,000 shares outstanding | As of August 21, 2026'
-      share_count_record_sha256: '12a24ba84220e3f645e1c5b82fba08bc48be824857bb74dd218fbf324d220324'
+      filed_share_count_text: 'The number of shares of common stock of the registrant outstanding as of August 21, 2026 was 876.9 million.'
+      filed_share_count_text_sha256: '316c3d17ec15dbf1ba51cfa0d9c578414324c82590611f4eb1403710b1aae264'
     MU:
       filing_source_ref: 'https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm'
-      share_count_record: 'MU | 1,129,393,151 shares outstanding | As of June 17, 2026'
-      share_count_record_sha256: 'ed22976cba7be740ebf3337c45b4f9fca15df1f5b3bc9d92ee4193bce82a5de2'
+      filed_share_count_text: 'The number of outstanding shares of the registrant’s common stock as of June 17, 2026 was 1,129,393,151.'
+      filed_share_count_text_sha256: 'a95ee3f2b2c7597cf428d1cc77e6f6420f96b1783d8bbd9f524e43cb8b4f4650'
   risk_free_rate: 0.04021
   equity_risk_premium: 0.0532
   pre_tax_cost_of_debt: 0.04476

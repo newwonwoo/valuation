@@ -16,7 +16,9 @@ exact bijection with the note's own names, so a segment the filing discloses
 but the operator ignores is a refusal, and so is a declared segment the filing
 never mentions. Routing still fails closed downstream — a declared KSIC code
 the classification map does not cover stops the run exactly as an unmapped
-company does.
+company does. When the filing aggregates heterogeneous activities without
+decomposition weights, the declaration preserves that unresolved state instead
+of inventing one KSIC; the decomposer blocks after the IFRS 8 bijection is proven.
 """
 
 from __future__ import annotations
@@ -37,6 +39,11 @@ _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 _DART_DOCUMENT_ID = re.compile(r"^DART_\d{14}$")
 _REPORTING_UNITS = frozenset({"원", "천원", "백만원", "억원"})
 _MAX_BOUND_REGION_CHARS = 16_384
+_RESOLVED_CLASSIFICATION = "RESOLVED"
+_UNRESOLVED_HETEROGENEOUS = "UNRESOLVED_HETEROGENEOUS"
+_CLASSIFICATION_STATUSES = frozenset(
+    {_RESOLVED_CLASSIFICATION, _UNRESOLVED_HETEROGENEOUS}
+)
 _TABLE_ROW = re.compile(r"<TR\b[^>]*>(?P<body>.*?)</TR\s*>", re.IGNORECASE | re.DOTALL)
 _TABLE_CELL = re.compile(
     r"<(?P<tag>TH|TD)\b(?P<attrs>[^>]*)>(?P<body>.*?)</(?P=tag)\s*>",
@@ -61,6 +68,14 @@ def _offset(value: object, label: str) -> int:
     if not isinstance(value, int) or isinstance(value, bool) or value < 0:
         raise DeclaredSegmentsError(f"{label} must be a non-negative integer")
     return value
+
+
+def _activities(value: object, label: str) -> tuple[str, ...]:
+    if value is None:
+        return ()
+    if not isinstance(value, list):
+        raise DeclaredSegmentsError(f"{label} must be a list")
+    return tuple(str(item) for item in value)
 
 
 def _source_amount_tokens(value: Decimal) -> tuple[str, ...]:
@@ -513,12 +528,14 @@ def _normalize_name(name: str) -> str:
 
 @dataclass(frozen=True)
 class DeclaredSegment:
-    """One reportable segment's declared economic identity."""
+    """One reportable segment's resolved or explicitly unresolved identity."""
 
     segment_id: str
     disclosed_name: str
     ksic_code: str
     rationale: str
+    classification_status: str = _RESOLVED_CLASSIFICATION
+    constituent_activities: tuple[str, ...] = ()
 
     def validate(self) -> None:
         if not _SEGMENT_ID.match(self.segment_id):
@@ -531,11 +548,31 @@ class DeclaredSegment:
                 f"segment {self.segment_id} requires the disclosed_name the "
                 "filing's operating-segment note uses"
             )
-        if not self.ksic_code.strip() or not self.ksic_code.strip().isdigit():
+        if self.classification_status not in _CLASSIFICATION_STATUSES:
             raise DeclaredSegmentsError(
-                f"segment {self.segment_id} requires a numeric ksic_code to "
-                "route its archetype through the classification map"
+                f"segment {self.segment_id} has unsupported classification_status "
+                f"{self.classification_status!r}"
             )
+        if self.classification_status == _RESOLVED_CLASSIFICATION:
+            if not self.ksic_code.strip() or not self.ksic_code.strip().isdigit():
+                raise DeclaredSegmentsError(
+                    f"segment {self.segment_id} requires a numeric ksic_code to "
+                    "route its archetype through the classification map"
+                )
+        else:
+            activities = tuple(
+                activity.strip() for activity in self.constituent_activities
+                if activity.strip()
+            )
+            if self.ksic_code.strip():
+                raise DeclaredSegmentsError(
+                    f"segment {self.segment_id} is unresolved and cannot assert a ksic_code"
+                )
+            if len(activities) < 2 or len(set(activities)) != len(activities):
+                raise DeclaredSegmentsError(
+                    f"segment {self.segment_id} must preserve at least two distinct "
+                    "constituent_activities when classification is heterogeneous"
+                )
         if len(self.rationale.strip()) < _MIN_RATIONALE_CHARS:
             raise DeclaredSegmentsError(
                 f"segment {self.segment_id} requires a substantive rationale "
@@ -721,6 +758,14 @@ def load_declared_segments(path: str | Path) -> DeclaredSegments:
                 disclosed_name=str((row or {}).get("disclosed_name") or ""),
                 ksic_code=str((row or {}).get("ksic_code") or ""),
                 rationale=str((row or {}).get("rationale") or ""),
+                classification_status=str(
+                    (row or {}).get("classification_status")
+                    or _RESOLVED_CLASSIFICATION
+                ),
+                constituent_activities=_activities(
+                    (row or {}).get("constituent_activities"),
+                    "segment constituent_activities",
+                ),
             )
             for row in rows
         ),

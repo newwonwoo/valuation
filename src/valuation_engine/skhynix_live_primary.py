@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
+from decimal import Decimal
 from hashlib import sha256
 import json
 from math import isclose
@@ -67,6 +68,50 @@ SEGMENT_ID = "memory"
 SCENARIOS = ("Down", "Core", "Bull")
 FORECAST_YEARS = 9
 MANDATORY_SCANNERS = ("CYCLE_NORMALIZATION", "COST_CURVE", "INVENTORY", "TRADE_FLOW")
+PEER_FILED_SHARE_COUNT_SHA256 = {
+    "INTC": "4c7d76c3248b0122090ba718306ecc7e248c1d23f5e85fd70be2167a89245106",
+    "AVGO": "9651d88f4da975242261e16bc2b90b8353891ad0f45fff6919ab1708433ee7f3",
+    "MRVL": "316c3d17ec15dbf1ba51cfa0d9c578414324c82590611f4eb1403710b1aae264",
+    "MU": "a95ee3f2b2c7597cf428d1cc77e6f6420f96b1783d8bbd9f524e43cb8b4f4650",
+}
+
+
+def _filed_share_count(text: str, *, peer_id: str) -> tuple[int, date]:
+    count_match = re.search(
+        r"(?:outstanding|was|were)\s+([0-9,]+(?:\.[0-9]+)?)\b",
+        text,
+        re.IGNORECASE,
+    )
+    date_match = re.search(
+        r"as of ([A-Za-z]+ [0-9]{1,2}, [0-9]{4})",
+        text,
+        re.IGNORECASE,
+    )
+    preamble_has_share_subject = bool(
+        count_match is not None
+        and re.search(
+            r"\bnumber of\b.*\bshares\b",
+            text[: count_match.start()],
+            re.IGNORECASE,
+        )
+    )
+    count_suffix = text[count_match.end():] if count_match is not None else ""
+    suffix_names_shares = bool(
+        count_match is not None
+        and re.match(r"\s*(?:million\s+)?shares\b", count_suffix, re.IGNORECASE)
+    )
+    if (
+        count_match is None
+        or date_match is None
+        or not (preamble_has_share_subject or suffix_names_shares)
+    ):
+        raise ValueError(f"SK hynix {peer_id} filed share-count text is malformed")
+    count = Decimal(count_match.group(1).replace(",", ""))
+    if re.match(r"\s*million\b", count_suffix, re.IGNORECASE):
+        count *= Decimal("1000000")
+    if count != count.to_integral_value():
+        raise ValueError(f"SK hynix {peer_id} filed share count is not integral")
+    return int(count), datetime.strptime(date_match.group(1), "%B %d, %Y").date()
 
 
 def _peer_market_structure(
@@ -83,20 +128,16 @@ def _peer_market_structure(
         row = peer_rows[peer_id]
         if not isinstance(row, dict):
             raise ValueError(f"SK hynix {peer_id} market-capital row is malformed")
-        record = str(row.get("share_count_record", ""))
-        if sha256(record.encode("utf-8")).hexdigest() != row.get(
-            "share_count_record_sha256"
+        filed_text = str(row.get("filed_share_count_text", ""))
+        payload_hash = sha256(filed_text.encode("utf-8")).hexdigest()
+        if (
+            payload_hash != row.get("filed_share_count_text_sha256")
+            or payload_hash != PEER_FILED_SHARE_COUNT_SHA256[peer_id]
         ):
-            raise ValueError(f"SK hynix {peer_id} share-count record hash mismatch")
-        match = re.fullmatch(
-            rf"{peer_id} \| ([0-9,]+) shares outstanding \| As of "
-            r"([A-Za-z]+ [0-9]{1,2}, [0-9]{4})",
-            record,
-        )
-        if match is None:
-            raise ValueError(f"SK hynix {peer_id} share-count record is malformed")
-        shares = int(match.group(1).replace(",", ""))
-        shares_as_of = datetime.strptime(match.group(2), "%B %d, %Y").date()
+            raise ValueError(
+                f"SK hynix {peer_id} filed share-count payload hash mismatch"
+            )
+        shares, shares_as_of = _filed_share_count(filed_text, peer_id=peer_id)
         estimate = beta_snapshot.estimate(peer_id)
         if (
             shares <= 0
@@ -383,8 +424,11 @@ def _all_records(snapshot: SKHynixSnapshot) -> tuple[EvidenceRecord, ...]:
                     value=value,
                     unit="KRW_billion",
                     layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
-                    source_ref=sources["underwriting"],
-                    notes="price-isolated analyst FCFF proposal; deterministic Assumption Compiler must rebind it",
+                    source_ref=sources["q2_results"],
+                    notes=(
+                        "analyst FCFF judgment anchored to, but not stated by, the Q2 results; "
+                        "deterministic Assumption Compiler must rebind it"
+                    ),
                     confidence=0.60,
                 )
             )
@@ -400,8 +444,15 @@ def _all_records(snapshot: SKHynixSnapshot) -> tuple[EvidenceRecord, ...]:
                     value=value,
                     unit=unit,
                     layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
-                    source_ref=sources["underwriting"],
-                    notes="analyst proposal subject to deterministic scenario/terminal consistency checks",
+                    source_ref=(
+                        sources["q2_results"]
+                        if metric == "terminal_growth"
+                        else sources["half_year_filing"]
+                    ),
+                    notes=(
+                        "analyst judgment anchored to, but not stated by, the linked issuer "
+                        "source; subject to deterministic scenario/terminal consistency checks"
+                    ),
                     confidence=confidence,
                 )
             )
@@ -411,8 +462,10 @@ def _all_records(snapshot: SKHynixSnapshot) -> tuple[EvidenceRecord, ...]:
                 source_ref = sources["half_year_filing"]
             elif metric == "diluted_shares":
                 source_ref = sources["treasury_filing"]
+            elif metric == "h2_2026_fcff_underwrite":
+                source_ref = sources["q2_results"]
             else:
-                source_ref = sources["underwriting"]
+                source_ref = sources["half_year_filing"]
             rows.append(
                 _record(
                     snapshot,
@@ -424,7 +477,10 @@ def _all_records(snapshot: SKHynixSnapshot) -> tuple[EvidenceRecord, ...]:
                     notes=(
                         "official/derived balance-sheet or financing observation"
                         if layer is EvidenceSourceLayer.REALIZED_OR_FILING
-                        else "analyst underwriting adjustment; unsettled announced buyback is excluded"
+                        else (
+                            "analyst underwriting judgment anchored to, but not stated by, "
+                            "the linked issuer source; unsettled announced buyback is excluded"
+                        )
                     ),
                     confidence=0.95 if layer is EvidenceSourceLayer.REALIZED_OR_FILING else 0.60,
                 )

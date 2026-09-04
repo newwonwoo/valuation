@@ -557,6 +557,32 @@ def test_the_decomposer_refuses_a_declared_segment_without_its_receipt():
         decompose(IDENTITY, single_snapshot)
 
 
+def test_heterogeneous_declared_segment_matches_ifrs8_then_blocks_routing():
+    unresolved = DeclaredSegment(
+        segment_id="other",
+        disclosed_name="기타부문",
+        ksic_code="",
+        rationale=(
+            "공시가 폐기물처리와 광물 활동을 합산하여 비중 근거 없이 "
+            "하나의 KSIC나 가치를 선언할 수 없다."
+        ),
+        classification_status="UNRESOLVED_HETEROGENEOUS",
+        constituent_activities=("폐기물처리", "광물·광산개발"),
+    )
+    declared = _declaration(segments=(*_declaration().segments[:2], unresolved))
+    snapshot = _load_snapshot(_fetch_bytes_multi, declared)
+    decompose = classified_segment_decomposer(
+        profile_fetcher=_refusing_profile_fetcher,
+        classification=load_kr_industry_classification(),
+        declared_segments=declared,
+    )
+    with pytest.raises(
+        GenericKRIndustryError,
+        match="UNRESOLVED_HETEROGENEOUS.*refusing to assign one KSIC",
+    ):
+        decompose(IDENTITY, snapshot)
+
+
 # ------------------------------------------------------------- declarations
 
 

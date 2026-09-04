@@ -1,5 +1,6 @@
 from dataclasses import fields
 from decimal import Decimal
+from hashlib import sha256
 import json
 from pathlib import Path
 
@@ -7,7 +8,7 @@ import pytest
 import yaml
 
 from valuation_engine.continuous_probability_snapshot import ContinuousProbabilityCalibrationSnapshot
-from valuation_engine.records import CalibrationStatus
+from valuation_engine.records import CalibrationStatus, EvidenceSourceLayer
 from valuation_engine.risk_adapters import TargetCapitalStructureMethod
 from valuation_engine.skhynix_continuous_live_primary import (
     EXTERNAL_PROBABILITY_SOURCE,
@@ -226,16 +227,42 @@ def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(tmp_path: Path)
         load_skhynix_snapshot(relabelled_wacc)
 
     payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
-    payload["risk"]["peer_market_capital"]["MU"]["share_count_record"] = (
-        "MU | 1 shares outstanding | As of June 17, 2026"
+    peer = payload["risk"]["peer_market_capital"]["MU"]
+    peer["filed_share_count_text"] = (
+        "The number of outstanding shares of the registrant’s common stock "
+        "as of June 17, 2026 was 1."
     )
+    peer["filed_share_count_text_sha256"] = sha256(
+        peer["filed_share_count_text"].encode("utf-8")
+    ).hexdigest()
     relabelled_shares = tmp_path / "relabelled_shares.yaml"
     relabelled_shares.write_text(
         yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
         encoding="utf-8",
     )
-    with pytest.raises(ValueError, match="share-count record hash mismatch"):
+    with pytest.raises(ValueError, match="filed share-count payload hash mismatch"):
         load_skhynix_snapshot(relabelled_shares)
+
+
+def test_skhynix_active_underwriting_keeps_original_issuer_source_provenance(tmp_path: Path):
+    authority = run_skhynix_live_primary(tmp_path)
+    result = require_canonical_live_result(authority)
+    snapshot = load_skhynix_snapshot()
+    underwriting = tuple(
+        record
+        for record in result.data["evidence_ledger"].active()
+        if record.source_layer is EvidenceSourceLayer.ANALYST_UNDERWRITING
+    )
+    assert underwriting
+    assert {record.source_ref for record in underwriting} <= {
+        snapshot.sources["q2_results"],
+        snapshot.sources["half_year_filing"],
+    }
+    assert all("not stated by" in record.notes for record in underwriting)
+    assert all(
+        record.source_ref != snapshot.sources["underwriting"]
+        for record in underwriting
+    )
 
 
 def test_skhynix_beta_snapshot_replays_frozen_nasdaq_series_and_sec_capital():

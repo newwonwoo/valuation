@@ -793,6 +793,14 @@ def classified_segment_decomposer(
                         f"declared segment {declared.segment_id}; the declaration "
                         "did not survive the filing screen"
                     )
+                if declared.classification_status == "UNRESOLVED_HETEROGENEOUS":
+                    activities = ", ".join(declared.constituent_activities)
+                    raise GenericKRIndustryError(
+                        f"declared segment {declared.segment_id} ({declared.disclosed_name}) "
+                        "is UNRESOLVED_HETEROGENEOUS after the authoritative IFRS 8 "
+                        f"bijection: {activities}; refusing to assign one KSIC or value "
+                        "the aggregated activities without decomposition evidence"
+                    )
                 entry = classification.lookup(declared.ksic_code)
                 descriptors.append(
                     _descriptor(
@@ -855,6 +863,16 @@ def classified_industry_dna_router(
     ) -> tuple[IndustryDNAProfile, ...]:
         if declared_segments is not None:
             declared_segments.assert_target(identity.target_id)
+            unresolved = tuple(
+                item
+                for item in declared_segments.segments
+                if item.classification_status == "UNRESOLVED_HETEROGENEOUS"
+            )
+            if unresolved:
+                raise GenericKRIndustryError(
+                    "industry DNA routing cannot accept unresolved heterogeneous "
+                    "segments: " + ", ".join(item.segment_id for item in unresolved)
+                )
             declared_codes = {
                 item.segment_id: item.ksic_code
                 for item in declared_segments.segments

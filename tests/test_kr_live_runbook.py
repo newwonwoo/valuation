@@ -18,6 +18,9 @@ from pathlib import Path
 import shutil
 import sys
 
+import pytest
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -27,6 +30,7 @@ from run_kr_live import (  # noqa: E402
     publish_report_bundle,
     reuse_published_report_bundle,
 )
+from valuation_engine.workflow import market_loader_from_config
 
 
 def test_the_committed_shinhanalpha_run_replays_to_the_attested_nav_envelope():
@@ -96,78 +100,42 @@ def test_the_committed_daehan_run_replays_as_a_three_segment_sotp():
         assert line in report, line
 
 
-def test_the_committed_koreazinc_run_replays_llm_bound_ifrs8_sotp():
+def test_the_committed_koreazinc_run_preserves_llm_bound_ifrs8_refusal():
     """The Korea Zinc run proves the irregular-note boundary: an LLM-reviewed
     extraction is bound to the immutable filing member, while deterministic
     code verifies the disclosed labels and filed totals before valuation.
 
-    KSIC 24213 is not a registered steel calibration cohort, so the run must
-    preserve the three-scenario envelope without fabricating an expected value.
+    The filing aggregates waste processing, minerals, renewables and battery
+    materials in Other without activity weights. The declaration preserves that
+    unresolved judgment and routing stops after the authoritative note bijection.
     """
     reached, stop_stage, stop_reason, result = execute_run(
         ROOT / "runs" / "koreazinc-010130"
     )
-    assert stop_stage is None, stop_reason
-    assert len(reached) == len(result.stage_traces) == 33
-    assert result.data["probability_weighting_allowed"] is False
-    assert result.data["generic_valuation_result"].expected_value_per_share is None
+    assert stop_stage == "SEGMENT_DECOMPOSITION"
+    assert len(reached) == 4
+    assert "UNRESOLVED_HETEROGENEOUS" in stop_reason
+    assert "authoritative IFRS 8 bijection" in stop_reason
+    assert "refusing to assign one KSIC or value" in stop_reason
+    assert not result.completed
 
-    aggregation = result.data["generic_valuation_result"].equity_aggregation
-    for scenario in aggregation.scenario_values:
-        operating = tuple(
-            item for item in scenario.components if item.ownership_ratio is not None
-        )
-        assert {item.asset_id for item in operating} == {
-            "manufacturing", "trading", "recycling"
-        }
-        assert all(item.ownership_ratio == Decimal("1") for item in operating)
-        parent = next(
-            item
-            for item in scenario.components
-            if item.asset_id == "parent_noncontrolling_interest"
-        )
-        assert parent.ownership_ratio is None
-        assert parent.economic_path_ids == (
-            "path:parent:noncontrolling_interest",
-        )
-        assert parent.attributable_equity_value.amount == Decimal(
-            "-250847127410.00"
-        )
 
-    report = result.data["final_report"]
-    for line in (
-        "**하방 시나리오:** 내재가치 주당 304,347원",
-        "**기준 시나리오:** 내재가치 주당 688,109원",
-        "**상방 시나리오:** 내재가치 주당 1,129,698원",
-        "**확률가중 기대값:** 미산출",
-        "**현재가:** 1,223,000원 (2026-09-04)",
-        "**가치동인:** 공시된 IFRS 8 3부문의 경제구조와 순금융부채를 분리해 제조·수출입의 정상화 수익력과 적자 기타부문의 유형자산 가치를 검증한다.",
-        "**기준 가정:** 제조 EBITDA 21,441억원 × 7.5배",
-        "기타 유형자산 NAV 1,476억원",
-        "공통 지배주주 귀속률 100.0000%",
-        "모회사 조정 -2,508억원",
-        "산식 [배수평가 부문 귀속 지분가치+NAV 부문 귀속 지분가치+모회사 조정]÷20,393,232주 (각 부문 EV→지분 조정·귀속률 반영)",
-        "**계산 확인:** 차단 점검 21/21개 통과 · 비차단 확인 필요 3건",
-        "동결 가치가 단일 DCF 시나리오로 재구성되지 않아 영구성장률·현금흐름 함의값을 산출하지 않았습니다",
-        "REFERENCE_ONLY",
-    ):
-        assert line in report, line
+def test_koreazinc_market_quote_is_bound_to_issuer_price_ticker_and_timestamp(tmp_path):
+    path = ROOT / "runs" / "koreazinc-010130" / "declarations" / "market.yaml"
+    market = market_loader_from_config(path)()
+    assert market.price == 1222000
+    assert market.as_of == "2026-09-04"
+    assert "koreazinc.co.kr" in market.source_ref
 
-    leading_conclusion = report.split("### 밸류에이션", 1)[0]
-    assert "미래 프로젝트" not in leading_conclusion
-    red_team = json.loads(
-        (
-            ROOT
-            / "runs"
-            / "koreazinc-010130"
-            / "declarations"
-            / "staff"
-            / "red_team_officer.json"
-        ).read_text(encoding="utf-8")
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    payload["market_comparison"]["price"] = 1223000
+    tampered = tmp_path / "market.yaml"
+    tampered.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
     )
-    counter_thesis = str(red_team["counter_thesis"]).lower()
-    for forbidden_market_premise in ("현재 가격", "현재가", "current price", "current-price"):
-        assert forbidden_market_premise not in counter_thesis
+    with pytest.raises(ValueError, match="ticker/price/timestamp binding mismatch"):
+        market_loader_from_config(tampered)()
 
 
 def test_a_multi_segment_filing_without_a_declaration_still_fails_closed(tmp_path):
