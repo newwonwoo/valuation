@@ -362,7 +362,14 @@ def test_single_dcf_assumptions_card_shows_parent_adjustment():
         "Base",
         (
             _assumption("fcff_year_1", "10", "KRW_billion"),
+            _assumption("fcff_year_2", "11", "KRW_billion"),
+            _assumption("fcff_year_3", "12", "KRW_billion"),
+            _assumption("fcff_year_4", "13", "KRW_billion"),
             _assumption("fcff_year_5", "15", "KRW_billion"),
+            _assumption("fcff_year_6", "16", "KRW_billion"),
+            _assumption("fcff_year_7", "17", "KRW_billion"),
+            _assumption("fcff_year_8", "18", "KRW_billion"),
+            _assumption("fcff_year_9", "19", "KRW_billion"),
             _assumption("terminal_growth", "0.02", "ratio"),
             _assumption("terminal_roic", "0.12", "ratio"),
             _assumption("ownership", "1", "ratio"),
@@ -406,7 +413,14 @@ def test_single_dcf_assumptions_card_shows_parent_adjustment():
                 output_kind="enterprise_value",
                 required_assumption_keys=(
                     "fcff_year_1",
+                    "fcff_year_2",
+                    "fcff_year_3",
+                    "fcff_year_4",
                     "fcff_year_5",
+                    "fcff_year_6",
+                    "fcff_year_7",
+                    "fcff_year_8",
+                    "fcff_year_9",
                     "terminal_growth",
                     "terminal_roic",
                 ),
@@ -435,6 +449,21 @@ def test_single_dcf_assumptions_card_shows_parent_adjustment():
 
     assert "모회사 조정" in svg
     assert "-30억원" in svg
+    for amount in range(10, 20):
+        if amount == 14:
+            continue
+        assert f"{amount * 10}억원" in svg
+    assert "…" not in svg
+
+    line = _scenario_assumptions_line(
+        scenario,
+        evaluator_contracts=compilation.evaluator_contracts,
+        valuation_plan=plan,
+    )
+    assert (
+        "FCFF 100억원 / 110억원 / 120억원 / 130억원 / 150억원 / "
+        "160억원 / 170억원 / 180억원 / 190억원"
+    ) in line
 
 
 def test_typed_non_fcff_inputs_render_in_mixed_report_and_single_family_card():

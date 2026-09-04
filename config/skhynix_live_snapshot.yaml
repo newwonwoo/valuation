@@ -18,7 +18,7 @@ sources:
   risk_free: 'https://english.mofe.go.kr/?boardCd=P0002&seq=2052'
   equity_risk_premium: 'https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctrypremtable.htm'
   debt_cost: 'https://english.mofe.go.kr/?boardCd=P0002&seq=2052'
-  market: 'https://www.skhynix.com/ir/UI-FR-IR02/'
+  market: 'https://www.skhynix.com/ir/UI-FR-IR01/'
   street: 'https://www.samsungpop.com/common.do?cmd=down&contentType=application%2Fpdf&fileName=2010%2F2026072908131231K_02_04.pdf&inlineYn=Y&saveKey=research.pdf'
 probability_conditioning:
   reference_period: '2026Q2'
@@ -44,6 +44,9 @@ official_facts:
   operating_cash_flow_h1_2026: [91742501, KRW_million]
   cash_and_short_term_financial_assets_q2_2026: [87957923, KRW_million]
   borrowings_q2_2026: [18586634, KRW_million]
+  total_equity_q2_2026: [262693228, KRW_million]
+  profit_before_income_tax_h1_2026: [122708355, KRW_million]
+  income_tax_expense_h1_2026: [28785762, KRW_million]
   pnt7_board_approved_investment: [7093.1, KRW_billion]
   issued_common_shares_pre_buyback: [730492365, shares]
   planned_buyback_shares: [24070000, shares]
@@ -69,11 +72,12 @@ valuation_adjustments:
   diluted_shares: [730492365, shares]
 risk:
   as_of: '2026-08-28'
+  capital_structure_as_of: '2026-06-30'
   beta_snapshot_path: 'config/skhynix_beta_snapshot.json'
   beta_snapshot_sha256: '2bc9eb5bc13658a910ecebc3e54fd79c7ed7f53b25e30d675d83c486b3bf44da'
-  target_equity_weight: 0.90
-  target_debt_weight: 0.10
-  tax_rate: 0.24
+  target_equity_weight: 0.9339212062042322
+  target_debt_weight: 0.06607879379576771
+  tax_rate: 0.23458681358738775
   risk_free_rate: 0.04021
   equity_risk_premium: 0.0532
   pre_tax_cost_of_debt: 0.04476
@@ -90,7 +94,7 @@ market:
   price: 1647000
   as_of: '2026-09-04'
   snapshot_path: 'config/skhynix_market_snapshot.json'
-  snapshot_sha256: '7736f2a9e6bf6e70ccec955c620a6b934db472a90e90cea8cadcd5ff1d779108'
+  snapshot_sha256: 'f6bcc877a33984cfe192967f5f426a5f7e2f93a5ac2dd4c1dadde6b44cb7f09d'
 street:
   consensus_target_price: 3000000
   report_count: 1

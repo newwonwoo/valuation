@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+import yaml
 
 from valuation_engine.continuous_probability_snapshot import ContinuousProbabilityCalibrationSnapshot
 from valuation_engine.records import CalibrationStatus
@@ -23,7 +24,10 @@ from valuation_engine.skhynix_beta_snapshot import (
     DEFAULT_BETA_SNAPSHOT_PATH,
     load_skhynix_beta_snapshot,
 )
-from valuation_engine.skhynix_live_primary import load_skhynix_snapshot
+from valuation_engine.skhynix_live_primary import (
+    DEFAULT_SNAPSHOT_PATH,
+    load_skhynix_snapshot,
+)
 from valuation_engine.street import summarize_street_reports
 from valuation_engine.strict_live_runtime import CANONICAL_ENTRYPOINT_ID, require_canonical_live_result
 
@@ -133,6 +137,16 @@ def test_skhynix_wacc_inputs_use_original_public_sources(tmp_path: Path):
     assert inputs.risk_free_rate.source_ref != snapshot.sources["underwriting"]
     assert inputs.equity_risk_premium.source_ref != snapshot.sources["underwriting"]
     assert inputs.marginal_pre_tax_cost_of_debt.source_ref != snapshot.sources["underwriting"]
+    structure = inputs.target_capital_structure
+    debt = Decimal(str(snapshot.official_facts["borrowings_q2_2026"][0]))
+    equity = Decimal(str(snapshot.official_facts["total_equity_q2_2026"][0]))
+    assert structure.source_refs == (snapshot.sources["half_year_filing"],)
+    assert structure.as_of == "2026-06-30"
+    assert structure.equity_weight == pytest.approx(float(equity / (debt + equity)))
+    assert structure.debt_weight == pytest.approx(float(debt / (debt + equity)))
+    assert structure.tax_rate == pytest.approx(
+        28785762 / 122708355
+    )
 
 
 def test_skhynix_street_loader_uses_original_broker_report(tmp_path: Path):
@@ -154,7 +168,7 @@ def test_skhynix_market_and_beta_inputs_use_original_exchange_sources(tmp_path: 
     config = build_skhynix_live_primary_config(tmp_path)
     market = config.providers.market_loader()
     beta = config.providers.beta_loader(None)
-    assert market.source_ref == "https://www.skhynix.com/ir/UI-FR-IR02/"
+    assert market.source_ref == "https://www.skhynix.com/ir/UI-FR-IR01/"
     assert market.price == 1647000
     assert market.as_of == "2026-09-04"
     assert all(
@@ -165,6 +179,28 @@ def test_skhynix_market_and_beta_inputs_use_original_exchange_sources(tmp_path: 
         for peer in level.peers
     )
     assert any("sec.gov/Archives/edgar/data/" in ref for ref in beta.source_refs)
+
+
+def test_skhynix_market_date_and_filed_wacc_bindings_fail_closed(tmp_path: Path):
+    payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload["market"]["as_of"] = "2026-09-03"
+    relabelled_market = tmp_path / "relabelled_market.yaml"
+    relabelled_market.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="market observation binding mismatch"):
+        load_skhynix_snapshot(relabelled_market)
+
+    payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload["risk"]["target_debt_weight"] = 0.1
+    relabelled_wacc = tmp_path / "relabelled_wacc.yaml"
+    relabelled_wacc.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="capital-structure or tax binding mismatch"):
+        load_skhynix_snapshot(relabelled_wacc)
 
 
 def test_skhynix_beta_snapshot_replays_frozen_nasdaq_series_and_sec_capital():

@@ -66,6 +66,25 @@ def _svg_text(
     )
 
 
+def _wrapped_lines(
+    value: object,
+    *,
+    width: int,
+    max_lines: int | None,
+) -> tuple[str, ...]:
+    text = " ".join(str(value).split())
+    lines = textwrap.wrap(
+        text,
+        width=width,
+        break_long_words=False,
+        break_on_hyphens=False,
+    ) or [""]
+    if max_lines is not None and len(lines) > max_lines:
+        lines = lines[:max_lines]
+        lines[-1] = lines[-1].rstrip("., ") + "…"
+    return tuple(lines)
+
+
 def _wrapped_text(
     value: object,
     *,
@@ -74,20 +93,15 @@ def _wrapped_text(
     width: int,
     size: int,
     line_height: int,
-    max_lines: int,
+    max_lines: int | None,
     weight: int = 400,
     fill: str = "#344B5A",
 ) -> tuple[str, int]:
-    text = " ".join(str(value).split())
-    lines = textwrap.wrap(
-        text,
+    lines = _wrapped_lines(
+        value,
         width=width,
-        break_long_words=False,
-        break_on_hyphens=False,
-    ) or [""]
-    if len(lines) > max_lines:
-        lines = lines[:max_lines]
-        lines[-1] = lines[-1].rstrip("., ") + "…"
+        max_lines=max_lines,
+    )
     rendered = [
         _svg_text(
             line,
@@ -157,8 +171,14 @@ def _source_footer(data: dict[str, Any], *, y: int) -> str:
     return "\n".join(lines)
 
 
-def _svg_document(*, title: str, description: str, body: str) -> str:
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{_CARD_WIDTH}" height="{_CARD_HEIGHT}" viewBox="0 0 {_CARD_WIDTH} {_CARD_HEIGHT}" role="img" aria-labelledby="title desc">
+def _svg_document(
+    *,
+    title: str,
+    description: str,
+    body: str,
+    height: int = _CARD_HEIGHT,
+) -> str:
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{_CARD_WIDTH}" height="{height}" viewBox="0 0 {_CARD_WIDTH} {height}" role="img" aria-labelledby="title desc">
 <title id="title">{escape(title)}</title>
 <desc id="desc">{escape(description)}</desc>
 <style>
@@ -421,17 +441,6 @@ def _multiple_assumption_table(
         for item in evaluator_contracts
         if item.execution_family not in multiple_families | nav_families
     )
-    if (
-        evaluator_contracts
-        and not multiple_contracts
-        and not nav_contracts
-        and len(discounted_contracts) == 1
-        and discounted_contracts[0].execution_family == "explicit_fcff_dcf"
-    ):
-        # Preserve the established dedicated DCF card for a single-family run.
-        # The generalized table is needed when SOTP mixes evaluator families.
-        return None
-
     # Legacy direct-plan callers do not carry a compilation artifact.  Their
     # historical table remains available, but every compiled runtime report
     # below is driven by exact selected evaluator contracts.
@@ -628,13 +637,7 @@ def _multiple_assumption_table(
                 rendered = tuple(
                     _scenario_assumption(scenario, key) for key in keys
                 )
-                value = (
-                    rendered[0]
-                    if len(rendered) == 1
-                    else " / ".join(rendered)
-                    if len(rendered) <= 3
-                    else f"{rendered[0]}→{rendered[-1]} ({len(rendered)}개)"
-                )
+                value = rendered[0] if len(rendered) == 1 else " / ".join(rendered)
                 return f"{group_label} {value}"
 
             path_lines = tuple(group_text(group) for group in primary)
@@ -690,7 +693,18 @@ def _multiple_assumption_table(
 
             rows.append(
                 (
-                    f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
+                    " ".join(
+                        part
+                        for part in (
+                            f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
+                            (
+                                f"{scenario.probability:.1%}"
+                                if getattr(scenario, "probability", None) is not None
+                                else ""
+                            ),
+                        )
+                        if part
+                    ),
                     "; ".join(row_multiples) or "—",
                     "; ".join(row_nav) or "—",
                     "; ".join(dcf_values) or "—",
@@ -715,7 +729,18 @@ def _multiple_assumption_table(
         row_nav = nav_values(scenario)
         rows.append(
             (
-                f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
+                " ".join(
+                    part
+                    for part in (
+                        f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
+                        (
+                            f"{scenario.probability:.1%}"
+                            if getattr(scenario, "probability", None) is not None
+                            else ""
+                        ),
+                    )
+                    if part
+                ),
                 row_multiples[0] if row_multiples else "—",
                 row_multiples[1] if len(row_multiples) > 1 else "—",
                 "; ".join(row_multiples[2:]) or "—",
@@ -998,7 +1023,8 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
 
     parts.append(_svg_text("시나리오별 핵심 가정", x=70, y=560, size=30, weight=800, fill="#102D3E"))
     table_y = 600
-    parts.append(_rect(70, table_y, 1060, 390, fill="#FFFFFF", radius=22))
+    table_rect_index = len(parts)
+    parts.append("")
     has_numeric_probabilities = bool(scenarios) and all(
         getattr(scenario, "probability", None) is not None
         for scenario in scenarios[:3]
@@ -1048,10 +1074,11 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             for scenario in scenarios[:3]
         )
     )
+    row_cursor = table_y + 112
     for index, values in enumerate(table_rows):
         if multiple_table is None:
-            # Keep the established single FCFF card byte-for-byte stable.
-            row_y = table_y + 125 + index * 85
+            row_y = row_cursor + 13
+            row_height = 85
             for x, value in zip(x_positions, values):
                 value_lines = str(value).splitlines()
                 value_y = row_y - (11 if len(value_lines) > 1 else 0)
@@ -1072,8 +1099,16 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
                     f'y2="{row_y + 28}" stroke="#E9EEF0" stroke-width="2"/>'
                 )
         else:
-            row_y = table_y + 112 + index * 98
+            row_y = row_cursor
             cell_widths = (11, 17, 17, 19, 17, 11)
+            wrapped_cells = tuple(
+                _wrapped_lines(value, width=width, max_lines=None)
+                for width, value in zip(cell_widths, values)
+            )
+            row_height = max(
+                85,
+                max(len(lines) for lines in wrapped_cells) * 18 + 32,
+            )
             for x, width, value in zip(x_positions, cell_widths, values):
                 rendered, _ = _wrapped_text(
                     value,
@@ -1082,16 +1117,27 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
                     width=width,
                     size=14 if x != 100 else 16,
                     line_height=18,
-                    max_lines=4,
+                    max_lines=None,
                     weight=700 if x == 100 else 500,
                     fill="#142A3A",
                 )
                 parts.append(rendered)
             if index < len(table_rows) - 1:
                 parts.append(
-                    f'<line x1="95" y1="{row_y + 69}" x2="1105" '
-                    f'y2="{row_y + 69}" stroke="#E9EEF0" stroke-width="2"/>'
+                    f'<line x1="95" y1="{row_y + row_height - 18}" x2="1105" '
+                    f'y2="{row_y + row_height - 18}" stroke="#E9EEF0" '
+                    'stroke-width="2"/>'
                 )
+        row_cursor += row_height
+    table_bottom = row_cursor + 20
+    parts[table_rect_index] = _rect(
+        70,
+        table_y,
+        1060,
+        table_bottom - table_y,
+        fill="#FFFFFF",
+        radius=22,
+    )
 
     capex = "—"
     if core is not None:
@@ -1118,7 +1164,7 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
         )
     )
-    y = 1050
+    y = table_bottom + 60
     for label, detail in detail_rows:
         parts.append(_svg_text(label, x=70, y=y, size=22, weight=800, fill="#E26643"))
         rendered, y_end = _wrapped_text(
@@ -1128,15 +1174,25 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             width=58,
             size=21,
             line_height=31,
-            max_lines=2,
+            max_lines=None,
         )
         parts.append(rendered)
         y = max(y + 62, y_end + 12)
 
+    footer_y = max(1370, y + 28)
+    card_height = footer_y + 130
+    parts[0] = _rect(
+        0,
+        0,
+        _CARD_WIDTH,
+        card_height,
+        fill="#F3F0E8",
+        radius=0,
+    )
     parts.extend(
         (
-            _rect(0, 1370, _CARD_WIDTH, 130, fill="#102D3E", radius=0),
-            _source_footer(data, y=1415),
+            _rect(0, footer_y, _CARD_WIDTH, 130, fill="#102D3E", radius=0),
+            _source_footer(data, y=footer_y + 45),
         )
     )
     return ReportVisual(
@@ -1144,8 +1200,9 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
         alt_text=f"{company} 가치평가 가정·위험·출처 요약",
         svg=_svg_document(
             title=f"{company} 가치평가 가정",
-            description="시나리오별 자유현금흐름, 영구성장률, 자본비용, 위험과 출처를 요약한 한국어 카드",
+            description="시나리오별 자유현금흐름, 영구성장률, 자본비용, 위험과 출처를 모두 표시한 한국어 카드",
             body="\n".join(parts),
+            height=card_height,
         ),
     )
 

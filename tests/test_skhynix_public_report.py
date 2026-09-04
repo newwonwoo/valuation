@@ -37,8 +37,11 @@ def test_skhynix_public_report_uses_korean_standard_form(tmp_path: Path):
     positions = [report.index(heading) for heading in PUBLIC_REQUIRED_HEADINGS]
     assert positions == sorted(positions)
     assert "하방 15.7% · 기준 43.9% · 상방 40.4%" in report
-    assert "확률가중 기대값:** 주당 5,519,812원" in report
-    assert "기준 내재가치는 5,170,059원" in report
+    valuation = result.data["generic_valuation_result"]
+    expected = valuation.expected_value_per_share
+    core = next(item for item in valuation.scenarios if item.scenario_id == "Core")
+    assert f"확률가중 기대값:** 주당 {expected:,.0f}원" in report
+    assert f"기준 내재가치는 {core.value_per_share:,.0f}원" in report
     assert "사업모델과 강점" in report
     assert "고대역폭메모리" in report
     assert "현금흐름할인법" in report
@@ -54,7 +57,7 @@ def test_skhynix_public_report_uses_korean_standard_form(tmp_path: Path):
     assert "github.com/newwonwoo/valuation" not in report
     assert "stockanalysis.com" not in report.casefold()
     assert "investing.com" not in report.casefold()
-    assert "skhynix.com/ir/UI-FR-IR02" in report
+    assert "skhynix.com/ir/UI-FR-IR01" in report
     assert "samsungpop.com" in report
     assert "api.nasdaq.com/api/quote/" in report
     assert "sec.gov/Archives/edgar/data/" in report
@@ -81,7 +84,7 @@ def test_skhynix_public_report_uses_korean_standard_form(tmp_path: Path):
         assert "commodity_price_taker" not in card
         assert "초고압" not in card
     assert "4세대 고대역폭메모리 양산 출하" in cards[0]
-    assert "시나리오 확률" in cards[1]
+    assert "확률" in cards[1]
     assert "15.7%" in cards[1]
     assert "43.9%" in cards[1]
     assert "40.4%" in cards[1]

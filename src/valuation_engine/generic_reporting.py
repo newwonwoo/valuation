@@ -417,10 +417,7 @@ def _scenario_assumptions_line(
                 f"×{common_ownership * 100:.4f}%÷{share_count:,.0f}주"
             )
 
-    use_typed_discounting = bool(discounted_contracts) and not (
-        len(evaluator_contracts) == 1
-        and discounted_contracts[0].execution_family == "explicit_fcff_dcf"
-    )
+    use_typed_discounting = bool(discounted_contracts)
     for contract in discounted_contracts if use_typed_discounting else ():
         label = segment_labels.get(contract.segment_id, contract.segment_id)
         if evaluator_contracts:

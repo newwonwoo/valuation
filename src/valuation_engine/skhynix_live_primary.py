@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from hashlib import sha256
 import json
+from math import isclose
 from pathlib import Path
+import re
 from typing import Any
 
 import yaml
@@ -155,13 +158,56 @@ def load_skhynix_snapshot(path: str | Path | None = None) -> SKHynixSnapshot:
     formats = price_rows[0].get("Formats", ())
     if not formats or float(formats[0]["rawValue"]) != float(market.get("price")):
         raise ValueError("SK hynix market price does not match the frozen issuer feed")
+    dated_record = str(market_snapshot.get("dated_source_record", ""))
+    if sha256(dated_record.encode("utf-8")).hexdigest() != market_snapshot.get(
+        "dated_source_record_sha256"
+    ):
+        raise ValueError("SK hynix dated market-source record hash mismatch")
+    dated_match = re.fullmatch(
+        r"SK hynix 000660 \| ([0-9,]+) KRW \| As of "
+        r"([0-9]{2}:[0-9]{2}) ([A-Za-z]+ [0-9]{2}, [0-9]{4})",
+        dated_record,
+    )
+    if dated_match is None:
+        raise ValueError("SK hynix dated market-source record is malformed")
+    dated_price = int(dated_match.group(1).replace(",", ""))
+    dated_as_of = datetime.strptime(
+        dated_match.group(3), "%B %d, %Y"
+    ).date().isoformat()
     if (
-        market_snapshot.get("as_of") != market.get("as_of")
+        dated_as_of != market.get("as_of")
+        or dated_price != market.get("price")
         or market_snapshot.get("price") != market.get("price")
         or market_snapshot.get("issuer_source_ref")
         != payload.get("sources", {}).get("market")
+        or market_snapshot.get("dated_source_ref")
+        != payload.get("sources", {}).get("market")
     ):
         raise ValueError("SK hynix market observation binding mismatch")
+
+    official_facts = payload.get("official_facts", {})
+    debt = float(official_facts["borrowings_q2_2026"][0])
+    equity = float(official_facts["total_equity_q2_2026"][0])
+    income_tax = float(official_facts["income_tax_expense_h1_2026"][0])
+    pre_tax_income = float(official_facts["profit_before_income_tax_h1_2026"][0])
+    capital_total = debt + equity
+    expected_risk = (
+        equity / capital_total,
+        debt / capital_total,
+        income_tax / pre_tax_income,
+    )
+    recorded_risk = (
+        float(risk.get("target_equity_weight", -1)),
+        float(risk.get("target_debt_weight", -1)),
+        float(risk.get("tax_rate", -1)),
+    )
+    if risk.get("capital_structure_as_of") != "2026-06-30":
+        raise ValueError("SK hynix filed capital-structure date mismatch")
+    if any(
+        not isclose(actual, expected, rel_tol=0.0, abs_tol=1e-15)
+        for actual, expected in zip(recorded_risk, expected_risk)
+    ):
+        raise ValueError("SK hynix filed capital-structure or tax binding mismatch")
 
     snapshot = SKHynixSnapshot(
         payload=payload,
@@ -594,10 +640,13 @@ def _target_structure(snapshot: SKHynixSnapshot) -> LiveCapitalStructureObservat
         equity_weight=float(risk["target_equity_weight"]),
         debt_weight=float(risk["target_debt_weight"]),
         tax_rate=float(risk["tax_rate"]),
-        method=TargetCapitalStructureMethod.LONG_RUN_POLICY,
-        as_of=str(risk["as_of"]),
-        source_refs=(snapshot.sources["underwriting"],),
-        rationale="explicit long-run capital-structure underwriting; target market value is not used",
+        method=TargetCapitalStructureMethod.COMPILED_SCENARIO,
+        as_of=str(risk["capital_structure_as_of"]),
+        source_refs=(snapshot.sources["half_year_filing"],),
+        rationale=(
+            "filed 2026H1 borrowings/equity weights and effective income-tax rate; "
+            "target market value is not used"
+        ),
     )
 
 

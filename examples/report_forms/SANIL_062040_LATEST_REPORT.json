@@ -1,17 +1,17 @@
 {
-  "artifact_id": "SANIL_062040-20260827-TP242038-1A57EF1F2A85",
-  "html_filename": "SANIL_062040_20260827_TP242038_1A57EF1F2A85.html",
-  "html_sha256": "70e26a9b4cd934d7fbddcb7ab901b2e653dc5b0f825a02d28596e5b97f0a1805",
-  "markdown_filename": "SANIL_062040_20260827_TP242038_1A57EF1F2A85.md",
-  "markdown_sha256": "d9faf73f256d2cd816620bbe9d4e9b0b2851e39912f631d725192bdf4ac782ba",
+  "artifact_id": "SANIL_062040-20260827-TP242038-29A752476374",
+  "html_filename": "SANIL_062040_20260827_TP242038_29A752476374.html",
+  "html_sha256": "7c89eb6d85c5ef56c6e158ac4715a620895481c92d02c05810ce5d678e8df4c3",
+  "markdown_filename": "SANIL_062040_20260827_TP242038_29A752476374.md",
+  "markdown_sha256": "d057710e8824a4f6e6236705e1e05004008ff6a4d3b2ef4fbf5347bb01c6495d",
   "visuals": [
     {
-      "filename": "PRISM_062040_01_summary_1A57EF1F2A85.svg",
+      "filename": "PRISM_062040_01_summary_29A752476374.svg",
       "sha256": "51ec87f52484af292cd27b086683b9b2c7fa3a11be83d558521dceb58fb64e3c"
     },
     {
-      "filename": "PRISM_062040_02_assumptions_1A57EF1F2A85.svg",
-      "sha256": "81a9f143f09fedb1c400293f373095b19af482b23555d530e389b8e5b3ee9b6f"
+      "filename": "PRISM_062040_02_assumptions_29A752476374.svg",
+      "sha256": "becb32fdccb93cfff75d7f4e23c9695a42f68fe532cac4a7fd82c693188f6158"
     }
   ]
 }

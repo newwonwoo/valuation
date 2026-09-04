@@ -102,7 +102,7 @@ def skhynix_public_source_links(data: Mapping[str, object]) -> tuple[SourceLink,
             label = "베타 비교기업 미국 증권거래위원회 공시"
         elif "samsungpop.com" in link.url:
             label = "삼성증권 원문 리서치"
-        elif "skhynix.com/ir/UI-FR-IR02" in link.url:
+        elif "skhynix.com/ir/UI-FR-IR01" in link.url:
             label = "SK하이닉스 주가정보"
         elif "news.skhynix.com" in link.url:
             label = "SK하이닉스 실적 발표"
