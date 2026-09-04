@@ -112,18 +112,38 @@ def test_the_committed_koreazinc_run_replays_llm_bound_ifrs8_sotp():
     assert result.data["probability_weighting_allowed"] is False
     assert result.data["generic_valuation_result"].expected_value_per_share is None
 
+    aggregation = result.data["generic_valuation_result"].equity_aggregation
+    for scenario in aggregation.scenario_values:
+        operating = tuple(
+            item for item in scenario.components if item.ownership_ratio is not None
+        )
+        assert {item.asset_id for item in operating} == {
+            "manufacturing", "trading", "recycling"
+        }
+        assert all(item.ownership_ratio == Decimal("1") for item in operating)
+        parent = next(
+            item
+            for item in scenario.components
+            if item.asset_id == "parent_noncontrolling_interest"
+        )
+        assert parent.ownership_ratio is None
+        assert parent.attributable_equity_value.amount == Decimal(
+            "-250847127410.00"
+        )
+
     report = result.data["final_report"]
     for line in (
-        "**하방 시나리오:** 내재가치 주당 309,797원",
-        "**기준 시나리오:** 내재가치 주당 685,256원",
-        "**상방 시나리오:** 내재가치 주당 1,117,291원",
+        "**하방 시나리오:** 내재가치 주당 304,347원",
+        "**기준 시나리오:** 내재가치 주당 688,109원",
+        "**상방 시나리오:** 내재가치 주당 1,129,698원",
         "**확률가중 기대값:** 미산출",
         "**현재가:** 1,223,000원 (2026-09-04)",
         "**가치동인:** 공시된 IFRS 8 3부문의 경제구조와 순금융부채를 분리해 제조·수출입의 정상화 수익력과 적자 기타부문의 유형자산 가치를 검증한다.",
         "**기준 가정:** 제조 EBITDA 21,441억원 × 7.5배",
         "기타 유형자산 NAV 1,476억원",
-        "공통 지배주주 귀속률 97.8364%",
-        "산식 [배수평가 부문 귀속 지분가치+NAV 부문 귀속 지분가치]÷20,393,232주 (각 부문 EV→지분 조정·귀속률 반영)",
+        "공통 지배주주 귀속률 100.0000%",
+        "모회사 조정 -2,508억원",
+        "산식 [배수평가 부문 귀속 지분가치+NAV 부문 귀속 지분가치+모회사 조정]÷20,393,232주 (각 부문 EV→지분 조정·귀속률 반영)",
         "**계산 확인:** 차단 점검 21/21개 통과 · 비차단 확인 필요 3건",
         "동결 가치가 단일 DCF 시나리오로 재구성되지 않아 영구성장률·현금흐름 함의값을 산출하지 않았습니다",
         "REFERENCE_ONLY",

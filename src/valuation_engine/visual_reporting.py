@@ -498,13 +498,26 @@ def _multiple_assumption_table(
                 adjustments.append(scenario.get(key).measure)
             except KeyError:
                 continue
-        if not adjustments:
-            return "—"
-        unit = adjustments[0].unit
-        total = sum(
-            (item.convert_to(unit).amount for item in adjustments), Decimal(0)
-        )
-        return _measure_value_text(total, unit)
+        details: list[str] = []
+        if adjustments:
+            unit = adjustments[0].unit
+            total = sum(
+                (item.convert_to(unit).amount for item in adjustments), Decimal(0)
+            )
+            details.append(f"EV→지분 {_measure_value_text(total, unit)}")
+        parent = []
+        for item in valuation_plan.parent_adjustments if valuation_plan else ():
+            try:
+                parent.append(scenario.get(item.assumption_key).measure)
+            except KeyError:
+                continue
+        if parent:
+            unit = parent[0].unit
+            total = sum(
+                (item.convert_to(unit).amount for item in parent), Decimal(0)
+            )
+            details.append(f"모회사 {_measure_value_text(total, unit)}")
+        return "; ".join(details) or "—"
 
     def multiple_values(scenario: Any) -> list[str]:
         values: list[str] = []
@@ -696,6 +709,12 @@ def _multiple_assumption_table(
             terminal.append(terminal_detail)
         return paths, terminal
 
+    adjustment_header = (
+        "EV→지분·모회사 조정"
+        if valuation_plan is not None and valuation_plan.parent_adjustments
+        else "EV→지분 조정"
+    )
+
     if discounted_contracts or (
         not evaluator_contracts
         and any(key.endswith("fcff_year_1") for key in first_keys)
@@ -706,7 +725,7 @@ def _multiple_assumption_table(
             "NAV 부문",
             "현금흐름/NPV 부문",
             "영구/기타 입력",
-            "EV→지분 조정",
+            adjustment_header,
         )
         rows = []
         for scenario in scenarios[:3]:
@@ -753,7 +772,7 @@ def _multiple_assumption_table(
         "배수평가 2",
         "배수평가 3+",
         "NAV 부문",
-        "EV→지분 조정",
+        adjustment_header,
     )
 
     rows = []
@@ -879,6 +898,21 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
                 (item.convert_to(unit).amount for item in adjustments), Decimal(0)
             )
             core_adjustment = _measure_value_text(total, unit)
+        if valuation_plan is not None and valuation_plan.parent_adjustments:
+            parent = tuple(
+                core.get(item.assumption_key).measure
+                for item in valuation_plan.parent_adjustments
+            )
+            unit = parent[0].unit
+            parent_total = sum(
+                (item.convert_to(unit).amount for item in parent), Decimal(0)
+            )
+            parent_text = f"모회사 {_measure_value_text(parent_total, unit)}"
+            core_adjustment = (
+                f"EV {core_adjustment} / {parent_text}"
+                if adjustments
+                else parent_text
+            )
         share_key = (
             valuation_plan.diluted_shares_key
             if valuation_plan is not None
@@ -952,7 +986,12 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
                 if common_ownership is not None
                 else "개별 적용",
             ),
-            ("EV→지분 조정", core_adjustment),
+            (
+                "EV→지분·모회사 조정"
+                if valuation_plan is not None and valuation_plan.parent_adjustments
+                else "EV→지분 조정",
+                core_adjustment,
+            ),
             ("주당 분모", core_shares),
         )
         if component_sotp_present

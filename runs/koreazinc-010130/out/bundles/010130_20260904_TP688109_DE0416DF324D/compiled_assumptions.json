@@ -1,0 +1,747 @@
+{
+  "assumption_set_hash": "b2af6afa475ac7c50ff09287ec994195f16dcf5ed6bb1c422214b0a5450f9783",
+  "assumptions": [
+    {
+      "bridge_id": "B:manufacturing_normalized_ebitda:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:normalized_ebitda",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:down_manufacturing_normalized_ebitda"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "52776be2711ca91f5a8b516e4b91a67ab0bc47d55879742f57295150dfc725d8",
+      "key": "manufacturing_normalized_ebitda",
+      "measure": {
+        "amount": "1500.904",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_normalized_multiple:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:normalized_multiple",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:down_manufacturing_normalized_multiple"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "03a8769b5f6a90b3e09e4d8e58414430e4cc1544733aa706d9b53afcb39d014f",
+      "key": "manufacturing_normalized_multiple",
+      "measure": {
+        "amount": "5.5",
+        "as_of": "2026-09-04",
+        "unit": "multiple"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_ownership:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:ownership",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ownership"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "26baabfa16a333442755452994fcdc914a1935cee19cd3ff524ca8a5f9a2460a",
+      "key": "manufacturing_ownership",
+      "measure": {
+        "amount": "1.0",
+        "as_of": "2026-09-04",
+        "unit": "ratio"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_ev_adjustment:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:ev_adjustment",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ev_adjustment"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "64a4f6364fa30f9caea0e315a08e35d0538fbda3a38d0f5d5a504295789ffadc",
+      "key": "manufacturing_ev_adjustment",
+      "measure": {
+        "amount": "-2713.254",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_normalized_ebitda:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:normalized_ebitda",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_ebitda"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "bcef1a5651f1b259c03ea9e9d162f65d50850f0178af35652e862ced72c2e63a",
+      "key": "trading_normalized_ebitda",
+      "measure": {
+        "amount": "192.05",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_normalized_multiple:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:normalized_multiple",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_multiple"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "260cf1df0ef7d74e71a4ba547192fc2953eed5be23b34b19288d230735f8e4b0",
+      "key": "trading_normalized_multiple",
+      "measure": {
+        "amount": "4.0",
+        "as_of": "2026-09-04",
+        "unit": "multiple"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_ownership:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:ownership",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ownership"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "6df1243cb0b8055cdd35597701662564b71cd8b59b7b2b8995018809e4d0331a",
+      "key": "trading_ownership",
+      "measure": {
+        "amount": "1.0",
+        "as_of": "2026-09-04",
+        "unit": "ratio"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_ev_adjustment:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:ev_adjustment",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ev_adjustment"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "050eba632a6b9f9fde9cde94c44cf7f0f1215452c5380eab3bf97de564986893",
+      "key": "trading_ev_adjustment",
+      "measure": {
+        "amount": "0",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:diluted_shares:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:company:diluted_shares",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:diluted_shares"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "df0a6564ca456328fa4ccc619bb1e2aee2b9efa7a23273ebe33410dff2e8800e",
+      "key": "diluted_shares",
+      "measure": {
+        "amount": "20393232",
+        "as_of": "2026-09-04",
+        "unit": "shares"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_normalized_ebitda:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:normalized_ebitda",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_normalized_ebitda"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "c001d00bc590aba1ea8cc558e3e1614e549d19d8070aeb8add167e91b200b0db",
+      "key": "manufacturing_normalized_ebitda",
+      "measure": {
+        "amount": "2144.149",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_normalized_multiple:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:normalized_multiple",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_normalized_multiple"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "4c3cc52d2dacbf64d663eac8a669af7a39f1029f81164bf1dd83d1b8c713148c",
+      "key": "manufacturing_normalized_multiple",
+      "measure": {
+        "amount": "7.5",
+        "as_of": "2026-09-04",
+        "unit": "multiple"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_ownership:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:ownership",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ownership"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "26baabfa16a333442755452994fcdc914a1935cee19cd3ff524ca8a5f9a2460a",
+      "key": "manufacturing_ownership",
+      "measure": {
+        "amount": "1.0",
+        "as_of": "2026-09-04",
+        "unit": "ratio"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_ev_adjustment:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:ev_adjustment",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ev_adjustment"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "64a4f6364fa30f9caea0e315a08e35d0538fbda3a38d0f5d5a504295789ffadc",
+      "key": "manufacturing_ev_adjustment",
+      "measure": {
+        "amount": "-2713.254",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_normalized_ebitda:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:normalized_ebitda",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_ebitda"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "bcef1a5651f1b259c03ea9e9d162f65d50850f0178af35652e862ced72c2e63a",
+      "key": "trading_normalized_ebitda",
+      "measure": {
+        "amount": "192.05",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_normalized_multiple:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:normalized_multiple",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_multiple"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "260cf1df0ef7d74e71a4ba547192fc2953eed5be23b34b19288d230735f8e4b0",
+      "key": "trading_normalized_multiple",
+      "measure": {
+        "amount": "4.0",
+        "as_of": "2026-09-04",
+        "unit": "multiple"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_ownership:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:ownership",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ownership"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "6df1243cb0b8055cdd35597701662564b71cd8b59b7b2b8995018809e4d0331a",
+      "key": "trading_ownership",
+      "measure": {
+        "amount": "1.0",
+        "as_of": "2026-09-04",
+        "unit": "ratio"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_ev_adjustment:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:ev_adjustment",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ev_adjustment"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "050eba632a6b9f9fde9cde94c44cf7f0f1215452c5380eab3bf97de564986893",
+      "key": "trading_ev_adjustment",
+      "measure": {
+        "amount": "0",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:diluted_shares:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:company:diluted_shares",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:diluted_shares"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "df0a6564ca456328fa4ccc619bb1e2aee2b9efa7a23273ebe33410dff2e8800e",
+      "key": "diluted_shares",
+      "measure": {
+        "amount": "20393232",
+        "as_of": "2026-09-04",
+        "unit": "shares"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_normalized_ebitda:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:normalized_ebitda",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:bull_manufacturing_normalized_ebitda"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "5d32d0470497f1e2c91859695c699d41667bd6d1157e02d44af0051663f53132",
+      "key": "manufacturing_normalized_ebitda",
+      "measure": {
+        "amount": "2787.394",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_normalized_multiple:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:normalized_multiple",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:bull_manufacturing_normalized_multiple"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "1f20441ca3578f896b7838e424e90f8a863ec05e99f1520b4a52fa5247d1127c",
+      "key": "manufacturing_normalized_multiple",
+      "measure": {
+        "amount": "9.0",
+        "as_of": "2026-09-04",
+        "unit": "multiple"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_ownership:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:ownership",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ownership"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "26baabfa16a333442755452994fcdc914a1935cee19cd3ff524ca8a5f9a2460a",
+      "key": "manufacturing_ownership",
+      "measure": {
+        "amount": "1.0",
+        "as_of": "2026-09-04",
+        "unit": "ratio"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:manufacturing_ev_adjustment:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:manufacturing:ev_adjustment",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ev_adjustment"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "64a4f6364fa30f9caea0e315a08e35d0538fbda3a38d0f5d5a504295789ffadc",
+      "key": "manufacturing_ev_adjustment",
+      "measure": {
+        "amount": "-2713.254",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_normalized_ebitda:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:normalized_ebitda",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_ebitda"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "bcef1a5651f1b259c03ea9e9d162f65d50850f0178af35652e862ced72c2e63a",
+      "key": "trading_normalized_ebitda",
+      "measure": {
+        "amount": "192.05",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_normalized_multiple:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:normalized_multiple",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_multiple"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "260cf1df0ef7d74e71a4ba547192fc2953eed5be23b34b19288d230735f8e4b0",
+      "key": "trading_normalized_multiple",
+      "measure": {
+        "amount": "4.0",
+        "as_of": "2026-09-04",
+        "unit": "multiple"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_ownership:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:ownership",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ownership"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "6df1243cb0b8055cdd35597701662564b71cd8b59b7b2b8995018809e4d0331a",
+      "key": "trading_ownership",
+      "measure": {
+        "amount": "1.0",
+        "as_of": "2026-09-04",
+        "unit": "ratio"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:trading_ev_adjustment:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:trading:ev_adjustment",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ev_adjustment"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "050eba632a6b9f9fde9cde94c44cf7f0f1215452c5380eab3bf97de564986893",
+      "key": "trading_ev_adjustment",
+      "measure": {
+        "amount": "0",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:diluted_shares:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:company:diluted_shares",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:diluted_shares"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "df0a6564ca456328fa4ccc619bb1e2aee2b9efa7a23273ebe33410dff2e8800e",
+      "key": "diluted_shares",
+      "measure": {
+        "amount": "20393232",
+        "as_of": "2026-09-04",
+        "unit": "shares"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:recycling_gross_asset_value:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:recycling_gross_asset_value",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_gross_asset_value"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "9fdf14530e24925060434a54b6e2f26313397a3e0fd2d83781e1a34972d1c898",
+      "key": "recycling_gross_asset_value",
+      "measure": {
+        "amount": "147.556",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:recycling_liabilities:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:recycling_liabilities",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_liabilities"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "ce37adfb79592627505d9b7b277ce09c55c712c342e72707a663e924d4c5cc19",
+      "key": "recycling_liabilities",
+      "measure": {
+        "amount": "0",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:recycling_ownership:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:recycling_ownership",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_ownership"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "bdfd45ccef3928d542f53709421ac60b0aded57e4d9127b32a48007870c922ea",
+      "key": "recycling_ownership",
+      "measure": {
+        "amount": "1.0",
+        "as_of": "2026-09-04",
+        "unit": "ratio"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:recycling_gross_asset_value:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:recycling_gross_asset_value",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_gross_asset_value"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "9fdf14530e24925060434a54b6e2f26313397a3e0fd2d83781e1a34972d1c898",
+      "key": "recycling_gross_asset_value",
+      "measure": {
+        "amount": "147.556",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:recycling_liabilities:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:recycling_liabilities",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_liabilities"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "ce37adfb79592627505d9b7b277ce09c55c712c342e72707a663e924d4c5cc19",
+      "key": "recycling_liabilities",
+      "measure": {
+        "amount": "0",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:recycling_ownership:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:recycling_ownership",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_ownership"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "bdfd45ccef3928d542f53709421ac60b0aded57e4d9127b32a48007870c922ea",
+      "key": "recycling_ownership",
+      "measure": {
+        "amount": "1.0",
+        "as_of": "2026-09-04",
+        "unit": "ratio"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:recycling_gross_asset_value:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:recycling_gross_asset_value",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_gross_asset_value"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "9fdf14530e24925060434a54b6e2f26313397a3e0fd2d83781e1a34972d1c898",
+      "key": "recycling_gross_asset_value",
+      "measure": {
+        "amount": "147.556",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:recycling_liabilities:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:recycling_liabilities",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_liabilities"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "ce37adfb79592627505d9b7b277ce09c55c712c342e72707a663e924d4c5cc19",
+      "key": "recycling_liabilities",
+      "measure": {
+        "amount": "0",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:recycling_ownership:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:recycling_ownership",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_ownership"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "bdfd45ccef3928d542f53709421ac60b0aded57e4d9127b32a48007870c922ea",
+      "key": "recycling_ownership",
+      "measure": {
+        "amount": "1.0",
+        "as_of": "2026-09-04",
+        "unit": "ratio"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:parent_noncontrolling_interest_adjustment:Down",
+      "calibration_status": null,
+      "economic_path_id": "path:parent:noncontrolling_interest",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:parent_noncontrolling_interest_adjustment"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "e7d23a18d9a03045b87bf32a7d31533b2ab3a4ed4ac4cd9995e6e627daff85d5",
+      "key": "parent_noncontrolling_interest_adjustment",
+      "measure": {
+        "amount": "-250.84712741",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Down",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:parent_noncontrolling_interest_adjustment:Base",
+      "calibration_status": null,
+      "economic_path_id": "path:parent:noncontrolling_interest",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:parent_noncontrolling_interest_adjustment"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "e7d23a18d9a03045b87bf32a7d31533b2ab3a4ed4ac4cd9995e6e627daff85d5",
+      "key": "parent_noncontrolling_interest_adjustment",
+      "measure": {
+        "amount": "-250.84712741",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Base",
+      "transform_id": "identity_observation"
+    },
+    {
+      "bridge_id": "B:parent_noncontrolling_interest_adjustment:Bull",
+      "calibration_status": null,
+      "economic_path_id": "path:parent:noncontrolling_interest",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:parent_noncontrolling_interest_adjustment"
+      ],
+      "hypothesis_id": "H:KZ:SOTP",
+      "input_evidence_hash": "e7d23a18d9a03045b87bf32a7d31533b2ab3a4ed4ac4cd9995e6e627daff85d5",
+      "key": "parent_noncontrolling_interest_adjustment",
+      "measure": {
+        "amount": "-250.84712741",
+        "as_of": "2026-09-04",
+        "unit": "KRW_billion"
+      },
+      "range_provenance": null,
+      "scenario_id": "Bull",
+      "transform_id": "identity_observation"
+    }
+  ],
+  "target_id": "KR:DART:00102858"
+}

@@ -16,6 +16,7 @@ from valuation_engine.evaluator_registry import ModelKey
 from valuation_engine.live_primary_adapters import SegmentDescriptor
 from valuation_engine.orchestrator import OrchestratorContext
 from valuation_engine.risk_adapters import LiveWACCStageResult
+from valuation_engine.valuation_execution import ParentAdjustmentPlan
 from valuation_engine.valuation_plan_compiler import SegmentMethodChoice
 from valuation_engine.wacc import WACCResult
 
@@ -49,6 +50,22 @@ def test_plan_inputs_fail_without_segments():
     loader = conventional_valuation_plan_inputs_loader(reporting_unit="KRW")
     with pytest.raises(GenericValuationPlanError, match="segment descriptors"):
         loader(_context({}))
+
+
+def test_plan_inputs_preserve_parent_adjustments_outside_segment_ownership():
+    adjustment = ParentAdjustmentPlan(
+        asset_id="parent_noncontrolling_interest",
+        assumption_key="parent_noncontrolling_interest_adjustment",
+    )
+    loader = conventional_valuation_plan_inputs_loader(
+        reporting_unit="KRW_billion",
+        parent_adjustments=(adjustment,),
+    )
+
+    inputs = loader(_context({"segment_descriptors": (_segment(),)}))
+
+    assert inputs.parent_adjustments == (adjustment,)
+    assert inputs.segment_bindings[0].ownership_key == "ownership"
 
 
 def test_registry_composes_a_wacc_free_family_without_wacc():

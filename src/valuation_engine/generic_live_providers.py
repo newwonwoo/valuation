@@ -77,6 +77,7 @@ from .method_capabilities import (
     load_default_method_capability_registry,
 )
 from .scenario_binding import ScenarioBindingSpec
+from .valuation_execution import ParentAdjustmentPlan
 from .valuation_plan_compiler import SegmentMethodChoice
 
 
@@ -188,6 +189,9 @@ class GenericKRRuntimeSpec:
     #: here routes them through the collection plan so the underwriting
     #: collector may serve them and coverage still fails closed when absent.
     extra_required_evidence: tuple[str, ...] = ()
+    #: Evidence-backed company-level claims/non-operating items applied once
+    #: after all operating-segment values. They are never ownership haircuts.
+    parent_adjustments: tuple[ParentAdjustmentPlan, ...] = ()
     #: The probability route: a loader returning a sealed calibration snapshot
     #: (e.g. the continuous financial-path snapshot the artifact factory's
     #: output produces) plus the cohort it must belong to. When set, the
@@ -220,6 +224,22 @@ class GenericKRRuntimeSpec:
             raise GenericValuationPlanError("scenario_ids must be unique")
         for choice in self.method_choices:
             choice.validate()
+        for adjustment in self.parent_adjustments:
+            adjustment.__post_init__()
+        adjustment_assets = tuple(
+            item.asset_id for item in self.parent_adjustments
+        )
+        adjustment_keys = tuple(
+            item.assumption_key for item in self.parent_adjustments
+        )
+        if len(adjustment_assets) != len(set(adjustment_assets)):
+            raise GenericValuationPlanError(
+                "parent adjustment asset IDs must be unique"
+            )
+        if len(adjustment_keys) != len(set(adjustment_keys)):
+            raise GenericValuationPlanError(
+                "parent adjustment assumption keys must be unique"
+            )
         self.filing.validate()
 
 
@@ -253,9 +273,14 @@ def build_generic_kr_runtime_factory(
     )
     keys = tuple(
         dict.fromkeys(
-            key
-            for choice in spec.method_choices
-            for key in keys_by_segment[choice.segment_id]
+            (
+                *(
+                    key
+                    for choice in spec.method_choices
+                    for key in keys_by_segment[choice.segment_id]
+                ),
+                *(item.assumption_key for item in spec.parent_adjustments),
+            )
         )
     )
     multi_segment = len(keys_by_segment) > 1
@@ -328,6 +353,7 @@ def build_generic_kr_runtime_factory(
         valuation_plan_inputs_loader=conventional_valuation_plan_inputs_loader(
             reporting_unit=spec.reporting_unit,
             segment_scoped_keys=multi_segment,
+            parent_adjustments=spec.parent_adjustments,
             ev_adjustment_segments=frozenset(
                 choice.segment_id
                 for choice in spec.method_choices
@@ -452,6 +478,18 @@ def build_generic_kr_runtime_factory(
         segment_id: segment_keys
         for segment_id, segment_keys in keys_by_segment.items()
     }
+    if spec.parent_adjustments:
+        additional_required[spec.filing.segment_id] = tuple(
+            dict.fromkeys(
+                (
+                    *additional_required[spec.filing.segment_id],
+                    *(
+                        item.assumption_key
+                        for item in spec.parent_adjustments
+                    ),
+                )
+            )
+        )
     # Extras route to the segment whose namespace prefixes them (multi-segment
     # scenario variants like steel_down_fcff_year_1); anything unprefixed —
     # every single-segment extra — binds to the filing segment as before.

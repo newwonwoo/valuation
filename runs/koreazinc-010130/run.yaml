@@ -10,6 +10,9 @@ segments:
     method: process_spread/normalized_multiple
   - segment_id: recycling
     method: asset_yield_nav/nav
+parent_adjustments:
+  - asset_id: parent_noncontrolling_interest
+    assumption_key: parent_noncontrolling_interest_adjustment
 market_currency: KRW
 filing:
   business_year: "2026"

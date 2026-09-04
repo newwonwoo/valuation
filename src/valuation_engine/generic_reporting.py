@@ -361,6 +361,23 @@ def _scenario_assumptions_line(
         values.append(
             f"EV→지분 조정 {_amount_unit_text(total, first_measure.unit)}"
         )
+    parent_adjustments = tuple(
+        by_key[item.assumption_key]
+        for item in (valuation_plan.parent_adjustments if valuation_plan else ())
+        if item.assumption_key in by_key
+    )
+    if parent_adjustments:
+        first_measure = parent_adjustments[0].measure
+        total = sum(
+            (
+                item.measure.convert_to(first_measure.unit).amount
+                for item in parent_adjustments
+            ),
+            Decimal(0),
+        )
+        values.append(
+            f"모회사 조정 {_amount_unit_text(total, first_measure.unit)}"
+        )
     share_key = (
         valuation_plan.diluted_shares_key
         if valuation_plan is not None

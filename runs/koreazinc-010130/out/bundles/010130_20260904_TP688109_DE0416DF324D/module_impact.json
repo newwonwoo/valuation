@@ -1,0 +1,374 @@
+{
+  "batch": {
+    "baseline": {
+      "assumption_hash": "b2af6afa475ac7c50ff09287ec994195f16dcf5ed6bb1c422214b0a5450f9783",
+      "blocked_reasons": [],
+      "conclusion_tags": [],
+      "intrinsic_value_per_share": null,
+      "route_hash": "ff9645930efe011e5f159dee1fc1bf2a3ce0ddc9a3f00ee95d9f8a7fb60e54fb",
+      "selected_methods": [
+        "commodity_price_taker/normalized_multiple/1",
+        "process_spread/normalized_multiple/1",
+        "asset_yield_nav/nav/1"
+      ],
+      "status": "COMPLETED",
+      "timing_days": null
+    },
+    "joint_observations": [],
+    "loadout_recommendations": [
+      {
+        "action": "keep_always",
+        "intensity": "always",
+        "module_id": "DETERMINISTIC_VALUATION",
+        "rationale": "repeated material impact supports mandatory deployment"
+      }
+    ],
+    "module_observations": [
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "INDUSTRY_DNA_ROUTER",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": true,
+        "module_id": "KNOWLEDGE_PLACEMENT_GATE",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "PRIMARY_EVIDENCE_COLLECTION",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "INDUSTRY_KNOWLEDGE",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "BROKER_RESEARCH",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "SIGNAL_INTELLIGENCE",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "EVIDENCE_LEDGER",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "ROCKET_INSIGHT_SCAN",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": false,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "UPSTREAM_FUNDING_SCAN",
+        "note": "module not applicable to this run",
+        "status": "not_applicable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "LLM_STAFF",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "BLIND_RED_TEAM_B",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "ASSUMPTION_COMPILER",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "SCENARIO_ENGINE",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": false,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "HIERARCHICAL_BETA_ENGINE",
+        "note": "module not applicable to this run",
+        "status": "not_applicable"
+      },
+      {
+        "applicable": false,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "WACC_ENGINE",
+        "note": "module not applicable to this run",
+        "status": "not_applicable"
+      },
+      {
+        "applicable": true,
+        "assessment": {
+          "assumption_changed": false,
+          "classification": "decision_material",
+          "conclusion_changed": true,
+          "guardrail_violation_detected": false,
+          "material": true,
+          "methods_changed": false,
+          "module_id": "DETERMINISTIC_VALUATION",
+          "rationale": "module changes status, route, method, conclusion or blocking decision",
+          "route_changed": false,
+          "status_changed": true,
+          "timing_delta_days": null,
+          "value_delta_abs": null,
+          "value_delta_pct": null
+        },
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "DETERMINISTIC_VALUATION",
+        "note": "",
+        "status": "measured"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "WARRANTED_PER_ENGINE",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      },
+      {
+        "applicable": true,
+        "assessment": null,
+        "effort": {
+          "documents_reviewed": 0,
+          "elapsed_seconds": 0.0,
+          "llm_calls": 0,
+          "source_queries": 0
+        },
+        "mandatory_guardrail": false,
+        "module_id": "SOTP_AGGREGATOR",
+        "note": "counterfactual adapter not implemented",
+        "status": "not_measurable"
+      }
+    ]
+  },
+  "summary": {
+    "available": true,
+    "downrank_candidates": [],
+    "failed": [],
+    "materiality": {
+      "ASSUMPTION_COMPILER": null,
+      "BLIND_RED_TEAM_B": null,
+      "BROKER_RESEARCH": null,
+      "DETERMINISTIC_VALUATION": true,
+      "EVIDENCE_LEDGER": null,
+      "EVIDENCE_TO_ASSUMPTION_BRIDGE": null,
+      "HIERARCHICAL_BETA_ENGINE": null,
+      "INDUSTRY_DNA_ROUTER": null,
+      "INDUSTRY_KNOWLEDGE": null,
+      "KNOWLEDGE_PLACEMENT_GATE": null,
+      "LLM_STAFF": null,
+      "PRIMARY_EVIDENCE_COLLECTION": null,
+      "ROCKET_INSIGHT_SCAN": null,
+      "SCENARIO_ENGINE": null,
+      "SIGNAL_INTELLIGENCE": null,
+      "SOTP_AGGREGATOR": null,
+      "UPSTREAM_FUNDING_SCAN": null,
+      "WACC_ENGINE": null,
+      "WARRANTED_PER_ENGINE": null
+    },
+    "measured": [
+      "DETERMINISTIC_VALUATION"
+    ],
+    "not_applicable": [
+      "HIERARCHICAL_BETA_ENGINE",
+      "UPSTREAM_FUNDING_SCAN",
+      "WACC_ENGINE"
+    ],
+    "not_measurable": [
+      "ASSUMPTION_COMPILER",
+      "BLIND_RED_TEAM_B",
+      "BROKER_RESEARCH",
+      "EVIDENCE_LEDGER",
+      "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+      "INDUSTRY_DNA_ROUTER",
+      "INDUSTRY_KNOWLEDGE",
+      "KNOWLEDGE_PLACEMENT_GATE",
+      "LLM_STAFF",
+      "PRIMARY_EVIDENCE_COLLECTION",
+      "ROCKET_INSIGHT_SCAN",
+      "SCENARIO_ENGINE",
+      "SIGNAL_INTELLIGENCE",
+      "SOTP_AGGREGATOR",
+      "WARRANTED_PER_ENGINE"
+    ],
+    "recommendations": [
+      {
+        "action": "keep_always",
+        "intensity": "always",
+        "module_id": "DETERMINISTIC_VALUATION",
+        "rationale": "repeated material impact supports mandatory deployment"
+      }
+    ],
+    "research_effort": {
+      "documents_reviewed": 0,
+      "elapsed_seconds": 0.0,
+      "llm_calls": 0,
+      "source_queries": 0
+    }
+  }
+}

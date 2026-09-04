@@ -1,0 +1,110 @@
+{
+  "artifact_id": "010130-20260904-TP688109-DE0416DF324D",
+  "as_of": "2026-09-04",
+  "audit_hash": "c85369b3e8fc797326b9c6199f0ec71cfb3a89572704bf62665a6a1ce76720ef",
+  "files": [
+    {
+      "filename": "010130_20260904_TP688109_DE0416DF324D.md",
+      "sha256": "e0e564cdc8838f9673c862cdcd1ff07328ae37b08bbcae07d80b8353a17eb0f4"
+    },
+    {
+      "filename": "PRISM_010130_01_summary.svg",
+      "sha256": "d8ab37d0f7ea39871ec4e6e0164beedab2a455d840ce82c55b4a3fedd8c43f7c"
+    },
+    {
+      "filename": "PRISM_010130_02_assumptions.svg",
+      "sha256": "cb7a0694ced1a969cb4e6515885c9db4caa38f1768710ac44ae029c7c757ecaa"
+    },
+    {
+      "filename": "audit.json",
+      "sha256": "019d650c952fbcc0281268b60573133aa9d93c14ce5222205d5d0e48214038ec"
+    },
+    {
+      "filename": "calibration_certificate.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "compiled_assumptions.json",
+      "sha256": "a294a5812afb80cdf5dfc4a84fa8b757300848f5ee6d802fdd96475fa3f72da9"
+    },
+    {
+      "filename": "context_strength_linkages.json",
+      "sha256": "92be571a24040658bc9681bfba2df1407257b53f803a97fb1347aa7d982cd895"
+    },
+    {
+      "filename": "control_plane_trace.json",
+      "sha256": "aca8d97a92323decdabd673ad526ee75ad3dbf1bb724228a71cea7ce3bdf0c76"
+    },
+    {
+      "filename": "doctrine_coverage.json",
+      "sha256": "655245540cc3a2d0c7480b37f40d638b0cc85ea08e2672a332d582b2a1cd3404"
+    },
+    {
+      "filename": "evidence_composition.json",
+      "sha256": "794f309cad51b3573483683a24162054cc68768b69e42cef885daa6a6fe26949"
+    },
+    {
+      "filename": "execution_attestation.json",
+      "sha256": "b8d1dfa9626faf9a2f4b478cc2f36fd1a3ba9b84e9e7c4148985e6fbcfd1a715"
+    },
+    {
+      "filename": "final_report.md",
+      "sha256": "08fbeb88812d8a99be2302899ce87a6f9b29d40cf72c40e748cea3d7e3357cf1"
+    },
+    {
+      "filename": "freeze_token.json",
+      "sha256": "8b398be6a3bfe73385ed02093435585037a6c24255210fb6bd1c1b83f543e0f2"
+    },
+    {
+      "filename": "manifest.json",
+      "sha256": "1d90dd6602270109380780cc55e57d42284d2aded0e0107d534a7652c7cba933"
+    },
+    {
+      "filename": "market_compare.json",
+      "sha256": "2bb120e83f125ce920cd780c6ecca549883b8f93cf14ffd28ef9c2c7766c78f3"
+    },
+    {
+      "filename": "module_impact.json",
+      "sha256": "6a4c3e8df3c862763e88811a5b82fe400303f3c6fd90f3b0278ff96736ddb66d"
+    },
+    {
+      "filename": "probability_forecast_drafts.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "filename": "reverse_dcf.json",
+      "sha256": "eccd044d245b6e9a47925806bb16f48a6b8b31db55cc59652a82a585be0bd041"
+    },
+    {
+      "filename": "scenario_probability_assessment.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "scenario_set.json",
+      "sha256": "21190f37808171248f8d4840c90f0c68edb7b740462dd9fe13f3c53082692dac"
+    },
+    {
+      "filename": "street_compare.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "thesis_delta.json",
+      "sha256": "7bc66e677c9e74211e6f1292ba11c52ea2d8fee1cc1b5c088f049d7c64184644"
+    },
+    {
+      "filename": "valuation.json",
+      "sha256": "24a6d092cd1f560c8c6b4216eedf784b3e5380952e2e901cfc866bb0fb23e66f"
+    },
+    {
+      "filename": "valuation_sensitivity.json",
+      "sha256": "21b75326d70c4bea1b5c1b4edf7832b03845d2d65ef85c5b317712f378a09437"
+    }
+  ],
+  "reference_value_per_share": "688109.2890322632528281931966",
+  "report_filename": "010130_20260904_TP688109_DE0416DF324D.md",
+  "run_id": "LIVE-KOREAZINC-2",
+  "run_input_sha256": "70a29dbf4ffbdf92c3ad7003139ab89f4a9c9d49dbfd0c06c21bd8434c75ddd6",
+  "schema_version": "kr-live-report-bundle/v1",
+  "ticker": "010130",
+  "valuation_hash": "dd8a2d1a669f8dc1b754dc66e94f222ecaef0634ba7a58671883c652c0a840c8"
+}

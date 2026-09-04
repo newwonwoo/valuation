@@ -1,5 +1,5 @@
 {
-  "rationale": "Evidence-backed pass-through of the manufacturing and trading normalized-multiple envelope; recycling is valued with the existing asset-yield NAV method using disclosed segment PPE, while consolidated debt and cash remain handled once in the manufacturing EV-to-equity bridge.",
+  "rationale": "Evidence-backed pass-through of the manufacturing and trading normalized-multiple envelope; recycling is valued with the existing asset-yield NAV method using disclosed segment PPE. IFRS 8 operating segments remain at 100% ownership, consolidated debt and cash are handled once in the manufacturing EV-to-equity bridge, and consolidated noncontrolling interest is deducted separately once at parent level.",
   "drafts": [
     {
       "assumption_key": "manufacturing_normalized_ebitda",
@@ -48,7 +48,7 @@
       ],
       "affected_variable": "segment_value",
       "direction": "unchanged",
-      "value": 0.978364,
+      "value": 1.0,
       "unit": "ratio",
       "canonical_unit": "ratio",
       "transform_id": "identity_observation",
@@ -124,7 +124,7 @@
       ],
       "affected_variable": "segment_value",
       "direction": "unchanged",
-      "value": 0.978364,
+      "value": 1.0,
       "unit": "ratio",
       "canonical_unit": "ratio",
       "transform_id": "identity_observation",
@@ -219,7 +219,7 @@
       ],
       "affected_variable": "segment_value",
       "direction": "unchanged",
-      "value": 0.978364,
+      "value": 1.0,
       "unit": "ratio",
       "canonical_unit": "ratio",
       "transform_id": "identity_observation",
@@ -295,7 +295,7 @@
       ],
       "affected_variable": "segment_value",
       "direction": "unchanged",
-      "value": 0.978364,
+      "value": 1.0,
       "unit": "ratio",
       "canonical_unit": "ratio",
       "transform_id": "identity_observation",
@@ -390,7 +390,7 @@
       ],
       "affected_variable": "segment_value",
       "direction": "unchanged",
-      "value": 0.978364,
+      "value": 1.0,
       "unit": "ratio",
       "canonical_unit": "ratio",
       "transform_id": "identity_observation",
@@ -466,7 +466,7 @@
       ],
       "affected_variable": "segment_value",
       "direction": "unchanged",
-      "value": 0.978364,
+      "value": 1.0,
       "unit": "ratio",
       "canonical_unit": "ratio",
       "transform_id": "identity_observation",
@@ -561,7 +561,7 @@
       ],
       "affected_variable": "segment_value",
       "direction": "unchanged",
-      "value": 0.978364,
+      "value": 1.0,
       "unit": "ratio",
       "canonical_unit": "ratio",
       "transform_id": "identity_observation",
@@ -618,7 +618,7 @@
       ],
       "affected_variable": "segment_value",
       "direction": "unchanged",
-      "value": 0.978364,
+      "value": 1.0,
       "unit": "ratio",
       "canonical_unit": "ratio",
       "transform_id": "identity_observation",
@@ -675,7 +675,7 @@
       ],
       "affected_variable": "segment_value",
       "direction": "unchanged",
-      "value": 0.978364,
+      "value": 1.0,
       "unit": "ratio",
       "canonical_unit": "ratio",
       "transform_id": "identity_observation",
@@ -684,6 +684,63 @@
       "kill_condition": "underwriting revision or contradicting filing",
       "verification_event": "next periodic filing",
       "economic_path_id": "path:recycling_ownership"
+    },
+    {
+      "assumption_key": "parent_noncontrolling_interest_adjustment",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:parent_noncontrolling_interest_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": -250.84712741,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "official connected NCI claim applied once at parent level",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:parent:noncontrolling_interest"
+    },
+    {
+      "assumption_key": "parent_noncontrolling_interest_adjustment",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:parent_noncontrolling_interest_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": -250.84712741,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "official connected NCI claim applied once at parent level",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:parent:noncontrolling_interest"
+    },
+    {
+      "assumption_key": "parent_noncontrolling_interest_adjustment",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:parent_noncontrolling_interest_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": -250.84712741,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "official connected NCI claim applied once at parent level",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:parent:noncontrolling_interest"
     }
   ]
 }

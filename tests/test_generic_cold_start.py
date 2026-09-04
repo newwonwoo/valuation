@@ -242,6 +242,32 @@ def test_extra_required_evidence_routes_scenario_qualified_inputs():
     assert "normalized_ebitda" in required
 
 
+def test_parent_adjustment_is_required_as_evidence_and_bridge_input(tmp_path):
+    """A company-level claim enters through the same evidence/Bridge gates;
+    it cannot be hidden in an operating-segment ownership ratio."""
+    from dataclasses import replace
+
+    from valuation_engine.valuation_execution import ParentAdjustmentPlan
+
+    adjustment = ParentAdjustmentPlan(
+        asset_id="parent_noncontrolling_interest",
+        assumption_key="parent_noncontrolling_interest_adjustment",
+    )
+    spec = replace(probe_runtime_spec(), parent_adjustments=(adjustment,))
+    factory = build_generic_kr_runtime_factory(
+        network=probe_network(),
+        transport=ScriptedTransport({}),
+        spec=spec,
+    )
+
+    required = factory.additional_required_evidence[spec.filing.segment_id]
+    assert "parent_noncontrolling_interest_adjustment" in required
+    config = factory(_request(tmp_path))
+    assert config.providers.bridge_analyst.required_keys[-1] == (
+        "parent_noncontrolling_interest_adjustment"
+    )
+
+
 def test_calibration_snapshot_loader_threads_into_the_probability_door():
     """The probability route's generic door: a snapshot loader on the spec must
     reach the extensions' calibration_loader slot and stamp the cohort and

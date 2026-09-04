@@ -30,6 +30,7 @@ from valuation_engine.scenario_binding import BoundScenario, BoundScenarioSet
 from valuation_engine.valuation_adapter import deterministic_valuation_adapter
 from valuation_engine.valuation_execution import (
     IntrinsicValuationScope,
+    ParentAdjustmentPlan,
     UnvaluedSegmentStatus,
     execute_company_valuation,
 )
@@ -164,6 +165,7 @@ def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
         _assumption("manufacturing_ev_adjustment", "-10", "KRW_billion"),
         _assumption("transport_ownership", "1", "ratio"),
         _assumption("transport_ev_adjustment", "-2", "KRW_billion"),
+        _assumption("parent_nci", "-3", "KRW_billion"),
         _assumption("diluted_shares", "10", "shares"),
     ]
     for key in backlog.required_assumption_keys:
@@ -246,6 +248,9 @@ def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
                     "transport_ev_adjustment",
                 ),
             ),
+            parent_adjustments=(
+                ParentAdjustmentPlan("parent_nci", "parent_nci"),
+            ),
         ),
         method_choices=(
             SegmentMethodChoice(
@@ -277,6 +282,7 @@ def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
     assert "제조 1,000억원×8배" in rendered_table
     assert "운송 수주잔고 DCF" in rendered_table
     assert "잔고 1,000억원" in rendered_table
+    assert "모회사 -30억원" in rendered_table
 
     svg = _assumptions_card(
         {
@@ -296,6 +302,7 @@ def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
     ).svg
     assert "운송 수주잔고 DCF" in svg
     assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in svg
+    assert "모회사 -30억원" in svg
 
     line = _scenario_assumptions_line(
         scenario,
@@ -304,6 +311,7 @@ def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
     )
     assert "운송 수주잔고 DCF" in line
     assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in line
+    assert "모회사 조정 -30억원" in line
 
     valuation = execute_company_valuation(
         scenario_set,
@@ -326,6 +334,7 @@ def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
     )
     assert "운송 수주잔고 DCF" in report
     assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in report
+    assert "모회사 조정 -30억원" in report
 
 
 def test_pure_multiple_visual_table_has_a_bounded_column_contract():
