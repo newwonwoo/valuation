@@ -97,6 +97,8 @@ def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
         (
             _assumption("manufacturing_normalized_ebitda", "100", "KRW_billion"),
             _assumption("manufacturing_normalized_multiple", "8", "multiple"),
+            _assumption("trading_normalized_ebitda", "20", "KRW_billion"),
+            _assumption("trading_normalized_multiple", "4", "multiple"),
             _assumption("recycling_gross_asset_value", "20", "KRW_billion"),
             _assumption("recycling_liabilities", "5", "KRW_billion"),
             _assumption("transport_fcff_year_1", "10", "KRW_billion"),
@@ -125,6 +127,7 @@ def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
     )
     rendered = " | ".join(rows[0])
     assert "제조 1,000억원×8배" in rendered
+    assert "수출입 200억원×4배" in rendered
     assert "기타 150억원" in rendered
     assert "운송 100억원→150억원" in rendered
     assert "운송 g 2.0%/ROIC 12.0%" in rendered
@@ -158,6 +161,9 @@ def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
     assert "DCF 가중평균자본비용" in svg
     assert "9.00%" in svg
     assert "[DCF 가치+부문 EBITDA×배수 합+유형자산 NAV+EV→지분 조정]" in svg
+    assert "제조 1,000억원×8배; 수출입 200억원×4배" not in svg
+    assert "제조 1,000억원×8배;" in svg
+    assert "수출입 200억원×4배" in svg
 
 
 def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
