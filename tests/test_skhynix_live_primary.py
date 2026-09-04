@@ -121,6 +121,21 @@ def test_skhynix_intrinsic_snapshot_rejects_post_freeze_comparison_fields(
         load_skhynix_snapshot(legacy_snapshot)
 
 
+def test_skhynix_intrinsic_snapshot_allows_commodity_price_assumptions(
+    tmp_path: Path,
+):
+    payload = yaml.safe_load(DEFAULT_SNAPSHOT_PATH.read_text(encoding="utf-8"))
+    payload["commodity_context"] = {"price": 123.45}
+    commodity_snapshot = tmp_path / "commodity-price.yaml"
+    commodity_snapshot.write_text(
+        yaml.safe_dump(payload, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    snapshot = load_skhynix_snapshot(commodity_snapshot)
+    assert snapshot.payload["commodity_context"]["price"] == 123.45
+
+
 def test_skhynix_continuous_probability_snapshot_replaces_legacy_boolean_mapping(tmp_path: Path):
     config = build_skhynix_live_primary_config(tmp_path)
     snapshot = config.providers.calibration_loader(None)
