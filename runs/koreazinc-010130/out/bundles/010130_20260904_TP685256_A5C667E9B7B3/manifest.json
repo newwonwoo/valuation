@@ -1,0 +1,13 @@
+{
+  "artifacts": {},
+  "audit_passed": true,
+  "blocked_reasons": [],
+  "company": "고려아연",
+  "finished_at": "2026-09-04T01:03:55-07:00",
+  "parent_run_id": null,
+  "round_count": 1,
+  "run_id": "LIVE-KOREAZINC-2",
+  "started_at": "2026-09-04T01:03:55-07:00",
+  "status": "COMPLETED",
+  "ticker": "010130"
+}

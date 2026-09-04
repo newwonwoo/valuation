@@ -1,0 +1,341 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>2-1. 연결 재무상태표</A></P>
+<TABLE class='nb' width='679'>
+<COLGROUP>
+<COL width='679'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='670' height='23' align='CENTER'>연결 재무상태표</TD>
+</TR>
+<TR height='30'>
+  <TD width='670' height='23' align='CENTER'>제 53 기 반기말 2026.06.30 현재</TD>
+</TR>
+<TR height='30'>
+  <TD width='670' height='23' align='CENTER'>제 52 기말 &nbsp; &nbsp; &nbsp; &nbsp;2025.12.31 현재</TD>
+</TR>
+<TR height='30'>
+  <TD width='670' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='679'>
+<COLGROUP>
+<COL width='379'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='370' height='23'>　</TH>
+  <TH width='141' height='23'>제 53 기 반기말</TH>
+  <TH width='141' height='23'>제 52 기말</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='370' height='23'>자산</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　유동 자산</TD>
+  <TD width='141' height='23' align='RIGHT'>10,453,121,401,407</TD>
+  <TD width='141' height='23' align='RIGHT'>12,069,316,661,153</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　현금및현금성자산</TD>
+  <TD width='141' height='23' align='RIGHT'>905,223,854,735</TD>
+  <TD width='141' height='23' align='RIGHT'>3,451,069,963,536</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　매출채권</TD>
+  <TD width='141' height='23' align='RIGHT'>1,431,838,021,609</TD>
+  <TD width='141' height='23' align='RIGHT'>1,115,039,382,670</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　유동 당기손익인식금융자산</TD>
+  <TD width='141' height='23' align='RIGHT'>507,182,039,118</TD>
+  <TD width='141' height='23' align='RIGHT'>893,872,527,581</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　유동 파생금융자산</TD>
+  <TD width='141' height='23' align='RIGHT'>69,286,515,775</TD>
+  <TD width='141' height='23' align='RIGHT'>46,213,201,058</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　기타 유동 금융자산</TD>
+  <TD width='141' height='23' align='RIGHT'>369,020,992,674</TD>
+  <TD width='141' height='23' align='RIGHT'>173,567,190,147</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　기타유동자산</TD>
+  <TD width='141' height='23' align='RIGHT'>444,225,436,783</TD>
+  <TD width='141' height='23' align='RIGHT'>166,801,950,303</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　재고자산</TD>
+  <TD width='141' height='23' align='RIGHT'>6,724,139,076,995</TD>
+  <TD width='141' height='23' align='RIGHT'>6,220,537,062,978</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　유동 당기법인세자산</TD>
+  <TD width='141' height='23' align='RIGHT'>2,205,463,718</TD>
+  <TD width='141' height='23' align='RIGHT'>2,215,382,880</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　비유동 자산</TD>
+  <TD width='141' height='23' align='RIGHT'>12,268,305,643,449</TD>
+  <TD width='141' height='23' align='RIGHT'>8,141,115,036,511</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　장기매출채권</TD>
+  <TD width='141' height='23' align='RIGHT'>19,829,653,062</TD>
+  <TD width='141' height='23' align='RIGHT'>24,508,255,019</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　비유동 당기손익인식금융자산</TD>
+  <TD width='141' height='23' align='RIGHT'>301,984,144,383</TD>
+  <TD width='141' height='23' align='RIGHT'>325,090,120,795</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　기타포괄손익-공정가치 지정 비유동지분상품투자</TD>
+  <TD width='141' height='23' align='RIGHT'>406,654,016,685</TD>
+  <TD width='141' height='23' align='RIGHT'>452,851,519,048</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　비유동성파생금융자산</TD>
+  <TD width='141' height='23' align='RIGHT'>50,500,431,250</TD>
+  <TD width='141' height='23' align='RIGHT'>71,244,633,967</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　기타 비유동 금융자산</TD>
+  <TD width='141' height='23' align='RIGHT'>3,109,052,708,754</TD>
+  <TD width='141' height='23' align='RIGHT'>74,761,975,694</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　기타 비유동 자산</TD>
+  <TD width='141' height='23' align='RIGHT'>12,552,612,568</TD>
+  <TD width='141' height='23' align='RIGHT'>13,836,751,949</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　관계기업투자및공동기업투자</TD>
+  <TD width='141' height='23' align='RIGHT'>449,452,406,747</TD>
+  <TD width='141' height='23' align='RIGHT'>508,637,040,124</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　유형자산</TD>
+  <TD width='141' height='23' align='RIGHT'>6,064,350,972,048</TD>
+  <TD width='141' height='23' align='RIGHT'>5,364,596,650,550</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>32,019,951,028</TD>
+  <TD width='141' height='23' align='RIGHT'>32,712,889,776</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　무형자산</TD>
+  <TD width='141' height='23' align='RIGHT'>1,480,860,235,489</TD>
+  <TD width='141' height='23' align='RIGHT'>985,238,682,972</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　사용권자산</TD>
+  <TD width='141' height='23' align='RIGHT'>184,480,273,716</TD>
+  <TD width='141' height='23' align='RIGHT'>158,709,176,172</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　순확정급여자산</TD>
+  <TD width='141' height='23' align='RIGHT'>67,742,010,136</TD>
+  <TD width='141' height='23' align='RIGHT'>43,645,660,270</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　이연법인세자산</TD>
+  <TD width='141' height='23' align='RIGHT'>88,826,227,583</TD>
+  <TD width='141' height='23' align='RIGHT'>85,281,680,175</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　자산총계</TD>
+  <TD width='141' height='23' align='RIGHT'>22,721,427,044,856</TD>
+  <TD width='141' height='23' align='RIGHT'>20,210,431,697,664</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>부채</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　유동 부채</TD>
+  <TD width='141' height='23' align='RIGHT'>7,846,167,698,539</TD>
+  <TD width='141' height='23' align='RIGHT'>6,127,539,235,858</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　매입채무</TD>
+  <TD width='141' height='23' align='RIGHT'>1,818,427,071,250</TD>
+  <TD width='141' height='23' align='RIGHT'>2,338,857,849,436</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　유동 리스부채</TD>
+  <TD width='141' height='23' align='RIGHT'>33,616,156,157</TD>
+  <TD width='141' height='23' align='RIGHT'>26,746,816,645</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　단기 금융기관 차입금(사채 제외)</TD>
+  <TD width='141' height='23' align='RIGHT'>3,621,287,487,547</TD>
+  <TD width='141' height='23' align='RIGHT'>3,047,321,676,609</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　단기 사채</TD>
+  <TD width='141' height='23' align='RIGHT'>497,551,013,702</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　유동성장기차입금</TD>
+  <TD width='141' height='23' align='RIGHT'>596,430,032,020</TD>
+  <TD width='141' height='23' align='RIGHT'>81,366,407,516</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　유동 사채 및 비유동 사채의 유동성 대체 부분</TD>
+  <TD width='141' height='23' align='RIGHT'>395,859,577,782</TD>
+  <TD width='141' height='23' align='RIGHT'>7,376,069,725</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　유동파생금융부채</TD>
+  <TD width='141' height='23' align='RIGHT'>96,220,505,075</TD>
+  <TD width='141' height='23' align='RIGHT'>154,270,789,529</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　충당부채</TD>
+  <TD width='141' height='23' align='RIGHT'>19,572,904,908</TD>
+  <TD width='141' height='23' align='RIGHT'>111,386,281</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　기타 유동 금융부채</TD>
+  <TD width='141' height='23' align='RIGHT'>337,893,188,348</TD>
+  <TD width='141' height='23' align='RIGHT'>276,189,442,247</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　기타유동부채</TD>
+  <TD width='141' height='23' align='RIGHT'>140,304,191,939</TD>
+  <TD width='141' height='23' align='RIGHT'>79,287,682,060</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　유동 당기 법인세부채</TD>
+  <TD width='141' height='23' align='RIGHT'>289,005,569,811</TD>
+  <TD width='141' height='23' align='RIGHT'>116,011,115,810</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　비유동 부채</TD>
+  <TD width='141' height='23' align='RIGHT'>3,281,359,635,659</TD>
+  <TD width='141' height='23' align='RIGHT'>3,083,962,613,220</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　비유동 리스부채</TD>
+  <TD width='141' height='23' align='RIGHT'>150,450,964,466</TD>
+  <TD width='141' height='23' align='RIGHT'>128,459,145,080</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　장기차입금</TD>
+  <TD width='141' height='23' align='RIGHT'>1,177,466,725,908</TD>
+  <TD width='141' height='23' align='RIGHT'>1,072,780,752,000</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　장기사채</TD>
+  <TD width='141' height='23' align='RIGHT'>1,207,333,737,084</TD>
+  <TD width='141' height='23' align='RIGHT'>1,596,165,187,951</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　비유동파생금융부채</TD>
+  <TD width='141' height='23' align='RIGHT'>58,700,167,531</TD>
+  <TD width='141' height='23' align='RIGHT'>47,249,550,975</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　충당부채</TD>
+  <TD width='141' height='23' align='RIGHT'>99,189,728,004</TD>
+  <TD width='141' height='23' align='RIGHT'>59,651,148,443</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　기타 비유동 금융부채</TD>
+  <TD width='141' height='23' align='RIGHT'>412,380,936,963</TD>
+  <TD width='141' height='23' align='RIGHT'>26,944,479,287</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　기타비유동부채</TD>
+  <TD width='141' height='23' align='RIGHT'>64,070,705,384</TD>
+  <TD width='141' height='23' align='RIGHT'>44,217,395,065</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　순확정급여부채</TD>
+  <TD width='141' height='23' align='RIGHT'>1,470,191,425</TD>
+  <TD width='141' height='23' align='RIGHT'>126,825,481</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　이연법인세부채</TD>
+  <TD width='141' height='23' align='RIGHT'>110,296,478,894</TD>
+  <TD width='141' height='23' align='RIGHT'>108,368,128,938</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　부채총계</TD>
+  <TD width='141' height='23' align='RIGHT'>11,127,527,334,198</TD>
+  <TD width='141' height='23' align='RIGHT'>9,211,501,849,078</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>자본</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　지배기업 소유주지분</TD>
+  <TD width='141' height='23' align='RIGHT'>11,343,052,583,248</TD>
+  <TD width='141' height='23' align='RIGHT'>10,752,452,223,922</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　자본금</TD>
+  <TD width='141' height='23' align='RIGHT'>115,591,520,000</TD>
+  <TD width='141' height='23' align='RIGHT'>115,591,520,000</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　주식발행초과금</TD>
+  <TD width='141' height='23' align='RIGHT'>3,849,897,208,725</TD>
+  <TD width='141' height='23' align='RIGHT'>3,849,897,208,725</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　기타자본항목</TD>
+  <TD width='141' height='23' align='RIGHT'>797,573,746,284</TD>
+  <TD width='141' height='23' align='RIGHT'>407,789,505,903</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　　이익잉여금</TD>
+  <TD width='141' height='23' align='RIGHT'>6,579,990,108,239</TD>
+  <TD width='141' height='23' align='RIGHT'>6,379,173,989,294</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　비지배지분</TD>
+  <TD width='141' height='23' align='RIGHT'>250,847,127,410</TD>
+  <TD width='141' height='23' align='RIGHT'>246,477,624,664</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>　자본총계</TD>
+  <TD width='141' height='23' align='RIGHT'>11,593,899,710,658</TD>
+  <TD width='141' height='23' align='RIGHT'>10,998,929,848,586</TD>
+</TR>
+<TR height='30'>
+  <TD width='370' height='23'>부채및자본총계</TD>
+  <TD width='141' height='23' align='RIGHT'>22,721,427,044,856</TD>
+  <TD width='141' height='23' align='RIGHT'>20,210,431,697,664</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

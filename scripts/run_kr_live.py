@@ -91,6 +91,7 @@ from valuation_engine.live_primary_adapters import (  # noqa: E402
     live_opendart_company_resolver,
 )
 from valuation_engine.strict_live_runtime import run_prism  # noqa: E402
+from valuation_engine.valuation_execution import ParentAdjustmentPlan  # noqa: E402
 from valuation_engine.valuation_plan_compiler import SegmentMethodChoice  # noqa: E402
 
 
@@ -976,6 +977,13 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
             external_probability_source=calibration["external_probability_source"],
         )
     market_path = _optional_path(run_dir, "market.yaml")
+    parent_adjustments = tuple(
+        ParentAdjustmentPlan(
+            asset_id=str(row["asset_id"]),
+            assumption_key=str(row["assumption_key"]),
+        )
+        for row in config.get("parent_adjustments", ())
+    )
     spec = GenericKRRuntimeSpec(
         as_of=str(config["as_of"]),
         scenario_ids=tuple(config["scenario_ids"]),
@@ -993,6 +1001,7 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
         declared_risk_path=_optional_path(run_dir, "risk_pack.yaml"),
         declared_segments_path=_optional_path(run_dir, "segments.yaml"),
         extra_required_evidence=tuple(config.get("extra_required_evidence", ())),
+        parent_adjustments=parent_adjustments,
         market_config_path=market_path,
         street_export_path=_optional_path(run_dir, "street.json"),
         market_currency=(

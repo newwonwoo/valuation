@@ -1,0 +1,35 @@
+{
+  "rationale": "공시된 IFRS 8 3부문의 경제구조와 순금융부채를 분리해 제조·수출입의 정상화 수익력과 적자 기타부문의 유형자산 가치를 검증한다.",
+  "hypotheses": [
+    {
+      "id": "H:KZ:SOTP",
+      "statement": "비철금속 제조·수출입·자원순환은 서로 다른 스프레드와 자본집약도를 가지므로 제조·수출입 정상화 EBITDA와 적자 기타부문 유형자산 NAV를 분리해 합산해야 한다.",
+      "causal_chain": [
+        "공시 부문별 매출·영업이익",
+        "2025 연간과 2026 H1 실적의 정상화·회복 경로",
+        "평가 가능 부문의 through-cycle multiple과 적자 부문의 유형자산 NAV floor",
+        "지배주주 귀속 SOTP equity value",
+        "부문별 손익과 자본집약도의 후속 공시 확인"
+      ],
+      "supporting_evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_normalized_ebitda",
+        "UW:KR:DART:00102858:trading_normalized_ebitda",
+        "UW:KR:DART:00102858:recycling_gross_asset_value"
+      ],
+      "contradicting_evidence_ids": [],
+      "kill_conditions": [
+        "다음 정기보고서에서 reportable segment 구조가 재분류되거나 제조부문 정상화 EBITDA가 두 기간 연속 Base 대비 30% 이상 하회",
+        "미국 통합제련소의 확정 자금조달과 독립 세후 현금수익률이 기존 영업 SOTP와 분리 가능한 수준으로 확인됨"
+      ],
+      "next_checks": [
+        "2026 3분기보고서 부문정보와 귀금속 실현가격",
+        "미국 통합제련소의 확정 자금조달·희석·가동 일정과 세후 현금수익률"
+      ]
+    }
+  ],
+  "requested_evidence": [],
+  "scanner_reinforcements": [],
+  "context_strength_linkage": {
+    "not_applicable_reason": "미국 통합제련소는 별도 IFRS 8 부문이 아니라 제조부문의 미래 생산능력 참고사항이다. 현 SOTP는 제조·수출입의 정상화 EBITDA와 적자 기타부문의 공시 유형자산 NAV를 합산하며 프로젝트를 독립 자산·부문 가치로 중복 가산하지 않는다. 프로젝트 목적 사용제한 금융자산은 관련 총부채와 비대칭이 생기지 않도록 순금융부채 브리지에 반영하고, 프로젝트 서사는 REFERENCE_ONLY로 둔다."
+  }
+}

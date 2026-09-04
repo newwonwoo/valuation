@@ -8,8 +8,20 @@ import textwrap
 from typing import Any
 
 from .context_strength_reporting import resolve_context_strength_linkage
+from .report_localization import (
+    evaluator_assumption_groups_ko,
+    valuation_family_value_term_ko,
+)
 from .source_reporting import build_source_link_index
-from .valuation_execution import GenericValuationResult, IntrinsicValuationScope
+from .valuation_execution import (
+    CompanyValuationPlan,
+    GenericValuationResult,
+    IntrinsicValuationScope,
+)
+from .valuation_plan_compiler import (
+    SegmentEvaluatorContract,
+    ValuationPlanCompilation,
+)
 
 
 _SAFE_FILE_PART = re.compile(r"[^A-Za-z0-9._-]+")
@@ -54,6 +66,25 @@ def _svg_text(
     )
 
 
+def _wrapped_lines(
+    value: object,
+    *,
+    width: int,
+    max_lines: int | None,
+) -> tuple[str, ...]:
+    text = " ".join(str(value).split())
+    lines = textwrap.wrap(
+        text,
+        width=width,
+        break_long_words=False,
+        break_on_hyphens=False,
+    ) or [""]
+    if max_lines is not None and len(lines) > max_lines:
+        lines = lines[:max_lines]
+        lines[-1] = lines[-1].rstrip("., ") + "…"
+    return tuple(lines)
+
+
 def _wrapped_text(
     value: object,
     *,
@@ -62,20 +93,15 @@ def _wrapped_text(
     width: int,
     size: int,
     line_height: int,
-    max_lines: int,
+    max_lines: int | None,
     weight: int = 400,
     fill: str = "#344B5A",
 ) -> tuple[str, int]:
-    text = " ".join(str(value).split())
-    lines = textwrap.wrap(
-        text,
+    lines = _wrapped_lines(
+        value,
         width=width,
-        break_long_words=False,
-        break_on_hyphens=False,
-    ) or [""]
-    if len(lines) > max_lines:
-        lines = lines[:max_lines]
-        lines[-1] = lines[-1].rstrip("., ") + "…"
+        max_lines=max_lines,
+    )
     rendered = [
         _svg_text(
             line,
@@ -126,7 +152,7 @@ def _source_footer(data: dict[str, Any], *, y: int) -> str:
     lines = [
         _svg_text("출처", x=70, y=y, size=22, weight=700, fill="#D9E7EC"),
         _svg_text(
-            "모든 수치의 원문 주소는 보고서 본문 ‘정보 출처’에서 직접 검증할 수 있습니다.",
+            "공시 사실과 분석가 가정의 근거 주소는 보고서 본문 ‘정보 출처’에서 확인할 수 있습니다.",
             x=140,
             y=y,
             size=20,
@@ -145,8 +171,14 @@ def _source_footer(data: dict[str, Any], *, y: int) -> str:
     return "\n".join(lines)
 
 
-def _svg_document(*, title: str, description: str, body: str) -> str:
-    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{_CARD_WIDTH}" height="{_CARD_HEIGHT}" viewBox="0 0 {_CARD_WIDTH} {_CARD_HEIGHT}" role="img" aria-labelledby="title desc">
+def _svg_document(
+    *,
+    title: str,
+    description: str,
+    body: str,
+    height: int = _CARD_HEIGHT,
+) -> str:
+    return f'''<svg xmlns="http://www.w3.org/2000/svg" width="{_CARD_WIDTH}" height="{height}" viewBox="0 0 {_CARD_WIDTH} {height}" role="img" aria-labelledby="title desc">
 <title id="title">{escape(title)}</title>
 <desc id="desc">{escape(description)}</desc>
 <style>
@@ -337,6 +369,8 @@ def _measure_text(assumption: Any) -> str:
 def _measure_value_text(amount: Decimal, unit: str) -> str:
     if unit == "ratio":
         return f"{amount * 100:.1f}%"
+    if unit == "multiple":
+        return f"{amount:g}배"
     if unit == "KRW_billion":
         return f"{amount * 10:,.0f}억원"
     if unit == "years":
@@ -344,6 +378,13 @@ def _measure_value_text(amount: Decimal, unit: str) -> str:
     if unit == "shares":
         return f"{amount:,.0f}주"
     return f"{amount:g} {unit}"
+
+
+def _compact_adjustment_text(amount: Decimal, unit: str) -> str:
+    """Fit a bridge amount in the narrow final column of the SVG table."""
+    if unit == "KRW_billion":
+        return f"{amount * 10:,.0f}억"
+    return _measure_value_text(amount, unit)
 
 
 def _scenario_assumption(scenario: Any, key: str) -> str:
@@ -370,6 +411,370 @@ def _scenario_total_fcff(scenario: Any, year: int) -> str:
     )
 
 
+def _multiple_assumption_table(
+    scenarios: tuple[Any, ...],
+    *,
+    evaluator_contracts: tuple[SegmentEvaluatorContract, ...] = (),
+    valuation_plan: CompanyValuationPlan | None = None,
+) -> tuple[tuple[str, ...], tuple[tuple[str, ...], ...]] | None:
+    if not scenarios:
+        return None
+    first_keys = tuple(item.key for item in scenarios[0].assumptions)
+    multiple_families = {
+        "normalized_multiple",
+        "normalized_ebitda_multiple",
+        "ffo_multiple",
+    }
+    nav_families = {"net_asset_value"}
+    multiple_contracts = tuple(
+        item
+        for item in evaluator_contracts
+        if item.execution_family in multiple_families
+    )
+    nav_contracts = tuple(
+        item
+        for item in evaluator_contracts
+        if item.execution_family in nav_families
+    )
+    discounted_contracts = tuple(
+        item
+        for item in evaluator_contracts
+        if item.execution_family not in multiple_families | nav_families
+    )
+    # Legacy direct-plan callers do not carry a compilation artifact.  Their
+    # historical table remains available, but every compiled runtime report
+    # below is driven by exact selected evaluator contracts.
+    ebitda_keys = (
+        tuple(
+            item.required_assumption_keys[0]
+            for item in multiple_contracts
+            if len(item.required_assumption_keys) >= 2
+        )
+        if evaluator_contracts
+        else tuple(
+            key for key in first_keys if key.endswith("normalized_ebitda")
+        )
+    )
+    multiple_keys = (
+        tuple(
+            item.required_assumption_keys[1]
+            for item in multiple_contracts
+            if len(item.required_assumption_keys) >= 2
+        )
+        if evaluator_contracts
+        else tuple(
+            key
+            for key in first_keys
+            if key.endswith(
+                ("normalized_multiple", "normalized_ebitda_multiple")
+            )
+        )
+    )
+    if not ebitda_keys or not multiple_keys:
+        if not evaluator_contracts:
+            return None
+    nav_asset_keys = (
+        tuple(
+            item.required_assumption_keys[0]
+            for item in nav_contracts
+            if len(item.required_assumption_keys) >= 2
+        )
+        if evaluator_contracts
+        else tuple(
+            key for key in first_keys if key.endswith("gross_asset_value")
+        )
+    )
+
+    def segment_label(segment: str) -> str:
+        return {
+            "manufacturing": "제조",
+            "trading": "수출입",
+            "recycling": "기타",
+            "transport": "운송",
+            "core": "핵심",
+            "uhv": "초고압",
+        }.get(segment, segment or "핵심")
+
+    def segment_from_key(key: str, suffix: str) -> str:
+        return key.removesuffix(suffix).rstrip("_")
+
+    ownership_rates_vary = False
+    if valuation_plan is not None:
+        ownership_rates = tuple(
+            scenario.get(segment.ownership_key)
+            .measure.convert_to("ratio")
+            .amount
+            for scenario in scenarios
+            for segment in valuation_plan.segments
+        )
+        ownership_rates_vary = len(set(ownership_rates)) > 1
+
+    def segment_label_with_ownership(scenario: Any, segment: str) -> str:
+        label = segment_label(segment)
+        if valuation_plan is None or not ownership_rates_vary:
+            return label
+        ownership_by_segment = {
+            item.segment_id: scenario.get(item.ownership_key)
+            .measure.convert_to("ratio")
+            .amount
+            for item in valuation_plan.segments
+        }
+        ownership = ownership_by_segment[segment]
+        return f"{label} · 귀속 {ownership * 100:.4f}%"
+
+    def adjustment_text(scenario: Any) -> str:
+        adjustment_keys = (
+            tuple(
+                item.ev_to_equity_adjustment_key
+                for item in valuation_plan.segments
+                if item.ev_to_equity_adjustment_key is not None
+            )
+            if valuation_plan is not None
+            else tuple(
+                item.key
+                for item in scenario.assumptions
+                if item.key.endswith("ev_adjustment")
+            )
+        )
+        adjustments = []
+        for key in adjustment_keys:
+            try:
+                adjustments.append(scenario.get(key).measure)
+            except KeyError:
+                continue
+        parent = []
+        for item in valuation_plan.parent_adjustments if valuation_plan else ():
+            try:
+                parent.append(scenario.get(item.assumption_key).measure)
+            except KeyError:
+                continue
+        details: list[str] = []
+        if adjustments:
+            unit = adjustments[0].unit
+            total = sum(
+                (item.convert_to(unit).amount for item in adjustments), Decimal(0)
+            )
+            details.append(
+                f"EV {_compact_adjustment_text(total, unit)}"
+                if parent
+                else _measure_value_text(total, unit)
+            )
+        if parent:
+            unit = parent[0].unit
+            total = sum(
+                (item.convert_to(unit).amount for item in parent), Decimal(0)
+            )
+            details.append(f"모 {_compact_adjustment_text(total, unit)}")
+        return "\n".join(details) or "—"
+
+    def multiple_values(scenario: Any) -> list[str]:
+        values: list[str] = []
+        if evaluator_contracts:
+            for contract in multiple_contracts:
+                if len(contract.required_assumption_keys) < 2:
+                    continue
+                value_key, multiple_key = contract.required_assumption_keys[:2]
+                values.append(
+                    f"{segment_label_with_ownership(scenario, contract.segment_id)} "
+                    f"{_scenario_assumption(scenario, value_key)}"
+                    f"×{_scenario_assumption(scenario, multiple_key)}"
+                )
+            return values
+        for key in ebitda_keys:
+            prefix = key.removesuffix("normalized_ebitda")
+            multiple_key = next(
+                (item for item in multiple_keys if item.startswith(prefix)),
+                None,
+            )
+            if multiple_key is None:
+                continue
+            values.append(
+                f"{segment_label(segment_from_key(key, 'normalized_ebitda'))} "
+                f"{_scenario_assumption(scenario, key)}"
+                f"×{_scenario_assumption(scenario, multiple_key)}"
+            )
+        return values
+
+    def nav_values(scenario: Any) -> list[str]:
+        values: list[str] = []
+        if evaluator_contracts:
+            contracts_and_keys = tuple(
+                (item, item.required_assumption_keys[:2])
+                for item in nav_contracts
+                if len(item.required_assumption_keys) >= 2
+            )
+        else:
+            contracts_and_keys = tuple(
+                (
+                    None,
+                    (
+                        key,
+                        f"{key.removesuffix('gross_asset_value')}liabilities",
+                    ),
+                )
+                for key in nav_asset_keys
+            )
+        for contract, (asset_key, liability_key) in contracts_and_keys:
+            try:
+                asset = scenario.get(asset_key).measure
+                liability = scenario.get(liability_key).measure.convert_to(
+                    asset.unit
+                )
+            except KeyError:
+                continue
+            label = (
+                segment_label_with_ownership(scenario, contract.segment_id)
+                if contract is not None
+                else segment_label(
+                    segment_from_key(asset_key, "gross_asset_value")
+                )
+            )
+            values.append(
+                f"{label} "
+                f"{_measure_value_text(asset.amount - liability.amount, asset.unit)}"
+            )
+        return values
+
+    def discounted_values(scenario: Any) -> tuple[list[str], list[str]]:
+        paths: list[str] = []
+        terminal: list[str] = []
+        for contract in discounted_contracts:
+            label = segment_label_with_ownership(scenario, contract.segment_id)
+            family = contract.execution_family
+            family_label = {
+                "explicit_fcff_dcf": "FCFF DCF",
+                "contracted_backlog_dcf": "수주잔고 DCF",
+                "finite_life_npv": "유한수명 NPV",
+                "gordon_ddm": "배당할인",
+                "justified_pb_roe": "PBR·ROE",
+                "residual_income": "잔여이익",
+                "rate_base_roe": "요금기반 ROE",
+                "calibrated_single_event_rnpv": "확률조정 NPV",
+            }.get(family, contract.model_key.method)
+            primary, secondary = evaluator_assumption_groups_ko(
+                family,
+                contract.required_assumption_keys,
+            )
+
+            def group_text(group: tuple[str, tuple[str, ...]]) -> str:
+                group_label, keys = group
+                rendered = tuple(
+                    _scenario_assumption(scenario, key) for key in keys
+                )
+                value = rendered[0] if len(rendered) == 1 else " / ".join(rendered)
+                return f"{group_label} {value}"
+
+            path_lines = tuple(group_text(group) for group in primary)
+            paths.append(" · ".join((f"{label} {family_label}", *path_lines)))
+            terminal_lines = tuple(group_text(group) for group in secondary)
+            terminal.append(" · ".join(terminal_lines) or "—")
+        return paths, terminal
+
+    adjustment_header = (
+        "EV→지분\n모회사 조정"
+        if valuation_plan is not None and valuation_plan.parent_adjustments
+        else "EV→지분 조정"
+    )
+
+    if discounted_contracts or (
+        not evaluator_contracts
+        and any(key.endswith("fcff_year_1") for key in first_keys)
+    ):
+        headers = (
+            "구분",
+            "배수평가 부문",
+            "NAV 부문",
+            "현금흐름/NPV 부문",
+            "영구/기타 입력",
+            adjustment_header,
+        )
+        rows = []
+        for scenario in scenarios[:3]:
+            row_multiples = multiple_values(scenario)
+            row_nav = nav_values(scenario)
+            if evaluator_contracts:
+                dcf_values, terminal_values = discounted_values(scenario)
+            else:
+                prefixes = tuple(
+                    dict.fromkeys(
+                        key.removesuffix("fcff_year_1")
+                        for key in first_keys
+                        if key.endswith("fcff_year_1")
+                    )
+                )
+                dcf_values = [
+                    f"{segment_label(prefix.rstrip('_'))} "
+                    f"{_scenario_assumption(scenario, f'{prefix}fcff_year_1')}"
+                    f"→{_scenario_assumption(scenario, f'{prefix}fcff_year_5')}"
+                    for prefix in prefixes
+                ]
+                terminal_values = [
+                    f"{segment_label(prefix.rstrip('_'))} g "
+                    f"{_scenario_assumption(scenario, f'{prefix}terminal_growth')}"
+                    f"/ROIC {_scenario_assumption(scenario, f'{prefix}terminal_roic')}"
+                    for prefix in prefixes
+                ]
+
+            rows.append(
+                (
+                    " ".join(
+                        part
+                        for part in (
+                            f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
+                            (
+                                f"{scenario.probability:.1%}"
+                                if getattr(scenario, "probability", None) is not None
+                                else ""
+                            ),
+                        )
+                        if part
+                    ),
+                    "; ".join(row_multiples) or "—",
+                    "; ".join(row_nav) or "—",
+                    "; ".join(dcf_values) or "—",
+                    "; ".join(terminal_values) or "—",
+                    adjustment_text(scenario),
+                )
+            )
+        return headers, tuple(rows)
+
+    headers = (
+        "구분",
+        "배수평가 1",
+        "배수평가 2",
+        "배수평가 3+",
+        "NAV 부문",
+        adjustment_header,
+    )
+
+    rows = []
+    for scenario in scenarios[:3]:
+        row_multiples = multiple_values(scenario)
+        row_nav = nav_values(scenario)
+        rows.append(
+            (
+                " ".join(
+                    part
+                    for part in (
+                        f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
+                        (
+                            f"{scenario.probability:.1%}"
+                            if getattr(scenario, "probability", None) is not None
+                            else ""
+                        ),
+                    )
+                    if part
+                ),
+                row_multiples[0] if row_multiples else "—",
+                row_multiples[1] if len(row_multiples) > 1 else "—",
+                "; ".join(row_multiples[2:]) or "—",
+                "; ".join(row_nav) or "—",
+                adjustment_text(scenario),
+            )
+        )
+    return headers, tuple(rows)
+
+
 def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     company = str(data.get("company") or data.get("target_id") or "분석 대상")
     scenario_set = data.get("bound_scenario_set")
@@ -378,7 +783,201 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     wacc_result = data.get("live_wacc_result")
     beta = getattr(beta_result, "target_levered_beta", None)
     wacc = getattr(getattr(wacc_result, "wacc_result", None), "wacc", None)
+    cost_of_equity = getattr(
+        getattr(wacc_result, "wacc_result", None),
+        "cost_of_equity",
+        None,
+    )
     calibration = getattr(getattr(scenario_set, "calibration_status", None), "value", "UNCALIBRATED")
+    compilation = data.get("valuation_plan_compilation")
+    if not isinstance(compilation, ValuationPlanCompilation):
+        compilation = None
+    valuation_plan = compilation.plan if compilation is not None else None
+    evaluator_contracts = (
+        compilation.evaluator_contracts if compilation is not None else ()
+    )
+    equity_discount_families = {
+        "gordon_ddm",
+        "justified_pb_roe",
+        "residual_income",
+        "rate_base_roe",
+    }
+    enterprise_discount_families = {
+        "contracted_backlog_dcf",
+        "explicit_fcff_dcf",
+        "finite_life_npv",
+        "calibrated_single_event_rnpv",
+    }
+    selected_families = {
+        item.execution_family for item in evaluator_contracts
+    }
+    uses_equity_discount = bool(
+        selected_families.intersection(equity_discount_families)
+    )
+    uses_enterprise_discount = bool(
+        selected_families.intersection(enterprise_discount_families)
+    )
+    if uses_equity_discount and uses_enterprise_discount:
+        discount_label = "할인율"
+        discount_value = (
+            f"WACC {wacc:.2%} / Ke {cost_of_equity:.2%}"
+            if wacc is not None and cost_of_equity is not None
+            else "미확보"
+        )
+    elif uses_equity_discount:
+        discount_label = "자기자본비용"
+        discount_value = (
+            f"{cost_of_equity:.2%}" if cost_of_equity is not None else "미확보"
+        )
+    else:
+        discount_label = "가중평균자본비용"
+        discount_value = f"{wacc:.2%}" if wacc is not None else "비적용"
+    multiple_table = _multiple_assumption_table(
+        scenarios,
+        evaluator_contracts=evaluator_contracts,
+        valuation_plan=valuation_plan,
+    )
+    core = next(
+        (item for item in scenarios if item.scenario_id in {"Core", "Base"}),
+        scenarios[0] if scenarios else None,
+    )
+
+    common_ownership: Decimal | None = None
+    core_adjustment = "—"
+    parent_adjustment_text = "—"
+    core_shares = "—"
+    formula = ""
+    discounted_families = {
+        "contracted_backlog_dcf",
+        "explicit_fcff_dcf",
+        "finite_life_npv",
+        "calibrated_single_event_rnpv",
+        "gordon_ddm",
+        "justified_pb_roe",
+        "residual_income",
+        "rate_base_roe",
+    }
+    dcf_present = (
+        any(
+            item.execution_family in discounted_families
+            for item in evaluator_contracts
+        )
+        if evaluator_contracts
+        else bool(
+            core is not None
+            and any(
+                item.key.endswith("fcff_year_1")
+                for item in core.assumptions
+            )
+        )
+    )
+    component_sotp_present = bool(
+        multiple_table is not None
+        and (
+            not evaluator_contracts
+            or any(
+                item.execution_family
+                in {
+                    "normalized_multiple",
+                    "normalized_ebitda_multiple",
+                    "ffo_multiple",
+                    "net_asset_value",
+                }
+                for item in evaluator_contracts
+            )
+        )
+    )
+    if core is not None and valuation_plan is not None and valuation_plan.parent_adjustments:
+        parent = tuple(
+            core.get(item.assumption_key).measure
+            for item in valuation_plan.parent_adjustments
+        )
+        unit = parent[0].unit
+        parent_total = sum(
+            (item.convert_to(unit).amount for item in parent), Decimal(0)
+        )
+        parent_adjustment_text = _measure_value_text(parent_total, unit)
+    if multiple_table is not None and core is not None:
+        ownership_keys = (
+            tuple(item.ownership_key for item in valuation_plan.segments)
+            if valuation_plan is not None
+            else tuple(
+                item.key
+                for item in core.assumptions
+                if item.key.endswith("ownership")
+            )
+        )
+        ownership_values = tuple(
+            scenario.get(key).measure.convert_to("ratio").amount
+            for scenario in scenarios
+            for key in ownership_keys
+        )
+        if ownership_values and len(set(ownership_values)) == 1:
+            common_ownership = ownership_values[0]
+        adjustment_keys = (
+            tuple(
+                item.ev_to_equity_adjustment_key
+                for item in valuation_plan.segments
+                if item.ev_to_equity_adjustment_key is not None
+            )
+            if valuation_plan is not None
+            else tuple(
+                item.key
+                for item in core.assumptions
+                if item.key.endswith("ev_adjustment")
+            )
+        )
+        adjustments = tuple(core.get(key).measure for key in adjustment_keys)
+        if adjustments:
+            unit = adjustments[0].unit
+            total = sum(
+                (item.convert_to(unit).amount for item in adjustments), Decimal(0)
+            )
+            core_adjustment = _measure_value_text(total, unit)
+        share_key = (
+            valuation_plan.diluted_shares_key
+            if valuation_plan is not None
+            else "diluted_shares"
+        )
+        try:
+            shares = core.get(share_key).measure.convert_to("shares").amount
+        except KeyError:
+            shares = None
+        if shares is not None:
+            core_shares = f"{shares / Decimal('1000000'):,.3f}백만주"
+        if evaluator_contracts and shares is not None:
+            value_terms = tuple(
+                dict.fromkeys(
+                    valuation_family_value_term_ko(
+                        item.execution_family,
+                        item.model_key.method,
+                    )
+                    for item in evaluator_contracts
+                )
+            )
+            if valuation_plan is not None and valuation_plan.parent_adjustments:
+                value_terms = (*value_terms, "모회사 조정")
+            formula = (
+                f"[{'+'.join(value_terms)}]÷{shares:,.0f}주 "
+                "(각 부문 EV→지분 조정·귀속률 반영)"
+            )
+        elif common_ownership is not None and shares is not None:
+            nav_present = any(
+                item.key.endswith("gross_asset_value")
+                for item in core.assumptions
+            )
+            value_terms = []
+            if dcf_present:
+                value_terms.append("DCF 가치")
+            value_terms.append("부문 EBITDA×배수 합")
+            if nav_present:
+                value_terms.append("유형자산 NAV")
+            if adjustments:
+                value_terms.append("EV→지분 조정")
+            formula = (
+                f"[{'+'.join(value_terms)}]"
+                f"×{common_ownership * 100:.4f}%÷{shares:,.0f}주"
+            )
 
     parts = [
         _rect(0, 0, _CARD_WIDTH, _CARD_HEIGHT, fill="#F3F0E8", radius=0),
@@ -389,9 +988,53 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
         _svg_text("핵심 위험 입력", x=70, y=315, size=30, weight=800, fill="#102D3E"),
     ]
     metric_rows = (
-        ("계층형 베타", f"{beta:.3f}" if beta is not None else "비적용"),
-        ("가중평균자본비용", f"{wacc:.2%}" if wacc is not None else "비적용"),
-        ("확률 보정", "완료" if calibration == "CALIBRATED" else "미완료"),
+        (
+            (
+                "DCF 가중평균자본비용"
+                if discount_label == "가중평균자본비용"
+                else discount_label,
+                discount_value,
+            ),
+            (
+                "지배주주 귀속률",
+                f"{common_ownership * 100:.4f}%"
+                if common_ownership is not None
+                else "개별 적용",
+            ),
+            ("주당 분모", core_shares),
+        )
+        if component_sotp_present and dcf_present
+        else
+        (
+            (
+                "지배주주 귀속률",
+                f"{common_ownership * 100:.4f}%"
+                if common_ownership is not None
+                else "개별 적용",
+            ),
+            (
+                "모회사 조정"
+                if valuation_plan is not None and valuation_plan.parent_adjustments
+                else "EV→지분 조정",
+                parent_adjustment_text
+                if valuation_plan is not None and valuation_plan.parent_adjustments
+                else core_adjustment,
+            ),
+            ("주당 분모", core_shares),
+        )
+        if component_sotp_present
+        else (
+            ("계층형 베타", f"{beta:.3f}" if beta is not None else "비적용"),
+            (discount_label, discount_value),
+            (
+                "모회사 조정"
+                if valuation_plan is not None and valuation_plan.parent_adjustments
+                else "확률 보정",
+                parent_adjustment_text
+                if valuation_plan is not None and valuation_plan.parent_adjustments
+                else ("완료" if calibration == "CALIBRATED" else "미완료"),
+            ),
+        )
     )
     for index, (label, value) in enumerate(metric_rows):
         x = 70 + index * 355
@@ -405,28 +1048,122 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
 
     parts.append(_svg_text("시나리오별 핵심 가정", x=70, y=560, size=30, weight=800, fill="#102D3E"))
     table_y = 600
-    parts.append(_rect(70, table_y, 1060, 390, fill="#FFFFFF", radius=22))
-    headers = ("구분", "1년 DCF FCFF", "5년 DCF FCFF", "영구성장률", "영구 ROIC", "UHV 5년 증분")
+    table_rect_index = len(parts)
+    parts.append("")
+    has_numeric_probabilities = bool(scenarios) and all(
+        getattr(scenario, "probability", None) is not None
+        for scenario in scenarios[:3]
+    )
+    headers = (
+        multiple_table[0]
+        if multiple_table is not None
+        else (
+            "구분",
+            "1년 DCF FCFF",
+            "5년 DCF FCFF",
+            "영구성장률",
+            "영구 ROIC",
+            "시나리오 확률" if has_numeric_probabilities else "UHV 5년 증분",
+        )
+    )
     x_positions = (100, 270, 470, 675, 855, 1015)
     for x, header in zip(x_positions, headers):
-        parts.append(_svg_text(header, x=x, y=table_y + 48, size=19, weight=800, fill="#607582"))
+        header_lines = str(header).splitlines()
+        header_y = table_y + (37 if len(header_lines) > 1 else 48)
+        for line_index, line in enumerate(header_lines):
+            parts.append(
+                _svg_text(
+                    line,
+                    x=x,
+                    y=header_y + line_index * 21,
+                    size=16 if len(header_lines) > 1 else 19,
+                    weight=800,
+                    fill="#607582",
+                )
+            )
     parts.append(f'<line x1="95" y1="{table_y + 68}" x2="1105" y2="{table_y + 68}" stroke="#D6DFE3" stroke-width="2"/>')
-    for index, scenario in enumerate(scenarios[:3]):
-        row_y = table_y + 125 + index * 85
-        values = (
-            f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
-            _scenario_total_fcff(scenario, 1),
-            _scenario_total_fcff(scenario, 5),
-            _scenario_assumption(scenario, "terminal_growth"),
-            _scenario_assumption(scenario, "terminal_roic"),
-            _scenario_assumption(scenario, "uhv_fcff_year_5"),
+    table_rows = (
+        multiple_table[1]
+        if multiple_table is not None
+        else tuple(
+            (
+                f"{_scenario_label(scenario.scenario_id)}({scenario.scenario_id})",
+                _scenario_total_fcff(scenario, 1),
+                _scenario_total_fcff(scenario, 5),
+                _scenario_assumption(scenario, "terminal_growth"),
+                _scenario_assumption(scenario, "terminal_roic"),
+                f"{scenario.probability:.1%}"
+                if has_numeric_probabilities
+                else _scenario_assumption(scenario, "uhv_fcff_year_5"),
+            )
+            for scenario in scenarios[:3]
         )
-        for x, value in zip(x_positions, values):
-            parts.append(_svg_text(value, x=x, y=row_y, size=21, weight=700 if x == 100 else 500, fill="#142A3A"))
-        if index < min(len(scenarios), 3) - 1:
-            parts.append(f'<line x1="95" y1="{row_y + 28}" x2="1105" y2="{row_y + 28}" stroke="#E9EEF0" stroke-width="2"/>')
+    )
+    row_cursor = table_y + 112
+    for index, values in enumerate(table_rows):
+        if multiple_table is None:
+            row_y = row_cursor + 13
+            row_height = 85
+            for x, value in zip(x_positions, values):
+                value_lines = str(value).splitlines()
+                value_y = row_y - (11 if len(value_lines) > 1 else 0)
+                for line_index, line in enumerate(value_lines):
+                    parts.append(
+                        _svg_text(
+                            line,
+                            x=x,
+                            y=value_y + line_index * 24,
+                            size=16 if len(value_lines) > 1 else 21,
+                            weight=700 if x == 100 else 500,
+                            fill="#142A3A",
+                        )
+                    )
+            if index < len(table_rows) - 1:
+                parts.append(
+                    f'<line x1="95" y1="{row_y + 28}" x2="1105" '
+                    f'y2="{row_y + 28}" stroke="#E9EEF0" stroke-width="2"/>'
+                )
+        else:
+            row_y = row_cursor
+            cell_widths = (11, 17, 17, 19, 17, 11)
+            wrapped_cells = tuple(
+                _wrapped_lines(value, width=width, max_lines=None)
+                for width, value in zip(cell_widths, values)
+            )
+            row_height = max(
+                85,
+                max(len(lines) for lines in wrapped_cells) * 18 + 32,
+            )
+            for x, width, value in zip(x_positions, cell_widths, values):
+                rendered, _ = _wrapped_text(
+                    value,
+                    x=x,
+                    y=row_y,
+                    width=width,
+                    size=14 if x != 100 else 16,
+                    line_height=18,
+                    max_lines=None,
+                    weight=700 if x == 100 else 500,
+                    fill="#142A3A",
+                )
+                parts.append(rendered)
+            if index < len(table_rows) - 1:
+                parts.append(
+                    f'<line x1="95" y1="{row_y + row_height - 18}" x2="1105" '
+                    f'y2="{row_y + row_height - 18}" stroke="#E9EEF0" '
+                    'stroke-width="2"/>'
+                )
+        row_cursor += row_height
+    table_bottom = row_cursor + 20
+    parts[table_rect_index] = _rect(
+        70,
+        table_y,
+        1060,
+        table_bottom - table_y,
+        fill="#FFFFFF",
+        radius=22,
+    )
 
-    core = next((item for item in scenarios if item.scenario_id in {"Core", "Base"}), None)
     capex = "—"
     if core is not None:
         expansion = _scenario_assumption(core, "expansion_capex")
@@ -438,12 +1175,21 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
     projects = tuple(getattr(capacity, "core_inclusion_required_projects", ()))
     project_text = ", ".join(projects) if projects else "별도 핵심 생산능력 프로젝트 없음"
     detail_rows = (
-        ("평가방법", method_text),
-        ("핵심 자본적지출", capex),
-        ("생산능력 반영", project_text),
-        ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
+        (
+            ("평가방법", method_text),
+            ("정확한 계산식", formula or "부문별 가치·귀속률·주식수로 결정론적 재계산"),
+            ("확률 보정", "완료" if calibration == "CALIBRATED" else "미완료"),
+            ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
+        )
+        if multiple_table is not None
+        else (
+            ("평가방법", method_text),
+            ("핵심 자본적지출", capex),
+            ("생산능력 반영", project_text),
+            ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
+        )
     )
-    y = 1050
+    y = table_bottom + 60
     for label, detail in detail_rows:
         parts.append(_svg_text(label, x=70, y=y, size=22, weight=800, fill="#E26643"))
         rendered, y_end = _wrapped_text(
@@ -453,15 +1199,25 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             width=58,
             size=21,
             line_height=31,
-            max_lines=2,
+            max_lines=None,
         )
         parts.append(rendered)
         y = max(y + 62, y_end + 12)
 
+    footer_y = max(1370, y + 28)
+    card_height = footer_y + 130
+    parts[0] = _rect(
+        0,
+        0,
+        _CARD_WIDTH,
+        card_height,
+        fill="#F3F0E8",
+        radius=0,
+    )
     parts.extend(
         (
-            _rect(0, 1370, _CARD_WIDTH, 130, fill="#102D3E", radius=0),
-            _source_footer(data, y=1415),
+            _rect(0, footer_y, _CARD_WIDTH, 130, fill="#102D3E", radius=0),
+            _source_footer(data, y=footer_y + 45),
         )
     )
     return ReportVisual(
@@ -469,8 +1225,9 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
         alt_text=f"{company} 가치평가 가정·위험·출처 요약",
         svg=_svg_document(
             title=f"{company} 가치평가 가정",
-            description="시나리오별 자유현금흐름, 영구성장률, 자본비용, 위험과 출처를 요약한 한국어 카드",
+            description="시나리오별 자유현금흐름, 영구성장률, 자본비용, 위험과 출처를 모두 표시한 한국어 카드",
             body="\n".join(parts),
+            height=card_height,
         ),
     )
 

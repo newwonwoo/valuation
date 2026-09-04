@@ -1,0 +1,12 @@
+{
+  "assumption_set_hash": "04f17de13b0b86a7b9a3c8a916413b8e2f294079ff35accbf44026db55bed8be",
+  "audit_hash": "1eec22287f8e3ad59d861749fed35ded61ac07004bf0b5f5facdd8b4da4a10dc",
+  "calibration_dataset_hash": "",
+  "calibration_snapshot_hash": "",
+  "industry_snapshot_hash": "dfcf63e4e4a59e23e99cb805165d6e73f389b18b88d9d0bfca390f963d90f0d0",
+  "ledger_snapshot_hash": "7c201ae7dbad7b0db871f5bfb436861cb8d0aedb6e12bebeb0e379d828a2b439",
+  "run_id": "LIVE-KOREAZINC-2",
+  "source_snapshot_hash": "19e57c78009f62e3945af820d958f10c92c3b6c20ff9939d060c568402825b7b",
+  "token_hash": "e559df1e2093c09e6d51c216562915b56a1109d41bc298dd7f5d2ff201fa62be",
+  "valuation_hash": "d12c5766ed56af72fd29d23f97d8e8d2011e7751d145220c33d30372b070cffe"
+}

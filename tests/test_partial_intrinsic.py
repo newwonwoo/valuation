@@ -1,18 +1,27 @@
 from dataclasses import replace
 from decimal import Decimal
+from types import SimpleNamespace
 
 import pytest
 
 from valuation_engine.actual_units import Measure
 from valuation_engine.assumption_compiler import CompiledAssumption, CompiledAssumptionSet
+from valuation_engine.backlog_evaluators import BacklogBurnDCFEvaluator
 from valuation_engine.control_plane import (
     DoctrineCoverageEntry,
     ExecutionMode,
     StageStatus,
     issue_freeze_token,
 )
-from valuation_engine.evaluator_registry import EvaluatorRegistry, NormalizedMultipleEvaluator
-from valuation_engine.generic_reporting import render_generic_report
+from valuation_engine.evaluator_registry import (
+    EvaluatorRegistry,
+    ModelKey,
+    NormalizedMultipleEvaluator,
+)
+from valuation_engine.generic_reporting import (
+    _scenario_assumptions_line,
+    render_generic_report,
+)
 from valuation_engine.impact_adapter import build_generic_decision_outcome
 from valuation_engine.method_capabilities import load_default_method_capability_registry
 from valuation_engine.module_plan import ModuleRequirementPlan, SegmentModuleRequirementPlan
@@ -21,20 +30,31 @@ from valuation_engine.partial_valuation import promote_partial_valuation_plan
 from valuation_engine.post_freeze import compare_generic_to_market
 from valuation_engine.post_freeze_adapters import market_compare_adapter
 from valuation_engine.records import AuditReport, CalibrationStatus, MarketObservation
+from valuation_engine.report_localization import evaluator_assumption_groups_ko
 from valuation_engine.scenario_binding import BoundScenario, BoundScenarioSet
 from valuation_engine.valuation_adapter import deterministic_valuation_adapter
 from valuation_engine.valuation_execution import (
+    CompanyValuationPlan,
     IntrinsicValuationScope,
+    ParentAdjustmentPlan,
+    SegmentValuationPlan,
     UnvaluedSegmentStatus,
     execute_company_valuation,
 )
 from valuation_engine.valuation_plan_compiler import (
     CompanyValuationPlanInputs,
+    SegmentEvaluatorContract,
+    SegmentMethodChoice,
     SegmentValueBinding,
+    ValuationPlanCompilation,
     ValuationPlanStatus,
     compile_company_valuation_plan,
 )
-from valuation_engine.visual_reporting import render_report_visuals
+from valuation_engine.visual_reporting import (
+    _assumptions_card,
+    _multiple_assumption_table,
+    render_report_visuals,
+)
 
 
 def _assumption(key: str, value: str, unit: str, *, scenario: str = "BASE") -> CompiledAssumption:
@@ -69,6 +89,726 @@ def _scenario_set(*, include_shares: bool = True, include_unvalued_ownership: bo
         numeric_weighting_allowed=False,
         scenario_set_hash="SCENARIO-HASH",
     )
+
+
+def test_mixed_multiple_nav_and_dcf_visual_table_preserves_every_method_input():
+    scenario = BoundScenario(
+        "BASE",
+        (
+            _assumption("manufacturing_normalized_ebitda", "100", "KRW_billion"),
+            _assumption("manufacturing_normalized_multiple", "8", "multiple"),
+            _assumption("trading_normalized_ebitda", "20", "KRW_billion"),
+            _assumption("trading_normalized_multiple", "4", "multiple"),
+            _assumption("recycling_gross_asset_value", "20", "KRW_billion"),
+            _assumption("recycling_liabilities", "5", "KRW_billion"),
+            _assumption("transport_fcff_year_1", "10", "KRW_billion"),
+            _assumption("transport_fcff_year_5", "15", "KRW_billion"),
+            _assumption("transport_terminal_growth", "0.02", "ratio"),
+            _assumption("transport_terminal_roic", "0.12", "ratio"),
+            _assumption("manufacturing_ev_adjustment", "-10", "KRW_billion"),
+            _assumption("manufacturing_ownership", "1", "ratio"),
+            _assumption("recycling_ownership", "1", "ratio"),
+            _assumption("transport_ownership", "1", "ratio"),
+            _assumption("diluted_shares", "10", "shares"),
+        ),
+    )
+
+    table = _multiple_assumption_table((scenario,))
+
+    assert table is not None
+    headers, rows = table
+    assert headers == (
+        "구분",
+        "배수평가 부문",
+        "NAV 부문",
+        "현금흐름/NPV 부문",
+        "영구/기타 입력",
+        "EV→지분 조정",
+    )
+    rendered = " | ".join(rows[0])
+    assert "제조 1,000억원×8배" in rendered
+    assert "수출입 200억원×4배" in rendered
+    assert "기타 150억원" in rendered
+    assert "운송 100억원→150억원" in rendered
+    assert "운송 g 2.0%/ROIC 12.0%" in rendered
+
+    scenario_set = BoundScenarioSet(
+        target_id="MIXED",
+        scenarios=(scenario,),
+        calibration_status=CalibrationStatus.UNCALIBRATED,
+        numeric_weighting_allowed=False,
+        scenario_set_hash="MIXED-SCENARIO-HASH",
+    )
+    svg = _assumptions_card(
+        {
+            "company": "Mixed Method",
+            "ticker": "MIXED",
+            "bound_scenario_set": scenario_set,
+            "selected_methods": (
+                "normalized_multiple",
+                "asset_yield_nav",
+                "driver_dcf",
+            ),
+            "live_wacc_result": SimpleNamespace(
+                wacc_result=SimpleNamespace(
+                    wacc=Decimal("0.09"),
+                    cost_of_equity=Decimal("0.11"),
+                )
+            ),
+        },
+        "mixed.svg",
+    ).svg
+    assert "DCF 가중평균자본비용" in svg
+    assert "9.00%" in svg
+    assert "[DCF 가치+부문 EBITDA×배수 합+유형자산 NAV+EV→지분 조정]" in svg
+    assert "제조 1,000억원×8배; 수출입 200억원×4배" not in svg
+    assert "제조 1,000억원×8배;" in svg
+    assert "수출입 200억원×4배" in svg
+
+
+def test_visual_table_renders_common_ownership_that_varies_by_scenario():
+    def scenario(scenario_id: str, ownership: str) -> BoundScenario:
+        return BoundScenario(
+            scenario_id,
+            (
+                _assumption(
+                    "manufacturing_normalized_ebitda",
+                    "100",
+                    "KRW_billion",
+                    scenario=scenario_id,
+                ),
+                _assumption(
+                    "manufacturing_normalized_multiple",
+                    "8",
+                    "multiple",
+                    scenario=scenario_id,
+                ),
+                _assumption(
+                    "trading_normalized_ebitda",
+                    "20",
+                    "KRW_billion",
+                    scenario=scenario_id,
+                ),
+                _assumption(
+                    "trading_normalized_multiple",
+                    "4",
+                    "multiple",
+                    scenario=scenario_id,
+                ),
+                _assumption(
+                    "manufacturing_ownership",
+                    ownership,
+                    "ratio",
+                    scenario=scenario_id,
+                ),
+                _assumption(
+                    "trading_ownership",
+                    ownership,
+                    "ratio",
+                    scenario=scenario_id,
+                ),
+                _assumption("diluted_shares", "10", "shares", scenario=scenario_id),
+            ),
+        )
+
+    scenarios = (
+        scenario("Down", "0.8"),
+        scenario("Core", "0.9"),
+        scenario("Bull", "1"),
+    )
+    manufacturing_key = ModelKey(
+        "commodity_price_taker", "normalized_multiple", "1"
+    )
+    trading_key = ModelKey("trading", "normalized_multiple", "1")
+    plan = CompanyValuationPlan(
+        segments=(
+            SegmentValuationPlan(
+                "manufacturing",
+                "manufacturing",
+                manufacturing_key,
+                "manufacturing_ownership",
+                None,
+            ),
+            SegmentValuationPlan(
+                "trading",
+                "trading",
+                trading_key,
+                "trading_ownership",
+                None,
+            ),
+        ),
+        reporting_unit="KRW_billion",
+        diluted_shares_key="diluted_shares",
+    )
+    contracts = (
+        SegmentEvaluatorContract(
+            "manufacturing",
+            manufacturing_key,
+            "normalized_multiple",
+            "enterprise_value",
+            (
+                "manufacturing_normalized_ebitda",
+                "manufacturing_normalized_multiple",
+            ),
+        ),
+        SegmentEvaluatorContract(
+            "trading",
+            trading_key,
+            "normalized_multiple",
+            "enterprise_value",
+            ("trading_normalized_ebitda", "trading_normalized_multiple"),
+        ),
+    )
+
+    table = _multiple_assumption_table(
+        scenarios,
+        evaluator_contracts=contracts,
+        valuation_plan=plan,
+    )
+
+    assert table is not None
+    rendered_rows = tuple(" | ".join(row) for row in table[1])
+    assert "귀속 80.0000%" in rendered_rows[0]
+    assert "귀속 90.0000%" in rendered_rows[1]
+    assert "귀속 100.0000%" in rendered_rows[2]
+
+
+def test_typed_plan_contract_keeps_backlog_dcf_in_mixed_sotp_reporting():
+    backlog = BacklogBurnDCFEvaluator(
+        archetype="contracted_backlog",
+        method="backlog_burn_dcf",
+        version="1",
+        forecast_years=2,
+        discount_rate=Decimal("0.09"),
+        discount_rate_path_id="WACC:TEST",
+        assumption_prefix="transport_",
+    )
+    assumptions = [
+        _assumption("manufacturing_normalized_ebitda", "100", "KRW_billion"),
+        _assumption("manufacturing_normalized_multiple", "8", "multiple"),
+        _assumption("manufacturing_ownership", "1", "ratio"),
+        _assumption("manufacturing_ev_adjustment", "-10", "KRW_billion"),
+        _assumption("transport_ownership", "1", "ratio"),
+        _assumption("transport_ev_adjustment", "-2", "KRW_billion"),
+        _assumption("parent_nci", "-3", "KRW_billion"),
+        _assumption("diluted_shares", "10", "shares"),
+    ]
+    for key in backlog.required_assumption_keys:
+        unit = (
+            "KRW_billion"
+            if key.endswith("opening_backlog")
+            or key.endswith("opening_revenue")
+            or "new_orders_year_" in key
+            else "ratio"
+        )
+        value = "100" if unit == "KRW_billion" else "0.1"
+        if "backlog_burn_rate_year_" in key:
+            value = "0.5"
+        elif "operating_margin_year_" in key:
+            value = "0.2"
+        elif key.endswith("terminal_growth"):
+            value = "0.02"
+        elif key.endswith("terminal_roic"):
+            value = "0.12"
+        assumptions.append(_assumption(key, value, unit))
+    scenario = BoundScenario("BASE", tuple(assumptions))
+    scenario_set = BoundScenarioSet(
+        target_id="MIXED-BACKLOG",
+        scenarios=(scenario,),
+        calibration_status=CalibrationStatus.UNCALIBRATED,
+        numeric_weighting_allowed=False,
+        scenario_set_hash="MIXED-BACKLOG-HASH",
+    )
+    registry = EvaluatorRegistry()
+    registry.register(
+        NormalizedMultipleEvaluator(
+            "commodity_price_taker",
+            ebitda_key="manufacturing_normalized_ebitda",
+            multiple_key="manufacturing_normalized_multiple",
+        )
+    )
+    registry.register(backlog)
+    module_plan = ModuleRequirementPlan(
+        segments=(
+            _segment(
+                "manufacturing",
+                "commodity_price_taker",
+                ("normalized_multiple",),
+            ),
+            _segment(
+                "transport",
+                "contracted_backlog",
+                ("backlog_burn_dcf",),
+            ),
+        ),
+        common_core_modules=("evidence_gate",),
+        required_evidence=("revenue",),
+        required_kpis=("revenue",),
+        mandatory_scanners=("TEST_SCANNER",),
+        kill_conditions=("test kill",),
+        scenario_variables=("revenue",),
+        double_count_traps=(),
+        forbidden_methods=(),
+    )
+    module_plan.validate()
+    compilation = compile_company_valuation_plan(
+        module_plan,
+        scenario_set,
+        evaluator_registry=registry,
+        capability_registry=load_default_method_capability_registry(),
+        inputs=CompanyValuationPlanInputs(
+            reporting_unit="KRW_billion",
+            diluted_shares_key="diluted_shares",
+            segment_bindings=(
+                SegmentValueBinding(
+                    "manufacturing",
+                    "manufacturing",
+                    "manufacturing_ownership",
+                    "manufacturing_ev_adjustment",
+                ),
+                SegmentValueBinding(
+                    "transport",
+                    "transport",
+                    "transport_ownership",
+                    "transport_ev_adjustment",
+                ),
+            ),
+            parent_adjustments=(
+                ParentAdjustmentPlan("parent_nci", "parent_nci"),
+            ),
+        ),
+        method_choices=(
+            SegmentMethodChoice(
+                "manufacturing",
+                "commodity_price_taker",
+                "normalized_multiple",
+                "1",
+            ),
+            SegmentMethodChoice(
+                "transport",
+                "contracted_backlog",
+                "backlog_burn_dcf",
+                "1",
+            ),
+        ),
+    )
+    assert compilation.ready
+    assert tuple(
+        item.execution_family for item in compilation.evaluator_contracts
+    ) == ("normalized_multiple", "contracted_backlog_dcf")
+
+    table = _multiple_assumption_table(
+        (scenario,),
+        evaluator_contracts=compilation.evaluator_contracts,
+        valuation_plan=compilation.plan,
+    )
+    assert table is not None
+    rendered_table = " | ".join(table[1][0])
+    assert "제조 1,000억원×8배" in rendered_table
+    assert "운송 수주잔고 DCF" in rendered_table
+    assert "잔고 1,000억원" in rendered_table
+    assert "EV -120억\n모 -30억" in rendered_table
+
+    svg = _assumptions_card(
+        {
+            "company": "Mixed Backlog",
+            "ticker": "MIXED-BACKLOG",
+            "bound_scenario_set": scenario_set,
+            "valuation_plan_compilation": compilation,
+            "selected_methods": (
+                "commodity_price_taker/normalized_multiple/1",
+                "contracted_backlog/backlog_burn_dcf/1",
+            ),
+            "live_wacc_result": SimpleNamespace(
+                wacc_result=SimpleNamespace(wacc=Decimal("0.09"))
+            ),
+        },
+        "mixed-backlog.svg",
+    ).svg
+    assert "운송 수주잔고 DCF" in svg
+    assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in svg
+    assert "모회사 조정" in svg
+    assert "모" in svg
+    assert "-30억" in svg
+
+    line = _scenario_assumptions_line(
+        scenario,
+        evaluator_contracts=compilation.evaluator_contracts,
+        valuation_plan=compilation.plan,
+    )
+    assert "운송 수주잔고 DCF" in line
+    assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in line
+    assert "모회사 조정 -30억원" in line
+
+    valuation = execute_company_valuation(
+        scenario_set,
+        plan=compilation.plan,
+        registry=registry,
+    )
+    report = render_generic_report(
+        {
+            "company": "Mixed Backlog",
+            "bound_scenario_set": scenario_set,
+            "generic_valuation_result": valuation,
+            "generic_audit_report": AuditReport(()),
+            "doctrine_coverage": (),
+            "valuation_plan_compilation": compilation,
+            "selected_methods": (
+                "commodity_price_taker/normalized_multiple/1",
+                "contracted_backlog/backlog_burn_dcf/1",
+            ),
+        }
+    )
+    assert "운송 수주잔고 DCF" in report
+    assert "배수평가 부문 귀속 지분가치+DCF 부문 귀속 지분가치" in report
+    assert "모회사 조정 -30억원" in report
+
+
+def test_single_dcf_assumptions_card_shows_parent_adjustment():
+    scenario = BoundScenario(
+        "Base",
+        (
+            _assumption("fcff_year_1", "10", "KRW_billion"),
+            _assumption("fcff_year_2", "11", "KRW_billion"),
+            _assumption("fcff_year_3", "12", "KRW_billion"),
+            _assumption("fcff_year_4", "13", "KRW_billion"),
+            _assumption("fcff_year_5", "15", "KRW_billion"),
+            _assumption("fcff_year_6", "16", "KRW_billion"),
+            _assumption("fcff_year_7", "17", "KRW_billion"),
+            _assumption("fcff_year_8", "18", "KRW_billion"),
+            _assumption("fcff_year_9", "19", "KRW_billion"),
+            _assumption("terminal_growth", "0.02", "ratio"),
+            _assumption("terminal_roic", "0.12", "ratio"),
+            _assumption("ownership", "1", "ratio"),
+            _assumption("ev_adjustment", "-2", "KRW_billion"),
+            _assumption("parent_nci", "-3", "KRW_billion"),
+            _assumption("diluted_shares", "10", "shares"),
+        ),
+    )
+    scenario_set = BoundScenarioSet(
+        target_id="SINGLE-DCF",
+        scenarios=(scenario,),
+        calibration_status=CalibrationStatus.UNCALIBRATED,
+        numeric_weighting_allowed=False,
+        scenario_set_hash="SINGLE-DCF-HASH",
+    )
+    model_key = ModelKey("capacity_manufacturing", "driver_dcf", "1")
+    plan = CompanyValuationPlan(
+        segments=(
+            SegmentValuationPlan(
+                "core", "core", model_key, "ownership", "ev_adjustment"
+            ),
+        ),
+        reporting_unit="KRW_billion",
+        diluted_shares_key="diluted_shares",
+        parent_adjustments=(ParentAdjustmentPlan("parent_nci", "parent_nci"),),
+    )
+    compilation = ValuationPlanCompilation(
+        status=ValuationPlanStatus.READY,
+        plan=plan,
+        scenario_set_hash="SINGLE-DCF-HASH",
+        module_plan_hash="MODULE",
+        capability_registry_hash="CAPABILITY",
+        evaluator_registry_hash="EVALUATOR",
+        method_choices_hash="METHOD",
+        segment_resolutions=(),
+        evaluator_contracts=(
+            SegmentEvaluatorContract(
+                segment_id="core",
+                model_key=model_key,
+                execution_family="explicit_fcff_dcf",
+                output_kind="enterprise_value",
+                required_assumption_keys=(
+                    "fcff_year_1",
+                    "fcff_year_2",
+                    "fcff_year_3",
+                    "fcff_year_4",
+                    "fcff_year_5",
+                    "fcff_year_6",
+                    "fcff_year_7",
+                    "fcff_year_8",
+                    "fcff_year_9",
+                    "terminal_growth",
+                    "terminal_roic",
+                ),
+            ),
+        ),
+        warranted_per_segments=(),
+        aggregator_bindings=(),
+        missing_assumptions=(),
+    )
+
+    svg = _assumptions_card(
+        {
+            "company": "Single DCF",
+            "bound_scenario_set": scenario_set,
+            "valuation_plan_compilation": compilation,
+            "live_beta_result": SimpleNamespace(target_levered_beta=Decimal("1.1")),
+            "live_wacc_result": SimpleNamespace(
+                wacc_result=SimpleNamespace(
+                    wacc=Decimal("0.09"),
+                    cost_of_equity=Decimal("0.11"),
+                )
+            ),
+        },
+        "single-dcf.svg",
+    ).svg
+
+    assert "모회사 조정" in svg
+    assert "-30억원" in svg
+    for amount in range(10, 20):
+        if amount == 14:
+            continue
+        assert f"{amount * 10}억원" in svg
+    assert "…" not in svg
+
+    line = _scenario_assumptions_line(
+        scenario,
+        evaluator_contracts=compilation.evaluator_contracts,
+        valuation_plan=plan,
+    )
+    assert (
+        "FCFF 100억원 / 110억원 / 120억원 / 130억원 / 150억원 / "
+        "160억원 / 170억원 / 180억원 / 190억원"
+    ) in line
+
+
+def test_typed_non_fcff_inputs_render_in_mixed_report_and_single_family_card():
+    scenario = BoundScenario(
+        "Base",
+        (
+            _assumption("manufacturing_normalized_ebitda", "100", "KRW_billion"),
+            _assumption("manufacturing_normalized_multiple", "8", "multiple"),
+            _assumption("bank_forward_distribution", "100", "KRW_billion"),
+            _assumption("bank_terminal_growth", "0.02", "ratio"),
+            _assumption("manufacturing_ownership", "1", "ratio"),
+            _assumption("bank_ownership", "1", "ratio"),
+            _assumption("diluted_shares", "10", "shares"),
+        ),
+    )
+    multiple_contract = SegmentEvaluatorContract(
+        segment_id="manufacturing",
+        model_key=ModelKey("commodity_price_taker", "normalized_multiple", "1"),
+        execution_family="normalized_multiple",
+        output_kind="enterprise_value",
+        required_assumption_keys=(
+            "manufacturing_normalized_ebitda",
+            "manufacturing_normalized_multiple",
+        ),
+    )
+    ddm_key = ModelKey("financial_balance_sheet", "ddm", "1")
+    ddm_contract = SegmentEvaluatorContract(
+        segment_id="bank",
+        model_key=ddm_key,
+        execution_family="gordon_ddm",
+        output_kind="equity_value",
+        required_assumption_keys=(
+            "bank_forward_distribution",
+            "bank_terminal_growth",
+        ),
+    )
+
+    line = _scenario_assumptions_line(
+        scenario,
+        evaluator_contracts=(multiple_contract, ddm_contract),
+    )
+    assert "bank 배당할인" in line
+    assert "선행 배당 1,000억원" in line
+    assert "영구성장률 2.0%" in line
+
+    single_scenario = BoundScenario(
+        "Base",
+        tuple(
+            item
+            for item in scenario.assumptions
+            if not item.key.startswith("manufacturing_")
+        ),
+    )
+    scenario_set = BoundScenarioSet(
+        target_id="SINGLE-DDM",
+        scenarios=(single_scenario,),
+        calibration_status=CalibrationStatus.UNCALIBRATED,
+        numeric_weighting_allowed=False,
+        scenario_set_hash="SINGLE-DDM-HASH",
+    )
+    plan = CompanyValuationPlan(
+        segments=(
+            SegmentValuationPlan(
+                "bank", "bank", ddm_key, "bank_ownership", None
+            ),
+        ),
+        reporting_unit="KRW_billion",
+        diluted_shares_key="diluted_shares",
+    )
+    compilation = ValuationPlanCompilation(
+        status=ValuationPlanStatus.READY,
+        plan=plan,
+        scenario_set_hash="SINGLE-DDM-HASH",
+        module_plan_hash="MODULE",
+        capability_registry_hash="CAPABILITY",
+        evaluator_registry_hash="EVALUATOR",
+        method_choices_hash="METHOD",
+        segment_resolutions=(),
+        evaluator_contracts=(ddm_contract,),
+        warranted_per_segments=(),
+        aggregator_bindings=(),
+        missing_assumptions=(),
+    )
+    svg = _assumptions_card(
+        {
+            "company": "Single DDM",
+            "bound_scenario_set": scenario_set,
+            "valuation_plan_compilation": compilation,
+            "live_beta_result": SimpleNamespace(target_levered_beta=Decimal("1.1")),
+            "live_wacc_result": SimpleNamespace(
+                wacc_result=SimpleNamespace(
+                    wacc=Decimal("0.09"),
+                    cost_of_equity=Decimal("0.11"),
+                )
+            ),
+        },
+        "single-ddm.svg",
+    ).svg
+    assert "bank 배당할인" in svg
+    assert "선행 배당" in svg
+    assert "1,000억원" in svg
+    assert "영구성장률" in svg
+    assert "2.0%" in svg
+    assert "자기자본비용" in svg
+    assert "11.00%" in svg
+    assert "가중평균자본비용" not in svg
+    assert "배당할인 부문 귀속 지분가치" in svg
+    assert "핵심 자본적지출" not in svg
+    assert "생산능력 반영" not in svg
+
+
+@pytest.mark.parametrize(
+    ("family", "keys", "expected_labels"),
+    (
+        (
+            "contracted_backlog_dcf",
+            (
+                "core_opening_backlog",
+                "core_opening_revenue",
+                "core_new_orders_year_1",
+                "core_backlog_burn_rate_year_1",
+                "core_operating_margin_year_1",
+                "core_operating_tax_rate",
+                "core_depreciation_rate_of_revenue",
+                "core_maintenance_capex_rate_of_revenue",
+                "core_incremental_working_capital_rate",
+                "core_terminal_growth",
+                "core_terminal_roic",
+            ),
+            {
+                "기초 수주잔고",
+                "기초 매출",
+                "소진률",
+                "신규수주",
+                "영업이익률",
+                "영업세율",
+                "감가상각률",
+                "유지보수 투자율",
+                "증분 운전자본률",
+                "영구성장률",
+                "영구 ROIC",
+            },
+        ),
+        (
+            "finite_life_npv",
+            ("mine_cashflow_year_0", "mine_cashflow_year_1"),
+            {"현금흐름"},
+        ),
+        (
+            "gordon_ddm",
+            ("bank_forward_distribution", "bank_terminal_growth"),
+            {"선행 배당", "영구성장률"},
+        ),
+        (
+            "justified_pb_roe",
+            (
+                "bank_current_book_value",
+                "bank_forward_roe",
+                "bank_terminal_growth",
+            ),
+            {"현재 장부가치", "선행 ROE", "영구성장률"},
+        ),
+        (
+            "residual_income",
+            (
+                "bank_beginning_book_value",
+                "bank_roe_year_1",
+                "bank_roe_year_2",
+                "bank_distribution_year_1",
+                "bank_distribution_year_2",
+                "bank_terminal_roe",
+                "bank_terminal_growth",
+            ),
+            {"기초 장부가치", "ROE", "배당", "영구 ROE", "영구성장률"},
+        ),
+        (
+            "rate_base_roe",
+            (
+                "utility_rate_base",
+                "utility_equity_ratio",
+                "utility_allowed_roe",
+                "utility_terminal_growth",
+            ),
+            {"요금기반 자산", "자기자본비율", "허용 ROE", "영구성장률"},
+        ),
+        (
+            "calibrated_single_event_rnpv",
+            (
+                "drug_unconditional_cashflow_year_0",
+                "drug_unconditional_cashflow_year_1",
+                "drug_contingent_cashflow_year_0",
+                "drug_contingent_cashflow_year_1",
+                "drug_probability_of_success",
+            ),
+            {"기본 현금흐름", "조건부 현금흐름", "보정 사건확률"},
+        ),
+    ),
+)
+def test_typed_reporting_groups_cover_every_compiled_input(
+    family: str,
+    keys: tuple[str, ...],
+    expected_labels: set[str],
+):
+    primary, secondary = evaluator_assumption_groups_ko(family, keys)
+    groups = (*primary, *secondary)
+    assert {label for label, _ in groups} == expected_labels
+    grouped_keys = tuple(key for _, grouped in groups for key in grouped)
+    assert len(grouped_keys) == len(set(grouped_keys))
+    assert set(grouped_keys) == set(keys)
+
+
+def test_pure_multiple_visual_table_has_a_bounded_column_contract():
+    scenario = BoundScenario(
+        "BASE",
+        (
+            _assumption("manufacturing_normalized_ebitda", "100", "KRW_billion"),
+            _assumption("manufacturing_normalized_multiple", "8", "multiple"),
+            _assumption("trading_normalized_ebitda", "20", "KRW_billion"),
+            _assumption("trading_normalized_multiple", "4", "multiple"),
+            _assumption("transport_normalized_ebitda", "10", "KRW_billion"),
+            _assumption("transport_normalized_multiple", "3", "multiple"),
+            _assumption("recycling_gross_asset_value", "20", "KRW_billion"),
+            _assumption("recycling_liabilities", "5", "KRW_billion"),
+            _assumption("manufacturing_ev_adjustment", "-10", "KRW_billion"),
+        ),
+    )
+
+    table = _multiple_assumption_table((scenario,))
+
+    assert table is not None
+    headers, rows = table
+    assert len(headers) == len(rows[0]) == 6
+    rendered = " | ".join(rows[0])
+    assert "제조 1,000억원×8배" in rendered
+    assert "수출입 200억원×4배" in rendered
+    assert "운송 100억원×3배" in rendered
+    assert "기타 150억원" in rendered
+    assert "-100억원" in rendered
 
 
 def _segment(

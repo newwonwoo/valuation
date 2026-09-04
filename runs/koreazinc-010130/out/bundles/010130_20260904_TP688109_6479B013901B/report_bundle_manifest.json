@@ -1,0 +1,110 @@
+{
+  "artifact_id": "010130-20260904-TP688109-6479B013901B",
+  "as_of": "2026-09-04",
+  "audit_hash": "58337b5d7fab12341a1a737be77afedd5bfd2f3ed9a91315e52c194c7851aab9",
+  "files": [
+    {
+      "filename": "010130_20260904_TP688109_6479B013901B.md",
+      "sha256": "ef43a1f4cb8ffd8a7dc53efe5f68108874093fd2f156c747aff95d0024223a64"
+    },
+    {
+      "filename": "PRISM_010130_01_summary.svg",
+      "sha256": "d8ab37d0f7ea39871ec4e6e0164beedab2a455d840ce82c55b4a3fedd8c43f7c"
+    },
+    {
+      "filename": "PRISM_010130_02_assumptions.svg",
+      "sha256": "14379b2d0a83dfad04bb14c3467e868832940e90b66cc0a98291f7f5be6c9a94"
+    },
+    {
+      "filename": "audit.json",
+      "sha256": "019d650c952fbcc0281268b60573133aa9d93c14ce5222205d5d0e48214038ec"
+    },
+    {
+      "filename": "calibration_certificate.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "compiled_assumptions.json",
+      "sha256": "a294a5812afb80cdf5dfc4a84fa8b757300848f5ee6d802fdd96475fa3f72da9"
+    },
+    {
+      "filename": "context_strength_linkages.json",
+      "sha256": "92be571a24040658bc9681bfba2df1407257b53f803a97fb1347aa7d982cd895"
+    },
+    {
+      "filename": "control_plane_trace.json",
+      "sha256": "aca8d97a92323decdabd673ad526ee75ad3dbf1bb724228a71cea7ce3bdf0c76"
+    },
+    {
+      "filename": "doctrine_coverage.json",
+      "sha256": "655245540cc3a2d0c7480b37f40d638b0cc85ea08e2672a332d582b2a1cd3404"
+    },
+    {
+      "filename": "evidence_composition.json",
+      "sha256": "794f309cad51b3573483683a24162054cc68768b69e42cef885daa6a6fe26949"
+    },
+    {
+      "filename": "execution_attestation.json",
+      "sha256": "f03ac0d89fcf2c75da7edcbf8a3b2ade84bfb5fbea20dd89298e4c8788cf5dc8"
+    },
+    {
+      "filename": "final_report.md",
+      "sha256": "e6227030f9f2a8dca0b69d1ba036b10135646ee5eef60e99a1cccdc9844ff758"
+    },
+    {
+      "filename": "freeze_token.json",
+      "sha256": "4828197e3dde550226d15b1b8a1bf19e64edabcd3c4edccd0e69fbee7bf39a79"
+    },
+    {
+      "filename": "manifest.json",
+      "sha256": "2ec1b6f60be42d7b9933820087269136fd12d341a53807d01d0e478eeff23fb0"
+    },
+    {
+      "filename": "market_compare.json",
+      "sha256": "75d58e02790e5a4c313ae94a73499a0595868dc2239f8088985a46862d6751df"
+    },
+    {
+      "filename": "module_impact.json",
+      "sha256": "6a4c3e8df3c862763e88811a5b82fe400303f3c6fd90f3b0278ff96736ddb66d"
+    },
+    {
+      "filename": "probability_forecast_drafts.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "filename": "reverse_dcf.json",
+      "sha256": "c012c85bd1577fd57a1f10283fe3269caada9721c5a71d9dd8c1b3bda26777cd"
+    },
+    {
+      "filename": "scenario_probability_assessment.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "scenario_set.json",
+      "sha256": "21190f37808171248f8d4840c90f0c68edb7b740462dd9fe13f3c53082692dac"
+    },
+    {
+      "filename": "street_compare.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "thesis_delta.json",
+      "sha256": "7bc66e677c9e74211e6f1292ba11c52ea2d8fee1cc1b5c088f049d7c64184644"
+    },
+    {
+      "filename": "valuation.json",
+      "sha256": "7ff92f94d12734890244decb909efbb1e0c1604e89e16b70e741e5434fe74d0f"
+    },
+    {
+      "filename": "valuation_sensitivity.json",
+      "sha256": "46d3e789271785b9364dc2ede2f9c4fd994062294db45c994f3c938ed62e78fe"
+    }
+  ],
+  "reference_value_per_share": "688109.2890322632528281931966",
+  "report_filename": "010130_20260904_TP688109_6479B013901B.md",
+  "run_id": "LIVE-KOREAZINC-2",
+  "run_input_sha256": "917c349500db57edb45c0020848b51ac69e3d69dcc4edf94cee9a422e7082e06",
+  "schema_version": "kr-live-report-bundle/v1",
+  "ticker": "010130",
+  "valuation_hash": "11aed17f87e2d6d041dcd50a7c3ca7453a50b368339175fe9ef6450d9646162e"
+}

@@ -1,0 +1,110 @@
+{
+  "artifact_id": "010130-20260904-TP685256-5215FD9E8931",
+  "as_of": "2026-09-04",
+  "audit_hash": "f0d27558c3aa06aa43c09276838e3b781c6d6408bfc4c9dc3f001b253a4e1a28",
+  "files": [
+    {
+      "filename": "010130_20260904_TP685256_5215FD9E8931.md",
+      "sha256": "d56c5dd771c0ac0754d51bc91496693da386741ecaac0ca5d053b9bbb7db62a8"
+    },
+    {
+      "filename": "PRISM_010130_01_summary.svg",
+      "sha256": "4febdffb4ec4d565d2a2b69988f172d9cfa4d88326b3364857360725f7ab9d4a"
+    },
+    {
+      "filename": "PRISM_010130_02_assumptions.svg",
+      "sha256": "9d6949d50690a66a393eeb2052ece679b2de6c2163f1f405827f34d1df86711e"
+    },
+    {
+      "filename": "audit.json",
+      "sha256": "cae46b1673a45d7b2e6922a5a7cc75461b1eab95918cb919deb9e868c9597cca"
+    },
+    {
+      "filename": "calibration_certificate.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "compiled_assumptions.json",
+      "sha256": "715b478f2e3af601033de050037c496e4d705ead1fd3f00e418b7225063212fb"
+    },
+    {
+      "filename": "context_strength_linkages.json",
+      "sha256": "92be571a24040658bc9681bfba2df1407257b53f803a97fb1347aa7d982cd895"
+    },
+    {
+      "filename": "control_plane_trace.json",
+      "sha256": "be06576b278733cb2b47b760b0f235611980ceff86f4a6b05b5904cd335bca08"
+    },
+    {
+      "filename": "doctrine_coverage.json",
+      "sha256": "9415d58a4479eb408d1a7dc29d912dcc2e1bc7fbd83f6469da5e020d4aa67042"
+    },
+    {
+      "filename": "evidence_composition.json",
+      "sha256": "8f335400aac29192a419345dc9f93efa0c4d197b96b3dd3ea6c042220777dac8"
+    },
+    {
+      "filename": "execution_attestation.json",
+      "sha256": "19802e8122532e21d6e8d154a6297773806a1e582ffadfb9c67a7055c30e7984"
+    },
+    {
+      "filename": "final_report.md",
+      "sha256": "d50329922f89193d88c22fc9c0823e37c06704961269c33ad7f73d7c05811925"
+    },
+    {
+      "filename": "freeze_token.json",
+      "sha256": "62b66cc031e1aa939488b19a7684090fa8ff09c2800ca4956489a5f07291df64"
+    },
+    {
+      "filename": "manifest.json",
+      "sha256": "3a0c00ecf01c56effcbd71bccc41855cfb79751495f693fcd35201e9ecef153c"
+    },
+    {
+      "filename": "market_compare.json",
+      "sha256": "fdab889ba799a1789fa3fbc8edd3d084b408bca52bd223cdd2a69c95e4e74add"
+    },
+    {
+      "filename": "module_impact.json",
+      "sha256": "9d613e78075ae85e597a3ded92c6db23c17db6b63aa32b09d622e7b39236a536"
+    },
+    {
+      "filename": "probability_forecast_drafts.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "filename": "reverse_dcf.json",
+      "sha256": "238fae263b24a1a55cb1a8f28255646fb9f0b7802c0cc1031aeb81abbf94b2bb"
+    },
+    {
+      "filename": "scenario_probability_assessment.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "scenario_set.json",
+      "sha256": "9744ad763cf88701e1733b18c1876d70a2030347c8f5e6265c2139e0a93fdb07"
+    },
+    {
+      "filename": "street_compare.json",
+      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+    },
+    {
+      "filename": "thesis_delta.json",
+      "sha256": "7bc66e677c9e74211e6f1292ba11c52ea2d8fee1cc1b5c088f049d7c64184644"
+    },
+    {
+      "filename": "valuation.json",
+      "sha256": "8b05498cdaf7d2a138c75fed9564989f63420cfa5dbe30b37792b7062ce28202"
+    },
+    {
+      "filename": "valuation_sensitivity.json",
+      "sha256": "a0926693ad46f33fbad3ef78738c2844df37e8a858d725497ce7451084f266cd"
+    }
+  ],
+  "reference_value_per_share": "685255.7313376320143859492208",
+  "report_filename": "010130_20260904_TP685256_5215FD9E8931.md",
+  "run_id": "LIVE-KOREAZINC-2",
+  "run_input_sha256": "4141ea1482ae57896bb52bd79d5736091d541fdbc981b98cc9d02bbad0c21b46",
+  "schema_version": "kr-live-report-bundle/v1",
+  "ticker": "010130",
+  "valuation_hash": "10cdcf520c20578b3b3fc9aab9537d0f38212960b54fcd4f655cfac77394c93a"
+}

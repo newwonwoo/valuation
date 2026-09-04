@@ -1,0 +1,331 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>9. 재고자산 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>재고자산 세부내역</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당반기말</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='141' height='23'>취득원가</TH>
+  <TH width='141' height='23'>평가충당금</TH>
+  <TH width='141' height='23'>장부금액 &nbsp;합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='141' height='23'>유동 상품</TD>
+  <TD width='141' height='23' align='RIGHT'>189,223,303</TD>
+  <TD width='141' height='23' align='RIGHT'>2,035,101</TD>
+  <TD width='141' height='23' align='RIGHT'>191,258,404</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>유동 제품</TD>
+  <TD width='141' height='23' align='RIGHT'>544,543,243</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>544,543,243</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>유동 재공품</TD>
+  <TD width='141' height='23' align='RIGHT'>1,295,900,008</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>1,295,900,008</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>부산물, 순액</TD>
+  <TD width='141' height='23' align='RIGHT'>24,160,000</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>24,160,000</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>유동 원재료</TD>
+  <TD width='141' height='23' align='RIGHT'>1,730,186,497</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>1,730,186,497</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>유동 저장품</TD>
+  <TD width='141' height='23' align='RIGHT'>216,658,858</TD>
+  <TD width='141' height='23' align='RIGHT'>(7,894,186)</TD>
+  <TD width='141' height='23' align='RIGHT'>208,764,672</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>반제품, 순액</TD>
+  <TD width='141' height='23' align='RIGHT'>901,402,064</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>901,402,064</TD>
+</TR>
+<TR height='53'>
+  <TD width='141' height='46'>유동 운송중 재고자산</TD>
+  <TD width='141' height='46' align='RIGHT'>1,752,409,886</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+  <TD width='141' height='46' align='RIGHT'>1,752,409,886</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>기타재고</TD>
+  <TD width='141' height='23' align='RIGHT'>124,996,327</TD>
+  <TD width='141' height='23' align='RIGHT'>(49,482,024)</TD>
+  <TD width='141' height='23' align='RIGHT'>75,514,303</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>재고자산 합계</TD>
+  <TD width='141' height='23' align='RIGHT'>6,779,480,186</TD>
+  <TD width='141' height='23' align='RIGHT'>(55,341,109)</TD>
+  <TD width='141' height='23' align='RIGHT'>6,724,139,077</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전기말</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='141' height='23'>취득원가</TH>
+  <TH width='141' height='23'>평가충당금</TH>
+  <TH width='141' height='23'>장부금액 &nbsp;합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='141' height='23'>유동 상품</TD>
+  <TD width='141' height='23' align='RIGHT'>163,543,038</TD>
+  <TD width='141' height='23' align='RIGHT'>6,015,882</TD>
+  <TD width='141' height='23' align='RIGHT'>169,558,920</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>유동 제품</TD>
+  <TD width='141' height='23' align='RIGHT'>565,130,990</TD>
+  <TD width='141' height='23' align='RIGHT'>(2,267,404)</TD>
+  <TD width='141' height='23' align='RIGHT'>562,863,586</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>유동 재공품</TD>
+  <TD width='141' height='23' align='RIGHT'>879,543,268</TD>
+  <TD width='141' height='23' align='RIGHT'>(1,587,629)</TD>
+  <TD width='141' height='23' align='RIGHT'>877,955,639</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>부산물, 순액</TD>
+  <TD width='141' height='23' align='RIGHT'>15,417,823</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>15,417,823</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>유동 원재료</TD>
+  <TD width='141' height='23' align='RIGHT'>1,093,292,354</TD>
+  <TD width='141' height='23' align='RIGHT'>(672,894)</TD>
+  <TD width='141' height='23' align='RIGHT'>1,092,619,460</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>유동 저장품</TD>
+  <TD width='141' height='23' align='RIGHT'>100,039,228</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>100,039,228</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>반제품, 순액</TD>
+  <TD width='141' height='23' align='RIGHT'>1,032,749,003</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>1,032,749,003</TD>
+</TR>
+<TR height='53'>
+  <TD width='141' height='46'>유동 운송중 재고자산</TD>
+  <TD width='141' height='46' align='RIGHT'>2,296,650,885</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+  <TD width='141' height='46' align='RIGHT'>2,296,650,885</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>기타재고</TD>
+  <TD width='141' height='23' align='RIGHT'>114,790,753</TD>
+  <TD width='141' height='23' align='RIGHT'>(42,108,234)</TD>
+  <TD width='141' height='23' align='RIGHT'>72,682,519</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>재고자산 합계</TD>
+  <TD width='141' height='23' align='RIGHT'>6,261,157,342</TD>
+  <TD width='141' height='23' align='RIGHT'>(40,620,279)</TD>
+  <TD width='141' height='23' align='RIGHT'>6,220,537,063</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>재고자산 평가손실에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>재고자산 순감액(환입)</TD>
+  <TD width='291' height='23' align='RIGHT'>4,542,973</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>재고자산 순감액(환입)</TD>
+  <TD width='291' height='23' align='RIGHT'>4,151,737</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

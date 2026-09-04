@@ -1,0 +1,746 @@
+{
+  "rationale": "Evidence-backed pass-through of the manufacturing and trading normalized-multiple envelope; recycling is valued with the existing asset-yield NAV method using disclosed segment PPE. IFRS 8 operating segments remain at 100% ownership, consolidated debt and cash are handled once in the manufacturing EV-to-equity bridge, and consolidated noncontrolling interest is deducted separately once at parent level.",
+  "drafts": [
+    {
+      "assumption_key": "manufacturing_normalized_ebitda",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:down_manufacturing_normalized_ebitda"
+      ],
+      "affected_variable": "margin",
+      "direction": "unchanged",
+      "value": 1500.904,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:normalized_ebitda"
+    },
+    {
+      "assumption_key": "manufacturing_normalized_multiple",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:down_manufacturing_normalized_multiple"
+      ],
+      "affected_variable": "multiple",
+      "direction": "unchanged",
+      "value": 5.5,
+      "unit": "multiple",
+      "canonical_unit": "multiple",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:normalized_multiple"
+    },
+    {
+      "assumption_key": "manufacturing_ownership",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ownership"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 1.0,
+      "unit": "ratio",
+      "canonical_unit": "ratio",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:ownership"
+    },
+    {
+      "assumption_key": "manufacturing_ev_adjustment",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ev_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": -2713.254,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:ev_adjustment"
+    },
+    {
+      "assumption_key": "trading_normalized_ebitda",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_ebitda"
+      ],
+      "affected_variable": "margin",
+      "direction": "unchanged",
+      "value": 192.05,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:normalized_ebitda"
+    },
+    {
+      "assumption_key": "trading_normalized_multiple",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_multiple"
+      ],
+      "affected_variable": "multiple",
+      "direction": "unchanged",
+      "value": 4.0,
+      "unit": "multiple",
+      "canonical_unit": "multiple",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:normalized_multiple"
+    },
+    {
+      "assumption_key": "trading_ownership",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ownership"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 1.0,
+      "unit": "ratio",
+      "canonical_unit": "ratio",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:ownership"
+    },
+    {
+      "assumption_key": "trading_ev_adjustment",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ev_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": 0,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:ev_adjustment"
+    },
+    {
+      "assumption_key": "diluted_shares",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:diluted_shares"
+      ],
+      "affected_variable": "share_count",
+      "direction": "unchanged",
+      "value": 20393232,
+      "unit": "shares",
+      "canonical_unit": "shares",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or share-count change",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:company:diluted_shares"
+    },
+    {
+      "assumption_key": "manufacturing_normalized_ebitda",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_normalized_ebitda"
+      ],
+      "affected_variable": "margin",
+      "direction": "unchanged",
+      "value": 2144.149,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:normalized_ebitda"
+    },
+    {
+      "assumption_key": "manufacturing_normalized_multiple",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_normalized_multiple"
+      ],
+      "affected_variable": "multiple",
+      "direction": "unchanged",
+      "value": 7.5,
+      "unit": "multiple",
+      "canonical_unit": "multiple",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:normalized_multiple"
+    },
+    {
+      "assumption_key": "manufacturing_ownership",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ownership"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 1.0,
+      "unit": "ratio",
+      "canonical_unit": "ratio",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:ownership"
+    },
+    {
+      "assumption_key": "manufacturing_ev_adjustment",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ev_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": -2713.254,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:ev_adjustment"
+    },
+    {
+      "assumption_key": "trading_normalized_ebitda",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_ebitda"
+      ],
+      "affected_variable": "margin",
+      "direction": "unchanged",
+      "value": 192.05,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:normalized_ebitda"
+    },
+    {
+      "assumption_key": "trading_normalized_multiple",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_multiple"
+      ],
+      "affected_variable": "multiple",
+      "direction": "unchanged",
+      "value": 4.0,
+      "unit": "multiple",
+      "canonical_unit": "multiple",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:normalized_multiple"
+    },
+    {
+      "assumption_key": "trading_ownership",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ownership"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 1.0,
+      "unit": "ratio",
+      "canonical_unit": "ratio",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:ownership"
+    },
+    {
+      "assumption_key": "trading_ev_adjustment",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ev_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": 0,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:ev_adjustment"
+    },
+    {
+      "assumption_key": "diluted_shares",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:diluted_shares"
+      ],
+      "affected_variable": "share_count",
+      "direction": "unchanged",
+      "value": 20393232,
+      "unit": "shares",
+      "canonical_unit": "shares",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or share-count change",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:company:diluted_shares"
+    },
+    {
+      "assumption_key": "manufacturing_normalized_ebitda",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:bull_manufacturing_normalized_ebitda"
+      ],
+      "affected_variable": "margin",
+      "direction": "unchanged",
+      "value": 2787.394,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:normalized_ebitda"
+    },
+    {
+      "assumption_key": "manufacturing_normalized_multiple",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:bull_manufacturing_normalized_multiple"
+      ],
+      "affected_variable": "multiple",
+      "direction": "unchanged",
+      "value": 9.0,
+      "unit": "multiple",
+      "canonical_unit": "multiple",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:normalized_multiple"
+    },
+    {
+      "assumption_key": "manufacturing_ownership",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ownership"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 1.0,
+      "unit": "ratio",
+      "canonical_unit": "ratio",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:ownership"
+    },
+    {
+      "assumption_key": "manufacturing_ev_adjustment",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:manufacturing_ev_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": -2713.254,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:manufacturing:ev_adjustment"
+    },
+    {
+      "assumption_key": "trading_normalized_ebitda",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_ebitda"
+      ],
+      "affected_variable": "margin",
+      "direction": "unchanged",
+      "value": 192.05,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:normalized_ebitda"
+    },
+    {
+      "assumption_key": "trading_normalized_multiple",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_normalized_multiple"
+      ],
+      "affected_variable": "multiple",
+      "direction": "unchanged",
+      "value": 4.0,
+      "unit": "multiple",
+      "canonical_unit": "multiple",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:normalized_multiple"
+    },
+    {
+      "assumption_key": "trading_ownership",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ownership"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 1.0,
+      "unit": "ratio",
+      "canonical_unit": "ratio",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:ownership"
+    },
+    {
+      "assumption_key": "trading_ev_adjustment",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:trading_ev_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": 0,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:trading:ev_adjustment"
+    },
+    {
+      "assumption_key": "diluted_shares",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:diluted_shares"
+      ],
+      "affected_variable": "share_count",
+      "direction": "unchanged",
+      "value": 20393232,
+      "unit": "shares",
+      "canonical_unit": "shares",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or share-count change",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:company:diluted_shares"
+    },
+    {
+      "assumption_key": "recycling_gross_asset_value",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_gross_asset_value"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 147.556,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:recycling_gross_asset_value"
+    },
+    {
+      "assumption_key": "recycling_liabilities",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_liabilities"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": 0,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:recycling_liabilities"
+    },
+    {
+      "assumption_key": "recycling_ownership",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_ownership"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 1.0,
+      "unit": "ratio",
+      "canonical_unit": "ratio",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:recycling_ownership"
+    },
+    {
+      "assumption_key": "recycling_gross_asset_value",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_gross_asset_value"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 147.556,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:recycling_gross_asset_value"
+    },
+    {
+      "assumption_key": "recycling_liabilities",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_liabilities"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": 0,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:recycling_liabilities"
+    },
+    {
+      "assumption_key": "recycling_ownership",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_ownership"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 1.0,
+      "unit": "ratio",
+      "canonical_unit": "ratio",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:recycling_ownership"
+    },
+    {
+      "assumption_key": "recycling_gross_asset_value",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_gross_asset_value"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 147.556,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:recycling_gross_asset_value"
+    },
+    {
+      "assumption_key": "recycling_liabilities",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_liabilities"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": 0,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:recycling_liabilities"
+    },
+    {
+      "assumption_key": "recycling_ownership",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:recycling_ownership"
+      ],
+      "affected_variable": "segment_value",
+      "direction": "unchanged",
+      "value": 1.0,
+      "unit": "ratio",
+      "canonical_unit": "ratio",
+      "transform_id": "identity_observation",
+      "rationale": "declared underwriting carried through unchanged",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:recycling_ownership"
+    },
+    {
+      "assumption_key": "parent_noncontrolling_interest_adjustment",
+      "scenario_id": "Down",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:parent_noncontrolling_interest_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": -250.84712741,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "official connected NCI claim applied once at parent level",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:parent:noncontrolling_interest"
+    },
+    {
+      "assumption_key": "parent_noncontrolling_interest_adjustment",
+      "scenario_id": "Base",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:parent_noncontrolling_interest_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": -250.84712741,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "official connected NCI claim applied once at parent level",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:parent:noncontrolling_interest"
+    },
+    {
+      "assumption_key": "parent_noncontrolling_interest_adjustment",
+      "scenario_id": "Bull",
+      "hypothesis_id": "H:KZ:SOTP",
+      "evidence_ids": [
+        "UW:KR:DART:00102858:parent_noncontrolling_interest_adjustment"
+      ],
+      "affected_variable": "net_debt",
+      "direction": "unchanged",
+      "value": -250.84712741,
+      "unit": "KRW_billion",
+      "canonical_unit": "KRW_billion",
+      "transform_id": "identity_observation",
+      "rationale": "official connected NCI claim applied once at parent level",
+      "confidence": 0.6,
+      "kill_condition": "underwriting revision or contradicting filing",
+      "verification_event": "next periodic filing",
+      "economic_path_id": "path:parent:noncontrolling_interest"
+    }
+  ]
+}

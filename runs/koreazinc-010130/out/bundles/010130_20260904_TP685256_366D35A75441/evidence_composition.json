@@ -1,0 +1,62 @@
+{
+  "findings": [
+    {
+      "blocking": false,
+      "check": "evidence_composition_measured",
+      "detail": "가치 투입 근거 16건의 출처 계층을 집계했습니다",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "evidence_composition_primary_backing",
+      "detail": "가치 투입 근거 중 공시·회사 공식계획 직접 인용이 0.0%로 기준(20%)에 미달합니다",
+      "passed": false
+    },
+    {
+      "blocking": false,
+      "check": "evidence_composition_underwriting_concentration",
+      "detail": "가치 투입 근거의 100.0%가 분석가 추정입니다. 이 결과는 공시 사실의 정리가 아니라 추정 위에 세워진 모델입니다",
+      "passed": false
+    }
+  ],
+  "ledger_active_count": 47,
+  "ledger_layers": [
+    {
+      "count": 47,
+      "label": "분석가 추정",
+      "share": "1",
+      "source_layer": "analyst_underwriting"
+    }
+  ],
+  "report_hash": "1c759673fc52515b52090ce25b8a0d93d7a5c7eea3b32662dc1773fca1dd5a7d",
+  "valuation_input_count": 16,
+  "valuation_input_evidence_ids": [
+    "UW:KR:DART:00102858:bull_manufacturing_normalized_ebitda",
+    "UW:KR:DART:00102858:bull_manufacturing_normalized_multiple",
+    "UW:KR:DART:00102858:diluted_shares",
+    "UW:KR:DART:00102858:down_manufacturing_normalized_ebitda",
+    "UW:KR:DART:00102858:down_manufacturing_normalized_multiple",
+    "UW:KR:DART:00102858:manufacturing_ev_adjustment",
+    "UW:KR:DART:00102858:manufacturing_normalized_ebitda",
+    "UW:KR:DART:00102858:manufacturing_normalized_multiple",
+    "UW:KR:DART:00102858:manufacturing_ownership",
+    "UW:KR:DART:00102858:recycling_gross_asset_value",
+    "UW:KR:DART:00102858:recycling_liabilities",
+    "UW:KR:DART:00102858:recycling_ownership",
+    "UW:KR:DART:00102858:trading_ev_adjustment",
+    "UW:KR:DART:00102858:trading_normalized_ebitda",
+    "UW:KR:DART:00102858:trading_normalized_multiple",
+    "UW:KR:DART:00102858:trading_ownership"
+  ],
+  "valuation_input_layers": [
+    {
+      "count": 16,
+      "label": "분석가 추정",
+      "share": "1",
+      "source_layer": "analyst_underwriting"
+    }
+  ],
+  "valuation_mean_confidence": "0.6",
+  "valuation_primary_backed_share": "0",
+  "valuation_underwriting_share": "1"
+}

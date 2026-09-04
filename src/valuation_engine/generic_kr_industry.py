@@ -398,12 +398,32 @@ def opendart_filing_snapshot_loader(
             from .segment_note import SegmentNoteError, parse_operating_segment_note
 
             disclosure = None
-            for member in filing.text_members:
-                try:
-                    disclosure = parse_operating_segment_note(member.text or "")
-                    break
-                except SegmentNoteError:
-                    continue
+            extraction = declared_segments.source_bound_extraction
+            if extraction is not None:
+                matching_members = tuple(
+                    member
+                    for member in filing.text_members
+                    if member.path == extraction.member_path
+                )
+                if len(matching_members) != 1:
+                    raise GenericKRIndustryError(
+                        "source-bound LLM segment extraction names a filing "
+                        "member that is absent or ambiguous"
+                    )
+                member = matching_members[0]
+                disclosure = extraction.bind_source_member(
+                    document_id=newest.document_id,
+                    member_path=member.path,
+                    member_sha256=member.content_hash,
+                    text=member.text or "",
+                )
+            else:
+                for member in filing.text_members:
+                    try:
+                        disclosure = parse_operating_segment_note(member.text or "")
+                        break
+                    except SegmentNoteError:
+                        continue
             if disclosure is None:
                 raise GenericKRIndustryError(
                     f"filing {newest.document_id} for {identity.target_id} "
@@ -773,6 +793,14 @@ def classified_segment_decomposer(
                         f"declared segment {declared.segment_id}; the declaration "
                         "did not survive the filing screen"
                     )
+                if declared.classification_status == "UNRESOLVED_HETEROGENEOUS":
+                    activities = ", ".join(declared.constituent_activities)
+                    raise GenericKRIndustryError(
+                        f"declared segment {declared.segment_id} ({declared.disclosed_name}) "
+                        "is UNRESOLVED_HETEROGENEOUS after the authoritative IFRS 8 "
+                        f"bijection: {activities}; refusing to assign one KSIC or value "
+                        "the aggregated activities without decomposition evidence"
+                    )
                 entry = classification.lookup(declared.ksic_code)
                 descriptors.append(
                     _descriptor(
@@ -835,6 +863,16 @@ def classified_industry_dna_router(
     ) -> tuple[IndustryDNAProfile, ...]:
         if declared_segments is not None:
             declared_segments.assert_target(identity.target_id)
+            unresolved = tuple(
+                item
+                for item in declared_segments.segments
+                if item.classification_status == "UNRESOLVED_HETEROGENEOUS"
+            )
+            if unresolved:
+                raise GenericKRIndustryError(
+                    "industry DNA routing cannot accept unresolved heterogeneous "
+                    "segments: " + ", ".join(item.segment_id for item in unresolved)
+                )
             declared_codes = {
                 item.segment_id: item.ksic_code
                 for item in declared_segments.segments

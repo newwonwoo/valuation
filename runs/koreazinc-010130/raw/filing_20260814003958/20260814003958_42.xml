@@ -1,0 +1,747 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>16. 차입금 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='2400'>
+<COLGROUP>
+<COL width='1200'></COL>
+<COL width='1200'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='2391' height='23' colspan='2'>차입금에 대한 세부 정보</TD>
+</TR>
+<TR height='30'>
+  <TD width='1191' height='23'>당반기</TD>
+  <TD width='1191' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='2400'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='2151' height='23' colspan='18'>차입금 명칭</TH>
+  <TH width='111' height='113' rowspan='4'>차입금 명칭 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>일반대출</TH>
+  <TH width='351' height='23' colspan='3'>기업어음</TH>
+  <TH width='351' height='23' colspan='3'>매출채권 할인 차입금</TH>
+  <TH width='351' height='23' colspan='3'>공급자금융약정 단기차입금</TH>
+  <TH width='351' height='23' colspan='3'>운전자금대출</TH>
+  <TH width='351' height='23' colspan='3'>시설자금대출</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 이자율</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0325</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0458</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0276</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0370</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0427</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0429</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0382</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0497</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0009</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0700</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0325</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0544</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>단기 금융기관 차입금(사채 제외)</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>351,471,546</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>900,000,000</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>10,285,821</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>2,030,623,718</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>321,447,715</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>7,458,688</TD>
+  <TD width='111' height='69' align='RIGHT'>3,621,287,488</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='2400'>
+<COLGROUP>
+<COL width='2400'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='2391' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='2400'>
+<COLGROUP>
+<COL width='1200'></COL>
+<COL width='1200'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23'>전반기</TD>
+  <TD width='1191' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='2400'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='2151' height='23' colspan='18'>차입금 명칭</TH>
+  <TH width='111' height='113' rowspan='4'>차입금 명칭 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>일반대출</TH>
+  <TH width='351' height='23' colspan='3'>기업어음</TH>
+  <TH width='351' height='23' colspan='3'>매출채권 할인 차입금</TH>
+  <TH width='351' height='23' colspan='3'>공급자금융약정 단기차입금</TH>
+  <TH width='351' height='23' colspan='3'>운전자금대출</TH>
+  <TH width='351' height='23' colspan='3'>시설자금대출</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 이자율</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>단기 금융기관 차입금(사채 제외)</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>170,000,000</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>700,000,000</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>4,144,462</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>1,793,390,274</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>373,078,783</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>　</TD>
+  <TD width='111' height='69' align='RIGHT'>6,708,158</TD>
+  <TD width='111' height='69' align='RIGHT'>3,047,321,677</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='2400'>
+<COLGROUP>
+<COL width='2400'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='2391' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>차입금 세부 정보에 대한 각주</TD>
+</TR>
+<TR height='122'>
+  <TD width='591' height='115'>(기업어음) 당반기말 현재 연결실체가 상기 일부 차입금에 대해서 약정에 의한 조항(신용등급 유지)을 충족하지 못하는 경우 기한의 이익을 상실할 수 있습니다.<BR/><BR/>(공급자금융약정 단기차입금) 연결실체는 매입채무에 대한 공급자금융약정을 체결하고 있습니다. 해당 약정의 성격에 따라 매입채무를 제거하고 차입금으로 인식하였습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1680'>
+<COLGROUP>
+<COL width='840'></COL>
+<COL width='840'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1671' height='23' colspan='2'>차입금의 구성내역</TD>
+</TR>
+<TR height='30'>
+  <TD width='831' height='23'>당반기</TD>
+  <TD width='831' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1680'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1431' height='23' colspan='12'>차입금 명칭</TH>
+  <TH width='111' height='113' rowspan='4'>차입금 명칭 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>시설자금대출</TH>
+  <TH width='351' height='23' colspan='3'>해외자원개발 목적 장기차입금</TH>
+  <TH width='351' height='23' colspan='3'>운전자금대출</TH>
+  <TH width='351' height='23' colspan='3'>ABL facility loan</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 만기</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>2031-06-07</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>2027-12-15</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>2040-03-31</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>2028-11-28</TD>
+  <TD width='111' height='23'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 이자율</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0325</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0544</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0075</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0009</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0700</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0512</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>명목금액</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>417,014,640</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>597,160</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>921,695,689</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>434,589,269</TD>
+  <TD width='111' height='23' align='RIGHT'>1,773,896,758</TD>
+</TR>
+<TR height='99'>
+  <TD width='111' height='92'>장기 금융기관 차입금(사채 제외)의 유동성 대체 부분</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>(596,430,032)</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>장기차입금 합계</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>1,177,466,726</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1680'>
+<COLGROUP>
+<COL width='1680'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1671' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1680'>
+<COLGROUP>
+<COL width='840'></COL>
+<COL width='840'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='831' height='23'>전반기</TD>
+  <TD width='831' height='23' align='RIGHT'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1680'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1431' height='23' colspan='12'>차입금 명칭</TH>
+  <TH width='111' height='113' rowspan='4'>차입금 명칭 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>시설자금대출</TH>
+  <TH width='351' height='23' colspan='3'>해외자원개발 목적 장기차입금</TH>
+  <TH width='351' height='23' colspan='3'>운전자금대출</TH>
+  <TH width='351' height='23' colspan='3'>ABL facility loan</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 만기</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 이자율</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>명목금액</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>365,090,040</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>1,123,311</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>433,218,613</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>354,715,196</TD>
+  <TD width='111' height='23' align='RIGHT'>1,154,147,160</TD>
+</TR>
+<TR height='99'>
+  <TD width='111' height='92'>장기 금융기관 차입금(사채 제외)의 유동성 대체 부분</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>(81,366,408)</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>장기차입금 합계</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>1,072,780,752</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1680'>
+<COLGROUP>
+<COL width='1680'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1671' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>차입금의 구성내역에 대한 각주</TD>
+</TR>
+<TR height='53'>
+  <TD width='591' height='46'>(해외자원개발) 당반기말 현재 연결실체는 차입금 담보로 백지수표 1매를 한국에너지공단에 견질로 제공하고 있습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='76'>
+  <TD width='591' height='69'>공급자금융약정은 하나 이상의 금융기관 등이 연결실체가 공급자에게 지급하여야 할금액을 지급하고, 연결실체는 공급자가 지급받은 이후에 해당 약정의 조건에 따라 금융기관등에 지급하는 것이 특징입니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='53'>
+  <TD width='591' height='46'>연결실체는 원재료 매입을 목적으로 공급자금융약정을 체결하고 있으며 이러한 약정은 관련 송장의 지급기한보다 연결실체에 연장된 지급기한을 제공합니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>공급자금융약정에 해당하는 금융부채의 지급기일 범위 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>　</TD>
+  <TD width='291' height='23' align='RIGHT'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='141' height='23'>하위범위</TH>
+  <TH width='141' height='23'>상위범위</TH>
+  <TH width='141' height='23'>범위 &nbsp;합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='99'>
+  <TD width='141' height='92'>공급자금융약정에 해당하는 금융부채의 청구서일과 지급기일의 일수</TD>
+  <TD width='141' height='92'>14일</TD>
+  <TD width='141' height='92'>180일</TD>
+  <TD width='141' height='92'>　</TD>
+</TR>
+<TR height='122'>
+  <TD width='141' height='115'>공급자금융약정에 해당하지 않는 비교 가능한 매입채무의 청구서일과 지급기일의 일수</TD>
+  <TD width='141' height='115'>　</TD>
+  <TD width='141' height='115'>　</TD>
+  <TD width='141' height='115'>120일</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>넓은 지급기일 범위에 대한 설명 정보 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='591' height='23'>공급자 금융약정을 통해 지급한 매입금액이 제외된 평균 지급기한입니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

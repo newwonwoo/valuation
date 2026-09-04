@@ -258,6 +258,7 @@ def execute_company_valuation(
                 ParentAdjustment(
                     item.asset_id,
                     assumption.measure.convert_to(plan.reporting_unit),
+                    assumption.economic_path_id,
                 )
             )
         duplicate_adjustment_paths = _duplicates(

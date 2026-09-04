@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timezone
+from hashlib import sha256
 from pathlib import Path
+import re
 from typing import Callable
 
 from .audit import audit_model, gate_report
@@ -24,6 +26,26 @@ from .state import StateStore, thesis_delta
 
 
 MarketLoader = Callable[[], MarketObservation]
+
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_TRUSTED_KR_ISSUER_QUOTE_BINDINGS = {
+    ("010130", "2026-09-04"): {
+        "source_ref": (
+            "https://www.koreazinc.co.kr/?mainMenuId=kz-investment&"
+            "menuId=kz-inv-ir-report-presentation&"
+            "pageName=investment/presentation&subMenuId=kz-inv-ir-report"
+        ),
+        "source_record_sha256": (
+            "4fb0881c06c40ca70a3f5fa39b39d88741842cf20c7a7a04129a3319af1c2ae4"
+        ),
+    },
+}
+_TRUSTED_KR_ISSUER_QUOTE_PATHS = {
+    (_REPO_ROOT / "runs/koreazinc-010130/declarations/market.yaml").resolve(): (
+        "010130",
+        "2026-09-04",
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -157,6 +179,61 @@ def market_loader_from_config(path: str | Path) -> MarketLoader:
     def load() -> MarketObservation:
         market = load_market_comparison(path)
         source_ref = str(market.get("source_ref") or f"{path}#market_comparison")
+        resolved_path = Path(path).resolve()
+        bound_ticker = str(market.get("ticker") or "")
+        registered_quote = (
+            resolved_path in _TRUSTED_KR_ISSUER_QUOTE_PATHS
+            or any(
+                binding["source_ref"] == source_ref
+                for binding in _TRUSTED_KR_ISSUER_QUOTE_BINDINGS.values()
+            )
+            or any(
+                ticker == bound_ticker
+                for ticker, _ in _TRUSTED_KR_ISSUER_QUOTE_BINDINGS
+            )
+        )
+        source_contract = market.get("source_contract")
+        if registered_quote and source_contract != "kr_issuer_dated_quote/v1":
+            raise ValueError(
+                "registered issuer quote requires source_contract "
+                "kr_issuer_dated_quote/v1"
+            )
+        if source_contract == "kr_issuer_dated_quote/v1":
+            record = str(market.get("source_record") or "")
+            record_hash = sha256(record.encode("utf-8")).hexdigest()
+            if record_hash != market.get("source_record_sha256"):
+                raise ValueError("dated issuer quote source-record hash mismatch")
+            ticker_match = re.search(r"\bKOSPI\s+(\d{6})\b", record)
+            price_match = re.search(
+                r"(?m)^([0-9,]+)원\s+(?:▲|▼|-)", record
+            )
+            timestamp_match = re.search(
+                r"(?m)^(\d{4}-\d{2}-\d{2})\s+"
+                r"\d{2}:\d{2}:\d{2}\s+기준$",
+                record,
+            )
+            if ticker_match is None or price_match is None or timestamp_match is None:
+                raise ValueError("dated issuer quote source record is malformed")
+            bound_price = int(price_match.group(1).replace(",", ""))
+            bound_date = timestamp_match.group(1)
+            trusted = _TRUSTED_KR_ISSUER_QUOTE_BINDINGS.get(
+                (bound_ticker, bound_date)
+            )
+            if (
+                ticker_match.group(1) != bound_ticker
+                or bound_price != int(market["price"])
+                or bound_date != str(market["as_of"])
+                or not source_ref.startswith("https://")
+            ):
+                raise ValueError("dated issuer quote ticker/price/timestamp binding mismatch")
+            if (
+                trusted is None
+                or trusted["source_ref"] != source_ref
+                or trusted["source_record_sha256"] != record_hash
+            ):
+                raise ValueError(
+                    "dated issuer quote is not independently registered in code"
+                )
         return MarketObservation(float(market["price"]), str(market["as_of"]), source_ref)
     return load
 

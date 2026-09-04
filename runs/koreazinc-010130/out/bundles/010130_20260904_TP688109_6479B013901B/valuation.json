@@ -1,0 +1,294 @@
+{
+  "equity_aggregation": {
+    "expected_equity_value": null,
+    "numeric_weighting_allowed": false,
+    "scenario_values": [
+      {
+        "aggregation_hash": "bb9808202df0f713f740a1378be41bd40510964c9177b2f07d8d7dfd7f5fae28",
+        "components": [
+          {
+            "asset_id": "manufacturing",
+            "attributable_equity_value": {
+              "amount": "5541718000000.00000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "manufacturing:Down:commodity_price_taker.normalized_multiple:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:manufacturing:normalized_ebitda",
+              "path:manufacturing:normalized_multiple"
+            ],
+            "ownership_ratio": "1.0"
+          },
+          {
+            "asset_id": "trading",
+            "attributable_equity_value": {
+              "amount": "768200000000.0000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "trading:Down:process_spread.normalized_multiple:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:trading:normalized_ebitda",
+              "path:trading:normalized_multiple"
+            ],
+            "ownership_ratio": "1.0"
+          },
+          {
+            "asset_id": "recycling",
+            "attributable_equity_value": {
+              "amount": "147556000000.0000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "recycling:Down:asset_yield_nav.nav:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:recycling_gross_asset_value",
+              "path:recycling_liabilities"
+            ],
+            "ownership_ratio": "1.0"
+          },
+          {
+            "asset_id": "parent_noncontrolling_interest",
+            "attributable_equity_value": {
+              "amount": "-250847127410.00000000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "parent:parent_noncontrolling_interest",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:parent:noncontrolling_interest"
+            ],
+            "ownership_ratio": null
+          }
+        ],
+        "equity_value": {
+          "amount": "6206626872590.00000000",
+          "as_of": "2026-09-04",
+          "unit": "KRW"
+        },
+        "scenario_id": "Down"
+      },
+      {
+        "aggregation_hash": "84384b8635828a9cbcccdebbed6dc58c7aa923935e4c9e258ee49cc1d8139bd7",
+        "components": [
+          {
+            "asset_id": "manufacturing",
+            "attributable_equity_value": {
+              "amount": "13367863500000.00000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "manufacturing:Base:commodity_price_taker.normalized_multiple:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:manufacturing:normalized_ebitda",
+              "path:manufacturing:normalized_multiple"
+            ],
+            "ownership_ratio": "1.0"
+          },
+          {
+            "asset_id": "trading",
+            "attributable_equity_value": {
+              "amount": "768200000000.0000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "trading:Base:process_spread.normalized_multiple:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:trading:normalized_ebitda",
+              "path:trading:normalized_multiple"
+            ],
+            "ownership_ratio": "1.0"
+          },
+          {
+            "asset_id": "recycling",
+            "attributable_equity_value": {
+              "amount": "147556000000.0000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "recycling:Base:asset_yield_nav.nav:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:recycling_gross_asset_value",
+              "path:recycling_liabilities"
+            ],
+            "ownership_ratio": "1.0"
+          },
+          {
+            "asset_id": "parent_noncontrolling_interest",
+            "attributable_equity_value": {
+              "amount": "-250847127410.00000000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "parent:parent_noncontrolling_interest",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:parent:noncontrolling_interest"
+            ],
+            "ownership_ratio": null
+          }
+        ],
+        "equity_value": {
+          "amount": "14032772372590.00000000",
+          "as_of": "2026-09-04",
+          "unit": "KRW"
+        },
+        "scenario_id": "Base"
+      },
+      {
+        "aggregation_hash": "47ed97e39061057357250c13e419ab95b740a46446a1a5751402504211cebaf2",
+        "components": [
+          {
+            "asset_id": "manufacturing",
+            "attributable_equity_value": {
+              "amount": "22373292000000.00000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "manufacturing:Bull:commodity_price_taker.normalized_multiple:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:manufacturing:normalized_ebitda",
+              "path:manufacturing:normalized_multiple"
+            ],
+            "ownership_ratio": "1.0"
+          },
+          {
+            "asset_id": "trading",
+            "attributable_equity_value": {
+              "amount": "768200000000.0000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "trading:Bull:process_spread.normalized_multiple:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:trading:normalized_ebitda",
+              "path:trading:normalized_multiple"
+            ],
+            "ownership_ratio": "1.0"
+          },
+          {
+            "asset_id": "recycling",
+            "attributable_equity_value": {
+              "amount": "147556000000.0000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "recycling:Bull:asset_yield_nav.nav:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:recycling_gross_asset_value",
+              "path:recycling_liabilities"
+            ],
+            "ownership_ratio": "1.0"
+          },
+          {
+            "asset_id": "parent_noncontrolling_interest",
+            "attributable_equity_value": {
+              "amount": "-250847127410.00000000",
+              "as_of": "2026-09-04",
+              "unit": "KRW"
+            },
+            "contribution_id": "parent:parent_noncontrolling_interest",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:parent:noncontrolling_interest"
+            ],
+            "ownership_ratio": null
+          }
+        ],
+        "equity_value": {
+          "amount": "23038200872590.00000000",
+          "as_of": "2026-09-04",
+          "unit": "KRW"
+        },
+        "scenario_id": "Bull"
+      }
+    ]
+  },
+  "expected_value_per_share": null,
+  "reporting_unit": "KRW",
+  "scenarios": [
+    {
+      "aggregation_hash": "bb9808202df0f713f740a1378be41bd40510964c9177b2f07d8d7dfd7f5fae28",
+      "diluted_shares": "20393232",
+      "economic_path_ids": [
+        "path:manufacturing:normalized_ebitda",
+        "path:manufacturing:normalized_multiple",
+        "path:manufacturing:ownership",
+        "path:manufacturing:ev_adjustment",
+        "path:trading:normalized_ebitda",
+        "path:trading:normalized_multiple",
+        "path:trading:ownership",
+        "path:trading:ev_adjustment",
+        "path:recycling_gross_asset_value",
+        "path:recycling_liabilities",
+        "path:recycling_ownership",
+        "path:parent:noncontrolling_interest",
+        "path:company:diluted_shares"
+      ],
+      "equity_value_amount": "6206626872590.00000000",
+      "reporting_unit": "KRW",
+      "scenario_id": "Down",
+      "value_per_share": "304347.3870443880597249126573"
+    },
+    {
+      "aggregation_hash": "84384b8635828a9cbcccdebbed6dc58c7aa923935e4c9e258ee49cc1d8139bd7",
+      "diluted_shares": "20393232",
+      "economic_path_ids": [
+        "path:manufacturing:normalized_ebitda",
+        "path:manufacturing:normalized_multiple",
+        "path:manufacturing:ownership",
+        "path:manufacturing:ev_adjustment",
+        "path:trading:normalized_ebitda",
+        "path:trading:normalized_multiple",
+        "path:trading:ownership",
+        "path:trading:ev_adjustment",
+        "path:recycling_gross_asset_value",
+        "path:recycling_liabilities",
+        "path:recycling_ownership",
+        "path:parent:noncontrolling_interest",
+        "path:company:diluted_shares"
+      ],
+      "equity_value_amount": "14032772372590.00000000",
+      "reporting_unit": "KRW",
+      "scenario_id": "Base",
+      "value_per_share": "688109.2890322632528281931966"
+    },
+    {
+      "aggregation_hash": "47ed97e39061057357250c13e419ab95b740a46446a1a5751402504211cebaf2",
+      "diluted_shares": "20393232",
+      "economic_path_ids": [
+        "path:manufacturing:normalized_ebitda",
+        "path:manufacturing:normalized_multiple",
+        "path:manufacturing:ownership",
+        "path:manufacturing:ev_adjustment",
+        "path:trading:normalized_ebitda",
+        "path:trading:normalized_multiple",
+        "path:trading:ownership",
+        "path:trading:ev_adjustment",
+        "path:recycling_gross_asset_value",
+        "path:recycling_liabilities",
+        "path:recycling_ownership",
+        "path:parent:noncontrolling_interest",
+        "path:company:diluted_shares"
+      ],
+      "equity_value_amount": "23038200872590.00000000",
+      "reporting_unit": "KRW",
+      "scenario_id": "Bull",
+      "value_per_share": "1129698.366231993045535891515"
+    }
+  ],
+  "scope": "FULL_INTRINSIC",
+  "unvalued_segments": [],
+  "valuation_hash": "11aed17f87e2d6d041dcd50a7c3ca7453a50b368339175fe9ef6450d9646162e"
+}

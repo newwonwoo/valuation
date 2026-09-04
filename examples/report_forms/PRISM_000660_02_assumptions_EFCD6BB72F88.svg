@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1846" viewBox="0 0 1200 1846" role="img" aria-labelledby="title desc">
+<title id="title">SK하이닉스 가치평가 가정</title>
+<desc id="desc">시나리오별 자유현금흐름, 영구성장률, 자본비용, 위험과 출처를 모두 표시한 한국어 카드</desc>
+<style>
+text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+</style>
+<rect x="0" y="0" width="1200" height="1846" rx="0" fill="#F3F0E8"/>
+<rect x="0" y="0" width="1200" height="250" rx="0" fill="#102D3E"/>
+<text x="70" y="70" font-size="24" font-weight="700" fill="#FFCB77" text-anchor="start">프리즘 최종보고서 · 2/2</text>
+<text x="70" y="145" font-size="54" font-weight="800" fill="#FFFFFF" text-anchor="start">SK하이닉스</text>
+<text x="70" y="202" font-size="30" font-weight="500" fill="#D9E7EC" text-anchor="start">가치평가 가정 · 위험 · 출처</text>
+<text x="70" y="315" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">핵심 위험 입력</text>
+<rect x="70" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
+<text x="94" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">계층형 베타</text>
+<text x="94" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">0.933</text>
+<rect x="425" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
+<text x="449" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">가중평균자본비용</text>
+<text x="449" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">8.62%</text>
+<rect x="780" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
+<text x="804" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">모회사 조정</text>
+<text x="804" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">1,482,266억원</text>
+<text x="70" y="560" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">시나리오별 핵심 가정</text>
+<rect x="70" y="600" width="1060" height="768" rx="22" fill="#FFFFFF"/>
+<text x="100" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">구분</text>
+<text x="270" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">배수평가 부문</text>
+<text x="470" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">NAV 부문</text>
+<text x="675" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">현금흐름/NPV 부문</text>
+<text x="855" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">영구/기타 입력</text>
+<text x="1015" y="637" font-size="16" font-weight="800" fill="#607582" text-anchor="start">EV→지분</text>
+<text x="1015" y="658" font-size="16" font-weight="800" fill="#607582" text-anchor="start">모회사 조정</text>
+<line x1="95" y1="668" x2="1105" y2="668" stroke="#D6DFE3" stroke-width="2"/>
+<text x="100" y="712" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">하방</text>
+<text x="100" y="730" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">15.7%</text>
+<text x="270" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="470" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="675" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">memory FCFF DCF ·</text>
+<text x="675" y="730" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">FCFF 1,200,000억원 /</text>
+<text x="675" y="748" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">1,000,000억원 /</text>
+<text x="675" y="766" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">850,000억원 /</text>
+<text x="675" y="784" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">750,000억원 /</text>
+<text x="675" y="802" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">650,000억원 /</text>
+<text x="675" y="820" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">600,000억원 /</text>
+<text x="675" y="838" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">550,000억원 /</text>
+<text x="675" y="856" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">500,000억원 /</text>
+<text x="675" y="874" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">450,000억원</text>
+<text x="855" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">영구성장률 0.5% · 영구</text>
+<text x="855" y="730" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">ROIC 10.0%</text>
+<text x="1015" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">EV 879,579억</text>
+<text x="1015" y="730" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">모</text>
+<text x="1015" y="748" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">1,482,266억</text>
+<line x1="95" y1="906" x2="1105" y2="906" stroke="#E9EEF0" stroke-width="2"/>
+<text x="100" y="924" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">기준</text>
+<text x="100" y="942" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">43.9%</text>
+<text x="270" y="924" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="470" y="924" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="675" y="924" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">memory FCFF DCF ·</text>
+<text x="675" y="942" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">FCFF 2,584,000억원 /</text>
+<text x="675" y="960" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">2,894,000억원 /</text>
+<text x="675" y="978" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">3,127,000억원 /</text>
+<text x="675" y="996" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">3,446,000억원 /</text>
+<text x="675" y="1014" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">3,627,000억원 /</text>
+<text x="675" y="1032" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">3,645,000억원 /</text>
+<text x="675" y="1050" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">3,631,000억원 /</text>
+<text x="675" y="1068" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">3,000,000억원 /</text>
+<text x="675" y="1086" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">2,200,000억원</text>
+<text x="855" y="924" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">영구성장률 2.0% · 영구</text>
+<text x="855" y="942" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">ROIC 10.0%</text>
+<text x="1015" y="924" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">EV 879,579억</text>
+<text x="1015" y="942" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">모</text>
+<text x="1015" y="960" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">1,482,266억</text>
+<line x1="95" y1="1118" x2="1105" y2="1118" stroke="#E9EEF0" stroke-width="2"/>
+<text x="100" y="1136" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">상방</text>
+<text x="100" y="1154" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">40.4%</text>
+<text x="270" y="1136" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="470" y="1136" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="675" y="1136" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">memory FCFF DCF ·</text>
+<text x="675" y="1154" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">FCFF 3,300,000억원 /</text>
+<text x="675" y="1172" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">3,900,000억원 /</text>
+<text x="675" y="1190" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">4,300,000억원 /</text>
+<text x="675" y="1208" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">4,800,000억원 /</text>
+<text x="675" y="1226" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">5,200,000억원 /</text>
+<text x="675" y="1244" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">5,400,000억원 /</text>
+<text x="675" y="1262" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">5,300,000억원 /</text>
+<text x="675" y="1280" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">4,500,000억원 /</text>
+<text x="675" y="1298" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">3,200,000억원</text>
+<text x="855" y="1136" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">영구성장률 2.5% · 영구</text>
+<text x="855" y="1154" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">ROIC 10.0%</text>
+<text x="1015" y="1136" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">EV 879,579억</text>
+<text x="1015" y="1154" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">모</text>
+<text x="1015" y="1172" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">1,482,266억</text>
+<text x="70" y="1428" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">평가방법</text>
+<text x="250" y="1428" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">메모리 업황·가격·물량 반영 현금흐름할인법</text>
+<text x="70" y="1490" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">정확한 계산식</text>
+<text x="250" y="1490" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">[DCF 부문 귀속 지분가치+모회사 조정]÷730,492,365주 (각 부문 EV→지분 조정·귀속률</text>
+<text x="250" y="1521" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">반영)</text>
+<text x="70" y="1564" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">확률 보정</text>
+<text x="250" y="1564" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">완료</text>
+<text x="70" y="1626" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">매수구간</text>
+<text x="250" y="1626" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">별도 진입 규칙 확정 전 특정 매수구간 미제시</text>
+<rect x="0" y="1716" width="1200" height="130" rx="0" fill="#102D3E"/>
+<text x="70" y="1761" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
+<text x="140" y="1761" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">공시 사실과 분석가 가정의 근거 주소는 보고서 본문 ‘정보 출처’에서 확인할 수 있습니다.</text>
+<a href="https://api.nasdaq.com/api/quote/AVGO/historical?assetclass=STOCKS&amp;fromdate=2021-08-28&amp;limit=5000&amp;todate=2026-08-28" target="_blank"><text x="70" y="1803" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
+<a href="https://api.nasdaq.com/api/quote/COMP/historical?assetclass=INDEX&amp;fromdate=2021-08-28&amp;limit=5000&amp;todate=2026-08-28" target="_blank"><text x="170" y="1803" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 2</text></a>
+<a href="https://api.nasdaq.com/api/quote/INTC/historical?assetclass=STOCKS&amp;fromdate=2021-08-28&amp;limit=5000&amp;todate=2026-08-28" target="_blank"><text x="270" y="1803" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 3</text></a>
+<a href="https://api.nasdaq.com/api/quote/MRVL/historical?assetclass=STOCKS&amp;fromdate=2021-08-28&amp;limit=5000&amp;todate=2026-08-28" target="_blank"><text x="370" y="1803" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 4</text></a>
+<a href="https://api.nasdaq.com/api/quote/MU/historical?assetclass=STOCKS&amp;fromdate=2021-08-28&amp;limit=5000&amp;todate=2026-08-28" target="_blank"><text x="470" y="1803" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 5</text></a>
+</svg>

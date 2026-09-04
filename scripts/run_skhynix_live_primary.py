@@ -16,6 +16,7 @@ from valuation_engine.skhynix_continuous_live_primary import (
 from valuation_engine.skhynix_public_report import (
     render_skhynix_public_report,
     render_skhynix_public_visual,
+    skhynix_public_source_links,
 )
 from valuation_engine.strict_live_runtime import require_canonical_live_result
 
@@ -47,7 +48,12 @@ def render_report(state_root: Path) -> tuple[object, tuple[tuple[str, str], ...]
         probability_snapshot,
         result.data.get("probability_distribution_status"),
     )
-    markdown_report = render_skhynix_public_report(markdown_report)
+    source_links = skhynix_public_source_links(result.data)
+    markdown_report = render_skhynix_public_report(
+        markdown_report,
+        data=result.data,
+        source_links=source_links,
+    )
 
     run_dir = Path(str(result.data["saved_run_dir"]))
     visual_names = tuple(str(name) for name in result.data.get("saved_report_visuals", ()))
@@ -71,6 +77,7 @@ def render_report(state_root: Path) -> tuple[object, tuple[tuple[str, str], ...]
         assumptions_filename=visuals[1][0],
         as_of=as_of,
         markdown_filename=DEFAULT_MARKDOWN_OUTPUT.name,
+        source_links=source_links,
     )
     core_value = next(
         item.value_per_share for item in valuation.scenarios if item.scenario_id == "Core"

@@ -69,6 +69,9 @@ def test_continuous_paths_map_every_draw_without_boolean_and_rules():
     assert abs(sum(probs.values()) - Decimal("1")) < Decimal("1e-12")
     assert probs["Bull"] > probs["Down"]
     assert all(item.lower_probability <= item.probability <= item.upper_probability for item in result.estimates)
+    assert result.simulation_hash == (
+        "68a6ce9f1aac3be4fc2b832894643704e1d8ba6af8f9b290b7104d6ea9a33dbe"
+    )
 
 
 def test_high_capex_does_not_mechanically_kill_bull_when_growth_path_is_bull_like():

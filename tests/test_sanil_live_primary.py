@@ -377,8 +377,10 @@ def test_sanil_live_primary_runs_every_stage_and_emits_attested_report(tmp_path)
     assert "미래에셋증권" in result.data["final_report"]
     assert "신한투자증권" in result.data["final_report"]
     assert "한국투자증권" in result.data["final_report"]
-    assert "5년차 DCF 사용 FCFF 4,602억원" in result.data["final_report"]
-    assert "기존 3,572억원 + 증분 1,030억원" in result.data["final_report"]
+    assert (
+        "FCFF 1,719억원 / 0억원 / 2,249억원 / 0억원 / 2,895억원 / "
+        "222억원 / 3,304억원 / 632억원 / 3,572억원 / 1,030억원"
+    ) in result.data["final_report"]
     assert "PRISM 기준 내재가치는 증권사 평균 목표가보다 7.8% 낮습니다" in result.data[
         "final_report"
     ]
@@ -479,8 +481,10 @@ def test_sanil_brokerage_report_integrates_august_27_update(tmp_path):
     assert "8월 27일 신규·정정 공시는 없습니다" in report
     assert "회사 확정치가 아니라 증권사 추정치" in report
     assert "**현재가** | 201,500원 (2026-08-27)" in report
-    assert "5년차 DCF 사용 FCFF 4,602억원" in report
-    assert "기존 3,572억원 + 증분 1,030억원" in report
+    assert (
+        "FCFF 1,719억원 / 0억원 / 2,249억원 / 0억원 / 2,895억원 / "
+        "222억원 / 3,304억원 / 632억원 / 3,572억원 / 1,030억원"
+    ) in report
     assert "기준 DCF 기업가치의 84.9%가 영구가치" in report
     assert "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660" in report
     assert len(visuals) == 2

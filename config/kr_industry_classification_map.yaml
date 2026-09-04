@@ -232,3 +232,42 @@ classifications:
       customer_structure: construction, auto and shipbuilding buyers
       reinvestment_model: maintenance and low-carbon transition capex
       cashflow_duration: commodity-cycle driven
+  - ksic_prefix: "24213"
+    label: 연 및 아연 제련·정련업
+    sector_adapter: metals.nonferrous_smelting
+    archetypes: [commodity_price_taker, process_spread]
+    structure:
+      revenue_recognition: shipment
+      price_formation: benchmark nonferrous and precious-metal prices over concentrate and treatment economics
+      asset_ownership: owned integrated smelting and refining facilities
+      capital_intensity: very-high
+      regulation_intensity: high
+      customer_structure: global industrial metal buyers
+      reinvestment_model: maintenance, recovery-yield and environmental capex
+      cashflow_duration: commodity-and-treatment-spread cycle driven
+  - ksic_prefix: "46721"
+    label: 1차 금속제품 도매업
+    sector_adapter: metals.trading
+    archetypes: [process_spread]
+    structure:
+      revenue_recognition: delivery
+      price_formation: resale price over metal acquisition cost
+      asset_ownership: inventory and distribution network
+      capital_intensity: low-medium
+      regulation_intensity: low
+      customer_structure: industrial buyers and affiliated trading counterparties
+      reinvestment_model: working-capital and logistics capacity
+      cashflow_duration: inventory-and-spread cycle driven
+  - ksic_prefix: "38220"
+    label: 지정 폐기물 처리업
+    sector_adapter: environmental.waste_processing
+    archetypes: [process_spread, asset_yield_nav]
+    structure:
+      revenue_recognition: service_delivery
+      price_formation: treatment fee over collection and processing cost
+      asset_ownership: owned or leased treatment facilities
+      capital_intensity: high
+      regulation_intensity: high
+      customer_structure: industrial and municipal waste generators
+      reinvestment_model: treatment-capacity maintenance and environmental capex
+      cashflow_duration: contracted-volume and treatment-spread driven

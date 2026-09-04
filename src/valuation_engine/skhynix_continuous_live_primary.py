@@ -92,12 +92,14 @@ def build_skhynix_live_primary_config(
     *,
     run_id: str = "SKHYNIX-000660-20260829-CONTINUOUS-PROBABILITY",
     snapshot_path: str | Path | None = None,
+    post_freeze_snapshot_path: str | Path | None = None,
 ):
     snapshot = load_skhynix_snapshot(snapshot_path)
     base = _build_base_config(
         state_root,
         run_id=run_id,
         snapshot_path=snapshot_path,
+        post_freeze_snapshot_path=post_freeze_snapshot_path,
     )
     providers = replace(
         base.providers,

@@ -1,0 +1,283 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>2-2. 연결 포괄손익계산서</A></P>
+<TABLE class='nb' width='981'>
+<COLGROUP>
+<COL width='981'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='972' height='23' align='CENTER'>연결 포괄손익계산서</TD>
+</TR>
+<TR height='30'>
+  <TD width='972' height='23' align='CENTER'>제 53 기 반기 2026.01.01 부터 2026.06.30 까지</TD>
+</TR>
+<TR height='30'>
+  <TD width='972' height='23' align='CENTER'>제 52 기 반기 2025.01.01 부터 2025.06.30 까지</TD>
+</TR>
+<TR height='30'>
+  <TD width='972' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='983'>
+<COLGROUP>
+<COL width='407'></COL>
+<COL width='142'></COL>
+<COL width='150'></COL>
+<COL width='142'></COL>
+<COL width='142'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='398' height='53' rowspan='2'>　</TH>
+  <TH width='283' height='23' colspan='2'>제 53 기 반기</TH>
+  <TH width='275' height='23' colspan='2'>제 52 기 반기</TH>
+</TR>
+<TR height='30'>
+  <TH width='133' height='23'>3개월</TH>
+  <TH width='141' height='23'>누적</TH>
+  <TH width='133' height='23'>3개월</TH>
+  <TH width='133' height='23'>누적</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='398' height='23'>매출액</TD>
+  <TD width='133' height='23' align='RIGHT'>6,372,601,096,848</TD>
+  <TD width='141' height='23' align='RIGHT'>12,444,628,513,649</TD>
+  <TD width='133' height='23' align='RIGHT'>3,825,380,317,089</TD>
+  <TD width='133' height='23' align='RIGHT'>7,658,165,058,958</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>매출원가</TD>
+  <TD width='133' height='23' align='RIGHT'>5,564,082,357,914</TD>
+  <TD width='141' height='23' align='RIGHT'>10,682,731,593,013</TD>
+  <TD width='133' height='23' align='RIGHT'>3,435,868,265,838</TD>
+  <TD width='133' height='23' align='RIGHT'>6,862,470,570,373</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>매출총이익</TD>
+  <TD width='133' height='23' align='RIGHT'>808,518,738,934</TD>
+  <TD width='141' height='23' align='RIGHT'>1,761,896,920,636</TD>
+  <TD width='133' height='23' align='RIGHT'>389,512,051,251</TD>
+  <TD width='133' height='23' align='RIGHT'>795,694,488,585</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>판매비와관리비</TD>
+  <TD width='133' height='23' align='RIGHT'>221,405,329,875</TD>
+  <TD width='141' height='23' align='RIGHT'>428,728,599,019</TD>
+  <TD width='133' height='23' align='RIGHT'>130,626,768,158</TD>
+  <TD width='133' height='23' align='RIGHT'>265,703,422,399</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>영업이익</TD>
+  <TD width='133' height='23' align='RIGHT'>587,113,409,059</TD>
+  <TD width='141' height='23' align='RIGHT'>1,333,168,321,617</TD>
+  <TD width='133' height='23' align='RIGHT'>258,885,283,093</TD>
+  <TD width='133' height='23' align='RIGHT'>529,991,066,186</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>기타수익</TD>
+  <TD width='133' height='23' align='RIGHT'>44,348,193,823</TD>
+  <TD width='141' height='23' align='RIGHT'>118,504,166,062</TD>
+  <TD width='133' height='23' align='RIGHT'>72,439,254,935</TD>
+  <TD width='133' height='23' align='RIGHT'>133,612,077,995</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>기타비용</TD>
+  <TD width='133' height='23' align='RIGHT'>(49,933,254,248)</TD>
+  <TD width='141' height='23' align='RIGHT'>(193,298,301,671)</TD>
+  <TD width='133' height='23' align='RIGHT'>(37,275,706,157)</TD>
+  <TD width='133' height='23' align='RIGHT'>(97,404,757,430)</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>금융수익</TD>
+  <TD width='133' height='23' align='RIGHT'>111,511,768,305</TD>
+  <TD width='141' height='23' align='RIGHT'>199,736,409,428</TD>
+  <TD width='133' height='23' align='RIGHT'>203,735,135,415</TD>
+  <TD width='133' height='23' align='RIGHT'>305,542,523,625</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>금융비용</TD>
+  <TD width='133' height='23' align='RIGHT'>(164,897,651,792)</TD>
+  <TD width='141' height='23' align='RIGHT'>(410,695,253,728)</TD>
+  <TD width='133' height='23' align='RIGHT'>(92,434,448,252)</TD>
+  <TD width='133' height='23' align='RIGHT'>(222,943,426,631)</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>지분법손익</TD>
+  <TD width='133' height='23' align='RIGHT'>(21,353,029,040)</TD>
+  <TD width='141' height='23' align='RIGHT'>(22,874,378,151)</TD>
+  <TD width='133' height='23' align='RIGHT'>17,577,296,646</TD>
+  <TD width='133' height='23' align='RIGHT'>12,825,820,463</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>법인세비용차감전순이익</TD>
+  <TD width='133' height='23' align='RIGHT'>506,789,436,107</TD>
+  <TD width='141' height='23' align='RIGHT'>1,024,540,963,557</TD>
+  <TD width='133' height='23' align='RIGHT'>422,926,815,680</TD>
+  <TD width='133' height='23' align='RIGHT'>661,623,304,208</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>법인세비용(수익)</TD>
+  <TD width='133' height='23' align='RIGHT'>155,250,633,050</TD>
+  <TD width='141' height='23' align='RIGHT'>318,960,912,188</TD>
+  <TD width='133' height='23' align='RIGHT'>93,188,943,213</TD>
+  <TD width='133' height='23' align='RIGHT'>169,409,977,749</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>반기순이익</TD>
+  <TD width='133' height='23' align='RIGHT'>351,538,803,057</TD>
+  <TD width='141' height='23' align='RIGHT'>705,580,051,369</TD>
+  <TD width='133' height='23' align='RIGHT'>329,737,872,467</TD>
+  <TD width='133' height='23' align='RIGHT'>492,213,326,459</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>반기순이익의 귀속</TD>
+  <TD width='133' height='23' align='RIGHT'>　</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+  <TD width='133' height='23' align='RIGHT'>　</TD>
+  <TD width='133' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　지배주주순이익</TD>
+  <TD width='133' height='23' align='RIGHT'>348,600,675,462</TD>
+  <TD width='141' height='23' align='RIGHT'>703,197,999,157</TD>
+  <TD width='133' height='23' align='RIGHT'>331,068,954,078</TD>
+  <TD width='133' height='23' align='RIGHT'>493,584,260,701</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　비지배주주순이익</TD>
+  <TD width='133' height='23' align='RIGHT'>2,938,127,595</TD>
+  <TD width='141' height='23' align='RIGHT'>2,382,052,212</TD>
+  <TD width='133' height='23' align='RIGHT'>(1,331,081,611)</TD>
+  <TD width='133' height='23' align='RIGHT'>(1,370,934,242)</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>기타포괄손익</TD>
+  <TD width='133' height='23' align='RIGHT'>80,553,944,916</TD>
+  <TD width='141' height='23' align='RIGHT'>401,072,220,703</TD>
+  <TD width='133' height='23' align='RIGHT'>(115,256,159,278)</TD>
+  <TD width='133' height='23' align='RIGHT'>(89,517,772,550)</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　당기손익으로 재분류되는 세후기타포괄손익의 구성요소</TD>
+  <TD width='133' height='23' align='RIGHT'>106,950,075,723</TD>
+  <TD width='141' height='23' align='RIGHT'>437,060,032,945</TD>
+  <TD width='133' height='23' align='RIGHT'>(154,799,806,744)</TD>
+  <TD width='133' height='23' align='RIGHT'>(140,733,101,634)</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　　지분법자본변동</TD>
+  <TD width='133' height='23' align='RIGHT'>4,745,274,129</TD>
+  <TD width='141' height='23' align='RIGHT'>4,752,622,848</TD>
+  <TD width='133' height='23' align='RIGHT'>1,033,263,252</TD>
+  <TD width='133' height='23' align='RIGHT'>886,958,572</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　　파생상품평가손익</TD>
+  <TD width='133' height='23' align='RIGHT'>(29,925,524,829)</TD>
+  <TD width='141' height='23' align='RIGHT'>(10,096,225,207)</TD>
+  <TD width='133' height='23' align='RIGHT'>14,050,008,816</TD>
+  <TD width='133' height='23' align='RIGHT'>17,582,778,071</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　　해외사업환산손익</TD>
+  <TD width='133' height='23' align='RIGHT'>132,130,326,423</TD>
+  <TD width='141' height='23' align='RIGHT'>442,403,635,304</TD>
+  <TD width='133' height='23' align='RIGHT'>(169,883,078,812)</TD>
+  <TD width='133' height='23' align='RIGHT'>(159,202,838,277)</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　후속적으로 당기손익으로 재분류되지 않는 포괄손익</TD>
+  <TD width='133' height='23' align='RIGHT'>(26,396,130,807)</TD>
+  <TD width='141' height='23' align='RIGHT'>(35,987,812,242)</TD>
+  <TD width='133' height='23' align='RIGHT'>39,543,647,466</TD>
+  <TD width='133' height='23' align='RIGHT'>51,215,329,084</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　　기타포괄손익-공정가치측정지분상품평가손익</TD>
+  <TD width='133' height='23' align='RIGHT'>(34,005,176,157)</TD>
+  <TD width='141' height='23' align='RIGHT'>(43,436,732,030)</TD>
+  <TD width='133' height='23' align='RIGHT'>39,540,207,761</TD>
+  <TD width='133' height='23' align='RIGHT'>50,755,117,598</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　　세후기타포괄손익, 확정급여제도의 재측정손익</TD>
+  <TD width='133' height='23' align='RIGHT'>7,625,105,831</TD>
+  <TD width='141' height='23' align='RIGHT'>7,485,209,990</TD>
+  <TD width='133' height='23' align='RIGHT'>0</TD>
+  <TD width='133' height='23' align='RIGHT'>0</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　　지분법이익잉여금변동</TD>
+  <TD width='133' height='23' align='RIGHT'>(16,060,481)</TD>
+  <TD width='141' height='23' align='RIGHT'>(36,290,202)</TD>
+  <TD width='133' height='23' align='RIGHT'>3,439,705</TD>
+  <TD width='133' height='23' align='RIGHT'>460,211,486</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>총포괄손익</TD>
+  <TD width='133' height='23' align='RIGHT'>432,092,747,973</TD>
+  <TD width='141' height='23' align='RIGHT'>1,106,652,272,072</TD>
+  <TD width='133' height='23' align='RIGHT'>214,481,713,189</TD>
+  <TD width='133' height='23' align='RIGHT'>402,695,553,909</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>총포괄이익의 귀속</TD>
+  <TD width='133' height='23' align='RIGHT'>　</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+  <TD width='133' height='23' align='RIGHT'>　</TD>
+  <TD width='133' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　지배주주포괄이익</TD>
+  <TD width='133' height='23' align='RIGHT'>428,150,025,128</TD>
+  <TD width='141' height='23' align='RIGHT'>1,100,431,159,326</TD>
+  <TD width='133' height='23' align='RIGHT'>220,623,471,523</TD>
+  <TD width='133' height='23' align='RIGHT'>409,081,138,225</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　비지배주주포괄이익</TD>
+  <TD width='133' height='23' align='RIGHT'>3,942,722,845</TD>
+  <TD width='141' height='23' align='RIGHT'>6,221,112,746</TD>
+  <TD width='133' height='23' align='RIGHT'>(6,141,758,333)</TD>
+  <TD width='133' height='23' align='RIGHT'>(6,385,584,316)</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>주당이익</TD>
+  <TD width='133' height='23' align='RIGHT'>　</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+  <TD width='133' height='23' align='RIGHT'>　</TD>
+  <TD width='133' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　기본주당이익 (단위 : 원)</TD>
+  <TD width='133' height='23' align='RIGHT'>17,094</TD>
+  <TD width='141' height='23' align='RIGHT'>34,482</TD>
+  <TD width='133' height='23' align='RIGHT'>18,227</TD>
+  <TD width='133' height='23' align='RIGHT'>27,160</TD>
+</TR>
+<TR height='30'>
+  <TD width='398' height='23'>　희석주당이익 (단위 : 원)</TD>
+  <TD width='133' height='23' align='RIGHT'>0.0</TD>
+  <TD width='141' height='23' align='RIGHT'>0.0</TD>
+  <TD width='133' height='23' align='RIGHT'>0.0</TD>
+  <TD width='133' height='23' align='RIGHT'>0.0</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

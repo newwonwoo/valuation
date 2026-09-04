@@ -15,15 +15,9 @@ sources:
   treasury_filing: 'https://www.sec.gov/Archives/edgar/data/2120882/000119312526356141/d436722d6k.htm'
   underwriting: 'https://github.com/newwonwoo/valuation/blob/main/config/skhynix_live_snapshot.yaml'
   probability_numeric_snapshot: 'https://stockanalysis.com/quote/krx/000660/financials/?p=quarterly'
-  beta_intc: 'https://stockanalysis.com/stocks/intc/statistics/'
-  beta_avgo: 'https://stockanalysis.com/stocks/avgo/statistics/'
-  beta_mrvl: 'https://stockanalysis.com/stocks/mrvl/statistics/'
-  beta_mu: 'https://stockanalysis.com/stocks/mu/statistics/'
   risk_free: 'https://english.mofe.go.kr/?boardCd=P0002&seq=2052'
   equity_risk_premium: 'https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctrypremtable.htm'
   debt_cost: 'https://english.mofe.go.kr/?boardCd=P0002&seq=2052'
-  market: 'https://kr.investing.com/equities/sk-hynix-inc-historical-data'
-  street: 'https://stockanalysis.com/quote/krx/000660/forecast/'
 probability_conditioning:
   reference_period: '2026Q2'
   revenue_growth: 2.5678
@@ -48,6 +42,9 @@ official_facts:
   operating_cash_flow_h1_2026: [91742501, KRW_million]
   cash_and_short_term_financial_assets_q2_2026: [87957923, KRW_million]
   borrowings_q2_2026: [18586634, KRW_million]
+  total_equity_q2_2026: [262693228, KRW_million]
+  profit_before_income_tax_h1_2026: [122708355, KRW_million]
+  income_tax_expense_h1_2026: [28785762, KRW_million]
   pnt7_board_approved_investment: [7093.1, KRW_billion]
   issued_common_shares_pre_buyback: [730492365, shares]
   planned_buyback_shares: [24070000, shares]
@@ -73,40 +70,37 @@ valuation_adjustments:
   diluted_shares: [730492365, shares]
 risk:
   as_of: '2026-08-28'
-  target_equity_weight: 0.90
-  target_debt_weight: 0.10
-  tax_rate: 0.24
+  beta_snapshot_path: 'config/skhynix_beta_snapshot.json'
+  beta_snapshot_sha256: '2bc9eb5bc13658a910ecebc3e54fd79c7ed7f53b25e30d675d83c486b3bf44da'
+  target_equity_weight: 0.9580857253626914
+  target_debt_weight: 0.04191427463730856
+  tax_rate: 0.23458681358738775
+  peer_market_capital:
+    INTC:
+      filing_source_ref: 'https://www.sec.gov/Archives/edgar/data/50863/000005086326000157/intc-20260627.htm'
+      filed_share_count_text: 'As of July 17, 2026, the registrant had outstanding 5,044 million shares of common stock.'
+      filed_share_count_text_sha256: '4c7d76c3248b0122090ba718306ecc7e248c1d23f5e85fd70be2167a89245106'
+    AVGO:
+      filing_source_ref: 'https://www.sec.gov/Archives/edgar/data/1730168/000173016826000054/avgo-20260503.htm'
+      filed_share_count_text: 'As of May 29, 2026, there were 4,757,580,198 shares of our common stock outstanding.'
+      filed_share_count_text_sha256: '9651d88f4da975242261e16bc2b90b8353891ad0f45fff6919ab1708433ee7f3'
+    MRVL:
+      filing_source_ref: 'https://www.sec.gov/Archives/edgar/data/1835632/000183563226000025/mrvl-20260801.htm'
+      filed_share_count_text: 'The number of shares of common stock of the registrant outstanding as of August 21, 2026 was 876.9 million.'
+      filed_share_count_text_sha256: '316c3d17ec15dbf1ba51cfa0d9c578414324c82590611f4eb1403710b1aae264'
+    MU:
+      filing_source_ref: 'https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm'
+      filed_share_count_text: 'The number of outstanding shares of the registrant’s common stock as of June 17, 2026 was 1,129,393,151.'
+      filed_share_count_text_sha256: 'a95ee3f2b2c7597cf428d1cc77e6f6420f96b1783d8bbd9f524e43cb8b4f4650'
   risk_free_rate: 0.04021
   equity_risk_premium: 0.0532
   pre_tax_cost_of_debt: 0.04476
   beta_levels:
     L1_BROAD_SECTOR:
       peer_id: INTC
-      levered_beta: 2.24
-      debt_to_equity: 0.49
-      source_key: beta_intc
     L2_INDUSTRY:
       peer_id: AVGO
-      levered_beta: 1.47
-      debt_to_equity: 0.74
-      source_key: beta_avgo
     L3_RISK_DRIVER_SUBINDUSTRY:
       peer_id: MRVL
-      levered_beta: 2.25
-      debt_to_equity: 0.29
-      source_key: beta_mrvl
     L4_ECONOMIC_TWINS:
       peer_id: MU
-      levered_beta: 2.21
-      debt_to_equity: 0.06
-      source_key: beta_mu
-market:
-  price: 1653000
-  as_of: '2026-08-28'
-street:
-  consensus_target_price: 3164332
-  report_count: 39
-  median_target_price: 3150000
-  min_target_price: 1200000
-  max_target_price: 5300000
-  as_of: '2026-08-28'

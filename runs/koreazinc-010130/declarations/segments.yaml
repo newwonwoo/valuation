@@ -1,0 +1,70 @@
+target_id: KR:DART:00102858
+as_of: "2026-09-04"
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958
+source_bound_extraction:
+  extractor: llm_reviewed
+  document_id: DART_20260814003958
+  member_path: 20260814003958_24.xml
+  member_sha256: d18bf9630f91fe8f5d514d9349a7066249a754c1673421d3d875f54532abc5a5
+  reporting_unit: 천원
+  source_rows:
+    revenue:
+      label: 매출액
+      offset: 404065
+    operating_income:
+      label: 영업이익
+      offset: 404658
+  filed_totals:
+    revenue: "13289522354"
+    operating_income: "1282869886"
+    source_offsets:
+      revenue: 404305
+      operating_income: 404897
+  segments:
+    - disclosed_name: 비철금속 제조 및 판매
+      revenue: "9693315659"
+      operating_income: "1241489905"
+      source_offsets:
+        name: 403841
+        revenue: 404118
+        operating_income: 404712
+    - disclosed_name: 비철금속 수출입
+      revenue: "3182281396"
+      operating_income: "54979012"
+      source_offsets:
+        name: 403889
+        revenue: 404181
+        operating_income: 404775
+    - disclosed_name: 기타부문
+      revenue: "413925299"
+      operating_income: "-13599032"
+      source_offsets:
+        name: 403637
+        revenue: 404244
+        operating_income: 404835
+segments:
+  - segment_id: manufacturing
+    disclosed_name: 비철금속 제조 및 판매
+    ksic_code: "24213"
+    rationale: >-
+      아연·연·금·은·동 등 비철금속 제련 및 판매가 핵심이며 금속 벤치마크와
+      제련 원가 스프레드에 노출되는 제조 부문입니다.
+  - segment_id: trading
+    disclosed_name: 비철금속 수출입
+    ksic_code: "46721"
+    rationale: >-
+      정광과 비철금속 제품을 매입·재판매하는 수출입 영업으로 조달가격과
+      판매가격 사이 상품 스프레드가 가치동인입니다.
+  - segment_id: recycling
+    disclosed_name: 기타부문
+    classification_status: UNRESOLVED_HETEROGENEOUS
+    constituent_activities:
+      - 폐기물처리·자원순환
+      - 광물·광산개발
+      - 신재생에너지·수소
+      - 이차전지 소재
+    rationale: >-
+      IFRS 8 주석은 폐기물처리·광물 등을 하나의 기타부문으로 합산하며,
+      사업 주석은 자원순환·광산개발·신재생에너지·이차전지 소재 활동을
+      함께 명시합니다. 활동별 매출·이익·자산 비중이 미공시이므로 하나의
+      KSIC와 NAV를 선언하지 않고 분해 근거가 생길 때까지 가치평가를 차단합니다.

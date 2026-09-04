@@ -7,10 +7,27 @@ from valuation_engine.orchestrator import (
     MajorGateDefinition,
     ReportingContract,
     StageExecutionResult,
+    StageTrace,
+    _stage_risk_ko,
     load_reporting_contract,
     load_stage_sequence,
     run_controlled_workflow,
 )
+
+
+def test_non_reconstructible_reverse_dcf_is_reported_without_inventing_a_gap():
+    risk = _stage_risk_ko(
+        StageTrace(
+            "MARKET_COMPARE",
+            StageStatus.WARNING,
+            "역산 가능한 단일 DCF 시나리오가 없어 시장 함의값을 산출하지 않았습니다",
+            False,
+        )
+    )
+
+    assert "단일 DCF 시나리오로 재구성되지 않아" in risk
+    assert "함의값을 산출하지 않았습니다" in risk
+    assert "확정된 가정과 달라" not in risk
 
 
 def test_canonical_stage_registry_loads_unique_freeze_boundary():

@@ -107,9 +107,16 @@ def valuation_evaluator_registry_hash(
         raise TypeError(
             "valuation evaluator identity requires EvaluatorRegistry"
         )
+    if registry.has_scoped_registrations():
+        registrations = registry.registration_items()
+        contract = "valuation_evaluator_registry/v2"
+    else:
+        registrations = tuple(
+            (None, key, registry.get(key)) for key in registry.keys()
+        )
+        contract = "valuation_evaluator_registry/v1"
     rows: list[dict[str, object]] = []
-    for key in registry.keys():
-        evaluator = registry.get(key)
+    for segment_id, key, evaluator in registrations:
         required = tuple(evaluator.required_assumption_keys)
         if not required or not all(
             isinstance(item, str) and item for item in required
@@ -121,17 +128,18 @@ def valuation_evaluator_registry_hash(
             raise ValueError(
                 f"evaluator {key!r} declares duplicate required assumptions"
             )
-        rows.append(
-            {
-                "archetype": key.archetype,
-                "method": key.method,
-                "version": key.version,
-                "required_assumption_keys": required,
-            }
-        )
+        row: dict[str, object] = {
+            "archetype": key.archetype,
+            "method": key.method,
+            "version": key.version,
+            "required_assumption_keys": required,
+        }
+        if registry.has_scoped_registrations():
+            row["segment_id"] = segment_id
+        rows.append(row)
     return _stable_contract_hash(
         {
-            "contract": "valuation_evaluator_registry/v1",
+            "contract": contract,
             "evaluators": rows,
         }
     )
@@ -292,6 +300,37 @@ class SegmentPlanResolution:
 
 
 @dataclass(frozen=True)
+class SegmentEvaluatorContract:
+    """Exact evaluator contract selected for one valued segment.
+
+    Reporting must consume this typed binding instead of inferring valuation
+    families from assumption-key suffixes.  The required keys come from the
+    registered evaluator that the compiler actually selected.
+    """
+
+    segment_id: str
+    model_key: ModelKey
+    execution_family: str
+    output_kind: str
+    required_assumption_keys: tuple[str, ...]
+
+    def validate(self) -> None:
+        if (
+            not self.segment_id
+            or not self.execution_family
+            or not self.output_kind
+            or not self.required_assumption_keys
+        ):
+            raise ValueError("segment evaluator contract is incomplete")
+        if len(self.required_assumption_keys) != len(
+            set(self.required_assumption_keys)
+        ):
+            raise ValueError(
+                "segment evaluator contract has duplicate required assumptions"
+            )
+
+
+@dataclass(frozen=True)
 class ValuationPlanCompilation:
     status: ValuationPlanStatus
     plan: CompanyValuationPlan | None
@@ -301,6 +340,7 @@ class ValuationPlanCompilation:
     evaluator_registry_hash: str
     method_choices_hash: str
     segment_resolutions: tuple[SegmentPlanResolution, ...]
+    evaluator_contracts: tuple[SegmentEvaluatorContract, ...]
     warranted_per_segments: tuple[str, ...]
     aggregator_bindings: tuple[str, ...]
     missing_assumptions: tuple[str, ...]
@@ -338,6 +378,7 @@ def compile_company_valuation_plan(
     aggregator_bindings: list[str] = []
     resolutions: list[SegmentPlanResolution] = []
     compiled_segments: list[SegmentValuationPlan] = []
+    evaluator_contracts: list[SegmentEvaluatorContract] = []
 
     for segment in module_plan.segments:
         capabilities = _segment_capabilities(segment, capability_registry)
@@ -359,6 +400,7 @@ def compile_company_valuation_plan(
                 capability,
                 scenario_set=scenario_set,
                 evaluator_registry=evaluator_registry,
+                segment_id=segment.segment_id,
             )
             for capability in capabilities
             if capability.kind is MethodKind.SEGMENT_EVALUATOR
@@ -419,6 +461,19 @@ def compile_company_valuation_plan(
                 ev_to_equity_adjustment_key=ev_adjustment,
             )
         )
+        evaluator = evaluator_registry.get(
+            resolution.selected_model_key,
+            segment_id=segment.segment_id,
+        )
+        evaluator_contract = SegmentEvaluatorContract(
+            segment_id=segment.segment_id,
+            model_key=resolution.selected_model_key,
+            execution_family=capability.execution_family,
+            output_kind=capability.output_kind,
+            required_assumption_keys=tuple(evaluator.required_assumption_keys),
+        )
+        evaluator_contract.validate()
+        evaluator_contracts.append(evaluator_contract)
 
     missing_global = _missing_plan_assumptions(
         scenario_set,
@@ -451,6 +506,7 @@ def compile_company_valuation_plan(
         evaluator_registry_hash=evaluator_hash,
         method_choices_hash=method_choice_hash,
         segment_resolutions=tuple(resolutions),
+        evaluator_contracts=tuple(evaluator_contracts),
         warranted_per_segments=tuple(dict.fromkeys(warranted_per_segments)),
         aggregator_bindings=tuple(dict.fromkeys(aggregator_bindings)),
         missing_assumptions=missing_all,
@@ -475,12 +531,13 @@ def _candidate_for(
     *,
     scenario_set: BoundScenarioSet,
     evaluator_registry: EvaluatorRegistry,
+    segment_id: str,
 ) -> SegmentMethodCandidate:
     registered = tuple(
         sorted(
             (
                 key
-                for key in evaluator_registry.keys()
+                for key in evaluator_registry.keys_for_segment(segment_id)
                 if key.archetype == capability.archetype
                 and key.method == capability.method
             ),
@@ -491,7 +548,7 @@ def _candidate_for(
     missing_union: list[str] = []
     missing_by_key: list[tuple[ModelKey, tuple[str, ...]]] = []
     for key in registered:
-        evaluator = evaluator_registry.get(key)
+        evaluator = evaluator_registry.get(key, segment_id=segment_id)
         key_missing: list[str] = []
         for scenario in scenario_set.scenarios:
             for assumption_key in evaluator.required_assumption_keys:

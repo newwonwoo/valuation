@@ -165,7 +165,13 @@ def simulate_continuous_financial_paths(
             path = {driver.driver_id: [] for driver in ordered}
             for period in range(periods):
                 independent = [rng.gauss(0.0, 1.0) for _ in ordered]
-                correlated = [sum(chol[i][j] * independent[j] for j in range(i + 1)) for i in range(len(ordered))]
+                correlated = [
+                    math.fsum(
+                        chol[i][j] * independent[j]
+                        for j in range(i + 1)
+                    )
+                    for i in range(len(ordered))
+                ]
                 chi2 = rng.gammavariate(dependence.student_t_df / 2.0, 2.0)
                 tail_scale = math.sqrt(dependence.student_t_df / max(chi2, 1e-12))
                 for i, driver in enumerate(ordered):
@@ -187,7 +193,7 @@ def simulate_continuous_financial_paths(
         estimates.append(
             ContinuousScenarioEstimate(
                 scenario_id=scenario.scenario_id,
-                probability=Decimal(str(sum(values) / len(values))),
+                probability=Decimal(str(math.fsum(values) / len(values))),
                 lower_probability=Decimal(str(_quantile(values, tail))),
                 upper_probability=Decimal(str(_quantile(values, 1.0 - tail))),
             )
@@ -279,7 +285,9 @@ def _cholesky(matrix: tuple[tuple[float, ...], ...]) -> list[list[float]]:
     result = [[0.0] * n for _ in range(n)]
     for i in range(n):
         for j in range(i + 1):
-            level = matrix[i][j] - sum(result[i][k] * result[j][k] for k in range(j))
+            level = matrix[i][j] - math.fsum(
+                result[i][k] * result[j][k] for k in range(j)
+            )
             if i == j:
                 if level < -1e-10:
                     raise ValueError("continuous dependence matrix is not positive semidefinite")

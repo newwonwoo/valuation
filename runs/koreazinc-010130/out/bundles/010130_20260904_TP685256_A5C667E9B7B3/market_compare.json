@@ -1,0 +1,37 @@
+{
+  "envelope": {
+    "comparison_hash": "bd5101b7f2e83898512ab72f7baceec5229ba918528479d5d38b0d70e3505d61",
+    "currency": "KRW",
+    "expected_gap": null,
+    "reference_as_of": "2026-09-04",
+    "reference_name": "Current market price",
+    "scenario_gaps": [
+      {
+        "gap_pct_of_reference": "-0.7466910042018262559602197390",
+        "gap_per_share": "-913203.0981388335110393487408",
+        "intrinsic_value_per_share": "309796.9018611664889606512592",
+        "reference_value_per_share": "1223000.0",
+        "scenario_id": "Down"
+      },
+      {
+        "gap_pct_of_reference": "-0.4396927789553295058168853469",
+        "gap_per_share": "-537744.2686623679856140507792",
+        "intrinsic_value_per_share": "685255.7313376320143859492208",
+        "reference_value_per_share": "1223000.0",
+        "scenario_id": "Base"
+      },
+      {
+        "gap_pct_of_reference": "-0.08643451572929807579834523385",
+        "gap_per_share": "-105709.412736931546701376221",
+        "intrinsic_value_per_share": "1117290.587263068453298623779",
+        "reference_value_per_share": "1223000.0",
+        "scenario_id": "Bull"
+      }
+    ]
+  },
+  "observation": {
+    "as_of": "2026-09-04",
+    "price": 1223000.0,
+    "source_ref": "https://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020103"
+  }
+}

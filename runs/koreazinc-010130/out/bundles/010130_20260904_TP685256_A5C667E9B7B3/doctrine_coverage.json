@@ -1,0 +1,170 @@
+[
+  {
+    "blocking": false,
+    "module_id": "DOCTRINE_CONSTITUTION",
+    "rationale": "GLOBAL: canonical doctrine/control authority loaded for this run",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "VALUATION_CONTROL_PLANE",
+    "rationale": "GLOBAL: canonical doctrine/control authority loaded for this run",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "REVISION_REQUEST_ORCHESTRATOR",
+    "rationale": "GLOBAL: canonical doctrine/control authority loaded for this run",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "INDUSTRY_DNA_ROUTER",
+    "rationale": "SEGMENT_DECOMPOSITION=pass: authoritative-lineage-backed segment decomposition completed | INDUSTRY_DNA_ROUTE=pass: all decomposed segments routed to evidence-backed multi-label Industry DNA profiles",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "MODULE_REQUIREMENT_PLAN",
+    "rationale": "MODULE_REQUIREMENT_PLAN=pass: compiled canonical Module Requirement Plan and non-destructive learned research loadout | VALUATION_METHOD_INTENT=pass: economic valuation-method intent resolved before Beta/WACC; exact evaluator construction remains downstream",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "KNOWLEDGE_PLACEMENT_GATE",
+    "rationale": "MODULE_REQUIREMENT_PLAN=pass: compiled canonical Module Requirement Plan and non-destructive learned research loadout | PRIMARY_EVIDENCE_COLLECTION=pass: primary evidence collected with complete required segment/metric coverage and planned source lineage | EVIDENCE_TO_ASSUMPTION_BRIDGE=pass: no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed | HIERARCHICAL_BETA_ESTIMATION=skipped_not_applicable: selected exact economic method path does not require Hierarchical Beta | WACC_VALIDATION=skipped_not_applicable: selected exact economic method path does not require WACC | HIERARCHICAL_WARRANTED_PER=skipped_not_applicable: selected Industry DNA does not route any segment to Warranted PER | Warranted PER is not applicable; capacity PER double-count path is closed | SCENARIO_BUILD=pass: no Core-inclusion capacity project requires bridge consumption | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding | INTRINSIC_VALUE_FREEZE=pass: freeze prerequisites are being validated atomically",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "SOURCE_WATCH",
+    "rationale": "SOURCE_FRESHNESS_PRECHECK=pass: live source-watch precheck passed",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "PRIMARY_EVIDENCE_COLLECTION",
+    "rationale": "PRIMARY_EVIDENCE_COLLECTION=pass: primary evidence collected with complete required segment/metric coverage and planned source lineage",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "INDUSTRY_KNOWLEDGE",
+    "rationale": "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT=pass: versioned Industry Knowledge snapshot loaded and hash-verified | PRIMARY_EVIDENCE_COLLECTION=pass: primary evidence collected with complete required segment/metric coverage and planned source lineage | ROCKET_INSIGHT_SCAN=warning: RocketTesla Context Engine locked scanner routing | live Rocket Insight scanner dispatch completed with warnings",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "module_id": "BROKER_RESEARCH",
+    "rationale": "MODULE_REQUIREMENT_PLAN=pass: compiled canonical Module Requirement Plan and non-destructive learned research loadout | ROCKET_INSIGHT_SCAN=warning: RocketTesla Context Engine locked scanner routing | live Rocket Insight scanner dispatch completed with warnings",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "module_id": "SIGNAL_INTELLIGENCE",
+    "rationale": "PRIMARY_EVIDENCE_COLLECTION=pass: primary evidence collected with complete required segment/metric coverage and planned source lineage | ROCKET_INSIGHT_SCAN=warning: RocketTesla Context Engine locked scanner routing | live Rocket Insight scanner dispatch completed with warnings | UPSTREAM_FUNDING_SCAN=skipped_not_applicable: selected Industry DNA does not require a dedicated upstream funding scan",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "module_id": "EVIDENCE_LEDGER",
+    "rationale": "EVIDENCE_LEDGER=pass: append-only EvidenceLedger validated and canonical runtime snapshot frozen | EVIDENCE_TO_ASSUMPTION_BRIDGE=pass: no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "ROCKET_INSIGHT_SCAN",
+    "rationale": "ROCKET_INSIGHT_SCAN=warning: RocketTesla Context Engine locked scanner routing | live Rocket Insight scanner dispatch completed with warnings",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "module_id": "UPSTREAM_FUNDING_SCAN",
+    "rationale": "UPSTREAM_FUNDING_SCAN=skipped_not_applicable: selected Industry DNA does not require a dedicated upstream funding scan | WACC_VALIDATION=skipped_not_applicable: selected exact economic method path does not require WACC",
+    "status": "skipped_not_applicable"
+  },
+  {
+    "blocking": false,
+    "module_id": "LLM_STAFF",
+    "rationale": "INDUSTRY_DNA_ROUTE=pass: all decomposed segments routed to evidence-backed multi-label Industry DNA profiles | MODULE_REQUIREMENT_PLAN=pass: compiled canonical Module Requirement Plan and non-destructive learned research loadout | ROCKET_INSIGHT_SCAN=warning: RocketTesla Context Engine locked scanner routing | live Rocket Insight scanner dispatch completed with warnings | RESEARCHER_A=pass: LLM Intelligence Officer produced typed hypotheses and an auditable environment-change/corporate-strength linkage decision without committing assumptions | BLIND_RED_TEAM_B=pass: Blind Red Team completed with no unresolved blocker | EVIDENCE_TO_ASSUMPTION_BRIDGE=pass: no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "module_id": "BLIND_RED_TEAM_B",
+    "rationale": "BLIND_RED_TEAM_B=pass: Blind Red Team completed with no unresolved blocker | RESEARCH_LOOP=skipped_not_applicable: Blind Red Team left no unresolved blocking issue",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+    "rationale": "EVIDENCE_TO_ASSUMPTION_BRIDGE=pass: no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "ASSUMPTION_COMPILER",
+    "rationale": "EVIDENCE_TO_ASSUMPTION_BRIDGE=pass: no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed | SCENARIO_BUILD=pass: no Core-inclusion capacity project requires bridge consumption | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "SCENARIO_ENGINE",
+    "rationale": "SCENARIO_BUILD=pass: no Core-inclusion capacity project requires bridge consumption | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding | PROBABILITY_DISTRIBUTION_ANALYSIS=warning: scenario probabilities are not calibration-authorized; numeric expected value remains disabled",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "module_id": "HIERARCHICAL_BETA_ENGINE",
+    "rationale": "HIERARCHICAL_BETA_ESTIMATION=skipped_not_applicable: selected exact economic method path does not require Hierarchical Beta",
+    "status": "skipped_not_applicable"
+  },
+  {
+    "blocking": false,
+    "module_id": "WACC_ENGINE",
+    "rationale": "WACC_VALIDATION=skipped_not_applicable: selected exact economic method path does not require WACC",
+    "status": "skipped_not_applicable"
+  },
+  {
+    "blocking": false,
+    "module_id": "DETERMINISTIC_VALUATION",
+    "rationale": "DETERMINISTIC_VALUATION=pass: registered deterministic evaluators and SOTP aggregation completed | no Warranted PER cross-check requires a DCF fingerprint | no Core-inclusion capacity project requires valuation binding",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "WARRANTED_PER_ENGINE",
+    "rationale": "HIERARCHICAL_WARRANTED_PER=skipped_not_applicable: selected Industry DNA does not route any segment to Warranted PER | Warranted PER is not applicable; capacity PER double-count path is closed | DCF_PER_ASSUMPTION_CONSISTENCY_GATE=pass: DCF-PER consistency gate is not applicable | capacity assessment, scenario, valuation and PER identities are consistent",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "SOTP_AGGREGATOR",
+    "rationale": "DETERMINISTIC_VALUATION=pass: registered deterministic evaluators and SOTP aggregation completed | no Warranted PER cross-check requires a DCF fingerprint | no Core-inclusion capacity project requires valuation binding",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "DECISION_IMPACT",
+    "rationale": "AUDIT_GATE=warning: pre-freeze Broker Research is not configured for this run | capacity omission, baseline and double-count audit passed | 가치 투입 근거 구성에 확인이 필요합니다: 가치 투입 근거 16건 — 분석가 추정 16건(100%) | 가치가 단일 변수에 민감합니다: 가치 민감도를 측정할 수 있는 시나리오가 없습니다 | decision-impact record and run-bound generic intrinsic audit passed; run is eligible for freeze if snapshot hashes are present",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "module_id": "IMPACT_PROPAGATION",
+    "rationale": "SOURCE_FRESHNESS_PRECHECK=pass: live source-watch precheck passed",
+    "status": "pass"
+  },
+  {
+    "blocking": false,
+    "module_id": "AUDIT_GATE",
+    "rationale": "DCF_PER_ASSUMPTION_CONSISTENCY_GATE=pass: DCF-PER consistency gate is not applicable | capacity assessment, scenario, valuation and PER identities are consistent | CROSS_METHOD_DOUBLE_COUNT_AUDIT=pass: cross-method economic paths are unique | AUDIT_GATE=warning: pre-freeze Broker Research is not configured for this run | capacity omission, baseline and double-count audit passed | 가치 투입 근거 구성에 확인이 필요합니다: 가치 투입 근거 16건 — 분석가 추정 16건(100%) | 가치가 단일 변수에 민감합니다: 가치 민감도를 측정할 수 있는 시나리오가 없습니다 | decision-impact record and run-bound generic intrinsic audit passed; run is eligible for freeze if snapshot hashes are present",
+    "status": "warning"
+  },
+  {
+    "blocking": false,
+    "module_id": "INTRINSIC_FREEZE",
+    "rationale": "INTRINSIC_VALUE_FREEZE=pass: freeze prerequisites are being validated atomically",
+    "status": "pass"
+  }
+]

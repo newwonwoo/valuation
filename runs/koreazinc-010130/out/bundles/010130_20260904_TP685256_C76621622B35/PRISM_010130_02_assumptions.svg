@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+<title id="title">고려아연 가치평가 가정</title>
+<desc id="desc">시나리오별 자유현금흐름, 영구성장률, 자본비용, 위험과 출처를 요약한 한국어 카드</desc>
+<style>
+text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+</style>
+<rect x="0" y="0" width="1200" height="1500" rx="0" fill="#F3F0E8"/>
+<rect x="0" y="0" width="1200" height="250" rx="0" fill="#102D3E"/>
+<text x="70" y="70" font-size="24" font-weight="700" fill="#FFCB77" text-anchor="start">PRISM 최종보고서 · 2/2</text>
+<text x="70" y="145" font-size="54" font-weight="800" fill="#FFFFFF" text-anchor="start">고려아연</text>
+<text x="70" y="202" font-size="30" font-weight="500" fill="#D9E7EC" text-anchor="start">가치평가 가정 · 위험 · 출처</text>
+<text x="70" y="315" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">핵심 위험 입력</text>
+<rect x="70" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
+<text x="94" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">지배주주 귀속률</text>
+<text x="94" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">97.8364%</text>
+<rect x="425" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
+<text x="449" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">EV→지분 조정</text>
+<text x="449" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">-27,133억원</text>
+<rect x="780" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
+<text x="804" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">주당 분모</text>
+<text x="804" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">20.393백만주</text>
+<text x="70" y="560" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">시나리오별 핵심 가정</text>
+<rect x="70" y="600" width="1060" height="390" rx="22" fill="#FFFFFF"/>
+<text x="100" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">구분</text>
+<text x="270" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">배수평가 1</text>
+<text x="470" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">배수평가 2</text>
+<text x="675" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">배수평가 3+</text>
+<text x="855" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">NAV 부문</text>
+<text x="1015" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">EV→지분 조정</text>
+<line x1="95" y1="668" x2="1105" y2="668" stroke="#D6DFE3" stroke-width="2"/>
+<text x="100" y="725" font-size="21" font-weight="700" fill="#142A3A" text-anchor="start">하방(Down)</text>
+<text x="270" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">제조 15,009억원×5.5배</text>
+<text x="470" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">수출입 1,920억원×4.0배</text>
+<text x="675" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="855" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">기타 1,476억원</text>
+<text x="1015" y="725" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">-27,133억원</text>
+<line x1="95" y1="753" x2="1105" y2="753" stroke="#E9EEF0" stroke-width="2"/>
+<text x="100" y="810" font-size="21" font-weight="700" fill="#142A3A" text-anchor="start">기준(Base)</text>
+<text x="270" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">제조 21,441억원×7.5배</text>
+<text x="470" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">수출입 1,920억원×4.0배</text>
+<text x="675" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="855" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">기타 1,476억원</text>
+<text x="1015" y="810" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">-27,133억원</text>
+<line x1="95" y1="838" x2="1105" y2="838" stroke="#E9EEF0" stroke-width="2"/>
+<text x="100" y="895" font-size="21" font-weight="700" fill="#142A3A" text-anchor="start">상방(Bull)</text>
+<text x="270" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">제조 27,874억원×9.0배</text>
+<text x="470" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">수출입 1,920억원×4.0배</text>
+<text x="675" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="855" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">기타 1,476억원</text>
+<text x="1015" y="895" font-size="21" font-weight="500" fill="#142A3A" text-anchor="start">-27,133억원</text>
+<text x="70" y="1050" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">평가방법</text>
+<text x="250" y="1050" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">commodity_price_taker/normalized_multiple/1,</text>
+<text x="250" y="1081" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">process_spread/normalized_multiple/1…</text>
+<text x="70" y="1124" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">정확한 계산식</text>
+<text x="250" y="1124" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">[배수평가 부문 귀속 지분가치+NAV 부문 귀속 지분가치]÷20,393,232주 (각 부문 EV→지분</text>
+<text x="250" y="1155" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">조정·귀속률 반영)</text>
+<text x="70" y="1198" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">확률 보정</text>
+<text x="250" y="1198" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">미완료</text>
+<text x="70" y="1260" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">매수구간</text>
+<text x="250" y="1260" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지</text>
+<rect x="0" y="1370" width="1200" height="130" rx="0" fill="#102D3E"/>
+<text x="70" y="1415" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
+<text x="140" y="1415" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">공시 사실과 분석가 가정의 근거 주소는 보고서 본문 ‘정보 출처’에서 확인할 수 있습니다.</text>
+<a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929" target="_blank"><text x="70" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
+<a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958" target="_blank"><text x="170" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 2</text></a>
+<a href="https://data.krx.co.kr/contents/MDC/MDI/mdiLoader/index.cmd?menuId=MDC0201020103" target="_blank"><text x="270" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 3</text></a>
+<a href="https://m.kisrating.com/fileDown.do?fileName=rs20260513-9.pdf&amp;gubun=2&amp;menuCd=R8" target="_blank"><text x="370" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 4</text></a>
+<a href="https://opendart.fss.or.kr/api/corpCode.xml" target="_blank"><text x="470" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 5</text></a>
+</svg>

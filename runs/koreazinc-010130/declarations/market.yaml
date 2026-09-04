@@ -1,0 +1,15 @@
+market_comparison:
+  ticker: '010130'
+  price: 1222000
+  as_of: '2026-09-04'
+  source_ref: https://www.koreazinc.co.kr/?mainMenuId=kz-investment&menuId=kz-inv-ir-report-presentation&pageName=investment/presentation&subMenuId=kz-inv-ir-report
+  source_contract: kr_issuer_dated_quote/v1
+  source_record: |-
+    Korea Zinc (KOSPI 010130)
+    1,222,000원 ▼2,000 (-0.16%)
+    거래량: 13,834 주
+    시가총액: 25.5 조원
+    52주 최고가: 2,188,000 원
+    52주 최저가: 877,000 원
+    2026-09-04 21:33:33 기준
+  source_record_sha256: 4fb0881c06c40ca70a3f5fa39b39d88741842cf20c7a7a04129a3319af1c2ae4

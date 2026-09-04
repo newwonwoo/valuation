@@ -102,22 +102,55 @@ class DeterministicEvaluator(Protocol):
 class EvaluatorRegistry:
     def __init__(self) -> None:
         self._evaluators: dict[ModelKey, DeterministicEvaluator] = {}
+        self._segment_evaluators: dict[
+            tuple[str, ModelKey], DeterministicEvaluator
+        ] = {}
 
-    def register(self, evaluator: DeterministicEvaluator) -> None:
-        if evaluator.key in self._evaluators:
-            raise ValueError(f"duplicate evaluator registration: {evaluator.key}")
+    def register(
+        self,
+        evaluator: DeterministicEvaluator,
+        *,
+        segment_id: str | None = None,
+    ) -> None:
         if not evaluator.required_assumption_keys:
             raise ValueError("evaluator must declare required assumptions")
-        self._evaluators[evaluator.key] = evaluator
+        if segment_id is None:
+            if evaluator.key in self._evaluators:
+                raise ValueError(
+                    f"duplicate evaluator registration: {evaluator.key}"
+                )
+            self._evaluators[evaluator.key] = evaluator
+            return
+        if not segment_id:
+            raise ValueError(
+                "segment-scoped evaluator registration requires segment_id"
+            )
+        scoped_key = (segment_id, evaluator.key)
+        if scoped_key in self._segment_evaluators:
+            raise ValueError(
+                f"duplicate evaluator registration for segment {segment_id}: "
+                f"{evaluator.key}"
+            )
+        self._segment_evaluators[scoped_key] = evaluator
 
-    def get(self, key: ModelKey) -> DeterministicEvaluator:
+    def get(
+        self,
+        key: ModelKey,
+        *,
+        segment_id: str | None = None,
+    ) -> DeterministicEvaluator:
+        if segment_id is not None:
+            scoped = self._segment_evaluators.get((segment_id, key))
+            if scoped is not None:
+                return scoped
         try:
             return self._evaluators[key]
         except KeyError as exc:
-            raise KeyError(f"no exact evaluator registered for {key}") from exc
+            scope = f" for segment {segment_id}" if segment_id else ""
+            raise KeyError(f"no exact evaluator registered for {key}{scope}") from exc
 
     def evaluate(self, key: ModelKey, scenario: BoundScenario, *, segment_id: str) -> SegmentValuation:
-        evaluator = self.get(key)
+        evaluator = self.get(key, segment_id=segment_id)
         missing = tuple(key for key in evaluator.required_assumption_keys if not _has_assumption(scenario, key))
         if missing:
             raise ValueError(
@@ -126,7 +159,56 @@ class EvaluatorRegistry:
         return evaluator.evaluate(scenario, segment_id=segment_id)
 
     def keys(self) -> tuple[ModelKey, ...]:
-        return tuple(sorted(self._evaluators, key=lambda item: (item.archetype, item.method, item.version)))
+        keys = set(self._evaluators)
+        keys.update(key for _, key in self._segment_evaluators)
+        return tuple(
+            sorted(
+                keys,
+                key=lambda item: (item.archetype, item.method, item.version),
+            )
+        )
+
+    def keys_for_segment(self, segment_id: str) -> tuple[ModelKey, ...]:
+        if not segment_id:
+            raise ValueError("segment evaluator lookup requires segment_id")
+        keys = set(self._evaluators)
+        keys.update(
+            key
+            for scoped_segment_id, key in self._segment_evaluators
+            if scoped_segment_id == segment_id
+        )
+        return tuple(
+            sorted(
+                keys,
+                key=lambda item: (item.archetype, item.method, item.version),
+            )
+        )
+
+    def has_scoped_registrations(self) -> bool:
+        return bool(self._segment_evaluators)
+
+    def registration_items(
+        self,
+    ) -> tuple[tuple[str | None, ModelKey, DeterministicEvaluator], ...]:
+        rows = [
+            (None, key, evaluator)
+            for key, evaluator in self._evaluators.items()
+        ]
+        rows.extend(
+            (segment_id, key, evaluator)
+            for (segment_id, key), evaluator in self._segment_evaluators.items()
+        )
+        return tuple(
+            sorted(
+                rows,
+                key=lambda item: (
+                    item[0] or "",
+                    item[1].archetype,
+                    item[1].method,
+                    item[1].version,
+                ),
+            )
+        )
 
 
 def _has_assumption(scenario: BoundScenario, key: str) -> bool:

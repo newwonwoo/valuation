@@ -13,10 +13,14 @@ from __future__ import annotations
 
 import json
 from decimal import Decimal
+from hashlib import sha256
 import importlib
 from pathlib import Path
 import shutil
 import sys
+
+import pytest
+import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -27,6 +31,7 @@ from run_kr_live import (  # noqa: E402
     publish_report_bundle,
     reuse_published_report_bundle,
 )
+from valuation_engine.workflow import market_loader_from_config
 
 
 def test_the_committed_shinhanalpha_run_replays_to_the_attested_nav_envelope():
@@ -54,15 +59,15 @@ def test_the_committed_shinhanalpha_run_replays_to_the_attested_nav_envelope():
     ):
         assert line in report, line
 
-
-def test_the_committed_daehan_run_replays_as_a_three_segment_sotp():
+def test_the_committed_daehan_run_replays_as_a_three_segment_sotp(tmp_path):
     """The third committed run is now the first true sum-of-the-parts: the
     IFRS 8 note names 제강/운송/기타, declarations/segments.yaml types each
     one (steel DCF at 0.8603 ownership, transport spread-DCF, leasing NAV),
     and every component carries its own key namespace and economic paths —
     wacc:...:steel is not wacc:...:transport."""
     reached, stop_stage, stop_reason, result = execute_run(
-        ROOT / "runs" / "daehansteel-084010"
+        ROOT / "runs" / "daehansteel-084010",
+        state_root=str(tmp_path / "state"),
     )
     assert stop_stage is None, stop_reason
     assert len(reached) == len(result.stage_traces)
@@ -94,6 +99,80 @@ def test_the_committed_daehan_run_replays_as_a_three_segment_sotp():
         "**현재가:** 8,420원 (2026-08-28)",
     ):
         assert line in report, line
+
+    visual_root = Path(result.data["saved_run_dir"])
+    assumption_svg = (visual_root / result.data["saved_report_visuals"][1]).read_text(
+        encoding="utf-8"
+    )
+    assert "귀속" in assumption_svg
+    assert "86.0300%" in assumption_svg
+    assert "100.0000%" in assumption_svg
+
+
+def test_the_committed_koreazinc_run_preserves_llm_bound_ifrs8_refusal():
+    """The Korea Zinc run proves the irregular-note boundary: an LLM-reviewed
+    extraction is bound to the immutable filing member, while deterministic
+    code verifies the disclosed labels and filed totals before valuation.
+
+    The filing aggregates waste processing, minerals, renewables and battery
+    materials in Other without activity weights. The declaration preserves that
+    unresolved judgment and routing stops after the authoritative note bijection.
+    """
+    reached, stop_stage, stop_reason, result = execute_run(
+        ROOT / "runs" / "koreazinc-010130"
+    )
+    assert stop_stage == "SEGMENT_DECOMPOSITION"
+    assert len(reached) == 4
+    assert "UNRESOLVED_HETEROGENEOUS" in stop_reason
+    assert "authoritative IFRS 8 bijection" in stop_reason
+    assert "refusing to assign one KSIC or value" in stop_reason
+    assert not result.completed
+
+
+def test_koreazinc_market_quote_is_bound_to_issuer_price_ticker_and_timestamp(tmp_path):
+    path = ROOT / "runs" / "koreazinc-010130" / "declarations" / "market.yaml"
+    market = market_loader_from_config(path)()
+    assert market.price == 1222000
+    assert market.as_of == "2026-09-04"
+    assert "koreazinc.co.kr" in market.source_ref
+
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    payload["market_comparison"]["price"] = 1223000
+    tampered = tmp_path / "market.yaml"
+    tampered.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="ticker/price/timestamp binding mismatch"):
+        market_loader_from_config(tampered)()
+
+    source = payload["market_comparison"]["source_record"].replace(
+        "1,222,000원", "1,223,000원"
+    )
+    payload["market_comparison"].update(
+        price=1223000,
+        source_record=source,
+        source_record_sha256=sha256(source.encode("utf-8")).hexdigest(),
+    )
+    self_authenticated = tmp_path / "self_authenticated_market.yaml"
+    self_authenticated.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="not independently registered in code"):
+        market_loader_from_config(self_authenticated)()
+
+    payload = yaml.safe_load(path.read_text(encoding="utf-8"))
+    payload["market_comparison"].pop("source_contract")
+    payload["market_comparison"]["price"] = 1223000
+    payload["market_comparison"]["as_of"] = "2026-09-05"
+    missing_contract = tmp_path / "missing_contract_market.yaml"
+    missing_contract.write_text(
+        yaml.safe_dump(payload, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="registered issuer quote requires"):
+        market_loader_from_config(missing_contract)()
 
 
 def test_a_multi_segment_filing_without_a_declaration_still_fails_closed(tmp_path):

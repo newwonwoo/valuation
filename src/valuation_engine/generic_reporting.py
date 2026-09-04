@@ -36,10 +36,12 @@ from .probability_forecasting import (
 from .report_localization import (
     calibration_label_ko,
     currency_label_ko,
+    evaluator_assumption_groups_ko,
     identifier_label_ko,
     method_label_ko,
     module_label_ko,
     scenario_label_ko,
+    valuation_family_value_term_ko,
     valuation_scope_label_ko,
 )
 from .records import AuditReport, RunManifest, RunStatus, iso_now
@@ -48,8 +50,13 @@ from .state import StateStore, thesis_delta
 from .street import StreetResearchReport
 from .source_reporting import build_source_link_index, render_source_link_section
 from .valuation_execution import (
+    CompanyValuationPlan,
     GenericValuationResult,
     IntrinsicValuationScope,
+)
+from .valuation_plan_compiler import (
+    SegmentEvaluatorContract,
+    ValuationPlanCompilation,
 )
 from .visual_reporting import render_report_visuals, report_visual_filenames
 
@@ -199,13 +206,265 @@ def _amount_unit_text(amount: Decimal, unit: str) -> str:
         return f"{amount:g}년"
     if unit == "shares":
         return f"{amount:,.0f}주"
+    if unit == "multiple":
+        return f"{amount:g}배"
     return f"{amount:g} {unit}".strip()
 
 
-def _scenario_assumptions_line(scenario: object) -> str:
+def _scenario_assumptions_line(
+    scenario: object,
+    *,
+    evaluator_contracts: tuple[SegmentEvaluatorContract, ...] = (),
+    valuation_plan: CompanyValuationPlan | None = None,
+) -> str:
     values: list[str] = []
+    assumptions = tuple(getattr(scenario, "assumptions", ()))
+    by_key = {
+        str(getattr(item, "key", "")): item
+        for item in assumptions
+        if getattr(item, "key", None)
+    }
+    multiple_families = {
+        "normalized_multiple",
+        "normalized_ebitda_multiple",
+        "ffo_multiple",
+    }
+    nav_families = {"net_asset_value"}
+    multiple_contracts = tuple(
+        item
+        for item in evaluator_contracts
+        if item.execution_family in multiple_families
+    )
+    nav_contracts = tuple(
+        item
+        for item in evaluator_contracts
+        if item.execution_family in nav_families
+    )
+    discounted_contracts = tuple(
+        item
+        for item in evaluator_contracts
+        if item.execution_family not in multiple_families | nav_families
+    )
+    ebitda_keys = (
+        tuple(
+            item.required_assumption_keys[0]
+            for item in multiple_contracts
+            if len(item.required_assumption_keys) >= 2
+        )
+        if evaluator_contracts
+        else tuple(
+            key for key in by_key if key.endswith("normalized_ebitda")
+        )
+    )
+    segment_labels = {
+        "manufacturing": "제조",
+        "trading": "수출입",
+        "recycling": "기타",
+        "transport": "운송",
+        "core": "핵심",
+    }
+    for index, ebitda_key in enumerate(ebitda_keys):
+        if evaluator_contracts:
+            contract = multiple_contracts[index]
+            multiple = by_key.get(contract.required_assumption_keys[1])
+            segment_id = contract.segment_id
+            value_label = (
+                "FFO"
+                if contract.execution_family == "ffo_multiple"
+                else "EBITDA"
+            )
+        else:
+            prefix = ebitda_key.removesuffix("normalized_ebitda")
+            multiple = by_key.get(f"{prefix}normalized_multiple") or by_key.get(
+                f"{prefix}normalized_ebitda_multiple"
+            )
+            segment_id = prefix.rstrip("_")
+            value_label = "EBITDA"
+        label = segment_labels.get(segment_id, segment_id or "핵심")
+        detail = f"{label} {value_label} {_measure_text(by_key[ebitda_key])}"
+        if multiple is not None:
+            detail += f" × {_measure_text(multiple)}"
+        values.append(detail)
+    nav_asset_keys = (
+        tuple(
+            item.required_assumption_keys[0]
+            for item in nav_contracts
+            if len(item.required_assumption_keys) >= 2
+        )
+        if evaluator_contracts
+        else tuple(
+            key for key in by_key if key.endswith("gross_asset_value")
+        )
+    )
+    for index, asset_key in enumerate(nav_asset_keys):
+        if evaluator_contracts:
+            contract = nav_contracts[index]
+            liabilities = by_key.get(contract.required_assumption_keys[1])
+            segment_id = contract.segment_id
+        else:
+            prefix = asset_key.removesuffix("gross_asset_value")
+            liabilities = by_key.get(f"{prefix}liabilities")
+            segment_id = prefix.rstrip("_")
+        if liabilities is None:
+            continue
+        asset_measure = by_key[asset_key].measure
+        liability_measure = liabilities.measure.convert_to(asset_measure.unit)
+        nav_amount = asset_measure.amount - liability_measure.amount
+        label = segment_labels.get(segment_id, segment_id or "핵심")
+        values.append(
+            f"{label} 유형자산 NAV "
+            f"{_amount_unit_text(nav_amount, asset_measure.unit)}"
+        )
+    ownership_keys = (
+        tuple(item.ownership_key for item in valuation_plan.segments)
+        if valuation_plan is not None
+        else tuple(key for key in by_key if key.endswith("ownership"))
+    )
+    ownerships = tuple(by_key[key] for key in ownership_keys if key in by_key)
+    common_ownership: Decimal | None = None
+    if ownerships:
+        ownership_values = tuple(
+            item.measure.convert_to("ratio").amount for item in ownerships
+        )
+        if len(set(ownership_values)) == 1:
+            common_ownership = ownership_values[0]
+            values.append(
+                f"공통 지배주주 귀속률 {common_ownership * 100:.4f}%"
+            )
+        else:
+            values.extend(
+                f"{key.removesuffix('_ownership')} 귀속률 "
+                f"{by_key[key].measure.convert_to('ratio').amount * 100:.4f}%"
+                for key in ownership_keys
+                if key in by_key
+            )
+    adjustment_keys = (
+        tuple(
+            item.ev_to_equity_adjustment_key
+            for item in valuation_plan.segments
+            if item.ev_to_equity_adjustment_key is not None
+        )
+        if valuation_plan is not None
+        else tuple(key for key in by_key if key.endswith("ev_adjustment"))
+    )
+    adjustments = tuple(
+        by_key[key] for key in adjustment_keys if key in by_key
+    )
+    if adjustments:
+        first_measure = adjustments[0].measure
+        total = sum(
+            (
+                item.measure.convert_to(first_measure.unit).amount
+                for item in adjustments
+            ),
+            Decimal(0),
+        )
+        values.append(
+            f"EV→지분 조정 {_amount_unit_text(total, first_measure.unit)}"
+        )
+    parent_adjustments = tuple(
+        by_key[item.assumption_key]
+        for item in (valuation_plan.parent_adjustments if valuation_plan else ())
+        if item.assumption_key in by_key
+    )
+    if parent_adjustments:
+        first_measure = parent_adjustments[0].measure
+        total = sum(
+            (
+                item.measure.convert_to(first_measure.unit).amount
+                for item in parent_adjustments
+            ),
+            Decimal(0),
+        )
+        values.append(
+            f"모회사 조정 {_amount_unit_text(total, first_measure.unit)}"
+        )
+    share_key = (
+        valuation_plan.diluted_shares_key
+        if valuation_plan is not None
+        else "diluted_shares"
+    )
+    shares = by_key.get(share_key)
+    if shares is not None:
+        share_count = Decimal(str(shares.measure.amount))
+        values.append(f"주당 분모 {share_count / Decimal('1000000'):,.3f}백만주")
+        if len(evaluator_contracts) > 1:
+            value_terms = tuple(
+                dict.fromkeys(
+                    valuation_family_value_term_ko(
+                        item.execution_family,
+                        item.model_key.method,
+                    )
+                    for item in evaluator_contracts
+                )
+            )
+            if valuation_plan is not None and valuation_plan.parent_adjustments:
+                value_terms = (*value_terms, "모회사 조정")
+            values.append(
+                f"산식 [{'+'.join(value_terms)}]÷{share_count:,.0f}주 "
+                "(각 부문 EV→지분 조정·귀속률 반영)"
+            )
+        elif len(ebitda_keys) + len(nav_asset_keys) > 1 and common_ownership is not None:
+            value_terms: list[str] = []
+            if ebitda_keys:
+                value_terms.append("부문 EBITDA×배수 합")
+            if nav_asset_keys:
+                value_terms.append("유형자산 NAV")
+            if adjustments:
+                value_terms.append("EV→지분 조정")
+            values.append(
+                f"산식 [{'+'.join(value_terms)}]"
+                f"×{common_ownership * 100:.4f}%÷{share_count:,.0f}주"
+            )
 
-    for year in (1, 5):
+    use_typed_discounting = bool(discounted_contracts)
+    for contract in discounted_contracts if use_typed_discounting else ():
+        label = segment_labels.get(contract.segment_id, contract.segment_id)
+        if evaluator_contracts:
+            method_label = {
+                "explicit_fcff_dcf": "FCFF DCF",
+                "contracted_backlog_dcf": "수주잔고 DCF",
+                "finite_life_npv": "유한수명 NPV",
+                "gordon_ddm": "배당할인",
+                "justified_pb_roe": "PBR·ROE",
+                "residual_income": "잔여이익",
+                "rate_base_roe": "요금기반 ROE",
+                "calibrated_single_event_rnpv": "확률조정 NPV",
+            }.get(contract.execution_family, contract.model_key.method)
+            detail = f"{label} {method_label}"
+            primary, secondary = evaluator_assumption_groups_ko(
+                contract.execution_family,
+                contract.required_assumption_keys,
+            )
+
+            def group_text(
+                group: tuple[str, tuple[str, ...]],
+            ) -> str:
+                group_label, keys = group
+                present = tuple(key for key in keys if key in by_key)
+                if not present:
+                    return ""
+                rendered = tuple(_measure_text(by_key[key]) for key in present)
+                value = (
+                    rendered[0]
+                    if len(rendered) == 1
+                    else " / ".join(rendered)
+                )
+                return f"{group_label} {value}"
+
+            input_details = tuple(
+                text
+                for text in (
+                    group_text(group)
+                    for group in (*primary, *secondary)
+                )
+                if text
+            )
+            if input_details:
+                detail += " · " + " · ".join(input_details)
+            values.append(detail)
+
+    for year in (() if use_typed_discounting else (1, 5)):
         key = f"fcff_year_{year}"
         try:
             base = scenario.get(key)  # type: ignore[attr-defined]
@@ -229,6 +488,9 @@ def _scenario_assumptions_line(scenario: object) -> str:
             f"(기존 {_amount_unit_text(base_amount, unit)} + "
             f"증분 {_amount_unit_text(incremental_amount, unit)})"
         )
+
+    if use_typed_discounting:
+        return " · ".join(values)
 
     try:
         growth = scenario.get("terminal_growth")  # type: ignore[attr-defined]
@@ -489,17 +751,57 @@ def render_generic_report(
     wacc_result = data.get("live_wacc_result")
     beta = getattr(beta_result, "target_levered_beta", None)
     wacc = getattr(getattr(wacc_result, "wacc_result", None), "wacc", None)
+    cost_of_equity = getattr(
+        getattr(wacc_result, "wacc_result", None),
+        "cost_of_equity",
+        None,
+    )
+    compilation = data.get("valuation_plan_compilation")
+    if not isinstance(compilation, ValuationPlanCompilation):
+        compilation = None
+    valuation_plan = compilation.plan if compilation is not None else None
+    evaluator_contracts = (
+        compilation.evaluator_contracts if compilation is not None else ()
+    )
+    equity_discount_families = {
+        "gordon_ddm",
+        "justified_pb_roe",
+        "residual_income",
+        "rate_base_roe",
+    }
+    enterprise_discount_families = {
+        "contracted_backlog_dcf",
+        "explicit_fcff_dcf",
+        "finite_life_npv",
+        "calibrated_single_event_rnpv",
+    }
+    selected_families = {
+        item.execution_family for item in evaluator_contracts
+    }
+    risk_inputs = []
+    if beta is not None:
+        risk_inputs.append(f"계층형 베타 {beta:.3f}")
+    if selected_families.intersection(enterprise_discount_families) and wacc is not None:
+        risk_inputs.append(f"가중평균자본비용 {wacc:.3%}")
+    if selected_families.intersection(equity_discount_families) and cost_of_equity is not None:
+        risk_inputs.append(f"자기자본비용 {cost_of_equity:.3%}")
+    if not evaluator_contracts and wacc is not None:
+        risk_inputs.append(f"가중평균자본비용 {wacc:.3%}")
     lines.extend((
         "",
         "## 핵심 가정과 위험",
         f"- **평가방법:** {', '.join(method_labels) if method_labels else '등록된 결정론적 가치평가법'}",
-        f"- **위험 입력:** 계층형 베타 {beta:.3f} · 가중평균자본비용 {wacc:.3%}"
-        if beta is not None and wacc is not None
+        f"- **위험 입력:** {' · '.join(risk_inputs)}"
+        if risk_inputs
         else "- **위험 입력:** 선택된 평가방법에서 별도 베타·가중평균자본비용을 요구하지 않습니다.",
         f"- **확률 보정:** {calibration_label_ko(calibration_status)} · 수치 가중 {'적용' if calibration_applied else '보류'}",
     ))
     for scenario in tuple(getattr(scenario_set, "scenarios", ()))[:3]:
-        assumptions = _scenario_assumptions_line(scenario)
+        assumptions = _scenario_assumptions_line(
+            scenario,
+            evaluator_contracts=evaluator_contracts,
+            valuation_plan=valuation_plan,
+        )
         if assumptions:
             lines.append(
                 f"- **{scenario_label_ko(getattr(scenario, 'scenario_id', ''))} 가정:** {assumptions}"
@@ -726,11 +1028,18 @@ def render_generic_report(
         item for item in coverage
         if item.status not in {StageStatus.PASS, StageStatus.WARNING, StageStatus.SKIPPED_NOT_APPLICABLE}
     )
+    blocking_findings = tuple(item for item in audit.findings if item.blocking)
+    blocking_passed = sum(item.passed for item in blocking_findings)
+    nonblocking_failed = sum(
+        not item.passed and not item.blocking for item in audit.findings
+    )
     lines.extend((
         "",
         "## 분석 범위와 유의사항",
         f"- **평가범위:** {valuation_scope_label_ko(valuation.scope.value)}",
-        f"- **계산 확인:** 자동 오류 점검 {len(audit.findings)}개 통과 · 분석 원칙 {len(coverage) - len(non_pass)}/{len(coverage)}개 충족",
+        f"- **계산 확인:** 차단 점검 {blocking_passed}/{len(blocking_findings)}개 통과 · "
+        f"비차단 확인 필요 {nonblocking_failed}건 · "
+        f"분석 원칙 {len(coverage) - len(non_pass)}/{len(coverage)}개 충족",
         "- 회사 공시 사실, 분석가 가정, 인공지능 연결 인사이트를 구분해 표시했습니다.",
         "- 증권사 목표가와 현재가는 가치평가를 마친 뒤 참고했으며, 앞서 계산한 가정을 바꾸는 데 사용하지 않았습니다.",
     ))
