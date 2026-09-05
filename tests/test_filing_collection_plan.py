@@ -10,6 +10,8 @@ and the roles that hand-picking missed must be found too.
 from __future__ import annotations
 
 from pathlib import Path
+import json
+import importlib.util
 
 import pytest
 
@@ -23,6 +25,8 @@ from valuation_engine.filing_collection_plan import (
     parse_viewer_toc,
     plan_sections,
     render_toc,
+    collection_binding,
+    resolver_input_hashes,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -32,6 +36,82 @@ FIXTURES = ROOT / "tests" / "fixtures"
 #: their sections differently.
 HALF_YEAR = FIXTURES / "koreazinc_h1_2026_filing_toc.txt"
 ANNUAL = FIXTURES / "koreazinc_annual_2025_filing_toc.txt"
+
+
+@pytest.fixture
+def bound_collection(tmp_path):
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    for name in ("corp_search.json", "list.json"):
+        (raw / name).write_text("{}")
+    (raw / "company.json").write_text(json.dumps({"corp_code": "00102858", "stock_code": "010130"}))
+    (tmp_path / "run.yaml").write_text('company_query: 고려아연\nas_of: "2026-09-01"\n')
+    payload = {
+        "company_query": "고려아연", "as_of": "2026-09-01",
+        "corp_code": "00102858", "stock_code": "010130",
+        "input_sha256": resolver_input_hashes(raw),
+        "adopted_annual": {"rcept_no": "20260813000001", "received_on": "2026-08-13"},
+        "latest_periodic": {"rcept_no": "20260814000001", "received_on": "2026-08-14"},
+        "superseded_rcept_nos": ["20260301000001"],
+    }
+    receipt = tmp_path / "resolver.json"
+    receipt.write_text(json.dumps(payload))
+    return tmp_path, receipt, payload
+
+
+def test_archival_collection_does_not_require_run(tmp_path):
+    assert collection_binding(tmp_path, "20260814000001", None)["status"] == "ARCHIVAL_UNBOUND"
+
+
+def test_collection_binds_adopted_annual_and_latest(bound_collection):
+    root, receipt, _ = bound_collection
+    for rcept in ("20260813000001", "20260814000001"):
+        result = collection_binding(root, rcept, receipt)
+        assert result["status"] == "RESOLVER_BOUND"
+        assert result["stock_code"] == "010130"
+        assert len(result["resolver_sha256"]) == 64
+
+
+@pytest.mark.parametrize("rcept", ["20260301000001", "20260814000002"])
+def test_collection_refuses_superseded_or_unselected(bound_collection, rcept):
+    root, receipt, _ = bound_collection
+    with pytest.raises(FilingCollectionError, match="not an adopted"):
+        collection_binding(root, rcept, receipt)
+
+
+@pytest.mark.parametrize("mutation", ["target", "as_of", "inputs", "future", "profile", "missing_hash"])
+def test_collection_refuses_stale_or_mismatched_binding(bound_collection, mutation):
+    root, receipt, payload = bound_collection
+    if mutation == "target":
+        payload["company_query"] = "다른 회사"
+    elif mutation == "as_of":
+        payload["as_of"] = "2026-08-31"
+    elif mutation == "inputs":
+        (root / "raw" / "list.json").write_text('{"changed": true}')
+    elif mutation == "future":
+        payload["latest_periodic"]["received_on"] = "2026-09-02"
+    elif mutation == "profile":
+        payload["corp_code"] = "99999999"
+    else:
+        del payload["input_sha256"]
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(FilingCollectionError, match="FILING_SELECTION_MISMATCH"):
+        collection_binding(root, "20260814000001", receipt)
+
+
+def test_collector_checks_binding_before_fetch_or_directory_write(bound_collection, monkeypatch):
+    root, receipt, _ = bound_collection
+    spec = importlib.util.spec_from_file_location("collect_kr_filing", ROOT / "scripts" / "collect_kr_filing.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    monkeypatch.setattr("sys.argv", ["collect", str(root), "--rcept", "20260301000001",
+                                     "--selection-receipt", str(receipt)])
+    def unexpected_fetch(*args, **kwargs):
+        pytest.fail("network called before selection validation")
+    monkeypatch.setattr(module, "_get", unexpected_fetch)
+    with pytest.raises(FilingCollectionError, match="FILING_SELECTION_MISMATCH"):
+        module.main()
+    assert not (root / "raw" / "filing_20260301000001").exists()
 
 
 def _plan(toc_path: Path):

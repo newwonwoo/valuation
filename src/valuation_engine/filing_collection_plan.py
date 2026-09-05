@@ -22,7 +22,9 @@ sub-sections is collected whole rather than truncated to the first hit.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from hashlib import sha256
+import json
 from pathlib import Path
 import re
 from typing import Any, Iterable, Mapping, Sequence
@@ -34,6 +36,54 @@ from .runtime_resources import runtime_registry_path
 
 class FilingCollectionError(ValueError):
     """Raised when the table of contents or the role registry is not readable."""
+
+
+def resolver_input_hashes(raw: Path) -> dict[str, str]:
+    """Bind a resolver result to the identity and filing index it actually read."""
+    return {
+        name: sha256((raw / name).read_bytes()).hexdigest()
+        for name in ("corp_search.json", "company.json", "list.json")
+    }
+
+
+def collection_binding(run_dir: Path, rcept: str, receipt: Path | None) -> dict[str, Any]:
+    """Check optional collection scope; this does not authorize valuation Evidence.
+
+    Archival collection remains available without a run declaration. Bound
+    collection reuses the resolver's selections, never a second filing selector.
+    """
+    if receipt is None:
+        return {"status": "ARCHIVAL_UNBOUND", "rcept_no": rcept}
+    try:
+        receipt_bytes = receipt.read_bytes()
+        resolved = json.loads(receipt_bytes)
+        config = yaml.safe_load((run_dir / "run.yaml").read_text(encoding="utf-8"))
+        cutoff = date.fromisoformat(str(resolved["as_of"]))
+        if (str(config["as_of"]) != cutoff.isoformat()
+                or config["company_query"] != resolved["company_query"]):
+            raise ValueError("run target/as_of differs from resolver")
+        if resolved["input_sha256"] != resolver_input_hashes(run_dir / "raw"):
+            raise ValueError("resolver inputs changed")
+        profile = json.loads((run_dir / "raw" / "company.json").read_bytes())
+        if (profile["corp_code"] != resolved["corp_code"]
+                or profile["stock_code"] != resolved["stock_code"]):
+            raise ValueError("resolver target differs from company profile")
+        selected = [resolved.get(key) for key in ("adopted_annual", "latest_periodic")]
+        matches = [item for item in selected if item and item["rcept_no"] == rcept]
+        if not matches or rcept in resolved.get("superseded_rcept_nos", ()):
+            raise ValueError("receipt is not an adopted resolver filing")
+        if any(date.fromisoformat(item["received_on"]) > cutoff for item in matches):
+            raise ValueError("filing was published after as_of")
+        return {
+            "status": "RESOLVER_BOUND",
+            "rcept_no": rcept,
+            "corp_code": resolved["corp_code"],
+            "stock_code": resolved["stock_code"],
+            "as_of": cutoff.isoformat(),
+            "resolver_sha256": sha256(receipt_bytes).hexdigest(),
+        }
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        raise FilingCollectionError(f"FILING_SELECTION_MISMATCH: {error}") from error
 
 
 DEFAULT_TOC_ROLE_REGISTRY = runtime_registry_path("kr_filing_toc_roles.yaml")
