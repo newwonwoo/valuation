@@ -784,12 +784,11 @@ def _answer(**overrides) -> str:
         "row_path": ["대한제강(주)", "철 근"],
         "column_path": ["2026년 반기"],
         "unit_token": "천원/톤",
-        # The proposal names where the filing writes the unit, per
-        # docs/LLM_READING_HANDOFF_DESIGN.md §3.2. Tests that vary the
-        # unit override this alongside unit_token.
-        "unit_source": {"quote": "(단위: 천원/톤)"},
     }
     cell.update(overrides)
+    # The proposal names where the filing writes the unit, and a source is a
+    # whole text node — the same contract a live reader answers under.
+    cell.setdefault("unit_source", _unit_source_in(MEMBER, cell["unit_token"]))
     return json.dumps({"cells": [cell], "not_found": []}, ensure_ascii=False)
 
 
