@@ -246,6 +246,8 @@ TABLE_CELL_ANSWER = json.dumps(
                 # docs/LLM_READING_HANDOFF_DESIGN.md §3.2 — here a one-line
                 # paragraph above the table, which is how issuers write it.
                 "unit_source": {"quote": "(단위: 원/톤)"},
+                # …and where it states the period, per the same section.
+                "period_source": {"cell": [2, 0, 2]},
             }
         ]
     }
@@ -348,7 +350,8 @@ def test_table_utilization_has_the_same_ratio_contract_as_static(cell, caption):
                          "table_index": 0, "row_path": ["제1공장"],
                          "column_path": ["당기"], "unit_token": "%",
                          "unit_source": ({"quote": caption} if "단위" in caption
-                                         else {"cell": [0, 1, 1]})}]}
+                                         else {"cell": [0, 1, 1]}),
+                         "period_source": {"cell": [0, 0, 1]}}]}
     class RatioTransport(_Transport):
         def complete(self, *, role, prompt):
             if role == "filing_locator_analyst":

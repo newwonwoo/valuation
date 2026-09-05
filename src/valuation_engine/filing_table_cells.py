@@ -278,6 +278,10 @@ class TableCellProposal:
     unit_token: str
     #: Where the filing writes this cell's unit. Named, never inferred.
     unit_source: SourceRef = SourceRef(quote="")
+    #: Where the filing says which period this cell reports. The design's other
+    #: dropped field: an issuer may date a column, a section or a caption, and
+    #: a verifier that hunts for the marker is parsing that habit.
+    period_source: SourceRef = SourceRef(quote="")
 
     @classmethod
     def from_row(cls, row: Mapping[str, Any]) -> "TableCellProposal":
@@ -291,6 +295,7 @@ class TableCellProposal:
                 "column_path",
                 "unit_token",
                 "unit_source",
+                "period_source",
             ),
             label="table_cell",
         )
@@ -317,6 +322,9 @@ class TableCellProposal:
             column_path=_path(row["column_path"], "column_path"),
             unit_token=text_field(row["unit_token"], "table_cell.unit_token"),
             unit_source=SourceRef.from_value(row["unit_source"], "table_cell.unit_source"),
+            period_source=SourceRef.from_value(
+                row["period_source"], "table_cell.period_source"
+            ),
         )
 
 
@@ -895,17 +903,24 @@ def read_table_cell(
     ):
         raise ProposalParseError("selected percentage cell conflicts with the task unit")
 
-    # The column's own headings are what date the figure.
-    column_text = " ".join(
-        str(item[column]) for item in headers if column < len(item) and str(item[column]).strip()
+    # The period is read where the proposal says the filing states it — a
+    # column header, a section line, a caption. The chronology contract is
+    # unchanged; what is gone is the search for which text to apply it to.
+    period_text, period_start, _ = _resolve_source(
+        member_text, proposal.period_source, label="table_cell.period_source"
     )
+    if period_start >= value_span[1]:
+        raise ProposalParseError(
+            "the named period source does not precede the selected cell, so it "
+            "does not date it"
+        )
     validate_filing_period_context(
-        column_text,
+        period_text,
         metric=task.metric,
         effective_date=effective_date,
         require_current_period_marker=task.require_current_period_marker,
     )
-    _validate_complete_reporting_period(column_text, effective_date)
+    _validate_complete_reporting_period(period_text, effective_date)
 
     value = _amount(grid[row][column])
     if value is None:

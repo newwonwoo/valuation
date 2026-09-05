@@ -48,24 +48,36 @@ COORDINATES: dict[tuple[str, str], dict[str, object]] = {
         "row_path": ["대한제강(주)", "철 근"],
         "column_path": ["2026년 반기"],
         "unit_token": "천원/톤",
+        "unit_source": {
+            "quote": "제품 가격은 품목별 매출액에서 판매량을 나눈 값으로 산출하였습니다. (단위: 천원/톤)"
+        },
+        "period_source": {"cell": [1, 0, 2]},
     },
     ("daehansteel-084010", "utilization"): {
         "table_index": 2,
         "row_path": ["대한제강(주)", "압 연(철근)", "소계"],
         "column_path": ["평균가동률"],
         "unit_token": "%",
+        "unit_source": {
+            "quote": "제74기 반기 동안의 생산실적, 생산능력 및 가동률은 아래와 같습니다. (단위: 천톤, %)"
+        },
+        "period_source": {"cell": [2, 0, 3]},
     },
     ("kisco-104700", "realized_price"): {
         "table_index": 3,
         "row_path": ["철강", "철 근"],
         "column_path": ["제19기 반기"],
         "unit_token": "원/Ton",
+        "unit_source": {"cell": [2, 0, 0]},
+        "period_source": {"cell": [3, 0, 2]},
     },
     ("kisco-104700", "utilization"): {
         "table_index": 11,
         "row_path": ["철 강", "철 근"],
         "column_path": ["가동률 (%)"],
         "unit_token": "%",
+        "unit_source": {"cell": [11, 0, 4]},
+        "period_source": {"cell": [11, 0, 4]},
     },
 }
 

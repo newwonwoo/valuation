@@ -33,6 +33,24 @@ from valuation_engine.filing_table_cells import (
 from valuation_engine.proposal_parsing import ProposalParseError
 
 
+
+def _period_source_in(member: str, table_index: int, column_path) -> dict:
+    """The header cell that dates the column, as a proposal would name it.
+
+    The old verifier assembled this text itself; the proposal names it now, so
+    the fixtures name the same cell they always relied on.
+    """
+    from valuation_engine.filing_table_cells import _grids, _squeeze
+    wanted = _squeeze(column_path[-1] if isinstance(column_path, (list, tuple)) else column_path)
+    grids = _grids(member)
+    if table_index < len(grids):
+        for r, row in enumerate(grids[table_index][:4]):
+            for c, cell in enumerate(row):
+                if _squeeze(cell) == wanted:
+                    return {"cell": [table_index, r, c]}
+    return {"quote": "기간 없음"}
+
+
 def _unit_source_in(member: str, token: str, table_index: int = 0) -> dict:
     """Where a fixture writes its unit, as a proposal would point at it.
 
@@ -96,6 +114,7 @@ def _read(**overrides):
     # exactly what the mismatch tests below are about. A test about some other
     # placement names its own source.
     row.setdefault("unit_source", _unit_source_in(MEMBER, row["unit_token"], row["table_index"]))
+    row.setdefault("period_source", _period_source_in(MEMBER, row["table_index"], row["column_path"]))
     return read_table_cell(
         MEMBER,
         TableCellProposal.from_row(row),
@@ -501,6 +520,7 @@ def _observe(**overrides):
     # exactly what the mismatch tests below are about. A test about some other
     # placement names its own source.
     row.setdefault("unit_source", _unit_source_in(MEMBER, row["unit_token"], row["table_index"]))
+    row.setdefault("period_source", _period_source_in(MEMBER, row["table_index"], row["column_path"]))
     return read_table_cell_observation(
         _filing(),
         TableCellProposal.from_row(row),
@@ -794,6 +814,7 @@ def _answer(**overrides) -> str:
     # The proposal names where the filing writes the unit, and a source is a
     # whole text node — the same contract a live reader answers under.
     cell.setdefault("unit_source", _unit_source_in(MEMBER, cell["unit_token"], cell["table_index"]))
+    cell.setdefault("period_source", _period_source_in(MEMBER, cell["table_index"], cell["column_path"]))
     return json.dumps({"cells": [cell], "not_found": []}, ensure_ascii=False)
 
 
