@@ -371,7 +371,8 @@ def test_rendering_does_not_silently_omit_rows_after_twenty(monkeypatch):
 
 
 @pytest.mark.parametrize("unit_token", ["천원/톤", "원/톤"])
-def test_mixed_units_require_cell_governance_before_any_observation(monkeypatch, unit_token):
+@pytest.mark.parametrize("second_unit", ["(원/톤)", "원/톤", "단위 원/톤", "단위 원 / 톤"])
+def test_mixed_units_require_cell_governance_before_any_observation(monkeypatch, unit_token, second_unit):
     import sys
 
     mixed = """<p>제품 가격변동추이</p><table>
@@ -379,6 +380,7 @@ def test_mixed_units_require_cell_governance_before_any_observation(monkeypatch,
     <tr><td>철근</td><td>(천원/톤)</td><td>823</td></tr>
     <tr><td>빌릿</td><td>(원/톤)</td><td>740000</td></tr>
     </table>"""
+    mixed = mixed.replace("(원/톤)", second_unit)
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", mixed)
     with pytest.raises(ProposalParseError, match="mixed units"):
         _observe(row_path=["빌릿"], unit_token=unit_token)
@@ -393,6 +395,15 @@ def test_equivalent_unit_spellings_do_not_create_false_ambiguity(monkeypatch):
     </table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", table)
     assert _observe(row_path=["빌릿"], unit_token="원/kg").measure.amount == Decimal("740000")
+
+
+def test_unit_whitespace_caption_preserves_token_boundaries(monkeypatch):
+    import sys
+
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", MEMBER.replace(
+        "(단위: 천원/톤)", "단위 천원 / 톤"
+    ))
+    assert _observe().measure.amount == Decimal("823000")
 
 
 def test_the_receipts_are_the_same_ones_the_static_path_leaves():

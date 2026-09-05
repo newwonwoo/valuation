@@ -313,26 +313,27 @@ def _require_declared_unit(
     changing a valuation input by a factor of a thousand through its choice of
     spelling. The token has to stand alone.
     """
-    haystack = _squeeze(text)
+    if not _squeeze(unit_token):
+        raise ProposalParseError(f"reading task {task.metric} needs a unit token")
+    if not _unit_matches(unit_token, text):
+        raise ProposalParseError(
+            f"the unit {unit_token!r} proposed for {task.metric} is not "
+            "declared with the table as a unit of its own; a unit has to be "
+            "read from the filing, not chosen from the registry"
+        )
+
+
+def _unit_matches(unit_token: str, text: str) -> list[re.Match[str]]:
+    """Permit internal spacing while preserving original token boundaries."""
     needle = _squeeze(unit_token)
     if not needle:
-        raise ProposalParseError(f"reading task {task.metric} needs a unit token")
-    start = 0
-    while True:
-        at = haystack.find(needle, start)
-        if at < 0:
-            raise ProposalParseError(
-                f"the unit {unit_token!r} proposed for {task.metric} is not "
-                "declared with the table as a unit of its own; a unit has to be "
-                "read from the filing, not chosen from the registry"
-            )
-        before = haystack[at - 1] if at else ""
-        after = haystack[at + len(needle) : at + len(needle) + 1]
-        if bool(_UNIT_BOUNDARY.fullmatch(before) or not before) and bool(
-            _UNIT_BOUNDARY.fullmatch(after) or not after
-        ):
-            return
-        start = at + 1
+        return []
+    pattern = r"\s*".join(re.escape(char) for char in needle)
+    return [
+        match for match in re.finditer(pattern, text)
+        if (match.start() == 0 or _UNIT_BOUNDARY.fullmatch(text[match.start() - 1]))
+        and (match.end() == len(text) or _UNIT_BOUNDARY.fullmatch(text[match.end()]))
+    ]
 
 
 def _grids(html_text: str) -> list[list[list[str]]]:
@@ -518,11 +519,15 @@ def read_table_cell(
     )
     declared_units: set[str] = set()
     for token, unit in task.source_unit_map:
-        try:
-            _require_declared_unit(token, caption + " " + grid_text, task=task)
-        except ProposalParseError:
-            continue
-        declared_units.add(unit)
+        # Cell boundaries delimit tokens too. Squeezing the entire grid would
+        # turn a bare unit cell into e.g. '빌릿원/톤740000' and hide it.
+        for context in (caption, *(cell for row in grid for cell in row)):
+            try:
+                _require_declared_unit(token, context, task=task)
+            except ProposalParseError:
+                continue
+            declared_units.add(unit)
+            break
     if len(declared_units) > 1:
         raise ProposalParseError(
             f"table {proposal.table_index} for {task.metric} declares mixed units; "
@@ -636,10 +641,8 @@ def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, str]:
             # The unit must come from this table or its own caption, never a
             # preceding table. Match the same declared token, at token boundaries.
             units = [
-                match.start() for match in re.finditer(re.escape(reading.unit_token), text)
+                match.start() for match in _unit_matches(reading.unit_token, text)
                 if previous_end <= match.start() and match.end() <= value_start
-                and (match.start() == 0 or _UNIT_BOUNDARY.fullmatch(text[match.start() - 1]))
-                and (match.end() == len(text) or _UNIT_BOUNDARY.fullmatch(text[match.end()]))
             ]
             if not units:
                 raise ProposalParseError("unit is not declared before the selected cell")
@@ -693,7 +696,8 @@ def read_table_cell_observation(
 
     escaped = re.escape(span)
     escaped_value = re.escape(value_text)
-    escaped_unit = re.escape(reading.unit_token)
+    original_unit_token = _unit_matches(reading.unit_token, span)[0].group()
+    escaped_unit = re.escape(original_unit_token)
     head, _, tail = escaped.rpartition(escaped_value)
     pattern = rf"(?<=\A[\s\S]{{{start}}})" + head + f"(?P<value>{escaped_value})" + tail
     if escaped_unit not in pattern:  # pragma: no cover - span starts at the unit
@@ -714,7 +718,7 @@ def read_table_cell_observation(
             f"{proposal.table_index} / {' / '.join(proposal.row_path)} / "
             f"{' / '.join(proposal.column_path)}"
         ),
-        source_unit_map=task.source_unit_map,
+        source_unit_map=tuple(dict(task.source_unit_map + ((original_unit_token, reading.unit),)).items()),
     )
     try:
         observation = extract_dart_kpi(filing, spec)
