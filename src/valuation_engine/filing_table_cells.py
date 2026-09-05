@@ -814,6 +814,20 @@ def read_table_cell(
             f"the cell proposed for {task.metric} is outside its row"
         )
 
+    # A unit written in the selected row governs that row, whatever the model
+    # points at elsewhere. This reads the row it was given; it does not detect
+    # which column is "the unit column".
+    for index, cell in enumerate(grid[row]):
+        if index == column or _amount(cell) is not None or _is_missing_value(cell):
+            continue
+        if not any(mark in cell for mark in ("/", "%", "／", "％")):
+            continue
+        if _squeeze(cell).strip("()（）") != _squeeze(proposal.unit_token).strip("()（）"):
+            raise ProposalParseError(
+                f"the selected row states its own unit ({cell!r}), which is not "
+                f"the proposed {proposal.unit_token!r}"
+            )
+
     # The unit is read where the proposal says the filing writes it. Nothing
     # here infers a caption, a unit column or a declaration grammar: those are
     # the issuer habits docs/LLM_READING_HANDOFF_DESIGN.md §1.1 puts on the
@@ -855,19 +869,6 @@ def read_table_cell(
             "written between the named unit source and the selected cell, so "
             "the source does not settle this cell's unit"
         )
-    # A unit written in the selected row governs that row, whatever the model
-    # points at elsewhere. This reads the row it was given; it does not detect
-    # which column is "the unit column".
-    for index, cell in enumerate(grid[row]):
-        if index == column or _amount(cell) is not None or _is_missing_value(cell):
-            continue
-        if not any(mark in cell for mark in ("/", "%", "／", "％")):
-            continue
-        if _squeeze(cell).strip("()（）") != _squeeze(proposal.unit_token).strip("()（）"):
-            raise ProposalParseError(
-                f"the selected row states its own unit ({cell!r}), which is not "
-                f"the proposed {proposal.unit_token!r}"
-            )
     if "%" in grid[row][column] and (
         task.unit_dimension != "RATIO" or proposal.unit_token != "%"
     ):

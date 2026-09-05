@@ -134,7 +134,7 @@ def test_caption_requires_complete_explicit_unit_declaration(monkeypatch, captio
     <tr><td>공장</td><td>2026년 반기</td></tr>
     <tr><td>제1공장</td><td>85</td></tr></table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    with pytest.raises(ProposalParseError, match="not declared"):
+    with pytest.raises(ProposalParseError, match="not declared|does not settle"):
         _observe(metric="utilization", row_path=["제1공장"], unit_token="%")
 
 
@@ -189,7 +189,7 @@ def test_trailing_note_cannot_override_unit_declaration(monkeypatch, note, row_u
     <tr><td>품목</td><td>2026년 반기</td>{unit_header}</tr>
     <tr><td>수출</td><td>600</td>{row_unit}</tr></table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    with pytest.raises(ProposalParseError, match="not declared"):
+    with pytest.raises(ProposalParseError, match="does not settle"):
         _observe(row_path=["수출"], unit_token="원/톤")
 
 
@@ -254,7 +254,7 @@ def test_ratio_unit_cannot_come_from_other_numeric_column(monkeypatch, other_fir
     <tr><td>공장</td><td>{headings[0]}</td><td>{headings[1]}</td></tr>
     <tr><td>제1공장</td><td>{cells[0]}</td><td>{cells[1]}</td></tr></table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    with pytest.raises(ProposalParseError, match="not declared"):
+    with pytest.raises(ProposalParseError, match="not declared|does not settle"):
         _observe(metric="utilization", row_path=["제1공장"], unit_token="%")
 
 
@@ -655,7 +655,7 @@ def test_mixed_units_require_exact_cell_governance(monkeypatch, unit_token, seco
     if unit_token == "원/톤" and second_unit in {"원/톤", "(원/톤)"}:
         assert _observe(row_path=["빌릿"], unit_token=unit_token).measure.amount == Decimal("740000")
     else:
-        with pytest.raises(ProposalParseError, match="mixed units"):
+        with pytest.raises(ProposalParseError, match="states its own unit"):
             _observe(row_path=["빌릿"], unit_token=unit_token)
     assert _observe(row_path=["철근"], unit_token="천원/톤").measure.amount == Decimal("823000")
 
