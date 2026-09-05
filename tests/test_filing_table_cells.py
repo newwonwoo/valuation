@@ -381,6 +381,7 @@ def test_the_raw_material_task_may_not_read_the_product_table():
                     "row_path": ["대한제강(주)", "철 근"],
                     "column_path": ["2026년 반기"],
                     "unit_token": "천원/톤",
+                    "unit_source": {"quote": "(단위: 천원/톤)"},
                 }
             ),
             TASKS["input_price"],
@@ -439,7 +440,9 @@ def test_the_committed_registry_is_coherent():
 
 
 @pytest.mark.parametrize(
-    "missing", ("metric", "member_path", "table_index", "row_path", "column_path", "unit_token")
+    "missing",
+    ("metric", "member_path", "table_index", "row_path", "column_path",
+     "unit_token", "unit_source"),
 )
 def test_an_incomplete_proposal_is_refused(missing):
     row = {
@@ -468,6 +471,7 @@ def test_a_single_heading_may_be_given_as_a_string():
             "row_path": "철 근",
             "column_path": "2026년 반기",
             "unit_token": "천원/톤",
+            "unit_source": {"quote": "(단위: 천원/톤)"},
         }
     ).row_path == ("철 근",)
 
@@ -980,6 +984,7 @@ def test_the_metric_reads_from_a_table_whose_neighbour_is_the_excluded_one():
                 "row_path": ["철 근"],
                 "column_path": ["2026년 반기"],
                 "unit_token": "천원/톤",
+                "unit_source": {"quote": "(단위: 천원/톤)"},
             }
         ),
         TASKS["realized_price"],
