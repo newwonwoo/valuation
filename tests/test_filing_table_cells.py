@@ -390,6 +390,7 @@ def test_the_raw_material_task_may_not_read_the_product_table():
                     "column_path": ["2026년 반기"],
                     "unit_token": "천원/톤",
                     "unit_source": {"quote": "(단위: 천원/톤)"},
+                    "period_source": {"cell": [0, 0, 2]},
                 }
             ),
             TASKS["input_price"],
@@ -460,10 +461,10 @@ def test_an_incomplete_proposal_is_refused(missing):
         "row_path": ["대한제강(주)"],
         "column_path": ["2026년 반기"],
         "unit_token": "천원/톤",
-        # The proposal names where the filing writes the unit, per
-        # docs/LLM_READING_HANDOFF_DESIGN.md §3.2. Tests that vary the
-        # unit override this alongside unit_token.
+        # The proposal names where the filing writes the unit and states the
+        # period, per docs/LLM_READING_HANDOFF_DESIGN.md §3.2.
         "unit_source": {"quote": "(단위: 천원/톤)"},
+        "period_source": {"cell": [0, 0, 2]},
     }
     row.pop(missing)
     with pytest.raises(ProposalParseError):
@@ -480,6 +481,7 @@ def test_a_single_heading_may_be_given_as_a_string():
             "column_path": "2026년 반기",
             "unit_token": "천원/톤",
             "unit_source": {"quote": "(단위: 천원/톤)"},
+            "period_source": {"cell": [0, 0, 2]},
         }
     ).row_path == ("철 근",)
 
@@ -1000,6 +1002,7 @@ def test_the_metric_reads_from_a_table_whose_neighbour_is_the_excluded_one():
                 "column_path": ["2026년 반기"],
                 "unit_token": "천원/톤",
                 "unit_source": {"quote": "(단위: 천원/톤)"},
+                "period_source": {"cell": [1, 0, 1]},
             }
         ),
         TASKS["realized_price"],
