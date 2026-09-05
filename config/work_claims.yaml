@@ -57,6 +57,19 @@ claims:
   # recorded rather than omitted: the record of who built a thing outlives the
   # request that built it, and a later agent reading this file learns that the
   # 고려아연 run directory has a history before it opens the directory.
+  - claim_id: table-cell-reading-proposals
+    owner: claude
+    pull_request: 173
+    status: active
+    paths:
+      - "src/valuation_engine/filing_table_cells.py"
+      - "config/kr_filing_table_reading_tasks.yaml"
+      - "tests/test_filing_table_cells.py"
+    note: >-
+      A table_cell proposal type beside the existing locator, so a metric is
+      found by the table's own identity rather than by an anchor dictionary
+      that grows once per issuer. New files only; the locator cage is not
+      changed under this claim.
   - claim_id: koreazinc-live-primary-evidence-gate
     owner: codex
     pull_request: 170

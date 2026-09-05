@@ -1,0 +1,69 @@
+version: 1
+purpose: >-
+  What a reader is looking for in a filing's tables, described by what the
+  metric *is* rather than by the headings one issuer happened to write.
+rule: >-
+  config/kr_filing_kpi_patterns.yaml carries an anchor vocabulary that a quote
+  must contain, and it grows once per issuer: realized_price reached five
+  anchors across three companies, each addition commented with the laundering
+  it might open. That is the wrong shape — the list has to keep growing, and
+  every growth widens what can be pointed at.
+
+  A reading task names the table's identity instead. The proposal says which
+  table and which cell; the verifier confirms the table carries this metric's
+  vocabulary and carries none of the vocabulary that would make it a different
+  table, then reads the cell by coordinate. Issuers may word their headings
+  however they like, and the exclusion list — not the inclusion list — is what
+  keeps a neighbouring table from being read as this one.
+tasks:
+  realized_price:
+    definition: 보고기간 제품 평균 판매단가
+    canonical_unit: KRW_per_ton
+    unit_dimension: PRICE_PER_MASS
+    require_current_period_marker: true
+    table_identity:
+      # Small and stable: a product price table says so somewhere in its
+      # headings, whatever the issuer's phrasing.
+      must_have_any: [판매, 단가, 가격]
+      # The decisive half. The raw-material price table sits beside the product
+      # one and reads almost identically; without this, a purchase price could
+      # enter as a selling price.
+      must_not_have: [원재료, 부재료, 매입, 투입]
+    source_unit_map:
+      원/톤: KRW_per_ton
+      원/Ton: KRW_per_ton
+      원/MT: KRW_per_ton
+      (원/톤): KRW_per_ton
+      천원/톤: KRW_thousand_per_ton
+      원/kg: KRW_per_kg
+      원/KG: KRW_per_kg
+  input_price:
+    definition: 보고기간 주요 원재료 평균 매입단가
+    canonical_unit: KRW_per_ton
+    unit_dimension: PRICE_PER_MASS
+    require_current_period_marker: true
+    table_identity:
+      must_have_any: [원재료, 부재료, 매입]
+      # The mirror of realized_price: a product price table may not be read as
+      # a raw-material one either.
+      must_not_have: [판매단가, 판매가격, 제품가격]
+    source_unit_map:
+      원/톤: KRW_per_ton
+      원/Ton: KRW_per_ton
+      원/MT: KRW_per_ton
+      (원/톤): KRW_per_ton
+      천원/톤: KRW_thousand_per_ton
+      원/kg: KRW_per_kg
+      원/KG: KRW_per_kg
+  utilization:
+    definition: 보고기간 평균 가동률
+    canonical_unit: ratio
+    unit_dimension: RATIO
+    require_current_period_marker: true
+    table_identity:
+      must_have_any: [가동률, 가동]
+      must_not_have: [계획, 전망, 목표]
+    source_unit_map:
+      "%": ratio_percent
+      "(%)": ratio_percent
+      퍼센트: ratio_percent

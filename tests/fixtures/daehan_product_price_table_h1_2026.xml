@@ -1,0 +1,63 @@
+>
+  <TD width='96' height='23' align='RIGHT'>945,780&nbsp;</TD>
+  <TD width='65' height='23' align='RIGHT'>0.50%</TD>
+</TR>
+<TR height='30'>
+  <TD width='468' height='23' colspan='5' align='CENTER'>합계</TD>
+  <TD width='96' height='23' align='RIGHT'>188,135,428&nbsp;</TD>
+  <TD width='65' height='23' align='RIGHT'>100.00%</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/><BR/><SPAN style='font-weight:bold;'>2) 제품별 구체적인 가격변동추이<BR/></SPAN><SPAN>제품 가격은 품목별 매출액에서 판매량을 나눈 값으로 산출하였습니다. (단위: 천원/톤)</SPAN><BR/>
+</P>
+<TABLE border='1' width='505'>
+<COLGROUP>
+<COL width='135'></COL>
+<COL width='92'></COL>
+<COL width='93'></COL>
+<COL width='93'></COL>
+<COL width='92'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='126' height='23' align='CENTER' style='background-color:#D7D7D7;'>구분</TD>
+  <TD width='83' height='23' align='CENTER' style='background-color:#D7D7D7;'>품 목</TD>
+  <TD width='84' height='23' align='CENTER' style='background-color:#D7D7D7;'>2026년 반기</TD>
+  <TD width='84' height='23' align='CENTER' style='background-color:#D7D7D7;'>2025년</TD>
+  <TD width='83' height='23' align='CENTER' style='background-color:#D7D7D7;'>2024년</TD>
+</TR>
+<TR height='30'>
+  <TD width='126' height='83' rowspan='3' align='CENTER'>대한제강(주)</TD>
+  <TD width='83' height='23' align='CENTER'>철 근</TD>
+  <TD width='84' height='23' align='CENTER'>823</TD>
+  <TD width='84' height='23' align='CENTER'>793</TD>
+  <TD width='83' height='23' align='CENTER'>863</TD>
+</TR>
+<TR height='30'>
+  <TD width='83' height='23' align='CENTER'>빌 릿</TD>
+  <TD width='84' height='23' align='CENTER'>740</TD>
+  <TD width='84' height='23' align='CENTER'>670</TD>
+  <TD width='83' height='23' align='CENTER'>678</TD>
+</TR>
+<TR height='30'>
+  <TD width='83' height='23' align='CENTER'>바인코일</TD>
+  <TD width='84' height='23' align='CENTER'>877</TD>
+  <TD width='84' height='23' align='CENTER'>796</TD>
+  <TD width='83' height='23' align='CENTER'>853</TD>
+</TR>
+<TR height='30'>
+  <TD width='126' height='53' rowspan='2' align='CENTER'>와이케이스틸(주)</TD>
+  <TD width='83' height='23' align='CENTER'>철 근</TD>
+  <TD width='84' height='23' align='CENTER'>807</TD>
+  <TD width='84' height='23' align='CENTER'>772</TD>
+  <TD width='83' height='23' align='CENTER'>815</TD>
+</TR>
+<TR height='30'>
+  <TD width='83' height='23' align='CENTER'>빌 릿</TD>
+  <TD width='84' height='23' align='CENTER'>763</TD>
+  <TD width='84' height='23' align='CENTER'>694</TD>
+  <TD width='83' height='23' align='CENTER'>732</TD>
+</TR>
+</TBODY>
+</TABLE>
