@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import date
+import json
 from pathlib import Path
 
 from .declared_risk_pack import (
@@ -183,6 +184,8 @@ class GenericKRRuntimeSpec:
     #: here. Required for any issuer whose filing discloses multiple
     #: reportable segments; forbidden for one that reports itself whole.
     declared_segments_path: str | Path | None = None
+    #: Prepared, committed metric-to-receipt declarations for model-free replay.
+    table_cell_receipts_path: str | Path | None = None
     #: Extra evidence metrics this run requires beyond the method's assumption
     #: keys — the door multi-scenario runs use for scenario-qualified inputs
     #: (down_normalized_ebitda, bull_normalized_multiple, …): declaring them
@@ -243,6 +246,35 @@ class GenericKRRuntimeSpec:
         self.filing.validate()
 
 
+def _load_table_cell_receipts(path: str | Path | None) -> dict[str, str]:
+    if path is None:
+        return {}
+
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate receipt key: {key}")
+            result[key] = value
+        return result
+
+    try:
+        payload = json.loads(Path(path).read_text(encoding="utf-8"), object_pairs_hook=unique_object)
+        if not isinstance(payload, dict):
+            raise ValueError("receipt declarations must map metrics to receipts")
+        receipts = {}
+        for metric, value in payload.items():
+            saved = json.loads(value, object_pairs_hook=unique_object) if isinstance(value, str) else value
+            if not isinstance(saved, dict) or not metric or saved.get("metric") != metric:
+                raise ValueError("receipt metric must match its declaration key")
+            receipts[metric] = json.dumps(saved, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+        return receipts
+    except (OSError, ValueError, TypeError) as error:
+        raise GenericValuationPlanError(
+            f"EVIDENCE_RECONCILIATION_REQUIRED: invalid table receipt declarations: {error}"
+        ) from error
+
+
 def build_generic_kr_runtime_factory(
     *,
     network: OpenDartNetwork,
@@ -252,6 +284,7 @@ def build_generic_kr_runtime_factory(
 ) -> KRLiveRuntimeFactory:
     """Assemble the complete cold-start factory for an unseen KR company."""
     spec.validate()
+    table_cell_receipts = _load_table_cell_receipts(spec.table_cell_receipts_path)
     network.validate()
     capability_registry = (
         capability_registry or load_default_method_capability_registry()
@@ -297,6 +330,7 @@ def build_generic_kr_runtime_factory(
                 as_of=spec.as_of,
                 segment_id=spec.filing.segment_id,
                 transport=transport,
+                table_cell_receipts=table_cell_receipts,
             ),
             *industry_series_collector_providers(
                 network.fetch_text,

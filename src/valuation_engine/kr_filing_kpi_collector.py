@@ -57,13 +57,14 @@ from .filing_table_cells import (
     TableReadingTask,
     load_table_reading_tasks,
     propose_and_verify_table_cells,
+    replay_table_cell_observation,
 )
 from .llm_filing_locators import (
     FilingLocatorTask,
     propose_and_verify_filing_kpis,
     validate_filing_period_context,
 )
-from .llm_transport import ProposalTransport
+from .llm_transport import ProposalTransport, TransportError
 from .live_indexers import index_opendart_filing_list
 from .live_runtime import LiveCollectorProvider
 from .proposal_parsing import ProposalParseError
@@ -219,12 +220,7 @@ def _read_tables(
     segment: str,
     effective_date: str,
 ) -> tuple[DartKPIObservation, ...]:
-    """The coordinate pass, tolerant of a run that never scripted this seat.
-
-    A prepared run carries one file per staff role it uses, and a run written
-    before this seat existed has none for it. That is not a reason to stop
-    collecting: the metric is simply unread, which is where it already was.
-    """
+    """Read coordinates without converting reader failures into missing facts."""
     try:
         return propose_and_verify_table_cells(
             transport=transport,
@@ -233,8 +229,10 @@ def _read_tables(
             segment=segment,
             effective_date=effective_date,
         )
-    except Exception:  # noqa: BLE001 - a seat that cannot answer leaves a gap
-        return ()
+    except (TransportError, TimeoutError, ConnectionError) as error:
+        raise FilingKPICollectorError(
+            "READER_UNAVAILABLE: filing table reader could not complete"
+        ) from error
 
 
 def request_scoped_filing_kpi_collector(
@@ -245,6 +243,7 @@ def request_scoped_filing_kpi_collector(
     patterns: tuple[FilingKPIPattern, ...],
     lookback_days: int = 540,
     transport: ProposalTransport | None = None,
+    table_cell_receipts: Mapping[str, str] | None = None,
 ):
     """EvidenceCollector reading the latest periodic filing's operating tables.
 
@@ -291,8 +290,24 @@ def request_scoped_filing_kpi_collector(
             api_key=network.api_key,
         )
         records = []
+        replayed_metrics: set[str] = set()
+        for metric, receipt in (table_cell_receipts or {}).items():
+            if metric not in request.required_metrics or metric not in table_tasks:
+                raise ProposalParseError(
+                    "EVIDENCE_RECONCILIATION_REQUIRED: receipt names an unrequested metric"
+                )
+            observation = replay_table_cell_observation(
+                filing, receipt, table_tasks[metric],
+                segment=segment_id, effective_date=effective_date,
+            )
+            records.append(dart_kpi_observation_to_evidence(
+                observation, target_id=request.target_id, observed_date=as_of[:10],
+            ))
+            replayed_metrics.add(metric)
         statically_missed: list[str] = []
         for metric in request.required_metrics:
+            if metric in replayed_metrics:
+                continue
             pattern = by_metric[metric]
             spec = pattern.to_spec(
                 segment=segment_id,
@@ -360,8 +375,8 @@ def request_scoped_filing_kpi_collector(
                 )
         # Third pass: a metric the statutory layout and the quoted locator both
         # missed may still sit in a table the reading registry describes. The
-        # coordinate path is tried last because it is the newest, and like the
-        # two before it a miss is a gap rather than a failure.
+        # coordinate path is tried last. Reader and verification failures must
+        # not be represented as evidence that the filing omits a metric.
         found = {item.metric for item in records}
         unread = tuple(
             metric
@@ -404,6 +419,7 @@ def filing_kpi_collector_provider(
     pattern_config_path: str | Path = DEFAULT_PATTERN_CONFIG_PATH,
     lookback_days: int = 540,
     transport: ProposalTransport | None = None,
+    table_cell_receipts: Mapping[str, str] | None = None,
 ) -> LiveCollectorProvider:
     patterns = load_filing_kpi_patterns(pattern_config_path)
     return LiveCollectorProvider(
@@ -424,5 +440,6 @@ def filing_kpi_collector_provider(
             patterns=patterns,
             lookback_days=lookback_days,
             transport=transport,
+            table_cell_receipts=table_cell_receipts,
         ),
     )

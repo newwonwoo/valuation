@@ -24,6 +24,8 @@ from valuation_engine.kr_filing_kpi_collector import (
     request_scoped_filing_kpi_collector,
 )
 from valuation_engine.kr_opendart_provider import OpenDartNetwork
+from valuation_engine.llm_transport import TransportError
+from valuation_engine.proposal_parsing import ProposalParseError
 
 
 AS_OF = "2026-08-27"
@@ -235,13 +237,14 @@ class _Transport:
         raise AssertionError(f"unscripted role: {role}")
 
 
-def _collect_with(transport, metrics=("realized_price",), body=PRICE_TABLE_BODY):
+def _collect_with(transport, metrics=("realized_price",), body=PRICE_TABLE_BODY, receipts=None):
     collector = request_scoped_filing_kpi_collector(
         _network(body),
         as_of=AS_OF,
         segment_id="core",
         patterns=load_filing_kpi_patterns(),
         transport=transport,
+        table_cell_receipts=receipts,
     )
     return collector(
         EvidenceCollectionRequest(target_id=TARGET, required_metrics=metrics)
@@ -269,22 +272,69 @@ def test_a_metric_an_earlier_pass_already_found_is_not_asked_about_again():
     assert {record.metric for record in batch.records} == {"orders", "backlog"}
 
 
-def test_a_refused_coordinate_leaves_a_gap_and_never_blocks_the_batch():
-    """A model pointing at the prior-year column loses the round, not the run."""
+def test_a_refused_coordinate_blocks_instead_of_becoming_absence():
+    """Rejected prior-year coordinates do not establish non-disclosure."""
     prior = json.loads(TABLE_CELL_ANSWER)
     prior["cells"][0]["column_path"] = ["2024년"]
-    batch = _collect_with(_Transport(table_answer=json.dumps(prior)))
-    assert not batch.records  # coverage names realized_price downstream
+    with pytest.raises(ProposalParseError, match="PROPOSAL_REJECTED"):
+        _collect_with(_Transport(table_answer=json.dumps(prior)))
 
 
-def test_a_run_that_never_scripted_the_reader_seat_still_collects():
-    """Committed runs predate this seat; an unanswerable seat is a gap."""
+@pytest.mark.parametrize("failure", [
+    TransportError("no staff file"),
+    TimeoutError("reader timeout"),
+    ConnectionError("reader disconnected"),
+])
+def test_reader_unavailability_blocks_instead_of_returning_partial_evidence(failure):
 
     class _LocatorOnly:
         def complete(self, *, role: str, prompt: str) -> str:
             if role == "filing_locator_analyst":
                 return NO_LOCATOR_ANSWER
-            raise RuntimeError(f"no staff file for role {role}")
+            raise failure
 
-    batch = _collect_with(_LocatorOnly(), metrics=("orders", "realized_price"))
+    with pytest.raises(FilingKPICollectorError, match="READER_UNAVAILABLE") as caught:
+        _collect_with(_LocatorOnly(), metrics=("orders", "realized_price"))
+    assert caught.value.__cause__ is failure
+
+
+@pytest.mark.parametrize("failure", [
+    RuntimeError("unexpected reader failure"),
+    AssertionError("broken verifier invariant"),
+])
+def test_unexpected_table_reader_errors_are_not_swallowed(monkeypatch, failure):
+    def broken_reader(**kwargs):
+        raise failure
+
+    monkeypatch.setattr(
+        "valuation_engine.kr_filing_kpi_collector.propose_and_verify_table_cells",
+        broken_reader,
+    )
+    with pytest.raises(type(failure)) as caught:
+        _collect_with(_Transport(), metrics=("orders", "realized_price"))
+    assert caught.value is failure
+
+
+def test_explicit_reader_not_found_remains_a_coverage_gap():
+    answer = json.dumps({"cells": [], "not_found": ["realized_price"]})
+    batch = _collect_with(_Transport(table_answer=answer), metrics=("orders", "realized_price"))
     assert {record.metric for record in batch.records} == {"orders"}
+
+
+def test_sealed_table_receipt_replays_without_any_model_call():
+    first = _collect_with(_Transport()).records[0]
+    receipt = first.notes.split("; table_cell_receipt=", 1)[1]
+    replay = _collect_with(None, receipts={"realized_price": receipt})
+    assert replay.records == (first,)
+
+
+def test_changed_source_cannot_fall_back_from_receipt_to_model():
+    first = _collect_with(_Transport()).records[0]
+    receipt = first.notes.split("; table_cell_receipt=", 1)[1]
+    transport = _Transport()
+    with pytest.raises(ProposalParseError, match="EVIDENCE_RECONCILIATION_REQUIRED"):
+        _collect_with(
+            transport, body=PRICE_TABLE_BODY.replace("1,046,000", "1,047,000"),
+            receipts={"realized_price": receipt},
+        )
+    assert transport.roles == []

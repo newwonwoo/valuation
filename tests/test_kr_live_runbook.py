@@ -315,3 +315,12 @@ def test_the_committed_kisco_run_replays_to_the_attested_expected_value(
         lambda *args, **kwargs: reused,
     )
     assert run_kr_live.main() == 0
+
+
+def test_missing_staff_proposal_is_a_typed_transport_failure(tmp_path, monkeypatch):
+    from valuation_engine.llm_transport import TransportError
+
+    monkeypatch.delenv("VALUATION_LLM_TRANSPORT", raising=False)
+    transport = run_kr_live._StaffTransport(tmp_path)
+    with pytest.raises(TransportError, match="no staff proposal file"):
+        transport.complete(role="filing_table_reader", prompt="read")

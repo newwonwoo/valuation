@@ -21,6 +21,7 @@ own words, not a hand-written status.
 from __future__ import annotations
 
 from io import BytesIO
+from dataclasses import replace
 import json
 from zipfile import ZipFile
 
@@ -87,6 +88,43 @@ def test_the_full_provider_set_assembles_for_an_unseen_company(tmp_path):
         assert getattr(providers, slot) is not None, slot
     assert providers.collectors
     assert providers.scanner_runners
+
+
+def test_factory_passes_prepared_table_receipts_to_collector(tmp_path, monkeypatch):
+    import valuation_engine.generic_live_providers as module
+
+    path = tmp_path / "table_cell_receipts.json"
+    receipt = {"metric": "realized_price", "member_sha256": "test-source"}
+    path.write_text(json.dumps({"realized_price": receipt}), encoding="utf-8")
+    original = module.filing_kpi_collector_provider
+    captured = {}
+
+    def capture(*args, **kwargs):
+        captured.update(kwargs)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(module, "filing_kpi_collector_provider", capture)
+    module.build_generic_kr_runtime_factory(
+        network=probe_network(), transport=ScriptedTransport(_staff_scripts()),
+        spec=replace(probe_runtime_spec(), table_cell_receipts_path=path),
+    )
+    assert json.loads(captured["table_cell_receipts"]["realized_price"]) == receipt
+
+
+@pytest.mark.parametrize("contents", [
+    "not json", "[]", '{"price": {"metric": "other"}}',
+    '{"price": {}, "price": {}}', '{"price": 42}',
+])
+def test_factory_rejects_malformed_receipt_declarations(tmp_path, contents):
+    from valuation_engine.generic_live_providers import GenericValuationPlanError
+
+    path = tmp_path / "table_cell_receipts.json"
+    path.write_text(contents, encoding="utf-8")
+    with pytest.raises(GenericValuationPlanError, match="EVIDENCE_RECONCILIATION_REQUIRED"):
+        build_generic_kr_runtime_factory(
+            network=probe_network(), transport=ScriptedTransport(_staff_scripts()),
+            spec=replace(probe_runtime_spec(), table_cell_receipts_path=path),
+        )
 
 
 def test_generic_modules_never_import_a_company_bound_module():

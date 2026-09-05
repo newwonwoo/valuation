@@ -276,6 +276,125 @@ def test_a_verified_cell_becomes_an_ordinary_observation():
     assert observation.segment == "steel"
 
 
+def test_receipt_replays_without_a_model_and_survives_evidence_conversion():
+    import json
+    from valuation_engine.filing_table_cells import replay_table_cell_observation
+    from valuation_engine.dart_kpi import dart_kpi_observation_to_evidence
+
+    original = _observe()
+    replay = replay_table_cell_observation(
+        _filing(), original.table_cell_receipt, TASKS["realized_price"],
+        segment="steel", effective_date="2026-06-30",
+    )
+    assert replay == original
+    receipt = json.loads(original.table_cell_receipt)
+    assert receipt["cell"] == [1, 2]
+    assert receipt["canonical_value"] == "823000"
+    evidence = dart_kpi_observation_to_evidence(
+        original, target_id="KR:084010", observed_date="2026-08-29"
+    )
+    assert original.table_cell_receipt in evidence.notes
+
+
+@pytest.mark.parametrize("field,value", [
+    ("grid_sha256", "0" * 64), ("task_sha256", "0" * 64),
+    ("member_sha256", "0" * 64), ("rcept_no", "other"),
+    ("segment", "other"), ("effective_date", "2025-06-30"),
+    ("canonical_value", "999999"), ("cell", [1, 3]),
+])
+def test_changed_receipt_bindings_require_reconciliation(field, value):
+    import json
+    from valuation_engine.filing_table_cells import replay_table_cell_observation
+
+    receipt = json.loads(_observe().table_cell_receipt)
+    receipt[field] = value
+    with pytest.raises(ProposalParseError, match="EVIDENCE_RECONCILIATION_REQUIRED"):
+        replay_table_cell_observation(
+            _filing(), receipt, TASKS["realized_price"],
+            segment="steel", effective_date="2026-06-30",
+        )
+
+
+def test_duplicate_tables_keep_the_selected_table_offset(monkeypatch):
+    import sys
+    from valuation_engine.dart_kpi import _visible_text
+
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", MEMBER + MEMBER)
+    first = _observe(table_index=0)
+    second = _observe(table_index=1)
+    assert first.measure == second.measure
+    assert second.text_start >= first.text_end
+    text = _visible_text(_filing().members[0])
+    assert text[second.text_start:second.text_end] == second.matched_text
+    assert first.observation_hash != second.observation_hash
+
+
+def test_identical_prior_and_current_values_still_select_current_column(monkeypatch):
+    import sys
+    from valuation_engine.dart_kpi import _visible_text
+
+    # A repeated value in a preceding cell cannot move the selected cell's end.
+    modified = MEMBER.replace("2026년 반기", "CURRENT_TEMP").replace(
+        "2025년", "2026년 반기"
+    ).replace("CURRENT_TEMP", "2025년").replace(
+        ">793</TD>", ">823</TD>"
+    )
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", modified)
+    observation = _observe()
+    text = _visible_text(_filing().members[0])
+    assert text[observation.text_start:observation.text_end].endswith("823 823")
+
+
+def test_persisted_receipt_bypasses_model_completely():
+    from valuation_engine.filing_table_cells import propose_and_verify_table_cells
+
+    class NoModel:
+        def complete(self, **kwargs):
+            pytest.fail("replay must not invoke the model")
+
+    observation = _observe()
+    replayed = propose_and_verify_table_cells(
+        transport=NoModel(), filing=_filing(), tasks=[TASKS["realized_price"]],
+        segment="steel", effective_date="2026-06-30",
+        receipts=[observation.table_cell_receipt],
+    )
+    assert replayed == (observation,)
+
+
+def test_rendering_does_not_silently_omit_rows_after_twenty(monkeypatch):
+    import sys
+    from valuation_engine.filing_table_cells import _render_tables
+
+    rows = "".join(f"<tr><td>row{i}</td><td>{i}</td></tr>" for i in range(30))
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", f"<table>{rows}</table>")
+    assert "row29" in _render_tables(_filing())
+
+
+@pytest.mark.parametrize("unit_token", ["천원/톤", "원/톤"])
+def test_mixed_units_require_cell_governance_before_any_observation(monkeypatch, unit_token):
+    import sys
+
+    mixed = """<p>제품 가격변동추이</p><table>
+    <tr><td>품목</td><td>단위</td><td>2026년 반기</td></tr>
+    <tr><td>철근</td><td>(천원/톤)</td><td>823</td></tr>
+    <tr><td>빌릿</td><td>(원/톤)</td><td>740000</td></tr>
+    </table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", mixed)
+    with pytest.raises(ProposalParseError, match="mixed units"):
+        _observe(row_path=["빌릿"], unit_token=unit_token)
+
+
+def test_equivalent_unit_spellings_do_not_create_false_ambiguity(monkeypatch):
+    import sys
+
+    table = """<p>제품 가격변동추이 (단위: 원/kg, 원/KG)</p><table>
+    <tr><td>품목</td><td>2026년 반기</td></tr>
+    <tr><td>빌릿</td><td>740</td></tr>
+    </table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", table)
+    assert _observe(row_path=["빌릿"], unit_token="원/kg").measure.amount == Decimal("740000")
+
+
 def test_the_receipts_are_the_same_ones_the_static_path_leaves():
     observation = _observe()
     assert observation.rcept_no == RCEPT
@@ -370,12 +489,14 @@ def test_the_model_is_shown_the_grid_it_must_address():
     assert "대한제강(주)" in prompt
 
 
-def test_a_prior_period_coordinate_yields_a_gap_not_a_number():
-    assert _propose(_Scripted(_answer(column_path=["2025년"]))) == ()
+def test_a_prior_period_coordinate_blocks_after_repair():
+    with pytest.raises(ProposalParseError, match="PROPOSAL_REJECTED"):
+        _propose(_Scripted(_answer(column_path=["2025년"])))
 
 
-def test_an_unrequested_metric_yields_a_gap():
-    assert _propose(_Scripted(_answer(metric="utilization"))) == ()
+def test_an_unrequested_metric_blocks_after_repair():
+    with pytest.raises(ProposalParseError, match="PROPOSAL_REJECTED"):
+        _propose(_Scripted(_answer(metric="utilization")))
 
 
 def test_a_not_found_answer_is_a_gap_and_not_a_blocked_collection():
@@ -385,8 +506,9 @@ def test_a_not_found_answer_is_a_gap_and_not_a_blocked_collection():
     assert _propose(transport) == ()
 
 
-def test_an_unparseable_answer_leaves_a_gap_rather_than_raising():
-    assert _propose(_Scripted("not json at all")) == ()
+def test_an_unparseable_answer_blocks_after_repair():
+    with pytest.raises(ProposalParseError, match="PROPOSAL_REJECTED"):
+        _propose(_Scripted("not json at all"))
 
 
 def test_two_cells_for_one_metric_are_refused():
@@ -415,7 +537,8 @@ def test_two_cells_for_one_metric_are_refused():
         },
         ensure_ascii=False,
     )
-    assert _propose(_Scripted(both)) == ()
+    with pytest.raises(ProposalParseError, match="PROPOSAL_REJECTED"):
+        _propose(_Scripted(both))
 
 
 def test_a_shorter_unit_inside_the_declared_one_is_refused():

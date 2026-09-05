@@ -33,11 +33,12 @@ checked against the filing's own structure.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, replace
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from pathlib import Path
 import re
+import json
 from typing import Any, Iterable, Mapping, Sequence
 
 import yaml
@@ -49,6 +50,7 @@ from .dart_kpi import (
     DartKPIObservation,
     extract_dart_kpi,
     _visible_text,
+    _normalize_space,
 )
 from .generic_kr_industry import _SegmentTableParser, _expand_table
 from .llm_filing_locators import validate_filing_period_context
@@ -514,6 +516,18 @@ def read_table_cell(
     _require_declared_unit(
         proposal.unit_token, caption + " " + grid_text, task=task
     )
+    declared_units: set[str] = set()
+    for token, unit in task.source_unit_map:
+        try:
+            _require_declared_unit(token, caption + " " + grid_text, task=task)
+        except ProposalParseError:
+            continue
+        declared_units.add(unit)
+    if len(declared_units) > 1:
+        raise ProposalParseError(
+            f"table {proposal.table_index} for {task.metric} declares mixed units; "
+            "the selected cell has no verified governing unit"
+        )
 
     column = _locate_column(grid, proposal.column_path, metric=task.metric)
     row = _locate_row(grid, proposal.row_path, metric=task.metric)
@@ -556,21 +570,82 @@ def read_table_cell(
     )
 
 
-def _ordered_span(text: str, needles: Sequence[str]) -> tuple[int, int]:
-    """Where the needles occur in order, as the earliest such run."""
-    cursor = 0
-    first = -1
-    for needle in needles:
-        found = text.find(needle, cursor)
-        if found < 0:
-            raise ProposalParseError(
-                f"the filing text does not carry {needle!r} after the previous "
-                "heading; the proposed coordinate is not readable as one span"
-            )
-        if first < 0:
-            first = found
-        cursor = found + len(needle)
-    return first, cursor
+class _CoordinateTextParser(_SegmentTableParser):
+    """Track original text offsets while reusing the canonical table expansion."""
+
+    def __init__(self):
+        super().__init__()
+        self.parts = []
+        self.cell_spans = []
+        self.table_spans = []
+        self._cell_start = None
+        self._table_start = 0
+
+    def _position(self):
+        return len(_normalize_space(" ".join(self.parts)))
+
+    def handle_starttag(self, tag, attrs):
+        if tag.lower() == "table":
+            if self._table_depth:
+                raise ProposalParseError("nested table coordinate provenance is unsupported")
+            self._table_start = self._position()
+        if tag.lower() in {"td", "th"} and self._row is not None:
+            self._cell_start = len(self.parts)
+        super().handle_starttag(tag, attrs)
+
+    def handle_data(self, data):
+        self.parts.append(data)
+        super().handle_data(data)
+
+    def handle_endtag(self, tag):
+        if tag.lower() in {"td", "th"} and self._cell_start is not None:
+            before = _normalize_space(" ".join(self.parts[:self._cell_start]))
+            cell = _normalize_space(" ".join(self.parts[self._cell_start:]))
+            start = len(before) + (1 if before and cell else 0)
+            self.cell_spans.append((start, start + len(cell)))
+            self._cell_start = None
+        if tag.lower() == "table" and self._table_depth == 1:
+            self.table_spans.append((self._table_start, self._position()))
+        super().handle_endtag(tag)
+
+
+def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, str]:
+    parser = _CoordinateTextParser()
+    parser.feed(member.text)
+    parser.close()
+    text = _visible_text(member)
+    if _normalize_space(" ".join(parser.parts)) != text:
+        raise ProposalParseError("coordinate text normalization differs from evidence")
+    cell_number = 0
+    for index, table in enumerate(parser.tables):
+        numbered = []
+        for row in table:
+            numbered_row = []
+            for _, rowspan, colspan in row:
+                numbered_row.append((str(cell_number), rowspan, colspan))
+                cell_number += 1
+            numbered.append(numbered_row)
+        if index == reading.table_index:
+            grid = _expand_table(numbered)
+            cell_id = int(grid[reading.row_index][reading.column_index])
+            value_start, end = parser.cell_spans[cell_id]
+            raw_value = text[value_start:end]
+            if _amount(raw_value) != reading.value:
+                raise ProposalParseError("coordinate provenance does not match verified value")
+            previous_end = parser.table_spans[index - 1][1] if index else 0
+            # The unit must come from this table or its own caption, never a
+            # preceding table. Match the same declared token, at token boundaries.
+            units = [
+                match.start() for match in re.finditer(re.escape(reading.unit_token), text)
+                if previous_end <= match.start() and match.end() <= value_start
+                and (match.start() == 0 or _UNIT_BOUNDARY.fullmatch(text[match.start() - 1]))
+                and (match.end() == len(text) or _UNIT_BOUNDARY.fullmatch(text[match.end()]))
+            ]
+            if not units:
+                raise ProposalParseError("unit is not declared before the selected cell")
+            start = units[-1]
+            return start, end, raw_value
+    raise ProposalParseError("coordinate table is missing")
 
 
 def evidence_span(member, reading: TableCellReading) -> str:
@@ -583,36 +658,8 @@ def evidence_span(member, reading: TableCellReading) -> str:
     came from, and the machine can re-extract it from the member exactly as it
     re-extracts a quoted locator.
     """
-    text = _visible_text(member)
-    labels = [label for label in reading.row_path if label.strip()]
-    value_text = _format_cell_value(reading.value)
-    _, end = _ordered_span(text, labels + [value_text])
-    label_start, _ = _ordered_span(text, labels[:1] or [value_text])
-    unit_at = text.rfind(reading.unit_token, 0, label_start)
-    if unit_at < 0:
-        raise ProposalParseError(
-            f"the unit {reading.unit_token!r} is not declared before the cell "
-            f"proposed for {reading.metric}; a unit that follows its figure "
-            "cannot be shown to govern it"
-        )
-    span = text[unit_at:end]
-    occurrences = text.count(span)
-    if occurrences != 1:
-        raise ProposalParseError(
-            f"the span carrying the cell proposed for {reading.metric} occurs "
-            f"{occurrences} times in the member; the coordinate does not name "
-            "one place in the filing"
-        )
-    return span
-
-
-def _format_cell_value(value: Decimal) -> str:
-    """Render the value the way the filing writes it, with thousands commas."""
-    text = format(value, "f")
-    if "." in text:
-        whole, _, fraction = text.partition(".")
-        return f"{int(whole):,}.{fraction}"
-    return f"{int(text):,}"
+    start, end, _ = _coordinate_span(member, reading)
+    return _visible_text(member)[start:end]
 
 
 def read_table_cell_observation(
@@ -641,14 +688,14 @@ def read_table_cell_observation(
     reading = read_table_cell(
         member.text, proposal, task, effective_date=effective_date
     )
-    span = evidence_span(member, reading)
-    value_text = _format_cell_value(reading.value)
+    start, end, value_text = _coordinate_span(member, reading)
+    span = _visible_text(member)[start:end]
 
     escaped = re.escape(span)
     escaped_value = re.escape(value_text)
     escaped_unit = re.escape(reading.unit_token)
     head, _, tail = escaped.rpartition(escaped_value)
-    pattern = head + f"(?P<value>{escaped_value})" + tail
+    pattern = rf"(?<=\A[\s\S]{{{start}}})" + head + f"(?P<value>{escaped_value})" + tail
     if escaped_unit not in pattern:  # pragma: no cover - span starts at the unit
         raise ProposalParseError(
             f"the span for {task.metric} lost its unit token while compiling"
@@ -670,7 +717,21 @@ def read_table_cell_observation(
         source_unit_map=task.source_unit_map,
     )
     try:
-        return extract_dart_kpi(filing, spec)
+        observation = extract_dart_kpi(filing, spec)
+        receipt = reading.receipt() | {
+            "version": "TABLE_CELL_RECEIPT_V1",
+            "rcept_no": filing.rcept_no,
+            "member_sha256": member.content_hash,
+            "task_sha256": sha256(_canonical_json(asdict(task)).encode()).hexdigest(),
+            "segment": segment,
+            "effective_date": effective_date,
+            "value": format(reading.value, "f"),
+            "canonical_value": format(observation.measure.amount, "f"),
+            "canonical_unit": observation.measure.unit,
+            "normalized_span": [start, end],
+            "normalized_text_sha256": observation.normalized_text_hash,
+        }
+        return replace(observation, table_cell_receipt=_canonical_json(receipt))
     except DartKPIExtractionError as error:
         raise ProposalParseError(
             f"deterministic re-extraction rejected the cell proposed for "
@@ -679,6 +740,32 @@ def read_table_cell_observation(
 
 
 ROLE_TABLE_READER = "filing_table_reader"
+
+
+def _canonical_json(value) -> str:
+    return json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+
+
+def replay_table_cell_observation(
+    filing: DartOriginalFilingDocument, receipt: str | Mapping[str, Any],
+    task: TableReadingTask, *, segment: str, effective_date: str,
+) -> DartKPIObservation:
+    """Reopen a sealed coordinate without a model; reject any changed binding."""
+    try:
+        saved = json.loads(receipt) if isinstance(receipt, str) else dict(receipt)
+        proposal = TableCellProposal.from_row({
+            key: saved[key] for key in (
+                "metric", "member_path", "table_index", "row_path", "column_path", "unit_token"
+            )
+        })
+        observation = read_table_cell_observation(
+            filing, proposal, task, segment=segment, effective_date=effective_date
+        )
+        if observation.table_cell_receipt != _canonical_json(saved):
+            raise ValueError("sealed table receipt differs from replay")
+        return observation
+    except (ValueError, KeyError, TypeError) as error:
+        raise ProposalParseError(f"EVIDENCE_RECONCILIATION_REQUIRED: {error}") from error
 
 
 def _render_tables(filing: DartOriginalFilingDocument) -> str:
@@ -695,11 +782,11 @@ def _render_tables(filing: DartOriginalFilingDocument) -> str:
         for index, grid in enumerate(_grids(member.text)):
             caption = captions[index] if index < len(captions) else ""
             rows = "\n".join(
-                "  | ".join(str(cell) for cell in row) for row in grid[:20]
+                "  | ".join(str(cell) for cell in row) for row in grid
             )
             blocks.append(
                 f"=== member: {member.path} table {index} ===\n"
-                f"caption: {caption[-300:]}\n{rows}"
+                f"caption: {caption}\n{rows}"
             )
     return "\n\n".join(blocks)
 
@@ -747,18 +834,35 @@ def propose_and_verify_table_cells(
     segment: str,
     effective_date: str,
     max_attempts: int = 2,
+    receipts: Sequence[str | Mapping[str, Any]] = (),
 ) -> tuple[DartKPIObservation, ...]:
     """Ask the model which cell holds each metric; keep only what re-reads.
 
-    A rejected coordinate produces no observation, exactly as an undisclosed
-    metric produces none: both surface downstream as a named coverage gap, and
-    neither blocks the run. A model that cannot point at a verifiable cell has
-    lost the round, not the collection.
+    Explicit not-found declarations remain unverified coverage gaps. Invalid
+    proposals exhaust repair and fail closed, never masquerading as absence.
     """
     if not tasks:
         return ()
     for task in tasks:
         task.validate()
+    by_metric = {task.metric: task for task in tasks}
+    replayed = []
+    replayed_metrics = set()
+    for receipt in receipts:
+        try:
+            saved = json.loads(receipt) if isinstance(receipt, str) else dict(receipt)
+            metric = saved["metric"]
+            if metric not in by_metric or metric in replayed_metrics:
+                raise ValueError("receipt names an unrequested or duplicate metric")
+            replayed.append(replay_table_cell_observation(
+                filing, saved, by_metric[metric], segment=segment, effective_date=effective_date
+            ))
+            replayed_metrics.add(metric)
+        except (ValueError, TypeError, KeyError) as error:
+            raise ProposalParseError(f"EVIDENCE_RECONCILIATION_REQUIRED: {error}") from error
+    tasks = [task for task in tasks if task.metric not in replayed_metrics]
+    if not tasks:
+        return tuple(replayed)
     by_metric = {task.metric: task for task in tasks}
     rendered = _render_tables(filing)
     prompt = _table_prompt(filing, tasks, rendered)
@@ -774,7 +878,9 @@ def propose_and_verify_table_cells(
         rows = payload["cells"]
         if not isinstance(rows, list):
             raise ProposalParseError("cells must be a list")
-        str_tuple(payload.get("not_found", []), "not_found")
+        not_found = str_tuple(payload.get("not_found", []), "not_found")
+        if len(set(not_found)) != len(not_found) or set(not_found) - set(by_metric):
+            raise ProposalParseError("not_found must name unique requested metrics")
         observations: list[DartKPIObservation] = []
         seen: set[str] = set()
         for row in rows:
@@ -800,18 +906,18 @@ def propose_and_verify_table_cells(
                     effective_date=effective_date,
                 )
             )
+        if seen & set(not_found) or seen | set(not_found) != set(by_metric):
+            raise ProposalParseError("each requested metric must be accounted for exactly once")
         return tuple(observations)
 
     with llm_proposal_scope():
         try:
-            return complete_with_repair(
+            return tuple(replayed) + complete_with_repair(
                 transport=transport,
                 role=ROLE_TABLE_READER,
                 prompt=prompt,
                 parse=parse,
                 max_attempts=max_attempts,
             )
-        except ProposalParseError:
-            # Unreadable and undisclosed end the same way: a named gap, not a
-            # blocked run.
-            return ()
+        except ProposalParseError as error:
+            raise ProposalParseError(f"PROPOSAL_REJECTED: {error}") from error

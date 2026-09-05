@@ -91,6 +91,7 @@ from valuation_engine.live_primary_adapters import (  # noqa: E402
     live_opendart_company_resolver,
 )
 from valuation_engine.strict_live_runtime import run_prism  # noqa: E402
+from valuation_engine.llm_transport import TransportError  # noqa: E402
 from valuation_engine.valuation_execution import ParentAdjustmentPlan  # noqa: E402
 from valuation_engine.valuation_plan_compiler import SegmentMethodChoice  # noqa: E402
 
@@ -105,6 +106,10 @@ _PASSING = {
 
 class RunbookError(ValueError):
     pass
+
+
+class _StaffUnavailableError(RunbookError, TransportError):
+    """A missing proposal is a reader failure, not undisclosed evidence."""
 
 
 class _TargetProfileMismatchError(RunbookError):
@@ -225,7 +230,7 @@ class _StaffTransport:
         if not answers:
             if os.environ.get("VALUATION_LLM_TRANSPORT", "").strip():
                 return self._live_transport().complete(role=role, prompt=prompt)
-            raise RunbookError(
+            raise _StaffUnavailableError(
                 f"no staff proposal file for role {role!r}; add "
                 f"declarations/staff/{role}.json per the runbook, or set "
                 "VALUATION_LLM_TRANSPORT to let a live model take the seat"
@@ -1000,6 +1005,7 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
         declared_underwriting_path=str(run_dir / "declarations" / "underwriting.yaml"),
         declared_risk_path=_optional_path(run_dir, "risk_pack.yaml"),
         declared_segments_path=_optional_path(run_dir, "segments.yaml"),
+        table_cell_receipts_path=_optional_path(run_dir, "table_cell_receipts.json"),
         extra_required_evidence=tuple(config.get("extra_required_evidence", ())),
         parent_adjustments=parent_adjustments,
         market_config_path=market_path,
