@@ -70,6 +70,7 @@ def test_the_disclosed_cell_is_read_from_the_grid():
     "원/톤/월", "USD/원/톤", "원/톤 / 월", "USD / 원/톤", "원/톤 ／ 월",
     "(원/톤)/월", "USD/(원/톤)", "(원/톤) / 월",
     "원/톤·월", "원/톤 · 월", "원/톤 * 월", "원/톤 × 월", "원/톤 ^ 월",
+    "원/톤 ∙ 월", "원/톤 ⨯ 월", "원/톤 ⚙ 월",
 ])
 def test_compound_units_cannot_be_read_as_registered_subtokens(monkeypatch, unit):
     import sys
@@ -91,6 +92,31 @@ def test_unit_token_cannot_be_assembled_across_header_cells(monkeypatch):
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
     with pytest.raises(ProposalParseError, match="not declared"):
         _observe(row_path=["제품"], unit_token="원/톤")
+
+
+@pytest.mark.parametrize("caption", [
+    "전년 대비 3% 증가한 가동률", "전년 대비 3 % 증가한 가동률",
+    "가동률 (%)", "가동률 (단위: % ∙ 시간)", "가동률 (단위: %) ∙ 시간",
+])
+def test_caption_requires_complete_explicit_unit_declaration(monkeypatch, caption):
+    import sys
+    member = f"""<p>{caption}</p><table>
+    <tr><td>공장</td><td>2026년 반기</td></tr>
+    <tr><td>제1공장</td><td>85</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="not declared"):
+        _observe(metric="utilization", row_path=["제1공장"], unit_token="%")
+
+
+def test_narrative_percentage_cannot_replace_explicit_unit_receipt(monkeypatch):
+    import sys
+    member = """<p>전년 대비 3% 증가한 가동률 (단위: %)</p><table>
+    <tr><td>공장</td><td>2026년 반기</td></tr>
+    <tr><td>제1공장</td><td>85</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    observation = _observe(metric="utilization", row_path=["제1공장"], unit_token="%")
+    assert observation.measure.amount == Decimal("0.85")
+    assert "3%" not in observation.matched_text
 
 
 @pytest.mark.parametrize("other_first", [True, False])

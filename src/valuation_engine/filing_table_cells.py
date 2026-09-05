@@ -341,6 +341,50 @@ def _unit_matches(unit_token: str, text: str) -> list[re.Match[str]]:
     ]
 
 
+def _authorized_unit_spans(unit_token: str, text: str, *, caption: bool,
+                           inline_value: bool = False) -> tuple[tuple[int, int], ...]:
+    """Accept a complete declaration, never a token found inside prose.
+
+    Captions require an explicit unit marker. Cells may themselves be a unit,
+    or end in a parenthesized unit. Only the selected numeric cell may declare
+    a trailing percent. Unknown operators remain part of the complete token
+    and therefore fail equality without a blacklist of compound spellings.
+    """
+    needle = _squeeze(unit_token).strip("()").casefold()
+    candidates: list[tuple[int, int]] = []
+    marker = r"(?:단위|units?)\s*[:：]?\s*"
+    for match in re.finditer(r"[（(]" + marker + r"([^()（）]+)[）)]\s*$", text, re.IGNORECASE):
+        candidates.append(match.span(1))
+    plain = re.search(marker + r"([^()（）]+)$", text, re.IGNORECASE)
+    if plain:
+        candidates.append(plain.span(1))
+    if not caption:
+        candidates.append((0, len(text)))
+        suffix = re.search(r"[（(]([^()（）]+)[）)]\s*$", text)
+        if suffix and all(char.isalnum() or char.isspace() for char in text[:suffix.start()]):
+            candidates.append(suffix.span(1))
+    approved: list[tuple[int, int]] = []
+    for start, end in candidates:
+        declaration = text[start:end]
+        tokens = list(re.finditer(r"[^,]+", declaration))
+        # Comma aliases are allowed only when every full token is the same
+        # unit (e.g. 원/kg, 원/KG), never an unrecognized second dimension.
+        if not tokens or any(_squeeze(token.group()).casefold() != needle for token in tokens):
+            continue
+        for token in tokens:
+            value = token.group()
+            if _squeeze(value) != _squeeze(unit_token).strip("()"):
+                continue
+            left = start + token.start() + len(value) - len(value.lstrip())
+            approved.append((left, start + token.end() - len(value) + len(value.rstrip())))
+    if inline_value and needle == "%" and text.rstrip().endswith("%"):
+        numeric = text.rstrip()[:-1].strip()
+        if _amount(numeric) is not None:
+            end = len(text.rstrip())
+            approved.append((end - 1, end))
+    return tuple(dict.fromkeys(approved))
+
+
 def _grids(html_text: str) -> list[list[list[str]]]:
     parser = _SegmentTableParser()
     parser.feed(html_text or "")
@@ -590,9 +634,10 @@ def read_table_cell(
         [(index, column) for index in range(len(headers))]
         + [(row, index) for index in unit_columns] + [(row, column)]
     ))
-    governing_contexts = (caption, *(grid[r][c] for r, c in governing_cells
-                                     if c < len(grid[r])))
-    if not any(_unit_matches(proposal.unit_token, context) for context in governing_contexts):
+    authorized = _authorized_unit_spans(proposal.unit_token, caption, caption=True)
+    if not authorized and not any(_authorized_unit_spans(
+        proposal.unit_token, grid[r][c], caption=False, inline_value=(r, c) == (row, column)
+    ) for r, c in governing_cells if c < len(grid[r])):
         raise ProposalParseError(
             "proposed unit is not declared with the table as a unit of its own "
             "in a governing cell or caption"
@@ -717,19 +762,19 @@ def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, str]:
                 raise ProposalParseError("coordinate provenance does not match verified value")
             previous_end = parser.table_spans[index - 1][1] if index else 0
             governing_spans = [
-                (previous_end, parser.table_spans[index][0]),
-                *(parser.cell_spans[int(grid[r][c])]
+                (previous_end, parser.table_spans[index][0], True, False),
+                *((*parser.cell_spans[int(grid[r][c])], False,
+                   (r, c) == (reading.row_index, reading.column_index))
                   for r, c in reading.governing_unit_cells if grid[r][c]),
             ]
             # The unit must come from this table or its own caption, never a
             # preceding table. It may also be the selected cell's inline unit.
             # Match the same declared token, at token boundaries.
             units = [
-                match.start() for match in _unit_matches(reading.unit_token, text)
-                if match.end() <= end and any(
-                    left <= match.start() and match.end() <= right
-                    for left, right in governing_spans
-                )
+                left + start for left, right, is_caption, inline in governing_spans
+                for start, stop in _authorized_unit_spans(
+                    reading.unit_token, text[left:right], caption=is_caption, inline_value=inline
+                ) if left + stop <= end
             ]
             if not units:
                 raise ProposalParseError("unit is not declared at the selected cell")
@@ -786,7 +831,7 @@ def read_table_cell_observation(
 
     escaped = re.escape(span)
     escaped_value = re.escape(value_text)
-    original_unit_token = _unit_matches(reading.unit_token, span)[0].group()
+    original_unit_token = _unit_matches(reading.unit_token.strip("()"), span)[0].group()
     escaped_unit = re.escape(original_unit_token)
     head, _, tail = escaped.rpartition(escaped_value)
     pattern = rf"(?<=\A[\s\S]{{{start}}})" + head + f"(?P<value>{escaped_value})" + tail
