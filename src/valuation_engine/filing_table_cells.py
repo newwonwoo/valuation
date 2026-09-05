@@ -360,8 +360,39 @@ class TableCellReading:
 _UNIT_BOUNDARY = re.compile(r"[\s:：()（）\[\]{},]|^|$")
 
 
+def _declared_units(text: str, *, inline_value: bool = False) -> tuple[str, ...]:
+    """The complete units a piece of filing text declares.
+
+    A unit grammar, not a layout grammar. It knows that a comma separates
+    alternatives and that everything else inside one declaration composes into
+    a single unit — so `천톤, %` declares two units while `원/톤 ⨯ 월` declares
+    one that is not `원/톤`. It does not know where an issuer puts the text; the
+    proposal says that. This is the line docs/LLM_READING_HANDOFF_DESIGN.md
+    §1.1 draws: vocabulary that varies by issuer goes to the model, structure
+    that is the same everywhere stays here.
+    """
+
+    body = _squeeze(text)
+    label = re.match(r"^[（(]?\s*(?:단위|units?)\s*[:：]\s*", body, re.IGNORECASE)
+    if label:
+        body = body[label.end():]
+    # `가동률 (%)` — a heading that carries its unit in a trailing parenthesis.
+    suffix = re.search(r"[（(]([^()（）]+)[）)]\s*$", body)
+    body = body.strip("()（） ")
+    candidates = [item.strip() for item in re.split(r"[,;、]", body) if item.strip()]
+    if suffix:
+        candidates.append(suffix.group(1).strip())
+    if inline_value:
+        # The selected cell may state its own unit against its own number.
+        trailing = re.match(r"^\s*[\d.,()△▲+-]+\s*(\S+)\s*$", body)
+        if trailing:
+            candidates.append(trailing.group(1).strip())
+    return tuple(dict.fromkeys(candidates))
+
+
 def _require_declared_unit(
-    unit_token: str, text: str, *, task: TableReadingTask
+    unit_token: str, text: str, *, task: TableReadingTask,
+    inline_value: bool = False,
 ) -> None:
     """The token must be the whole unit the filing declares, not part of one.
 
@@ -372,11 +403,14 @@ def _require_declared_unit(
     """
     if not _squeeze(unit_token):
         raise ProposalParseError(f"reading task {task.metric} needs a unit token")
-    if not _unit_matches(unit_token, text):
+    wanted = _squeeze(unit_token).strip("()（）")
+    declared = _declared_units(text, inline_value=inline_value)
+    if not any(_squeeze(item).strip("()（）") == wanted for item in declared):
         raise ProposalParseError(
             f"the unit {unit_token!r} proposed for {task.metric} is not "
-            "declared with the table as a unit of its own; a unit has to be "
-            "read from the filing, not chosen from the registry"
+            "declared with the table as a unit of its own; the filing declares "
+            f"{', '.join(repr(item) for item in declared) or 'nothing'} there, "
+            "and a unit has to be read from the filing whole"
         )
 
 
@@ -762,6 +796,16 @@ def read_table_cell(
                and value == value.to_integral_value()
                for value in (_amount(cell) for cell in item)):
             raise ProposalParseError("bare calendar year is ambiguous with a vertical period header")
+    # A row is named by what it is, not by the unit it happens to be priced in.
+    # The registry the metric already carries says which strings are units, so
+    # this needs no detection of which column holds them.
+    for element in proposal.row_path:
+        if any(_squeeze(element).strip("()（）") == _squeeze(token).strip("()（）")
+               for token, _ in task.source_unit_map):
+            raise ProposalParseError(
+                f"no row may be named by a unit ({element!r}); a coordinate has "
+                "to keep a semantic row identity"
+            )
     row = _locate_row(grid, proposal.row_path, metric=task.metric)
     if row < len(headers):
         raise ProposalParseError("selected row belongs to the header block")
@@ -777,11 +821,13 @@ def read_table_cell(
     unit_text, unit_start, unit_end = _resolve_source(
         member_text, proposal.unit_source, label="table_cell.unit_source"
     )
-    _require_declared_unit(proposal.unit_token, unit_text, task=task)
-    unit = task.unit_for(proposal.unit_token)
-
     offsets = _cell_text_offsets(member_text)
     value_span = offsets.get((proposal.table_index, row, column))
+    _require_declared_unit(
+        proposal.unit_token, unit_text, task=task,
+        inline_value=proposal.unit_source.cell == (proposal.table_index, row, column),
+    )
+    unit = task.unit_for(proposal.unit_token)
     if value_span is None:
         raise ProposalParseError("selected cell has no text of its own in the member")
     if unit_start >= value_span[1]:
@@ -806,6 +852,19 @@ def read_table_cell(
             f"a different registered unit ({', '.join(intervening)}) is declared "
             "between the named unit source and the selected cell"
         )
+    # A unit written in the selected row governs that row, whatever the model
+    # points at elsewhere. This reads the row it was given; it does not detect
+    # which column is "the unit column".
+    for index, cell in enumerate(grid[row]):
+        if index == column or _amount(cell) is not None or _is_missing_value(cell):
+            continue
+        if not any(mark in cell for mark in ("/", "%", "／", "％")):
+            continue
+        if _squeeze(cell).strip("()（）") != _squeeze(proposal.unit_token).strip("()（）"):
+            raise ProposalParseError(
+                f"the selected row states its own unit ({cell!r}), which is not "
+                f"the proposed {proposal.unit_token!r}"
+            )
     if "%" in grid[row][column] and (
         task.unit_dimension != "RATIO" or proposal.unit_token != "%"
     ):
@@ -908,24 +967,27 @@ def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, int, 
             raw_value = text[value_start:end]
             if _amount(raw_value) != reading.value:
                 raise ProposalParseError("coordinate provenance does not match verified value")
-            previous_end = parser.table_spans[index - 1][1] if index else 0
-            governing_spans = [
-                (previous_end, parser.table_spans[index][0], True, False),
-                *((*parser.cell_spans[int(grid[r][c])], False,
-                   (r, c) == (reading.row_index, reading.column_index))
-                  for r, c in reading.governing_unit_cells if grid[r][c]),
-            ]
-            # The unit must come from this table or its own caption, never a
-            # preceding table. It may also be the selected cell's inline unit.
-            # Match the same declared token, at token boundaries.
+            # Provenance follows the proposal's named unit source, the same
+            # coordinate verification used. Nothing here re-derives where a
+            # filing "usually" declares its unit.
+            if reading.unit_source.cell is not None:
+                table, r, c = reading.unit_source.cell
+                if table == reading.table_index:
+                    if not grid[r][c]:
+                        raise ProposalParseError("named unit cell is not in this table")
+                    unit_left, unit_right = parser.cell_spans[int(grid[r][c])]
+                else:
+                    unit_left, unit_right = _cell_text_offsets(member.text)[(table, r, c)]
+            else:
+                quote = _normalize_space(reading.unit_source.quote or "")
+                unit_left = text.find(quote)
+                if unit_left < 0:
+                    raise ProposalParseError("named unit quote is not in the member")
+                unit_right = unit_left + len(quote)
             units = [
-                (left + start, left + stop) for left, right, is_caption, inline in governing_spans
-                for start, stop in _authorized_unit_spans(
-                    reading.unit_token, text[left:right], caption=is_caption, inline_value=inline
-                )
-            ]
-            if not units:
-                raise ProposalParseError("unit is not declared at the selected cell")
+                (unit_left + offset.start(), unit_left + offset.end())
+                for offset in _unit_matches(reading.unit_token, text[unit_left:unit_right])
+            ] or [(unit_left, unit_right)]
             unit_start, unit_end = units[-1]
             start = min(unit_start, value_start)
             # A ratio cell may carry its own trailing percent token. Keep it

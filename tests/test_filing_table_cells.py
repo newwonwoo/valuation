@@ -13,6 +13,7 @@ unit "(단위: 천원/톤)" sits above the markup rather than inside it. 철근 
 
 from __future__ import annotations
 
+import re
 from decimal import Decimal
 from pathlib import Path
 
@@ -29,6 +30,28 @@ from valuation_engine.filing_table_cells import (
     read_table_cell,
 )
 from valuation_engine.proposal_parsing import ProposalParseError
+
+
+def _unit_source_in(member: str, token: str) -> dict:
+    """Where a fixture writes its unit, as a proposal would point at it.
+
+    A caption when the fixture has one, otherwise the cell that holds the unit.
+    Fixtures that declare no unit at all get a source that is not there, so the
+    tests about an undeclared unit still refuse.
+    """
+    caption = re.search(r"[（(]\s*단위\s*[:：][^()（）]*[）)]", member)
+    if caption:
+        return {"quote": caption.group()}
+    from valuation_engine.filing_table_cells import _grids, _squeeze
+    hits = [
+        (t, r, c)
+        for t, grid in enumerate(_grids(member))
+        for r, row in enumerate(grid)
+        for c, cell in enumerate(row)
+        if _squeeze(cell).strip("()（）") == _squeeze(token).strip("()（）")
+    ]
+    return {"cell": list(hits[0])} if len(hits) == 1 else {"quote": "(단위: 없음)"}
+
 
 FIXTURE = (
     Path(__file__).resolve().parents[1]
@@ -52,8 +75,11 @@ def _read(**overrides):
     row.update(overrides)
     # The proposal names where the filing writes the unit, per
     # docs/LLM_READING_HANDOFF_DESIGN.md §3.2. These fixtures declare it the
-    # ordinary way, in a caption; a test about some other placement says so.
-    row.setdefault("unit_source", {"quote": f"(단위: {row['unit_token']})"})
+    # ordinary way, in a caption, so the default points at the declaration the
+    # fixture actually carries — not at the token the proposal claims, which is
+    # exactly what the mismatch tests below are about. A test about some other
+    # placement names its own source.
+    row.setdefault("unit_source", _unit_source_in(MEMBER, row["unit_token"]))
     return read_table_cell(
         MEMBER,
         TableCellProposal.from_row(row),
@@ -241,7 +267,7 @@ def test_unknown_row_unit_cannot_borrow_registered_unit(monkeypatch, caption, he
     <tr><td>국내</td><td>원/톤</td><td>740000</td></tr>
     <tr><td>수출</td><td>USD/톤</td><td>600</td></tr></table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    with pytest.raises(ProposalParseError, match="selected row unit"):
+    with pytest.raises(ProposalParseError, match="states its own unit"):
         _read(row_path=["수출"], unit_token="원/톤")
 
 
@@ -252,7 +278,7 @@ def test_unknown_unit_shape_rejects_without_known_unit_column(monkeypatch, unit)
     <tr><td>품목</td><td>분류</td><td>2026년 반기</td></tr>
     <tr><td>수출</td><td>{unit}</td><td>600</td></tr></table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    with pytest.raises(ProposalParseError, match="unit-shaped"):
+    with pytest.raises(ProposalParseError, match="states its own unit"):
         _read(row_path=["수출"], unit_token="원/톤")
 
 
@@ -481,8 +507,11 @@ def _observe(**overrides):
     row.update(overrides)
     # The proposal names where the filing writes the unit, per
     # docs/LLM_READING_HANDOFF_DESIGN.md §3.2. These fixtures declare it the
-    # ordinary way, in a caption; a test about some other placement says so.
-    row.setdefault("unit_source", {"quote": f"(단위: {row['unit_token']})"})
+    # ordinary way, in a caption, so the default points at the declaration the
+    # fixture actually carries — not at the token the proposal claims, which is
+    # exactly what the mismatch tests below are about. A test about some other
+    # placement names its own source.
+    row.setdefault("unit_source", _unit_source_in(MEMBER, row["unit_token"]))
     return read_table_cell_observation(
         _filing(),
         TableCellProposal.from_row(row),
