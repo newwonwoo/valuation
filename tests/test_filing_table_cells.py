@@ -33,7 +33,7 @@ from valuation_engine.filing_table_cells import (
 from valuation_engine.proposal_parsing import ProposalParseError
 
 
-def _unit_source_in(member: str, token: str) -> dict:
+def _unit_source_in(member: str, token: str, table_index: int = 0) -> dict:
     """Where a fixture writes its unit, as a proposal would point at it.
 
     A caption when the fixture has one, otherwise the cell that holds the unit.
@@ -50,6 +50,11 @@ def _unit_source_in(member: str, token: str) -> dict:
     ]
     if len(hits) == 1:
         return {"cell": list(hits[0])}
+    # Duplicate tables repeat their captions and their unit cells, so a quote
+    # cannot disambiguate; the coordinate in the selected table can.
+    in_table = [hit for hit in hits if hit[0] == table_index]
+    if len(in_table) == 1:
+        return {"cell": list(in_table[0])}
     # A source is a whole text node, so quote the node the declaration sits in.
     for node in re.findall(r"(?<=>)([^<>]*단위[^<>]*)(?=<)", member):
         if member.count(node) == 1:
@@ -90,7 +95,7 @@ def _read(**overrides):
     # fixture actually carries — not at the token the proposal claims, which is
     # exactly what the mismatch tests below are about. A test about some other
     # placement names its own source.
-    row.setdefault("unit_source", _unit_source_in(MEMBER, row["unit_token"]))
+    row.setdefault("unit_source", _unit_source_in(MEMBER, row["unit_token"], row["table_index"]))
     return read_table_cell(
         MEMBER,
         TableCellProposal.from_row(row),
@@ -495,7 +500,7 @@ def _observe(**overrides):
     # fixture actually carries — not at the token the proposal claims, which is
     # exactly what the mismatch tests below are about. A test about some other
     # placement names its own source.
-    row.setdefault("unit_source", _unit_source_in(MEMBER, row["unit_token"]))
+    row.setdefault("unit_source", _unit_source_in(MEMBER, row["unit_token"], row["table_index"]))
     return read_table_cell_observation(
         _filing(),
         TableCellProposal.from_row(row),
@@ -788,7 +793,7 @@ def _answer(**overrides) -> str:
     cell.update(overrides)
     # The proposal names where the filing writes the unit, and a source is a
     # whole text node — the same contract a live reader answers under.
-    cell.setdefault("unit_source", _unit_source_in(MEMBER, cell["unit_token"]))
+    cell.setdefault("unit_source", _unit_source_in(MEMBER, cell["unit_token"], cell["table_index"]))
     return json.dumps({"cells": [cell], "not_found": []}, ensure_ascii=False)
 
 
