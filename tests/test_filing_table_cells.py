@@ -39,10 +39,13 @@ def _unit_source_in(member: str, token: str) -> dict:
     Fixtures that declare no unit at all get a source that is not there, so the
     tests about an undeclared unit still refuse.
     """
-    caption = re.search(r"[（(]\s*단위\s*[:：][^()（）]*[）)]", member)
-    if caption:
-        return {"quote": caption.group()}
     from valuation_engine.filing_table_cells import _grids, _squeeze
+    for pattern in (r"[（(]\s*단위[^()（）]*[）)]",):
+        caption = re.search(pattern, member)
+        # A duplicated table repeats its caption, so a quote would be ambiguous;
+        # fall through to the cell in that case.
+        if caption and member.count(caption.group()) == 1:
+            return {"quote": caption.group()}
     hits = [
         (t, r, c)
         for t, grid in enumerate(_grids(member))

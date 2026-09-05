@@ -1112,7 +1112,8 @@ def replay_table_cell_observation(
         saved = json.loads(receipt) if isinstance(receipt, str) else dict(receipt)
         proposal = TableCellProposal.from_row({
             key: saved[key] for key in (
-                "metric", "member_path", "table_index", "row_path", "column_path", "unit_token"
+                "metric", "member_path", "table_index", "row_path", "column_path",
+                "unit_token", "unit_source",
             )
         })
         observation = read_table_cell_observation(
