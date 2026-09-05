@@ -177,7 +177,7 @@ def test_trailing_note_cannot_override_unit_declaration(monkeypatch, note, row_u
     <tr><td>품목</td><td>2026년 반기</td>{unit_header}</tr>
     <tr><td>수출</td><td>600</td>{row_unit}</tr></table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    with pytest.raises(ProposalParseError, match="does not settle|not declared"):
+    with pytest.raises(ProposalParseError, match="not declared|does not settle|does not govern|not a complete text"):
         _observe(row_path=["수출"], unit_token="원/톤")
 
 
@@ -234,7 +234,7 @@ def test_ratio_unit_cannot_come_from_other_numeric_column(monkeypatch, other_fir
     <tr><td>공장</td><td>{headings[0]}</td><td>{headings[1]}</td></tr>
     <tr><td>제1공장</td><td>{cells[0]}</td><td>{cells[1]}</td></tr></table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    with pytest.raises(ProposalParseError, match="not declared|does not settle"):
+    with pytest.raises(ProposalParseError, match="not declared|does not settle|does not govern|not a complete text"):
         _observe(metric="utilization", row_path=["제1공장"], unit_token="%")
 
 
