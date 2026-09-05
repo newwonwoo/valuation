@@ -142,6 +142,7 @@ class DartKPIObservation:
     source_unit: str
     locator_label: str
     critical: bool
+    table_cell_receipt: str = ""
 
     def validate(self) -> None:
         if not all(
@@ -202,6 +203,8 @@ class DartKPIObservation:
                 self.locator_label,
             )
         )
+        if self.table_cell_receipt:
+            payload += "|table_cell_receipt=" + self.table_cell_receipt
         return sha256(payload.encode("utf-8")).hexdigest()
 
 
@@ -331,6 +334,8 @@ def dart_kpi_observation_to_evidence(
             f"source_unit_token={observation.source_unit_token!r}; "
             f"source_unit={observation.source_unit}; "
             f"matched_text={observation.matched_text!r}"
+            + (f"; table_cell_receipt={observation.table_cell_receipt}"
+               if observation.table_cell_receipt else "")
         ),
         critical=observation.critical,
     )

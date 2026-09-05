@@ -24,6 +24,8 @@ from valuation_engine.kr_filing_kpi_collector import (
     request_scoped_filing_kpi_collector,
 )
 from valuation_engine.kr_opendart_provider import OpenDartNetwork
+from valuation_engine.llm_transport import ScriptedTransport, TransportError
+from valuation_engine.proposal_parsing import ProposalParseError
 
 
 AS_OF = "2026-08-27"
@@ -165,6 +167,35 @@ def test_the_provider_declares_exactly_the_configured_metrics():
     }
 
 
+@pytest.mark.parametrize("transport,receipts,available", [
+    (None, None, False),
+    (ScriptedTransport({}), None, False),
+    (ScriptedTransport({"filing_table_reader": ()}), None, False),
+    (ScriptedTransport({"filing_table_reader": ("answer",)}), None, True),
+    (None, {"input_price": "receipt-to-be-validated"}, True),
+])
+def test_table_only_capability_requires_reader_or_receipt(transport, receipts, available):
+    provider = filing_kpi_collector_provider(
+        _network(), as_of=AS_OF, segment_id="core", transport=transport,
+        table_cell_receipts=receipts,
+    )
+    assert ("input_price" in provider.capability.supported_metrics) == available
+    assert "utilization" in provider.capability.supported_metrics
+
+
+def test_configured_reader_exhaustion_is_not_a_capability_downgrade():
+    transport = ScriptedTransport({"filing_table_reader": ("answer",)})
+    transport.complete(role="filing_table_reader", prompt="")
+    provider = filing_kpi_collector_provider(
+        _network(), as_of=AS_OF, segment_id="core", transport=transport,
+    )
+    assert "input_price" in provider.capability.supported_metrics
+    with pytest.raises(FilingKPICollectorError, match="READER_UNAVAILABLE"):
+        provider.collector(EvidenceCollectionRequest(
+            target_id=TARGET, required_metrics=("input_price",),
+        ))
+
+
 def test_pattern_config_rejects_a_bad_regex_at_load_time(tmp_path):
     bad = tmp_path / "patterns.yaml"
     bad.write_text(
@@ -176,3 +207,229 @@ def test_pattern_config_rejects_a_bad_regex_at_load_time(tmp_path):
     )
     with pytest.raises(Exception, match="unit"):
         load_filing_kpi_patterns(bad)
+
+
+# --- The third pass: a coordinate reading, from the production collector -----
+#
+# The two tests below are the wiring's only honest proof. A reader that exists
+# but is never reached from `request_scoped_filing_kpi_collector` collects
+# nothing, however well it reads in its own unit tests.
+
+# 제품별 가격변동추이: the heading and the unit sit *outside* the <TABLE>, which
+# is how issuers actually write it, and why the static pattern — which needs
+# "판매단가 … 원/톤" adjacent in one span — cannot read it.
+PRICE_TABLE_BODY = FILING_BODY.replace(
+    "</BODY>",
+    """
+<P>다. 제품별 구체적인 가격변동추이</P>
+<P>(단위: 원/톤)</P>
+<TABLE>
+<TR><TD>품목</TD><TD>2024년</TD><TD>당기</TD></TR>
+<TR><TD>후판</TD><TD>1,010,000</TD><TD>1,046,000</TD></TR>
+</TABLE>
+</BODY>""",
+)
+
+MEMBER_PATH = f"{RCEPT}.xml"
+
+TABLE_CELL_ANSWER = json.dumps(
+    {
+        "cells": [
+            {
+                "metric": "realized_price",
+                "member_path": MEMBER_PATH,
+                "table_index": 2,
+                "row_path": ["후판"],
+                "column_path": ["당기"],
+                "unit_token": "원/톤",
+            }
+        ]
+    }
+)
+
+NO_LOCATOR_ANSWER = json.dumps({"locators": [], "not_found": ["realized_price"]})
+
+
+class _Transport:
+    """Answers the locator seat with nothing and the reader seat with a cell."""
+
+    def __init__(self, *, table_answer: str = TABLE_CELL_ANSWER):
+        self.roles: list[str] = []
+        self._table_answer = table_answer
+
+    def complete(self, *, role: str, prompt: str) -> str:
+        self.roles.append(role)
+        if role == "filing_locator_analyst":
+            return NO_LOCATOR_ANSWER
+        if role == "filing_table_reader":
+            return self._table_answer
+        raise AssertionError(f"unscripted role: {role}")
+
+
+def _collect_with(transport, metrics=("realized_price",), body=PRICE_TABLE_BODY, receipts=None):
+    collector = request_scoped_filing_kpi_collector(
+        _network(body),
+        as_of=AS_OF,
+        segment_id="core",
+        patterns=load_filing_kpi_patterns(),
+        transport=transport,
+        table_cell_receipts=receipts,
+    )
+    return collector(
+        EvidenceCollectionRequest(target_id=TARGET, required_metrics=metrics)
+    )
+
+
+def test_a_metric_both_earlier_passes_miss_is_read_by_coordinate():
+    transport = _Transport()
+    batch = _collect_with(transport)
+    assert transport.roles == ["filing_locator_analyst", "filing_table_reader"]
+    record = batch.records[0]
+    assert record.metric == "realized_price"
+    assert float(record.value) == 1046000.0
+    assert record.unit == "KRW_per_ton"
+    # The receipt names the cell, so a reviewer can reopen it in the filing.
+    assert "member_sha256=" in record.source_ref
+    assert RCEPT in record.id
+
+
+def test_table_reader_only_transport_skips_unconfigured_locator():
+    transport = ScriptedTransport({"filing_table_reader": (TABLE_CELL_ANSWER,)})
+    record = _collect_with(transport).records[0]
+    assert record.metric == "realized_price"
+    assert [role for role, _ in transport.calls] == ["filing_table_reader"]
+
+
+def test_locator_only_transport_does_not_invoke_unconfigured_reader():
+    transport = ScriptedTransport({"filing_locator_analyst": (NO_LOCATOR_ANSWER,)})
+    assert _collect_with(transport).records == ()
+    assert [role for role, _ in transport.calls] == ["filing_locator_analyst"]
+
+
+def test_configured_locator_failure_still_blocks_before_table_reader():
+    transport = ScriptedTransport({"filing_locator_analyst": ("used",),
+                                   "filing_table_reader": (TABLE_CELL_ANSWER,)})
+    transport.complete(role="filing_locator_analyst", prompt="")
+    with pytest.raises(TransportError):
+        _collect_with(transport)
+    assert all(role == "filing_locator_analyst" for role, _ in transport.calls)
+
+
+def test_table_only_input_price_is_collectable_and_replayable():
+    answer = json.loads(TABLE_CELL_ANSWER)
+    answer["cells"][0]["metric"] = "input_price"
+    body = PRICE_TABLE_BODY.replace("제품별 구체적인 가격변동추이", "원재료 매입단가")
+    transport = _Transport(table_answer=json.dumps(answer))
+    record = _collect_with(transport, metrics=("input_price",), body=body).records[0]
+    assert transport.roles == ["filing_table_reader"]
+    assert record.metric == "input_price"
+    assert float(record.value) == 1046000.0
+    receipt = record.notes.split("; table_cell_receipt=", 1)[1]
+    replay = _collect_with(None, metrics=("input_price",), body=body,
+                           receipts={"input_price": receipt}).records[0]
+    assert replay == record
+
+
+@pytest.mark.parametrize("cell,caption", [
+    ("85.3", "가동률 (단위: %)"),
+    ("85.3%", "가동률 (단위: %)"),
+    ("85.3 %", "가동률 (단위: %)"),
+    ("85.3%", "가동률"),
+])
+def test_table_utilization_has_the_same_ratio_contract_as_static(cell, caption):
+    body = f"""<BODY><P>{caption}</P><TABLE>
+    <TR><TD>사업장</TD><TD>당기</TD></TR>
+    <TR><TD>제1공장</TD><TD>{cell}</TD></TR></TABLE></BODY>"""
+    answer = {"cells": [{"metric": "utilization", "member_path": MEMBER_PATH,
+                         "table_index": 0, "row_path": ["제1공장"],
+                         "column_path": ["당기"], "unit_token": "%"}]}
+    class RatioTransport(_Transport):
+        def complete(self, *, role, prompt):
+            if role == "filing_locator_analyst":
+                self.roles.append(role)
+                return json.dumps({"locators": [], "not_found": ["utilization"]})
+            return super().complete(role=role, prompt=prompt)
+    transport = RatioTransport(table_answer=json.dumps(answer))
+    record = _collect_with(transport, metrics=("utilization",), body=body).records[0]
+    assert record.unit == "ratio"
+    assert float(record.value) == pytest.approx(0.853)
+    receipt = record.notes.split("; table_cell_receipt=", 1)[1]
+    replay = _collect_with(None, metrics=("utilization",), body=body,
+                           receipts={"utilization": receipt}).records[0]
+    assert replay == record
+
+
+def test_a_metric_an_earlier_pass_already_found_is_not_asked_about_again():
+    """The coordinate pass is a last resort, not a second opinion."""
+    transport = _Transport()
+    batch = _collect_with(transport, metrics=("orders", "backlog"))
+    assert transport.roles == []  # nothing was missed; no seat was asked
+    assert {record.metric for record in batch.records} == {"orders", "backlog"}
+
+
+def test_a_refused_coordinate_blocks_instead_of_becoming_absence():
+    """Rejected prior-year coordinates do not establish non-disclosure."""
+    prior = json.loads(TABLE_CELL_ANSWER)
+    prior["cells"][0]["column_path"] = ["2024년"]
+    with pytest.raises(ProposalParseError, match="PROPOSAL_REJECTED"):
+        _collect_with(_Transport(table_answer=json.dumps(prior)))
+
+
+@pytest.mark.parametrize("failure", [
+    TransportError("no staff file"),
+    TimeoutError("reader timeout"),
+    ConnectionError("reader disconnected"),
+])
+def test_reader_unavailability_blocks_instead_of_returning_partial_evidence(failure):
+
+    class _LocatorOnly:
+        def complete(self, *, role: str, prompt: str) -> str:
+            if role == "filing_locator_analyst":
+                return NO_LOCATOR_ANSWER
+            raise failure
+
+    with pytest.raises(FilingKPICollectorError, match="READER_UNAVAILABLE") as caught:
+        _collect_with(_LocatorOnly(), metrics=("orders", "realized_price"))
+    assert caught.value.__cause__ is failure
+
+
+@pytest.mark.parametrize("failure", [
+    RuntimeError("unexpected reader failure"),
+    AssertionError("broken verifier invariant"),
+])
+def test_unexpected_table_reader_errors_are_not_swallowed(monkeypatch, failure):
+    def broken_reader(**kwargs):
+        raise failure
+
+    monkeypatch.setattr(
+        "valuation_engine.kr_filing_kpi_collector.propose_and_verify_table_cells",
+        broken_reader,
+    )
+    with pytest.raises(type(failure)) as caught:
+        _collect_with(_Transport(), metrics=("orders", "realized_price"))
+    assert caught.value is failure
+
+
+def test_explicit_reader_not_found_remains_a_coverage_gap():
+    answer = json.dumps({"cells": [], "not_found": ["realized_price"]})
+    batch = _collect_with(_Transport(table_answer=answer), metrics=("orders", "realized_price"))
+    assert {record.metric for record in batch.records} == {"orders"}
+
+
+def test_sealed_table_receipt_replays_without_any_model_call():
+    first = _collect_with(_Transport()).records[0]
+    receipt = first.notes.split("; table_cell_receipt=", 1)[1]
+    replay = _collect_with(None, receipts={"realized_price": receipt})
+    assert replay.records == (first,)
+
+
+def test_changed_source_cannot_fall_back_from_receipt_to_model():
+    first = _collect_with(_Transport()).records[0]
+    receipt = first.notes.split("; table_cell_receipt=", 1)[1]
+    transport = _Transport()
+    with pytest.raises(ProposalParseError, match="EVIDENCE_RECONCILIATION_REQUIRED"):
+        _collect_with(
+            transport, body=PRICE_TABLE_BODY.replace("1,046,000", "1,047,000"),
+            receipts={"realized_price": receipt},
+        )
+    assert transport.roles == []

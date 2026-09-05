@@ -50,6 +50,10 @@ class ScriptedTransport:
     _cursor: dict[str, int] = field(default_factory=dict)
     calls: list[tuple[str, str]] = field(default_factory=list)
 
+    def supports_role(self, role: str) -> bool:
+        """Configured capability, independent of whether its script is exhausted."""
+        return bool(self.responses.get(role))
+
     def complete(self, *, role: str, prompt: str) -> str:
         self.calls.append((role, prompt))
         script = tuple(self.responses.get(role, ()))

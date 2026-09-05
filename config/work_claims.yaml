@@ -56,7 +56,7 @@ claims:
   - claim_id: filing-selection-binding
     owner: codex
     pull_request: 175
-    status: active
+    status: merged
     paths:
       - "scripts/collect_kr_filing.py"
       - "scripts/resolve_kr_run.py"
@@ -69,6 +69,29 @@ claims:
   # recorded rather than omitted: the record of who built a thing outlives the
   # request that built it, and a later agent reading this file learns that the
   # 고려아연 run directory has a history before it opens the directory.
+  - claim_id: table-cell-reading-proposals
+    owner: codex
+    pull_request: 173
+    status: active
+    paths:
+      - "src/valuation_engine/filing_table_cells.py"
+      - "config/kr_filing_table_reading_tasks.yaml"
+      - "tests/test_filing_table_cells.py"
+      - "src/valuation_engine/dart_kpi.py"
+      - "src/valuation_engine/llm_transport.py"
+      - "src/valuation_engine/generic_live_providers.py"
+      - "tests/test_generic_cold_start.py"
+      - "src/valuation_engine/kr_filing_kpi_collector.py"
+      - "scripts/run_kr_live.py"
+      - "tests/test_kr_filing_kpi_collector.py"
+      - "tests/test_kr_live_runbook.py"
+      - "docs/TABLE_READER_EVIDENCE_BINDING.md"
+    note: >-
+      User explicitly transferred this work from Claude to Codex on 2026-09-05.
+      A table_cell proposal type beside the existing locator, so a metric is
+      found by the table's own identity rather than by an anchor dictionary
+      that grows once per issuer. The takeover binds cell receipts to Evidence
+      and makes reader failures explicit; the existing locator is unchanged.
   - claim_id: koreazinc-live-primary-evidence-gate
     owner: codex
     pull_request: 170
