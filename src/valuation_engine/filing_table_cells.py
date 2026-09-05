@@ -346,6 +346,8 @@ class TableCellReading:
     governing_unit_cells: tuple[tuple[int, int], ...]
     #: Where the filing writes the unit, as the proposal named it.
     unit_source: SourceRef = SourceRef(quote="")
+    #: Where the filing states the period, as the proposal named it.
+    period_source: SourceRef = SourceRef(quote="")
 
     def receipt(self) -> dict[str, Any]:
         return {
@@ -360,6 +362,7 @@ class TableCellReading:
             "grid_sha256": self.grid_sha256,
             "governing_unit_cells": [list(cell) for cell in self.governing_unit_cells],
             "unit_source": self.unit_source.receipt(),
+            "period_source": self.period_source.receipt(),
         }
 
 
@@ -942,6 +945,7 @@ def read_table_cell(
         grid_sha256=_grid_sha256(grid),
         governing_unit_cells=((row, column),),
         unit_source=proposal.unit_source,
+        period_source=proposal.period_source,
     )
 
 
@@ -1149,7 +1153,7 @@ def replay_table_cell_observation(
         proposal = TableCellProposal.from_row({
             key: saved[key] for key in (
                 "metric", "member_path", "table_index", "row_path", "column_path",
-                "unit_token", "unit_source",
+                "unit_token", "unit_source", "period_source",
             )
         })
         observation = read_table_cell_observation(
