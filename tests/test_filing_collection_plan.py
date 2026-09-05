@@ -47,6 +47,7 @@ def bound_collection(tmp_path):
     (raw / "company.json").write_text(json.dumps({"corp_code": "00102858", "stock_code": "010130"}))
     (tmp_path / "run.yaml").write_text('company_query: 고려아연\nas_of: "2026-09-01"\n')
     payload = {
+        "gaps": [],
         "company_query": "고려아연", "as_of": "2026-09-01",
         "corp_code": "00102858", "stock_code": "010130",
         "input_sha256": resolver_input_hashes(raw),
@@ -96,6 +97,18 @@ def test_collection_refuses_stale_or_mismatched_binding(bound_collection, mutati
         del payload["input_sha256"]
     receipt.write_text(json.dumps(payload))
     with pytest.raises(FilingCollectionError, match="FILING_SELECTION_MISMATCH"):
+        collection_binding(root, "20260814000001", receipt)
+
+
+@pytest.mark.parametrize("gaps", [[{"code": "TARGET_AMBIGUOUS"}],
+                                  [{"code": "NO_ANNUAL_FILING"}],
+                                  [{"code": "MULTI_SEGMENT_DECLARED"}], None])
+def test_collection_refuses_failed_resolver_with_surviving_run(bound_collection, gaps):
+    root, receipt, payload = bound_collection
+    # A failed resolver writes its latest result without replacing old run.yaml.
+    payload["gaps"] = gaps
+    receipt.write_text(json.dumps(payload))
+    with pytest.raises(FilingCollectionError, match="unresolved gaps"):
         collection_binding(root, "20260814000001", receipt)
 
 

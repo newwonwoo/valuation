@@ -53,6 +53,18 @@ guarded_areas:
       Evaluator identity and the segment note. Both were solved twice, in
       incompatible ways, within two days.
 claims:
+  - claim_id: filing-selection-binding
+    owner: codex
+    pull_request: 175
+    status: active
+    paths:
+      - "scripts/collect_kr_filing.py"
+      - "scripts/resolve_kr_run.py"
+      - "src/valuation_engine/filing_collection_plan.py"
+      - "tests/test_filing_collection_plan.py"
+    note: >-
+      Bind optional collection to the existing resolver result and source
+      hashes; reject failed resolver results while preserving archival collection.
   # The two requests whose overlap is the reason this registry exists. They are
   # recorded rather than omitted: the record of who built a thing outlives the
   # request that built it, and a later agent reading this file learns that the

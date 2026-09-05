@@ -57,6 +57,8 @@ def collection_binding(run_dir: Path, rcept: str, receipt: Path | None) -> dict[
     try:
         receipt_bytes = receipt.read_bytes()
         resolved = json.loads(receipt_bytes)
+        if resolved.get("gaps") != []:
+            raise ValueError("resolver has unresolved gaps or no gap result")
         config = yaml.safe_load((run_dir / "run.yaml").read_text(encoding="utf-8"))
         cutoff = date.fromisoformat(str(resolved["as_of"]))
         if (str(config["as_of"]) != cutoff.isoformat()
