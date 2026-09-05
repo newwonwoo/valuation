@@ -67,9 +67,10 @@ def active_claims_from_contents(blob: object) -> list[dict[str, object]]:
     ]
 
 
-def collect_claims(repository: str, token: str, exclude: int | None,
-                   registry_path: str) -> dict[str, list[dict[str, object]]]:
+def _collect_snapshot(repository: str, token: str, exclude: int | None,
+                      registry_path: str):
     collected: dict[str, list[dict[str, object]]] = {}
+    membership = {}
     page = 1
     while True:
         pulls = _get(
@@ -84,6 +85,9 @@ def collect_claims(repository: str, token: str, exclude: int | None,
             ref = (pull.get("head") or {}).get("sha")
             if number < 1 or not isinstance(ref, str) or not ref:
                 raise ValueError("pull request requires number and head SHA")
+            if number in membership:
+                raise ValueError("pull request listing shifted during pagination")
+            membership[number] = ref
             if number == exclude:
                 continue
             # A 404 can mean absent content or insufficient access. Neither
@@ -100,8 +104,20 @@ def collect_claims(repository: str, token: str, exclude: int | None,
             if rows:
                 collected[str(number)] = rows
         if len(pulls) < 100:
-            return collected
+            return collected, membership
         page += 1
+
+
+def collect_claims(repository: str, token: str, exclude: int | None,
+                   registry_path: str) -> dict[str, list[dict[str, object]]]:
+    """Require consecutive complete scans to agree on membership and heads."""
+    previous = None
+    for _ in range(4):
+        current = _collect_snapshot(repository, token, exclude, registry_path)
+        if current == previous:
+            return current[0]
+        previous = current
+    raise ValueError("open pull request membership did not stabilize")
 
 
 def main() -> int:

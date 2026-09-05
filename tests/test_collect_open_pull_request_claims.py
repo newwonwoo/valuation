@@ -72,6 +72,23 @@ def test_missing_token_is_failure(collector, monkeypatch, tmp_path):
     assert collector.main() == 1
 
 
+def test_shifted_pages_require_a_stable_rescan(collector, monkeypatch):
+    snapshots = iter([
+        ({}, {1: "a", 3: "c"}),
+        ({"2": [{"paths": ["runs/shared/**"]}]}, {2: "b", 3: "c"}),
+        ({"2": [{"paths": ["runs/shared/**"]}]}, {2: "b", 3: "c"}),
+    ])
+    monkeypatch.setattr(collector, "_collect_snapshot", lambda *args: next(snapshots))
+    assert "2" in collector.collect_claims("repo", "token", None, "registry")
+
+
+def test_unstable_membership_fails_closed(collector, monkeypatch):
+    snapshots = iter([({}, {1: str(n)}) for n in range(4)])
+    monkeypatch.setattr(collector, "_collect_snapshot", lambda *args: next(snapshots))
+    with pytest.raises(ValueError, match="did not stabilize"):
+        collector.collect_claims("repo", "token", None, "registry")
+
+
 def test_invalid_list_response_is_failure(collector, monkeypatch):
     monkeypatch.setattr(collector, "_get", lambda *args: {"message": "rate limited"})
     with pytest.raises(ValueError, match="must be a list"):
