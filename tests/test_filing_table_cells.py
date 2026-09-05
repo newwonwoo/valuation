@@ -41,12 +41,10 @@ def _unit_source_in(member: str, token: str) -> dict:
     tests about an undeclared unit still refuse.
     """
     from valuation_engine.filing_table_cells import _grids, _squeeze
-    for pattern in (r"[（(]\s*단위[^()（）]*[）)]",):
-        caption = re.search(pattern, member)
-        # A duplicated table repeats its caption, so a quote would be ambiguous;
-        # fall through to the cell in that case.
-        if caption and member.count(caption.group()) == 1:
-            return {"quote": caption.group()}
+    # A source is a whole text node, so quote the node the declaration sits in.
+    for node in re.findall(r"(?<=>)([^<>]*단위[^<>]*)(?=<)", member):
+        if member.count(node) == 1:
+            return {"quote": re.sub(r"\s+", " ", node).strip()}
     hits = [
         (t, r, c)
         for t, grid in enumerate(_grids(member))

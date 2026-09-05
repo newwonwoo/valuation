@@ -373,9 +373,19 @@ def _declared_units(text: str, *, inline_value: bool = False) -> tuple[str, ...]
     """
 
     body = _squeeze(text)
-    label = re.match(r"^[（(]?\s*(?:단위|units?)\s*[:：]\s*", body, re.IGNORECASE)
-    if label:
-        body = body[label.end():]
+    # A labelled declaration may sit at the end of a longer node — a caption
+    # that first titles the table and then states its unit. It must *end* the
+    # node: anything the issuer wrote after it qualifies it, and this contract
+    # cannot say how. The node is the whole source, so "after it" is exact.
+    labelled = re.search(
+        r"[（(]\s*(?:단위|units?)\s*[:：]?\s*([^()（）]*)[）)]\s*$", body, re.IGNORECASE
+    )
+    if labelled:
+        body = labelled.group(1)
+    else:
+        label = re.match(r"^[（(]?\s*(?:단위|units?)\s*[:：]\s*", body, re.IGNORECASE)
+        if label:
+            body = body[label.end():]
     # `가동률 (%)` — a heading that carries its unit in a trailing parenthesis.
     suffix = re.search(r"[（(]([^()（）]+)[）)]\s*$", body)
     body = body.strip("()（） ")
@@ -537,6 +547,17 @@ def _resolve_source(
         quote = _normalize_space(source.quote)
         if not quote:
             raise ProposalParseError(f"{label} quote is empty")
+        # A source is a whole text node, never a fragment of one. Otherwise a
+        # proposal could truncate its own source — pointing at "(단위: 원/톤)"
+        # inside a caption that goes on to say "주1) 월 기준" — and no amount of
+        # scanning between the source and the cell can recover what was cut
+        # away. This is a rule about markup, not about how Korean filings word
+        # their notes, so it needs no vocabulary.
+        if not any(quote == _normalize_space(part) for part in parser.parts):
+            raise ProposalParseError(
+                f"{label} quote is not a complete text of the filing; a source "
+                "must be a whole cell or paragraph, not part of one"
+            )
         first = visible.find(quote)
         if first < 0:
             raise ProposalParseError(f"{label} quote is not in the member")
