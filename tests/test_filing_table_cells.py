@@ -178,7 +178,25 @@ def test_complete_caption_declaration_allows_separate_note(monkeypatch, note):
     assert _observe(row_path=["제품"], unit_token="원/톤").measure.amount == Decimal("600")
 
 
-def test_trailing_unit_keeps_numeric_capture_on_selected_cell(monkeypatch):
+def test_a_unit_column_after_the_value_is_refused(monkeypatch):
+    """A named source has to precede the cell it governs.
+
+    That rule is what stops a proposal reaching forward past the value for a
+    friendlier unit, and it costs this shape: an issuer that puts its unit
+    column to the right of the figure cannot be read here. The narrower
+    contract is deliberate — a read that cannot say which declaration is the
+    cell's own is the read this reader exists to refuse.
+    """
+    import sys
+    member = """<p>제품 가격변동추이</p><table>
+    <tr><td>품목</td><td>2026년 반기</td><td>단위</td></tr>
+    <tr><td>제품</td><td>600</td><td>원/톤</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="does not precede"):
+        _observe(row_path=["제품"], unit_token="원/톤")
+
+
+def _retired_test_trailing_unit_keeps_numeric_capture_on_selected_cell(monkeypatch):
     import re
     import sys
     import valuation_engine.filing_table_cells as module
@@ -607,9 +625,15 @@ def test_duplicate_tables_keep_the_selected_table_offset(monkeypatch):
     import sys
     from valuation_engine.dart_kpi import _visible_text
 
-    monkeypatch.setattr(sys.modules[__name__], "MEMBER", MEMBER + MEMBER)
-    first = _observe(table_index=0)
-    second = _observe(table_index=1)
+    # A repeated caption cannot name one table of the two, so this fixture
+    # declares its unit in a cell, which each copy can name for itself.
+    one = ("<table><tr><td>품목</td><td>단위</td><td>2026년 반기</td></tr>"
+           "<tr><td>철 근</td><td>천원/톤</td><td>823</td></tr></table>")
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", one + one)
+    first = _observe(row_path=["철 근"], table_index=0,
+                     unit_source={"cell": [0, 1, 1]}, period_source={"cell": [0, 0, 2]})
+    second = _observe(row_path=["철 근"], table_index=1,
+                      unit_source={"cell": [1, 1, 1]}, period_source={"cell": [1, 0, 2]})
     assert first.measure == second.measure
     assert second.text_start >= first.text_end
     text = _visible_text(_filing().members[0])
@@ -994,7 +1018,7 @@ def test_the_metric_reads_from_a_table_whose_neighbour_is_the_excluded_one():
                 "row_path": ["철 근"],
                 "column_path": ["2026년 반기"],
                 "unit_token": "천원/톤",
-                "unit_source": {"quote": "(단위: 천원/톤)"},
+                "unit_source": {"quote": "제품별 가격변동추이 (단위: 천원/톤)"},
                 "period_source": {"cell": [1, 0, 1]},
             }
         ),
