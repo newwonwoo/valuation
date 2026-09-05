@@ -843,17 +843,89 @@ def classified_segment_decomposer(
     return decompose
 
 
+_ARCHETYPE_PREMISE_ACCOUNTS = {
+    # The IFRS 8 note reports a segment in the same two economic terms every
+    # premise is written in, so the mapping is fixed here rather than guessed
+    # per issuer.
+    "ifrs-full_Revenue": "revenue",
+    "dart_OperatingIncomeLoss": "operating_income",
+}
+
+
+def _segment_filed_facts(declared_segments, segment_id: str) -> dict[str, Any]:
+    """The declared segment's own filed revenue and operating income, or none.
+
+    These come from the source-bound reading of the IFRS 8 note — the same
+    numbers the reconciliation already checked — so nothing new is read here.
+    """
+
+    if declared_segments is None:
+        return {}
+    extraction = getattr(declared_segments, "source_bound_extraction", None)
+    if extraction is None:
+        return {}
+    ids = tuple(item.segment_id for item in declared_segments.segments)
+    if segment_id not in ids:
+        return {}
+    entry = extraction.entries[ids.index(segment_id)]
+    return {
+        "ifrs-full_Revenue": entry.revenue,
+        "dart_OperatingIncomeLoss": entry.operating_income,
+    }
+
+
+def _surviving_archetypes(
+    archetypes: tuple[EconomicArchetype, ...],
+    facts: Mapping[str, Any],
+    archetype_registry_path: str | Path | None,
+    segment_id: str,
+) -> tuple[EconomicArchetype, ...]:
+    if len(archetypes) < 2 or not facts or archetype_registry_path is None:
+        return archetypes
+    from .run_resolver import refuted_archetypes
+
+    def _name(item) -> str:
+        return str(getattr(item, "value", item))
+
+    refuted = {
+        name
+        for name, _shown in refuted_archetypes(
+            tuple(_name(item) for item in archetypes),
+            facts,
+            archetype_registry_path=archetype_registry_path,
+        )
+    }
+    surviving = tuple(item for item in archetypes if _name(item) not in refuted)
+    if not surviving:
+        raise GenericKRIndustryError(
+            f"every archetype the route offers segment {segment_id} is refuted "
+            "by that segment's own filed revenue and operating income; the "
+            "classification map describes a business this segment is not"
+        )
+    return surviving
+
+
 def classified_industry_dna_router(
     *,
     profile_fetcher: Callable[[ResolvedCompanyIdentity], OpenDartCompanyProfile],
     classification: KRIndustryClassification,
     declared_segments=None,
+    archetype_registry_path: str | Path | None = None,
 ):
     """IndustryDNARouter: archetypes come from the classification map, never a guess.
 
     With a segment declaration, each segment routes through its own declared
     KSIC code — the company-level code types the issuer, and copying it onto
     every reportable segment would hand a logistics segment a steel archetype.
+
+    A KSIC code that covers two ways of earning routes to both archetypes, and
+    the route alone cannot say which one this issuer is. The filing can: the
+    archetype registry states each premise where one is decidable, and the IFRS
+    8 note reports every segment's own revenue and operating income. An
+    archetype whose premise those figures contradict is dropped here rather
+    than carried into MODULE_REQUIREMENT_PLAN, because carrying it would make a
+    commercial manufacturer produce clinical-trial evidence for a pipeline it
+    does not have. Nothing is ever added this way — refutation only removes.
     """
 
     def route(
@@ -899,7 +971,12 @@ def classified_industry_dna_router(
             return IndustryDNAProfile(
                 segment_id=segment.segment_id,
                 sector_adapter=entry.sector_adapter,
-                archetypes=entry.archetypes,
+                archetypes=_surviving_archetypes(
+                    entry.archetypes,
+                    _segment_filed_facts(declared_segments, segment.segment_id),
+                    archetype_registry_path,
+                    segment.segment_id,
+                ),
                 revenue_recognition=segment.revenue_recognition,
                 price_formation=segment.price_formation,
                 asset_ownership=segment.asset_ownership,

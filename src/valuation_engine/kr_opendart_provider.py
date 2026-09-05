@@ -631,6 +631,11 @@ class KRLiveRuntimeFactory:
                     "valuation_engine.kr_opendart_provider."
                     "request_scoped_opendart_fact_collector"
                 ),
+                # These are the consolidated statements, and the run says
+                # which segment they are attributed to. Another segment's
+                # requirement must not be answered with this company-wide
+                # figure wearing that segment's name.
+                segment_id=self.filing.segment_id,
             ),
             collector=request_scoped_opendart_fact_collector(
                 self.network,

@@ -49,6 +49,18 @@ roles:
     - 부문별 정보
     - 부문정보
     - 영업부문
+  consolidation_scope:
+    required: false
+    purpose: >-
+      the general-information note that names each consolidated entity, its
+      ownership and its principal activity. A reportable segment is built from
+      legal entities, so this note is what says which business an aggregated
+      "other" segment actually contains — the difference between typing that
+      segment from evidence and guessing at it.
+    patterns:
+    - 일반사항
+    - 연결대상 종속회사
+    - 종속회사에 관한 사항
   borrowings_note:
     required: false
     purpose: interest-bearing debt and lease detail for the net-debt bridge

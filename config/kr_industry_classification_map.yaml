@@ -73,9 +73,15 @@ classifications:
       reinvestment_model: debottlenecking and maintenance capex
       cashflow_duration: commodity-cycle driven
   - ksic_prefix: "21"
+    # 이 코드 하나가 임상단계 바이오텍과 상업단계 의약품 제조사를 함께 담는다.
+    # 코드는 둘을 구분하지 못하므로 두 원형을 모두 노출하고, 어느 쪽인지는
+    # archetype_module_registry의 probabilistic_pipeline 전제
+    # (refuted_when_positive: 매출·영업이익)가 회사 자신의 재무제표로 판정한다.
+    # 허가받지 않은 자산이 가치를 지고 있다는 전제가 반증되면 미허가 파이프라인
+    # 확률이 아니라 설비 가동과 실현 판가가 가치를 만든다.
     label: 의료용 물질 및 의약품 제조업
     sector_adapter: pharma.rnd
-    archetypes: [probabilistic_pipeline]
+    archetypes: [probabilistic_pipeline, capacity_manufacturing]
     structure:
       revenue_recognition: sale_or_licensing
       price_formation: regulated reimbursement and licensing economics
@@ -83,8 +89,8 @@ classifications:
       capital_intensity: medium
       regulation_intensity: very-high
       customer_structure: payors, hospitals and licensing partners
-      reinvestment_model: clinical-stage R&D reinvestment
-      cashflow_duration: pipeline-milestone driven
+      reinvestment_model: clinical-stage R&D or approved-product capacity
+      cashflow_duration: pipeline-milestone or capacity-cycle driven
   - ksic_prefix: "5821"
     label: 게임 소프트웨어 개발 및 공급업
     sector_adapter: content.games
@@ -189,6 +195,23 @@ classifications:
       customer_structure: mass subscriber base
       reinvestment_model: network-generation capex cycles
       cashflow_duration: subscription-usage driven
+  - ksic_prefix: "63"
+    # 셀트리온 연결의 기타부문(글로벌의약품 안전성 데이터 관리 법인) 라우팅을
+    # 위해 추가된 항목. 자료 처리·정보서비스의 가치동인은 설비 증설이 아니라
+    # 계속 제공되는 용역의 갱신과 서비스 원가이므로 recurring_subscription이
+    # 정직한 기술이다.
+    label: 정보서비스업
+    sector_adapter: software.information_services
+    archetypes: [recurring_subscription]
+    structure:
+      revenue_recognition: ratable_service
+      price_formation: contracted service fees over cost to serve
+      asset_ownership: owned data platforms and operating staff
+      capital_intensity: low
+      regulation_intensity: medium
+      customer_structure: contracted institutional clients
+      reinvestment_model: platform and headcount investment
+      cashflow_duration: contract-renewal driven
   - ksic_prefix: "30"
     label: 자동차 및 트레일러 제조업
     sector_adapter: auto.oem

@@ -581,6 +581,48 @@ class DeclaredSegment:
             )
 
 
+#: A residual row may be left unvalued only when it is an order of magnitude
+#: below the quantitative threshold IFRS 8 itself uses to decide that a segment
+#: must be reported (10%). A segment the standard would have obliged the issuer
+#: to report can therefore never be dropped here, and the one case this exists
+#: for — a filing's "all other segments" line that no disclosure describes —
+#: still has to prove its own immateriality out of the filed table.
+_RESIDUAL_MAX_SHARE = Decimal("0.01")
+
+
+@dataclass(frozen=True)
+class UnvaluedResidualSegment:
+    """The filing's own "all other segments" line, accounted for but not valued.
+
+    IFRS 8 separates reportable segments from the residual category an issuer
+    combines the rest of its activities into, and the two are not the same
+    thing to value. A reportable segment is a business the filing describes; a
+    residual is a bucket, and the filing usually says nothing about what is in
+    it. Declaring one here keeps the note's bijection intact — the row is still
+    accounted for, still reconciled, still shown — while refusing to invent an
+    archetype and a cashflow for activities the issuer never described. The
+    guards live in code rather than in the declaration: the run proves the row
+    is immaterial out of the filed table it already read, so a declaration
+    cannot buy its way past a segment that actually carries value.
+    """
+
+    disclosed_name: str
+    rationale: str
+
+    def validate(self) -> None:
+        if not self.disclosed_name.strip():
+            raise DeclaredSegmentsError(
+                "an unvalued residual segment must name the row the filing's "
+                "operating-segment note discloses"
+            )
+        if len(self.rationale.strip()) < _MIN_RATIONALE_CHARS:
+            raise DeclaredSegmentsError(
+                "an unvalued residual segment requires a substantive rationale "
+                f"(>= {_MIN_RATIONALE_CHARS} chars) saying what the filing does "
+                "and does not disclose about the row"
+            )
+
+
 @dataclass(frozen=True)
 class DeclaredSegments:
     """A loaded, eagerly validated segment map bound to one target."""
@@ -590,6 +632,7 @@ class DeclaredSegments:
     source_ref: str
     segments: tuple[DeclaredSegment, ...]
     source_bound_extraction: SourceBoundSegmentExtraction | None = None
+    unvalued_residual: UnvaluedResidualSegment | None = None
 
     def validate(self) -> None:
         if not self.target_id or not self.as_of:
@@ -616,15 +659,79 @@ class DeclaredSegments:
             )
         for item in self.segments:
             item.validate()
+        residual_name = None
+        if self.unvalued_residual is not None:
+            self.unvalued_residual.validate()
+            residual_name = _normalize_name(self.unvalued_residual.disclosed_name)
+            if residual_name in set(names):
+                raise DeclaredSegmentsError(
+                    "the unvalued residual names a segment the declaration also "
+                    "values; a row is one or the other"
+                )
+            if self.source_bound_extraction is None:
+                raise DeclaredSegmentsError(
+                    "leaving a residual row unvalued requires the source-bound "
+                    "reading of the note, because the run proves the row is "
+                    "immaterial out of the filed table rather than on the "
+                    "declaration's word"
+                )
         if self.source_bound_extraction is not None:
             self.source_bound_extraction.validate()
             extracted_names = tuple(
                 _normalize_name(item.disclosed_name)
                 for item in self.source_bound_extraction.entries
             )
-            if extracted_names != names:
+            valued_names = tuple(
+                item for item in extracted_names if item != residual_name
+            )
+            if valued_names != names:
                 raise DeclaredSegmentsError(
                     "source-bound extraction and declared segment names/order must match exactly"
+                )
+            if residual_name is not None:
+                self._assert_residual_is_immaterial(residual_name)
+
+    def _assert_residual_is_immaterial(self, residual_name: str) -> None:
+        extraction = self.source_bound_extraction
+        entries = tuple(
+            item
+            for item in extraction.entries
+            if _normalize_name(item.disclosed_name) == residual_name
+        )
+        if len(entries) != 1:
+            raise DeclaredSegmentsError(
+                "the unvalued residual is not one row of the source-bound "
+                "reading of the note; it must be read from the filing like "
+                "every other row before it can be set aside"
+            )
+        if len(self.segments) < 2:
+            raise DeclaredSegmentsError(
+                "setting a row aside as a residual leaves fewer than two valued "
+                "segments; a company whose disclosure reduces to one business "
+                "needs no segment declaration at all"
+            )
+        entry = entries[0]
+        for label, part, total in (
+            ("revenue", entry.revenue, extraction.filed_total_revenue),
+            (
+                "operating income",
+                entry.operating_income,
+                extraction.filed_total_operating_income,
+            ),
+        ):
+            if not abs(total):
+                raise DeclaredSegmentsError(
+                    f"the note's filed total {label} is zero, so the residual's "
+                    "share of it cannot be shown; value the row instead"
+                )
+            share = abs(part) / abs(total)
+            if share > _RESIDUAL_MAX_SHARE:
+                raise DeclaredSegmentsError(
+                    f"residual segment {entry.disclosed_name!r} carries "
+                    f"{share:.2%} of the note's filed {label}, above the "
+                    f"{_RESIDUAL_MAX_SHARE:.0%} an unvalued row may carry; a row "
+                    "this size is part of the company's value and has to be "
+                    "typed and valued like any other segment"
                 )
 
     def assert_target(self, target_id: str) -> None:
@@ -642,11 +749,22 @@ class DeclaredSegments:
         The bijection is the containment: a declared segment the note never
         mentions would let the operator invent a business, and a note segment
         left undeclared would let a run quietly value part of the company as
-        if it were the whole. Both refuse.
+        if it were the whole. Both refuse. A row declared as the filing's
+        unvalued residual is accounted for here too — it must exist in the
+        note — and is then set aside rather than paired with a valuation.
         """
         by_name = {
             _normalize_name(entry.name): entry for entry in disclosure.entries
         }
+        if self.unvalued_residual is not None:
+            residual_key = _normalize_name(self.unvalued_residual.disclosed_name)
+            if by_name.pop(residual_key, None) is None:
+                raise DeclaredSegmentsError(
+                    f"the declaration sets aside "
+                    f"{self.unvalued_residual.disclosed_name!r} as the filing's "
+                    "residual row, which the operating-segment note does not "
+                    "disclose"
+                )
         matched: list[tuple[DeclaredSegment, SegmentNoteEntry]] = []
         for declared in self.segments:
             entry = by_name.pop(_normalize_name(declared.disclosed_name), None)
@@ -748,6 +866,15 @@ def load_declared_segments(path: str | Path) -> DeclaredSegments:
                 income_row.get("offset"), "operating-income row-label offset"
             ),
         )
+    residual_payload = payload.get("unvalued_residual")
+    residual = None
+    if residual_payload is not None:
+        if not isinstance(residual_payload, dict):
+            raise DeclaredSegmentsError("unvalued_residual must be a mapping")
+        residual = UnvaluedResidualSegment(
+            disclosed_name=str(residual_payload.get("disclosed_name") or ""),
+            rationale=str(residual_payload.get("rationale") or ""),
+        )
     declared = DeclaredSegments(
         target_id=str(payload.get("target_id") or ""),
         as_of=str(payload.get("as_of") or ""),
@@ -770,6 +897,7 @@ def load_declared_segments(path: str | Path) -> DeclaredSegments:
             for row in rows
         ),
         source_bound_extraction=extraction,
+        unvalued_residual=residual,
     )
     declared.validate()
     return declared

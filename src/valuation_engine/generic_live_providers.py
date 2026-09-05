@@ -81,6 +81,10 @@ from .scenario_binding import ScenarioBindingSpec
 from .valuation_execution import ParentAdjustmentPlan
 from .valuation_plan_compiler import SegmentMethodChoice
 
+_ARCHETYPE_REGISTRY_PATH = (
+    Path(__file__).resolve().parents[2] / "config" / "archetype_module_registry.yaml"
+)
+
 
 def required_assumption_keys_by_segment(
     *,
@@ -369,6 +373,7 @@ def build_generic_kr_runtime_factory(
             profile_fetcher=profile_fetcher,
             classification=classification,
             declared_segments=declared_segments,
+            archetype_registry_path=_ARCHETYPE_REGISTRY_PATH,
         ),
         scanner_runners=generic_scanner_runners(),
         funding_scanner=generic_ledger_funding_scanner,

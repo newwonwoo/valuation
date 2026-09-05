@@ -95,6 +95,13 @@ class CollectorCapability:
     supported_metrics: tuple[str, ...]
     jurisdictions: tuple[str, ...]
     implementation_ref: str
+    #: The one segment this collector can speak for, when it can only speak
+    #: for one. A collector reading the consolidated statements reports the
+    #: company, and a run that has decomposed the company into reportable
+    #: segments attributes those statements to a single anchor segment. Left
+    #: unset, the collector serves any segment — which is right for a
+    #: collector that reads each segment's own disclosure.
+    segment_id: str | None = None
 
     def validate(self) -> None:
         if not all(
@@ -633,6 +640,15 @@ def compile_company_collection_plan(
                 and capability.supports(
                     metric=metric,
                     jurisdiction=company.jurisdiction,
+                )
+                # A company-scope collector routed to another segment's
+                # requirement would answer it with the consolidated figure
+                # under that segment's name — a wrong number, not a missing
+                # one. Leave the requirement without a collector so the
+                # coverage gap names it.
+                and (
+                    capability.segment_id is None
+                    or capability.segment_id == segment.segment_id
                 )
             )
         )
