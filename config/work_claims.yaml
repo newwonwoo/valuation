@@ -16,6 +16,15 @@ rule: >-
   — instead of colliding later across the whole diff. A claim is not a lock on
   the repository; it is a statement of who is already working there, and it
   ends when its pull request merges or is closed.
+
+  Reach, stated plainly: a claim already on the default branch is seen by every
+  later request, which is the common case. Two requests opened at the same time
+  read their own checkouts, so each pull request's check also reads the
+  registries of the other open requests; a request opened after that check ran
+  cannot be seen by it, and the registry check on the default branch is the
+  backstop — two active claims on one path fail there. Claim paths are exact
+  files or 'prefix/**' subtrees so that overlap between two claims is decidable
+  rather than guessed at.
 guarded_areas:
   # Chosen from where collisions actually happened, not from speculation.
   - paths: ["runs/**"]

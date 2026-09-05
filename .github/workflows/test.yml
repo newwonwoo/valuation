@@ -21,15 +21,21 @@ jobs:
         run: PYTHONPATH=src python scripts/validate_work_claims.py
       - name: Work claims cover this change
         if: github.event_name == 'pull_request'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           # The base commit by sha, not the branch: the checkout is shallow,
           # so a branch ref shares no history with this head and a merge base
           # cannot be computed. One object is enough to diff against.
           git fetch --no-tags --depth=1 origin \
             "${{ github.event.pull_request.base.sha }}"
+          PYTHONPATH=src python scripts/collect_open_pull_request_claims.py \
+            --exclude "${{ github.event.pull_request.number }}" \
+            --out /tmp/open_request_claims.json
           PYTHONPATH=src python scripts/validate_work_claims.py \
             --base "${{ github.event.pull_request.base.sha }}" \
-            --pull-request "${{ github.event.pull_request.number }}"
+            --pull-request "${{ github.event.pull_request.number }}" \
+            --open-requests /tmp/open_request_claims.json
       - name: Module registries and method capabilities
         run: PYTHONPATH=src python scripts/validate_module_registries.py
       - name: Module requirement plans

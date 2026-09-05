@@ -17,6 +17,7 @@ collisions that have actually cost something, not to make every edit paperwork.
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -28,12 +29,47 @@ if str(SRC) not in sys.path:
 
 from valuation_engine.work_claims import (  # noqa: E402
     DEFAULT_WORK_CLAIM_REGISTRY,
+    ForeignClaim,
+    WorkClaim,
     active_claims,
     changed_paths_from_diff,
+    check_against_open_requests,
     check_changed_paths,
     claim_for,
     load_work_claim_registry,
 )
+
+
+def _foreign_violations(args, changed):
+    """Read other open requests' registries, if CI collected them for us."""
+    if not args.open_requests:
+        return ()
+    path = Path(args.open_requests)
+    if not path.is_file():
+        print(f"\nopen-request registries were not collected ({path}); "
+              "a claim added in another open request cannot be seen here")
+        return ()
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    foreign: list[ForeignClaim] = []
+    for number, rows in (payload or {}).items():
+        for row in rows or ():
+            foreign.append(
+                ForeignClaim(
+                    pull_request=int(number),
+                    claim=WorkClaim(
+                        claim_id=str(row.get("claim_id") or ""),
+                        owner=str(row.get("owner") or ""),
+                        pull_request=int(row.get("pull_request") or number),
+                        paths=tuple(str(item) for item in row.get("paths") or ()),
+                        status=str(row.get("status") or ""),
+                    ),
+                )
+            )
+    if foreign:
+        print(f"  {len(foreign)} active claims from other open pull requests")
+    return check_against_open_requests(
+        changed, foreign, pull_request=args.pull_request
+    )
 
 
 def main() -> int:
@@ -41,6 +77,14 @@ def main() -> int:
     parser.add_argument("--registry", default=str(DEFAULT_WORK_CLAIM_REGISTRY))
     parser.add_argument("--base", help="base ref to diff against, e.g. origin/main")
     parser.add_argument("--pull-request", type=int, help="this pull request's number")
+    parser.add_argument(
+        "--open-requests",
+        help=(
+            "JSON file mapping other open pull request numbers to their copy "
+            "of the registry, so a claim added in a request that has not "
+            "merged yet is still visible here"
+        ),
+    )
     args = parser.parse_args()
 
     registry = load_work_claim_registry(args.registry)
@@ -61,7 +105,7 @@ def main() -> int:
     # present, and on a pull-request checkout the head already contains the
     # base, so the difference is the request's own changes.
     completed = subprocess.run(
-        ["git", "diff", "--name-only", args.base, "HEAD"],
+        ["git", "diff", "--name-status", "-M", args.base, "HEAD"],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -79,6 +123,10 @@ def main() -> int:
     violations = check_changed_paths(
         registry, changed, pull_request=args.pull_request
     )
+    # A claim another open request added is not in this checkout's registry, so
+    # without this its collision would only surface when the second one merges.
+    violations += _foreign_violations(args, changed)
+
     if not violations:
         held = claim_for(registry, args.pull_request) if args.pull_request else ()
         print(
@@ -87,14 +135,16 @@ def main() -> int:
         )
         return 0
 
-    print("\nunclaimed changes in guarded areas:")
-    for violation in violations:
-        print(f"  - {violation.describe()}")
-    print(
-        "\nAdd a claim to config/work_claims.yaml naming this pull request, or "
-        "coordinate with the request that already holds the path."
-    )
-    return 1
+    if violations:
+        print("\nunclaimed changes in guarded areas:")
+        for violation in violations:
+            print(f"  - {violation.describe()}")
+        print(
+            "\nAdd a claim to config/work_claims.yaml naming this pull request, "
+            "or coordinate with the request that already holds the path."
+        )
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
