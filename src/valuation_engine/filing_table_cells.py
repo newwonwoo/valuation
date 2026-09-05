@@ -535,6 +535,19 @@ def read_table_cell(
     if any(column >= len(item) or _amount(item[column]) is None
            for item in grid[len(headers):]):
         raise ProposalParseError("selected column crosses non-data or vertical header sections")
+    # Numeric years are readable decimals but may introduce a new vertical
+    # period section. This contract has no section boundaries, so neither a
+    # repeated header label nor an unqualified calendar year is valid data.
+    for item in grid[len(headers):]:
+        if any(index != column and _squeeze(cell) and any(
+            index < len(header) and _squeeze(cell) == _squeeze(header[index])
+            for header in headers
+        ) for index, cell in enumerate(item)):
+            raise ProposalParseError("table contains repeated vertical header labels")
+        if any(value is not None and Decimal("1900") <= value <= Decimal("2199")
+               and value == value.to_integral_value()
+               for value in (_amount(cell) for cell in item)):
+            raise ProposalParseError("bare calendar year is ambiguous with a vertical period header")
     row = _locate_row(grid, proposal.row_path, metric=task.metric)
     if row < len(headers):
         raise ProposalParseError("selected row belongs to the header block")
@@ -542,12 +555,28 @@ def read_table_cell(
     # An explicit unit column governs its own row. Unknown tokens must reject
     # even when a different body row happens to carry a registered unit.
     for index in range(max(map(len, headers))):
-        if any(index < len(header) and _squeeze(header[index]).casefold()
-               in {"단위", "unit", "units"} for header in headers):
+        explicit_unit = any(index < len(header) and re.search(
+            r"단위|통화|unit|currency", _squeeze(header[index]), re.IGNORECASE
+        ) for header in headers)
+        # Column roles can also be demonstrated by actual registered unit
+        # cells, independent of the issuer's chosen column heading.
+        demonstrated_unit = any(index < len(item) and any(
+            _squeeze(item[index]).strip("()") == _squeeze(token).strip("()")
+            for token, _ in task.source_unit_map
+        ) for item in grid[len(headers):])
+        if explicit_unit or demonstrated_unit:
             row_unit = grid[row][index] if index < len(grid[row]) else ""
-            if _squeeze(row_unit) != _squeeze(proposal.unit_token):
+            if _squeeze(row_unit).strip("()") != _squeeze(proposal.unit_token).strip("()"):
                 raise ProposalParseError("mixed units: selected row unit does not match proposed unit")
-            task.unit_for(row_unit)
+            task.unit_for(proposal.unit_token)
+
+    # A dimension-shaped row label cannot silently override a global unit.
+    # Unknown currencies/denominators need no blacklist: any slash-bearing
+    # nonnumeric cell must be an exact declared token to enter this contract.
+    for cell in grid[row]:
+        if _amount(cell) is None and any(mark in cell for mark in ("/", "%", "／", "％")):
+            if _squeeze(cell).strip("()") != _squeeze(proposal.unit_token).strip("()"):
+                raise ProposalParseError("selected row contains an unverified unit-shaped cell")
 
     # The unit has to be present where the table is, not merely registered:
     # otherwise a model could attach any registered token to any number.

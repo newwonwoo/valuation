@@ -300,6 +300,12 @@ def test_table_reader_only_transport_skips_unconfigured_locator():
     assert [role for role, _ in transport.calls] == ["filing_table_reader"]
 
 
+def test_locator_only_transport_does_not_invoke_unconfigured_reader():
+    transport = ScriptedTransport({"filing_locator_analyst": (NO_LOCATOR_ANSWER,)})
+    assert _collect_with(transport).records == ()
+    assert [role for role, _ in transport.calls] == ["filing_locator_analyst"]
+
+
 def test_configured_locator_failure_still_blocks_before_table_reader():
     transport = ScriptedTransport({"filing_locator_analyst": ("used",),
                                    "filing_table_reader": (TABLE_CELL_ANSWER,)})

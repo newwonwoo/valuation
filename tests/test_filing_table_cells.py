@@ -67,15 +67,41 @@ def test_the_disclosed_cell_is_read_from_the_grid():
 
 
 @pytest.mark.parametrize("caption", ["제품 가격변동추이", "제품 가격변동추이 (단위: 원/톤)"])
-def test_unknown_row_unit_cannot_borrow_registered_unit(monkeypatch, caption):
+@pytest.mark.parametrize("heading", ["단위", "통화단위", "Currency Unit", "Unit of measure", "임의분류", ""])
+def test_unknown_row_unit_cannot_borrow_registered_unit(monkeypatch, caption, heading):
     import sys
     member = f"""<p>{caption}</p><table>
-    <tr><td>품목</td><td>단위</td><td>2026년 반기</td></tr>
+    <tr><td>품목</td><td>{heading}</td><td>2026년 반기</td></tr>
     <tr><td>국내</td><td>원/톤</td><td>740000</td></tr>
     <tr><td>수출</td><td>USD/톤</td><td>600</td></tr></table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
     with pytest.raises(ProposalParseError, match="selected row unit"):
         _read(row_path=["수출"], unit_token="원/톤")
+
+
+@pytest.mark.parametrize("unit", ["XYZ/unknown", "XYZ／unknown", "XYZ％"])
+def test_unknown_unit_shape_rejects_without_known_unit_column(monkeypatch, unit):
+    import sys
+    member = f"""<p>제품 가격변동추이 (단위: 원/톤)</p><table>
+    <tr><td>품목</td><td>분류</td><td>2026년 반기</td></tr>
+    <tr><td>수출</td><td>{unit}</td><td>600</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="unit-shaped"):
+        _read(row_path=["수출"], unit_token="원/톤")
+
+
+@pytest.mark.parametrize("label", ["품목", "별도구분", ""])
+@pytest.mark.parametrize("year", ["2025", "2026", "1999", "2025.0", "2,025"])
+def test_numeric_period_sections_are_not_decimal_data(monkeypatch, label, year):
+    import sys
+    member = f"""<p>제품 가격변동추이 (단위: 원/톤)</p><table>
+    <tr><td>품목</td><td>2026년 반기</td></tr>
+    <tr><td>제품A</td><td>600</td></tr>
+    <tr><td>{label}</td><td>{year}</td></tr>
+    <tr><td>제품B</td><td>700</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="header"):
+        _read(row_path=["제품B"], unit_token="원/톤")
 
 
 @pytest.mark.parametrize("first,second,target", [
@@ -308,7 +334,7 @@ def test_receipt_uses_governing_caption_not_a_previous_body_row(monkeypatch):
     import sys
     member = """<p>제품 가격변동추이 (단위: 원/톤)</p><table>
     <tr><td>품목</td><td>비고</td><td>2026년 반기</td></tr>
-    <tr><td>이전제품</td><td>원/톤</td><td>600</td></tr>
+    <tr><td>이전제품</td><td>참고 (원/톤)</td><td>600</td></tr>
     <tr><td>선택제품</td><td>공시</td><td>700</td></tr></table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
     observation = _observe(row_path=["선택제품"], unit_token="원/톤")

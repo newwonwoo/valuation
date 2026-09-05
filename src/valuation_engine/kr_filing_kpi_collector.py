@@ -391,7 +391,10 @@ def request_scoped_filing_kpi_collector(
             for metric in statically_missed
             if metric not in found and metric in table_tasks
         )
-        if unread and transport is not None:
+        reader_available = transport is not None and (
+            supports_role is None or supports_role("filing_table_reader")
+        )
+        if unread and reader_available:
             for observation in _read_tables(
                 transport=transport,
                 filing=filing,
