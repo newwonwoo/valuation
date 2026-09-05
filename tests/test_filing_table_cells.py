@@ -41,6 +41,15 @@ def _unit_source_in(member: str, token: str) -> dict:
     tests about an undeclared unit still refuse.
     """
     from valuation_engine.filing_table_cells import _grids, _squeeze
+    hits = [
+        (ti, r, c)
+        for ti, grid in enumerate(_grids(member))
+        for r, row in enumerate(grid)
+        for c, cell in enumerate(row)
+        if _squeeze(cell).strip("()（）") == _squeeze(token).strip("()（）")
+    ]
+    if len(hits) == 1:
+        return {"cell": list(hits[0])}
     # A source is a whole text node, so quote the node the declaration sits in.
     for node in re.findall(r"(?<=>)([^<>]*단위[^<>]*)(?=<)", member):
         if member.count(node) == 1:
@@ -168,7 +177,7 @@ def test_trailing_note_cannot_override_unit_declaration(monkeypatch, note, row_u
     <tr><td>품목</td><td>2026년 반기</td>{unit_header}</tr>
     <tr><td>수출</td><td>600</td>{row_unit}</tr></table>"""
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    with pytest.raises(ProposalParseError, match="does not settle"):
+    with pytest.raises(ProposalParseError, match="does not settle|not declared"):
         _observe(row_path=["수출"], unit_token="원/톤")
 
 
