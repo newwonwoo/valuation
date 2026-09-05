@@ -34,6 +34,8 @@ checked against the filing's own structure.
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, replace
+from datetime import date
+from calendar import monthrange
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
 from html import unescape
@@ -527,7 +529,31 @@ def _is_label(cell: str) -> bool:
     only, and a cell that reads as a number is not a label.
     """
     text = str(cell or "").strip()
-    return bool(text) and _amount(text) is None
+    return bool(text) and not _is_missing_value(text) and _amount(text) is None
+
+
+def _validate_complete_reporting_period(text: str, effective_date: str) -> None:
+    """Bind an explicit Korean reporting-period header to its period end.
+
+    Relative current-period labels retain the existing filing contract. An
+    explicit calendar year without an interim marker denotes the annual
+    period, not any interim period in that year.
+    """
+    effective = date.fromisoformat(effective_date)
+    years = {int(year) for year in re.findall(r"(?<!\d)(\d{4})\s*년", text)}
+    if years and years != {effective.year}:
+        raise ProposalParseError("column header does not match the complete reporting period")
+    months = set()
+    for quarter, english in re.findall(r"([1-4])\s*분기|Q\s*([1-4])", text, re.IGNORECASE):
+        months.add(3 * int(quarter or english))
+    if re.search(r"하반기|H\s*2|2\s*H", text, re.IGNORECASE):
+        raise ProposalParseError("second-half duration requires an explicit reporting-period contract")
+    if re.search(r"반기|H\s*1|1\s*H", text, re.IGNORECASE):
+        months.add(6)
+    if years and not months and "당" not in text:
+        months.add(12)
+    if months and (months != {effective.month} or effective.day != monthrange(effective.year, effective.month)[1]):
+        raise ProposalParseError("column header does not match the complete reporting period")
 
 
 def _locate_row(
@@ -674,7 +700,7 @@ def read_table_cell(
                 continue
             declared_units.add(unit)
             break
-    if len(declared_units) > 1:
+    if len(declared_units) > 1 and not unit_columns:
         raise ProposalParseError(
             f"table {proposal.table_index} for {task.metric} declares mixed units; "
             "the selected cell has no verified governing unit"
@@ -691,6 +717,7 @@ def read_table_cell(
         effective_date=effective_date,
         require_current_period_marker=task.require_current_period_marker,
     )
+    _validate_complete_reporting_period(column_text, effective_date)
 
     if column >= len(grid[row]):
         raise ProposalParseError(

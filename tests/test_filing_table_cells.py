@@ -601,7 +601,7 @@ def test_rendering_does_not_silently_omit_rows_after_twenty(monkeypatch):
 
 @pytest.mark.parametrize("unit_token", ["천원/톤", "원/톤"])
 @pytest.mark.parametrize("second_unit", ["(원/톤)", "원/톤", "단위 원/톤", "단위 원 / 톤"])
-def test_mixed_units_require_cell_governance_before_any_observation(monkeypatch, unit_token, second_unit):
+def test_mixed_units_require_exact_cell_governance(monkeypatch, unit_token, second_unit):
     import sys
 
     mixed = """<p>제품 가격변동추이</p><table>
@@ -611,8 +611,50 @@ def test_mixed_units_require_cell_governance_before_any_observation(monkeypatch,
     </table>"""
     mixed = mixed.replace("(원/톤)", second_unit)
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", mixed)
-    with pytest.raises(ProposalParseError, match="mixed units"):
-        _observe(row_path=["빌릿"], unit_token=unit_token)
+    if unit_token == "원/톤" and second_unit in {"원/톤", "(원/톤)"}:
+        assert _observe(row_path=["빌릿"], unit_token=unit_token).measure.amount == Decimal("740000")
+    else:
+        with pytest.raises(ProposalParseError, match="mixed units"):
+            _observe(row_path=["빌릿"], unit_token=unit_token)
+    assert _observe(row_path=["철근"], unit_token="천원/톤").measure.amount == Decimal("823000")
+
+
+@pytest.mark.parametrize("effective", ["2026-03-31", "2026-09-30", "2026-12-31"])
+def test_half_year_header_cannot_be_sealed_as_other_same_year_period(effective):
+    proposal = TableCellProposal("realized_price", "member.xml", 0,
+                                 ("대한제강(주)", "철 근"), ("2026년 반기",), "천원/톤")
+    with pytest.raises(ProposalParseError, match="complete reporting period"):
+        read_table_cell(MEMBER, proposal, TASKS["realized_price"], effective_date=effective)
+
+
+@pytest.mark.parametrize("header,effective,accepted", [
+    ("2026년 1분기", "2026-03-31", True),
+    ("2026년 1분기", "2026-09-30", False),
+    ("2026년 3분기", "2026-09-30", True),
+    ("2026년 3분기", "2026-06-30", False),
+    ("2026년", "2026-12-31", True),
+    ("2026년", "2026-06-30", False),
+])
+def test_named_quarter_and_annual_headers_bind_full_period(header, effective, accepted):
+    member = MEMBER.replace("2026년 반기", header)
+    proposal = TableCellProposal("realized_price", "member.xml", 0,
+                                 ("대한제강(주)", "철 근"), (header,), "천원/톤")
+    if accepted:
+        assert read_table_cell(member, proposal, TASKS["realized_price"], effective_date=effective).value == Decimal("823")
+    else:
+        with pytest.raises(ProposalParseError, match="complete reporting period"):
+            read_table_cell(member, proposal, TASKS["realized_price"], effective_date=effective)
+
+
+@pytest.mark.parametrize("marker", ["N/A", "-", "해당없음"])
+def test_missing_value_marker_cannot_address_a_row(monkeypatch, marker):
+    import sys
+    member = f"""<p>제품 가격변동추이 (단위: 원/톤)</p><table>
+    <tr><td>품목</td><td>2026년 반기</td><td>비교</td></tr>
+    <tr><td>제품A</td><td>600</td><td>{marker}</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="rather than a heading"):
+        _observe(row_path=[marker], unit_token="원/톤")
 
 
 def test_equivalent_unit_spellings_do_not_create_false_ambiguity(monkeypatch):
