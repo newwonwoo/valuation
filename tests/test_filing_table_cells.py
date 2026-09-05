@@ -20,6 +20,7 @@ import pytest
 
 from valuation_engine.filing_table_cells import (
     TableCellProposal,
+    read_table_cell_observation,
     TableIdentity,
     TableReadingTask,
     _table_captions,
@@ -196,3 +197,98 @@ def test_a_single_heading_may_be_given_as_a_string():
             "unit_token": "천원/톤",
         }
     ).row_path == ("철 근",)
+
+
+def _filing():
+    """The fixture as an original filing document, the way a run holds one."""
+    from datetime import date
+    from io import BytesIO
+    from zipfile import ZipFile
+
+    from valuation_engine.dart_documents import (
+        parse_opendart_original_document_archive,
+    )
+
+    buffer = BytesIO()
+    with ZipFile(buffer, "w") as archive:
+        archive.writestr(f"{RCEPT}.xml", MEMBER)
+    return parse_opendart_original_document_archive(
+        buffer.getvalue(),
+        rcept_no=RCEPT,
+        checked_at=date(2026, 8, 29),
+        source_ref=(
+            "https://opendart.fss.or.kr/api/document.xml?rcept_no=" + RCEPT
+        ),
+    )
+
+
+RCEPT = "20260814003201"
+
+
+def _observe(**overrides):
+    row = {
+        "metric": "realized_price",
+        "member_path": f"{RCEPT}.xml",
+        "table_index": 0,
+        "row_path": ["대한제강(주)", "철 근"],
+        "column_path": ["2026년 반기"],
+        "unit_token": "천원/톤",
+    }
+    row.update(overrides)
+    return read_table_cell_observation(
+        _filing(),
+        TableCellProposal.from_row(row),
+        TASKS[row["metric"]],
+        segment="steel",
+        effective_date="2026-06-30",
+    )
+
+
+def test_a_verified_cell_becomes_an_ordinary_observation():
+    """Nothing downstream should have to know that a coordinate rather than a
+    phrase is what found the number."""
+    observation = _observe()
+    assert observation.measure.amount == Decimal("823000")
+    assert observation.measure.unit == "KRW_per_ton"
+    assert observation.source_unit_token == "천원/톤"
+    assert observation.source_unit == "KRW_thousand_per_ton"
+    assert observation.metric == "realized_price"
+    assert observation.segment == "steel"
+
+
+def test_the_receipts_are_the_same_ones_the_static_path_leaves():
+    observation = _observe()
+    assert observation.rcept_no == RCEPT
+    assert len(observation.member_content_hash) == 64
+    assert observation.text_end > observation.text_start >= 0
+    assert observation.matched_text.endswith("823")
+
+
+def test_the_quoted_span_carries_the_unit_that_governs_the_figure():
+    """A table declares its unit in the caption, so the span has to run from
+    that declaration through the cell — otherwise the receipt shows a bare
+    number and a reviewer cannot tell what it is measured in."""
+    matched = _observe().matched_text
+    assert "천원/톤" in matched
+    assert matched.index("천원/톤") < matched.index("823")
+
+
+def test_the_span_names_the_row_it_came_from():
+    matched = _observe().matched_text
+    assert "대한제강(주)" in matched and "철 근" in matched
+
+
+def test_a_second_row_reads_and_re_extracts_its_own_figure():
+    assert _observe(row_path=["와이케이스틸(주)", "철 근"]).measure.amount == Decimal(
+        "807000"
+    )
+
+
+def test_an_unknown_member_is_refused():
+    with pytest.raises(ProposalParseError, match="unknown member"):
+        _observe(member_path="absent.xml")
+
+
+def test_the_prior_period_column_is_still_refused_on_the_full_path():
+    with pytest.raises(ProposalParseError, match="current-period marker"):
+        _observe(column_path=["2025년"])

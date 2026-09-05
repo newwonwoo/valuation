@@ -42,6 +42,14 @@ from typing import Any, Iterable, Mapping, Sequence
 
 import yaml
 
+from .dart_documents import DartOriginalFilingDocument
+from .dart_kpi import (
+    DartKPIExtractionError,
+    DartKPIExtractionSpec,
+    DartKPIObservation,
+    extract_dart_kpi,
+    _visible_text,
+)
 from .generic_kr_industry import _SegmentTableParser, _expand_table
 from .llm_filing_locators import validate_filing_period_context
 from .proposal_parsing import ProposalParseError, require_keys, text_field
@@ -458,3 +466,125 @@ def read_table_cell(
         unit_token=proposal.unit_token,
         grid_sha256=_grid_sha256(grid),
     )
+
+
+def _ordered_span(text: str, needles: Sequence[str]) -> tuple[int, int]:
+    """Where the needles occur in order, as the earliest such run."""
+    cursor = 0
+    first = -1
+    for needle in needles:
+        found = text.find(needle, cursor)
+        if found < 0:
+            raise ProposalParseError(
+                f"the filing text does not carry {needle!r} after the previous "
+                "heading; the proposed coordinate is not readable as one span"
+            )
+        if first < 0:
+            first = found
+        cursor = found + len(needle)
+    return first, cursor
+
+
+def evidence_span(member, reading: TableCellReading) -> str:
+    """The stretch of the filing that carries the unit and then the cell.
+
+    The locator path proves a number by quoting it; a table cell has to prove
+    the same thing, and its unit is declared in the caption rather than beside
+    the figure. So the span runs from that declaration through the cell: a
+    reviewer reading it sees what the number is measured in and which row it
+    came from, and the machine can re-extract it from the member exactly as it
+    re-extracts a quoted locator.
+    """
+    text = _visible_text(member)
+    labels = [label for label in reading.row_path if label.strip()]
+    value_text = _format_cell_value(reading.value)
+    _, end = _ordered_span(text, labels + [value_text])
+    label_start, _ = _ordered_span(text, labels[:1] or [value_text])
+    unit_at = text.rfind(reading.unit_token, 0, label_start)
+    if unit_at < 0:
+        raise ProposalParseError(
+            f"the unit {reading.unit_token!r} is not declared before the cell "
+            f"proposed for {reading.metric}; a unit that follows its figure "
+            "cannot be shown to govern it"
+        )
+    span = text[unit_at:end]
+    occurrences = text.count(span)
+    if occurrences != 1:
+        raise ProposalParseError(
+            f"the span carrying the cell proposed for {reading.metric} occurs "
+            f"{occurrences} times in the member; the coordinate does not name "
+            "one place in the filing"
+        )
+    return span
+
+
+def _format_cell_value(value: Decimal) -> str:
+    """Render the value the way the filing writes it, with thousands commas."""
+    text = format(value, "f")
+    if "." in text:
+        whole, _, fraction = text.partition(".")
+        return f"{int(whole):,}.{fraction}"
+    return f"{int(text):,}"
+
+
+def read_table_cell_observation(
+    filing: DartOriginalFilingDocument,
+    proposal: TableCellProposal,
+    task: TableReadingTask,
+    *,
+    segment: str,
+    effective_date: str,
+) -> DartKPIObservation:
+    """Verify the coordinate, then let the ordinary extractor read the number.
+
+    The observation is the same object the static patterns and the quoted
+    locators produce, with the same receipts — member hash, normalized-text
+    span, matched text — so nothing downstream has to know that a coordinate
+    rather than a phrase is what found it.
+    """
+    member = next(
+        (item for item in filing.members if item.path == proposal.member_path),
+        None,
+    )
+    if member is None:
+        raise ProposalParseError(
+            f"table_cell names an unknown member: {proposal.member_path}"
+        )
+    reading = read_table_cell(
+        member.text, proposal, task, effective_date=effective_date
+    )
+    span = evidence_span(member, reading)
+    value_text = _format_cell_value(reading.value)
+
+    escaped = re.escape(span)
+    escaped_value = re.escape(value_text)
+    escaped_unit = re.escape(reading.unit_token)
+    head, _, tail = escaped.rpartition(escaped_value)
+    pattern = head + f"(?P<value>{escaped_value})" + tail
+    if escaped_unit not in pattern:  # pragma: no cover - span starts at the unit
+        raise ProposalParseError(
+            f"the span for {task.metric} lost its unit token while compiling"
+        )
+    pattern = pattern.replace(escaped_unit, f"(?P<unit>{escaped_unit})", 1)
+
+    spec = DartKPIExtractionSpec(
+        metric=task.metric,
+        segment=segment,
+        member_path_pattern=re.escape(proposal.member_path),
+        value_pattern=pattern,
+        canonical_unit=task.canonical_unit,
+        effective_date=effective_date,
+        locator_label=(
+            "LLM table cell (verified): table "
+            f"{proposal.table_index} / {' / '.join(proposal.row_path)} / "
+            f"{' / '.join(proposal.column_path)}"
+        ),
+        source_unit_map=task.source_unit_map,
+    )
+    try:
+        return extract_dart_kpi(filing, spec)
+    except DartKPIExtractionError as error:
+        raise ProposalParseError(
+            f"deterministic re-extraction rejected the cell proposed for "
+            f"{task.metric}: {error}"
+        ) from error
