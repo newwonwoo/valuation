@@ -57,7 +57,7 @@ tasks:
       원/KG: KRW_per_kg
   utilization:
     definition: 보고기간 평균 가동률
-    canonical_unit: "%"
+    canonical_unit: ratio
     unit_dimension: RATIO
     require_current_period_marker: true
     table_identity:

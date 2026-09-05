@@ -331,7 +331,8 @@ def _unit_matches(unit_token: str, text: str) -> list[re.Match[str]]:
     pattern = r"\s*".join(re.escape(char) for char in needle)
     return [
         match for match in re.finditer(pattern, text)
-        if (match.start() == 0 or _UNIT_BOUNDARY.fullmatch(text[match.start() - 1]))
+        if (match.start() == 0 or _UNIT_BOUNDARY.fullmatch(text[match.start() - 1])
+            or (needle == "%" and text[match.start() - 1].isdigit()))
         and (match.end() == len(text) or _UNIT_BOUNDARY.fullmatch(text[match.end()]))
     ]
 
@@ -639,15 +640,19 @@ def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, str]:
                 raise ProposalParseError("coordinate provenance does not match verified value")
             previous_end = parser.table_spans[index - 1][1] if index else 0
             # The unit must come from this table or its own caption, never a
-            # preceding table. Match the same declared token, at token boundaries.
+            # preceding table. It may also be the selected cell's inline unit.
+            # Match the same declared token, at token boundaries.
             units = [
                 match.start() for match in _unit_matches(reading.unit_token, text)
-                if previous_end <= match.start() and match.end() <= value_start
+                if previous_end <= match.start() and match.end() <= end
             ]
             if not units:
-                raise ProposalParseError("unit is not declared before the selected cell")
-            start = units[-1]
-            return start, end, raw_value
+                raise ProposalParseError("unit is not declared at the selected cell")
+            start = min(units[-1], value_start)
+            # A ratio cell may carry its own trailing percent token. Keep it
+            # in the evidence span/unit capture, outside the decimal capture.
+            numeric_value = raw_value.rstrip().removesuffix("%").rstrip()
+            return start, end, numeric_value
     raise ProposalParseError("coordinate table is missing")
 
 

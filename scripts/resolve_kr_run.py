@@ -35,6 +35,7 @@ if str(SRC) not in sys.path:
 import yaml  # noqa: E402
 
 from valuation_engine.run_resolver import resolve_run  # noqa: E402
+from valuation_engine.filing_collection_plan import resolver_input_hashes  # noqa: E402
 
 
 def _load(path: Path) -> dict:
@@ -144,7 +145,8 @@ def main() -> int:
     output_root.mkdir(parents=True, exist_ok=True)
     receipt = output_root / "resolver.json"
     receipt.write_text(
-        json.dumps(resolved.as_dict(), ensure_ascii=False, indent=2) + "\n",
+        json.dumps({**resolved.as_dict(), "input_sha256": resolver_input_hashes(raw)},
+                   ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
     for decision in resolved.decisions:

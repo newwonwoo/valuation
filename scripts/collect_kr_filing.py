@@ -4,6 +4,12 @@
     PYTHONPATH=src python scripts/collect_kr_filing.py runs/koreazinc-010130 \
         --rcept 20260814003958
 
+For a resolved run, pass --selection-receipt <run_dir>/out/resolver.json.
+This checks the run target, cutoff and selected filing before any collection.
+Without it, collection is explicitly ARCHIVAL_UNBOUND: downloading an original
+document does not authorize its use as valuation Evidence. Runtime filing and
+target gates remain authoritative in both modes.
+
 The viewer's own contents tree decides which element ids serve which role (see
 config/kr_filing_toc_roles.yaml), so nothing is chosen by hand and a filing that
 renumbers its sections is still collected correctly.
@@ -32,6 +38,7 @@ if str(SRC) not in sys.path:
 
 from valuation_engine.filing_collection_plan import (  # noqa: E402
     build_raw_manifest,
+    collection_binding,
     load_section_roles,
     parse_toc,
     parse_viewer_toc,
@@ -77,6 +84,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run_dir")
     parser.add_argument("--rcept", required=True, help="14-digit receipt number")
+    parser.add_argument("--selection-receipt", type=Path,
+                        help="resolver.json to bind collection to run target/as_of")
     parser.add_argument(
         "--roles",
         help="comma-separated subset of roles to collect (default: every role)",
@@ -92,6 +101,8 @@ def main() -> int:
     if not (rcept.isdigit() and len(rcept) == 14):
         raise SystemExit(f"rcept must be 14 digits, got {args.rcept!r}")
 
+    binding = collection_binding(Path(args.run_dir), rcept, args.selection_receipt)
+    print(f"collection scope: {binding['status']}")
     raw = Path(args.run_dir) / "raw"
     filing_dir = raw / f"filing_{rcept}"
     filing_dir.mkdir(parents=True, exist_ok=True)
@@ -142,6 +153,12 @@ def main() -> int:
     manifest_path.write_text(
         json.dumps(build_raw_manifest(raw), ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
+    )
+    output = Path(args.run_dir) / "out" / "collection"
+    output.mkdir(parents=True, exist_ok=True)
+    binding["members"] = build_raw_manifest(filing_dir)
+    (output / f"{rcept}.json").write_text(
+        json.dumps(binding, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
     print(f"\nfetched {fetched}, already present {skipped}; wrote {manifest_path}")
     return 0

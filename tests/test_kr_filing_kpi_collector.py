@@ -163,7 +163,7 @@ def test_the_provider_declares_exactly_the_configured_metrics():
     assert provider.capability.collector_id == COLLECTOR_ID
     assert set(provider.capability.supported_metrics) == {
         "orders", "backlog", "nameplate_capacity", "capacity", "production",
-        "utilization", "realized_price", "contract_liabilities", "lead_time",
+        "utilization", "realized_price", "contract_liabilities", "lead_time", "input_price",
     }
 
 
@@ -262,6 +262,50 @@ def test_a_metric_both_earlier_passes_miss_is_read_by_coordinate():
     # The receipt names the cell, so a reviewer can reopen it in the filing.
     assert "member_sha256=" in record.source_ref
     assert RCEPT in record.id
+
+
+def test_table_only_input_price_is_collectable_and_replayable():
+    answer = json.loads(TABLE_CELL_ANSWER)
+    answer["cells"][0]["metric"] = "input_price"
+    body = PRICE_TABLE_BODY.replace("제품별 구체적인 가격변동추이", "원재료 매입단가")
+    transport = _Transport(table_answer=json.dumps(answer))
+    record = _collect_with(transport, metrics=("input_price",), body=body).records[0]
+    assert transport.roles == ["filing_table_reader"]
+    assert record.metric == "input_price"
+    assert float(record.value) == 1046000.0
+    receipt = record.notes.split("; table_cell_receipt=", 1)[1]
+    replay = _collect_with(None, metrics=("input_price",), body=body,
+                           receipts={"input_price": receipt}).records[0]
+    assert replay == record
+
+
+@pytest.mark.parametrize("cell,caption", [
+    ("85.3", "가동률 (단위: %)"),
+    ("85.3%", "가동률 (단위: %)"),
+    ("85.3 %", "가동률 (단위: %)"),
+    ("85.3%", "가동률"),
+])
+def test_table_utilization_has_the_same_ratio_contract_as_static(cell, caption):
+    body = f"""<BODY><P>{caption}</P><TABLE>
+    <TR><TD>사업장</TD><TD>당기</TD></TR>
+    <TR><TD>제1공장</TD><TD>{cell}</TD></TR></TABLE></BODY>"""
+    answer = {"cells": [{"metric": "utilization", "member_path": MEMBER_PATH,
+                         "table_index": 0, "row_path": ["제1공장"],
+                         "column_path": ["당기"], "unit_token": "%"}]}
+    class RatioTransport(_Transport):
+        def complete(self, *, role, prompt):
+            if role == "filing_locator_analyst":
+                self.roles.append(role)
+                return json.dumps({"locators": [], "not_found": ["utilization"]})
+            return super().complete(role=role, prompt=prompt)
+    transport = RatioTransport(table_answer=json.dumps(answer))
+    record = _collect_with(transport, metrics=("utilization",), body=body).records[0]
+    assert record.unit == "ratio"
+    assert float(record.value) == pytest.approx(0.853)
+    receipt = record.notes.split("; table_cell_receipt=", 1)[1]
+    replay = _collect_with(None, metrics=("utilization",), body=body,
+                           receipts={"utilization": receipt}).records[0]
+    assert replay == record
 
 
 def test_a_metric_an_earlier_pass_already_found_is_not_asked_about_again():

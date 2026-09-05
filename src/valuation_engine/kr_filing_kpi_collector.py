@@ -269,7 +269,7 @@ def request_scoped_filing_kpi_collector(
     def collect(request: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
         corp_code = opendart_corp_code_from_target_id(request.target_id)
         unsupported = tuple(
-            sorted(set(request.required_metrics) - set(by_metric))
+            sorted(set(request.required_metrics) - (set(by_metric) | set(table_tasks)))
         )
         if unsupported:
             raise FilingKPICollectorError(
@@ -308,7 +308,10 @@ def request_scoped_filing_kpi_collector(
         for metric in request.required_metrics:
             if metric in replayed_metrics:
                 continue
-            pattern = by_metric[metric]
+            pattern = by_metric.get(metric)
+            if pattern is None:
+                statically_missed.append(metric)
+                continue
             spec = pattern.to_spec(
                 segment=segment_id,
                 effective_date=effective_date,
@@ -354,13 +357,14 @@ def request_scoped_filing_kpi_collector(
                     observed_date=as_of[:10],
                 )
             )
-        if statically_missed and transport is not None:
+        locator_missed = [metric for metric in statically_missed if metric in by_metric]
+        if locator_missed and transport is not None:
             observations = propose_and_verify_filing_kpis(
                 transport=transport,
                 filing=filing,
                 tasks=tuple(
                     by_metric[metric].locator_task()
-                    for metric in statically_missed
+                    for metric in locator_missed
                 ),
                 segment=segment_id,
                 effective_date=effective_date,
@@ -426,7 +430,9 @@ def filing_kpi_collector_provider(
         capability=CollectorCapability(
             collector_id=COLLECTOR_ID,
             source_id=SOURCE_ID,
-            supported_metrics=tuple(item.metric for item in patterns),
+            supported_metrics=tuple(sorted(
+                {item.metric for item in patterns} | set(load_table_reading_tasks())
+            )),
             jurisdictions=("KR",),
             implementation_ref=(
                 "valuation_engine.kr_filing_kpi_collector."
