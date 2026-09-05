@@ -128,14 +128,14 @@ class TableIdentity:
                 f"{', '.join(forbidden)}; that is a different table, and "
                 "reading it here would relabel its figures as this metric's"
             )
-        if self.must_have_any and not any(
-            _squeeze(term) in joined for term in self.must_have_any
-        ):
-            raise ProposalParseError(
-                f"the table proposed for {metric} carries none of its "
-                f"vocabulary ({', '.join(self.must_have_any)}); the proposal "
-                "has not shown that this table is about the metric"
-            )
+        # Inclusion is the model's claim, not the verifier's test.
+        # docs/LLM_READING_HANDOFF_DESIGN.md §3.1: "표 정체는 LLM이 제안하고,
+        # 등록부의 작은 배제 어휘가 사후검증한다." An inclusion gate has to
+        # learn every issuer's heading — KISCO writes its price table's title
+        # into a separate one-cell layout table, so the data grid carries none
+        # of the vocabulary — and that list is the one this reader exists to
+        # stop growing. Exclusion is what blocks the laundering it must block:
+        # the raw-material table read as a selling price.
 
 
 @dataclass(frozen=True)
@@ -222,6 +222,51 @@ def load_table_reading_tasks(
 
 
 @dataclass(frozen=True)
+class SourceRef:
+    """Where in the filing a fact about the cell is written.
+
+    docs/LLM_READING_HANDOFF_DESIGN.md §3.2 gives a table_cell proposal a
+    ``unit_source`` beside its coordinate, and the reason is §1.1's condition
+    A and B: issuers write the unit wherever they like — in a caption, in a
+    unit column, in a one-cell layout table above the data. A verifier that
+    has to *find* it is a parser of that habit, and grows one patch per issuer.
+    A verifier that is *told* where it is only has to check that the filing
+    says there what the proposal claims.
+
+    Exactly one of the two forms. ``cell`` is a coordinate in the member's own
+    tables; ``quote`` is text outside any table, which must occur there once.
+    """
+
+    cell: tuple[int, int, int] | None = None
+    quote: str | None = None
+
+    @classmethod
+    def from_value(cls, value: object, label: str) -> "SourceRef":
+        if not isinstance(value, Mapping):
+            raise ProposalParseError(f"{label} must be an object naming cell or quote")
+        keys = set(value)
+        if keys not in ({"cell"}, {"quote"}):
+            raise ProposalParseError(
+                f"{label} names exactly one of cell or quote; got {sorted(keys) or 'nothing'}"
+            )
+        if "quote" in value:
+            return cls(quote=text_field(value["quote"], f"{label}.quote"))
+        raw = value["cell"]
+        if not isinstance(raw, (list, tuple)) or len(raw) != 3:
+            raise ProposalParseError(f"{label}.cell is [table_index, row, column]")
+        try:
+            coordinate = tuple(int(item) for item in raw)
+        except (TypeError, ValueError) as error:
+            raise ProposalParseError(f"{label}.cell must hold three integers") from error
+        if any(item < 0 for item in coordinate):
+            raise ProposalParseError(f"{label}.cell must not be negative")
+        return cls(cell=coordinate)  # type: ignore[arg-type]
+
+    def receipt(self) -> dict[str, object]:
+        return {"cell": list(self.cell)} if self.cell is not None else {"quote": self.quote}
+
+
+@dataclass(frozen=True)
 class TableCellProposal:
     """Where the model says the number is. It never says what the number is."""
 
@@ -231,6 +276,8 @@ class TableCellProposal:
     row_path: tuple[str, ...]
     column_path: tuple[str, ...]
     unit_token: str
+    #: Where the filing writes this cell's unit. Named, never inferred.
+    unit_source: SourceRef = SourceRef(quote="")
 
     @classmethod
     def from_row(cls, row: Mapping[str, Any]) -> "TableCellProposal":
@@ -243,6 +290,7 @@ class TableCellProposal:
                 "row_path",
                 "column_path",
                 "unit_token",
+                "unit_source",
             ),
             label="table_cell",
         )
@@ -268,6 +316,7 @@ class TableCellProposal:
             row_path=_path(row["row_path"], "row_path"),
             column_path=_path(row["column_path"], "column_path"),
             unit_token=text_field(row["unit_token"], "table_cell.unit_token"),
+            unit_source=SourceRef.from_value(row["unit_source"], "table_cell.unit_source"),
         )
 
 
@@ -287,6 +336,8 @@ class TableCellReading:
     unit_token: str
     grid_sha256: str
     governing_unit_cells: tuple[tuple[int, int], ...]
+    #: Where the filing writes the unit, as the proposal named it.
+    unit_source: SourceRef = SourceRef(quote="")
 
     def receipt(self) -> dict[str, Any]:
         return {
@@ -300,6 +351,7 @@ class TableCellReading:
             "unit": self.unit,
             "grid_sha256": self.grid_sha256,
             "governing_unit_cells": [list(cell) for cell in self.governing_unit_cells],
+            "unit_source": self.unit_source.receipt(),
         }
 
 
@@ -397,6 +449,75 @@ def _authorized_unit_spans(unit_token: str, text: str, *, caption: bool,
             end = len(text.rstrip())
             approved.append((end - 1, end))
     return tuple(dict.fromkeys(approved))
+
+
+def _cell_text_offsets(html_text: str) -> dict[tuple[int, int, int], tuple[int, int]]:
+    """Offset of every expanded cell in the member's visible text.
+
+    The same numbering trick ``_coordinate_span`` uses: parse once recording
+    each cell's span, parse again with each cell replaced by its number, and
+    expand. A rowspan then carries its origin cell's span to every position it
+    covers, which is what a coordinate naming that position should read.
+    """
+
+    parser = _CoordinateTextParser()
+    parser.feed(html_text)
+    parser.close()
+    numbered_tables: list[list[list[tuple[str, int, int]]]] = []
+    number = 0
+    for table in parser.tables:
+        rows = []
+        for row in table:
+            cells = []
+            for _, rowspan, colspan in row:
+                cells.append((str(number), rowspan, colspan))
+                number += 1
+            rows.append(cells)
+        numbered_tables.append(rows)
+    offsets: dict[tuple[int, int, int], tuple[int, int]] = {}
+    for table_index, table in enumerate(numbered_tables):
+        for row_index, row in enumerate(_expand_table(table)):
+            for column_index, identifier in enumerate(row):
+                if not identifier:
+                    continue
+                span = parser.cell_spans[int(identifier)]
+                offsets[(table_index, row_index, column_index)] = span
+    return offsets
+
+
+def _resolve_source(
+    html_text: str, source: SourceRef, *, label: str
+) -> tuple[str, int, int]:
+    """The text the proposal points at, and where it sits in the member.
+
+    Nothing here knows what a caption is, or that a unit line is often its own
+    one-cell table. It reads the position it was given and reports what the
+    filing writes there.
+    """
+
+    parser = _CoordinateTextParser()
+    parser.feed(html_text)
+    parser.close()
+    visible = _normalize_space(" ".join(parser.parts))
+    if source.quote is not None:
+        quote = _normalize_space(source.quote)
+        if not quote:
+            raise ProposalParseError(f"{label} quote is empty")
+        first = visible.find(quote)
+        if first < 0:
+            raise ProposalParseError(f"{label} quote is not in the member")
+        if visible.find(quote, first + 1) >= 0:
+            raise ProposalParseError(
+                f"{label} quote occurs more than once; a source must be unambiguous"
+            )
+        return quote, first, first + len(quote)
+    offsets = _cell_text_offsets(html_text)
+    span = offsets.get(source.cell or (-1, -1, -1))
+    if span is None:
+        raise ProposalParseError(
+            f"{label} names cell {list(source.cell or ())}, which is not in the member"
+        )
+    return visible[span[0]:span[1]], span[0], span[1]
 
 
 def _grids(html_text: str) -> list[list[list[str]]]:
@@ -641,79 +762,56 @@ def read_table_cell(
                and value == value.to_integral_value()
                for value in (_amount(cell) for cell in item)):
             raise ProposalParseError("bare calendar year is ambiguous with a vertical period header")
-    # An explicit unit column governs its own row. Unknown tokens must reject
-    # even when a different body row happens to carry a registered unit.
-    unit_columns = []
-    for index in range(max(map(len, headers))):
-        explicit_unit = any(index < len(header) and re.fullmatch(
-            r"단위|통화|units?|currency", _squeeze(header[index]), re.IGNORECASE
-        ) for header in headers)
-        # Column roles can also be demonstrated by actual registered unit
-        # cells, independent of the issuer's chosen column heading.
-        demonstrated_unit = any(index < len(item) and any(
-            _squeeze(item[index]).strip("()") == _squeeze(token).strip("()")
-            for token, _ in task.source_unit_map
-        ) for item in grid[len(headers):])
-        if explicit_unit or demonstrated_unit:
-            unit_columns.append(index)
-
-    row = _locate_row(grid, proposal.row_path, metric=task.metric,
-                      excluded_columns=unit_columns)
+    row = _locate_row(grid, proposal.row_path, metric=task.metric)
     if row < len(headers):
         raise ProposalParseError("selected row belongs to the header block")
-    if "%" in grid[row][column] and (task.unit_dimension != "RATIO" or proposal.unit_token != "%"):
+    if column >= len(grid[row]):
+        raise ProposalParseError(
+            f"the cell proposed for {task.metric} is outside its row"
+        )
+
+    # The unit is read where the proposal says the filing writes it. Nothing
+    # here infers a caption, a unit column or a declaration grammar: those are
+    # the issuer habits docs/LLM_READING_HANDOFF_DESIGN.md §1.1 puts on the
+    # model's side of the line, and each of them grew one patch per issuer.
+    unit_text, unit_start, unit_end = _resolve_source(
+        member_text, proposal.unit_source, label="table_cell.unit_source"
+    )
+    _require_declared_unit(proposal.unit_token, unit_text, task=task)
+    unit = task.unit_for(proposal.unit_token)
+
+    offsets = _cell_text_offsets(member_text)
+    value_span = offsets.get((proposal.table_index, row, column))
+    if value_span is None:
+        raise ProposalParseError("selected cell has no text of its own in the member")
+    if unit_start >= value_span[1]:
+        raise ProposalParseError(
+            "the named unit source does not precede the selected cell, so it "
+            "does not govern it"
+        )
+    # Nearest declaration wins and ambiguity refuses: a unit reached across a
+    # different registered unit is not this cell's. The rule is positional, so
+    # it needs no list of the places an issuer may put a unit line.
+    parser = _CoordinateTextParser()
+    parser.feed(member_text)
+    parser.close()
+    between = _normalize_space(" ".join(parser.parts))[unit_end:value_span[0]]
+    intervening = sorted({
+        registered
+        for token, registered in task.source_unit_map
+        if registered != unit and _unit_matches(token, between)
+    })
+    if intervening:
+        raise ProposalParseError(
+            f"a different registered unit ({', '.join(intervening)}) is declared "
+            "between the named unit source and the selected cell"
+        )
+    if "%" in grid[row][column] and (
+        task.unit_dimension != "RATIO" or proposal.unit_token != "%"
+    ):
         raise ProposalParseError("selected percentage cell conflicts with the task unit")
 
-    for index in unit_columns:
-        row_unit = grid[row][index] if index < len(grid[row]) else ""
-        if _squeeze(row_unit).strip("()") != _squeeze(proposal.unit_token).strip("()"):
-            raise ProposalParseError("mixed units: selected row unit does not match proposed unit")
-        task.unit_for(proposal.unit_token)
-
-
-    # A dimension-shaped row label cannot silently override a global unit.
-    # Unknown currencies/denominators need no blacklist: any slash-bearing
-    # nonnumeric cell must be an exact declared token to enter this contract.
-    for cell in grid[row]:
-        if _amount(cell) is None and not _is_missing_value(cell) and any(mark in cell for mark in ("/", "%", "／", "％")):
-            if _squeeze(cell).strip("()") != _squeeze(proposal.unit_token).strip("()"):
-                raise ProposalParseError("selected row contains an unverified unit-shaped cell")
-
-    # The unit has to be present where the table is, not merely registered:
-    # otherwise a model could attach any registered token to any number.
-    governing_cells = tuple(dict.fromkeys(
-        [(index, column) for index in range(len(headers))]
-        + [(row, index) for index in unit_columns] + [(row, column)]
-    ))
-    authorized = _authorized_unit_spans(proposal.unit_token, caption, caption=True)
-    if not authorized and re.search(r"(?:단위|units?)(?:\s*[:：]|\s+)", caption, re.IGNORECASE):
-        raise ProposalParseError("caption unit is not declared with the table as a unit of its own under a verified complete contract")
-    if not authorized and not any(_authorized_unit_spans(
-        proposal.unit_token, grid[r][c], caption=False, inline_value=(r, c) == (row, column)
-    ) for r, c in governing_cells if c < len(grid[r])):
-        raise ProposalParseError(
-            "proposed unit is not declared with the table as a unit of its own "
-            "in a governing cell or caption"
-        )
-    declared_units: set[str] = set()
-    for token, unit in task.source_unit_map:
-        # Cell boundaries delimit tokens too. Squeezing the entire grid would
-        # turn a bare unit cell into e.g. '빌릿원/톤740000' and hide it.
-        for context in (caption, *(cell for row in grid for cell in row)):
-            try:
-                _require_declared_unit(token, context, task=task)
-            except ProposalParseError:
-                continue
-            declared_units.add(unit)
-            break
-    if len(declared_units) > 1 and not unit_columns:
-        raise ProposalParseError(
-            f"table {proposal.table_index} for {task.metric} declares mixed units; "
-            "the selected cell has no verified governing unit"
-        )
-
-    # The column's own headings are what date the figure, so chronology is
-    # checked against them rather than against the whole table.
+    # The column's own headings are what date the figure.
     column_text = " ".join(
         str(item[column]) for item in headers if column < len(item) and str(item[column]).strip()
     )
@@ -725,17 +823,12 @@ def read_table_cell(
     )
     _validate_complete_reporting_period(column_text, effective_date)
 
-    if column >= len(grid[row]):
-        raise ProposalParseError(
-            f"the cell proposed for {task.metric} is outside its row"
-        )
     value = _amount(grid[row][column])
     if value is None:
         raise ProposalParseError(
             f"the cell proposed for {task.metric} is not a readable number: "
             f"{grid[row][column]!r}"
         )
-    unit = task.unit_for(proposal.unit_token)
     return TableCellReading(
         metric=task.metric,
         member_path=proposal.member_path,
@@ -748,7 +841,8 @@ def read_table_cell(
         unit=unit,
         unit_token=proposal.unit_token,
         grid_sha256=_grid_sha256(grid),
-        governing_unit_cells=governing_cells,
+        governing_unit_cells=((row, column),),
+        unit_source=proposal.unit_source,
     )
 
 
