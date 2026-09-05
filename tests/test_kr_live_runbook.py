@@ -109,6 +109,57 @@ def test_the_committed_daehan_run_replays_as_a_three_segment_sotp(tmp_path):
     assert "100.0000%" in assumption_svg
 
 
+def test_the_committed_celltrion_run_values_two_segments_and_reconciles_the_residual(
+    tmp_path,
+):
+    """The fourth committed run is the one where the KSIC only proposes.
+
+    Code 21 covers both a clinical-stage biotech and a commercial
+    pharmaceutical manufacturer, so the route offers both archetypes and the
+    segment's own filed revenue and operating income refute the pipeline
+    premise — leaving capacity_manufacturing and, with it, a plan that never
+    asks a 4조-revenue manufacturer for a trial registry. The IFRS 8 note names
+    two reportable businesses plus its own residual row; the residual is
+    matched, reconciled and left unvalued, and 제4·5공장 is disclosed, typed
+    and kept out of Core because the filing evidences no site control for it.
+    """
+    reached, stop_stage, stop_reason, result = execute_run(
+        ROOT / "runs" / "celltrion-068270",
+        state_root=str(tmp_path / "state"),
+    )
+    assert stop_stage is None, stop_reason
+    assert len(reached) == len(result.stage_traces)
+
+    aggregation = result.data["generic_valuation_result"].equity_aggregation
+    base = next(
+        item for item in aggregation.scenario_values if item.scenario_id == "Base"
+    )
+    by_asset = {item.asset_id: item for item in base.components}
+    assert set(by_asset) == {"biologics", "chemical"}
+    assert by_asset["chemical"].ownership_ratio == Decimal("0.5499")
+
+    plan = result.data["module_requirement_plan"]
+    biologics = next(
+        item for item in plan.segments if item.segment_id == "biologics"
+    )
+    required = set(biologics.required_evidence)
+    assert "nameplate_capacity" in required
+    assert not required & {"trial_registry", "cash_runway", "stage"}
+
+    commitment = result.data["capacity_commitment_assessment"]
+    assert commitment.core_inclusion_required_projects == ()
+    assert commitment.recovery_required_segments == ()
+
+    report = result.data["final_report"]
+    for line in (
+        "**하방 시나리오:** 내재가치 주당 50,123원",
+        "**기준 시나리오:** 내재가치 주당 128,758원",
+        "**상방 시나리오:** 내재가치 주당 245,531원",
+        "**현재가:** 188,100원 (2026-09-04)",
+    ):
+        assert line in report, line
+
+
 def test_the_committed_koreazinc_run_preserves_llm_bound_ifrs8_refusal():
     """The Korea Zinc run proves the irregular-note boundary: an LLM-reviewed
     extraction is bound to the immutable filing member, while deterministic
