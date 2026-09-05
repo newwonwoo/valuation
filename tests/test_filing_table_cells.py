@@ -66,6 +66,51 @@ def test_the_disclosed_cell_is_read_from_the_grid():
     assert reading.column_path == ("2026년 반기",)
 
 
+@pytest.mark.parametrize("unit", [
+    "원/톤/월", "USD/원/톤", "원/톤 / 월", "USD / 원/톤", "원/톤 ／ 월",
+    "(원/톤)/월", "USD/(원/톤)", "(원/톤) / 월",
+    "원/톤·월", "원/톤 · 월", "원/톤 * 월", "원/톤 × 월", "원/톤 ^ 월",
+])
+def test_compound_units_cannot_be_read_as_registered_subtokens(monkeypatch, unit):
+    import sys
+    member = f"""<p>제품 가격변동추이 (단위: {unit})</p><table>
+    <tr><td>품목</td><td>2026년 반기</td></tr>
+    <tr><td>제품</td><td>600</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="not declared"):
+        _observe(row_path=["제품"], unit_token="원/톤")
+
+
+def test_unit_token_cannot_be_assembled_across_header_cells(monkeypatch):
+    import sys
+    member = """<p>제품 가격변동추이</p><table>
+    <tr><td>구분</td><td>원</td></tr>
+    <tr><td>품목</td><td>/톤</td></tr>
+    <tr><td>명칭</td><td>2026년 반기</td></tr>
+    <tr><td>제품</td><td>600</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="not declared"):
+        _observe(row_path=["제품"], unit_token="원/톤")
+
+
+@pytest.mark.parametrize("other_first", [True, False])
+@pytest.mark.parametrize("unit_in_header", [True, False])
+def test_ratio_unit_cannot_come_from_other_numeric_column(monkeypatch, other_first, unit_in_header):
+    import sys
+    other_header = "비교지표 (%)" if unit_in_header else "비교지표"
+    other_cell = "3" if unit_in_header else "3%"
+    headings, cells = ([other_header, "2026년 반기"], [other_cell, "85"])
+    if not other_first:
+        headings.reverse()
+        cells.reverse()
+    member = f"""<p>가동률</p><table>
+    <tr><td>공장</td><td>{headings[0]}</td><td>{headings[1]}</td></tr>
+    <tr><td>제1공장</td><td>{cells[0]}</td><td>{cells[1]}</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="not declared"):
+        _observe(metric="utilization", row_path=["제1공장"], unit_token="%")
+
+
 @pytest.mark.parametrize("caption", ["제품 가격변동추이", "제품 가격변동추이 (단위: 원/톤)"])
 @pytest.mark.parametrize("heading", ["단위", "통화단위", "Currency Unit", "Unit of measure", "임의분류", ""])
 def test_unknown_row_unit_cannot_borrow_registered_unit(monkeypatch, caption, heading):
@@ -367,6 +412,7 @@ def test_receipt_replays_without_a_model_and_survives_evidence_conversion():
     ("member_sha256", "0" * 64), ("rcept_no", "other"),
     ("segment", "other"), ("effective_date", "2025-06-30"),
     ("canonical_value", "999999"), ("cell", [1, 3]),
+    ("governing_unit_cells", [[9, 9]]),
 ])
 def test_changed_receipt_bindings_require_reconciliation(field, value):
     import json

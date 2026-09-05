@@ -283,6 +283,7 @@ class TableCellReading:
     unit: str
     unit_token: str
     grid_sha256: str
+    governing_unit_cells: tuple[tuple[int, int], ...]
 
     def receipt(self) -> dict[str, Any]:
         return {
@@ -295,12 +296,13 @@ class TableCellReading:
             "unit_token": self.unit_token,
             "unit": self.unit,
             "grid_sha256": self.grid_sha256,
+            "governing_unit_cells": [list(cell) for cell in self.governing_unit_cells],
         }
 
 
 #: Characters that may sit around a unit token in a filing. A token found with
 #: any other character against it is part of a longer unit, not this one.
-_UNIT_BOUNDARY = re.compile(r"[\s:：()（）\[\]{},·/]|^|$")
+_UNIT_BOUNDARY = re.compile(r"[\s:：()（）\[\]{},]|^|$")
 
 
 def _require_declared_unit(
@@ -334,6 +336,8 @@ def _unit_matches(unit_token: str, text: str) -> list[re.Match[str]]:
         if (match.start() == 0 or _UNIT_BOUNDARY.fullmatch(text[match.start() - 1])
             or (needle == "%" and text[match.start() - 1].isdigit()))
         and (match.end() == len(text) or _UNIT_BOUNDARY.fullmatch(text[match.end()]))
+        and not text[:match.start()].rstrip(" \t\r\n()（）[]{}＜＞").endswith(("/", "／", "·", "⋅", "*", "×", "^"))
+        and not text[match.end():].lstrip(" \t\r\n()（）[]{}＜＞").startswith(("/", "／", "·", "⋅", "*", "×", "^"))
     ]
 
 
@@ -554,6 +558,7 @@ def read_table_cell(
 
     # An explicit unit column governs its own row. Unknown tokens must reject
     # even when a different body row happens to carry a registered unit.
+    unit_columns = []
     for index in range(max(map(len, headers))):
         explicit_unit = any(index < len(header) and re.search(
             r"단위|통화|unit|currency", _squeeze(header[index]), re.IGNORECASE
@@ -565,6 +570,7 @@ def read_table_cell(
             for token, _ in task.source_unit_map
         ) for item in grid[len(headers):])
         if explicit_unit or demonstrated_unit:
+            unit_columns.append(index)
             row_unit = grid[row][index] if index < len(grid[row]) else ""
             if _squeeze(row_unit).strip("()") != _squeeze(proposal.unit_token).strip("()"):
                 raise ProposalParseError("mixed units: selected row unit does not match proposed unit")
@@ -580,10 +586,17 @@ def read_table_cell(
 
     # The unit has to be present where the table is, not merely registered:
     # otherwise a model could attach any registered token to any number.
-    grid_text = " ".join(str(cell) for item in (*headers, grid[row]) for cell in item)
-    _require_declared_unit(
-        proposal.unit_token, caption + " " + grid_text, task=task
-    )
+    governing_cells = tuple(dict.fromkeys(
+        [(index, column) for index in range(len(headers))]
+        + [(row, index) for index in unit_columns] + [(row, column)]
+    ))
+    governing_contexts = (caption, *(grid[r][c] for r, c in governing_cells
+                                     if c < len(grid[r])))
+    if not any(_unit_matches(proposal.unit_token, context) for context in governing_contexts):
+        raise ProposalParseError(
+            "proposed unit is not declared with the table as a unit of its own "
+            "in a governing cell or caption"
+        )
     declared_units: set[str] = set()
     for token, unit in task.source_unit_map:
         # Cell boundaries delimit tokens too. Squeezing the entire grid would
@@ -636,6 +649,7 @@ def read_table_cell(
         unit=unit,
         unit_token=proposal.unit_token,
         grid_sha256=_grid_sha256(grid),
+        governing_unit_cells=governing_cells,
     )
 
 
@@ -696,8 +710,6 @@ def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, str]:
             numbered.append(numbered_row)
         if index == reading.table_index:
             grid = _expand_table(numbered)
-            text_grid = _expand_table(table)
-            headers = _top_header_block(text_grid)
             cell_id = int(grid[reading.row_index][reading.column_index])
             value_start, end = parser.cell_spans[cell_id]
             raw_value = text[value_start:end]
@@ -706,9 +718,8 @@ def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, str]:
             previous_end = parser.table_spans[index - 1][1] if index else 0
             governing_spans = [
                 (previous_end, parser.table_spans[index][0]),
-                *(parser.cell_spans[int(cell)]
-                  for row in (*grid[:len(headers)], grid[reading.row_index])
-                  for cell in row if cell),
+                *(parser.cell_spans[int(grid[r][c])]
+                  for r, c in reading.governing_unit_cells if grid[r][c]),
             ]
             # The unit must come from this table or its own caption, never a
             # preceding table. It may also be the selected cell's inline unit.
