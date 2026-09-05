@@ -619,6 +619,30 @@ def test_mixed_units_require_exact_cell_governance(monkeypatch, unit_token, seco
     assert _observe(row_path=["철근"], unit_token="천원/톤").measure.amount == Decimal("823000")
 
 
+@pytest.mark.parametrize("header", ["2026년 반기 단위당 가격", "2026년 반기 unit price"])
+def test_per_unit_price_header_is_not_a_unit_column(monkeypatch, header):
+    import sys
+    member = f"""<p>제품 가격변동추이 (단위: 원/톤)</p><table>
+    <tr><td>품목</td><td>{header}</td></tr>
+    <tr><td>철근</td><td>600</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    assert _observe(row_path=["철근"], column_path=[header], unit_token="원/톤").measure.amount == Decimal("600")
+
+
+@pytest.mark.parametrize("unit_header", ["단위", "통화", "Unit", "Units", "Currency", "표시"])
+@pytest.mark.parametrize("row_path", [["천원/톤"], ["빌릿", "천원/톤"]])
+def test_unit_cells_cannot_identify_a_product_row(monkeypatch, unit_header, row_path):
+    import sys
+    member = f"""<p>제품 가격변동추이</p><table>
+    <tr><td>품목</td><td>{unit_header}</td><td>2026년 반기</td></tr>
+    <tr><td>철근</td><td>원/톤</td><td>600</td></tr>
+    <tr><td>빌릿</td><td>천원/톤</td><td>823</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="no row"):
+        _observe(row_path=row_path, unit_token="천원/톤")
+    assert _observe(row_path=["빌릿"], unit_token="천원/톤").measure.amount == Decimal("823000")
+
+
 @pytest.mark.parametrize("effective", ["2026-03-31", "2026-09-30", "2026-12-31"])
 def test_half_year_header_cannot_be_sealed_as_other_same_year_period(effective):
     proposal = TableCellProposal("realized_price", "member.xml", 0,

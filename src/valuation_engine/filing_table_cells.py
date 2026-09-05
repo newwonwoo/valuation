@@ -557,7 +557,8 @@ def _validate_complete_reporting_period(text: str, effective_date: str) -> None:
 
 
 def _locate_row(
-    grid: Sequence[Sequence[str]], row_path: Sequence[str], *, metric: str
+    grid: Sequence[Sequence[str]], row_path: Sequence[str], *, metric: str,
+    excluded_columns: Sequence[int] = (),
 ) -> int:
     for item in row_path:
         if not _is_label(item):
@@ -568,7 +569,8 @@ def _locate_row(
             )
     candidates = []
     for index, row in enumerate(grid):
-        labels = [_squeeze(cell) for cell in row if _is_label(cell)]
+        labels = [_squeeze(cell) for column, cell in enumerate(row)
+                  if column not in excluded_columns and _is_label(cell)]
         if all(any(_squeeze(item) == cell for cell in labels) for item in row_path):
             candidates.append(index)
     if not candidates:
@@ -639,18 +641,12 @@ def read_table_cell(
                and value == value.to_integral_value()
                for value in (_amount(cell) for cell in item)):
             raise ProposalParseError("bare calendar year is ambiguous with a vertical period header")
-    row = _locate_row(grid, proposal.row_path, metric=task.metric)
-    if row < len(headers):
-        raise ProposalParseError("selected row belongs to the header block")
-    if "%" in grid[row][column] and (task.unit_dimension != "RATIO" or proposal.unit_token != "%"):
-        raise ProposalParseError("selected percentage cell conflicts with the task unit")
-
     # An explicit unit column governs its own row. Unknown tokens must reject
     # even when a different body row happens to carry a registered unit.
     unit_columns = []
     for index in range(max(map(len, headers))):
-        explicit_unit = any(index < len(header) and re.search(
-            r"단위|통화|unit|currency", _squeeze(header[index]), re.IGNORECASE
+        explicit_unit = any(index < len(header) and re.fullmatch(
+            r"단위|통화|units?|currency", _squeeze(header[index]), re.IGNORECASE
         ) for header in headers)
         # Column roles can also be demonstrated by actual registered unit
         # cells, independent of the issuer's chosen column heading.
@@ -660,10 +656,20 @@ def read_table_cell(
         ) for item in grid[len(headers):])
         if explicit_unit or demonstrated_unit:
             unit_columns.append(index)
-            row_unit = grid[row][index] if index < len(grid[row]) else ""
-            if _squeeze(row_unit).strip("()") != _squeeze(proposal.unit_token).strip("()"):
-                raise ProposalParseError("mixed units: selected row unit does not match proposed unit")
-            task.unit_for(proposal.unit_token)
+
+    row = _locate_row(grid, proposal.row_path, metric=task.metric,
+                      excluded_columns=unit_columns)
+    if row < len(headers):
+        raise ProposalParseError("selected row belongs to the header block")
+    if "%" in grid[row][column] and (task.unit_dimension != "RATIO" or proposal.unit_token != "%"):
+        raise ProposalParseError("selected percentage cell conflicts with the task unit")
+
+    for index in unit_columns:
+        row_unit = grid[row][index] if index < len(grid[row]) else ""
+        if _squeeze(row_unit).strip("()") != _squeeze(proposal.unit_token).strip("()"):
+            raise ProposalParseError("mixed units: selected row unit does not match proposed unit")
+        task.unit_for(proposal.unit_token)
+
 
     # A dimension-shaped row label cannot silently override a global unit.
     # Unknown currencies/denominators need no blacklist: any slash-bearing
