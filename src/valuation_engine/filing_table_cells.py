@@ -353,8 +353,12 @@ def _authorized_unit_spans(unit_token: str, text: str, *, caption: bool,
     needle = _squeeze(unit_token).strip("()").casefold()
     candidates: list[tuple[int, int]] = []
     marker = r"(?:단위|units?)\s*[:：]?\s*"
-    for match in re.finditer(r"[（(]" + marker + r"([^()（）]+)[）)]\s*$", text, re.IGNORECASE):
-        candidates.append(match.span(1))
+    for match in re.finditer(r"[（(]" + marker + r"([^()（）]+)[）)]", text, re.IGNORECASE):
+        remainder = text[match.end():].strip()
+        if not remainder or (caption and re.match(
+            r"(?:주\s*\d*\s*[)）:：.]|주석\b|비고\s*[:：]|notes?\b|※)", remainder, re.IGNORECASE
+        )):
+            candidates.append(match.span(1))
     plain = re.search(marker + r"([^()（）]+)$", text, re.IGNORECASE)
     if plain:
         candidates.append(plain.span(1))
@@ -737,7 +741,7 @@ class _CoordinateTextParser(_SegmentTableParser):
         super().handle_endtag(tag)
 
 
-def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, str]:
+def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, int, int, int, int]:
     parser = _CoordinateTextParser()
     parser.feed(member.text)
     parser.close()
@@ -771,32 +775,35 @@ def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, str]:
             # preceding table. It may also be the selected cell's inline unit.
             # Match the same declared token, at token boundaries.
             units = [
-                left + start for left, right, is_caption, inline in governing_spans
+                (left + start, left + stop) for left, right, is_caption, inline in governing_spans
                 for start, stop in _authorized_unit_spans(
                     reading.unit_token, text[left:right], caption=is_caption, inline_value=inline
-                ) if left + stop <= end
+                )
             ]
             if not units:
                 raise ProposalParseError("unit is not declared at the selected cell")
-            start = min(units[-1], value_start)
+            unit_start, unit_end = units[-1]
+            start = min(unit_start, value_start)
             # A ratio cell may carry its own trailing percent token. Keep it
             # in the evidence span/unit capture, outside the decimal capture.
-            numeric_value = raw_value.rstrip().removesuffix("%").rstrip()
-            return start, end, numeric_value
+            numeric_value = raw_value.rstrip().removesuffix("%").strip()
+            numeric_start = value_start + raw_value.index(numeric_value)
+            return (start, max(end, unit_end), numeric_start,
+                    numeric_start + len(numeric_value), unit_start, unit_end)
     raise ProposalParseError("coordinate table is missing")
 
 
 def evidence_span(member, reading: TableCellReading) -> str:
-    """The stretch of the filing that carries the unit and then the cell.
+    """The stretch of the filing containing the verified unit and value.
 
     The locator path proves a number by quoting it; a table cell has to prove
     the same thing, and its unit is declared in the caption rather than beside
-    the figure. So the span runs from that declaration through the cell: a
+    the figure. The span covers both coordinates in either column order: a
     reviewer reading it sees what the number is measured in and which row it
     came from, and the machine can re-extract it from the member exactly as it
     re-extracts a quoted locator.
     """
-    start, end, _ = _coordinate_span(member, reading)
+    start, end, *_ = _coordinate_span(member, reading)
     return _visible_text(member)[start:end]
 
 
@@ -826,20 +833,18 @@ def read_table_cell_observation(
     reading = read_table_cell(
         member.text, proposal, task, effective_date=effective_date
     )
-    start, end, value_text = _coordinate_span(member, reading)
-    span = _visible_text(member)[start:end]
-
-    escaped = re.escape(span)
-    escaped_value = re.escape(value_text)
-    original_unit_token = _unit_matches(reading.unit_token.strip("()"), span)[0].group()
-    escaped_unit = re.escape(original_unit_token)
-    head, _, tail = escaped.rpartition(escaped_value)
-    pattern = rf"(?<=\A[\s\S]{{{start}}})" + head + f"(?P<value>{escaped_value})" + tail
-    if escaped_unit not in pattern:  # pragma: no cover - span starts at the unit
-        raise ProposalParseError(
-            f"the span for {task.metric} lost its unit token while compiling"
-        )
-    pattern = pattern.replace(escaped_unit, f"(?P<unit>{escaped_unit})", 1)
+    start, end, value_start, value_end, unit_start, unit_end = _coordinate_span(member, reading)
+    text = _visible_text(member)
+    original_unit_token = text[unit_start:unit_end]
+    pattern = rf"(?<=\A[\s\S]{{{start}}})"
+    cursor = start
+    for left, right, name in sorted(((value_start, value_end, "value"),
+                                     (unit_start, unit_end, "unit"))):
+        if left < cursor or right > end:
+            raise ProposalParseError("verified value and unit coordinates overlap or exceed evidence")
+        pattern += re.escape(text[cursor:left]) + f"(?P<{name}>{re.escape(text[left:right])})"
+        cursor = right
+    pattern += re.escape(text[cursor:end])
 
     spec = DartKPIExtractionSpec(
         metric=task.metric,

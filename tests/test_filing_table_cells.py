@@ -119,6 +119,37 @@ def test_narrative_percentage_cannot_replace_explicit_unit_receipt(monkeypatch):
     assert "3%" not in observation.matched_text
 
 
+@pytest.mark.parametrize("note", ["주1) 국내 판매 기준", "주) 국내 판매 기준", "Note: domestic sales", "※ 국내 판매 기준"])
+def test_complete_caption_declaration_allows_separate_note(monkeypatch, note):
+    import sys
+    member = f"""<p>제품 가격변동추이 (단위: 원/톤)</p><p>{note}</p><table>
+    <tr><td>품목</td><td>2026년 반기</td></tr>
+    <tr><td>제품</td><td>600</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    assert _observe(row_path=["제품"], unit_token="원/톤").measure.amount == Decimal("600")
+
+
+def test_trailing_unit_keeps_numeric_capture_on_selected_cell(monkeypatch):
+    import re
+    import sys
+    import valuation_engine.filing_table_cells as module
+    member = """<p>제품 가격변동추이</p><table>
+    <tr><td>품목</td><td>2026년 반기</td><td>2025년</td><td>단위</td></tr>
+    <tr><td>제품</td><td>600</td><td>1600</td><td>원/톤</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    extract = module.extract_dart_kpi
+    def inspect_capture(filing, spec):
+        text = module._visible_text(filing.members[0])
+        match = re.search(spec.value_pattern, text)
+        assert match.start("value") == text.index("600")
+        assert match.start("unit") > match.end("value")
+        return extract(filing, spec)
+    monkeypatch.setattr(module, "extract_dart_kpi", inspect_capture)
+    observation = _observe(row_path=["제품"], unit_token="원/톤")
+    assert observation.measure.amount == Decimal("600")
+    assert observation.matched_text.endswith("원/톤")
+
+
 @pytest.mark.parametrize("other_first", [True, False])
 @pytest.mark.parametrize("unit_in_header", [True, False])
 def test_ratio_unit_cannot_come_from_other_numeric_column(monkeypatch, other_first, unit_in_header):
