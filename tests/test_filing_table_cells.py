@@ -20,6 +20,7 @@ from pathlib import Path
 import pytest
 
 from valuation_engine.filing_table_cells import (
+    SourceRef,
     _declared_units,
     TableCellProposal,
     _is_label,
@@ -32,6 +33,12 @@ from valuation_engine.filing_table_cells import (
 )
 from valuation_engine.proposal_parsing import ProposalParseError
 
+
+
+def _ref(source: dict) -> "SourceRef":
+    """A source dict as the frozen value the proposal carries."""
+    return (SourceRef(cell=tuple(source["cell"])) if "cell" in source
+            else SourceRef(quote=source["quote"]))
 
 
 def _period_source_in(member: str, table_index: int, column_path) -> dict:
@@ -695,8 +702,12 @@ def test_unit_cells_cannot_identify_a_product_row(monkeypatch, unit_header, row_
 
 @pytest.mark.parametrize("effective", ["2026-03-31", "2026-09-30", "2026-12-31"])
 def test_half_year_header_cannot_be_sealed_as_other_same_year_period(effective):
-    proposal = TableCellProposal("realized_price", "member.xml", 0,
-                                 ("대한제강(주)", "철 근"), ("2026년 반기",), "천원/톤")
+    proposal = TableCellProposal(
+        "realized_price", "member.xml", 0, ("대한제강(주)", "철 근"),
+        ("2026년 반기",), "천원/톤",
+        unit_source=_ref(_unit_source_in(MEMBER, "천원/톤", 0)),
+        period_source=_ref(_period_source_in(MEMBER, 0, ["2026년 반기"])),
+    )
     with pytest.raises(ProposalParseError, match="complete reporting period"):
         read_table_cell(MEMBER, proposal, TASKS["realized_price"], effective_date=effective)
 
@@ -711,8 +722,12 @@ def test_half_year_header_cannot_be_sealed_as_other_same_year_period(effective):
 ])
 def test_named_quarter_and_annual_headers_bind_full_period(header, effective, accepted):
     member = MEMBER.replace("2026년 반기", header)
-    proposal = TableCellProposal("realized_price", "member.xml", 0,
-                                 ("대한제강(주)", "철 근"), (header,), "천원/톤")
+    proposal = TableCellProposal(
+        "realized_price", "member.xml", 0, ("대한제강(주)", "철 근"), (header,),
+        "천원/톤",
+        unit_source=_ref(_unit_source_in(member, "천원/톤", 0)),
+        period_source=_ref(_period_source_in(member, 0, [header])),
+    )
     if accepted:
         assert read_table_cell(member, proposal, TASKS["realized_price"], effective_date=effective).value == Decimal("823")
     else:
