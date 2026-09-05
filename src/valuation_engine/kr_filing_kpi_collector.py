@@ -358,7 +358,11 @@ def request_scoped_filing_kpi_collector(
                 )
             )
         locator_missed = [metric for metric in statically_missed if metric in by_metric]
-        if locator_missed and transport is not None:
+        supports_role = getattr(transport, "supports_role", None)
+        locator_available = transport is not None and (
+            supports_role is None or supports_role("filing_locator_analyst")
+        )
+        if locator_missed and locator_available:
             observations = propose_and_verify_filing_kpis(
                 transport=transport,
                 filing=filing,

@@ -293,6 +293,22 @@ def test_a_metric_both_earlier_passes_miss_is_read_by_coordinate():
     assert RCEPT in record.id
 
 
+def test_table_reader_only_transport_skips_unconfigured_locator():
+    transport = ScriptedTransport({"filing_table_reader": (TABLE_CELL_ANSWER,)})
+    record = _collect_with(transport).records[0]
+    assert record.metric == "realized_price"
+    assert [role for role, _ in transport.calls] == ["filing_table_reader"]
+
+
+def test_configured_locator_failure_still_blocks_before_table_reader():
+    transport = ScriptedTransport({"filing_locator_analyst": ("used",),
+                                   "filing_table_reader": (TABLE_CELL_ANSWER,)})
+    transport.complete(role="filing_locator_analyst", prompt="")
+    with pytest.raises(TransportError):
+        _collect_with(transport)
+    assert all(role == "filing_locator_analyst" for role, _ in transport.calls)
+
+
 def test_table_only_input_price_is_collectable_and_replayable():
     answer = json.loads(TABLE_CELL_ANSWER)
     answer["cells"][0]["metric"] = "input_price"

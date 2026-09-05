@@ -435,6 +435,24 @@ def _locate_column(
     return candidates[0]
 
 
+def _top_header_block(grid: Sequence[Sequence[str]]) -> Sequence[Sequence[str]]:
+    """Only a single top header block may govern this rectangular table.
+
+    A new label-only row after numeric data can introduce a different period
+    section. Reject it instead of borrowing a heading across sections.
+    """
+    first_data = next((i for i, row in enumerate(grid)
+                       if any(_amount(cell) is not None for cell in row)), len(grid))
+    if not first_data or first_data == len(grid):
+        raise ProposalParseError("table has no distinct top header block")
+    for row in grid[first_data:]:
+        if any(str(cell).strip() for cell in row) and not any(
+            _amount(cell) is not None for cell in row
+        ):
+            raise ProposalParseError("table contains ambiguous vertical header sections")
+    return grid[:first_data]
+
+
 def _is_label(cell: str) -> bool:
     """A heading names something; a figure is what the heading points at.
 
@@ -512,9 +530,28 @@ def read_table_cell(
         _headings(grid) + (caption,), metric=task.metric
     )
 
+    headers = _top_header_block(grid)
+    column = _locate_column(headers, proposal.column_path, metric=task.metric)
+    if any(column >= len(item) or _amount(item[column]) is None
+           for item in grid[len(headers):]):
+        raise ProposalParseError("selected column crosses non-data or vertical header sections")
+    row = _locate_row(grid, proposal.row_path, metric=task.metric)
+    if row < len(headers):
+        raise ProposalParseError("selected row belongs to the header block")
+
+    # An explicit unit column governs its own row. Unknown tokens must reject
+    # even when a different body row happens to carry a registered unit.
+    for index in range(max(map(len, headers))):
+        if any(index < len(header) and _squeeze(header[index]).casefold()
+               in {"단위", "unit", "units"} for header in headers):
+            row_unit = grid[row][index] if index < len(grid[row]) else ""
+            if _squeeze(row_unit) != _squeeze(proposal.unit_token):
+                raise ProposalParseError("mixed units: selected row unit does not match proposed unit")
+            task.unit_for(row_unit)
+
     # The unit has to be present where the table is, not merely registered:
     # otherwise a model could attach any registered token to any number.
-    grid_text = " ".join(str(cell) for row in grid for cell in row)
+    grid_text = " ".join(str(cell) for item in (*headers, grid[row]) for cell in item)
     _require_declared_unit(
         proposal.unit_token, caption + " " + grid_text, task=task
     )
@@ -535,13 +572,10 @@ def read_table_cell(
             "the selected cell has no verified governing unit"
         )
 
-    column = _locate_column(grid, proposal.column_path, metric=task.metric)
-    row = _locate_row(grid, proposal.row_path, metric=task.metric)
-
     # The column's own headings are what date the figure, so chronology is
     # checked against them rather than against the whole table.
     column_text = " ".join(
-        str(item[column]) for item in grid if column < len(item) and str(item[column]).strip()
+        str(item[column]) for item in headers if column < len(item) and str(item[column]).strip()
     )
     validate_filing_period_context(
         column_text,
@@ -633,18 +667,29 @@ def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, str]:
             numbered.append(numbered_row)
         if index == reading.table_index:
             grid = _expand_table(numbered)
+            text_grid = _expand_table(table)
+            headers = _top_header_block(text_grid)
             cell_id = int(grid[reading.row_index][reading.column_index])
             value_start, end = parser.cell_spans[cell_id]
             raw_value = text[value_start:end]
             if _amount(raw_value) != reading.value:
                 raise ProposalParseError("coordinate provenance does not match verified value")
             previous_end = parser.table_spans[index - 1][1] if index else 0
+            governing_spans = [
+                (previous_end, parser.table_spans[index][0]),
+                *(parser.cell_spans[int(cell)]
+                  for row in (*grid[:len(headers)], grid[reading.row_index])
+                  for cell in row if cell),
+            ]
             # The unit must come from this table or its own caption, never a
             # preceding table. It may also be the selected cell's inline unit.
             # Match the same declared token, at token boundaries.
             units = [
                 match.start() for match in _unit_matches(reading.unit_token, text)
-                if previous_end <= match.start() and match.end() <= end
+                if match.end() <= end and any(
+                    left <= match.start() and match.end() <= right
+                    for left, right in governing_spans
+                )
             ]
             if not units:
                 raise ProposalParseError("unit is not declared at the selected cell")

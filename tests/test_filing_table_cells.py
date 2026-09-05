@@ -66,6 +66,34 @@ def test_the_disclosed_cell_is_read_from_the_grid():
     assert reading.column_path == ("2026년 반기",)
 
 
+@pytest.mark.parametrize("caption", ["제품 가격변동추이", "제품 가격변동추이 (단위: 원/톤)"])
+def test_unknown_row_unit_cannot_borrow_registered_unit(monkeypatch, caption):
+    import sys
+    member = f"""<p>{caption}</p><table>
+    <tr><td>품목</td><td>단위</td><td>2026년 반기</td></tr>
+    <tr><td>국내</td><td>원/톤</td><td>740000</td></tr>
+    <tr><td>수출</td><td>USD/톤</td><td>600</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="selected row unit"):
+        _read(row_path=["수출"], unit_token="원/톤")
+
+
+@pytest.mark.parametrize("first,second,target", [
+    ("2025년 반기", "2026년 반기", "이전제품"),
+    ("2026년 반기", "2025년 반기", "이후제품"),
+])
+def test_vertical_period_sections_cannot_lend_headers(monkeypatch, first, second, target):
+    import sys
+    member = f"""<p>제품 가격변동추이 (단위: 원/톤)</p><table>
+    <tr><td>품목</td><td>{first}</td></tr>
+    <tr><td>이전제품</td><td>600</td></tr>
+    <tr><td>품목</td><td>{second}</td></tr>
+    <tr><td>이후제품</td><td>700</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="vertical header sections"):
+        _read(row_path=[target], unit_token="원/톤")
+
+
 def test_a_second_row_of_the_same_table_reads_its_own_cell():
     assert _read(row_path=["대한제강(주)", "빌 릿"]).value == Decimal("740")
     assert _read(row_path=["와이케이스틸(주)", "철 근"]).value == Decimal("807")
@@ -274,6 +302,18 @@ def test_a_verified_cell_becomes_an_ordinary_observation():
     assert observation.source_unit == "KRW_thousand_per_ton"
     assert observation.metric == "realized_price"
     assert observation.segment == "steel"
+
+
+def test_receipt_uses_governing_caption_not_a_previous_body_row(monkeypatch):
+    import sys
+    member = """<p>제품 가격변동추이 (단위: 원/톤)</p><table>
+    <tr><td>품목</td><td>비고</td><td>2026년 반기</td></tr>
+    <tr><td>이전제품</td><td>원/톤</td><td>600</td></tr>
+    <tr><td>선택제품</td><td>공시</td><td>700</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    observation = _observe(row_path=["선택제품"], unit_token="원/톤")
+    assert observation.matched_text.startswith("원/톤) 품목")
+    assert observation.measure.amount == Decimal("700")
 
 
 def test_receipt_replays_without_a_model_and_survives_evidence_conversion():
