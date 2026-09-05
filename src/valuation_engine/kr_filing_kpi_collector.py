@@ -53,6 +53,11 @@ from .dart_kpi import (
 )
 from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequest
 from .kr_opendart_provider import OpenDartNetwork, opendart_corp_code_from_target_id
+from .filing_table_cells import (
+    TableReadingTask,
+    load_table_reading_tasks,
+    propose_and_verify_table_cells,
+)
 from .llm_filing_locators import (
     FilingLocatorTask,
     propose_and_verify_filing_kpis,
@@ -206,6 +211,32 @@ def _latest_periodic_filing(
     return max(periodic, key=lambda record: (record.published_at, record.document_id))
 
 
+def _read_tables(
+    *,
+    transport: ProposalTransport,
+    filing: DartOriginalFilingDocument,
+    tasks: tuple[TableReadingTask, ...],
+    segment: str,
+    effective_date: str,
+) -> tuple[DartKPIObservation, ...]:
+    """The coordinate pass, tolerant of a run that never scripted this seat.
+
+    A prepared run carries one file per staff role it uses, and a run written
+    before this seat existed has none for it. That is not a reason to stop
+    collecting: the metric is simply unread, which is where it already was.
+    """
+    try:
+        return propose_and_verify_table_cells(
+            transport=transport,
+            filing=filing,
+            tasks=tasks,
+            segment=segment,
+            effective_date=effective_date,
+        )
+    except Exception:  # noqa: BLE001 - a seat that cannot answer leaves a gap
+        return ()
+
+
 def request_scoped_filing_kpi_collector(
     network: OpenDartNetwork,
     *,
@@ -234,6 +265,7 @@ def request_scoped_filing_kpi_collector(
         raise FilingKPICollectorError("segment_id is required")
     cutoff = date.fromisoformat(as_of[:10])
     by_metric = {item.metric: item for item in patterns}
+    table_tasks = load_table_reading_tasks()
 
     def collect(request: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
         corp_code = opendart_corp_code_from_target_id(request.target_id)
@@ -319,6 +351,31 @@ def request_scoped_filing_kpi_collector(
                 effective_date=effective_date,
             )
             for observation in observations:
+                records.append(
+                    dart_kpi_observation_to_evidence(
+                        observation,
+                        target_id=request.target_id,
+                        observed_date=as_of[:10],
+                    )
+                )
+        # Third pass: a metric the statutory layout and the quoted locator both
+        # missed may still sit in a table the reading registry describes. The
+        # coordinate path is tried last because it is the newest, and like the
+        # two before it a miss is a gap rather than a failure.
+        found = {item.metric for item in records}
+        unread = tuple(
+            metric
+            for metric in statically_missed
+            if metric not in found and metric in table_tasks
+        )
+        if unread and transport is not None:
+            for observation in _read_tables(
+                transport=transport,
+                filing=filing,
+                tasks=tuple(table_tasks[metric] for metric in unread),
+                segment=segment_id,
+                effective_date=effective_date,
+            ):
                 records.append(
                     dart_kpi_observation_to_evidence(
                         observation,

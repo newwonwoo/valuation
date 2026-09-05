@@ -57,13 +57,14 @@ tasks:
       원/KG: KRW_per_kg
   utilization:
     definition: 보고기간 평균 가동률
-    canonical_unit: ratio
+    canonical_unit: "%"
     unit_dimension: RATIO
     require_current_period_marker: true
     table_identity:
       must_have_any: [가동률, 가동]
       must_not_have: [계획, 전망, 목표]
     source_unit_map:
-      "%": ratio_percent
-      "(%)": ratio_percent
-      퍼센트: ratio_percent
+      # The measure registry knows '%' and 'ratio'; there is no 'ratio_percent'.
+      # A task whose map named one could never produce evidence — every
+      # re-extraction would fail on an unsupported unit and read as a gap.
+      "%": "%"

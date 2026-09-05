@@ -20,6 +20,7 @@ import pytest
 
 from valuation_engine.filing_table_cells import (
     TableCellProposal,
+    _is_label,
     read_table_cell_observation,
     TableIdentity,
     TableReadingTask,
@@ -100,15 +101,20 @@ def test_a_column_path_that_fits_nothing_is_refused():
 
 
 def test_a_unit_not_present_at_the_table_is_refused():
-    """Registered is not enough: the unit has to be read from the filing."""
-    with pytest.raises(ProposalParseError, match="does not appear with the table"):
+    """Registered is not enough: the unit has to be read from the filing.
+
+    원/kg is registered for this metric and simply is not what this table
+    declares."""
+    with pytest.raises(ProposalParseError, match="not declared with the table"):
         _read(unit_token="원/kg")
 
 
-def test_a_unit_present_in_the_filing_but_unregistered_is_refused():
-    """'%' is right there in the section, and is still not a price per tonne."""
+def test_a_unit_the_task_does_not_register_is_refused():
+    """A price per tonne cannot be reported in percent, however the table is
+    worded. The registry check is separate from the presence check, so it is
+    exercised directly."""
     with pytest.raises(ProposalParseError, match="does not register unit token"):
-        _read(unit_token="%")
+        TASKS["realized_price"].unit_for("%")
 
 
 def test_the_raw_material_task_may_not_read_the_product_table():
@@ -153,9 +159,23 @@ def test_a_task_may_not_mix_unit_dimensions():
         canonical_unit="KRW_per_ton",
         unit_dimension="PRICE_PER_MASS",
         table_identity=TableIdentity(("판매",), ()),
-        source_unit_map=(("%", "ratio_percent"),),
+        # A real, registered unit — of the wrong dimension for this metric.
+        source_unit_map=(("%", "%"),),
     )
     with pytest.raises(ProposalParseError, match="cannot be converted"):
+        task.validate()
+
+
+def test_a_task_may_not_name_a_unit_the_registry_does_not_know():
+    task = TableReadingTask(
+        metric="utilization",
+        definition="d",
+        canonical_unit="%",
+        unit_dimension="RATIO",
+        table_identity=TableIdentity(("가동률",), ()),
+        source_unit_map=(("%", "ratio_percent"),),
+    )
+    with pytest.raises(ProposalParseError, match="unregistered unit"):
         task.validate()
 
 
@@ -396,3 +416,96 @@ def test_two_cells_for_one_metric_are_refused():
         ensure_ascii=False,
     )
     assert _propose(_Scripted(both)) == ()
+
+
+def test_a_shorter_unit_inside_the_declared_one_is_refused():
+    """천원/톤 contains 원/톤. A substring test would let the model read a table
+    declared in thousands as though it were in won — a factor of a thousand on
+    a valuation input, chosen by spelling."""
+    with pytest.raises(ProposalParseError, match="as a unit of its own"):
+        _read(unit_token="원/톤")
+
+
+def test_the_declared_unit_still_reads():
+    assert _read().unit == "KRW_thousand_per_ton"
+
+
+@pytest.mark.parametrize("path_kind", ("row_path", "column_path"))
+def test_a_figure_may_not_be_used_as_a_heading(path_kind):
+    """The prompt shows every number in the table, so a path made of figures
+    would let the model pick any cell and relabel it as this metric."""
+    with pytest.raises(ProposalParseError, match="figure rather than a heading"):
+        _read(**{path_kind: ["823"]})
+
+
+def test_a_figure_shaped_cell_is_not_treated_as_a_label():
+    assert _is_label("철 근") is True
+    assert _is_label("823") is False
+    assert _is_label("99.23%") is False
+    assert _is_label("(13,599,031)") is False
+    assert _is_label("") is False
+
+
+def test_every_task_declares_a_unit_the_measure_registry_knows():
+    """A task mapping to a unit the registry does not know could never produce
+    evidence: re-extraction would fail and read as a gap, silently."""
+    from decimal import Decimal as _D
+
+    from valuation_engine.actual_units import Measure
+
+    for task in TASKS.values():
+        Measure(_D("1"), task.canonical_unit, "2026-06-30")
+        for _token, unit in task.source_unit_map:
+            Measure(_D("1"), unit, "2026-06-30")
+
+
+def test_a_caption_stops_at_the_previous_table():
+    """Splitting on opening tags alone puts the whole previous table into the
+    next one's caption, so a neighbouring grid could lend vocabulary to
+    validate the wrong table, or a term inside it could reject the right one."""
+    body = (
+        "<p>원재료 매입 현황 (단위: 원/kg)</p>"
+        "<table><tr><td>구분</td><td>값</td></tr><tr><td>고철</td><td>500</td></tr></table>"
+        "<p>제품별 가격변동추이 (단위: 천원/톤)</p>"
+        "<table><tr><td>품 목</td><td>2026년 반기</td></tr>"
+        "<tr><td>철 근</td><td>823</td></tr></table>"
+    )
+    captions = _table_captions(body)
+    assert len(captions) == 2
+    assert "원재료" in captions[0] and "천원/톤" not in captions[0]
+    # The second caption must not carry the first table's vocabulary, which
+    # would otherwise reject this table under the metric's exclusion list.
+    assert "원재료" not in captions[1]
+    assert "고철" not in captions[1]
+    assert "천원/톤" in captions[1]
+
+
+def test_the_metric_reads_from_a_table_whose_neighbour_is_the_excluded_one():
+    """The exact shape the caption bug would have broken: the raw-material
+    table sits right above the product table."""
+    body = (
+        "<p>원재료 매입 현황 (단위: 원/kg)</p>"
+        "<table><tr><td>구분</td><td>2026년 반기</td></tr>"
+        "<tr><td>고 철</td><td>500</td></tr></table>"
+        "<p>제품별 가격변동추이 (단위: 천원/톤)</p>"
+        "<table><tr><td>품 목</td><td>2026년 반기</td></tr>"
+        "<tr><td>철 근</td><td>823</td></tr></table>"
+    )
+    from valuation_engine.filing_table_cells import read_table_cell
+
+    reading = read_table_cell(
+        body,
+        TableCellProposal.from_row(
+            {
+                "metric": "realized_price",
+                "member_path": "m",
+                "table_index": 1,
+                "row_path": ["철 근"],
+                "column_path": ["2026년 반기"],
+                "unit_token": "천원/톤",
+            }
+        ),
+        TASKS["realized_price"],
+        effective_date="2026-06-30",
+    )
+    assert reading.value == Decimal("823")

@@ -77,7 +77,7 @@ _UNIT_DIMENSIONS: dict[str, str] = {
     "KRW_thousand_per_ton": "PRICE_PER_MASS",
     "KRW_per_kg": "PRICE_PER_MASS",
     "ratio": "RATIO",
-    "ratio_percent": "RATIO",
+    "%": "RATIO",
     "tons_per_year": "MASS_RATE",
     "count": "COUNT",
 }
@@ -296,6 +296,43 @@ class TableCellReading:
         }
 
 
+#: Characters that may sit around a unit token in a filing. A token found with
+#: any other character against it is part of a longer unit, not this one.
+_UNIT_BOUNDARY = re.compile(r"[\s:：()（）\[\]{},·/]|^|$")
+
+
+def _require_declared_unit(
+    unit_token: str, text: str, *, task: TableReadingTask
+) -> None:
+    """The token must be the whole unit the filing declares, not part of one.
+
+    ``원/톤`` occurs inside ``천원/톤``, so a substring test lets a proposal read
+    a table declared in thousands of won as though it were in won — the model
+    changing a valuation input by a factor of a thousand through its choice of
+    spelling. The token has to stand alone.
+    """
+    haystack = _squeeze(text)
+    needle = _squeeze(unit_token)
+    if not needle:
+        raise ProposalParseError(f"reading task {task.metric} needs a unit token")
+    start = 0
+    while True:
+        at = haystack.find(needle, start)
+        if at < 0:
+            raise ProposalParseError(
+                f"the unit {unit_token!r} proposed for {task.metric} is not "
+                "declared with the table as a unit of its own; a unit has to be "
+                "read from the filing, not chosen from the registry"
+            )
+        before = haystack[at - 1] if at else ""
+        after = haystack[at + len(needle) : at + len(needle) + 1]
+        if bool(_UNIT_BOUNDARY.fullmatch(before) or not before) and bool(
+            _UNIT_BOUNDARY.fullmatch(after) or not after
+        ):
+            return
+        start = at + 1
+
+
 def _grids(html_text: str) -> list[list[list[str]]]:
     parser = _SegmentTableParser()
     parser.feed(html_text or "")
@@ -312,14 +349,33 @@ _CAPTION_WINDOW = 600
 _TAG = re.compile(r"<[^>]+>")
 
 
+_TABLE_BOUNDARY = re.compile(r"<\s*(/?)\s*table\b", re.I)
+
+
 def _table_captions(html_text: str) -> list[str]:
-    """The text standing immediately above each table, in document order."""
-    parts = re.split(r"<\s*table", str(html_text or ""), flags=re.I)
+    """The text between the previous table and this one, in document order.
+
+    Only that gap: splitting on opening tags alone would put the whole previous
+    table into the next one's caption, and then a neighbouring grid could lend
+    its vocabulary to validate the wrong table, or a term inside it could reject
+    the right one.
+    """
+    text = str(html_text or "")
     captions: list[str] = []
-    for preceding in parts[:-1]:
-        text = _TAG.sub(" ", preceding)
-        text = re.sub(r"&[a-zA-Z#0-9]+;", " ", text)
-        captions.append(re.sub(r"\s+", " ", text)[-_CAPTION_WINDOW:].strip())
+    cursor = 0
+    depth = 0
+    for match in _TABLE_BOUNDARY.finditer(text):
+        closing = bool(match.group(1))
+        if closing:
+            depth = max(0, depth - 1)
+            if depth == 0:
+                cursor = match.end()
+            continue
+        if depth == 0:
+            gap = _TAG.sub(" ", text[cursor:match.start()])
+            gap = re.sub(r"&[a-zA-Z#0-9]+;", " ", gap)
+            captions.append(re.sub(r"\s+", " ", gap)[-_CAPTION_WINDOW:].strip())
+        depth += 1
     return captions
 
 
@@ -343,13 +399,20 @@ def _locate_column(
     grid: Sequence[Sequence[str]], column_path: Sequence[str], *, metric: str
 ) -> int:
     """The column every heading in the path stands over."""
+    for item in column_path:
+        if not _is_label(item):
+            raise ProposalParseError(
+                f"column path for {metric} uses {item!r}, which is a figure "
+                "rather than a heading; a column is addressed by what stands "
+                "over it, never by a number inside it"
+            )
     width = max((len(row) for row in grid), default=0)
     candidates = []
     for column in range(width):
         stack = [
             _squeeze(row[column])
             for row in grid
-            if column < len(row) and str(row[column]).strip()
+            if column < len(row) and _is_label(row[column])
         ]
         if all(
             any(_squeeze(heading) == cell for cell in stack) for heading in column_path
@@ -368,12 +431,31 @@ def _locate_column(
     return candidates[0]
 
 
+def _is_label(cell: str) -> bool:
+    """A heading names something; a figure is what the heading points at.
+
+    A path made of figures would let a proposal address any cell by quoting its
+    own value — the prompt shows every number, so the model could pick one and
+    relabel it as whatever metric it liked. Paths therefore match label cells
+    only, and a cell that reads as a number is not a label.
+    """
+    text = str(cell or "").strip()
+    return bool(text) and _amount(text) is None
+
+
 def _locate_row(
     grid: Sequence[Sequence[str]], row_path: Sequence[str], *, metric: str
 ) -> int:
+    for item in row_path:
+        if not _is_label(item):
+            raise ProposalParseError(
+                f"row path for {metric} uses {item!r}, which is a figure rather "
+                "than a heading; a cell is addressed by what names it, never by "
+                "the number it holds"
+            )
     candidates = []
     for index, row in enumerate(grid):
-        labels = [_squeeze(cell) for cell in row if str(cell).strip()]
+        labels = [_squeeze(cell) for cell in row if _is_label(cell)]
         if all(any(_squeeze(item) == cell for cell in labels) for item in row_path):
             candidates.append(index)
     if not candidates:
@@ -429,12 +511,9 @@ def read_table_cell(
     # The unit has to be present where the table is, not merely registered:
     # otherwise a model could attach any registered token to any number.
     grid_text = " ".join(str(cell) for row in grid for cell in row)
-    if _squeeze(proposal.unit_token) not in _squeeze(caption + " " + grid_text):
-        raise ProposalParseError(
-            f"the unit {proposal.unit_token!r} proposed for {task.metric} does "
-            "not appear with the table; a unit has to be read from the filing, "
-            "not chosen from the registry"
-        )
+    _require_declared_unit(
+        proposal.unit_token, caption + " " + grid_text, task=task
+    )
 
     column = _locate_column(grid, proposal.column_path, metric=task.metric)
     row = _locate_row(grid, proposal.row_path, metric=task.metric)

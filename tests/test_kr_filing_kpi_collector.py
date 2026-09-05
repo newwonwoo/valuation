@@ -176,3 +176,115 @@ def test_pattern_config_rejects_a_bad_regex_at_load_time(tmp_path):
     )
     with pytest.raises(Exception, match="unit"):
         load_filing_kpi_patterns(bad)
+
+
+# --- The third pass: a coordinate reading, from the production collector -----
+#
+# The two tests below are the wiring's only honest proof. A reader that exists
+# but is never reached from `request_scoped_filing_kpi_collector` collects
+# nothing, however well it reads in its own unit tests.
+
+# 제품별 가격변동추이: the heading and the unit sit *outside* the <TABLE>, which
+# is how issuers actually write it, and why the static pattern — which needs
+# "판매단가 … 원/톤" adjacent in one span — cannot read it.
+PRICE_TABLE_BODY = FILING_BODY.replace(
+    "</BODY>",
+    """
+<P>다. 제품별 구체적인 가격변동추이</P>
+<P>(단위: 원/톤)</P>
+<TABLE>
+<TR><TD>품목</TD><TD>2024년</TD><TD>당기</TD></TR>
+<TR><TD>후판</TD><TD>1,010,000</TD><TD>1,046,000</TD></TR>
+</TABLE>
+</BODY>""",
+)
+
+MEMBER_PATH = f"{RCEPT}.xml"
+
+TABLE_CELL_ANSWER = json.dumps(
+    {
+        "cells": [
+            {
+                "metric": "realized_price",
+                "member_path": MEMBER_PATH,
+                "table_index": 2,
+                "row_path": ["후판"],
+                "column_path": ["당기"],
+                "unit_token": "원/톤",
+            }
+        ]
+    }
+)
+
+NO_LOCATOR_ANSWER = json.dumps({"locators": [], "not_found": ["realized_price"]})
+
+
+class _Transport:
+    """Answers the locator seat with nothing and the reader seat with a cell."""
+
+    def __init__(self, *, table_answer: str = TABLE_CELL_ANSWER):
+        self.roles: list[str] = []
+        self._table_answer = table_answer
+
+    def complete(self, *, role: str, prompt: str) -> str:
+        self.roles.append(role)
+        if role == "filing_locator_analyst":
+            return NO_LOCATOR_ANSWER
+        if role == "filing_table_reader":
+            return self._table_answer
+        raise AssertionError(f"unscripted role: {role}")
+
+
+def _collect_with(transport, metrics=("realized_price",), body=PRICE_TABLE_BODY):
+    collector = request_scoped_filing_kpi_collector(
+        _network(body),
+        as_of=AS_OF,
+        segment_id="core",
+        patterns=load_filing_kpi_patterns(),
+        transport=transport,
+    )
+    return collector(
+        EvidenceCollectionRequest(target_id=TARGET, required_metrics=metrics)
+    )
+
+
+def test_a_metric_both_earlier_passes_miss_is_read_by_coordinate():
+    transport = _Transport()
+    batch = _collect_with(transport)
+    assert transport.roles == ["filing_locator_analyst", "filing_table_reader"]
+    record = batch.records[0]
+    assert record.metric == "realized_price"
+    assert float(record.value) == 1046000.0
+    assert record.unit == "KRW_per_ton"
+    # The receipt names the cell, so a reviewer can reopen it in the filing.
+    assert "member_sha256=" in record.source_ref
+    assert RCEPT in record.id
+
+
+def test_a_metric_an_earlier_pass_already_found_is_not_asked_about_again():
+    """The coordinate pass is a last resort, not a second opinion."""
+    transport = _Transport()
+    batch = _collect_with(transport, metrics=("orders", "backlog"))
+    assert transport.roles == []  # nothing was missed; no seat was asked
+    assert {record.metric for record in batch.records} == {"orders", "backlog"}
+
+
+def test_a_refused_coordinate_leaves_a_gap_and_never_blocks_the_batch():
+    """A model pointing at the prior-year column loses the round, not the run."""
+    prior = json.loads(TABLE_CELL_ANSWER)
+    prior["cells"][0]["column_path"] = ["2024년"]
+    batch = _collect_with(_Transport(table_answer=json.dumps(prior)))
+    assert not batch.records  # coverage names realized_price downstream
+
+
+def test_a_run_that_never_scripted_the_reader_seat_still_collects():
+    """Committed runs predate this seat; an unanswerable seat is a gap."""
+
+    class _LocatorOnly:
+        def complete(self, *, role: str, prompt: str) -> str:
+            if role == "filing_locator_analyst":
+                return NO_LOCATOR_ANSWER
+            raise RuntimeError(f"no staff file for role {role}")
+
+    batch = _collect_with(_LocatorOnly(), metrics=("orders", "realized_price"))
+    assert {record.metric for record in batch.records} == {"orders"}
