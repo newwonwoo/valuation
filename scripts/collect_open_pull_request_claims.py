@@ -19,6 +19,7 @@ is an extra warning layer, and the local checks stand on their own.
 from __future__ import annotations
 
 import argparse
+import base64
 import json
 import os
 from pathlib import Path
@@ -43,6 +44,23 @@ def _get(url: str, token: str) -> object:
     )
     with urlopen(request, timeout=30) as response:
         return json.loads(response.read().decode("utf-8"))
+
+
+def active_claims_from_contents(blob: object) -> list[dict[str, object]]:
+    """Read the active claims out of a GitHub contents response.
+
+    Kept separate from the request so the parsing is testable without a
+    network: a check that silently reads nothing is worse than no check.
+    """
+    content = str((blob or {}).get("content") or "") if isinstance(blob, dict) else ""
+    if not content.strip():
+        return []
+    payload = yaml.safe_load(base64.b64decode(content).decode("utf-8"))
+    return [
+        row
+        for row in (payload or {}).get("claims") or ()
+        if isinstance(row, dict) and str(row.get("status")) == "active"
+    ]
 
 
 def main() -> int:
@@ -84,16 +102,7 @@ def main() -> int:
                 if error.code == 404:
                     continue  # that request predates the registry
                 raise
-            import base64
-
-            payload = yaml.safe_load(
-                base64.b64decode(str(blob.get("content") or "")).decode("utf-8")
-            )
-            rows = [
-                row
-                for row in (payload or {}).get("claims") or ()
-                if isinstance(row, dict) and str(row.get("status")) == "active"
-            ]
+            rows = active_claims_from_contents(blob)
             if rows:
                 collected[str(number)] = rows
     except (HTTPError, URLError, TimeoutError, ValueError) as error:

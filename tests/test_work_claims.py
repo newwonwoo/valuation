@@ -288,3 +288,44 @@ def test_a_merged_claim_in_another_request_does_not_block():
     assert check_against_open_requests(
         ("runs/kisco-104700/run.yaml",), foreign, pull_request=172
     ) == ()
+
+
+def test_a_contents_response_yields_only_the_active_claims():
+    """The cross-request read is the one part that needs the network, so its
+    parsing is covered here: a check that silently reads nothing would be worse
+    than no check at all."""
+    import base64
+    import importlib.util
+    from pathlib import Path as _Path
+
+    spec = importlib.util.spec_from_file_location(
+        "collect_open_pull_request_claims",
+        _Path(__file__).resolve().parents[1]
+        / "scripts"
+        / "collect_open_pull_request_claims.py",
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    registry = """
+version: 1
+claims:
+  - claim_id: live
+    owner: codex
+    pull_request: 173
+    status: active
+    paths: ["runs/koreazinc-010130/**"]
+  - claim_id: done
+    owner: codex
+    pull_request: 168
+    status: merged
+    paths: ["src/valuation_engine/segment_note.py"]
+"""
+    blob = {"content": base64.b64encode(registry.encode("utf-8")).decode("ascii")}
+    rows = module.active_claims_from_contents(blob)
+    assert [row["claim_id"] for row in rows] == ["live"]
+
+    assert module.active_claims_from_contents({}) == []
+    assert module.active_claims_from_contents(None) == []
+    empty = {"content": base64.b64encode(b"version: 1\n").decode("ascii")}
+    assert module.active_claims_from_contents(empty) == []
