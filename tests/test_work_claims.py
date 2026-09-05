@@ -325,7 +325,16 @@ claims:
     rows = module.active_claims_from_contents(blob)
     assert [row["claim_id"] for row in rows] == ["live"]
 
-    assert module.active_claims_from_contents({}) == []
-    assert module.active_claims_from_contents(None) == []
+    with pytest.raises(ValueError):
+        module.active_claims_from_contents({})
+    with pytest.raises(ValueError):
+        module.active_claims_from_contents(None)
     empty = {"content": base64.b64encode(b"version: 1\n").decode("ascii")}
     assert module.active_claims_from_contents(empty) == []
+
+
+def test_inherited_claim_does_not_resurrect_ownership():
+    foreign = (ForeignClaim(173, _claim(170, "runs/**")),)
+    assert check_against_open_requests(
+        ("runs/kisco/run.yaml",), foreign, pull_request=174
+    ) == ()
