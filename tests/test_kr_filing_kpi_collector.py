@@ -242,6 +242,10 @@ TABLE_CELL_ANSWER = json.dumps(
                 "row_path": ["후판"],
                 "column_path": ["당기"],
                 "unit_token": "원/톤",
+                # The proposal names where the filing writes the unit, per
+                # docs/LLM_READING_HANDOFF_DESIGN.md §3.2 — here a one-line
+                # paragraph above the table, which is how issuers write it.
+                "unit_source": {"quote": "(단위: 원/톤)"},
             }
         ]
     }
@@ -342,7 +346,9 @@ def test_table_utilization_has_the_same_ratio_contract_as_static(cell, caption):
     <TR><TD>제1공장</TD><TD>{cell}</TD></TR></TABLE></BODY>"""
     answer = {"cells": [{"metric": "utilization", "member_path": MEMBER_PATH,
                          "table_index": 0, "row_path": ["제1공장"],
-                         "column_path": ["당기"], "unit_token": "%"}]}
+                         "column_path": ["당기"], "unit_token": "%",
+                         "unit_source": ({"quote": caption} if "단위" in caption
+                                         else {"cell": [0, 1, 1]})}]}
     class RatioTransport(_Transport):
         def complete(self, *, role, prompt):
             if role == "filing_locator_analyst":
