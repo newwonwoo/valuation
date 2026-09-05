@@ -150,6 +150,44 @@ def test_trailing_unit_keeps_numeric_capture_on_selected_cell(monkeypatch):
     assert observation.matched_text.endswith("원/톤")
 
 
+@pytest.mark.parametrize("note", ["수출은 USD/톤", "∙ 월 기준", "월 기준", "단위는 천원/톤"])
+@pytest.mark.parametrize("row_unit", ["", "<td>원/톤</td>"])
+def test_trailing_note_cannot_override_unit_declaration(monkeypatch, note, row_unit):
+    import sys
+    unit_header = "<td>단위</td>" if row_unit else ""
+    member = f"""<p>제품 가격변동추이 (단위: 원/톤) 주1) {note}</p><table>
+    <tr><td>품목</td><td>2026년 반기</td>{unit_header}</tr>
+    <tr><td>수출</td><td>600</td>{row_unit}</tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="not declared"):
+        _observe(row_path=["수출"], unit_token="원/톤")
+
+
+@pytest.mark.parametrize("missing", ["-", "N/A", "해당없음"])
+@pytest.mark.parametrize("missing_first", [True, False])
+def test_unrelated_missing_value_row_does_not_block_selected_value(monkeypatch, missing, missing_first):
+    import sys
+    rows = [f"<tr><td>제품A</td><td>{missing}</td></tr>", "<tr><td>제품B</td><td>600</td></tr>"]
+    if not missing_first:
+        rows.reverse()
+    member = f"""<p>제품 가격변동추이 (단위: 원/톤)</p><table>
+    <tr><td>품목</td><td>2026년 반기</td></tr>{''.join(rows)}</table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    assert _observe(row_path=["제품B"], unit_token="원/톤").measure.amount == Decimal("600")
+    with pytest.raises(ProposalParseError, match="not a readable number"):
+        _observe(row_path=["제품A"], unit_token="원/톤")
+
+
+@pytest.mark.parametrize("entity", ["&#37;", "&#x25;"])
+def test_caption_unit_html_entity_is_decoded_and_bound(monkeypatch, entity):
+    import sys
+    member = f"""<p>가동률 (단위: {entity})</p><table>
+    <tr><td>공장</td><td>2026년 반기</td></tr>
+    <tr><td>제1공장</td><td>85</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    assert _observe(metric="utilization", row_path=["제1공장"], unit_token="%").measure.amount == Decimal("0.85")
+
+
 @pytest.mark.parametrize("other_first", [True, False])
 @pytest.mark.parametrize("unit_in_header", [True, False])
 def test_ratio_unit_cannot_come_from_other_numeric_column(monkeypatch, other_first, unit_in_header):

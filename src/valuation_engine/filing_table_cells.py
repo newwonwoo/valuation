@@ -36,6 +36,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, replace
 from decimal import Decimal, InvalidOperation
 from hashlib import sha256
+from html import unescape
 from pathlib import Path
 import re
 import json
@@ -355,9 +356,16 @@ def _authorized_unit_spans(unit_token: str, text: str, *, caption: bool,
     marker = r"(?:단위|units?)\s*[:：]?\s*"
     for match in re.finditer(r"[（(]" + marker + r"([^()（）]+)[）)]", text, re.IGNORECASE):
         remainder = text[match.end():].strip()
-        if not remainder or (caption and re.match(
-            r"(?:주\s*\d*\s*[)）:：.]|주석\b|비고\s*[:：]|notes?\b|※)", remainder, re.IGNORECASE
-        )):
+        note = re.match(
+            r"(?:주\s*\d*\s*[)）:：.]|주석\b|비고\s*[:：]|notes?\b\s*[:：]?|※)", remainder, re.IGNORECASE
+        )
+        # Only these scope-only notes have a defined interpretation here.
+        # Unknown note semantics (including unit overrides) require a separate
+        # declaration contract, rather than an ever-growing symbol blacklist.
+        neutral_note = note is not None and _squeeze(remainder[note.end():]).casefold() in {
+            "국내판매기준", "domesticsales", "연결기준", "별도기준",
+        }
+        if not remainder or (caption and neutral_note):
             candidates.append(match.span(1))
     plain = re.search(marker + r"([^()（）]+)$", text, re.IGNORECASE)
     if plain:
@@ -429,7 +437,7 @@ def _table_captions(html_text: str) -> list[str]:
             continue
         if depth == 0:
             gap = _TAG.sub(" ", text[cursor:match.start()])
-            gap = re.sub(r"&[a-zA-Z#0-9]+;", " ", gap)
+            gap = unescape(gap)
             captions.append(re.sub(r"\s+", " ", gap)[-_CAPTION_WINDOW:].strip())
         depth += 1
     return captions
@@ -487,6 +495,10 @@ def _locate_column(
     return candidates[0]
 
 
+def _is_missing_value(cell: str) -> bool:
+    return _squeeze(cell).casefold() in {"-", "–", "—", "n/a", "na", "해당없음"}
+
+
 def _top_header_block(grid: Sequence[Sequence[str]]) -> Sequence[Sequence[str]]:
     """Only a single top header block may govern this rectangular table.
 
@@ -494,12 +506,13 @@ def _top_header_block(grid: Sequence[Sequence[str]]) -> Sequence[Sequence[str]]:
     section. Reject it instead of borrowing a heading across sections.
     """
     first_data = next((i for i, row in enumerate(grid)
-                       if any(_amount(cell) is not None for cell in row)), len(grid))
+                       if any(_amount(cell) is not None or _is_missing_value(cell)
+                              for cell in row)), len(grid))
     if not first_data or first_data == len(grid):
         raise ProposalParseError("table has no distinct top header block")
     for row in grid[first_data:]:
         if any(str(cell).strip() for cell in row) and not any(
-            _amount(cell) is not None for cell in row
+            _amount(cell) is not None or _is_missing_value(cell) for cell in row
         ):
             raise ProposalParseError("table contains ambiguous vertical header sections")
     return grid[:first_data]
@@ -584,7 +597,7 @@ def read_table_cell(
 
     headers = _top_header_block(grid)
     column = _locate_column(headers, proposal.column_path, metric=task.metric)
-    if any(column >= len(item) or _amount(item[column]) is None
+    if any(column >= len(item) or (_amount(item[column]) is None and not _is_missing_value(item[column]))
            for item in grid[len(headers):]):
         raise ProposalParseError("selected column crosses non-data or vertical header sections")
     # Numeric years are readable decimals but may introduce a new vertical
@@ -628,7 +641,7 @@ def read_table_cell(
     # Unknown currencies/denominators need no blacklist: any slash-bearing
     # nonnumeric cell must be an exact declared token to enter this contract.
     for cell in grid[row]:
-        if _amount(cell) is None and any(mark in cell for mark in ("/", "%", "／", "％")):
+        if _amount(cell) is None and not _is_missing_value(cell) and any(mark in cell for mark in ("/", "%", "／", "％")):
             if _squeeze(cell).strip("()") != _squeeze(proposal.unit_token).strip("()"):
                 raise ProposalParseError("selected row contains an unverified unit-shaped cell")
 
@@ -639,6 +652,8 @@ def read_table_cell(
         + [(row, index) for index in unit_columns] + [(row, column)]
     ))
     authorized = _authorized_unit_spans(proposal.unit_token, caption, caption=True)
+    if not authorized and re.search(r"(?:단위|units?)(?:\s*[:：]|\s+)", caption, re.IGNORECASE):
+        raise ProposalParseError("caption unit is not declared with the table as a unit of its own under a verified complete contract")
     if not authorized and not any(_authorized_unit_spans(
         proposal.unit_token, grid[r][c], caption=False, inline_value=(r, c) == (row, column)
     ) for r, c in governing_cells if c < len(grid[r])):
