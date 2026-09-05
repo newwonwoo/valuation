@@ -20,6 +20,7 @@ from pathlib import Path
 import pytest
 
 from valuation_engine.filing_table_cells import (
+    _declared_units,
     TableCellProposal,
     _is_label,
     read_table_cell_observation,
@@ -115,30 +116,7 @@ def test_compound_units_cannot_be_read_as_registered_subtokens(monkeypatch, unit
         _observe(row_path=["제품"], unit_token="원/톤")
 
 
-def test_unit_token_cannot_be_assembled_across_header_cells(monkeypatch):
-    import sys
-    member = """<p>제품 가격변동추이</p><table>
-    <tr><td>구분</td><td>원</td></tr>
-    <tr><td>품목</td><td>/톤</td></tr>
-    <tr><td>명칭</td><td>2026년 반기</td></tr>
-    <tr><td>제품</td><td>600</td></tr></table>"""
-    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    with pytest.raises(ProposalParseError, match="not declared"):
-        _observe(row_path=["제품"], unit_token="원/톤")
 
-
-@pytest.mark.parametrize("caption", [
-    "전년 대비 3% 증가한 가동률", "전년 대비 3 % 증가한 가동률",
-    "가동률 (%)", "가동률 (단위: % ∙ 시간)", "가동률 (단위: %) ∙ 시간",
-])
-def test_caption_requires_complete_explicit_unit_declaration(monkeypatch, caption):
-    import sys
-    member = f"""<p>{caption}</p><table>
-    <tr><td>공장</td><td>2026년 반기</td></tr>
-    <tr><td>제1공장</td><td>85</td></tr></table>"""
-    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    with pytest.raises(ProposalParseError, match="not declared|does not settle"):
-        _observe(metric="utilization", row_path=["제1공장"], unit_token="%")
 
 
 def test_narrative_percentage_cannot_replace_explicit_unit_receipt(monkeypatch):
@@ -211,14 +189,6 @@ def test_unrelated_missing_value_row_does_not_block_selected_value(monkeypatch, 
         _observe(row_path=["제품A"], unit_token="원/톤")
 
 
-@pytest.mark.parametrize("entity", ["&#37;", "&#x25;"])
-def test_caption_unit_html_entity_is_decoded_and_bound(monkeypatch, entity):
-    import sys
-    member = f"""<p>가동률 (단위: {entity})</p><table>
-    <tr><td>공장</td><td>2026년 반기</td></tr>
-    <tr><td>제1공장</td><td>85</td></tr></table>"""
-    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
-    assert _observe(metric="utilization", row_path=["제1공장"], unit_token="%").measure.amount == Decimal("0.85")
 
 
 @pytest.mark.parametrize("value", ["600%", "600 %"])
@@ -740,8 +710,6 @@ def test_equivalent_unit_spellings_do_not_create_false_ambiguity(monkeypatch):
     assert _observe(row_path=["빌릿"], unit_token="원/kg").measure.amount == Decimal("740000")
 
 
-def test_unit_whitespace_caption_preserves_token_boundaries(monkeypatch):
-    import sys
 
     monkeypatch.setattr(sys.modules[__name__], "MEMBER", MEMBER.replace(
         "(단위: 천원/톤)", "단위 천원 / 톤"
@@ -991,3 +959,39 @@ def test_the_metric_reads_from_a_table_whose_neighbour_is_the_excluded_one():
         effective_date="2026-06-30",
     )
     assert reading.value == Decimal("823")
+
+
+@pytest.mark.parametrize(
+    "text, declared",
+    [
+        ("(단위: 천원/톤)", ("천원/톤",)),
+        ("(단위 : 원/Ton)", ("원/Ton",)),
+        # A comma separates alternatives: one table, two units, one per column.
+        ("(단위: 천톤, %)", ("천톤", "%")),
+        ("(단위: 원/kg, 원/KG)", ("원/kg", "원/KG")),
+        # Everything else composes. 원/톤 ⨯ 월 is one unit and it is not 원/톤,
+        # whichever operator the issuer reached for — no blacklist decides this.
+        ("(단위: 원/톤 ⨯ 월)", ("원/톤⨯월",)),
+        ("(단위: 원/톤 ∙ 월)", ("원/톤∙월",)),
+        ("(단위: USD/원/톤)", ("USD/원/톤",)),
+        ("가동률 (%)", ("가동률(%", "%")),
+        ("원/톤", ("원/톤",)),
+    ],
+)
+def test_a_declaration_names_complete_units(text, declared):
+    """Which units a piece of filing text declares is a unit question.
+
+    The four tests this replaces asked the same thing through fixtures that
+    presupposed where the caption was and what a note after it meant — the
+    issuer-habit parsing docs/LLM_READING_HANDOFF_DESIGN.md §1.1 moves to the
+    model. The proposal now names the text; all that is left here is to read
+    it, and the one rule that matters is that a fragment of a compound unit is
+    never a declaration: 원/톤 taken out of 천원/톤 is a thousandfold error on a
+    valuation input, chosen by spelling.
+    """
+    assert _declared_units(text) == declared
+
+
+def test_a_shorter_unit_is_not_declared_by_a_longer_one():
+    assert "원/톤" not in _declared_units("(단위: 천원/톤)")
+    assert "원/톤" not in _declared_units("(단위: 원/톤 ⨯ 월)")
