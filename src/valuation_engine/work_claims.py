@@ -272,6 +272,8 @@ def check_against_open_requests(
     rows = tuple(foreign)
     for path in sorted(set(str(item) for item in changed_paths if str(item).strip())):
         for row in rows:
+            if row.claim.pull_request != row.pull_request:
+                continue  # inherited declaration, not this open request's claim
             if pull_request is not None and row.pull_request == int(pull_request):
                 continue
             if not row.claim.active or not row.claim.covers(path):
