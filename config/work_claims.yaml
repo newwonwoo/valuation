@@ -78,6 +78,7 @@ claims:
       - "config/kr_filing_table_reading_tasks.yaml"
       - "tests/test_filing_table_cells.py"
       - "src/valuation_engine/dart_kpi.py"
+      - "src/valuation_engine/llm_transport.py"
       - "src/valuation_engine/generic_live_providers.py"
       - "tests/test_generic_cold_start.py"
       - "src/valuation_engine/kr_filing_kpi_collector.py"

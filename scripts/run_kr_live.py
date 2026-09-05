@@ -218,6 +218,11 @@ class _StaffTransport:
         self._counts: dict[str, int] = {}
         self._live = None
 
+    def supports_role(self, role: str) -> bool:
+        return bool(self._answers.get(role)) or bool(
+            os.environ.get("VALUATION_LLM_TRANSPORT", "").strip()
+        )
+
     def _live_transport(self):
         if self._live is None:
             from valuation_engine.generic_kr_cli import _load_transport

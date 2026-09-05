@@ -415,6 +415,21 @@ def request_scoped_filing_kpi_collector(
     return collect
 
 
+def _available_table_metrics(transport, table_cell_receipts) -> set[str]:
+    """Advertise a table-only metric only with a reader or a saved receipt.
+
+    Live transports without role introspection retain their normal capability.
+    A configured reader that later fails still raises; this is not error recovery.
+    """
+    tasks = set(load_table_reading_tasks())
+    supports_role = getattr(transport, "supports_role", None)
+    if transport is not None and (
+        supports_role is None or supports_role("filing_table_reader")
+    ):
+        return tasks
+    return tasks & set(table_cell_receipts or {})
+
+
 def filing_kpi_collector_provider(
     network: OpenDartNetwork,
     *,
@@ -431,7 +446,8 @@ def filing_kpi_collector_provider(
             collector_id=COLLECTOR_ID,
             source_id=SOURCE_ID,
             supported_metrics=tuple(sorted(
-                {item.metric for item in patterns} | set(load_table_reading_tasks())
+                {item.metric for item in patterns}
+                | _available_table_metrics(transport, table_cell_receipts)
             )),
             jurisdictions=("KR",),
             implementation_ref=(

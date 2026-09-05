@@ -24,7 +24,7 @@ from valuation_engine.kr_filing_kpi_collector import (
     request_scoped_filing_kpi_collector,
 )
 from valuation_engine.kr_opendart_provider import OpenDartNetwork
-from valuation_engine.llm_transport import TransportError
+from valuation_engine.llm_transport import ScriptedTransport, TransportError
 from valuation_engine.proposal_parsing import ProposalParseError
 
 
@@ -163,8 +163,37 @@ def test_the_provider_declares_exactly_the_configured_metrics():
     assert provider.capability.collector_id == COLLECTOR_ID
     assert set(provider.capability.supported_metrics) == {
         "orders", "backlog", "nameplate_capacity", "capacity", "production",
-        "utilization", "realized_price", "contract_liabilities", "lead_time", "input_price",
+        "utilization", "realized_price", "contract_liabilities", "lead_time",
     }
+
+
+@pytest.mark.parametrize("transport,receipts,available", [
+    (None, None, False),
+    (ScriptedTransport({}), None, False),
+    (ScriptedTransport({"filing_table_reader": ()}), None, False),
+    (ScriptedTransport({"filing_table_reader": ("answer",)}), None, True),
+    (None, {"input_price": "receipt-to-be-validated"}, True),
+])
+def test_table_only_capability_requires_reader_or_receipt(transport, receipts, available):
+    provider = filing_kpi_collector_provider(
+        _network(), as_of=AS_OF, segment_id="core", transport=transport,
+        table_cell_receipts=receipts,
+    )
+    assert ("input_price" in provider.capability.supported_metrics) == available
+    assert "utilization" in provider.capability.supported_metrics
+
+
+def test_configured_reader_exhaustion_is_not_a_capability_downgrade():
+    transport = ScriptedTransport({"filing_table_reader": ("answer",)})
+    transport.complete(role="filing_table_reader", prompt="")
+    provider = filing_kpi_collector_provider(
+        _network(), as_of=AS_OF, segment_id="core", transport=transport,
+    )
+    assert "input_price" in provider.capability.supported_metrics
+    with pytest.raises(FilingKPICollectorError, match="READER_UNAVAILABLE"):
+        provider.collector(EvidenceCollectionRequest(
+            target_id=TARGET, required_metrics=("input_price",),
+        ))
 
 
 def test_pattern_config_rejects_a_bad_regex_at_load_time(tmp_path):

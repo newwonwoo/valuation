@@ -46,13 +46,15 @@ def _foreign_violations(args, changed):
         return ()
     path = Path(args.open_requests)
     if not path.is_file():
-        print(f"\nopen-request registries were not collected ({path}); "
-              "a claim added in another open request cannot be seen here")
-        return ()
+        raise ValueError(f"open-request registries were not collected ({path})")
     payload = json.loads(path.read_text(encoding="utf-8"))
     foreign: list[ForeignClaim] = []
-    for number, rows in (payload or {}).items():
-        for row in rows or ():
+    if not isinstance(payload, dict):
+        raise ValueError("open-request registries must be a mapping")
+    for number, rows in payload.items():
+        if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+            raise ValueError("open-request claims must be a list of mappings")
+        for row in rows:
             foreign.append(
                 ForeignClaim(
                     pull_request=int(number),
@@ -125,7 +127,11 @@ def main() -> int:
     )
     # A claim another open request added is not in this checkout's registry, so
     # without this its collision would only surface when the second one merges.
-    violations += _foreign_violations(args, changed)
+    try:
+        violations += _foreign_violations(args, changed)
+    except (OSError, ValueError) as error:
+        print(f"could not validate other open requests: {error}")
+        return 1
 
     if not violations:
         held = claim_for(registry, args.pull_request) if args.pull_request else ()
