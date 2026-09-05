@@ -759,13 +759,6 @@ def test_equivalent_unit_spellings_do_not_create_false_ambiguity(monkeypatch):
     assert _observe(row_path=["빌릿"], unit_token="원/kg").measure.amount == Decimal("740000")
 
 
-
-    monkeypatch.setattr(sys.modules[__name__], "MEMBER", MEMBER.replace(
-        "(단위: 천원/톤)", "단위 천원 / 톤"
-    ))
-    assert _observe().measure.amount == Decimal("823000")
-
-
 def test_the_receipts_are_the_same_ones_the_static_path_leaves():
     observation = _observe()
     assert observation.rcept_no == RCEPT

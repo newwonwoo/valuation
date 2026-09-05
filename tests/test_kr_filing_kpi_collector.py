@@ -380,6 +380,10 @@ def test_a_refused_coordinate_blocks_instead_of_becoming_absence():
     """Rejected prior-year coordinates do not establish non-disclosure."""
     prior = json.loads(TABLE_CELL_ANSWER)
     prior["cells"][0]["column_path"] = ["2024년"]
+    # The period is read where the proposal says the filing states it, so a
+    # prior-year reading has to name the prior-year header — and that is what
+    # the chronology contract refuses.
+    prior["cells"][0]["period_source"] = {"cell": [2, 0, 1]}
     with pytest.raises(ProposalParseError, match="PROPOSAL_REJECTED"):
         _collect_with(_Transport(table_answer=json.dumps(prior)))
 
