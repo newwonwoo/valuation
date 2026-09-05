@@ -188,6 +188,28 @@ def test_caption_unit_html_entity_is_decoded_and_bound(monkeypatch, entity):
     assert _observe(metric="utilization", row_path=["제1공장"], unit_token="%").measure.amount == Decimal("0.85")
 
 
+@pytest.mark.parametrize("value", ["600%", "600 %"])
+def test_percentage_cell_cannot_be_relabelled_as_price(monkeypatch, value):
+    import sys
+    member = f"""<p>제품 가격변동추이 (단위: 원/톤)</p><table>
+    <tr><td>품목</td><td>2026년 반기</td></tr>
+    <tr><td>제품</td><td>{value}</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError, match="percentage cell conflicts"):
+        _observe(row_path=["제품"], unit_token="원/톤")
+
+
+@pytest.mark.parametrize("value", ["8%5", "85%%", "%85"])
+def test_malformed_inline_percent_cannot_become_a_number(monkeypatch, value):
+    import sys
+    member = f"""<p>가동률 (단위: %)</p><table>
+    <tr><td>공장</td><td>2026년 반기</td></tr>
+    <tr><td>제1공장</td><td>{value}</td></tr></table>"""
+    monkeypatch.setattr(sys.modules[__name__], "MEMBER", member)
+    with pytest.raises(ProposalParseError):
+        _observe(metric="utilization", row_path=["제1공장"], unit_token="%")
+
+
 @pytest.mark.parametrize("other_first", [True, False])
 @pytest.mark.parametrize("unit_in_header", [True, False])
 def test_ratio_unit_cannot_come_from_other_numeric_column(monkeypatch, other_first, unit_in_header):

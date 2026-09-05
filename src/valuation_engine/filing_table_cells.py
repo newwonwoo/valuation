@@ -92,7 +92,7 @@ def _squeeze(text: str) -> str:
 
 def _amount(cell: str) -> Decimal | None:
     """Parse a filed money or ratio cell; ``(x)`` and ``△x`` are negative."""
-    text = _squeeze(cell).replace(",", "").replace("%", "")
+    text = _squeeze(cell).replace(",", "").removesuffix("%")
     if not text or text in {"-", "—", "–"}:
         return None
     negative = text.startswith("(") and text.endswith(")")
@@ -616,6 +616,8 @@ def read_table_cell(
     row = _locate_row(grid, proposal.row_path, metric=task.metric)
     if row < len(headers):
         raise ProposalParseError("selected row belongs to the header block")
+    if "%" in grid[row][column] and (task.unit_dimension != "RATIO" or proposal.unit_token != "%"):
+        raise ProposalParseError("selected percentage cell conflicts with the task unit")
 
     # An explicit unit column governs its own row. Unknown tokens must reject
     # even when a different body row happens to carry a registered unit.
@@ -801,7 +803,10 @@ def _coordinate_span(member, reading: TableCellReading) -> tuple[int, int, int, 
             start = min(unit_start, value_start)
             # A ratio cell may carry its own trailing percent token. Keep it
             # in the evidence span/unit capture, outside the decimal capture.
-            numeric_value = raw_value.rstrip().removesuffix("%").strip()
+            numeric_value = raw_value.rstrip()
+            if reading.unit == "%":
+                numeric_value = numeric_value.removesuffix("%")
+            numeric_value = numeric_value.strip()
             numeric_start = value_start + raw_value.index(numeric_value)
             return (start, max(end, unit_end), numeric_start,
                     numeric_start + len(numeric_value), unit_start, unit_end)
