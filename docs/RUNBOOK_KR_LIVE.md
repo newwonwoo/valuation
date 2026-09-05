@@ -43,6 +43,21 @@ runs/<종목>-<코드>/
 
 ## 2. 원시 데이터 수집 → `raw/`
 
+**run.yaml은 resolver가 쓴다** — 다른 런을 복사해 손으로 고치지 마라:
+
+```
+PYTHONPATH=src python scripts/resolve_kr_run.py runs/<종목>-<코드> \
+    --as-of YYYY-MM-DD --ticker <6자리> --query <회사명> --method <원형/방법>
+```
+
+corp_search/company/list 세 파일만 있으면 회사·KSIC 라우팅·결산주기·채택
+정기보고서(정정 포함)·연결여부·코호트를 정하고 `run.yaml`과 근거 영수증
+`out/resolver.json`을 쓴다. 기본 규칙은 **최신 사업보고서**를 채택하는 것이며,
+반기·분기 보고서를 묶어야 하는 런은 운영자가 run.yaml에서 바꾼다. 정하지
+못하는 것(동명 상장사, 사업보고서 없음, 미매핑 KSIC, 노선 밖 방법, 연결여부
+미확인, **이미 선언된 다부문**)은 이름 붙은 gap으로 내놓고 run.yaml을 쓰지
+않는다 — 그 gap이 작업지시서다.
+
 | 파일 | 원천 | 내용 |
 |---|---|---|
 | `corp_search.json` | find_company("회사명") | `{"companies":[{corp_code,corp_name,stock_code},…]}` 검색 결과 그대로 |
@@ -54,14 +69,27 @@ runs/<종목>-<코드>/
 
 ### 2.1 원문 섹션 뜨는 법 (키리스)
 
-1. `dart.fss.or.kr/dsaf001/main.do?rcpNo=<rcept_no>` HTML을 받는다.
-2. HTML 안의 목차 트리에서 원하는 섹션 제목(예: "원재료 및 생산설비",
-   "매출 및 수주상황", "주요 제품 및 서비스", "주식의 총수")을 찾아 그 노드의
-   `dcmNo / eleId / offset / length` 를 읽는다.
-3. `report/viewer.do?rcpNo=…&dcmNo=…&eleId=…&offset=…&length=…&dtd=dart4.xsd`
-   로 각 섹션 HTML을 받아 `filing_<rcept_no>/<rcept_no>_<eleId>.xml` 로 저장.
-   러너가 이 디렉토리를 원문 아카이브로 조립하고, 추출 영수증(멤버 SHA-256·
-   스팬)은 평소처럼 남는다.
+**수집기가 대신 한다** — 목차에서 eleId를 손으로 고르지 마라:
+
+```
+PYTHONPATH=src python scripts/collect_kr_filing.py runs/<종목>-<코드> --rcept <rcept_no>
+```
+
+역할 목록은 `config/kr_filing_toc_roles.yaml`이 정본이다(주식의 총수, 사업의
+개요, 주요 제품, 원재료·생산설비, 매출·수주, 영업부문 주석, 차입금, 타법인출자,
+배당, 감사의견). 회사·연도마다 **섹션 번호가 바뀌므로**(고려아연 부문 주석은
+반기 31번·연간 39번) 제목 앞 번호를 떼고 역할로 맞춘다. 역할을 채우는 제목이
+없으면 그 역할 이름을 그대로 보고하고, 필수 역할이면 멈춘다. `--plan-only`로
+받기 전에 계획만 볼 수 있고, `--roles a,b`로 일부만 받는다.
+
+이미 받은 멤버는 다시 받지 않아 세션이 끊겨도 이어서 받는다. 받은 파일은
+`raw/manifest.json`에 해시·크기와 **판독창(12,000자) 초과 여부**가 남는다 —
+나중에 판독이 비었을 때 "없음"이 아니라 "잘림"으로 이름 붙이기 위한 것이다.
+
+손으로 받을 때: `dsaf001/main.do?rcpNo=…` HTML의 목차 트리에서 `dcmNo /
+eleId / offset / length`를 읽어 `report/viewer.do?…&dtd=dart4.xsd`를 받고
+`filing_<rcept_no>/<rcept_no>_<eleId>.xml`로 저장한다. 트리는 **깊이 3단까지**
+있다 — node1/node2만 읽으면 주석이 통째로 빠진다(고려아연 반기 135개 중 78개).
 
 ### 2.2 다부문 회사라면 (스크린이 "multiple operating segments"로 멈출 때)
 

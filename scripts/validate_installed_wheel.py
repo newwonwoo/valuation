@@ -27,6 +27,7 @@ REGISTRIES = (
     "generic_scanner_screens.yaml",
     "kr_industry_series_registry.yaml",
     "kr_filing_kpi_patterns.yaml",
+    "kr_filing_toc_roles.yaml",
 )
 EXPECTED_METHOD_COUNT = 42
 

@@ -23,6 +23,11 @@ description: 이 레포에서 실제 한국 상장 종목의 라이브 밸류에
 
 ## 순서 (요약)
 
+1. **run.yaml은 resolver가 쓴다**: 메타데이터 3종 수집 후
+   `python scripts/resolve_kr_run.py runs/<종목>-<코드> --as-of … --ticker … --method …`
+   → run.yaml + 근거 영수증 out/resolver.json. 정하지 못한 것은 이름 붙은 gap.
+   원문 섹션은 `python scripts/collect_kr_filing.py runs/<종목>-<코드> --rcept <no>`
+   가 역할(`config/kr_filing_toc_roles.yaml`)로 고른다 — 멱등, manifest 영수증.
 1. **런 디렉토리** `runs/<종목>-<코드>/` 생성, `runs/kisco-104700/run.yaml` 복사.
 2. **raw/ 수집** — 키 불필요:
    - PlayMCP `opendart-find_company` → `raw/corp_search.json`

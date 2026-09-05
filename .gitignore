@@ -18,3 +18,10 @@ runs/kisco-104700/out/
 runs/shinhanalpha-293940/out/
 !runs/daehansteel-084010/
 runs/daehansteel-084010/out/
+
+# Packaging output. `pip wheel .` writes a full copy of the package here, and a
+# tracked copy would drift from src/ silently — and be picked up by anything
+# that scans importable files.
+build/
+dist/
+*.egg-info/

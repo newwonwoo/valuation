@@ -1,0 +1,73 @@
+version: 1
+purpose: >-
+  Which sections of a Korean statutory filing a run collects, named by the role
+  they play rather than by the heading a particular issuer happened to write.
+  A filing's table of contents numbers its sections differently every year and
+  every company (고려아연's segment note is item 31 in the half-year report and
+  item 39 in the annual), and the headings themselves drift, so the numbering
+  is stripped before matching and each role carries every heading vocabulary
+  seen in an accepted run. A role that matches nothing is reported as missing,
+  never silently skipped.
+rule: >-
+  Leading numbering ("31.", "2-1.") and surrounding whitespace are removed from
+  the heading, then a role matches if any of its patterns appears in what is
+  left. Roles marked required stop the collection when unmatched.
+roles:
+  share_count:
+    required: true
+    purpose: issued, treasury and outstanding share counts
+    patterns:
+    - 주식의 총수
+  business_overview:
+    required: true
+    purpose: the segment-and-product narrative the underwriting reads
+    patterns:
+    - 사업의 개요
+  products_and_prices:
+    required: true
+    purpose: product mix and the selling-price trend table
+    patterns:
+    - 주요 제품 및 서비스
+    - 주요 제품 및 원재료
+  raw_materials_and_facilities:
+    required: true
+    purpose: input price trend, production capacity, output and utilization
+    patterns:
+    - 원재료 및 생산설비
+  sales_and_orders:
+    required: false
+    purpose: sales by product and channel, order backlog where disclosed
+    patterns:
+    - 매출 및 수주상황
+  segment_note:
+    required: false
+    purpose: >-
+      the IFRS 8 note, the only authority on which reportable segments exist.
+      Required in practice for a multi-segment issuer, but a single-segment
+      filing has no such note, so the screen decides rather than this list.
+    patterns:
+    - 부문별 정보
+    - 부문정보
+    - 영업부문
+  borrowings_note:
+    required: false
+    purpose: interest-bearing debt and lease detail for the net-debt bridge
+    patterns:
+    - 차입금
+    - 사채
+  equity_investments:
+    required: false
+    purpose: holdings in other entities, for non-operating asset treatment
+    patterns:
+    - 타법인출자
+  dividends:
+    required: false
+    purpose: declared distribution history
+    patterns:
+    - 배당에 관한 사항
+  audit_opinion:
+    required: false
+    purpose: the auditor's opinion and any emphasis of matter
+    patterns:
+    - 감사인의 감사의견
+    - 회계감사인의 감사의견
