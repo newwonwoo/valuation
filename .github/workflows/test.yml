@@ -17,6 +17,15 @@ jobs:
         run: python -m pip install -e '.[dev]'
       - name: Unit contract registry
         run: PYTHONPATH=src python scripts/validate_unit_contract_registry.py
+      - name: Work claims registry
+        run: PYTHONPATH=src python scripts/validate_work_claims.py
+      - name: Work claims cover this change
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --depth=50 origin "${{ github.base_ref }}"
+          PYTHONPATH=src python scripts/validate_work_claims.py \
+            --base "origin/${{ github.base_ref }}" \
+            --pull-request "${{ github.event.pull_request.number }}"
       - name: Module registries and method capabilities
         run: PYTHONPATH=src python scripts/validate_module_registries.py
       - name: Module requirement plans

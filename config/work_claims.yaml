@@ -1,0 +1,75 @@
+version: 1
+purpose: >-
+  AGENTS.md already requires disjoint write sets: "If two tasks can write the
+  same file or generated artifact, give them one owner or add an explicit
+  sequential dependency; unordered overlap fails closed." Inside one agent's
+  plan that is enforceable. Between two agents driving separate pull requests
+  nothing enforced it, and on 2026-09-04 the cost showed: two independent
+  Korea Zinc runs were built in the same directory, the same segment-scoped
+  evaluator defect was fixed twice in incompatible ways, and the same
+  classification map grew from two directions. About half of one branch had to
+  be discarded.
+rule: >-
+  A pull request that changes a path inside a guarded area must hold an active
+  claim covering it. Claims are small and cheap on purpose: two agents heading
+  for the same area collide here, in one short file, before either writes code
+  — instead of colliding later across the whole diff. A claim is not a lock on
+  the repository; it is a statement of who is already working there, and it
+  ends when its pull request merges or is closed.
+guarded_areas:
+  # Chosen from where collisions actually happened, not from speculation.
+  - paths: ["runs/**"]
+    reason: >-
+      A run directory is one company's valuation. Two agents preparing the same
+      ticker produce two different valuations of it in the same path.
+  - paths:
+      - "config/kr_industry_classification_map.yaml"
+      - "config/archetype_module_registry.yaml"
+      - "config/archetype_control_requirements.yaml"
+      - "config/valuation_method_capability_registry.yaml"
+      - "config/industry_taxonomy.yaml"
+      - "config/kr_calibration_cohort_registry.yaml"
+    reason: >-
+      The economic contracts. These decide what a company is and what evidence
+      its valuation must carry, so two edits from different directions do not
+      merge into a coherent contract even when git merges the text.
+  - paths:
+      - "src/valuation_engine/evaluator_registry.py"
+      - "src/valuation_engine/valuation_plan_compiler.py"
+      - "src/valuation_engine/generic_valuation_plan.py"
+      - "src/valuation_engine/equity_evaluators.py"
+      - "src/valuation_engine/finite_life_evaluators.py"
+      - "src/valuation_engine/segment_note.py"
+    reason: >-
+      Evaluator identity and the segment note. Both were solved twice, in
+      incompatible ways, within two days.
+claims:
+  # The two requests whose overlap is the reason this registry exists. They are
+  # recorded rather than omitted: the record of who built a thing outlives the
+  # request that built it, and a later agent reading this file learns that the
+  # 고려아연 run directory has a history before it opens the directory.
+  - claim_id: koreazinc-live-primary-evidence-gate
+    owner: codex
+    pull_request: 170
+    status: merged
+    paths:
+      - "runs/koreazinc-010130/**"
+      - "config/kr_industry_classification_map.yaml"
+      - "src/valuation_engine/evaluator_registry.py"
+      - "src/valuation_engine/valuation_plan_compiler.py"
+    note: >-
+      Built the 고려아연 run that refuses its heterogeneous Other segment, added
+      the 24213/46721/38220 routes, and scoped evaluators by (segment_id, key).
+  - claim_id: run-resolver-and-filing-collector
+    owner: claude
+    pull_request: 171
+    status: merged
+    paths:
+      - "config/kr_filing_toc_roles.yaml"
+      - "src/valuation_engine/run_resolver.py"
+      - "src/valuation_engine/filing_collection_plan.py"
+      - "scripts/resolve_kr_run.py"
+      - "scripts/collect_kr_filing.py"
+    note: >-
+      The surviving half of a branch that had also built a second 고려아연 run
+      and a second evaluator-identity fix; both were discarded to #170.
