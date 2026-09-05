@@ -93,6 +93,25 @@ def _consolidated_from_raw(raw: Path) -> bool | None:
     return None
 
 
+def _financial_facts(raw: Path) -> dict[str, str]:
+    """Current-period amounts by standard account id, from the collected files.
+
+    Only the ids matter here: an archetype premise is stated in XBRL account
+    identifiers so that checking it reads the same for every issuer, whatever
+    each one calls its own lines.
+    """
+
+    facts: dict[str, str] = {}
+    for path in sorted(raw.glob("fnltt_*.json")):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        for row in payload.get("list") or ():
+            account = str(row.get("account_id") or "")
+            amount = str(row.get("thstrm_amount") or "")
+            if account and amount and account not in facts:
+                facts[account] = amount
+    return facts
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run_dir", help="run directory holding raw/ metadata")
@@ -134,6 +153,7 @@ def main() -> int:
         consolidated=consolidated,
         declared_segment_ids=segment_ids,
         classification_map_path=ROOT / "config" / "kr_industry_classification_map.yaml",
+        financial_facts=_financial_facts(raw),
         archetype_registry_path=ROOT / "config" / "archetype_module_registry.yaml",
     )
 

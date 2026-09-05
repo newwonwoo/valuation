@@ -32,6 +32,8 @@ import calendar
 import re
 from typing import Any, Iterable, Mapping, Sequence
 
+from decimal import Decimal, InvalidOperation
+
 import yaml
 
 from .calibration_cohort_registry import (
@@ -336,6 +338,48 @@ def route_industry(
     return tuple(str(item) for item in finalists[0].get("archetypes") or ())
 
 
+def refuted_archetypes(
+    archetypes: Iterable[str],
+    financial_facts: Mapping[str, Any] | None,
+    *,
+    archetype_registry_path: str | Path,
+) -> tuple[tuple[str, str], ...]:
+    """Archetypes whose premise the company's own statements contradict.
+
+    A KSIC prefix says what an issuer manufactures; it cannot say how the
+    issuer earns. The registry states each archetype's premise where one is
+    decidable, in standard XBRL account ids rather than an issuer's wording,
+    and this checks it against the audited figures the run already collected.
+    Nothing here reads prose, so it does not grow with the next filing.
+    """
+
+    if not financial_facts:
+        return ()
+    payload = yaml.safe_load(Path(archetype_registry_path).read_text(encoding="utf-8"))
+    modules = (payload or {}).get("modules") or {}
+    refuted: list[tuple[str, str]] = []
+    for archetype in archetypes:
+        premise = (modules.get(archetype) or {}).get("premise") or {}
+        positives = [
+            account
+            for account in premise.get("refuted_when_positive") or ()
+            if _positive_amount(financial_facts.get(account))
+        ]
+        if positives:
+            shown = ", ".join(
+                f"{account}={financial_facts[account]}" for account in positives
+            )
+            refuted.append((archetype, shown))
+    return tuple(refuted)
+
+
+def _positive_amount(value: Any) -> bool:
+    try:
+        return Decimal(str(value).replace(",", "")) > 0
+    except (InvalidOperation, AttributeError, TypeError):
+        return False
+
+
 def _method_candidates(
     archetypes: Iterable[str], *, archetype_registry_path: str | Path
 ) -> tuple[str, ...]:
@@ -370,6 +414,7 @@ def resolve_run(
     consolidated: bool | None = None,
     classification_map_path: str | Path,
     archetype_registry_path: str | Path,
+    financial_facts: Mapping[str, Any] | None = None,
     calibration_registry_path: str | Path | None = None,
 ) -> ResolvedRun:
     """Resolve one run from the metadata a collector fetches first.
@@ -494,12 +539,62 @@ def resolve_run(
                     str(classification_map_path),
                 )
             )
+            refuted = refuted_archetypes(
+                archetypes, financial_facts,
+                archetype_registry_path=archetype_registry_path,
+            )
+            for archetype, shown in refuted:
+                gaps.append(
+                    ResolverGap(
+                        "ARCHETYPE_PREMISE_REFUTED",
+                        f"the KSIC route sends {ksic_code} to {archetype}, whose "
+                        f"premise this company's own statements contradict "
+                        f"({shown}); route it to an archetype whose economics "
+                        "the filing supports, with --method, or record why this "
+                        "one still holds",
+                    )
+                )
             methods = _method_candidates(
                 archetypes, archetype_registry_path=archetype_registry_path
             )
             chosen = str(method or "").strip()
             if chosen:
-                if chosen not in methods:
+                # A KSIC prefix proposes; evidence decides. When the routed
+                # archetype's premise is refuted by the company's own
+                # statements, a method outside that route is not off-route —
+                # it is the correction the refusal asked for. It still has to
+                # be a real method whose own premise the filing does not
+                # contradict, and the swap is recorded with its basis.
+                off_route = chosen not in methods
+                corrected = False
+                if off_route and refuted:
+                    candidate_archetype = chosen.split("/", 1)[0]
+                    everything = _method_candidates(
+                        (candidate_archetype,),
+                        archetype_registry_path=archetype_registry_path,
+                    )
+                    still_refuted = refuted_archetypes(
+                        (candidate_archetype,), financial_facts,
+                        archetype_registry_path=archetype_registry_path,
+                    )
+                    if chosen in everything and not still_refuted:
+                        corrected = True
+                        methods = (chosen,)
+                        gaps = [
+                            gap for gap in gaps
+                            if gap.reason != "ARCHETYPE_PREMISE_REFUTED"
+                        ]
+                        decisions.append(
+                            ResolverDecision(
+                                "archetype_correction",
+                                candidate_archetype,
+                                "the KSIC route's archetype was refuted by this "
+                                "company's own statements; this one's premise is "
+                                "not, and its method was declared",
+                                str(archetype_registry_path),
+                            )
+                        )
+                if off_route and not corrected:
                     gaps.append(
                         ResolverGap(
                             "METHOD_OFF_ROUTE",

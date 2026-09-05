@@ -90,6 +90,9 @@ from valuation_engine.live_primary_adapters import (  # noqa: E402
     CompanyResolutionRequest,
     live_opendart_company_resolver,
 )
+from valuation_engine.generic_valuation_plan import (  # noqa: E402
+    GenericValuationPlanError,
+)
 from valuation_engine.strict_live_runtime import run_prism  # noqa: E402
 from valuation_engine.llm_transport import TransportError  # noqa: E402
 from valuation_engine.valuation_execution import ParentAdjustmentPlan  # noqa: E402
@@ -1020,11 +1023,18 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
         ),
         **spec_kwargs,
     )
-    factory = build_generic_kr_runtime_factory(
-        network=network,
-        transport=_StaffTransport(run_dir / "declarations" / "staff"),
-        spec=spec,
-    )
+    try:
+        factory = build_generic_kr_runtime_factory(
+            network=network,
+            transport=_StaffTransport(run_dir / "declarations" / "staff"),
+            spec=spec,
+        )
+    except GenericValuationPlanError as error:
+        # A plan that cannot be built is a work order like any other stop: it
+        # names the route the registries chose and what the engine lacks to
+        # walk it. Letting it escape as a traceback would break the runbook's
+        # one promise — that a run stops by telling the operator what to do.
+        return (), "VALUATION_PLAN_CONSTRUCTION", f"blocked: {error}", None
 
     def run(root: str):
         request = LiveAnalysisRequest(
@@ -1082,7 +1092,11 @@ def main() -> int:
         print(f"  OK  {stage}")
     if stop_stage is not None:
         print(f"  STOP {stop_stage}  {stop_reason}")
-        print(f"\n  stages: {len(reached)}/{len(result.stage_traces)}")
+        # A run can stop before the control plane exists — a plan the
+        # registries route to but the engine cannot build has no stage traces
+        # to count against.
+        total = len(result.stage_traces) if result is not None else "—"
+        print(f"\n  stages: {len(reached)}/{total}")
         print(
             "\nThe stop message above names exactly what the run still needs — "
             "that is the work order, not a crash. See docs/RUNBOOK_KR_LIVE.md."

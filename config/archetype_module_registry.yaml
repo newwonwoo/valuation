@@ -516,6 +516,20 @@ modules:
     - pb_roe
     - residual_income
   probabilistic_pipeline:
+    # A KSIC prefix says what an issuer manufactures, never how it earns. This
+    # premise is the discriminator the required_evidence below already implies
+    # — cash_runway and stage are pre-revenue concepts — stated where a router
+    # can check it against the company's own audited statements rather than
+    # against its industry code. Refuted here means "this is not this
+    # company's economics", not "this company is uninteresting": the run stops
+    # and names the archetypes whose premise its filing does support.
+    premise:
+      description: >-
+        Value is carried by unapproved assets whose cashflows are contingent,
+        so the company is not yet earning an operating profit from products.
+      refuted_when_positive:
+        - ifrs-full_Revenue
+        - dart_OperatingIncomeLoss
     required_evidence:
     - trial_registry
     - patient_evidence
