@@ -45,6 +45,7 @@ def test_the_repository_carries_the_runs_the_runbook_names():
         "shinhanalpha-293940",
         "daehansteel-084010",
         "koreazinc-010130",
+        "celltrion-068270",
     }
 
 

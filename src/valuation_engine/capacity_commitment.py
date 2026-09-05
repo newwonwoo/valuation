@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 from enum import Enum
@@ -58,6 +58,33 @@ class CapacityCommitmentPolicy:
         EvidenceSourceLayer.REALIZED_OR_FILING,
         EvidenceSourceLayer.COMPANY_OFFICIAL_PLAN,
     )
+    #: Layers admissible only where the determination cannot add Core value.
+    #: Verifying LAND_CONTROL, and the committed capacity, site area, capex,
+    #: ramp date and equipment Evidence the gate reads once it is verified,
+    #: pull an announced project into Core — those stay bound to the filing or
+    #: the company's own plan, because an analyst must not be able to assert a
+    #: contract into existence. Resolving LAND_CONTROL as *not* verified, or
+    #: declaring that the segment has no expansion at all, only removes value
+    #: from the valuation, and a cold start has no other source for it: the
+    #: absence of a site contract is not something a filing states. So the
+    #: asymmetry is written down rather than left to a blanket rule that
+    #: silently made the capacity route unreachable from a declaration.
+    conservative_source_layers: tuple[EvidenceSourceLayer, ...] = (
+        EvidenceSourceLayer.ANALYST_UNDERWRITING,
+    )
+
+    def with_conservative_layers(self) -> "CapacityCommitmentPolicy":
+        return replace(
+            self,
+            eligible_source_layers=(
+                *self.eligible_source_layers,
+                *tuple(
+                    layer
+                    for layer in self.conservative_source_layers
+                    if layer not in self.eligible_source_layers
+                ),
+            ),
+        )
 
     def validate(self) -> None:
         metrics = (
@@ -449,6 +476,16 @@ def _assess_project(
     policy: CapacityCommitmentPolicy,
 ) -> CapacityProjectAssessment:
     binding.validate(policy=policy)
+    # A project whose LAND_CONTROL is declared unverified, or one declared
+    # cancelled, cannot reach Core inclusion however its remaining Evidence
+    # reads. Only there does the conservative layer become admissible.
+    _land_declaration = _gate_observation(binding.gate_set, policy.core_inclusion_gate)
+    if (
+        binding.disposition is CapacityProjectDisposition.CANCELLED
+        or _land_declaration is None
+        or not _land_declaration.verified
+    ):
+        policy = policy.with_conservative_layers()
     verified_gates = _validate_gate_evidence(
         binding,
         evidence_by_id=evidence_by_id,
@@ -662,7 +699,9 @@ def _validate_no_active_expansion(
         segment.no_active_expansion_evidence_ids,
         expected_metric=policy.no_active_expansion_metric,
         segment_id=segment.segment_id,
-        policy=policy,
+        # Declaring that a segment has no expansion adds nothing to Core; it
+        # only forgoes one. See CapacityCommitmentPolicy.conservative_source_layers.
+        policy=policy.with_conservative_layers(),
     )
     for record in records:
         if record.value is not True:

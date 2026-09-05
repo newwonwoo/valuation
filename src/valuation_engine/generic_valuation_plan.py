@@ -489,6 +489,66 @@ def generic_backlog_dcf_fingerprint_loader(
     return load
 
 
+def generic_explicit_fcff_dcf_fingerprint_loader(
+    *,
+    scenario_id: str,
+    forecast_years: int,
+    segment_prefix: str = "",
+):
+    """DCFConsistencyFingerprintLoader for the explicit free-cashflow family.
+
+    Every archetype that exposes a Warranted-PER cross-check makes the run seal
+    a fingerprint of the DCF's economics first, so a PER route can never assume
+    growth the DCF did not. The backlog family derives that from its roll-
+    forward. This family declares the cashflow itself, so what it seals is what
+    it actually asserts: the year-over-year growth of the declared FCFF path,
+    the terminal step, and the one reinvestment rate the terminal contract
+    fixes (g / ROIC).
+
+    Margin is left empty on purpose. An explicit-FCFF plan states no revenue
+    and therefore no margin, and inventing a path here would let a PER route be
+    "checked" against a margin the DCF never claimed. An empty path is a claim
+    too — that there is nothing to match — and a PER fingerprint carrying a
+    margin path will fail the comparison rather than pass it silently.
+    """
+    if forecast_years < 1:
+        raise GenericValuationPlanError("forecast_years must be positive")
+
+    def load(context: OrchestratorContext) -> EconomicAssumptionFingerprint:
+        compiled = context.data.get("compiled_assumption_set")
+        if compiled is None:
+            raise GenericValuationPlanError(
+                "compiled_assumption_set is required before the DCF fingerprint"
+            )
+
+        def amount(key: str) -> Decimal:
+            return compiled.get(f"{segment_prefix}{key}", scenario_id).measure.amount
+
+        path = [amount(f"fcff_year_{year}") for year in range(1, forecast_years + 1)]
+        growth: list[float] = []
+        for previous, current in zip(path, path[1:]):
+            if previous == 0:
+                raise GenericValuationPlanError(
+                    "explicit-FCFF fingerprint cannot take growth off a zero year"
+                )
+            growth.append(float(current / previous - 1))
+        terminal_growth = amount("terminal_growth")
+        terminal_roic = amount("terminal_roic")
+        if terminal_roic <= 0:
+            raise GenericValuationPlanError(
+                "explicit-FCFF fingerprint requires a positive terminal ROIC"
+            )
+        growth.append(float(terminal_growth))
+        return EconomicAssumptionFingerprint(
+            growth_rates=tuple(growth),
+            margin_path=(),
+            reinvestment_path=(float(terminal_growth / terminal_roic),),
+            growth_duration_years=forecast_years,
+        )
+
+    return load
+
+
 def withheld_per_loader():
     """PERInputsLoader that withholds PER rather than approximating one.
 
@@ -527,15 +587,35 @@ def generic_capacity_commitment_loader():
     the operator explicitly declared there is none? A cold start has exactly
     one honest source for the answer — the declared-underwriting Evidence in
     the ledger. A truthy ``no_active_capacity_expansion`` record bound to the
-    segment becomes the input's explicit no-expansion Evidence; a declared
-    ACTIVE expansion cannot be composed generically yet, so it fails closed by
-    name rather than gate-walking a project this loader did not type.
+    segment becomes the input's explicit no-expansion Evidence.
+
+    Otherwise the segment has an expansion, and the plan has already required
+    the Evidence that types it: land control, baseline treatment, committed
+    capacity, site area, committed capex, ramp date, equipment commitment and
+    cancellation. This composes exactly those records into one declared
+    project and hands it to the gate. It decides nothing itself — the gate
+    still asks whether LAND_CONTROL is verified and whether the capacity is
+    incremental to the baseline, so an announced plan whose site control the
+    filing does not evidence stays out of Core value on the gate's own
+    reasoning, rather than by hiding behind a false "no expansion".
+
+    Quantification Evidence is attached only once land control is verified.
+    Before that the gate never asks how large the project is, and binding a
+    figure it will not read would assert a commitment the filing has not made.
     """
     from .capacity_commitment import (
+        BaselineInclusionStatus,
         CapacityCommitmentInput,
+        CapacityProjectBinding,
+        CapacityProjectDisposition,
         CapacitySegmentCommitmentInput,
     )
     from .industry_dna import EconomicArchetype
+    from .signal_intelligence import (
+        ProjectGate,
+        ProjectGateEvidence,
+        ProjectGateSet,
+    )
 
     def load(context: OrchestratorContext) -> CapacityCommitmentInput:
         plan = context.data.get("module_requirement_plan")
@@ -544,29 +624,133 @@ def generic_capacity_commitment_loader():
         for segment in plan.segments:
             if EconomicArchetype.CAPACITY_MANUFACTURING not in segment.archetypes:
                 continue
+            active = tuple(
+                record
+                for record in ledger.active()
+                if record.segment == segment.segment_id
+            )
+
+            def _records(metric: str, rows=active):
+                return tuple(item for item in rows if item.metric == metric)
+
             declared_none = tuple(
                 record.id
-                for record in ledger.active()
-                if record.metric == "no_active_capacity_expansion"
-                and record.segment == segment.segment_id
-                and bool(record.value)
+                for record in _records("no_active_capacity_expansion")
+                if bool(record.value)
             )
-            if not declared_none:
+            if declared_none:
+                segments.append(
+                    CapacitySegmentCommitmentInput(
+                        segment.segment_id,
+                        (),
+                        declared_none,
+                    )
+                )
+                continue
+
+            land = _records("expansion_land_control")
+            baseline = _records("expansion_baseline_inclusion")
+            if len(land) != 1 or len(baseline) != 1:
                 raise GenericValuationPlanError(
                     f"segment {segment.segment_id} runs the "
-                    "capacity_manufacturing route but the ledger carries no "
-                    "truthy no_active_capacity_expansion declaration for it; "
-                    "declare the no-expansion state, or an active expansion "
-                    "needs a typed project loader this cold start does not "
-                    "compose"
+                    "capacity_manufacturing route without a truthy "
+                    "no_active_capacity_expansion declaration, so it has an "
+                    "expansion the gate must type; that needs exactly one "
+                    "expansion_land_control and one expansion_baseline_inclusion "
+                    "Evidence bound to the segment"
                 )
+            land_record = land[0]
+            baseline_record = baseline[0]
+            try:
+                baseline_status = BaselineInclusionStatus(
+                    str(baseline_record.value).strip().lower()
+                )
+            except ValueError as error:
+                raise GenericValuationPlanError(
+                    f"segment {segment.segment_id} declares "
+                    f"expansion_baseline_inclusion {baseline_record.value!r}, "
+                    "which is not one of not_in_baseline, in_baseline, unknown"
+                ) from error
+
+            cancelled = tuple(
+                item
+                for item in _records("expansion_cancelled")
+                if str(item.value).strip().lower() in {"true", "cancelled"}
+            )
+            land_verified = _truthy_declaration(land_record.value)
+            quantification: dict[str, tuple[str, ...]] = {}
+            if land_verified and not cancelled:
+                for field, metric in (
+                    (
+                        "committed_capacity_evidence_ids",
+                        "expansion_capacity_committed",
+                    ),
+                    ("site_area_evidence_ids", "expansion_site_area"),
+                    ("committed_capex_evidence_ids", "expansion_capex_committed"),
+                    ("ramp_date_evidence_ids", "expansion_ramp_date"),
+                    (
+                        "equipment_commitment_evidence_ids",
+                        "expansion_equipment_commitment",
+                    ),
+                ):
+                    quantification[field] = tuple(
+                        item.id
+                        for item in _records(metric)
+                        if _states_a_figure(item.value)
+                    )
+
+            project_id = f"{segment.segment_id}-declared-expansion"
+            binding = CapacityProjectBinding(
+                project_id=project_id,
+                segment_id=segment.segment_id,
+                gate_set=ProjectGateSet(
+                    project_id=project_id,
+                    required_gates=(ProjectGate.LAND_CONTROL,),
+                    observations=(
+                        ProjectGateEvidence(
+                            gate=ProjectGate.LAND_CONTROL,
+                            verified=land_verified,
+                            evidence_ids=(land_record.id,),
+                        ),
+                    ),
+                ),
+                baseline_inclusion=baseline_status,
+                baseline_inclusion_evidence_ids=(baseline_record.id,),
+                disposition=(
+                    CapacityProjectDisposition.CANCELLED
+                    if cancelled
+                    else CapacityProjectDisposition.ACTIVE
+                ),
+                disposition_evidence_ids=tuple(item.id for item in cancelled),
+                **quantification,
+            )
             segments.append(
-                CapacitySegmentCommitmentInput(
-                    segment.segment_id,
-                    (),
-                    declared_none,
-                )
+                CapacitySegmentCommitmentInput(segment.segment_id, (binding,), ())
             )
         return CapacityCommitmentInput(tuple(segments))
 
     return load
+
+
+def _truthy_declaration(value: object) -> bool:
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in {"true", "yes", "verified"}
+
+
+def _states_a_figure(value: object) -> bool:
+    """Whether a declaration states a figure rather than naming its absence.
+
+    A filing that discloses nothing about a project's site area is not the
+    same as one disclosing zero, and the declaration says which by naming the
+    absence. Only a stated figure reaches the gate.
+    """
+
+    text = str(value).strip().lower()
+    return bool(text) and text not in {
+        "not_disclosed",
+        "not_observed",
+        "none",
+        "null",
+        "0",
+    }

@@ -432,6 +432,37 @@ def build_generic_kr_runtime_factory(
                 forecast_years=spec.forecast_years,
             ),
         )
+    elif "explicit_fcff_dcf" in families:
+        from .generic_valuation_plan import (
+            generic_explicit_fcff_dcf_fingerprint_loader,
+        )
+
+        # Multi-segment runs namespace the keys; the fingerprint seals the
+        # segment the filing is anchored to, which is the one whose statements
+        # the run reads.
+        fcff_segments = tuple(
+            choice.segment_id
+            for choice in spec.method_choices
+            if method_registry.get(choice.archetype, choice.method).execution_family
+            == "explicit_fcff_dcf"
+        )
+        anchor = (
+            spec.filing.segment_id
+            if spec.filing.segment_id in fcff_segments
+            else fcff_segments[0]
+        )
+        extensions = replace(
+            extensions,
+            dcf_fingerprint_loader=generic_explicit_fcff_dcf_fingerprint_loader(
+                scenario_id=spec.scenario_ids[0],
+                forecast_years=spec.forecast_years,
+                segment_prefix=(
+                    f"{anchor}_"
+                    if len({c.segment_id for c in spec.method_choices}) > 1
+                    else ""
+                ),
+            ),
+        )
     if spec.market_config_path is not None:
         from .workflow import market_loader_from_config
 
@@ -529,15 +560,22 @@ def build_generic_kr_runtime_factory(
                 )
             )
         )
-    # Extras route to the segment whose namespace prefixes them (multi-segment
-    # scenario variants like steel_down_fcff_year_1); anything unprefixed —
-    # every single-segment extra — binds to the filing segment as before.
+    # Extras route to the segment whose namespace names them. A scenario
+    # variant is written qualifier-first (down_chemical_fcff_year_1), which is
+    # how every committed run declares one, so the segment id is looked for as
+    # a whole token anywhere in the key rather than only at its start.
+    # Anything naming no segment — every single-segment extra — binds to the
+    # filing segment as before.
     for extra in spec.extra_required_evidence:
         owner = next(
             (
                 segment_id
                 for segment_id in keys_by_segment
-                if multi_segment and extra.startswith(f"{segment_id}_")
+                if multi_segment
+                and (
+                    extra.startswith(f"{segment_id}_")
+                    or f"_{segment_id}_" in extra
+                )
             ),
             spec.filing.segment_id,
         )
