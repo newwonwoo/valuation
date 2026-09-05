@@ -842,15 +842,18 @@ def read_table_cell(
     parser.feed(member_text)
     parser.close()
     between = _normalize_space(" ".join(parser.parts))[unit_end:value_span[0]]
-    intervening = sorted({
-        registered
-        for token, registered in task.source_unit_map
-        if registered != unit and _unit_matches(token, between)
+    wanted_unit = _squeeze(proposal.unit_token).strip("()（）")
+    contested = sorted({
+        token for token in re.split(r"[\s,;、]+", between)
+        if token and _amount(token) is None and not _is_missing_value(token)
+        and any(mark in token for mark in ("/", "%", "／", "％"))
+        and _squeeze(token).strip("()（）.)") != wanted_unit
     })
-    if intervening:
+    if contested:
         raise ProposalParseError(
-            f"a different registered unit ({', '.join(intervening)}) is declared "
-            "between the named unit source and the selected cell"
+            f"another unit ({', '.join(repr(item) for item in contested)}) is "
+            "written between the named unit source and the selected cell, so "
+            "the source does not settle this cell's unit"
         )
     # A unit written in the selected row governs that row, whatever the model
     # points at elsewhere. This reads the row it was given; it does not detect
