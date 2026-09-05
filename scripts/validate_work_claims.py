@@ -55,13 +55,26 @@ def main() -> int:
     if not args.base:
         return 0
 
-    diff = subprocess.run(
-        ["git", "diff", "--name-only", f"{args.base}...HEAD"],
+    # Two commits, not a merge base: a CI checkout is shallow, so asking for the
+    # common ancestor of a base branch and a head that share no fetched history
+    # fails outright. Comparing the two commits needs only both objects to be
+    # present, and on a pull-request checkout the head already contains the
+    # base, so the difference is the request's own changes.
+    completed = subprocess.run(
+        ["git", "diff", "--name-only", args.base, "HEAD"],
         cwd=ROOT,
         capture_output=True,
         text=True,
-        check=True,
-    ).stdout
+    )
+    if completed.returncode != 0:
+        detail = (completed.stderr.strip() or f"git exited {completed.returncode}")
+        print(f"\ncould not diff against {args.base!r}: {detail.splitlines()[0]}")
+        print(
+            "Fetch that commit before this check runs — a shallow checkout does "
+            "not have it."
+        )
+        return 1
+    diff = completed.stdout
     changed = changed_paths_from_diff(diff)
     violations = check_changed_paths(
         registry, changed, pull_request=args.pull_request

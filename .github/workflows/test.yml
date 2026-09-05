@@ -22,9 +22,13 @@ jobs:
       - name: Work claims cover this change
         if: github.event_name == 'pull_request'
         run: |
-          git fetch --no-tags --depth=50 origin "${{ github.base_ref }}"
+          # The base commit by sha, not the branch: the checkout is shallow,
+          # so a branch ref shares no history with this head and a merge base
+          # cannot be computed. One object is enough to diff against.
+          git fetch --no-tags --depth=1 origin \
+            "${{ github.event.pull_request.base.sha }}"
           PYTHONPATH=src python scripts/validate_work_claims.py \
-            --base "origin/${{ github.base_ref }}" \
+            --base "${{ github.event.pull_request.base.sha }}" \
             --pull-request "${{ github.event.pull_request.number }}"
       - name: Module registries and method capabilities
         run: PYTHONPATH=src python scripts/validate_module_registries.py
