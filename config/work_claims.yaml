@@ -72,7 +72,7 @@ claims:
   - claim_id: table-cell-reading-proposals
     owner: codex
     pull_request: 173
-    status: active
+    status: merged
     paths:
       - "src/valuation_engine/filing_table_cells.py"
       - "config/kr_filing_table_reading_tasks.yaml"
