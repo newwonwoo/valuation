@@ -52,7 +52,16 @@ from .dart_kpi import (
 )
 from .generic_kr_industry import _SegmentTableParser, _expand_table
 from .llm_filing_locators import validate_filing_period_context
-from .proposal_parsing import ProposalParseError, require_keys, text_field
+from .llm_transport import ProposalTransport
+from .proposal_parsing import (
+    ProposalParseError,
+    complete_with_repair,
+    parse_json_object,
+    require_keys,
+    str_tuple,
+    text_field,
+)
+from .runtime_authority import llm_proposal_scope
 from .runtime_resources import runtime_registry_path
 
 
@@ -588,3 +597,142 @@ def read_table_cell_observation(
             f"deterministic re-extraction rejected the cell proposed for "
             f"{task.metric}: {error}"
         ) from error
+
+
+ROLE_TABLE_READER = "filing_table_reader"
+
+
+def _render_tables(filing: DartOriginalFilingDocument) -> str:
+    """Show the model each member's tables as numbered grids with their caption.
+
+    The grids are what the coordinates address, so the model is shown exactly
+    what the verifier will read — not the raw markup, where a row and its
+    heading are far apart, and not the flattened text, where a table's shape is
+    lost.
+    """
+    blocks: list[str] = []
+    for member in filing.members:
+        captions = _table_captions(member.text)
+        for index, grid in enumerate(_grids(member.text)):
+            caption = captions[index] if index < len(captions) else ""
+            rows = "\n".join(
+                "  | ".join(str(cell) for cell in row) for row in grid[:20]
+            )
+            blocks.append(
+                f"=== member: {member.path} table {index} ===\n"
+                f"caption: {caption[-300:]}\n{rows}"
+            )
+    return "\n\n".join(blocks)
+
+
+def _table_prompt(
+    filing: DartOriginalFilingDocument, tasks: Sequence[TableReadingTask], rendered: str
+) -> str:
+    task_lines = "\n".join(
+        f"- {task.metric}: {task.definition}"
+        f" | this table must mention some of: {', '.join(task.table_identity.must_have_any)}"
+        f" | and none of: {', '.join(task.table_identity.must_not_have)}"
+        f" | allowed unit tokens: {', '.join(token for token, _ in task.source_unit_map)}"
+        for task in tasks
+    )
+    return (
+        "You are a filing table reader. For each target metric, say WHICH CELL "
+        "of which table holds it. You do not report numbers; you report "
+        "COORDINATES. A deterministic reader opens the table at your "
+        "coordinates and only what it reads there becomes evidence.\n\n"
+        f"Filing {filing.rcept_no} tables:\n{rendered}\n\n"
+        f"Target metrics:\n{task_lines}\n\n"
+        """Return ONE JSON object:
+{
+ "cells": [
+   {"metric": "...", "member_path": "...", "table_index": 0,
+    "row_path": ["heading cells that identify the row, in order"],
+    "column_path": ["heading cells that stand over the column"],
+    "unit_token": "one allowed unit token, as written in the caption or the grid"}
+ ],
+ "not_found": ["metrics this filing does not disclose in a table"]
+}
+Rules enforced mechanically: the row path must fit exactly one row and the
+column path exactly one column; the table must carry the metric's vocabulary
+and none of its excluded vocabulary; the unit token must appear with the table;
+the column must be the current period, not a prior year or a plan. Do not
+guess — report a metric in not_found when the filing does not disclose it."""
+    )
+
+
+def propose_and_verify_table_cells(
+    *,
+    transport: ProposalTransport,
+    filing: DartOriginalFilingDocument,
+    tasks: Sequence[TableReadingTask],
+    segment: str,
+    effective_date: str,
+    max_attempts: int = 2,
+) -> tuple[DartKPIObservation, ...]:
+    """Ask the model which cell holds each metric; keep only what re-reads.
+
+    A rejected coordinate produces no observation, exactly as an undisclosed
+    metric produces none: both surface downstream as a named coverage gap, and
+    neither blocks the run. A model that cannot point at a verifiable cell has
+    lost the round, not the collection.
+    """
+    if not tasks:
+        return ()
+    for task in tasks:
+        task.validate()
+    by_metric = {task.metric: task for task in tasks}
+    rendered = _render_tables(filing)
+    prompt = _table_prompt(filing, tasks, rendered)
+
+    def parse(text: str) -> tuple[DartKPIObservation, ...]:
+        payload = parse_json_object(text)
+        require_keys(
+            payload,
+            required=("cells",),
+            optional=("not_found",),
+            label="table cell proposal",
+        )
+        rows = payload["cells"]
+        if not isinstance(rows, list):
+            raise ProposalParseError("cells must be a list")
+        str_tuple(payload.get("not_found", []), "not_found")
+        observations: list[DartKPIObservation] = []
+        seen: set[str] = set()
+        for row in rows:
+            if not isinstance(row, dict):
+                raise ProposalParseError("a table cell proposal must be an object")
+            proposal = TableCellProposal.from_row(row)
+            task = by_metric.get(proposal.metric)
+            if task is None:
+                raise ProposalParseError(
+                    f"table cell names an unrequested metric: {proposal.metric}"
+                )
+            if proposal.metric in seen:
+                raise ProposalParseError(
+                    f"duplicate table cell for metric {proposal.metric}"
+                )
+            seen.add(proposal.metric)
+            observations.append(
+                read_table_cell_observation(
+                    filing,
+                    proposal,
+                    task,
+                    segment=segment,
+                    effective_date=effective_date,
+                )
+            )
+        return tuple(observations)
+
+    with llm_proposal_scope():
+        try:
+            return complete_with_repair(
+                transport=transport,
+                role=ROLE_TABLE_READER,
+                prompt=prompt,
+                parse=parse,
+                max_attempts=max_attempts,
+            )
+        except ProposalParseError:
+            # Unreadable and undisclosed end the same way: a named gap, not a
+            # blocked run.
+            return ()

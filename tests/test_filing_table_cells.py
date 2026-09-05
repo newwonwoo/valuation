@@ -292,3 +292,107 @@ def test_an_unknown_member_is_refused():
 def test_the_prior_period_column_is_still_refused_on_the_full_path():
     with pytest.raises(ProposalParseError, match="current-period marker"):
         _observe(column_path=["2025년"])
+
+
+class _Scripted:
+    """A transport whose answers are written in advance, like a run's staff file."""
+
+    def __init__(self, *answers: str) -> None:
+        self.answers = list(answers)
+        self.prompts: list[str] = []
+
+    def complete(self, *, role: str, prompt: str) -> str:
+        self.prompts.append(prompt)
+        return self.answers[min(len(self.prompts) - 1, len(self.answers) - 1)]
+
+
+def _answer(**overrides) -> str:
+    import json
+
+    cell = {
+        "metric": "realized_price",
+        "member_path": f"{RCEPT}.xml",
+        "table_index": 0,
+        "row_path": ["대한제강(주)", "철 근"],
+        "column_path": ["2026년 반기"],
+        "unit_token": "천원/톤",
+    }
+    cell.update(overrides)
+    return json.dumps({"cells": [cell], "not_found": []}, ensure_ascii=False)
+
+
+def _propose(transport):
+    from valuation_engine.filing_table_cells import propose_and_verify_table_cells
+
+    return propose_and_verify_table_cells(
+        transport=transport,
+        filing=_filing(),
+        tasks=[TASKS["realized_price"]],
+        segment="steel",
+        effective_date="2026-06-30",
+    )
+
+
+def test_a_verifiable_coordinate_becomes_evidence():
+    observations = _propose(_Scripted(_answer()))
+    assert [item.metric for item in observations] == ["realized_price"]
+    assert observations[0].measure.amount == Decimal("823000")
+
+
+def test_the_model_is_shown_the_grid_it_must_address():
+    """Coordinates are only answerable against the same grid the verifier
+    reads, so the prompt carries the expanded table and its caption."""
+    transport = _Scripted(_answer())
+    _propose(transport)
+    prompt = transport.prompts[0]
+    assert "2026년 반기" in prompt
+    assert "천원/톤" in prompt
+    assert "대한제강(주)" in prompt
+
+
+def test_a_prior_period_coordinate_yields_a_gap_not_a_number():
+    assert _propose(_Scripted(_answer(column_path=["2025년"]))) == ()
+
+
+def test_an_unrequested_metric_yields_a_gap():
+    assert _propose(_Scripted(_answer(metric="utilization"))) == ()
+
+
+def test_a_not_found_answer_is_a_gap_and_not_a_blocked_collection():
+    import json
+
+    transport = _Scripted(json.dumps({"cells": [], "not_found": ["realized_price"]}))
+    assert _propose(transport) == ()
+
+
+def test_an_unparseable_answer_leaves_a_gap_rather_than_raising():
+    assert _propose(_Scripted("not json at all")) == ()
+
+
+def test_two_cells_for_one_metric_are_refused():
+    import json
+
+    both = json.dumps(
+        {
+            "cells": [
+                {
+                    "metric": "realized_price",
+                    "member_path": f"{RCEPT}.xml",
+                    "table_index": 0,
+                    "row_path": ["대한제강(주)", "철 근"],
+                    "column_path": ["2026년 반기"],
+                    "unit_token": "천원/톤",
+                },
+                {
+                    "metric": "realized_price",
+                    "member_path": f"{RCEPT}.xml",
+                    "table_index": 0,
+                    "row_path": ["대한제강(주)", "빌 릿"],
+                    "column_path": ["2026년 반기"],
+                    "unit_token": "천원/톤",
+                },
+            ]
+        },
+        ensure_ascii=False,
+    )
+    assert _propose(_Scripted(both)) == ()
