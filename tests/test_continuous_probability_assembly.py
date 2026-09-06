@@ -417,3 +417,73 @@ def test_sk_hynix_conditioning_converts_into_the_generic_form():
         SKHYNIX_CONTINUOUS_BINDING.driver_ids
     )
     assert generic.as_map() == current.as_map()
+
+
+def test_a_cohort_whose_anchors_cannot_frame_the_target_degrades_by_name(
+    tmp_path: Path,
+):
+    """A borrowed distribution fails loudly here and quietly everywhere else.
+
+    The scenario anchors are the cohort's own reference paths, placed a scale
+    apart. Push one driver's conditioned path far outside all of them and
+    nearest-scenario assignment stops discriminating: every simulated path
+    lands on the same extreme scenario, which reads as near-certainty and is
+    really the absence of an answer. The snapshot degrades and names the
+    driver, so the reader learns the cohort is wrong rather than reading a
+    probability off a saturated count.
+    """
+    artifact = _artifact()
+    # Only the utilisation driver is moved; the other two stay inside the
+    # anchors, so the finding must name exactly one driver.
+    artifact["drivers"]["yard_utilisation"]["path"]["mean"] = [
+        "3.0" for _ in range(YEARS)
+    ]
+    artifact["artifact_sha256"] = stable_hash(
+        {k: v for k, v in artifact.items() if k != "artifact_sha256"}
+    )
+    binding = _binding(tmp_path, artifact, _provenance())
+    snapshot = build_continuous_probability_snapshot(
+        binding=binding,
+        conditioning=_conditioning(binding),
+        as_of_date="2026-08-29",
+    )
+    assert snapshot.status is CalibrationStatus.DEGRADED
+    assert len(snapshot.integrity_findings) == 1
+    finding = snapshot.integrity_findings[0]
+    assert "yard_utilisation" in finding
+    assert "order_intake_growth" not in finding
+    with pytest.raises(PermissionError):
+        snapshot.certificate()
+
+
+def test_a_saturated_scenario_reports_an_interval_that_contains_its_estimate(
+    tmp_path: Path,
+):
+    """The invariant the saturated case used to break.
+
+    The point estimate is the mean of the outer draws, normalized so the
+    scenarios sum to one; the bounds are sample quantiles that normalization
+    never touches. When one scenario takes essentially every path, its 5%
+    quantile can sit above its normalized mean, and the snapshot's own
+    validator threw instead of reporting the saturation.
+    """
+    artifact = _artifact()
+    artifact["drivers"]["yard_utilisation"]["path"]["mean"] = [
+        "3.0" for _ in range(YEARS)
+    ]
+    artifact["artifact_sha256"] = stable_hash(
+        {k: v for k, v in artifact.items() if k != "artifact_sha256"}
+    )
+    binding = _binding(tmp_path, artifact, _provenance())
+    snapshot = build_continuous_probability_snapshot(
+        binding=binding,
+        conditioning=_conditioning(binding),
+        as_of_date="2026-08-29",
+    )
+    for estimate in snapshot.estimates:
+        assert (
+            estimate.lower_probability
+            <= estimate.probability
+            <= estimate.upper_probability
+        ), estimate.scenario_id
+    assert max(item.probability for item in snapshot.estimates) > Decimal("0.99")

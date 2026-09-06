@@ -1,9 +1,0 @@
-{
- "values": {
-  "revenue_growth": 0.170126,
-  "operating_margin": 0.280714
- },
- "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00413046&bsns_year=2025&reprt_code=11011&fs_div=CFS",
- "first_seen_at": "2026-03-16T09:00:00Z",
- "source_hash": "1fc7e12fdd1a5a06f49f7d7f792a3f12a0b075fc67e9c2d41d01ea092f3f36c0"
-}
