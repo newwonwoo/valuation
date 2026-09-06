@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='section-2'><A name='toc1'>2. 주요 제품 및 서비스</A></P>
+<P style='font-weight:bold;color:#FF0000;'><BR/></P>
+<P style='font-weight:bold;'>가. 주요 제품 등의 현황 (연결 기준)&nbsp;</P>
+<TABLE class='nb' width='565'>
+<COLGROUP>
+<COL width='283'></COL>
+<COL width='282'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='274' height='23' valign='TOP'>(기준일: 2026.06.30)</TD>
+  <TD width='273' height='23' align='RIGHT' valign='TOP'>(단위 : 백만원, %)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='566'>
+<COLGROUP>
+<COL width='108'></COL>
+<COL width='123'></COL>
+<COL width='185'></COL>
+<COL width='84'></COL>
+<COL width='66'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='99' height='23' valign='TOP'>사업부문</TH>
+  <TH width='114' height='23' valign='TOP'>매출유형</TH>
+  <TH width='176' height='23' valign='TOP'>품목</TH>
+  <TH width='75' height='23' valign='TOP'>매출액</TH>
+  <TH width='57' height='23' valign='TOP'>비율</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='99' height='83' rowspan='3' align='CENTER'>바이오의약품</TD>
+  <TD width='114' height='23' align='CENTER'>제품 및 용역 등</TD>
+  <TD width='176' height='23' align='CENTER'>CT-P13 바이오시밀러 외</TD>
+  <TD width='75' height='23' align='RIGHT'>2,396,705</TD>
+  <TD width='57' height='23' align='RIGHT'>94.41</TD>
+</TR>
+<TR height='30'>
+  <TD width='114' height='23' align='CENTER'>기타</TD>
+  <TD width='176' height='23' align='CENTER'>기타</TD>
+  <TD width='75' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>0.00</TD>
+</TR>
+<TR height='30'>
+  <TD width='299' height='23' colspan='2' align='CENTER'>소계</TD>
+  <TD width='75' height='23' align='RIGHT'>2,396,705</TD>
+  <TD width='57' height='23' align='RIGHT'>94.41</TD>
+</TR>
+<TR height='30'>
+  <TD width='99' height='113' rowspan='4' align='CENTER'>케미컬의약품</TD>
+  <TD width='114' height='23' align='CENTER'>제품 및 상품 등</TD>
+  <TD width='176' height='23' align='CENTER'>&nbsp;고덱스 외</TD>
+  <TD width='75' height='23' align='RIGHT'>141,601</TD>
+  <TD width='57' height='23' align='RIGHT'>5.58</TD>
+</TR>
+<TR height='30'>
+  <TD width='114' height='23' align='CENTER'>용역</TD>
+  <TD width='176' height='23' align='CENTER'>기타 서비스 등</TD>
+  <TD width='75' height='23' align='RIGHT'>353</TD>
+  <TD width='57' height='23' align='RIGHT'>0.01</TD>
+</TR>
+<TR height='30'>
+  <TD width='114' height='23' align='CENTER'>기타</TD>
+  <TD width='176' height='23' align='CENTER'>기타</TD>
+  <TD width='75' height='23' align='RIGHT'>20</TD>
+  <TD width='57' height='23' align='RIGHT'>0.00</TD>
+</TR>
+<TR height='30'>
+  <TD width='299' height='23' colspan='2' align='CENTER'>소계</TD>
+  <TD width='75' height='23' align='RIGHT'>141,974</TD>
+  <TD width='57' height='23' align='RIGHT'>5.59</TD>
+</TR>
+<TR height='30'>
+  <TD width='99' height='113' rowspan='4' align='CENTER'>기타</TD>
+  <TD width='114' height='23' align='CENTER'>제품 및 상품</TD>
+  <TD width='176' height='23' align='CENTER'>기타</TD>
+  <TD width='75' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>0.00</TD>
+</TR>
+<TR height='30'>
+  <TD width='114' height='23' align='CENTER'>용역</TD>
+  <TD width='176' height='23' align='CENTER'>기타</TD>
+  <TD width='75' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>0.00</TD>
+</TR>
+<TR height='30'>
+  <TD width='114' height='23' align='CENTER'>기타</TD>
+  <TD width='176' height='23' align='CENTER'>기타</TD>
+  <TD width='75' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>0.00</TD>
+</TR>
+<TR height='30'>
+  <TD width='299' height='23' colspan='2' align='CENTER'>소계</TD>
+  <TD width='75' height='23' align='RIGHT'>-</TD>
+  <TD width='57' height='23' align='RIGHT'>0.00</TD>
+</TR>
+<TR height='30'>
+  <TD width='407' height='23' colspan='3' align='CENTER'>합계</TD>
+  <TD width='75' height='23' align='RIGHT'>2,538,679</TD>
+  <TD width='57' height='23' align='RIGHT'>100.00</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><SPAN><BR/></SPAN><SPAN style='font-weight:bold;'>나. 주요 제품 등의 가격변동추이</SPAN><SPAN>&nbsp;<BR/>당사는 직접판매 채널의 경우 시장 상황에 따라 공급 가격을 조정하는 한편 유통사를 통한 간접판매의 경우 유통사와의 계약에 따라 제품의 국가별 시장 가격, 각종 공제 항목 및 파트너사 마진을 고려하여 제품 가격을 산정하고 있으며, 시장 상황 및 파트너사와의 계약에 따라 공급 가격을 조정하고 있습니다.<BR/></SPAN><BR/>
+</P>
+<P><BR/></P>
+</BODY>
+</HTML>

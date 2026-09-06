@@ -1,0 +1,213 @@
+# 셀트리온(068270) 선언 리스크 팩 — 할인율의 정문.
+# 베타는 committed raw/peers/ 의 공개 시세로 재현 가능하며(scripts/compute_peer_betas.py),
+# 자본구조는 2026-09-04 기준 공개 시가총액·PBR·부채비율에서 같은 정의로 관측했습니다.
+# 타깃(068270 / 00413046)은 어떤 레벨에도 포함되지 않습니다.
+target_id: KR:DART:00413046
+as_of: '2026-09-04'
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003751
+cash_flow_currency: KRW
+risk_free_rate:
+  time: '20260904'
+  value: 4.361
+  unit: 연%
+  name: 국고채 10년
+  source_ref: https://m.stock.naver.com/front-api/marketIndex/prices?category=bond&reutersCode=KR10YT%3DRR&page=1
+country_risk:
+  country: Korea
+  as_of: '2026-01-05'
+  mature_market_erp: 0.0423
+  country_risk_premium: 0.0064
+  total_equity_risk_premium: 0.0487
+  adjusted_default_spread: 0.0042
+  corporate_tax_rate: 0.264
+  rating: Aa2
+  source_ref: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctryprem.html
+marginal_debt:
+  series:
+    time: '20260904'
+    value: 4.361
+    unit: 연%
+    name: 국고채 10년 — 셀트리온 공모사채 미발행으로 한계부채비용 하한 대용 선언
+    source_ref: https://m.stock.naver.com/front-api/marketIndex/prices?category=bond&reutersCode=KR10YT%3DRR&page=1
+  credit_rating: 무등급(공모사채 미발행)
+  maturity: 10Y
+  rating_source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003751
+beta_levels:
+  L1_BROAD_SECTOR:
+    selection_rationale: >-
+      국내 유가증권시장 상장 제약 3사(유한양행·동아에스티·보령) — 규제 약가와 국내외 의약품 수요 사이클을 공유하는 광의 섹터 사전확률. 베타는 2025-07-29~2026-09-04 일간 로그수익률의 코스피 OLS(scripts/compute_peer_betas.py로 재현). 자본구조는 부채총계와 시가총액으로 관측했으며(부채총계 = 시가총액/PBR × 부채비율, 모두 2026-09-04 공개 시세·재무비율), 피어 전체에 같은 정의를 적용해 언레버·리레버가 서로 상쇄되도록 했습니다.
+    risk_driver_features:
+    - pharmaceutical demand cycle
+    - regulated drug pricing
+    peers:
+    - peer_id: "000100"
+      beta:
+        benchmark: 코스피
+        beta: 0.3196
+        observations: 269
+        start_date: '2025-07-29'
+        end_date: '2026-09-04'
+      beta_standard_error: 0.0426
+      capital:
+        debt: 854.2
+        equity_market_value: 2349.9
+        tax_rate: 0.264
+        as_of: '2026-09-04'
+        source_ref: https://m.stock.naver.com/api/stock/000100/finance/annual
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=000100&timeframe=day&count=270&requestType=0
+    - peer_id: "170900"
+      beta:
+        benchmark: 코스피
+        beta: 0.2601
+        observations: 269
+        start_date: '2025-07-29'
+        end_date: '2026-09-04'
+      beta_standard_error: 0.0365
+      capital:
+        debt: 720.4
+        equity_market_value: 653.5
+        tax_rate: 0.264
+        as_of: '2026-09-04'
+        source_ref: https://m.stock.naver.com/api/stock/170900/finance/annual
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=170900&timeframe=day&count=270&requestType=0
+    - peer_id: "003850"
+      beta:
+        benchmark: 코스피
+        beta: 0.3894
+        observations: 269
+        start_date: '2025-07-29'
+        end_date: '2026-09-04'
+      beta_standard_error: 0.0377
+      capital:
+        debt: 585.3
+        equity_market_value: 912.4
+        tax_rate: 0.264
+        as_of: '2026-09-04'
+        source_ref: https://m.stock.naver.com/api/stock/003850/finance/annual
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=003850&timeframe=day&count=270&requestType=0
+  L2_INDUSTRY:
+    selection_rationale: >-
+      완제 의약품을 제조·판매하는 대형 제약 3사(한미약품·종근당·대웅제약) — 셀트리온의 케미컬의약품 부문과 같은 완제 제조·유통 구조를 갖는 산업 단계. L1과 서로소. 자본구조는 부채총계와 시가총액으로 관측했으며(부채총계 = 시가총액/PBR × 부채비율, 모두 2026-09-04 공개 시세·재무비율), 피어 전체에 같은 정의를 적용해 언레버·리레버가 서로 상쇄되도록 했습니다.
+    risk_driver_features:
+    - finished-drug manufacturing
+    - domestic channel concentration
+    peers:
+    - peer_id: "128940"
+      beta:
+        benchmark: 코스피
+        beta: 0.4947
+        observations: 269
+        start_date: '2025-07-29'
+        end_date: '2026-09-04'
+      beta_standard_error: 0.0815
+      capital:
+        debt: 711.9
+        equity_market_value: 1417.3
+        tax_rate: 0.264
+        as_of: '2026-09-04'
+        source_ref: https://m.stock.naver.com/api/stock/128940/finance/annual
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=128940&timeframe=day&count=270&requestType=0
+    - peer_id: "185750"
+      beta:
+        benchmark: 코스피
+        beta: 0.1586
+        observations: 269
+        start_date: '2025-07-29'
+        end_date: '2026-09-04'
+      beta_standard_error: 0.0344
+      capital:
+        debt: 841.4
+        equity_market_value: 1066.6
+        tax_rate: 0.264
+        as_of: '2026-09-04'
+        source_ref: https://m.stock.naver.com/api/stock/185750/finance/annual
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=185750&timeframe=day&count=270&requestType=0
+    - peer_id: "069620"
+      beta:
+        benchmark: 코스피
+        beta: 0.1396
+        observations: 269
+        start_date: '2025-07-29'
+        end_date: '2026-09-04'
+      beta_standard_error: 0.0548
+      capital:
+        debt: 1155.6
+        equity_market_value: 1067.6
+        tax_rate: 0.264
+        as_of: '2026-09-04'
+        source_ref: https://m.stock.naver.com/api/stock/069620/finance/annual
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=069620&timeframe=day&count=270&requestType=0
+  L3_RISK_DRIVER_SUBINDUSTRY:
+    selection_rationale: >-
+      생물학적 제제를 대량 생산설비에서 만드는 2사(녹십자 혈액제제·백신, SK바이오사이언스 백신) — 셀트리온 바이오의약품 부문과 같은 설비 자본집약과 제조소 규제 승인이라는 위험동인을 공유. L1·L2와 서로소. 자본구조는 부채총계와 시가총액으로 관측했으며(부채총계 = 시가총액/PBR × 부채비율, 모두 2026-09-04 공개 시세·재무비율), 피어 전체에 같은 정의를 적용해 언레버·리레버가 서로 상쇄되도록 했습니다.
+    risk_driver_features:
+    - biologics manufacturing capital intensity
+    - regulatory manufacturing approval
+    peers:
+    - peer_id: "006280"
+      beta:
+        benchmark: 코스피
+        beta: 0.3781
+        observations: 269
+        start_date: '2025-07-29'
+        end_date: '2026-09-04'
+      beta_standard_error: 0.0475
+      capital:
+        debt: 1429.2
+        equity_market_value: 1263.7
+        tax_rate: 0.264
+        as_of: '2026-09-04'
+        source_ref: https://m.stock.naver.com/api/stock/006280/finance/annual
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=006280&timeframe=day&count=270&requestType=0
+    - peer_id: "302440"
+      beta:
+        benchmark: 코스피
+        beta: 0.3313
+        observations: 269
+        start_date: '2025-07-29'
+        end_date: '2026-09-04'
+      beta_standard_error: 0.0478
+      capital:
+        debt: 793.0
+        equity_market_value: 1759.5
+        tax_rate: 0.264
+        as_of: '2026-09-04'
+        source_ref: https://m.stock.naver.com/api/stock/302440/finance/annual
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=302440&timeframe=day&count=270&requestType=0
+  L4_ECONOMIC_TWINS:
+    selection_rationale: >-
+      허가 완료 제품을 해외 규제시장에 자체 인프라로 공급하는 2사(삼성바이오로직스 — 대규모 바이오리액터 위탁생산, SK바이오팜 — 미국 직접판매 신약). 셀트리온이 25만 리터 국내 설비와 미국 직판망으로 허가 완료 바이오시밀러를 공급하는 구조와 가장 가까운 경제적 쌍둥이. L1~L3과 서로소. 자본구조는 부채총계와 시가총액으로 관측했으며(부채총계 = 시가총액/PBR × 부채비율, 모두 2026-09-04 공개 시세·재무비율), 피어 전체에 같은 정의를 적용해 언레버·리레버가 서로 상쇄되도록 했습니다.
+    risk_driver_features:
+    - approved product supplied to overseas regulated markets
+    - large-scale bioreactor or direct-sales infrastructure
+    peers:
+    - peer_id: "207940"
+      beta:
+        benchmark: 코스피
+        beta: 0.2752
+        observations: 269
+        start_date: '2025-07-29'
+        end_date: '2026-09-04'
+      beta_standard_error: 0.0429
+      capital:
+        debt: 4055.8
+        equity_market_value: 8372.9
+        tax_rate: 0.264
+        as_of: '2026-09-04'
+        source_ref: https://m.stock.naver.com/api/stock/207940/finance/annual
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=207940&timeframe=day&count=270&requestType=0
+    - peer_id: "326030"
+      beta:
+        benchmark: 코스피
+        beta: 0.4601
+        observations: 269
+        start_date: '2025-07-29'
+        end_date: '2026-09-04'
+      beta_standard_error: 0.0497
+      capital:
+        debt: 459.9
+        equity_market_value: 1021.4
+        tax_rate: 0.264
+        as_of: '2026-09-04'
+        source_ref: https://m.stock.naver.com/api/stock/326030/finance/annual
+      beta_source_ref: https://fchart.stock.naver.com/sise.nhn?symbol=326030&timeframe=day&count=270&requestType=0

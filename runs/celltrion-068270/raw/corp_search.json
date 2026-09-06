@@ -1,0 +1,26 @@
+{
+ "status": "000",
+ "message": "'셀트리온' 검색 결과",
+ "companies": [
+  {
+   "corp_code": "00413046",
+   "corp_name": "(주)셀트리온",
+   "stock_code": "068270"
+  },
+  {
+   "corp_code": "00541349",
+   "corp_name": "셀트리온제약",
+   "stock_code": "068760"
+  },
+  {
+   "corp_code": "00554024",
+   "corp_name": "셀트리온헬스케어",
+   "stock_code": "091990"
+  },
+  {
+   "corp_code": "00421045",
+   "corp_name": "셀트리온",
+   "stock_code": ""
+  }
+ ]
+}

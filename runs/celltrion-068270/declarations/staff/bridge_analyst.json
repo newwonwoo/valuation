@@ -1,0 +1,1088 @@
+{
+ "rationale": "두 부문의 선언 봉투를 증거에 묶어 그대로 통과시킵니다. 시나리오는 바이오의약품의 운전자본 해소 속도와 판가 침식, 케미컬의약품의 유휴 설비 흡수력이 가릅니다.",
+ "drafts": [
+  {
+   "assumption_key": "biologics_fcff_year_1",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_biologics_fcff_year_1"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 300,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_1"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_2",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_biologics_fcff_year_2"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 400,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_2"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_3",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_biologics_fcff_year_3"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 500,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_3"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_4",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_biologics_fcff_year_4"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 560,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_4"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_5",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_biologics_fcff_year_5"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 600,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_5"
+  },
+  {
+   "assumption_key": "biologics_terminal_growth",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_biologics_terminal_growth"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.005,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_terminal_growth"
+  },
+  {
+   "assumption_key": "biologics_terminal_roic",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_terminal_roic"
+   ],
+   "affected_variable": "yield",
+   "direction": "unchanged",
+   "value": 0.12,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_terminal_roic"
+  },
+  {
+   "assumption_key": "biologics_ownership",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_ownership"
+  },
+  {
+   "assumption_key": "biologics_ev_adjustment",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": -2087.4,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_ev_adjustment"
+  },
+  {
+   "assumption_key": "diluted_shares",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:diluted_shares"
+   ],
+   "affected_variable": "share_count",
+   "direction": "unchanged",
+   "value": 228570251,
+   "unit": "shares",
+   "canonical_unit": "shares",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:diluted_shares"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_1",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_chemical_fcff_year_1"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 20,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_1"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_2",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_chemical_fcff_year_2"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 22,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_2"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_3",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_chemical_fcff_year_3"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 25,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_3"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_4",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_chemical_fcff_year_4"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 27,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_4"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_5",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_chemical_fcff_year_5"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 30,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_5"
+  },
+  {
+   "assumption_key": "chemical_terminal_growth",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:down_chemical_terminal_growth"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_terminal_growth"
+  },
+  {
+   "assumption_key": "chemical_terminal_roic",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_terminal_roic"
+   ],
+   "affected_variable": "yield",
+   "direction": "unchanged",
+   "value": 0.1,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_terminal_roic"
+  },
+  {
+   "assumption_key": "chemical_ownership",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.5499,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_ownership"
+  },
+  {
+   "assumption_key": "chemical_ev_adjustment",
+   "scenario_id": "Down",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_ev_adjustment"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_1",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_fcff_year_1"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 420,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_1"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_2",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_fcff_year_2"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 585,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_2"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_3",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_fcff_year_3"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 740,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_3"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_4",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_fcff_year_4"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 855,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_4"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_5",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_fcff_year_5"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 950,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_5"
+  },
+  {
+   "assumption_key": "biologics_terminal_growth",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_terminal_growth"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.02,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_terminal_growth"
+  },
+  {
+   "assumption_key": "biologics_terminal_roic",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_terminal_roic"
+   ],
+   "affected_variable": "yield",
+   "direction": "unchanged",
+   "value": 0.12,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_terminal_roic"
+  },
+  {
+   "assumption_key": "biologics_ownership",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_ownership"
+  },
+  {
+   "assumption_key": "biologics_ev_adjustment",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": -2087.4,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_ev_adjustment"
+  },
+  {
+   "assumption_key": "diluted_shares",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:diluted_shares"
+   ],
+   "affected_variable": "share_count",
+   "direction": "unchanged",
+   "value": 228570251,
+   "unit": "shares",
+   "canonical_unit": "shares",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:diluted_shares"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_1",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_fcff_year_1"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 30,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_1"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_2",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_fcff_year_2"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 35,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_2"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_3",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_fcff_year_3"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 40,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_3"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_4",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_fcff_year_4"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 45,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_4"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_5",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_fcff_year_5"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 50,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_5"
+  },
+  {
+   "assumption_key": "chemical_terminal_growth",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_terminal_growth"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.015,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_terminal_growth"
+  },
+  {
+   "assumption_key": "chemical_terminal_roic",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_terminal_roic"
+   ],
+   "affected_variable": "yield",
+   "direction": "unchanged",
+   "value": 0.1,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_terminal_roic"
+  },
+  {
+   "assumption_key": "chemical_ownership",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.5499,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_ownership"
+  },
+  {
+   "assumption_key": "chemical_ev_adjustment",
+   "scenario_id": "Base",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_ev_adjustment"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_1",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_biologics_fcff_year_1"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 520,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_1"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_2",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_biologics_fcff_year_2"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 720,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_2"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_3",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_biologics_fcff_year_3"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 900,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_3"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_4",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_biologics_fcff_year_4"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 1030,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_4"
+  },
+  {
+   "assumption_key": "biologics_fcff_year_5",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_biologics_fcff_year_5"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 1150,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_fcff_year_5"
+  },
+  {
+   "assumption_key": "biologics_terminal_growth",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_biologics_terminal_growth"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.03,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_terminal_growth"
+  },
+  {
+   "assumption_key": "biologics_terminal_roic",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_terminal_roic"
+   ],
+   "affected_variable": "yield",
+   "direction": "unchanged",
+   "value": 0.12,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_terminal_roic"
+  },
+  {
+   "assumption_key": "biologics_ownership",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 1.0,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_ownership"
+  },
+  {
+   "assumption_key": "biologics_ev_adjustment",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:biologics_ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": -2087.4,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:biologics_ev_adjustment"
+  },
+  {
+   "assumption_key": "diluted_shares",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:INSTALLED_BASE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:diluted_shares"
+   ],
+   "affected_variable": "share_count",
+   "direction": "unchanged",
+   "value": 228570251,
+   "unit": "shares",
+   "canonical_unit": "shares",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:diluted_shares"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_1",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_chemical_fcff_year_1"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 40,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_1"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_2",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_chemical_fcff_year_2"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 48,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_2"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_3",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_chemical_fcff_year_3"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 55,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_3"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_4",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_chemical_fcff_year_4"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 62,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_4"
+  },
+  {
+   "assumption_key": "chemical_fcff_year_5",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_chemical_fcff_year_5"
+   ],
+   "affected_variable": "margin",
+   "direction": "unchanged",
+   "value": 70,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_fcff_year_5"
+  },
+  {
+   "assumption_key": "chemical_terminal_growth",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:bull_chemical_terminal_growth"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.025,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 시나리오 변형을 그대로 전달",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_terminal_growth"
+  },
+  {
+   "assumption_key": "chemical_terminal_roic",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_terminal_roic"
+   ],
+   "affected_variable": "yield",
+   "direction": "unchanged",
+   "value": 0.1,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_terminal_roic"
+  },
+  {
+   "assumption_key": "chemical_ownership",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_ownership"
+   ],
+   "affected_variable": "segment_value",
+   "direction": "unchanged",
+   "value": 0.5499,
+   "unit": "ratio",
+   "canonical_unit": "ratio",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_ownership"
+  },
+  {
+   "assumption_key": "chemical_ev_adjustment",
+   "scenario_id": "Bull",
+   "hypothesis_id": "H:CELLTRION:CHEMICAL_SPARE",
+   "evidence_ids": [
+    "UW:KR:DART:00413046:chemical_ev_adjustment"
+   ],
+   "affected_variable": "net_debt",
+   "direction": "unchanged",
+   "value": 0,
+   "unit": "KRW_billion",
+   "canonical_unit": "KRW_billion",
+   "transform_id": "identity_observation",
+   "rationale": "선언된 언더라이팅을 그대로 전달 - 시나리오별 변형이 선언되지 않은 키",
+   "confidence": 0.6,
+   "kill_condition": "언더라이팅 개정 또는 이를 반증하는 정기보고서",
+   "verification_event": "차기 정기보고서",
+   "economic_path_id": "path:chemical_ev_adjustment"
+  }
+ ]
+}

@@ -1,0 +1,121 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>1. 일반사항</A></P>
+<TABLE class='nb' width='648'>
+<COLGROUP>
+<COL width='648'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='568'>
+  <TD width='639' height='561'>
+<P>주식회사 셀트리온(이하 '당사')은 1991년 2월 27일에 설립되었으며, 2005년 7월 19일 한국증권업협회 중개시장(KOSDAQ)에 등록하였습니다. 또한, 당사는 2008년 8월 19일자로 2002년 2월 26일에 설립된 주식회사 셀트리온을 흡수 합병한 후 상호를주식회사 오알켐에서 주식회사 셀트리온으로 변경하였습니다. 당사는 2018년 2월 9일자로 한국거래소 유가증권시장에 이전 상장하였습니다. 당사는 2023년 12월 28일자로 주식회사 셀트리온헬스케어를 흡수 합병하였습니다.</P>
+<P><BR/></P>
+<P>당사는 동물세포 대량배양 기술과 생명공학기술을 이용한 항암제 등 각종 단백질 치료제를 개발, 생산 및 판매하는 것을 주 목적사업으로 하고 있으며, 인천경제자유구역 내에 본점 사업장을 두고 운영하고 있습니다.<BR/><BR/></P>
+<P>보고기간 종료일 현재 주요 주주구성은 다음과 같습니다.</P>
+<TABLE border='1' width='639'>
+<COLGROUP>
+<COL width='233'></COL>
+<COL width='115'></COL>
+<COL width='88'></COL>
+<COL width='115'></COL>
+<COL width='88'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='224' height='53' rowspan='2'>구분</TH>
+  <TH width='194' height='23' colspan='2'>2026.06.30</TH>
+  <TH width='194' height='23' colspan='2'>2025.12.31</TH>
+</TR>
+<TR height='30'>
+  <TH width='106' height='23'>보통주(주)</TH>
+  <TH width='79' height='23'>지분율</TH>
+  <TH width='106' height='23'>보통주(주)</TH>
+  <TH width='79' height='23'>지분율</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='224' height='23'>셀트리온홀딩스</TD>
+  <TD width='106' height='23' align='RIGHT'>60,205,135&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>25.89%&nbsp;</TD>
+  <TD width='106' height='23' align='RIGHT'>56,655,667&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>24.53%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>셀트리온스킨큐어</TD>
+  <TD width='106' height='23' align='RIGHT'>5,079,169&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>2.18%&nbsp;</TD>
+  <TD width='106' height='23' align='RIGHT'>4,797,684&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>2.08%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>국민연금</TD>
+  <TD width='106' height='23' align='RIGHT'>16,160,276&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>6.95%&nbsp;</TD>
+  <TD width='106' height='23' align='RIGHT'>15,416,445&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>6.67%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>서정진</TD>
+  <TD width='106' height='23' align='RIGHT'>9,775,500&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>4.20%&nbsp;</TD>
+  <TD width='106' height='23' align='RIGHT'>9,310,000&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>4.03%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>Aranda Investments Pte. Ltd.</TD>
+  <TD width='106' height='23' align='RIGHT'>7,047,957&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>3.03%&nbsp;</TD>
+  <TD width='106' height='23' align='RIGHT'>6,712,340&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>2.91%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>기타</TD>
+  <TD width='106' height='23' align='RIGHT'>130,302,214&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>56.04%&nbsp;</TD>
+  <TD width='106' height='23' align='RIGHT'>125,720,988&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>54.43%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>자기주식</TD>
+  <TD width='106' height='23' align='RIGHT'>3,983,455&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>1.71%&nbsp;</TD>
+  <TD width='106' height='23' align='RIGHT'>12,347,845&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>5.35%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23' align='CENTER'>합계</TD>
+  <TD width='106' height='23' align='RIGHT'>232,553,706&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='106' height='23' align='RIGHT'>230,960,969&nbsp;</TD>
+  <TD width='79' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+</TR>
+</TBODY>
+</TABLE><BR/>
+</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

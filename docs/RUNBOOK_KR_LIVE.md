@@ -174,24 +174,37 @@ eleId / offset / length`를 읽어 `report/viewer.do?…&dtd=dart4.xsd`를 받�
 filing(business_year·report_code·fs_div·fiscal_period_end) /
 extra_required_evidence / market_currency`.
 
-**기대값(확률가중)까지 원하면 `calibration:` 블록**: 코호트 아티팩트가 있어야
-한다. 없으면 —
-1. 동종사(타깃 **제외**) 5곳 이상 × 다년 실적 이력을 §2와 같은 원천에서 모아
-   `{"rows":[{company_id,period_end,published_at,values,source_ref}]}` 로 저장
-   (예: `config/kr_steel_cohort_dataset.json` 12사 91행,
-   `config/kr_reit_cohort_dataset.json` 7사 57행).
-   **결산 주기가 섞이면 안 된다** — 반기 결산 리츠의 6개월 성장률과 12월
-   결산사의 연간 성장률은 같은 축이 아니다. 타깃과 같은 주기의 회사만
-   코호트에 넣는다 (리츠 코호트가 반기 7사로 좁혀진 이유).
-2. `python scripts/build_calibration_artifact.py --dataset … --drivers … \
-   --scenarios Down,Base,Bull --path-length 5 --exclude-ticker <코드> \
-   --conditioning-json …` → 아티팩트·프로버넌스 파일과 **BindingConstants**가
-   출력된다. 그 상수를 `calibration.constants`에 그대로 붙여넣는다.
-3. conditioning은 **타깃 자신의 최신 실측**(값 + 출처 URL + first_seen_at +
+**기대값(확률가중)까지 원하면 `calibration:` 블록**을 붙인다. 정본 경로는
+**타깃 자기 이력**이다 — 시나리오 확률은 여러 회사가 공유하는 시장가격이 아니라
+그 회사의 경제가 정하는 값이기 때문이다. **새 피어 코호트를 만들지 마라**
+(`AGENTS.md`의 "Scenario probability — target's own history only"). 철강·리츠
+코호트는 그 규칙 이전에 커밋된 것이고 해당 런의 재생을 위해 남아 있을 뿐,
+따라 할 선례가 아니다.
+
+1. **측정** — 타깃 자신의 연도별 실현 동인을 §2와 같은 원천에서 모아
+   `{"series_basis":"…","observations":[{period_end,published_at,values,
+   source_ref}]}` 로 저장한다. **한 회계기준 위의 기간만** 싣는다: 합병·인적분할·
+   소급수정이 끼면 그 앞뒤는 다른 회사이고, 걸쳐서 적합하면 측정되는 것은
+   회사가 아니라 단절이다. 뺀 기간은 뺀 이유와 함께 같은 파일에 적어 둔다.
+   최소 **5개 전이**(= 6개 기간)가 필요하고, 모자라면 거부가 곧 답이다.
+2. **선언** — 각 시나리오가 **가정하는** 동인 경로를
+   `{"paths":{"<시나리오>":{"<동인>":[…]}},"rationale":"…"}` 로 쓴다. 이건
+   오퍼레이터의 판단이고 **입력**이다. 같은 이력에서 앵커까지 뽑아내면 세 앵커가
+   항상 ±1σ에 놓여 분할이 상수가 된다 — 확률처럼 보이지만 아무 정보도 없다.
+3. `python scripts/build_self_calibration_artifact.py --observations … \
+   --scenario-paths … --drivers … --scenarios Down,Base,Bull --path-length 5 \
+   --target-ticker <코드> --conditioning-json …` → 아티팩트·프로버넌스와
+   **BindingConstants**가 출력된다. run.yaml `calibration:` 블록에는
+   `self_calibrated: true`와
+   `external_probability_source: target_realized_dispersion_monte_carlo`를
+   함께 적어야 한다 — 둘이 어긋나면 러너가 그 자리에서 멈춘다.
+4. conditioning은 **타깃 자신의 최신 실측**(값 + 출처 URL + first_seen_at +
    원천 파일 sha256)이다.
 
-캘리브레이션이 없으면 그 블록을 빼라 — 시나리오 범위는 나오고 기대값은
-정직하게 "미산출"로 남는다.
+캘리브레이션이 없거나 팩토리가 거부하면 그 블록을 빼라 — 시나리오 범위는 나오고
+기대값은 정직하게 "미산출"로 남는다. 실제 예: 셀트리온은 2023-12-28 합병 때문에
+합병 후 기준의 전이가 1개도 없어 거부되고, 그 사실이
+`runs/celltrion-068270/RESEARCH_STATUS.md`에 재현 명령과 함께 적혀 있다.
 
 ## 6. 실행과 막힘 대처
 

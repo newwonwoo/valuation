@@ -1,0 +1,543 @@
+# Operator-declared judgments for the 셀트리온 (068270) run, as of 2026-09-04.
+# Every rationale names the filed figure it stands on, or says plainly that the
+# filing discloses nothing and the number is a judgment. Two filings are cited:
+# 셀트리온's own 반기보고서 (rcept 20260814003751) and, for the 케미컬의약품
+# segment, the segment's constituent issuer (주)셀트리온제약's 반기보고서
+# (rcept 20260814003577, collected under raw/peer_filing_20260814003577/).
+target_id: KR:DART:00413046
+as_of: '2026-09-04'
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003751
+declarations:
+
+  # ---------------------------------------------------------------- capacity
+  nameplate_capacity:
+  - value: 386
+    unit: batches_per_year
+    segment: biologics
+    rationale: >-
+      반기보고서 생산능력 표의 제1·2·3공장 합계 313배치는 산출근거에서 성공률
+      81%를 이미 반영한 수치이므로, 성공률 적용 전 명목 생산능력은 313/0.81 =
+      386배치입니다. 1공장 산출식(작업일수 330일/생산주기 2일 = 165배치 × 81%
+      = 133배치)이 이 환산의 근거이며, 2·3공장은 제품 change-over 영향이 추가로
+      반영되어 있어 환산은 근사치입니다.
+  - value: 3298256585
+    unit: tablets_per_year
+    segment: chemical
+    rationale: >-
+      (주)셀트리온제약 반기보고서 생산능력 표의 청주 정제 1,524,368,784정 +
+      캡슐 452,019,120정, 진천 정제 484,306,200정 + 캡슐 672,649,652정 = 연간
+      3,133,343,756정이며, 산출방법이 수율(성공율) 95%를 이미 반영하므로 명목
+      생산능력은 3,133,343,756/0.95 = 3,298,256,585정입니다.
+  effective_capacity:
+  - value: 313
+    unit: batches_per_year
+    segment: biologics
+    rationale: >-
+      반기보고서 생산능력 표의 제36기 반기 합계 313배치(제1공장 133, 제2공장 82,
+      제3공장 98)를 그대로 선언합니다. 이 수치는 설비 유지보수 35일 제외와 성공률
+      81%를 이미 반영한 실효 생산능력이며, 제35기와 동일합니다.
+  - value: 3133343756
+    unit: tablets_per_year
+    segment: chemical
+    rationale: >-
+      (주)셀트리온제약 반기보고서 생산능력 표의 4개 라인(청주 정제·캡슐, 진천
+      정제·캡슐) 연간 생산능력 합계이며, 수율 95%와 조업효율 83.3%를 반영한
+      실효 생산능력입니다. 제27기 상반기와 제26기가 동일합니다.
+  utilization:
+  - value: 0.9
+    unit: ratio
+    segment: biologics
+    rationale: >-
+      부문 가동률은 공시되지 않아 판단입니다. 생산능력이 313배치로 전기와 동일한
+      가운데 바이오의약품 부문 매출은 전반기 3,218,117,566천원에서 당반기
+      4,081,611,592천원으로 26.8% 증가했고, 2025년 12월 인수한 브랜치버그
+      6.6만 리터 설비를 자사 제품 공급과 타사 CMO 위탁생산에 함께 가동 중이라고
+      기재되어 있어 높은 가동 상태로 판단했습니다.
+  - value: 0.2406
+    unit: ratio
+    segment: chemical
+    rationale: >-
+      (주)셀트리온제약 반기보고서의 제27기 상반기 생산실적 합계 376,947,540정
+      (청주 정제 162,998,714 + 캡슐 13,003,970, 진천 정제 21,693,526 + 캡슐
+      179,251,330)을 연간 생산능력 3,133,343,756정의 반기분 1,566,671,878정으로
+      나눈 실측치입니다. 판단이 아니라 공시된 두 표의 비율입니다.
+  yield:
+  - value: 0.81
+    unit: ratio
+    segment: biologics
+    rationale: >-
+      반기보고서 생산능력 산출근거의 "성공률 81% (작업자 실수 및 설비 오류에
+      따른 실패율 반영)"를 그대로 선언합니다.
+  - value: 0.95
+    unit: ratio
+    segment: chemical
+    rationale: >-
+      (주)셀트리온제약 반기보고서 생산능력 산출기준의 "수율(성공율) 95% 가정"을
+      그대로 선언합니다.
+  asp:
+  - value: 17.0
+    unit: KRW_billion_per_batch
+    segment: biologics
+    rationale: >-
+      배치당 판가는 공시되지 않아 공시 수치로 유도했습니다. 주요 제품 표의
+      바이오의약품 부문 외부 매출 2,396,705백만원(반기)을 실효 생산능력의 반기분
+      156.5배치에 선언 가동률 0.9를 곱한 140.9배치로 나누면 배치당 17.0십억원
+      입니다. 가동률이 판단이므로 이 값도 그 판단을 물려받습니다.
+  - value: 274.7
+    unit: KRW_per_tablet
+    segment: chemical
+    rationale: >-
+      (주)셀트리온제약 매출실적 표의 제품 매출 103,535백만원(제27기 상반기)을
+      같은 보고서의 상반기 생산실적 376,947,540정으로 나눈 정당 274.7원입니다.
+      상품(107,905백만원)과 용역(73,973백만원)은 자사 생산분이 아니므로 제외
+      했습니다.
+  mix:
+  - value: 1.0
+    unit: ratio
+    segment: biologics
+    rationale: >-
+      주요 제품 표에서 바이오의약품 부문은 "제품 및 용역 등(CT-P13 바이오시밀러
+      외)" 2,396,705백만원(94.41%)이 전부이고 기타는 0.00%이므로, 부문 내 제품
+      비중은 1.0입니다.
+  - value: 0.363
+    unit: ratio
+    segment: chemical
+    rationale: >-
+      (주)셀트리온제약 매출실적 표의 제27기 상반기 구성 - 제품 103,535백만원,
+      상품 107,905백만원, 용역 73,973백만원, 합계 285,413백만원 - 에서 자사
+      생산 제품이 차지하는 비중 36.3%입니다. 나머지는 그룹 바이오의약품 상품
+      유통과 용역입니다.
+  unit_cost:
+  - value: 5.7
+    unit: KRW_billion_per_batch
+    segment: biologics
+    rationale: >-
+      배치당 원가는 공시되지 않아 유도했습니다. FY2025 연결 매출원가
+      1,695,468백만원에 주요 제품 표의 바이오의약품 외부 매출 비중 94.41%를
+      적용한 1,600,700백만원을, 연간 실효 생산능력 313배치에 선언 가동률 0.9를
+      곱한 281.7배치로 나눈 값입니다.
+  - value: 244.9
+    unit: KRW_per_tablet
+    segment: chemical
+    rationale: >-
+      정당 원가는 공시되지 않아 유도했습니다. 영업부문 주석의 케미컬의약품 부문
+      매출 296,416,360천원과 영업이익 32,128,896천원이 뜻하는 영업이익률 10.84%를
+      위 정당 판가 274.7원에 적용한 244.9원입니다.
+
+  # ------------------------------------------------------- capacity expansion
+  expansion_capex:
+  - value: 347.7
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      반기보고서 생산설비 현황 표의 반기 중 유형자산 취득 173,851,648천원을
+      연환산한 347.7십억원입니다. 기존 설비 유지·증설을 포함한 실제 집행액이며
+      제4·5공장 계획 금액과는 별개입니다.
+  - value: 4.0
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      (주)셀트리온제약 생산설비 현황 표의 반기 증가 1,979,682천원을 연환산한
+      4.0십억원입니다.
+  expansion_land_control:
+  - value: false
+    unit: dimensionless
+    segment: biologics
+    rationale: >-
+      반기보고서 생산설비 투자계획은 송도 캠퍼스 내 제4·5공장 신설을 "추진하고
+      있습니다"라고만 기재하며, 해당 공장 부지의 취득·임차 계약, 착공, 인허가
+      어느 것도 공시하지 않습니다. 캠퍼스를 이미 보유한다는 사실은 특정 신설
+      부지에 대한 통제를 증명하지 않으므로 LAND_CONTROL은 미검증으로 선언합니다.
+  - value: not_applicable
+    unit: dimensionless
+    segment: chemical
+    rationale: >-
+      케미컬의약품 부문에는 게이트가 판정할 증설 프로젝트가 없다고
+      no_active_capacity_expansion으로 선언했으므로 부지 통제 질문 자체가
+      성립하지 않습니다.
+  expansion_baseline_inclusion:
+  - value: not_in_baseline
+    unit: dimensionless
+    segment: biologics
+    rationale: >-
+      생산능력 표는 제1·2·3공장만 합산해 313배치를 제시하므로, 제4·5공장의
+      18만 리터는 이 기준선에 포함되어 있지 않습니다.
+  - value: not_applicable
+    unit: dimensionless
+    segment: chemical
+    rationale: >-
+      증설 프로젝트가 없으므로 기준선 포함 여부를 판정할 대상이 없습니다.
+  expansion_capacity_committed:
+  - value: 180000
+    unit: litres
+    segment: biologics
+    rationale: >-
+      생산설비 투자계획의 "제4공장과 제5공장은 총 18만 리터 규모로 건설될
+      예정"을 그대로 선언합니다. 계획 규모이며 부지 통제가 미검증이므로 게이트가
+      이 수치를 Core에 반영하지는 않습니다.
+  - value: not_disclosed
+    unit: dimensionless
+    segment: chemical
+    rationale: >-
+      (주)셀트리온제약 반기보고서에는 증설 계획 항목이 없어 확정 증설 능력이
+      공시되지 않았습니다.
+  expansion_site_area:
+  - value: not_disclosed
+    unit: dimensionless
+    segment: biologics
+    rationale: >-
+      제4·5공장의 부지 면적은 반기보고서 어디에도 기재되어 있지 않습니다.
+      공시가 없다는 사실을 값으로 선언하며 0으로 대체하지 않습니다.
+  - value: not_disclosed
+    unit: dimensionless
+    segment: chemical
+    rationale: 증설 프로젝트가 없어 부지 면적 공시도 존재하지 않습니다.
+  expansion_capex_committed:
+  - value: not_disclosed
+    unit: dimensionless
+    segment: biologics
+    rationale: >-
+      투자계획은 "예상 투자금액은 약 1조 2,265억원"이라고 기재할 뿐 계약이
+      확정된 집행금액을 공시하지 않습니다. 예상액을 확정 투자액으로 선언하면
+      게이트에 없는 약정을 만들어내는 것이므로 미공시로 선언합니다.
+  - value: not_disclosed
+    unit: dimensionless
+    segment: chemical
+    rationale: 증설 프로젝트가 없어 확정 투자금액 공시도 존재하지 않습니다.
+  expansion_ramp_date:
+  - value: not_disclosed
+    unit: dimensionless
+    segment: biologics
+    rationale: >-
+      제4·5공장의 준공·가동 예정일은 반기보고서에 기재되어 있지 않습니다.
+  - value: not_disclosed
+    unit: dimensionless
+    segment: chemical
+    rationale: 증설 프로젝트가 없어 가동 예정일 공시도 존재하지 않습니다.
+  expansion_equipment_commitment:
+  - value: not_disclosed
+    unit: dimensionless
+    segment: biologics
+    rationale: >-
+      바이오리액터 등 주요 설비의 발주·계약 사실은 반기보고서에 기재되어 있지
+      않습니다.
+  - value: not_disclosed
+    unit: dimensionless
+    segment: chemical
+    rationale: 증설 프로젝트가 없어 설비 발주 공시도 존재하지 않습니다.
+  expansion_cancelled:
+  - value: false
+    unit: dimensionless
+    segment: biologics
+    rationale: >-
+      제4·5공장 계획의 철회·취소를 알리는 공시는 없으며, 반기보고서는 계획을
+      추진 중이라고 기재하고 있습니다.
+  - value: false
+    unit: dimensionless
+    segment: chemical
+    rationale: 취소를 판정할 증설 프로젝트 자체가 없습니다.
+  no_active_capacity_expansion:
+  - value: false
+    unit: dimensionless
+    segment: biologics
+    rationale: >-
+      반기보고서가 제4·5공장 신설 계획을 명시하므로 증설이 없다고 선언할 수
+      없습니다. 게이트가 프로젝트를 유형화하고, 부지 통제 미검증을 근거로 Core
+      가치에서 제외하도록 그대로 넘깁니다.
+  - value: true
+    unit: dimensionless
+    segment: chemical
+    rationale: >-
+      (주)셀트리온제약 반기보고서의 생산설비 항목은 진천·청주 두 공장의 장부가액
+      증감만 기재하고 투자계획 절을 두지 않으며, 지배기업의 생산설비 투자계획도
+      바이오 제4·5공장만을 대상으로 합니다. 케미컬의약품 부문에는 게이트가
+      판정할 증설 프로젝트가 없습니다.
+
+  # -------------------------------------------------------- biologics 현금흐름
+  biologics_fcff_year_1:
+    value: 420
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      FY2025 연결 영업활동현금흐름에서 유형·무형 취득을 뺀 실제 FCFF는 영업이익
+      1,168,471백만원에 크게 못 미쳤고 차이는 출시 재고에 묶인 운전자본입니다.
+      1년차는 그 적립이 둔화되되 멈추지는 않는다고 보고, 부문 영업이익 비중
+      95.1%(624,038/656,107)에 해당하는 몫을 배분했습니다.
+  biologics_fcff_year_2:
+    value: 585
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      운전자본 정상화 2년차. FY2025 매출총이익률 59.3%(매출 4,162,495백만원,
+      매출원가 1,695,468백만원)를 유지하고 판관비 증가율이 매출 증가율을 밑돈다는
+      판단이며, 직접판매 전환이 완료된 채널 구조가 그 근거입니다.
+  biologics_fcff_year_3:
+    value: 740
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      FCFF가 NOPAT에서 유지보수 수준 자본지출을 뺀 값에 접근합니다. FY2025
+      영업이익 1,168,471백만원에 실효세율 10.6%를 적용한 NOPAT 약 1,045십억원의
+      부문 몫에서 연 348십억원 수준의 실제 설비투자를 차감한 경로입니다.
+  biologics_fcff_year_4:
+    value: 855
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      FY2025 원가구조(영업이익률 28.1%)를 그대로 두고 허가 완료 제품의 물량
+      성장만 반영합니다. 제4·5공장은 부지 통제 미검증으로 Core에서 제외되므로
+      기존 313배치 기준선 안의 성장입니다.
+  biologics_fcff_year_5:
+    value: 950
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      터미널 직전 FCFF로, FY2025 NOPAT의 부문 몫을 넘지 않는 수준입니다.
+      자본지출이 증설이 아닌 유지 수준으로 내려간 상태를 가정합니다.
+  biologics_terminal_growth:
+    value: 0.02
+    unit: ratio
+    segment: biologics
+    rationale: >-
+      장기 명목 성장률을 밑도는 2%. 바이오시밀러는 분자별 독점 만료와 함께
+      판가가 침식되므로 터미널 성장은 판가가 아니라 물량 대체로 봅니다.
+  biologics_terminal_roic:
+    value: 0.12
+    unit: ratio
+    segment: biologics
+    rationale: >-
+      FY2025 영업이익 1,168,471백만원과 자산총계 22,334,900백만원이 뜻하는
+      자산수익률 위, 자기자본 17,352,530백만원 기준 순이익률 아래의 통과 사이클
+      ROIC 판단. 터미널 재투자는 이 수익률로 값이 매겨집니다.
+  biologics_ownership:
+    value: 1.0
+    unit: ratio
+    segment: biologics
+    rationale: >-
+      바이오의약품 부문은 지배기업과 100% 종속 판매법인들로 구성되며, 연결
+      비지배지분 144,055백만원은 54.99% 지분의 (주)셀트리온제약, 즉 케미컬
+      부문에 귀속됩니다.
+  biologics_ev_adjustment:
+    value: -2087.4
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      FY2025 연결 기준 단기금융부채 3,326,882백만원에서 현금및현금성자산
+      1,119,206백만원과 단기금융자산 120,296백만원을 뺀 순차입 2,087.4십억원을
+      차감합니다. 부문별 순차입 배분 자료가 없어 전액을 지배기업 사업인 이
+      부문에 귀속시킵니다.
+  diluted_shares:
+    value: 228570251
+    unit: shares
+    segment: biologics
+    rationale: >-
+      반기보고서 주식의 총수 표의 유통주식수 228,570,251주(발행주식총수
+      232,553,706주 - 자기주식 3,983,455주, 기준일 2026.06.30).
+
+  # --------------------------------------------------------- chemical 현금흐름
+  chemical_fcff_year_1:
+    value: 30
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      (주)셀트리온제약 반기 매출 285,413백만원, 당기순이익 22,539백만원의
+      연환산 순이익 약 45십억원에서 연 4십억원 수준의 설비투자와 운전자본
+      증가를 뺀 1년차 판단입니다.
+  chemical_fcff_year_2:
+    value: 35
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      부문 영업이익률 10.84%(영업부문 주석 32,128,896/296,416,360)가 유지되고
+      매출이 한 자릿수 중반 성장한다는 판단.
+  chemical_fcff_year_3:
+    value: 40
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      가동률 24.1%의 여유 설비가 증설 없이 물량을 흡수하므로 성장 자본지출이
+      거의 필요 없다는 실측 기반 판단입니다.
+  chemical_fcff_year_4:
+    value: 45
+    unit: KRW_billion
+    segment: chemical
+    rationale: 4년차 플래토 - 제네릭 판가 압박과 물량 성장이 상쇄된다는 판단.
+  chemical_fcff_year_5:
+    value: 50
+    unit: KRW_billion
+    segment: chemical
+    rationale: 터미널 진입 FCFF; 연결 FCFF의 5% 남짓으로 부문 매출 비중 5.6%와 정합.
+  chemical_terminal_growth:
+    value: 0.015
+    unit: ratio
+    segment: chemical
+    rationale: >-
+      내수 중심 완제 의약품의 장기 성장은 인구·약가 정책에 묶여 바이오 부문보다
+      낮은 1.5%로 봅니다.
+  chemical_terminal_roic:
+    value: 0.1
+    unit: ratio
+    segment: chemical
+    rationale: >-
+      유휴 설비가 있어 성장 자본지출 부담이 낮은 완제 의약품 사업의 통과 사이클
+      ROIC 판단.
+  chemical_ownership:
+    value: 0.5499
+    unit: ratio
+    segment: chemical
+    rationale: >-
+      일반사항 주석 종속기업 현황의 (주)셀트리온제약 명목지분율 54.99%
+      (2026.06.30 기준, 전기말 54.80%)를 그대로 선언합니다.
+  chemical_ev_adjustment:
+    value: 0
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      부문별 순차입 배분 자료가 없어 연결 순차입 전액을 바이오의약품 부문에
+      귀속시켰으므로 이 부문의 EV 조정은 0입니다.
+
+  # ----------------------------------------------- 시나리오 변형 (Down/Bull)
+  down_biologics_fcff_year_1:
+    value: 300
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      하방 경로 - 출시 재고에 묶인 운전자본 해소가 지연되고 유럽 선행 분자의 판가 침식이 물량 성장을 앞선다는 가정. FY2025 영업이익 1,168,471백만원 대비 실제 FCFF 격차가 좁혀지지 않는 상태를 5년간 끌고 갑니다. 기준 경로 420십억원 대비 1년차 값입니다.
+  down_biologics_fcff_year_2:
+    value: 400
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      하방 경로 - 출시 재고에 묶인 운전자본 해소가 지연되고 유럽 선행 분자의 판가 침식이 물량 성장을 앞선다는 가정. FY2025 영업이익 1,168,471백만원 대비 실제 FCFF 격차가 좁혀지지 않는 상태를 5년간 끌고 갑니다. 기준 경로 585십억원 대비 2년차 값입니다.
+  down_biologics_fcff_year_3:
+    value: 500
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      하방 경로 - 출시 재고에 묶인 운전자본 해소가 지연되고 유럽 선행 분자의 판가 침식이 물량 성장을 앞선다는 가정. FY2025 영업이익 1,168,471백만원 대비 실제 FCFF 격차가 좁혀지지 않는 상태를 5년간 끌고 갑니다. 기준 경로 740십억원 대비 3년차 값입니다.
+  down_biologics_fcff_year_4:
+    value: 560
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      하방 경로 - 출시 재고에 묶인 운전자본 해소가 지연되고 유럽 선행 분자의 판가 침식이 물량 성장을 앞선다는 가정. FY2025 영업이익 1,168,471백만원 대비 실제 FCFF 격차가 좁혀지지 않는 상태를 5년간 끌고 갑니다. 기준 경로 855십억원 대비 4년차 값입니다.
+  down_biologics_fcff_year_5:
+    value: 600
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      하방 경로 - 출시 재고에 묶인 운전자본 해소가 지연되고 유럽 선행 분자의 판가 침식이 물량 성장을 앞선다는 가정. FY2025 영업이익 1,168,471백만원 대비 실제 FCFF 격차가 좁혀지지 않는 상태를 5년간 끌고 갑니다. 기준 경로 950십억원 대비 5년차 값입니다.
+  down_biologics_terminal_growth:
+    value: 0.005
+    unit: ratio
+    segment: biologics
+    rationale: >-
+      하방 경로 - 출시 재고에 묶인 운전자본 해소가 지연되고 유럽 선행 분자의 판가 침식이 물량 성장을 앞선다는 가정. FY2025 영업이익 1,168,471백만원 대비 실제 FCFF 격차가 좁혀지지 않는 상태를 5년간 끌고 갑니다. 터미널 성장률은 기준 0.02 대비 0.005로 둡니다.
+  bull_biologics_fcff_year_1:
+    value: 520
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      상방 경로 - 브랜치버그 6.6만 리터 설비의 CMO 가동이 더해지고 미국 직접판매 전환의 마진 효과가 FY2025 영업이익률 28.1%를 상회하도록 유지되는 가정. 기준 경로 420십억원 대비 1년차 값입니다.
+  bull_biologics_fcff_year_2:
+    value: 720
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      상방 경로 - 브랜치버그 6.6만 리터 설비의 CMO 가동이 더해지고 미국 직접판매 전환의 마진 효과가 FY2025 영업이익률 28.1%를 상회하도록 유지되는 가정. 기준 경로 585십억원 대비 2년차 값입니다.
+  bull_biologics_fcff_year_3:
+    value: 900
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      상방 경로 - 브랜치버그 6.6만 리터 설비의 CMO 가동이 더해지고 미국 직접판매 전환의 마진 효과가 FY2025 영업이익률 28.1%를 상회하도록 유지되는 가정. 기준 경로 740십억원 대비 3년차 값입니다.
+  bull_biologics_fcff_year_4:
+    value: 1030
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      상방 경로 - 브랜치버그 6.6만 리터 설비의 CMO 가동이 더해지고 미국 직접판매 전환의 마진 효과가 FY2025 영업이익률 28.1%를 상회하도록 유지되는 가정. 기준 경로 855십억원 대비 4년차 값입니다.
+  bull_biologics_fcff_year_5:
+    value: 1150
+    unit: KRW_billion
+    segment: biologics
+    rationale: >-
+      상방 경로 - 브랜치버그 6.6만 리터 설비의 CMO 가동이 더해지고 미국 직접판매 전환의 마진 효과가 FY2025 영업이익률 28.1%를 상회하도록 유지되는 가정. 기준 경로 950십억원 대비 5년차 값입니다.
+  bull_biologics_terminal_growth:
+    value: 0.03
+    unit: ratio
+    segment: biologics
+    rationale: >-
+      상방 경로 - 브랜치버그 6.6만 리터 설비의 CMO 가동이 더해지고 미국 직접판매 전환의 마진 효과가 FY2025 영업이익률 28.1%를 상회하도록 유지되는 가정. 터미널 성장률은 기준 0.02 대비 0.03로 둡니다.
+  down_chemical_fcff_year_1:
+    value: 20
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      하방 경로 - 제네릭 약가 인하와 그룹 상품 유통 마진 축소가 겹쳐 부문 영업이익률이 필드 10.84%를 밑도는 가정. 기준 경로 30십억원 대비 1년차 값입니다.
+  down_chemical_fcff_year_2:
+    value: 22
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      하방 경로 - 제네릭 약가 인하와 그룹 상품 유통 마진 축소가 겹쳐 부문 영업이익률이 필드 10.84%를 밑도는 가정. 기준 경로 35십억원 대비 2년차 값입니다.
+  down_chemical_fcff_year_3:
+    value: 25
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      하방 경로 - 제네릭 약가 인하와 그룹 상품 유통 마진 축소가 겹쳐 부문 영업이익률이 필드 10.84%를 밑도는 가정. 기준 경로 40십억원 대비 3년차 값입니다.
+  down_chemical_fcff_year_4:
+    value: 27
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      하방 경로 - 제네릭 약가 인하와 그룹 상품 유통 마진 축소가 겹쳐 부문 영업이익률이 필드 10.84%를 밑도는 가정. 기준 경로 45십억원 대비 4년차 값입니다.
+  down_chemical_fcff_year_5:
+    value: 30
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      하방 경로 - 제네릭 약가 인하와 그룹 상품 유통 마진 축소가 겹쳐 부문 영업이익률이 필드 10.84%를 밑도는 가정. 기준 경로 50십억원 대비 5년차 값입니다.
+  down_chemical_terminal_growth:
+    value: 0.0
+    unit: ratio
+    segment: chemical
+    rationale: >-
+      하방 경로 - 제네릭 약가 인하와 그룹 상품 유통 마진 축소가 겹쳐 부문 영업이익률이 필드 10.84%를 밑도는 가정. 터미널 성장률은 기준 0.015 대비 0.0로 둡니다.
+  bull_chemical_fcff_year_1:
+    value: 40
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      상방 경로 - 가동률 24.1%의 유휴 설비가 증설 없이 물량을 흡수해 영업레버리지가 그대로 이익으로 남는 가정. 기준 경로 30십억원 대비 1년차 값입니다.
+  bull_chemical_fcff_year_2:
+    value: 48
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      상방 경로 - 가동률 24.1%의 유휴 설비가 증설 없이 물량을 흡수해 영업레버리지가 그대로 이익으로 남는 가정. 기준 경로 35십억원 대비 2년차 값입니다.
+  bull_chemical_fcff_year_3:
+    value: 55
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      상방 경로 - 가동률 24.1%의 유휴 설비가 증설 없이 물량을 흡수해 영업레버리지가 그대로 이익으로 남는 가정. 기준 경로 40십억원 대비 3년차 값입니다.
+  bull_chemical_fcff_year_4:
+    value: 62
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      상방 경로 - 가동률 24.1%의 유휴 설비가 증설 없이 물량을 흡수해 영업레버리지가 그대로 이익으로 남는 가정. 기준 경로 45십억원 대비 4년차 값입니다.
+  bull_chemical_fcff_year_5:
+    value: 70
+    unit: KRW_billion
+    segment: chemical
+    rationale: >-
+      상방 경로 - 가동률 24.1%의 유휴 설비가 증설 없이 물량을 흡수해 영업레버리지가 그대로 이익으로 남는 가정. 기준 경로 50십억원 대비 5년차 값입니다.
+  bull_chemical_terminal_growth:
+    value: 0.025
+    unit: ratio
+    segment: chemical
+    rationale: >-
+      상방 경로 - 가동률 24.1%의 유휴 설비가 증설 없이 물량을 흡수해 영업레버리지가 그대로 이익으로 남는 가정. 터미널 성장률은 기준 0.015 대비 0.025로 둡니다.

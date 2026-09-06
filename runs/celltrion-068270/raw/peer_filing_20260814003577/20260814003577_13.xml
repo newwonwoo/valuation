@@ -1,0 +1,320 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='section-2'><A name='toc1'>4. 매출 및 수주상황</A></P>
+<P><BR/></P>
+<P>1. 매출실적</P>
+<TABLE class='nb' width='694'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='394'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23' valign='BOTTOM'>(기준일: 2026년 6월 30일)</TD>
+  <TD width='385' height='23' align='RIGHT' valign='BOTTOM'>(단위: 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='693'>
+<COLGROUP>
+<COL width='81'></COL>
+<COL width='81'></COL>
+<COL width='102'></COL>
+<COL width='54'></COL>
+<COL width='125'></COL>
+<COL width='125'></COL>
+<COL width='125'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='72' height='23'>사업부문</TH>
+  <TH width='72' height='23'>매출유형</TH>
+  <TH width='147' height='23' colspan='2'>품 목</TH>
+  <TH width='116' height='23'>제27기 상반기</TH>
+  <TH width='116' height='23'>제26기</TH>
+  <TH width='116' height='23'>제25기</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='72' height='983' rowspan='33' align='CENTER'>의약품</TD>
+  <TD width='72' height='353' rowspan='12' align='CENTER'>제품</TD>
+  <TD width='93' height='83' rowspan='3' align='CENTER'>고덱스</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>1,176</TD>
+  <TD width='116' height='23' align='RIGHT'>1,433</TD>
+  <TD width='116' height='23' align='RIGHT'>1,193</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>35,421</TD>
+  <TD width='116' height='23' align='RIGHT'>68,431</TD>
+  <TD width='116' height='23' align='RIGHT'>66,817</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>36,597</TD>
+  <TD width='116' height='23' align='RIGHT'>69,864</TD>
+  <TD width='116' height='23' align='RIGHT'>68,010</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='83' rowspan='3' align='CENTER'>타미풀</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>610</TD>
+  <TD width='116' height='23' align='RIGHT'>2,668</TD>
+  <TD width='116' height='23' align='RIGHT'>2,848</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>610</TD>
+  <TD width='116' height='23' align='RIGHT'>2,668</TD>
+  <TD width='116' height='23' align='RIGHT'>2,848</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='83' rowspan='3' align='CENTER'>기타 제네릭</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>8,959</TD>
+  <TD width='116' height='23' align='RIGHT'>16,015</TD>
+  <TD width='116' height='23' align='RIGHT'>14,688</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>57,369</TD>
+  <TD width='116' height='23' align='RIGHT'>112,070</TD>
+  <TD width='116' height='23' align='RIGHT'>100,592</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>66,328</TD>
+  <TD width='116' height='23' align='RIGHT'>128,085</TD>
+  <TD width='116' height='23' align='RIGHT'>115,280</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='83' rowspan='3' align='CENTER'>제품소계</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>10,135</TD>
+  <TD width='116' height='23' align='RIGHT'>17,448</TD>
+  <TD width='116' height='23' align='RIGHT'>15,881</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>93,400</TD>
+  <TD width='116' height='23' align='RIGHT'>183,169</TD>
+  <TD width='116' height='23' align='RIGHT'>170,257</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>103,535</TD>
+  <TD width='116' height='23' align='RIGHT'>200,617</TD>
+  <TD width='116' height='23' align='RIGHT'>186,138</TD>
+</TR>
+<TR height='30'>
+  <TD width='72' height='533' rowspan='18' align='CENTER'>상품</TD>
+  <TD width='93' height='83' rowspan='3' align='CENTER'>램시마</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>24,718</TD>
+  <TD width='116' height='23' align='RIGHT'>45,541</TD>
+  <TD width='116' height='23' align='RIGHT'>43,977</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>24,718</TD>
+  <TD width='116' height='23' align='RIGHT'>45,541</TD>
+  <TD width='116' height='23' align='RIGHT'>43,977</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='83' rowspan='3' align='CENTER'>트룩시마</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>8,045</TD>
+  <TD width='116' height='23' align='RIGHT'>12,252</TD>
+  <TD width='116' height='23' align='RIGHT'>11,442</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>8,045</TD>
+  <TD width='116' height='23' align='RIGHT'>12,252</TD>
+  <TD width='116' height='23' align='RIGHT'>11,442</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='83' rowspan='3' align='CENTER'>허쥬마</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>10,368</TD>
+  <TD width='116' height='23' align='RIGHT'>21,927</TD>
+  <TD width='116' height='23' align='RIGHT'>21,256</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>10,368</TD>
+  <TD width='116' height='23' align='RIGHT'>21,927</TD>
+  <TD width='116' height='23' align='RIGHT'>21,256</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='83' rowspan='3' align='CENTER'>딜라트렌</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>29,978</TD>
+  <TD width='116' height='23' align='RIGHT'>57,420</TD>
+  <TD width='116' height='23' align='RIGHT'>50,229</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>29,978</TD>
+  <TD width='116' height='23' align='RIGHT'>57,420</TD>
+  <TD width='116' height='23' align='RIGHT'>50,229</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='83' rowspan='3' align='CENTER'>기타</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>513</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>34,283</TD>
+  <TD width='116' height='23' align='RIGHT'>74,355</TD>
+  <TD width='116' height='23' align='RIGHT'>54,885</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>34,796</TD>
+  <TD width='116' height='23' align='RIGHT'>74,355</TD>
+  <TD width='116' height='23' align='RIGHT'>54,885</TD>
+</TR>
+<TR height='30'>
+  <TD width='93' height='83' rowspan='3' align='CENTER'>상품소계</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>513</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+  <TD width='116' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>107,392</TD>
+  <TD width='116' height='23' align='RIGHT'>211,495</TD>
+  <TD width='116' height='23' align='RIGHT'>181,789</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>107,905</TD>
+  <TD width='116' height='23' align='RIGHT'>211,495</TD>
+  <TD width='116' height='23' align='RIGHT'>181,789</TD>
+</TR>
+<TR height='30'>
+  <TD width='174' height='83' colspan='2' rowspan='3' align='CENTER'>용역매출</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>735</TD>
+  <TD width='116' height='23' align='RIGHT'>1,417</TD>
+  <TD width='116' height='23' align='RIGHT'>3,186</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>73,238</TD>
+  <TD width='116' height='23' align='RIGHT'>122,871</TD>
+  <TD width='116' height='23' align='RIGHT'>106,722</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>소 계</TD>
+  <TD width='116' height='23' align='RIGHT'>73,973</TD>
+  <TD width='116' height='23' align='RIGHT'>124,288</TD>
+  <TD width='116' height='23' align='RIGHT'>109,908</TD>
+</TR>
+<TR height='30'>
+  <TD width='255' height='83' colspan='3' rowspan='3' align='CENTER'>합 계</TD>
+  <TD width='45' height='23' align='CENTER'>수 출</TD>
+  <TD width='116' height='23' align='RIGHT'>11,383</TD>
+  <TD width='116' height='23' align='RIGHT'>18,865</TD>
+  <TD width='116' height='23' align='RIGHT'>19,067</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>내 수</TD>
+  <TD width='116' height='23' align='RIGHT'>274,030</TD>
+  <TD width='116' height='23' align='RIGHT'>517,535</TD>
+  <TD width='116' height='23' align='RIGHT'>458,768</TD>
+</TR>
+<TR height='30'>
+  <TD width='45' height='23' align='CENTER'>합 계</TD>
+  <TD width='116' height='23' align='RIGHT'>285,413</TD>
+  <TD width='116' height='23' align='RIGHT'>536,400</TD>
+  <TD width='116' height='23' align='RIGHT'>477,835</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/>2. 판매경로, 방법 및 전략<BR/>가. 판매경로</P>
+<TABLE border='1' width='504'>
+<COLGROUP>
+<COL width='60'></COL>
+<COL width='106'></COL>
+<COL width='338'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='157' height='23' colspan='2'>유형</TH>
+  <TH width='329' height='23'>판매경로</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='51' height='53' rowspan='2' align='CENTER'>내수</TD>
+  <TD width='97' height='23' align='CENTER'>약국</TD>
+  <TD width='329' height='23' valign='TOP'>&nbsp;회사 → 도매상 → 약국 → 소비자</TD>
+</TR>
+<TR height='30'>
+  <TD width='97' height='23' align='CENTER'>병의원</TD>
+  <TD width='329' height='23' valign='TOP'>&nbsp;회사 → 도매상 → 병의원 → 소비자</TD>
+</TR>
+<TR height='30'>
+  <TD width='51' height='53' rowspan='2' align='CENTER'>수출</TD>
+  <TD width='97' height='23' align='CENTER'>직수출</TD>
+  <TD width='329' height='23' valign='TOP'>&nbsp;직접주문자를 통한 수출</TD>
+</TR>
+<TR height='30'>
+  <TD width='97' height='23' align='CENTER'>간접수출</TD>
+  <TD width='329' height='23' valign='TOP'>&nbsp;무역전문업체를 통한 수출</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/>나. 판매방법 및 조건<BR/>의약품 도매상을 통한 간접유통을 통해 판매가 이루어지고 있으며 판매조건은 내수의 경우 현금 및 외상판매이며 수출의 경우 L/C 또는 T/T 거래 조건 입니다.<BR/><BR/>다. 판매전략<BR/>- 시장분석 기반 제품포트폴리오 구성<BR/>- 임상데이터를 통한 제품의 특장점 홍보<BR/>- 적극적인 학회 참여와 학술활동 강화<BR/><BR/></P>
+<P>3. 수주상황<BR/>해당사항 없습니다.</P>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

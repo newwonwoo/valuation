@@ -1,0 +1,31 @@
+{
+ "counter_thesis": "Biosimilar price erosion is structural, not cyclical: the filed half-year segment revenue growth is a launch effect on a portfolio whose molecules lose exclusivity one by one, the declared 90% utilization is a judgment the filing never discloses, and a company pursuing 제4·5공장 at an estimated 1조 2,265억원 is telling the market its current capacity is the binding constraint — so excluding that project from Core may understate the reinvestment the declared FCFF path quietly assumes away.",
+ "issues": [
+  {
+   "id": "R:CELLTRION:UTILIZATION_JUDGMENT",
+   "blocking": false,
+   "description": "asp and unit_cost are both derived through the declared 90% utilization, which no filed table discloses; an error there moves both per-batch figures in the same direction and cancels in the margin while misstating the capacity headroom the thesis rests on",
+   "requested_evidence": [
+    "생산실적 또는 가동률 표 (셀트리온 정기보고서에는 현재 미공시)"
+   ]
+  },
+  {
+   "id": "R:CELLTRION:EXPANSION_ASYMMETRY",
+   "blocking": false,
+   "description": "the 제4·5공장 project is excluded from Core because the filing evidences no site control, yet its estimated 1조 2,265억원 of capex is also absent from the declared FCFF path; if the project proceeds, the reinvestment lands before the capacity does",
+   "requested_evidence": [
+    "제4·5공장 부지 취득·착공·설비 발주 공시",
+    "차기 보고서의 건설중인자산 증감"
+   ]
+  },
+  {
+   "id": "R:CELLTRION:SEGMENT_PRE_ELIMINATION",
+   "blocking": false,
+   "description": "the IFRS 8 note states its segment figures are a simple sum of the constituent legal entities before intercompany elimination (부문 매출 4,382,742,787천원 against consolidated 2,538,678,713천원), so segment operating income used to split the consolidated FCFF carries that gross-up",
+   "requested_evidence": [
+    "부문간 제거 금액의 부문별 배분"
+   ]
+  }
+ ],
+ "requested_evidence": []
+}

@@ -37,6 +37,20 @@ class ContinuousOOSDriverDiagnostic:
             raise ValueError("continuous OOS regime similarity must lie within [0,1]")
 
 
+#: The two admissible bases for a continuous scenario probability. They run
+#: the same simulation and answer different questions, so the snapshot records
+#: which one produced it and never lets the pair be confused: a peer cohort
+#: places the target inside its industry's distribution, while self
+#: calibration scores the operator's declared scenario driver paths against
+#: the target's own realized spread.
+_CONTINUOUS_PROBABILITY_SOURCES = frozenset(
+    {
+        "continuous_financial_path_monte_carlo",
+        "target_realized_dispersion_monte_carlo",
+    }
+)
+
+
 @dataclass(frozen=True)
 class ContinuousProbabilityCalibrationSnapshot:
     cohort_key: str
@@ -74,8 +88,12 @@ class ContinuousProbabilityCalibrationSnapshot:
         ):
             raise ValueError("continuous probability snapshot identity is incomplete")
         date.fromisoformat(self.as_of_date[:10])
-        if self.probability_source != "continuous_financial_path_monte_carlo":
-            raise ValueError("continuous probability snapshot source must remain continuous financial-path Monte Carlo")
+        if self.probability_source not in _CONTINUOUS_PROBABILITY_SOURCES:
+            raise ValueError(
+                "continuous probability snapshot source must be a continuous "
+                "financial-path Monte Carlo — over a peer cohort, or over the "
+                "target's own realized dispersion"
+            )
         if not self.estimates:
             raise ValueError("continuous probability snapshot requires scenario estimates")
         ids = tuple(item.scenario_id for item in self.estimates)
@@ -208,6 +226,7 @@ class ContinuousProbabilityCalibrationSnapshot:
         dataset_hash: str,
         oos_diagnostics: tuple[ContinuousOOSDriverDiagnostic, ...],
         integrity_findings: tuple[str, ...] = (),
+        probability_source: str = "continuous_financial_path_monte_carlo",
     ) -> "ContinuousProbabilityCalibrationSnapshot":
         status = (
             CalibrationStatus.CALIBRATED
@@ -221,7 +240,7 @@ class ContinuousProbabilityCalibrationSnapshot:
             as_of_date=as_of_date,
             method_version=method_version,
             mapping_version=mapping_version,
-            probability_source="continuous_financial_path_monte_carlo",
+            probability_source=probability_source,
             estimates=estimates,
             driver_snapshot_hashes=driver_snapshot_hashes,
             dependence_hash=dependence_hash,

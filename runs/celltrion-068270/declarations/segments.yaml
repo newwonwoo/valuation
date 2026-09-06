@@ -1,0 +1,75 @@
+target_id: KR:DART:00413046
+as_of: "2026-09-04"
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003751
+source_bound_extraction:
+  extractor: llm_reviewed
+  document_id: DART_20260814003751
+  member_path: 20260814003751_28.xml
+  member_sha256: 81625813aef1de44d384c0ebda1747117b39bb4363e8d1a02279d867d494f528
+  reporting_unit: 천원
+  source_rows:
+    revenue:
+      label: 매출액
+      offset: 4627
+    operating_income:
+      label: 영업이익(손실)
+      offset: 6358
+  filed_totals:
+    revenue: "4382742787"
+    operating_income: "656106540"
+    source_offsets:
+      revenue: 4863
+      operating_income: 6595
+  segments:
+    - disclosed_name: 바이오의약품
+      revenue: "4081611592"
+      operating_income: "624037712"
+      source_offsets:
+        name: 4339
+        revenue: 4680
+        operating_income: 6416
+    - disclosed_name: 케미컬의약품
+      revenue: "296416360"
+      operating_income: "32128896"
+      source_offsets:
+        name: 4381
+        revenue: 4743
+        operating_income: 6477
+    - disclosed_name: 기타부문
+      revenue: "4714835"
+      operating_income: "-60068"
+      source_offsets:
+        name: 4423
+        revenue: 4804
+        operating_income: 6537
+segments:
+  - segment_id: biologics
+    disclosed_name: 바이오의약품
+    ksic_code: "21100"
+    rationale: >-
+      주석은 이 부문을 "생명공학기술 및 동물세포대량배양기술을 기반으로 항암제 등의
+      각종 단백질 치료제를 개발, 생산 및 판매"로 기술하며, 지배기업 자신의 신고 업종
+      코드가 21100(기초 의약물질 및 생물학적 제제 제조업)입니다. 허가 완료된 11개
+      바이오시밀러를 25만 리터 국내 설비와 6.6만 리터 미국 브랜치버그 설비에서
+      생산·판매하는 상업단계 제조 부문이므로, 가치는 미허가 파이프라인의 확률이
+      아니라 설비 가동과 실현 판가가 만듭니다.
+  - segment_id: chemical
+    disclosed_name: 케미컬의약품
+    ksic_code: "212"
+    rationale: >-
+      주석은 이 부문을 "케미컬의약품을 개발, 생산 및 판매"로 기술하며, 부문을 구성하는
+      종속기업 (주)셀트리온제약의 신고 업종 코드가 212(의약품 제조업, 완제 의약품)
+      입니다. 고덱스 외 완제 의약품을 제조·판매하는 상업단계 부문으로 반기 매출
+      296,416,360천원, 영업이익 32,128,896천원을 계상했습니다.
+unvalued_residual:
+  disclosed_name: 기타부문
+  rationale: >-
+    주석은 보고부문을 "바이오의약품 부문, 케미컬의약품 부문 및 기타부문"으로
+    구성한다고 밝히면서 앞의 두 부문만 제품·용역으로 기술하고 기타부문은
+    설명하지 않습니다. 부문 금액이 "부문에 해당하는 법인의 단순합산"이므로
+    반기 매출 4,714,835천원과 정확히 일치하는 법인을 일반사항 주석에서 찾으면
+    Celltrion Global Safety Data Center, Inc.(주요 영업활동 "글로벌의약품 안전성
+    데이터 관리") 하나이며, 주요 제품 표에서 이 부문의 외부 매출 비율은 0.00%로
+    전액이 부문간 거래로 제거됩니다. 부문 매출의 0.11%, 부문 영업이익의 0.01%인
+    잔여 항목이므로 원형과 현금흐름을 지어내 평가하지 않고, 주석이 보고한 금액
+    그대로 대사 항목으로만 표시합니다.

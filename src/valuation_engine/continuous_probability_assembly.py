@@ -40,6 +40,7 @@ from .continuous_probability_snapshot import (
 
 ARTIFACT_FORMAT_VERSION = "1.0"
 PROBABILITY_SOURCE = "continuous_financial_path_monte_carlo"
+SELF_PROBABILITY_SOURCE = "target_realized_dispersion_monte_carlo"
 REQUIRED_OOS_WINDOWS = 3
 REQUIRED_OOS_SPLIT_ORDER = ("TRAIN", "VALIDATION", "HOLDOUT", "FINAL_OOS")
 
@@ -95,6 +96,14 @@ class ContinuousCalibrationBinding:
     expected_source_row_count: int
     expected_source_company_count: int
     excluded_ticker: str
+    #: True when the artifact was fitted on the TARGET's own realized history
+    #: rather than on a peer panel. The two are opposite claims about the same
+    #: ticker — withheld from training, or the only thing trained on — so they
+    #: are checked against opposite artifact keys and can never be read as one
+    #: another. A self-calibrated artifact scores operator-declared scenario
+    #: driver paths against the target's own dispersion; the target sets the
+    #: spread, never the reference path it is measured against.
+    self_calibrated: bool = False
     credible_level: Decimal = Decimal("0.90")
     outer_draws: int = 300
     inner_draws: int = 200
@@ -282,6 +291,47 @@ def snapshot_cutoff(value: str) -> datetime:
     return parse_timestamp(text, label="continuous probability as_of_date")
 
 
+def _validate_self_calibrated_identity(
+    payload: Mapping[str, Any],
+    binding: "ContinuousCalibrationBinding",
+    *,
+    label: str,
+) -> None:
+    """A self-calibrated artifact must say so, and name the ticker it is of.
+
+    The cohort route records ``target_ticker_excluded`` — the ticker withheld
+    from training. The self route records ``target_ticker`` — the only ticker
+    trained on. Requiring the self key present and the cohort key absent means
+    a peer-fitted artifact can never be bound as self-calibrated, nor the
+    reverse, however the binding is written.
+    """
+
+    if payload.get("self_calibrated") is not True:
+        raise ContinuousCalibrationError(
+            f"binding declares self-calibration but the {label} does not"
+        )
+    if payload.get("target_ticker_excluded") is not None:
+        raise ContinuousCalibrationError(
+            f"a self-calibrated {label} cannot also withhold a target ticker"
+        )
+    if str(payload.get("target_ticker") or "") != binding.excluded_ticker:
+        raise ContinuousCalibrationError(
+            f"self-calibrated {label} is fitted on "
+            f"{payload.get('target_ticker')!r}, not {binding.excluded_ticker}"
+        )
+    if str(payload.get("probability_source") or "") != SELF_PROBABILITY_SOURCE:
+        raise ContinuousCalibrationError(
+            f"self-calibrated {label} must name the "
+            f"{SELF_PROBABILITY_SOURCE} probability source"
+        )
+    if not str(payload.get("series_basis") or "").strip():
+        raise ContinuousCalibrationError(
+            f"self-calibrated {label} must state the reporting basis its own "
+            "history shares; a dispersion fitted across a merger or "
+            "restatement measures the break, not the company"
+        )
+
+
 def _find_forbidden_keys(value: Any, forbidden: frozenset[str]) -> tuple[str, ...]:
     found: set[str] = set()
     if isinstance(value, dict):
@@ -333,7 +383,12 @@ def load_artifact(
         raise ContinuousCalibrationError("continuous calibration artifact hash mismatch")
     if payload.get("version") != ARTIFACT_FORMAT_VERSION:
         raise ContinuousCalibrationError("continuous calibration artifact version drift")
-    if payload.get("source_dataset_sha256") != binding.expected_dataset_sha256:
+    if binding.self_calibrated:
+        # There is no cohort dataset: the fit's inputs are the target's own
+        # filed periods, already hashed into the artifact and listed with
+        # their source refs in the provenance.
+        pass
+    elif payload.get("source_dataset_sha256") != binding.expected_dataset_sha256:
         raise ContinuousCalibrationError(
             "continuous calibration source dataset hash mismatch"
         )
@@ -354,7 +409,9 @@ def load_artifact(
             "continuous calibration company breadth must remain "
             f"{binding.expected_source_company_count}"
         )
-    if str(payload.get("target_ticker_excluded") or "") != binding.excluded_ticker:
+    if binding.self_calibrated:
+        _validate_self_calibrated_identity(payload, binding, label="artifact")
+    elif str(payload.get("target_ticker_excluded") or "") != binding.excluded_ticker:
         raise ContinuousCalibrationError(
             "continuous calibration must exclude target rows for "
             f"{binding.excluded_ticker}"
@@ -391,7 +448,12 @@ def load_provenance(
         raise ContinuousCalibrationError(
             "continuous calibration provenance version drift"
         )
-    if payload.get("source_dataset_sha256") != binding.expected_dataset_sha256:
+    if binding.self_calibrated:
+        # There is no cohort dataset: the fit's inputs are the target's own
+        # filed periods, already hashed into the artifact and listed with
+        # their source refs in the provenance.
+        pass
+    elif payload.get("source_dataset_sha256") != binding.expected_dataset_sha256:
         raise ContinuousCalibrationError(
             "continuous calibration provenance dataset hash mismatch"
         )
@@ -399,7 +461,9 @@ def load_provenance(
         raise ContinuousCalibrationError(
             "continuous calibration provenance lineage hash mismatch"
         )
-    if str(payload.get("target_ticker_excluded") or "") != binding.excluded_ticker:
+    if binding.self_calibrated:
+        _validate_self_calibrated_identity(payload, binding, label="provenance")
+    elif str(payload.get("target_ticker_excluded") or "") != binding.excluded_ticker:
         raise ContinuousCalibrationError(
             "continuous calibration provenance lost target exclusion"
         )
@@ -667,6 +731,8 @@ _COHORT_FRAME_MAX_EXCESS_SCALES = 2.0
 def _cohort_frame_findings(
     drivers: tuple[ContinuousDriverPosterior, ...],
     scenarios: tuple[ScenarioFinancialPath, ...],
+    *,
+    self_calibrated: bool = False,
 ) -> tuple[str, ...]:
     """Name every driver whose target path falls outside the cohort's anchors.
 
@@ -697,7 +763,21 @@ def _cohort_frame_findings(
             if excess > worst:
                 worst, worst_period, worst_side = excess, period + 1, side
         if worst > _COHORT_FRAME_MAX_EXCESS_SCALES:
+            # Same measurement, two different things to fix. Under a peer
+            # cohort the anchors are the industry's and the target does not
+            # belong in it. Under self calibration the anchors are the
+            # operator's own scenarios, so the miss is theirs: the three
+            # cases they declared do not bracket what this company's own
+            # history says it can do.
             findings.append(
+                f"declared scenario driver paths do not bracket the target's "
+                f"own realized dispersion on {driver.driver_id}: the "
+                f"conditioned path runs {worst:.1f} scales {worst_side} the "
+                f"outermost declared path at period {worst_period}; every "
+                "simulated path lands on the same scenario, so the weighting "
+                "carries no discrimination — widen or recentre the scenarios"
+                if self_calibrated
+                else
                 f"cohort scenario anchors do not frame the target on "
                 f"{driver.driver_id}: the conditioned path runs {worst:.1f} "
                 f"scales {worst_side} the outermost anchor at period "
@@ -753,8 +833,13 @@ def build_continuous_probability_snapshot(
         inner_draws=binding.inner_draws,
         seed=binding.seed,
     )
-    frame_findings = _cohort_frame_findings(drivers, scenarios)
+    frame_findings = _cohort_frame_findings(
+        drivers, scenarios, self_calibrated=binding.self_calibrated
+    )
     return ContinuousProbabilityCalibrationSnapshot.build(
+        probability_source=(
+            SELF_PROBABILITY_SOURCE if binding.self_calibrated else PROBABILITY_SOURCE
+        ),
         cohort_key=binding.cohort_key,
         forecast_class=binding.forecast_class,
         horizon=binding.horizon,

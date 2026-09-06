@@ -1,0 +1,59 @@
+{
+ "rationale": "A commercial-stage biosimilar manufacturer whose filed segment note reports 4.08조 of half-year biologics revenue and 624십억 of segment operating income is valued on the cashflow its approved portfolio already earns inside the filed 313-batch capacity, not on an announced expansion whose site control the filing does not evidence.",
+ "hypotheses": [
+  {
+   "id": "H:CELLTRION:INSTALLED_BASE",
+   "statement": "The declared biologics FCFF path is earned inside the filed 313-batch installed capacity, as working capital absorbed by the launch inventory build normalizes at the filed FY2025 gross margin",
+   "causal_chain": [
+    "approved portfolio volume in the US and EU on direct-sales channels",
+    "utilization of the filed 313-batch capacity at the filed 81% success rate",
+    "working-capital release as the launch inventory build slows",
+    "free cashflow to the firm",
+    "enterprise value"
+   ],
+   "supporting_evidence_ids": [
+    "UW:KR:DART:00413046:biologics_fcff_year_3",
+    "UW:KR:DART:00413046:effective_capacity:biologics",
+    "UW:KR:DART:00413046:yield:biologics"
+   ],
+   "contradicting_evidence_ids": [],
+   "kill_conditions": [
+    "biologics segment revenue falls below the prior half-year's 3,218,117,566천원 for two consecutive halves",
+    "filed capacity falls below 313 batches without an offsetting price increase"
+   ],
+   "next_checks": [
+    "2026 사업보고서 영업부문 정보 주석의 부문별 매출·영업이익",
+    "다음 정기보고서 생산능력 표의 배치수와 성공률"
+   ]
+  },
+  {
+   "id": "H:CELLTRION:CHEMICAL_SPARE",
+   "statement": "The chemical segment grows without growth capex because its own filed utilization is 24.1% of the filed capacity",
+   "causal_chain": [
+    "spare tablet and capsule capacity at 진천 and 청주",
+    "volume growth absorbed without new lines",
+    "capex held near the filed 4십억 annual run-rate",
+    "free cashflow to the firm"
+   ],
+   "supporting_evidence_ids": [
+    "UW:KR:DART:00413046:utilization:chemical",
+    "UW:KR:DART:00413046:effective_capacity:chemical",
+    "UW:KR:DART:00413046:chemical_fcff_year_3"
+   ],
+   "contradicting_evidence_ids": [],
+   "kill_conditions": [
+    "chemical segment operating margin falls below the filed 10.84% for two consecutive halves",
+    "a capacity expansion is disclosed for 진천 or 청주, contradicting the declared no-expansion state"
+   ],
+   "next_checks": [
+    "(주)셀트리온제약 다음 정기보고서의 생산능력·생산실적 표",
+    "영업부문 주석의 케미컬의약품 부문 영업이익률"
+   ]
+  }
+ ],
+ "requested_evidence": [],
+ "scanner_reinforcements": [],
+ "context_strength_linkage": {
+  "not_applicable_reason": "The collected evidence carries no non-obvious environment-to-strength connection beyond the installed-capacity thesis already declared."
+ }
+}

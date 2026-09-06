@@ -1,0 +1,49 @@
+# Resolved from public metadata for (주)셀트리온 (068270) as of 2026-09-04; the
+# filing, fiscal month and route decisions are out/resolver.json's. The one
+# thing the resolver refuses to decide is written by hand below: the IFRS 8
+# note names two reportable businesses plus its own residual row, so the run
+# carries one method per valued segment rather than a company-level route.
+# The residual is declared in declarations/segments.yaml and is reconciled
+# rather than valued.
+company_query: (주)셀트리온
+run_id: LIVE-068270-1
+as_of: "2026-09-04"
+jurisdiction: KR
+scenario_ids: [Down, Base, Bull]
+segments:
+  - segment_id: biologics
+    method: capacity_manufacturing/driver_dcf
+  - segment_id: chemical
+    method: capacity_manufacturing/driver_dcf
+market_currency: KRW
+filing:
+  business_year: "2025"
+  report_code: "11011"
+  fs_div: CFS
+  fiscal_period_end: "2025-12-31"
+  segment_id: biologics
+extra_required_evidence:
+  - down_biologics_fcff_year_1
+  - down_biologics_fcff_year_2
+  - down_biologics_fcff_year_3
+  - down_biologics_fcff_year_4
+  - down_biologics_fcff_year_5
+  - down_biologics_terminal_growth
+  - bull_biologics_fcff_year_1
+  - bull_biologics_fcff_year_2
+  - bull_biologics_fcff_year_3
+  - bull_biologics_fcff_year_4
+  - bull_biologics_fcff_year_5
+  - bull_biologics_terminal_growth
+  - down_chemical_fcff_year_1
+  - down_chemical_fcff_year_2
+  - down_chemical_fcff_year_3
+  - down_chemical_fcff_year_4
+  - down_chemical_fcff_year_5
+  - down_chemical_terminal_growth
+  - bull_chemical_fcff_year_1
+  - bull_chemical_fcff_year_2
+  - bull_chemical_fcff_year_3
+  - bull_chemical_fcff_year_4
+  - bull_chemical_fcff_year_5
+  - bull_chemical_terminal_growth

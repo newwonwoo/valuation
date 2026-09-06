@@ -46,13 +46,17 @@ description: 이 레포에서 실제 한국 상장 종목의 라이브 밸류에
    bridge_analyst / (필요시) filing_locator_analyst 의 제안 JSON을 작성한다.
    존재하는 evidence_id만 인용, identity는 값=인용값, 로케이터 quote는 원문에
    유일 실재. 예시 런의 파일이 정확한 형식이다.
-5. **기대값까지 원하면** calibration 블록: 동종사(타깃 제외) 이력 →
-   `scripts/build_calibration_artifact.py` → 출력된 BindingConstants를
-   run.yaml에 붙여넣기. 기존 코호트가 맞으면 재사용
-   (철강: `config/kr_steel_calibration_artifact.json`,
-   리츠: `config/kr_reit_calibration_artifact.json`).
-   **코호트는 타깃과 결산 주기가 같아야 한다** — 반기 결산사의 6개월
-   성장률과 12월 결산사의 연간 성장률을 한 축에 섞지 마라.
+5. **기대값까지 원하면** calibration 블록: **타깃 자기 이력**으로 적합한다.
+   측정 = 타깃의 연도별 실현 동인(한 회계기준 위, 최소 5개 전이),
+   선언 = 각 시나리오가 **가정하는** 동인 경로 →
+   `scripts/build_self_calibration_artifact.py` → 출력된 BindingConstants를
+   run.yaml에 붙여넣고 `self_calibrated: true`와
+   `external_probability_source: target_realized_dispersion_monte_carlo`를
+   같이 적는다 (둘이 어긋나면 러너가 멈춘다).
+   **새 피어 코호트는 만들지 않는다** — 시나리오 확률은 공유 시장가격이 아니라
+   그 회사의 경제가 정한다 (`AGENTS.md`). 철강·리츠 코호트는 규칙 이전에
+   커밋된 것으로 해당 런 재생용으로만 남아 있고, 따라 할 선례가 아니다.
+   전이가 모자라면 거부가 곧 답이다 — 기대값 없이 완주하고 사실대로 보고한다.
 6. **실행**: `PYTHONPATH=src python scripts/run_kr_live.py runs/<종목>-<코드>`
 
 ## 철칙

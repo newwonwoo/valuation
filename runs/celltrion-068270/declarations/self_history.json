@@ -1,0 +1,26 @@
+{
+  "series_basis": "Consolidated IFRS revenue and operating income of the post-merger entity. 셀트리온헬스케어 was absorbed on 2023-12-28, so FY2024 is the first full year on this basis and FY2023 and earlier belong to a different company. Only periods on the post-merger basis are listed, and revenue_growth is listed only where its prior year is on the same basis.",
+  "target_ticker": "068270",
+  "observations": [
+    {
+      "period_end": "2025-12-31",
+      "published_at": "2026-03-16T09:00:00+00:00",
+      "values": {
+        "revenue_growth": 0.17017,
+        "operating_margin": 0.28072
+      },
+      "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00421045&bsns_year=2025&reprt_code=11011&fs_div=CFS"
+    }
+  ],
+  "excluded_periods": [
+    {
+      "period_end": "2024-12-31",
+      "operating_margin": 0.13832,
+      "reason": "revenue_growth is not computable on this basis: FY2023 revenue (2,176.4bn) is 셀트리온 standalone, FY2024 (3,557.3bn) is the merged entity, so the ratio measures the merger."
+    },
+    {
+      "period_end": "2023-12-31 and earlier",
+      "reason": "pre-merger 셀트리온 standalone; a dispersion fitted across the 2023-12-28 absorption measures the break, not the company."
+    }
+  ]
+}

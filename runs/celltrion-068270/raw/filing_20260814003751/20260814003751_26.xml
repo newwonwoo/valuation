@@ -1,0 +1,1211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>1. 일반사항 (연결)</A></P>
+<TABLE class='nb' width='1131'>
+<COLGROUP>
+<COL width='1131'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='4202'>
+  <TD width='1122' height='4195'>
+<P>주식회사 셀트리온(이하 '지배기업') 및 종속기업들(이하 지배기업과 그 종속기업을 일괄하여 '연결기업')의 일반적인 사항은 다음과 같습니다.</P>
+<P><BR/></P>
+<P>지배기업은 1991년 2월 27일에 설립되었으며, 2005년 7월 19일 한국증권업협회 중개시장(KOSDAQ)에 등록하였습니다. 또한, 지배기업은 2008년 8월 19일자로 2002년 2월 26일에 설립된 주식회사 셀트리온을 흡수 합병한 후 상호를 주식회사 오알켐에서 주식회사 셀트리온으로 변경하였습니다. 지배기업은 2018년 2월 9일자로 한국거래소 유가증권시장에 이전 상장하였습니다. 지배기업은 2023년 12월 28일자로 주식회사 셀트리온헬스케어를 흡수 합병하였습니다.</P>
+<P><BR/></P>
+<P>지배기업은 동물세포 대량배양 기술과 생명공학기술을 이용한 항암제 등 각종 단백질 치료제를 개발, 생산 및 판매하는 것을 주 목적사업으로 하고 있으며, 인천경제자유구역 내에 본점 사업장을 두고 운영하고 있습니다.</P>
+<P><BR/></P>
+<P>보고기간 종료일 현재 주요 주주구성은 다음과 같습니다.</P>
+<P><BR/></P>
+<TABLE border='1' width='783'>
+<COLGROUP>
+<COL width='233'></COL>
+<COL width='138'></COL>
+<COL width='138'></COL>
+<COL width='137'></COL>
+<COL width='137'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='224' height='53' rowspan='2'>구분</TH>
+  <TH width='267' height='23' colspan='2'>2026.06.30</TH>
+  <TH width='265' height='23' colspan='2'>2025.12.31</TH>
+</TR>
+<TR height='30'>
+  <TH width='129' height='23'>보통주(주)</TH>
+  <TH width='129' height='23'>지분율</TH>
+  <TH width='128' height='23'>보통주(주)</TH>
+  <TH width='128' height='23'>지분율</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='224' height='23'>셀트리온홀딩스</TD>
+  <TD width='129' height='23' align='RIGHT'>60,205,135&nbsp;</TD>
+  <TD width='129' height='23' align='RIGHT'>25.89%&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>56,655,667&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>24.53%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>셀트리온스킨큐어</TD>
+  <TD width='129' height='23' align='RIGHT'>5,079,169&nbsp;</TD>
+  <TD width='129' height='23' align='RIGHT'>2.18%&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>4,797,684&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>2.08%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>국민연금</TD>
+  <TD width='129' height='23' align='RIGHT'>16,160,276&nbsp;</TD>
+  <TD width='129' height='23' align='RIGHT'>6.95%&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>15,416,445&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>6.67%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>서정진</TD>
+  <TD width='129' height='23' align='RIGHT'>9,775,500&nbsp;</TD>
+  <TD width='129' height='23' align='RIGHT'>4.20%&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>9,310,000&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>4.03%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>Aranda Investments Pte. Ltd.</TD>
+  <TD width='129' height='23' align='RIGHT'>7,047,957&nbsp;</TD>
+  <TD width='129' height='23' align='RIGHT'>3.03%&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>6,712,340&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>2.91%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>기타</TD>
+  <TD width='129' height='23' align='RIGHT'>130,302,214&nbsp;</TD>
+  <TD width='129' height='23' align='RIGHT'>56.04%&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>125,720,988&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>54.43%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23'>자기주식</TD>
+  <TD width='129' height='23' align='RIGHT'>3,983,455&nbsp;</TD>
+  <TD width='129' height='23' align='RIGHT'>1.71%&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>12,347,845&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>5.35%&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='224' height='23' align='CENTER'>합계</TD>
+  <TD width='129' height='23' align='RIGHT'>232,553,706&nbsp;</TD>
+  <TD width='129' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>230,960,969&nbsp;</TD>
+  <TD width='128' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P>1.1. 종속기업 현황</P>
+<P>보고기간 종료일 현재 지배기업의 연결대상 종속기업의 현황은 다음과 같습니다.</P>
+<TABLE border='1' width='1122'>
+<COLGROUP>
+<COL width='514'></COL>
+<COL width='92'></COL>
+<COL width='92'></COL>
+<COL width='93'></COL>
+<COL width='63'></COL>
+<COL width='268'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='505' height='53' rowspan='2'>기업명</TH>
+  <TH width='175' height='23' colspan='2'>명목지분율</TH>
+  <TH width='84' height='53' rowspan='2'>소재지</TH>
+  <TH width='54' height='53' rowspan='2'>결산월</TH>
+  <TH width='259' height='53' rowspan='2'>주요 영업활동</TH>
+</TR>
+<TR height='30'>
+  <TH width='83' height='23'>2026.06.30</TH>
+  <TH width='83' height='23'>2025.12.31</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='505' height='23'>셀트리온제약</TD>
+  <TD width='83' height='23' align='RIGHT'>54.99%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>54.80%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>한국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 제조ㆍ판매</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Europe Limited</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>영국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>바이오의약품 임상시험</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Global Safety Data Center, Inc.</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>필리핀</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>글로벌의약품 안전성 데이터 관리</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Biopharma</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>아일랜드</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>바이오의약품 임상시험</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Asia Pacific PTE. LTD</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>싱가포르</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>케미컬의약품 판매 및 연구개발</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Shanghai Biotechnology Co., Ltd(*1)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>중국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>바이오의약품 임상시험 등 연구개발</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare ILAC SANAYI VE TICARET LIMITED SIRKETI</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>튀르키예</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 제조 및 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Hungary, Kft.</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>헝가리</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 제조 및 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Philippines Inc.</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>필리핀</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Malaysia SDN BHD</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>말레이시아</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Hong Kong Limited</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>홍콩</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare (Thailand) Co., Ltd.</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>태국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Distribuicao de Produtos Farmaceuticos do Brasil LTDA</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>브라질</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Singapore Private Limited</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>싱가포르</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Japan K.K.</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>일본</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 제조 및 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Taiwan Limited</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>대만</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Netherlands B.V.</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>네덜란드</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Australia Pty Ltd</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>호주</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Colombia S.A.S.</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>콜롬비아</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Canada Ltd.</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>캐나다</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare United Kingdom Limited.(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>영국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Ireland Limited(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>아일랜드</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Denmark ApS(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>덴마크</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Austria GmbH(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>오스트리아</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Deutschland GmbH(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>독일</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Italy S.r.l(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>이태리</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Belgium Sprl.(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>벨기에</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Norway AS(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>노르웨이</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare France SAS(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>프랑스</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Finland Oy(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>핀란드</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare New Zealand Limited(*3)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>뉴질랜드</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare De Mexico S.A. de C.V.(*4)</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>멕시코</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Chile SpA(*4)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>칠레</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Healthcare Peru S.A.C.(*4)</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>페루</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion USA, Inc.</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>미국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Czech Republic s.r.o.(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>체코</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Romania S.R.L.(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>루마니아</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Poland sp. z o.o.(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>폴란드</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Switzerland GmbH(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>스위스</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Farmaceutica(ESPANA),S.L.(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>스페인</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Portugal, UNIPESSOAL LDA(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>포르투갈</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Sweden AB(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>스웨덴</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Vietnam Company Limited</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>베트남</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>셀트리온바이오솔루션스</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>한국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>기타서비스</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>iQone Healthcare Switzerland SA(*2)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>스위스</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>CELLTRION INDONESIA PHARMACEUTICAL(*5)</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>인도네시아</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Branchburg, LLC(*6)(*7)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>미국</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 제조</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>GIFRER BARBEZAT(*2)(*8)</TD>
+  <TD width='83' height='23' align='RIGHT'>100.00%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>프랑스</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 및 헬스케어 제품 판매 유통업</TD>
+</TR>
+<TR height='30'>
+  <TD width='505' height='23'>Celltrion Slovak Republic, s. r. o.(*2)(*9)</TD>
+  <TD width='83' height='23' align='RIGHT'>99.99%&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='84' height='23' align='CENTER'>슬로바키아</TD>
+  <TD width='54' height='23' align='CENTER'>12월</TD>
+  <TD width='259' height='23'>의약품 도소매업</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P>(*1) 전기 중 기존 Shanghai Vcell Biotech에서 사명 변경하였습니다.</P>
+<P>(*2) Celltrion Healthcare Hungary, Kft.의 종속기업입니다.</P>
+<P>(*3) Celltrion Healthcare Australia Pty Ltd의 종속기업입니다.</P>
+<P>(*4) Celltrion Healthcare Colombia S.A.S의 종속기업입니다.</P>
+<P>(*5) 전기 중 신규 설립되었습니다.</P>
+<P>(*6) 전기 중 연결기업의 종속기업인 Celltrion USA, Inc가 인수함에 따라 연결기업의 종속기업으로 추가 되었습니다.</P>
+<P>(*7) Celltrion USA, Inc의 종속기업으로, 인수 후 기존 Imclone systems, LLC에서 Celltrion Branchburg, LLC로 사명 변경하였습니다.</P>
+<P>(*8) 당반기 중 Celltrion Healthcare Hungary, Kft.의 종속기업인 Celltrion Healthcare France SAS가 인수함에 따라 연결기업의 종속기업으로 추가 되었습니다.</P>
+<P>(*9) 당반기 중 신규 설립되었습니다.</P>
+<P><BR/></P>
+<P>1.2 종속기업 관련 재무정보 요약(내부거래 제거 전)</P>
+<P>연결대상 종속기업의 2026년 6월 30일과 2025년 12월 31일 현재의 요약재무상태표와 2026년과 2025년 6월 30일로 종료하는 6개월 보고기간의 요약포괄손익계산서는다음과 같습니다.</P>
+<TABLE class='nb' width='1117'>
+<COLGROUP>
+<COL width='1117'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='27'>
+  <TD width='1108' height='20' align='RIGHT' style='font-size:9pt;'>(단위: 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1118'>
+<COLGROUP>
+<COL width='320'></COL>
+<COL width='89'></COL>
+<COL width='89'></COL>
+<COL width='89'></COL>
+<COL width='89'></COL>
+<COL width='89'></COL>
+<COL width='89'></COL>
+<COL width='88'></COL>
+<COL width='88'></COL>
+<COL width='88'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='27'>
+  <TH width='311' height='74' rowspan='3' style='font-size:9pt;'>구분</TH>
+  <TH width='258' height='20' colspan='3' style='font-size:9pt;'>2026.06.30</TH>
+  <TH width='522' height='20' colspan='6' style='font-size:9pt;'>2026년 반기</TH>
+</TR>
+<TR height='27'>
+  <TH width='80' height='47' rowspan='2' style='font-size:9pt;'>자산</TH>
+  <TH width='80' height='47' rowspan='2' style='font-size:9pt;'>부채</TH>
+  <TH width='80' height='47' rowspan='2' style='font-size:9pt;'>자본</TH>
+  <TH width='258' height='20' colspan='3' style='font-size:9pt;'>3개월</TH>
+  <TH width='255' height='20' colspan='3' style='font-size:9pt;'>누적</TH>
+</TR>
+<TR height='27'>
+  <TH width='80' height='20' style='font-size:9pt;'>매출</TH>
+  <TH width='80' height='20' style='font-size:9pt;'>당기순손익</TH>
+  <TH width='80' height='20' style='font-size:9pt;'>총포괄손익</TH>
+  <TH width='79' height='20' style='font-size:9pt;'>매출</TH>
+  <TH width='79' height='20' style='font-size:9pt;'>당기순손익</TH>
+  <TH width='79' height='20' style='font-size:9pt;'>총포괄손익</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>셀트리온제약</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>779,183,133&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>329,982,945&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>449,200,188&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>153,290,879&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>13,721,038&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>13,721,038&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>285,412,775&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>22,539,355&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>22,539,355&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Europe Limited</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Global Safety Data Center, Inc.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>4,302,613&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2,117,752&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2,184,861&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2,623,763&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(330,038)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(307,617)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>4,714,835&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(162,016)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(88,564)</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Shanghai Biotechnology Co., Ltd</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,658,782&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,408&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,657,374&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(32,536)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>28,235&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(66,690)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>99,029&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Asia Pacific PTE. LTD</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>188,157,451&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>9,400,443&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>178,757,008&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>4,942,099&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>3,305,103&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>6,432,647&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>11,003,585&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>18,434,335&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>30,187,873&nbsp;</TD>
+</TR>
+<TR height='47'>
+  <TD width='311' height='40' style='font-size:9pt;'>Celltrion Healthcare ILAC SANAYI VE TICARET LIMITED SIRKETI</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>54,942,695&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>48,158,486&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>6,784,209&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>7,251,088&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>1,589,320&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>3,101,667&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>10,359,229&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>(4,176,371)</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>(374,800)</TD>
+</TR>
+<TR height='47'>
+  <TD width='311' height='40' style='font-size:9pt;'>Celltrion Healthcare Hungary, Kft. 와 그 종속기업(*1)</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>3,213,955,004&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>3,089,254,451&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>124,700,553&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>702,077,467&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>108,170&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>(11,679,282)</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>1,264,906,594&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>25,889,875&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>(6,425,080)</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare Philippines Inc.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>3,543,793&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,516,889&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2,026,904&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,473,550&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>21,127&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>46,306&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2,491,778&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(33,588)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>34,858&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare Malaysia SDN BHD</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>909,795&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>324,219&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>585,576&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>614,756&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>30,495&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>35,015&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,099,585&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>64,623&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>98,795&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare Hong Kong Limited</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>8,714,051&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>5,667,807&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>3,046,244&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2,519,559&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>176,491&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>251,812&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>4,839,180&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>184,560&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>389,865&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare (Thailand) Co., Ltd.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>29,248,454&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>27,359,811&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,888,643&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>4,005,513&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(447,377)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(444,927)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>8,841,489&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(386,103)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(355,933)</TD>
+</TR>
+<TR height='47'>
+  <TD width='311' height='40' style='font-size:9pt;'>Celltrion Healthcare Distribuicao de Produtos Farmaceuticos do Brasil LTDA</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>170,142,141&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>84,983,707&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>85,158,434&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>36,579,304&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>982,644&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>3,513,607&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>53,627,967&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>2,398,758&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>12,237,698&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare Singapore Private Limited</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>8,960,762&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>7,523,154&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,437,608&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2,670,242&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>102,016&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>143,804&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>5,183,029&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>157,063&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>263,349&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare Japan K.K.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>105,909,562&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>102,065,226&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>3,844,336&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>40,429,051&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>496,513&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>521,632&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>59,899,060&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>95,382&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>195,491&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare Taiwan Limited</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>15,411,460&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>11,581,804&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>3,829,656&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2,228,495&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(177,881)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(149,157)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>3,543,753&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(208,508)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(105,950)</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare Netherlands B.V.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>134,741,470&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>139,134,603&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(4,393,133)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>42,413,362&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,181,110&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,233,880&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>74,254,656&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(11,374,757)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(11,271,310)</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare Australia Pty Ltd와 그 종속기업(*2)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>111,339,474&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>105,501,776&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>5,837,698&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>32,001,523&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,056,312&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>983,259&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>51,991,215&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,373,941&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,560,447&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare Colombia S.A.S.와 그 종속기업(*3)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>82,041,343&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>69,622,602&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>12,418,741&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>15,365,253&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(30,913)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>706,960&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>26,744,579&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>439,031&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,731,453&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Healthcare Canada Ltd.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>168,293,617&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>158,855,229&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>9,438,388&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>59,960,800&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,258,723&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,180,771&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>109,831,928&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2,345,313&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2,553,807&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion USA, Inc.와 그 종속기업(*4)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2,236,956,261&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,383,851,879&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>853,104,382&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>458,379,438&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>4,897,062&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>20,827,494&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>590,532,466&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>21,604,989&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>73,100,115&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>Celltrion Vietnam Company Limited</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>579,041&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>91,019&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>488,022&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>660,721&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>30,543&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>40,490&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,142,549&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>79,427&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>110,068&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>셀트리온바이오솔루션스</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>7,118,623&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>61,199&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>7,057,424&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(150,671)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(150,671)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(450,184)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(450,184)</TD>
+</TR>
+<TR height='27'>
+  <TD width='311' height='20' style='font-size:9pt;'>CELLTRION INDONESIA PHARMACEUTICAL(*5)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>839,114&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>413&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>838,701&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(4,088)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>(30,467)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(11,141)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(3,272)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<TABLE class='nb' width='1116'>
+<COLGROUP>
+<COL width='1116'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='27'>
+  <TD width='1107' height='20' align='RIGHT' style='font-size:9pt;'>(단위: 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1118'>
+<COLGROUP>
+<COL width='324'></COL>
+<COL width='89'></COL>
+<COL width='89'></COL>
+<COL width='88'></COL>
+<COL width='88'></COL>
+<COL width='88'></COL>
+<COL width='88'></COL>
+<COL width='88'></COL>
+<COL width='88'></COL>
+<COL width='88'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='27'>
+  <TH width='315' height='74' rowspan='3' style='font-size:9pt;'>구분</TH>
+  <TH width='257' height='47' colspan='3' rowspan='2' style='font-size:9pt;'>2025.12.31</TH>
+  <TH width='519' height='20' colspan='6' style='font-size:9pt;'>2025년 반기</TH>
+</TR>
+<TR height='27'>
+  <TH width='255' height='20' colspan='3' style='font-size:9pt;'>3개월</TH>
+  <TH width='255' height='20' colspan='3' style='font-size:9pt;'>누적</TH>
+</TR>
+<TR height='27'>
+  <TH width='80' height='20' style='font-size:9pt;'>자산</TH>
+  <TH width='80' height='20' style='font-size:9pt;'>부채</TH>
+  <TH width='79' height='20' style='font-size:9pt;'>자본</TH>
+  <TH width='79' height='20' style='font-size:9pt;'>매출</TH>
+  <TH width='79' height='20' style='font-size:9pt;'>당기순손익</TH>
+  <TH width='79' height='20' style='font-size:9pt;'>총포괄손익</TH>
+  <TH width='79' height='20' style='font-size:9pt;'>매출</TH>
+  <TH width='79' height='20' style='font-size:9pt;'>당기순손익</TH>
+  <TH width='79' height='20' style='font-size:9pt;'>총포괄손익</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>셀트리온제약</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>759,440,542&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>323,477,395&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>435,963,147&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>131,297,669&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>11,088,193&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>11,088,193&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>243,821,667&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>18,409,747&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>18,409,747&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Europe Limited</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Global Safety Data Center, Inc.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>3,533,348&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,259,923&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2,273,425&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2,221,572&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>371,108&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>152,026&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>4,795,905&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,188,051&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>999,179&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Shanghai Biotechnology Co., Ltd</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,558,386&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>41&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,558,345&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(9,772)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(107,988)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(32,637)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(127,858)</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Asia Pacific PTE. LTD</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>180,883,749&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>32,314,614&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>148,569,135&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>3,489,562&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(217,974)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(12,266,769)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>6,173,932&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(9,309,855)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(32,875,675)</TD>
+</TR>
+<TR height='47'>
+  <TD width='315' height='40' style='font-size:9pt;'>Celltrion Healthcare ILAC SANAYI VE TICARET LIMITED SIRKETI</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>75,359,332&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>68,200,323&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>7,159,009&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>5,318,299&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>(253,827)</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>1,184,570&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>15,591,904&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>579,128&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>2,689,213&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Hungary, Kft. 와 그 종속기업(*1)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>3,105,824,791&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2,974,699,158&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>131,125,633&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>505,831,731&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(35,834,011)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(62,244,120)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>899,877,801&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(51,077,098)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(80,395,494)</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Philippines Inc.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>4,557,191&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>2,565,145&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,992,046&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>874,455&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>59,115&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(23,865)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,944,890&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>189,025&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>121,273&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Malaysia SDN BHD</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>795,615&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>308,834&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>486,781&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>422,651&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>51,223&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>39,456&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>779,334&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>54,879&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>44,556&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Hong Kong Limited</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>13,454,301&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>10,797,923&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2,656,378&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2,461,446&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>42,194&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(112,341)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>5,157,620&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(8,441)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(166,207)</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare (Thailand) Co., Ltd.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>39,609,890&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>37,365,313&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2,244,577&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>7,471,020&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(372,066)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(501,432)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>14,870,713&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(919,697)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(1,031,637)</TD>
+</TR>
+<TR height='47'>
+  <TD width='315' height='40' style='font-size:9pt;'>Celltrion Healthcare Distribuicao de Produtos Farmaceuticos do Brasil LTDA</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>144,304,611&nbsp;</TD>
+  <TD width='80' height='40' align='RIGHT' style='font-size:9pt;'>71,383,875&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>72,920,736&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>30,567,730&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>(800,907)</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>(2,685,628)</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>49,787,393&nbsp;</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>(272,263)</TD>
+  <TD width='79' height='40' align='RIGHT' style='font-size:9pt;'>2,509,778&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Singapore Private Limited</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>6,366,277&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>5,192,018&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,174,259&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2,137,225&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>13,804&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(17,739)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>3,891,420&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>152,572&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>135,219&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Japan K.K.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>154,101,537&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>150,452,692&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>3,648,845&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>38,382,716&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>439,355&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>334,002&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>53,379,661&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>612,764&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>616,710&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Taiwan Limited</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>19,283,964&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>15,348,358&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>3,935,606&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,527,756&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(24,133)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>116,221&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>4,024,159&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>8,230&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>104,875&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Netherlands B.V.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>133,222,788&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>126,344,611&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>6,878,177&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>31,795,201&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(5,522,621)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(5,603,743)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>60,264,732&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(6,668,689)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(6,621,105)</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Australia Pty Ltd 와 그 종속기업(*2)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>75,420,666&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>71,143,415&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>4,277,251&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>10,743,883&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(108,119)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(101,215)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>21,297,568&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>301,811&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>194,256&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Colombia S.A.S. 와 그 종속기업(*3)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>62,355,227&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>51,667,942&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>10,687,285&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>10,753,435&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(80,261)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(404,335)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>18,658,240&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(12,901)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>29,876&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Healthcare Canada Ltd.</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>125,993,875&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>119,109,294&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>6,884,581&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>23,337,717&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>170,685&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>243,724&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>34,297,659&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>298,828&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>323,482&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion USA, Inc. 와 그 종속기업(*4)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,889,747,583&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>1,214,089,605&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>675,657,978&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>64,387,563&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>1,741,341&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>2,821,366&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>120,224,881&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>3,393,113&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>4,164,858&nbsp;</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>Celltrion Vietnam Company Limited</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>737,540&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>359,586&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>377,954&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>80,781&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>8,773&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(16,735)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>132,265&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>9,844&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(17,536)</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>셀트리온바이오솔루션스</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>7,701,453&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>193,845&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>7,507,608&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(668,957)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(668,957)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(1,239,043)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(1,239,043)</TD>
+</TR>
+<TR height='27'>
+  <TD width='315' height='20' style='font-size:9pt;'>CELLTRION INDONESIA PHARMACEUTICAL(*5)</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>841,997&nbsp;</TD>
+  <TD width='80' height='20' align='RIGHT' style='font-size:9pt;'>25&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>841,972&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(1,070)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(50,038)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>-&nbsp;</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(1,070)</TD>
+  <TD width='79' height='20' align='RIGHT' style='font-size:9pt;'>(47,950)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P>(*1) Celltrion Healthcare Hungary, Kft. 및 그 종속기업이 포함된 중간지배기업의 연결재무정보 입니다.</P>
+<P>(*2) Celltrion Healthcare Australia Pty Ltd 및 그 종속기업이 포함된 중간지배기업의 연결재무정보 입니다.</P>
+<P>(*3) Celltrion Healthcare Colombia S.A.S. 및 그 종속기업이 포함된 중간지배기업의 연결재무정보 입니다.</P>
+<P>(*4) Celltrion USA, Inc. 및 그 종속기업이 포함된 중간지배기업의 연결재무정보 입니다.</P>
+<P>(*5) 전기 중 신규 설립 하였습니다.</P>
+</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

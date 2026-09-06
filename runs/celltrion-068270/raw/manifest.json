@@ -1,0 +1,115 @@
+{
+  "version": 1,
+  "member_text_limit": 12000,
+  "files": [
+    {
+      "path": "company.json",
+      "bytes": 528,
+      "sha256": "e890f8b6c24e86ec653e17499c75a8bf653a4fc3c9e3d1b993b64f2aa5ba523e"
+    },
+    {
+      "path": "corp_search.json",
+      "bytes": 480,
+      "sha256": "d8a84df8ed455ba8c44167604976084cba3bcb3e71a143eb140d2ce77f328f54"
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_10.xml",
+      "bytes": 3659,
+      "sha256": "c915ada01b1fc0fa17840e0b476853eb6e74ac5668aca4aa4cbcaccf45678eb3",
+      "characters": 2037,
+      "truncated_for_reader": false
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_11.xml",
+      "bytes": 5262,
+      "sha256": "102902745dc2d404cec5bce345896f996269ab5012b61570cc6c9d7ba11f3182",
+      "characters": 4752,
+      "truncated_for_reader": false
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_111.xml",
+      "bytes": 28172,
+      "sha256": "2a8b0035aee2aa6f05011eb9be5b97c0bea46b294b7f758494fc4dde32718b38",
+      "characters": 26323,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_113.xml",
+      "bytes": 66140,
+      "sha256": "e892e1ba85679bf5351013d0a5f4914629361571f52fa8660bc4d0307deab1b9",
+      "characters": 64858,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_12.xml",
+      "bytes": 18102,
+      "sha256": "b11a8653d255a04ef86781ca401dd6c361ee7f8fd1daef5830f88b21c7bf7762",
+      "characters": 15992,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_13.xml",
+      "bytes": 5093,
+      "sha256": "25ea5c6432d0113cf54583acc90c729f483a9207e536baaadb2510208215889a",
+      "characters": 4287,
+      "truncated_for_reader": false
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_26.xml",
+      "bytes": 72860,
+      "sha256": "a4555e78411940e4e7da81a430c150ebc4e634d2941bf9a1be3f0797250377bd",
+      "characters": 69726,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_28.xml",
+      "bytes": 33847,
+      "sha256": "716a8aa23995d602bad745c8f2928809e0237a865c229d8b2b3d9cedec58447d",
+      "characters": 30913,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_58.xml",
+      "bytes": 5268,
+      "sha256": "0f2d5987ef337bd63137e68a9e143a49ce46a385df2cf84a4b6ae93035a3a9f9",
+      "characters": 4620,
+      "truncated_for_reader": false
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_7.xml",
+      "bytes": 51739,
+      "sha256": "56c81bd5579e1ba38d59ffdc8097dd9318ab33b4f06ac70fc089db4b8d8e798b",
+      "characters": 47913,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_80.xml",
+      "bytes": 13806,
+      "sha256": "1c441eef47eb488dd335319726309344efb8b3596c839f3473e530cba167a24c",
+      "characters": 11510,
+      "truncated_for_reader": false
+    },
+    {
+      "path": "filing_20260814003751/20260814003751_92.xml",
+      "bytes": 46975,
+      "sha256": "037f5911d7bec264289f71789f1c493d560521b422959cde8faf9e1ecf30bb46",
+      "characters": 40811,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814003751/toc.txt",
+      "bytes": 7423,
+      "sha256": "e10e4430c16fc6a5ab564e166b77361d2aeab7df925c3eac37bd5c8ce67d312a"
+    },
+    {
+      "path": "fnltt_2025_CFS.json",
+      "bytes": 150611,
+      "sha256": "1fc7e12fdd1a5a06f49f7d7f792a3f12a0b075fc67e9c2d41d01ea092f3f36c0"
+    },
+    {
+      "path": "list.json",
+      "bytes": 83159,
+      "sha256": "791a4661792e5e1a7367383cdbd0d5db746c62f67a8609bf20d5ea33a88e8eae"
+    }
+  ]
+}

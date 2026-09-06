@@ -1,0 +1,342 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='section-2'><A name='toc1'>3. 원재료 및 생산설비</A></P>
+<P><BR/></P>
+<P style='font-weight:bold;'>가. 주요 원재료 등의 현황(연결 기준)&nbsp;</P>
+<TABLE class='nb' width='657'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='357'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23' valign='TOP'>(기준일: 2026.06.30)</TD>
+  <TD width='348' height='23' align='RIGHT' valign='TOP'>(단위 : 백만원, %)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='658'>
+<COLGROUP>
+<COL width='108'></COL>
+<COL width='78'></COL>
+<COL width='158'></COL>
+<COL width='93'></COL>
+<COL width='161'></COL>
+<COL width='60'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='99' height='23' valign='TOP'>&nbsp; 사업부문</TH>
+  <TH width='69' height='23' valign='TOP'>매입유형</TH>
+  <TH width='149' height='23' valign='TOP'>품 목</TH>
+  <TH width='84' height='23' valign='TOP'>구체적용도</TH>
+  <TH width='152' height='23' valign='TOP'>매입액(비율)</TH>
+  <TH width='51' height='23' valign='TOP'>비 고</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='99' height='99' rowspan='2' align='CENTER'>바이오의약품</TD>
+  <TD width='69' height='46' align='CENTER'>원재료</TD>
+  <TD width='149' height='46' align='CENTER'>미디어 외</TD>
+  <TD width='84' height='46' align='CENTER'>제품생산</TD>
+  <TD width='152' height='46' align='RIGHT'>238,203<BR/>(73.05)</TD>
+  <TD width='51' height='46' align='CENTER'>-</TD>
+</TR>
+<TR height='53'>
+  <TD width='69' height='46' align='CENTER'>부재료</TD>
+  <TD width='149' height='46' align='CENTER'>CIP 100 외</TD>
+  <TD width='84' height='46' align='CENTER'>제품생산</TD>
+  <TD width='152' height='46' align='RIGHT'>26,021<BR/>(7.98)</TD>
+  <TD width='51' height='46' align='CENTER'>-</TD>
+</TR>
+<TR height='53'>
+  <TD width='99' height='46' align='CENTER'>케미컬의약품</TD>
+  <TD width='69' height='46' align='CENTER'>원재료</TD>
+  <TD width='149' height='46' align='CENTER'>오로트산카르니틴 외</TD>
+  <TD width='84' height='46' align='CENTER'>제품생산</TD>
+  <TD width='152' height='46' align='RIGHT'>61,878<BR/>(18.97)</TD>
+  <TD width='51' height='46' align='CENTER'>-</TD>
+</TR>
+<TR height='53'>
+  <TD width='428' height='46' colspan='4' align='CENTER'>총 매입액</TD>
+  <TD width='152' height='46' align='RIGHT'>326,102<BR/> (100.00)</TD>
+  <TD width='51' height='46' align='CENTER'>-</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P>- 당사 의약품 제조에 사용되는 원재료 등은 사업의 특성상 매입처에서 주문생산 방식으로 조달하고 있으며, 계약 당사자 간의 상호 협의를 통해 가격을 조정하고 있어 가격변동 추이는 별도로 산정하지 않았습니다.<BR/>- 주요 매입처의 경우 경쟁상황 및 상호 계약 내용에 따라 기재하지 않습니다.<BR/><BR/><SPAN style='font-weight:bold;'>나. 생산능력 및 생산능력의 산출근거</SPAN><SPAN style='font-weight:bold;color:#4F81BD;'>&nbsp;<BR/></SPAN><SPAN>(1) 생산능력&nbsp;</SPAN><BR/>
+</P>
+<TABLE class='nb' width='607'>
+<COLGROUP>
+<COL width='607'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='598' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 배치)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='609'>
+<COLGROUP>
+<COL width='98'></COL>
+<COL width='211'></COL>
+<COL width='83'></COL>
+<COL width='109'></COL>
+<COL width='108'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='89' height='23' valign='TOP'>사업부문</TH>
+  <TH width='202' height='23' valign='TOP'>품 목</TH>
+  <TH width='74' height='23' valign='TOP'>사업소</TH>
+  <TH width='100' height='23' valign='TOP'>제36기 반기</TH>
+  <TH width='99' height='23' valign='TOP'>제35기</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='89' height='83' rowspan='3' align='CENTER'>의약품제조</TD>
+  <TD width='202' height='23' align='CENTER'>바이오시밀러(CT-P13 등) 외</TD>
+  <TD width='74' height='23' align='CENTER'>제1공장</TD>
+  <TD width='100' height='23' align='RIGHT'>133</TD>
+  <TD width='99' height='23' align='RIGHT'>133</TD>
+</TR>
+<TR height='30'>
+  <TD width='202' height='23' align='CENTER'>바이오시밀러(CT-P13 등) 외</TD>
+  <TD width='74' height='23' align='CENTER'>제2공장</TD>
+  <TD width='100' height='23' align='RIGHT'>82</TD>
+  <TD width='99' height='23' align='RIGHT'>82</TD>
+</TR>
+<TR height='30'>
+  <TD width='202' height='23' align='CENTER'>바이오시밀러(CT-P13 등) 외</TD>
+  <TD width='74' height='23' align='CENTER'>제3공장</TD>
+  <TD width='100' height='23' align='RIGHT'>98</TD>
+  <TD width='99' height='23' align='RIGHT'>98</TD>
+</TR>
+<TR height='30'>
+  <TD width='383' height='23' colspan='3' align='CENTER'>합 계</TD>
+  <TD width='100' height='23' align='RIGHT'>313</TD>
+  <TD width='99' height='23' align='RIGHT'>313</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/>(2) 생산능력의 산출근거<BR/>1) 산출기준 (1공장 기준)</P>
+<P>&nbsp;- 작업일수: 330일 (설비 유지보수 기간 35일 제외)<BR/> - 성공률 81% (작업자 실수 및 설비 오류에 따른 실패율 반영)<BR/> - 생산주기: 2일<BR/> - 바이오리액터의 수: 8기<BR/> - 연간 동일제품 생산 가정<BR/><BR/>2) 산출방법 (1공장 기준)</P>
+<P>&nbsp;- 연간 총 생산능력<BR/> &nbsp; &nbsp;: 작업일수 (330일)/생산주기 (2일)<SPAN style='color:#424242;'>&nbsp;×</SPAN>&nbsp;성공률 (81%) = 133배치<BR/> - 바이오리액터당 연간 생산능력<BR/> &nbsp; &nbsp;: [작업일수 (330일)/생산주기 (2일)] / 8기<SPAN style='color:#424242;'>&nbsp;×</SPAN>&nbsp;성공률 (81%) = 16.7배치<BR/> - 생산능력은 상업생산 단계에서 생산 가능한 최대 생산주기를 기준으로 산출하였으며, 실제 생산능력은 각 배치별 생산시간 간격, 성공률, 생산제품의 수 등 다양한 요인에 의해 변동 될 수 있습니다.<BR/><BR/>3) 2, 3공장은 보다 다양한 제품을 생산하도록 계획된 각 공장의 사정에 맞추어 제품 change-over의 영향을 추가로 반영하여 산출하였습니다.<BR/><BR/><SPAN style='font-weight:bold;'>다. 생산설비의 현황 (연결 기준)&nbsp;</SPAN><BR/>
+</P>
+<TABLE class='nb' width='1360'>
+<COLGROUP>
+<COL width='1360'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1351' height='23' align='RIGHT' valign='TOP'>(단위 : 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1360'>
+<COLGROUP>
+<COL width='203'></COL>
+<COL width='113'></COL>
+<COL width='105'></COL>
+<COL width='100'></COL>
+<COL width='112'></COL>
+<COL width='71'></COL>
+<COL width='92'></COL>
+<COL width='92'></COL>
+<COL width='113'></COL>
+<COL width='113'></COL>
+<COL width='123'></COL>
+<COL width='123'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='194' height='23'>구분</TH>
+  <TH width='104' height='23'>2026.01.01</TH>
+  <TH width='96' height='23'>사업결합(*1)</TH>
+  <TH width='91' height='23'>취득</TH>
+  <TH width='103' height='23'>대체 등</TH>
+  <TH width='62' height='23'>처분</TH>
+  <TH width='83' height='23'>감가상각</TH>
+  <TH width='83' height='23'>기타</TH>
+  <TH width='104' height='23'>2026.06.30</TH>
+  <TH width='104' height='23'>취득원가</TH>
+  <TH width='114' height='23'>감가상각누계액</TH>
+  <TH width='114' height='23'>손상차손누계액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='194' height='23'>토지</TD>
+  <TD width='104' height='23' align='RIGHT'>320,722,025&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>5,623,393&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>(2,841)</TD>
+  <TD width='62' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>1,279,200&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>327,621,777&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>327,621,777&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>-&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='194' height='23'>건물</TD>
+  <TD width='104' height='23' align='RIGHT'>501,341,564&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>1,586,843&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>101,849,667&nbsp;</TD>
+  <TD width='62' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>9,841,241&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>3,994,921&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>598,931,754&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>755,282,517&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>(156,350,763)</TD>
+  <TD width='114' height='23' align='RIGHT'>-&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='194' height='23'>건물-사용권자산(*2)</TD>
+  <TD width='104' height='23' align='RIGHT'>25,802,707&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>1,391,102&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>2,722,635&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='62' height='23' align='RIGHT'>143,924&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>4,974,775&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>922,520&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>25,720,265&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>46,592,371&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>(20,872,106)</TD>
+  <TD width='114' height='23' align='RIGHT'>-&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='194' height='23'>생산시설</TD>
+  <TD width='104' height='23' align='RIGHT'>293,579,228&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>18,000&nbsp;</TD>
+  <TD width='62' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>17,876,910&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>3,253,983&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>278,974,301&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>641,638,866&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>(362,664,565)</TD>
+  <TD width='114' height='23' align='RIGHT'>-&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='194' height='23'>구축물</TD>
+  <TD width='104' height='23' align='RIGHT'>144,632,118&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>4,125,943&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>1,670,290&nbsp;</TD>
+  <TD width='62' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>5,318,427&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>10,269,437&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>155,379,361&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>170,702,896&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>(15,323,535)</TD>
+  <TD width='114' height='23' align='RIGHT'>-&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='194' height='23'>기계장치</TD>
+  <TD width='104' height='23' align='RIGHT'>192,311,876&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>4,684,730&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>6,702,890&nbsp;</TD>
+  <TD width='62' height='23' align='RIGHT'>13,074&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>16,556,946&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>5,913,670&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>193,043,146&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>402,174,478&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>(207,987,415)</TD>
+  <TD width='114' height='23' align='RIGHT'>(1,143,917)</TD>
+</TR>
+<TR height='30'>
+  <TD width='194' height='23'>차량운반구</TD>
+  <TD width='104' height='23' align='RIGHT'>445,504&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>679,401&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='62' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>102,528&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>43,500&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>1,065,877&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>1,942,106&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>(876,229)</TD>
+  <TD width='114' height='23' align='RIGHT'>-&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='194' height='23'>차량운반구-사용권자산(*2)</TD>
+  <TD width='104' height='23' align='RIGHT'>11,461,386&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>5,761,049&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='62' height='23' align='RIGHT'>483,590&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>3,297,862&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>426,716&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>13,867,699&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>22,450,997&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>(8,583,298)</TD>
+  <TD width='114' height='23' align='RIGHT'>-&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='194' height='23'>비품</TD>
+  <TD width='104' height='23' align='RIGHT'>62,093,157&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>19,821&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>2,983,817&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>2,736,966&nbsp;</TD>
+  <TD width='62' height='23' align='RIGHT'>14,969&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>9,261,736&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>2,642,705&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>61,199,761&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>111,928,095&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>(50,716,650)</TD>
+  <TD width='114' height='23' align='RIGHT'>(11,684)</TD>
+</TR>
+<TR height='30'>
+  <TD width='194' height='23'>건설중인자산</TD>
+  <TD width='104' height='23' align='RIGHT'>150,220,292&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>145,683,837&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>(121,287,326)</TD>
+  <TD width='62' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>4,073,532&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>178,690,335&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>178,690,335&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>-&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>-&nbsp;</TD>
+</TR>
+<TR height='30'>
+  <TD width='194' height='23' align='CENTER'>합계</TD>
+  <TD width='104' height='23' align='RIGHT'>1,702,609,857&nbsp;</TD>
+  <TD width='96' height='23' align='RIGHT'>1,410,923&nbsp;</TD>
+  <TD width='91' height='23' align='RIGHT'>173,851,648&nbsp;</TD>
+  <TD width='103' height='23' align='RIGHT'>(8,312,354)</TD>
+  <TD width='62' height='23' align='RIGHT'>655,557&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>67,230,425&nbsp;</TD>
+  <TD width='83' height='23' align='RIGHT'>32,820,184&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>1,834,494,276&nbsp;</TD>
+  <TD width='104' height='23' align='RIGHT'>2,659,024,438&nbsp;</TD>
+  <TD width='114' height='23' align='RIGHT'>(823,374,561)</TD>
+  <TD width='114' height='23' align='RIGHT'>(1,155,601)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P>(*1) 당기 중 GIFRER BARBEZAT 인수에 따라 추가 인식하였습니다.</P>
+<P>(*2) 연결기업은 단기리스 및 소액자산 리스에 대하여 인식면제 규정을 적용하였으며 당반기 중 단기리스에 따른 리스료 2,767백만원(전반기: 1,921백만원), 소액자산리스에 따른 리스료 588백만원(전반기: 564백만원)을 비용으로 인식하였습니다. 한편 당반기 중 리스의 총 현금유출은 13,635백만원(전반기: 10,112백만원)이며, 상기 리스이용자의 사용권자산 전대리스와 관련하여 당반기 중 인식한 리스료 수익은 없습니다(전반기: 44백만원). 또한 당반기중 리스부채와 관련한 이자비용은 646백만원(전반기: 797백만원)입니다.</P>
+<P><BR/><SPAN style='font-weight:bold;'>라. 생산설비 투자계획</SPAN><BR/>
+</P>
+<P>당사는 상업화 파이프라인 확대 및 시장 수요 증가에 선제적으로 대응하고 안정적인 의약품 공급망을 구축하기 위하여, 송도 캠퍼스 내 제4공장 및 제5공장을 신설하는 신규 시설투자를 추진하고 있습니다. 제4공장과 제5공장은 총 18만 리터 규모로 건설될 예정이며, 예상 투자금액은 약 1조 2,265억원입니다. 본 투자를 통해 원료의약품(DS) 생산 역량을 확대함으로써 생산 내재화 수준을 제고하고, 원가 경쟁력 및 공급 안정성을 강화할 수 있을 것으로 기대합니다.<BR/><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>
