@@ -201,15 +201,28 @@ def simulate_continuous_financial_paths(
     total = sum((estimate.probability for estimate in estimates), Decimal("0"))
     if abs(total - Decimal("1")) > Decimal("0.02"):
         raise ValueError("continuous scenario probabilities do not sum approximately to one")
-    normalized = tuple(
-        ContinuousScenarioEstimate(
-            scenario_id=estimate.scenario_id,
-            probability=estimate.probability / total,
-            lower_probability=estimate.lower_probability,
-            upper_probability=estimate.upper_probability,
+    # The point estimate is the mean of the outer draws and the bounds are
+    # sample quantiles of the same draws, so lower <= point <= upper is usual
+    # but not guaranteed — and normalizing the point to make the scenarios sum
+    # to one moves it again without moving the bounds. Both crossings happen
+    # exactly where a scenario saturates: with 96% of the outer draws putting
+    # every path in one scenario, its 5% quantile is 1.0 while its mean is
+    # 0.9994. The clamp is applied to the normalized point, because that is
+    # the number the interval accompanies. It keeps a saturated cohort a
+    # reported result — the frame check names it — rather than an exception
+    # thrown from the snapshot's own invariant.
+    normalized: list[ContinuousScenarioEstimate] = []
+    for estimate in estimates:
+        point = estimate.probability / total
+        normalized.append(
+            ContinuousScenarioEstimate(
+                scenario_id=estimate.scenario_id,
+                probability=point,
+                lower_probability=min(estimate.lower_probability, point),
+                upper_probability=max(estimate.upper_probability, point),
+            )
         )
-        for estimate in estimates
-    )
+    normalized = tuple(normalized)
     payload = {
         "contract": "continuous_financial_path_probability/v1",
         "drivers": [

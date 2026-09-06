@@ -1,0 +1,12 @@
+{
+ "current_conditioning_first_seen_at": "2026-03-16T09:00:00Z",
+ "current_conditioning_source_hash": "1fc7e12fdd1a5a06f49f7d7f792a3f12a0b075fc67e9c2d41d01ea092f3f36c0",
+ "current_conditioning_source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00413046&bsns_year=2025&reprt_code=11011&fs_div=CFS",
+ "source_company_count": 6,
+ "source_dataset_sha256": "268b733f9983eb85630dd8033e16a5a3db3487db8e609d72b09b1d03155929f0",
+ "source_provenance_hash": "6197ca95f67ba71ae777cf947d07f98d500bc69d66523dbbfe6a9355df50f7fb",
+ "source_row_count": 30,
+ "target_ticker_excluded": "068270",
+ "training_latest_publication_at": "2026-03-20T09:00:00Z",
+ "version": "1.0"
+}

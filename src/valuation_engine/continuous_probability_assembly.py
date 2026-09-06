@@ -653,6 +653,60 @@ def _dependence_object(
 # ------------------------------------------------------------------- assembler
 
 
+#: How far outside the outermost scenario anchor a target may sit before the
+#: cohort stops being able to frame it. The factory places the low and high
+#: anchors at -1 and +1 scale around the cohort's own reference path, so a
+#: target more than this many scales beyond the outer anchor is not a company
+#: having an unusually good or bad year — it is a company the cohort's levels
+#: do not describe. Nearest-scenario assignment still returns an answer there,
+#: and the answer is always the same extreme scenario, which reads like
+#: certainty and is really the absence of discrimination.
+_COHORT_FRAME_MAX_EXCESS_SCALES = 2.0
+
+
+def _cohort_frame_findings(
+    drivers: tuple[ContinuousDriverPosterior, ...],
+    scenarios: tuple[ScenarioFinancialPath, ...],
+) -> tuple[str, ...]:
+    """Name every driver whose target path falls outside the cohort's anchors.
+
+    This is a comparability check on the cohort, not a judgment on the target.
+    A finding here degrades the snapshot, so scenario probabilities stay
+    descriptive and the run withholds a weighted expected value with a reason
+    a reader can act on — replace the cohort — instead of reporting a
+    saturated 99.98% as though it were a measurement.
+    """
+
+    findings: list[str] = []
+    for driver in drivers:
+        anchors_by_period = [
+            [dict(scenario.driver_paths)[driver.driver_id][period] for scenario in scenarios]
+            for period in range(len(driver.mean_path))
+        ]
+        worst = 0.0
+        worst_period = 0
+        worst_side = ""
+        for period, anchors in enumerate(anchors_by_period):
+            scale = abs(float(driver.scale_path[period]))
+            if scale <= 0:
+                continue
+            mean = float(driver.mean_path[period])
+            above = (mean - float(max(anchors))) / scale
+            below = (float(min(anchors)) - mean) / scale
+            excess, side = (above, "위") if above >= below else (below, "아래")
+            if excess > worst:
+                worst, worst_period, worst_side = excess, period + 1, side
+        if worst > _COHORT_FRAME_MAX_EXCESS_SCALES:
+            findings.append(
+                f"cohort scenario anchors do not frame the target on "
+                f"{driver.driver_id}: the conditioned path runs {worst:.1f} "
+                f"scales {worst_side} the outermost anchor at period "
+                f"{worst_period}; scenario assignment saturates and carries no "
+                "discrimination, so this cohort cannot weight this target"
+            )
+    return tuple(findings)
+
+
 def build_continuous_probability_snapshot(
     *,
     binding: ContinuousCalibrationBinding,
@@ -699,6 +753,7 @@ def build_continuous_probability_snapshot(
         inner_draws=binding.inner_draws,
         seed=binding.seed,
     )
+    frame_findings = _cohort_frame_findings(drivers, scenarios)
     return ContinuousProbabilityCalibrationSnapshot.build(
         cohort_key=binding.cohort_key,
         forecast_class=binding.forecast_class,
@@ -714,5 +769,5 @@ def build_continuous_probability_snapshot(
         simulation_hash=simulation.simulation_hash,
         dataset_hash=binding.expected_dataset_sha256,
         oos_diagnostics=diagnostics,
-        integrity_findings=(),
+        integrity_findings=frame_findings,
     )
