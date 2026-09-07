@@ -152,6 +152,7 @@ def simulate_continuous_financial_paths(
     chol = _cholesky(matrix)
     rng = random.Random(seed)
     scenario_samples = {scenario.scenario_id: [] for scenario in scenarios}
+    scenario_scorers = _compile_scenario_scorers(scenarios, ordered)
 
     for _ in range(outer_draws):
         sampled_means: list[list[float]] = []
@@ -181,7 +182,7 @@ def simulate_continuous_financial_paths(
                     if driver.upper_bound is not None:
                         level = min(level, float(driver.upper_bound))
                     path[driver.driver_id].append(level)
-            winner = _nearest_scenario(path, scenarios, driver_map)
+            winner = _nearest_scenario(path, scenario_scorers)
             counts[winner] += 1
         for scenario_id, count in counts.items():
             scenario_samples[scenario_id].append(count / inner_draws)
@@ -256,26 +257,46 @@ def simulate_continuous_financial_paths(
     )
 
 
-def _nearest_scenario(
-    path: dict[str, list[float]],
+def _compile_scenario_scorers(
     scenarios: tuple[ScenarioFinancialPath, ...],
-    driver_map: dict[str, ContinuousDriverPosterior],
-) -> str:
-    scored: list[tuple[float, str]] = []
+    drivers: tuple[ContinuousDriverPosterior, ...],
+) -> tuple[tuple[str, tuple[tuple[str, tuple[float, ...], tuple[float, ...], float], ...]], ...]:
+    """Compile immutable float scoring inputs once, outside Monte Carlo draws."""
+    compiled = []
     for scenario in scenarios:
         anchors = dict(scenario.driver_paths)
         weights = dict(scenario.driver_weights)
+        terms = []
+        for driver in drivers:
+            terms.append(
+                (
+                    driver.driver_id,
+                    tuple(float(value) for value in anchors[driver.driver_id]),
+                    tuple(max(abs(float(scale)), 1e-9) for scale in driver.scale_path),
+                    float(weights.get(driver.driver_id, Decimal("1"))),
+                )
+            )
+        compiled.append((scenario.scenario_id, tuple(terms)))
+    return tuple(compiled)
+
+
+def _nearest_scenario(
+    path: dict[str, list[float]],
+    scorers: tuple[
+        tuple[str, tuple[tuple[str, tuple[float, ...], tuple[float, ...], float], ...]],
+        ...,
+    ],
+) -> str:
+    scored: list[tuple[float, str]] = []
+    for scenario_id, terms in scorers:
         distance = 0.0
         weight_total = 0.0
-        for driver_id, observed_path in path.items():
-            driver = driver_map[driver_id]
-            driver_weight = float(weights.get(driver_id, Decimal("1")))
-            for observed, anchor, scale in zip(observed_path, anchors[driver_id], driver.scale_path):
-                denominator = max(abs(float(scale)), 1e-9)
-                diff = (observed - float(anchor)) / denominator
+        for driver_id, anchors, denominators, driver_weight in terms:
+            for observed, anchor, denominator in zip(path[driver_id], anchors, denominators):
+                diff = (observed - anchor) / denominator
                 distance += driver_weight * diff * diff
                 weight_total += driver_weight
-        scored.append((distance / max(weight_total, 1e-12), scenario.scenario_id))
+        scored.append((distance / max(weight_total, 1e-12), scenario_id))
     scored.sort(key=lambda item: (item[0], item[1]))
     return scored[0][1]
 
