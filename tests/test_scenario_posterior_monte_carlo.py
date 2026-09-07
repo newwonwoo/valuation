@@ -67,6 +67,28 @@ def test_wider_event_posteriors_produce_nonzero_scenario_uncertainty():
     assert any(item.upper_probability - item.lower_probability > Decimal("0.05") for item in result.estimates)
 
 
+def test_rare_event_mean_may_lie_outside_central_quantile_interval():
+    result = simulate_scenario_posterior(
+        factors=(
+            PosteriorEventFactor("rare", Decimal("0.01"), Decimal("99.99"), "RARE"),
+        ),
+        rules=(
+            PosteriorScenarioRule("Yes", required_event_ids=("rare",)),
+            PosteriorScenarioRule("No", forbidden_event_ids=("rare",)),
+        ),
+        dependence=CorrelationDependence(
+            version="independent",
+            event_ids=("rare",),
+            correlation_matrix=((Decimal("1"),),),
+        ),
+        outer_draws=300,
+        inner_draws=10,
+        seed=0,
+    )
+    rare = {item.scenario_id: item for item in result.estimates}["Yes"]
+    assert rare.point_probability > rare.upper_probability == Decimal("0.0")
+
+
 def test_dependence_is_explicit_and_changes_joint_scenario_result():
     positive = simulate_scenario_posterior(
         factors=factors(), rules=rules(), dependence=dependence("0.70"), outer_draws=50, inner_draws=80, seed=5
