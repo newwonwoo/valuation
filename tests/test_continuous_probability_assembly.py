@@ -9,6 +9,7 @@ tests fail.
 
 from __future__ import annotations
 
+from dataclasses import replace
 from decimal import Decimal
 import json
 from pathlib import Path
@@ -211,6 +212,40 @@ def test_that_snapshot_issues_a_certificate_the_runtime_socket_accepts(bound):
     assert isinstance(certificate, CalibrationCertificate)
     certificate.validate_for_weighting()
     assert certificate.cohort_key == "shipbuilding|5y_path|continuous_v1"
+
+
+def test_continuous_snapshot_accepts_mean_outside_central_quantile_interval(bound):
+    snapshot = _build(bound)
+    estimates = (
+        replace(
+            snapshot.estimates[0],
+            probability=Decimal("0.001"),
+            lower_probability=Decimal("0"),
+            upper_probability=Decimal("0"),
+        ),
+        replace(
+            snapshot.estimates[1],
+            probability=Decimal("0.999"),
+            lower_probability=Decimal("1"),
+            upper_probability=Decimal("1"),
+        ),
+    )
+    rebuilt = snapshot.__class__.build(
+        cohort_key=snapshot.cohort_key,
+        forecast_class=snapshot.forecast_class,
+        horizon=snapshot.horizon,
+        as_of_date=snapshot.as_of_date,
+        method_version=snapshot.method_version,
+        mapping_version=snapshot.mapping_version,
+        estimates=estimates,
+        driver_snapshot_hashes=snapshot.driver_snapshot_hashes,
+        dependence_hash=snapshot.dependence_hash,
+        simulation_hash=snapshot.simulation_hash,
+        dataset_hash=snapshot.dataset_hash,
+        oos_diagnostics=snapshot.oos_diagnostics,
+    )
+    rebuilt.validate()
+    assert rebuilt.status is CalibrationStatus.CALIBRATED
 
 
 def test_driver_count_and_forecast_length_are_not_fixed_at_sk_hynix_values(bound):
