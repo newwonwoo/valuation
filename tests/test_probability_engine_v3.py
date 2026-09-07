@@ -6,6 +6,7 @@ from valuation_engine.assumption_compiler import CompiledAssumption, CompiledAss
 from valuation_engine.continuous_predictive_weight import PredictiveEvidenceProfile
 from valuation_engine.dynamic_hierarchical_posterior import DataIntegrityAssessment
 from valuation_engine.probability_engine_v3 import (
+    ProbabilityEngineV3Certificate,
     ProbabilityEngineV3Result,
     ProbabilityEngineV3Spec,
     ProbabilityEngineV3Status,
@@ -100,6 +101,22 @@ def test_v3_computes_probabilities_even_when_oos_skill_is_weak():
     assert abs(sum(value for _, value in result.scenario_probabilities) - Decimal("1")) < Decimal("1e-12")
     assert all(lower <= dict(result.scenario_probabilities)[scenario] <= upper for scenario, lower, upper in result.scenario_intervals)
     assert all(weight.likelihood_weight > 0 for event in result.event_results for _, weight in event.level_weights)
+
+
+def test_v3_certificate_accepts_mean_outside_central_quantile_interval():
+    certificate = ProbabilityEngineV3Certificate(
+        cohort_key="scenario_probability|12m|v3",
+        snapshot_hash="SNAPSHOT",
+        dataset_hash="DATASET",
+        scenario_probabilities=(("Rare", Decimal("0.001")), ("Other", Decimal("0.999"))),
+        scenario_intervals=(
+            ("Rare", Decimal("0"), Decimal("0")),
+            ("Other", Decimal("1"), Decimal("1")),
+        ),
+        source_posterior_hashes=("POSTERIOR",),
+        credible_level=Decimal("0.90"),
+    )
+    certificate.validate_for_weighting()
 
 
 def test_v3_probability_contract_cannot_accept_market_or_valuation_inputs():
