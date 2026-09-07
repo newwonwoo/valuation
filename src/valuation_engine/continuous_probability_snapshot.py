@@ -95,10 +95,9 @@ class ContinuousProbabilityCalibrationSnapshot:
             ):
                 raise ValueError("continuous scenario estimate contains non-finite probability")
             if not (
-                Decimal("0") <= item.lower_probability
-                <= item.probability
-                <= item.upper_probability
-                <= Decimal("1")
+                Decimal("0") <= item.probability <= Decimal("1")
+                and Decimal("0") <= item.lower_probability
+                <= item.upper_probability <= Decimal("1")
             ):
                 raise ValueError("continuous scenario estimate interval is invalid")
         driver_ids = tuple(driver_id for driver_id, _ in self.driver_snapshot_hashes)

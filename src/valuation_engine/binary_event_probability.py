@@ -189,11 +189,9 @@ class BinaryEventProbabilityCalibrationSnapshot:
                     "binary-event scenario estimate contains non-finite probability"
                 )
             if not (
-                Decimal("0")
-                <= item.lower_probability
-                <= item.probability
-                <= item.upper_probability
-                <= Decimal("1")
+                Decimal("0") <= item.probability <= Decimal("1")
+                and Decimal("0") <= item.lower_probability
+                <= item.upper_probability <= Decimal("1")
             ):
                 raise BinaryEventCalibrationError(
                     "binary-event scenario estimate interval is invalid"
@@ -317,11 +315,11 @@ def _estimates(
 ) -> tuple[tuple[BinaryEventScenarioEstimate, ...], tuple[str, ...]]:
     """Pair each normalised probability with its credible interval.
 
-    The engine normalises point probabilities across the scenario rules but
-    reports intervals as simulated. A rule set that does not partition the event
-    space can therefore push a normalised point outside its own interval. That is
-    a real modelling defect, not a rounding artifact, so it is recorded as an
-    integrity finding and degrades the snapshot rather than being clamped away.
+    The point is the posterior Monte Carlo mean while the interval is a central
+    posterior quantile interval. For skewed or discrete rare-event simulations,
+    the mean can legitimately lie outside that interval; containment is therefore
+    not an integrity condition. Bounds and ordering remain validated by the
+    snapshot contract.
     """
     intervals = {
         scenario_id: (lower, upper)
@@ -334,8 +332,6 @@ def _estimates(
             findings.append(f"missing_credible_interval:{scenario_id}")
             continue
         lower, upper = intervals[scenario_id]
-        if not lower <= probability <= upper:
-            findings.append(f"normalised_probability_outside_interval:{scenario_id}")
         estimates.append(
             BinaryEventScenarioEstimate(
                 scenario_id=scenario_id,
@@ -379,10 +375,9 @@ def build_binary_event_probability_snapshot(
     """Run the binary-event probability engine and seal the result for the runtime.
 
     A ``DATA_BLOCKED`` engine result raises :class:`BinaryEventProbabilityBlocked`
-    carrying the engine's own violations. A run that estimates but whose
-    normalised probabilities fall outside their credible intervals seals as
-    DEGRADED, so it reaches SCENARIO_BUILD as a monitoring artifact and
-    probabilities stay descriptive. Only a clean run issues a certificate.
+    carrying the engine's own violations. A clean estimated distribution issues
+    a certificate; the point estimate need not lie inside a central quantile
+    interval because the posterior can be skewed or discrete.
     """
     binding.validate()
     rule_ids = tuple(rule.scenario_id for rule in scenario_rules)

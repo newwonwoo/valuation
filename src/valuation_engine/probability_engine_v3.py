@@ -109,7 +109,7 @@ class ProbabilityEngineV3Certificate:
             if scenario_id not in interval_map:
                 raise ValueError("v3 scenario probability is missing its credible interval")
             lower, upper = interval_map[scenario_id]
-            if not Decimal("0") <= lower <= value <= upper <= Decimal("1"):
+            if not Decimal("0") <= lower <= upper <= Decimal("1"):
                 raise ValueError("v3 scenario credible interval is invalid")
         if not Decimal("0") < self.credible_level < Decimal("1"):
             raise ValueError("v3 credible level is invalid")

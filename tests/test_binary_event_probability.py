@@ -191,6 +191,40 @@ def test_a_different_seed_moves_the_snapshot_hash():
     assert first.snapshot_hash != second.snapshot_hash
 
 
+def test_snapshot_accepts_mean_outside_a_central_quantile_interval():
+    snapshot = _snapshot()
+    estimates = (
+        replace(
+            snapshot.estimates[0],
+            probability=Decimal("0.001"),
+            lower_probability=Decimal("0"),
+            upper_probability=Decimal("0"),
+        ),
+        replace(
+            snapshot.estimates[1],
+            probability=Decimal("0.499"),
+            lower_probability=Decimal("0.45"),
+            upper_probability=Decimal("0.55"),
+        ),
+        replace(
+            snapshot.estimates[2],
+            probability=Decimal("0.500"),
+            lower_probability=Decimal("0.45"),
+            upper_probability=Decimal("0.55"),
+        ),
+    )
+    rebuilt = BinaryEventProbabilityCalibrationSnapshot.build(
+        binding=_binding(),
+        as_of_date=AS_OF,
+        estimates=estimates,
+        event_snapshot_hashes=snapshot.event_snapshot_hashes,
+        simulation_hash=snapshot.simulation_hash,
+        dataset_hash=snapshot.dataset_hash,
+    )
+    rebuilt.validate()
+    assert rebuilt.status is CalibrationStatus.CALIBRATED
+
+
 # ------------------------------------------------------------------- the socket
 
 
