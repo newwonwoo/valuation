@@ -120,7 +120,7 @@ claims:
   - claim_id: koreazinc-sotp-investor-report
     owner: codex
     pull_request: 179
-    status: active
+    status: merged
     paths:
       - "runs/koreazinc-010130/**"
       - "runs/kisco-104700/declarations/investor_report.yaml"
