@@ -26,3 +26,28 @@ extra_required_evidence:
   - bull_manufacturing_normalized_ebitda
   - down_manufacturing_normalized_multiple
   - bull_manufacturing_normalized_multiple
+calibration:
+  cohort_key: kr.self.koreazinc|1y_earnings_state|self_v1
+  self_calibrated: true
+  external_probability_source: target_realized_dispersion_monte_carlo
+  forecast_class: kr.self.continuous_financial_path
+  horizon: 1y_earnings_state
+  method_version: probability_engine_v3.2_self_v1
+  mapping_version: koreazinc_self_margin_v1
+  driver_ids: [operating_margin]
+  scenario_ids: [Down, Base, Bull]
+  path_length: 1
+  artifact: declarations/self_calibration_artifact.json
+  provenance: declarations/self_calibration_provenance.json
+  conditioning: declarations/self_conditioning.json
+  seed: 20260904
+  outer_draws: 300
+  inner_draws: 200
+  constants:
+    expected_artifact_sha256: ccdcb52efbcc001f0f3b465dd138d20899a651d906df92149252e4f65efa8ad2
+    expected_provenance_artifact_sha256: 162b5de0e944d7c9a7343d679f0654dc26acb709b9494be85de8190ca96fe451
+    expected_dataset_sha256: no_cohort_dataset_self_calibrated
+    expected_provenance_hash: f43db533d9bf45f35a0d7df37878c6e9462f384cf38346e1dde558613b3ee397
+    expected_source_row_count: 6
+    expected_source_company_count: 1
+    excluded_ticker: "010130"

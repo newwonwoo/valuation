@@ -123,6 +123,7 @@ def test_the_committed_koreazinc_run_values_other_through_a_declared_proxy():
     assert stop_stage is None, stop_reason
     assert len(reached) == 33
     assert result.completed
+    assert result.data["probability_weighting_allowed"] is True
     valuation = result.data["generic_valuation_result"]
     assert valuation.scope.value == "FULL_INTRINSIC"
     assert not valuation.unvalued_segments
@@ -134,10 +135,23 @@ def test_the_committed_koreazinc_run_values_other_through_a_declared_proxy():
     assert valuation.scenarios[1].value_per_share == Decimal(
         "688109.2890322632528281931966"
     )
+    assert valuation.expected_value_per_share == Decimal(
+        "948269.1300067100693014231386"
+    )
+    probabilities = {
+        item.scenario_id: item.probability
+        for item in result.data["bound_scenario_set"].scenarios
+    }
+    assert probabilities == {
+        "Down": Decimal("0.05265"),
+        "Base": Decimal("0.31245"),
+        "Bull": Decimal("0.6349"),
+    }
     report = result.data["final_report"]
     assert "기타 유형자산 NAV 1,476억원" in report
     assert "미평가 사업부 — 0원으로 간주하지 않음" not in report
     assert "**투자판단** | 비중축소" in report
+    assert "**확률가중 기대값:** 주당 948,269원" in report
     assert "market_comparison" in result.data
     assert result.data["broker_research_audit_passed"]
     assert len(

@@ -64,7 +64,7 @@ def test_koreazinc_investor_report_is_clean_and_decision_ready(koreazinc_result)
         "- 현재가: 1,222,000원 (2026-09-04)",
         "- 평가 기준가: 688,109원",
         "| 주당가치 | 304,347원 | 688,109원 | 1,129,698원 |",
-        "확률가중 기대값은 산출되지 않았습니다.",
+        "확률가중 기대값은 948,269원입니다. 적용 확률은 하방 5.3%, 기준 31.2%, 상방 63.5%입니다.",
         "이전 평가 완료 사업부 소계 680,874원 → 수정 688,109원, 주당 7,235원 증가",
         "| 기타부문 | 평가 | 공시 유형자산 1,476억원을 집계 NAV로 반영 |",
     ):
@@ -115,6 +115,21 @@ def test_partial_report_names_scope_and_does_not_zero_fill(koreazinc_result):
     assert "독립 현금흐름 자료가 부족합니다." in report
     assert "부분 평가이므로 현재가와의 상승여력은 비교하지 않았습니다." in report
     assert "| 기타부문 | 평가 |" not in report
+
+
+def test_market_price_cannot_replace_missing_probability_weight(koreazinc_result):
+    valuation = replace(
+        koreazinc_result.data["generic_valuation_result"],
+        expected_value_per_share=None,
+    )
+    report = render_investor_report(
+        {**koreazinc_result.data, "generic_valuation_result": valuation},
+        load_investor_report_profile(PROFILE_PATH),
+    )
+
+    assert "- 투자의견: 판단 유보" in report
+    assert "보정된 시나리오 확률과 확률가중 기대값이 없습니다." in report
+    assert "현재가는 확률 생성에 사용하지 않으며" in report
 
 
 def test_publisher_exposes_clean_report_and_reuses_the_same_alias(
