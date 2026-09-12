@@ -135,7 +135,7 @@ claims:
   - claim_id: koreazinc-self-probability
     owner: codex
     pull_request: 181
-    status: active
+    status: merged
     paths:
       - "runs/koreazinc-010130/**"
     note: >-
