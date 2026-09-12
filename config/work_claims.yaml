@@ -117,3 +117,18 @@ claims:
     note: >-
       The surviving half of a branch that had also built a second 고려아연 run
       and a second evaluator-identity fix; both were discarded to #170.
+  - claim_id: koreazinc-sotp-investor-report
+    owner: codex
+    pull_request: 179
+    status: active
+    paths:
+      - "runs/koreazinc-010130/**"
+      - "runs/kisco-104700/declarations/investor_report.yaml"
+      - "runs/daehansteel-084010/declarations/investor_report.yaml"
+      - "runs/shinhanalpha-293940/declarations/investor_report.yaml"
+      - "src/valuation_engine/valuation_plan_compiler.py"
+      - "src/valuation_engine/generic_valuation_plan.py"
+    note: >-
+      Complete the three-segment Korea Zinc SOTP, bind Broker Research leads to
+      company-primary IFRS 8 verification, and require a clean seven-section
+      investor report for every committed KR live run.

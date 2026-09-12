@@ -1,0 +1,35 @@
+investment_points:
+  - title: 정상화 EBITDA가 가치범위를 결정
+    content: 핵심 EBITDA와 적용배수의 조합에 따라 하방·기준·상방 가치가 구분됩니다.
+    evidence: 하방 350억원·기준 600억원·상방 850억원의 정상화 EBITDA 가정
+  - title: 기업가치에서 지분가치로의 조정이 주요 완충요인
+    content: 시나리오별 기업가치에 3,920억원의 지분가치 조정을 반영했습니다.
+    evidence: 2025 사업보고서와 2026 반기보고서의 재무상태 자료
+  - title: 현재가는 하방 시나리오보다 낮음
+    content: 확률가중 기대값과 별개로 현재가가 전체 가치범위 아래에 있습니다.
+    evidence: 2026년 8월 28일 현재가 10,120원과 하방 주당가치 14,115원
+valuation_method: 정상화 EBITDA에 시나리오별 배수를 적용한 기업가치 배수법
+major_assumptions: 정상화 EBITDA는 하방 350억원·기준 600억원·상방 850억원, 적용배수는 각각 3.5배·4.0배·4.5배입니다. 기업가치에서 지분가치로 3,920억원을 조정하고 희석주식수 36.450백만주를 적용했습니다.
+valuation_exclusions: 미공시 자산과 별도 사업 옵션가치는 추가하지 않았습니다.
+segment_notes:
+  - segment_id: 철강 제조
+    content: 정상화 EBITDA와 시나리오별 배수 적용
+    note: 평가 완료
+risks:
+  - 철강 업황과 가동률이 정상화 EBITDA 가정에 미달하면 주당가치가 하락합니다.
+  - 적용배수가 낮아지면 같은 EBITDA에서도 기업가치가 축소됩니다.
+  - 기업가치에서 지분가치로의 조정액이 재무상태 변화로 줄어들면 주당가치가 하락합니다.
+conditions:
+  upside: 정상화 EBITDA와 적용배수의 기준·상방 가정이 공시 실적과 현금흐름으로 확인될 때입니다.
+  downside: 정상화 EBITDA가 하방 가정에 미달하거나 지분가치 조정액이 축소될 때입니다.
+  actionable: 현재가는 하방 가치보다 낮아 매수 검토가 가능하나, 실제 EBITDA와 가동률 확인이 필요합니다.
+sources:
+  - source_type: 공시
+    label: 2025 사업보고서
+    url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260319001021
+  - source_type: 공시
+    label: 2026 반기보고서
+    url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002934
+  - source_type: 시장가격
+    label: 한국철강 시장가격
+    url: https://m.stock.naver.com/api/stock/104700/price

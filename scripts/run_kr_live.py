@@ -86,6 +86,10 @@ from valuation_engine.kr_opendart_provider import (  # noqa: E402
     OpenDartFilingSelection,
     OpenDartNetwork,
 )
+from valuation_engine.investor_report import (  # noqa: E402
+    load_investor_report_profile,
+    render_investor_report,
+)
 from valuation_engine.live_primary_adapters import (  # noqa: E402
     CompanyResolutionRequest,
     live_opendart_company_resolver,
@@ -668,7 +672,16 @@ def publish_report_bundle(
             "completed run bundle is incomplete: " + ", ".join(missing)
         )
 
-    report = (source / "final_report.md").read_text(encoding="utf-8")
+    investor_profile_path = run_dir / "declarations" / "investor_report.yaml"
+    if not investor_profile_path.is_file():
+        raise RunbookError(
+            "public report publication requires declarations/investor_report.yaml; "
+            "refusing to expose the developer-facing audit report"
+        )
+    report = render_investor_report(
+        result.data,
+        load_investor_report_profile(investor_profile_path),
+    )
     valuation_hash = str(result.data.get("valuation_hash") or "")
     audit_hash = str(result.data.get("audit_hash") or "")
     run_id = str(getattr(result, "run_id", "") or "")
@@ -710,12 +723,12 @@ def publish_report_bundle(
     bundle_dir.parent.mkdir(parents=True, exist_ok=True)
     shutil.copytree(source, bundle_dir)
 
-    versioned_report_name = f"{filename_base}.md"
-    versioned_report = (
-        report.rstrip() + f"\n\n---\n보고서 ID `{artifact_id}`\n"
+    versioned_report_name = (
+        f"{_safe_artifact_token(ticker)}_"
+        f"{_safe_artifact_token(as_of.replace('-', ''))}_투자보고서.md"
     )
     (bundle_dir / versioned_report_name).write_text(
-        versioned_report, encoding="utf-8"
+        report, encoding="utf-8"
     )
     files = tuple(
         {
@@ -802,6 +815,12 @@ def reuse_published_report_bundle(
     are byte-identical to their receipts.
     """
     run_dir = Path(run_dir).resolve()
+    investor_profile_path = run_dir / "declarations" / "investor_report.yaml"
+    if not investor_profile_path.is_file():
+        raise RunbookError(
+            "public report reuse requires declarations/investor_report.yaml; "
+            "refusing to expose the developer-facing audit report"
+        )
     output_root = Path(output_dir or run_dir / "out").resolve()
     if not output_root.is_dir():
         return None
@@ -922,7 +941,7 @@ def reuse_published_report_bundle(
             or run_manifest.get("audit_passed") is not True
         ):
             raise RunbookError("published run manifest identity/status mismatch")
-        report = raw_report.read_text(encoding="utf-8")
+        report = versioned_report_path.read_text(encoding="utf-8")
         alias = Path(report_alias) if report_alias else output_root / "final_report.md"
         alias.parent.mkdir(parents=True, exist_ok=True)
         token = sha256(str(latest["artifact_id"]).encode("utf-8")).hexdigest()[:12]
@@ -1010,6 +1029,10 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
         declared_underwriting_path=str(run_dir / "declarations" / "underwriting.yaml"),
         declared_risk_path=_optional_path(run_dir, "risk_pack.yaml"),
         declared_segments_path=_optional_path(run_dir, "segments.yaml"),
+        declared_broker_research_path=_optional_path(
+            run_dir, "broker_research.yaml"
+        ),
+        require_broker_research=bool(config.get("require_broker_research", False)),
         table_cell_receipts_path=_optional_path(run_dir, "table_cell_receipts.json"),
         extra_required_evidence=tuple(config.get("extra_required_evidence", ())),
         parent_adjustments=parent_adjustments,

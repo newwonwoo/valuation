@@ -112,8 +112,9 @@ declarations:
     unit: KRW_billion
     segment: recycling
     source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
-    rationale: 2025 사업보고서 IFRS 8 표의 폐기물처리 및 기타사업 유형자산 147,555,847천원을 장부가 기반의 보수적 영업자산
-      floor로 사용합니다. 적자 EBITDA에 배수를 적용하지 않고 확인 가능한 유형자산만 평가합니다.
+    rationale: 2025 사업보고서 IFRS 8 표의 폐기물처리 및 기타사업 유형자산 147,555,847천원을 장부가 기반의 집계 블록
+      참고가치로 사용합니다. 적자 EBITDA에 양의 배수를 적용하지 않고 확인 가능한 유형자산만 반영하며, 손상·처분가치가 장부가와
+      다를 수 있으므로 이를 보장된 하방가치로 표현하지 않습니다.
   recycling_liabilities:
     value: 0
     unit: KRW_billion
@@ -150,7 +151,7 @@ declarations:
     unit: status
     segment: recycling
     source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
-    rationale: 유형자산 장부가 floor를 사용하며 부동산 cap rate를 적용하지 않습니다.
+    rationale: 유형자산 장부가 참고가치를 사용하며 부동산 cap rate를 적용하지 않습니다.
   debt:
     value: NOT_DISCLOSED
     unit: status

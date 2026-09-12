@@ -13,7 +13,14 @@ from valuation_engine.control_plane import (
 from valuation_engine.decision_impact import DecisionOutcome, ResearchEffort
 from valuation_engine.generic_reporting import render_generic_report, save_state_adapter
 from valuation_engine.orchestrator import OrchestratorContext
-from valuation_engine.records import AuditFinding, AuditReport, RunManifest, RunStatus
+from valuation_engine.post_freeze import compare_generic_to_market
+from valuation_engine.records import (
+    AuditFinding,
+    AuditReport,
+    MarketObservation,
+    RunManifest,
+    RunStatus,
+)
 from valuation_engine.research_learning import ResearchLearningStore
 from valuation_engine.sotp import ScenarioEquityAggregation
 from valuation_engine.state import StateStore
@@ -231,3 +238,25 @@ def test_investor_report_keeps_module_diagnostics_out_of_decision_body():
     assert "MEASURED_MODULE" not in report
     assert "UNMEASURED_MODULE" not in report
     assert "확률 보정:** 미보정 · 수치 가중 보류" in report
+
+
+def test_full_envelope_above_market_supports_direction_without_probability_weight():
+    valuation = _valuation()
+    observation = MarketObservation(100.0, "2026-09-04", "market")
+    report = render_generic_report(
+        {
+            "company": "Example",
+            "generic_valuation_result": valuation,
+            "generic_audit_report": _audit(),
+            "doctrine_coverage": _coverage(),
+            "market_comparison": compare_generic_to_market(
+                valuation,
+                observation,
+                currency="KRW",
+            ),
+        }
+    )
+
+    assert "**투자판단** | 비중축소" in report
+    assert "상방 시나리오 가치도 웃돌아" in report
+    assert "확률가중 기대값:** 미산출" in report

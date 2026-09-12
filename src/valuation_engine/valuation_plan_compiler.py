@@ -18,6 +18,7 @@ from .valuation_execution import (
     CompanyValuationPlan,
     ParentAdjustmentPlan,
     SegmentValuationPlan,
+    UnvaluedSegment,
 )
 
 
@@ -165,6 +166,7 @@ class CompanyValuationPlanInputs:
     diluted_shares_key: str
     segment_bindings: tuple[SegmentValueBinding, ...]
     parent_adjustments: tuple[ParentAdjustmentPlan, ...] = ()
+    unvalued_segments: tuple[UnvaluedSegment, ...] = ()
 
     def validate(self, *, expected_segment_ids: tuple[str, ...]) -> None:
         if (
@@ -178,6 +180,8 @@ class CompanyValuationPlanInputs:
             )
         for item in self.segment_bindings:
             item.validate()
+        for item in self.unvalued_segments:
+            item.__post_init__()
         ids = tuple(item.segment_id for item in self.segment_bindings)
         if len(ids) != len(set(ids)):
             raise ValueError(
@@ -188,9 +192,18 @@ class CompanyValuationPlanInputs:
                 "valuation plan binding coverage mismatch: "
                 f"expected={sorted(expected_segment_ids)}, got={sorted(ids)}"
             )
+        unvalued_ids = tuple(item.segment_id for item in self.unvalued_segments)
+        duplicate_segment_ids = _duplicates((*ids, *unvalued_ids))
+        if duplicate_segment_ids:
+            raise ValueError(
+                "valuation plan inputs reuse valued/unvalued segment IDs: "
+                + ", ".join(duplicate_segment_ids)
+            )
 
         asset_ids = tuple(
             item.asset_id for item in self.segment_bindings
+        ) + tuple(
+            item.asset_id for item in self.unvalued_segments
         ) + tuple(item.asset_id for item in self.parent_adjustments)
         duplicate_assets = _duplicates(asset_ids)
         if duplicate_assets:
@@ -494,6 +507,7 @@ def compile_company_valuation_plan(
             reporting_unit=inputs.reporting_unit,
             diluted_shares_key=inputs.diluted_shares_key,
             parent_adjustments=inputs.parent_adjustments,
+            unvalued_segments=inputs.unvalued_segments,
         )
         plan.validate()
 

@@ -58,6 +58,21 @@ def _stage_status_ko(status: StageStatus) -> str:
     return _STAGE_STATUS_KO.get(status, status.value)
 
 
+def _first_screen_required_fields(
+    reporting_contract: object,
+    valuation: object,
+) -> tuple[str, ...]:
+    fields = tuple(getattr(reporting_contract, "first_screen_required_fields", ()))
+    scope = getattr(getattr(valuation, "scope", None), "value", "")
+    if scope != "PARTIAL_INTRINSIC":
+        return fields
+    replacements = {
+        "기준 내재가치": "평가 완료 사업부 소계",
+        "가치평가 범위": "평가 완료 사업부 범위",
+    }
+    return tuple(replacements.get(field, field) for field in fields)
+
+
 def _next_action_ko(
     value: str,
     reporting_contract: object,
@@ -233,6 +248,7 @@ def attest_controlled_run(
     except (TypeError, ValueError):
         source_links = ()
     persisted_report = data.get("final_report")
+    valuation = data.get("generic_valuation_result")
     llm_section = _markdown_section(
         persisted_report,
         "인공지능 인사이트 — 환경 변화 × 기업 강점",
@@ -256,7 +272,10 @@ def attest_controlled_run(
         isinstance(investment_summary, str)
         and all(
             f"**{field}**" in investment_summary
-            for field in reporting_contract.first_screen_required_fields
+            for field in _first_screen_required_fields(
+                reporting_contract,
+                valuation,
+            )
         )
         and all(
             f"### {block}" in investment_summary
@@ -265,7 +284,6 @@ def attest_controlled_run(
     )
     probability_assessment = data.get("scenario_probability_assessment")
     probability_drafts = data.get("probability_forecast_drafts", ())
-    valuation = data.get("generic_valuation_result")
     bound_scenarios = getattr(data.get("bound_scenario_set"), "scenarios", ())
     uncalibrated_prior_contract = probability_assessment is None or (
         getattr(getattr(probability_assessment, "status", None), "value", None)

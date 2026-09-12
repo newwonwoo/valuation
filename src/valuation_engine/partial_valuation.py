@@ -91,7 +91,7 @@ def promote_partial_valuation_plan(
             ),
         )
 
-    unvalued_segments = tuple(
+    unresolved_plan_segments = tuple(
         UnvaluedSegment(
             asset_id=inputs.binding_for(item.segment_id).asset_id,
             segment_id=item.segment_id,
@@ -100,6 +100,10 @@ def promote_partial_valuation_plan(
             missing_assumptions=item.missing_assumptions,
         )
         for item in unresolved
+    )
+    unvalued_segments = (
+        *inputs.unvalued_segments,
+        *unresolved_plan_segments,
     )
     plan = CompanyValuationPlan(
         segments=valued_segments,

@@ -1,0 +1,42 @@
+investment_points:
+  - title: 제강부문 현금흐름 회복이 핵심 가치동인
+    content: 제강부문의 5개년 FCFF 경로가 하방·기준·상방 가치 차이의 대부분을 결정합니다.
+    evidence: 2025 사업보고서와 2026 반기보고서의 제강부문 실적 및 현금흐름 가정
+  - title: 운송과 기타부문을 분리 평가
+    content: 운송부문은 독립 FCFF, 기타부문은 유형자산 NAV로 평가해 제강부문과 합산했습니다.
+    evidence: 기타부문 유형자산 NAV 457억원과 운송부문 5개년 FCFF 가정
+  - title: 현재가는 하방 시나리오보다 낮음
+    content: 확률가중 기대값과 별개로 현재가가 전체 가치범위 아래에 있습니다.
+    evidence: 2026년 8월 28일 현재가 8,420원과 하방 주당가치 10,284원
+valuation_method: 제강·운송부문 FCFF DCF와 기타부문 유형자산 NAV를 합산한 SOTP
+major_assumptions: 가중평균자본비용 4.207%, 제강부문 귀속률 86.0300%, 기타부문 유형자산 NAV 457억원, 기업가치에서 지분가치로의 조정 1,190억원과 희석주식수 34.372백만주를 적용했습니다.
+valuation_exclusions: 공시로 분리되지 않은 추가 사업 옵션가치는 반영하지 않았습니다.
+segment_notes:
+  - segment_id: 제강
+    content: 시나리오별 5개년 FCFF와 영구가치 적용
+    note: 지배주주 귀속률 86.0300% 반영
+  - segment_id: 운송
+    content: 독립 5개년 FCFF와 영구가치 적용
+    note: 평가 완료
+  - segment_id: 기타
+    content: 유형자산 NAV 457억원 반영
+    note: 평가 완료
+risks:
+  - 제강부문 FCFF가 회복 경로에 미달하면 DCF 가치와 주당가치가 하락합니다.
+  - 가중평균자본비용이 상승하면 제강·운송부문의 현재가치가 축소됩니다.
+  - 기타부문 유형자산의 손상 또는 낮은 처분가치가 확인되면 NAV가 하락합니다.
+  - 제강부문 귀속률 또는 기업가치에서 지분가치로의 조정이 불리하게 변하면 주당가치가 하락합니다.
+conditions:
+  upside: 제강부문 FCFF 회복과 기준·상방 영구가치 가정이 공시 실적으로 확인될 때입니다.
+  downside: 제강부문 현금흐름 악화, 할인율 상승 또는 기타부문 자산 손상이 확인될 때입니다.
+  actionable: 현재가는 하방 가치보다 낮아 매수 검토가 가능하나, 제강부문 현금흐름 회복 여부를 우선 확인해야 합니다.
+sources:
+  - source_type: 공시
+    label: 2025 사업보고서
+    url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260318000780
+  - source_type: 공시
+    label: 2026 반기보고서
+    url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003201
+  - source_type: 시장가격
+    label: 대한제강 시장가격
+    url: https://m.stock.naver.com/api/stock/084010/price

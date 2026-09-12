@@ -26,6 +26,8 @@ from datetime import date
 import json
 from pathlib import Path
 
+from .declared_broker_research import declared_broker_research_loader
+from .declared_segment_evidence import declared_segment_evidence_provider
 from .declared_risk_pack import (
     BETA_SELECTION_METRICS,
     declared_risk_beta_loader,
@@ -78,7 +80,7 @@ from .method_capabilities import (
     load_default_method_capability_registry,
 )
 from .scenario_binding import ScenarioBindingSpec
-from .valuation_execution import ParentAdjustmentPlan
+from .valuation_execution import ParentAdjustmentPlan, UnvaluedSegment
 from .valuation_plan_compiler import SegmentMethodChoice
 
 
@@ -184,6 +186,11 @@ class GenericKRRuntimeSpec:
     #: here. Required for any issuer whose filing discloses multiple
     #: reportable segments; forbidden for one that reports itself whole.
     declared_segments_path: str | Path | None = None
+    #: Prepared, metadata-only Broker Research discovery. Target-company
+    #: forecasts/targets remain quarantined; company-specific observations may
+    #: only request primary-source verification before Intrinsic Freeze.
+    declared_broker_research_path: str | Path | None = None
+    require_broker_research: bool = False
     #: Prepared, committed metric-to-receipt declarations for model-free replay.
     table_cell_receipts_path: str | Path | None = None
     #: Extra evidence metrics this run requires beyond the method's assumption
@@ -222,6 +229,10 @@ class GenericKRRuntimeSpec:
         if self.market_config_path is not None and not self.market_currency:
             raise GenericValuationPlanError(
                 "market_currency is required with a market config"
+            )
+        if self.require_broker_research and self.declared_broker_research_path is None:
+            raise GenericValuationPlanError(
+                "require_broker_research=True requires a declared Broker Research file"
             )
         if len(self.scenario_ids) != len(set(self.scenario_ids)):
             raise GenericValuationPlanError("scenario_ids must be unique")
@@ -295,6 +306,27 @@ def build_generic_kr_runtime_factory(
         from .declared_segments import load_declared_segments
 
         declared_segments = load_declared_segments(spec.declared_segments_path)
+    broker_loader = (
+        declared_broker_research_loader(
+            spec.declared_broker_research_path,
+            run_as_of=spec.as_of,
+        )
+        if spec.declared_broker_research_path is not None
+        else None
+    )
+    unresolved_segments = tuple(
+        UnvaluedSegment(
+            asset_id=item.segment_id,
+            segment_id=item.segment_id,
+            resolution_status=item.classification_status,
+            rationale=(
+                f"{item.rationale.strip()} 미분해 구성 활동: "
+                + ", ".join(item.constituent_activities)
+            ),
+        )
+        for item in (() if declared_segments is None else declared_segments.segments)
+        if item.classification_status == "UNRESOLVED_HETEROGENEOUS"
+    )
     profile_fetcher = CachedCompanyProfileFetcher(
         fetch_text=network.fetch_text,
         api_key=network.api_key,
@@ -325,6 +357,18 @@ def build_generic_kr_runtime_factory(
         )
     extensions = KRLiveProviderExtensions(
         additional_collectors=(
+            *(
+                (
+                    declared_segment_evidence_provider(
+                        declared_segments,
+                        effective_date=spec.filing.fiscal_period_end,
+                        checked_at=spec.as_of,
+                    ),
+                )
+                if declared_segments is not None
+                and declared_segments.source_bound_extraction is not None
+                else ()
+            ),
             filing_kpi_collector_provider(
                 network,
                 as_of=spec.as_of,
@@ -388,6 +432,7 @@ def build_generic_kr_runtime_factory(
             reporting_unit=spec.reporting_unit,
             segment_scoped_keys=multi_segment,
             parent_adjustments=spec.parent_adjustments,
+            unvalued_segments=unresolved_segments,
             ev_adjustment_segments=frozenset(
                 choice.segment_id
                 for choice in spec.method_choices
@@ -403,6 +448,7 @@ def build_generic_kr_runtime_factory(
         # PER itself is withheld — NOT_APPLICABLE with its reason — because no
         # authorized Economic-Twin residual PER pack exists in a cold start.
         per_loader=withheld_per_loader(),
+        broker_research_loader=broker_loader,
     )
     method_registry = capability_registry
     families = {
@@ -556,6 +602,8 @@ def build_generic_kr_runtime_factory(
         extensions=extensions,
         additional_required_evidence=additional_required,
         market_currency=spec.market_currency,
+        require_broker_research=spec.require_broker_research,
+        initial_data={"data_cutoff": spec.as_of},
         scenario_binding_spec=ScenarioBindingSpec(
             scenario_ids=spec.scenario_ids,
             required_keys=keys,

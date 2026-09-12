@@ -109,24 +109,40 @@ def test_the_committed_daehan_run_replays_as_a_three_segment_sotp(tmp_path):
     assert "100.0000%" in assumption_svg
 
 
-def test_the_committed_koreazinc_run_preserves_llm_bound_ifrs8_refusal():
-    """The Korea Zinc run proves the irregular-note boundary: an LLM-reviewed
-    extraction is bound to the immutable filing member, while deterministic
-    code verifies the disclosed labels and filed totals before valuation.
+def test_the_committed_koreazinc_run_values_other_through_a_declared_proxy():
+    """LLM interpretation may choose a conservative aggregate valuation proxy.
 
-    The filing aggregates waste processing, minerals, renewables and battery
-    materials in Other without activity weights. The declaration preserves that
-    unresolved judgment and routing stops after the authoritative note bijection.
+    The filing still proves the exact IFRS 8 segment set and totals.  The
+    declaration keeps Other's heterogeneous constituents visible, while the
+    deterministic path values only the disclosed aggregate PPE and refuses a
+    speculative development-project option uplift.
     """
     reached, stop_stage, stop_reason, result = execute_run(
         ROOT / "runs" / "koreazinc-010130"
     )
-    assert stop_stage == "SEGMENT_DECOMPOSITION"
-    assert len(reached) == 4
-    assert "UNRESOLVED_HETEROGENEOUS" in stop_reason
-    assert "authoritative IFRS 8 bijection" in stop_reason
-    assert "refusing to assign one KSIC or value" in stop_reason
-    assert not result.completed
+    assert stop_stage is None, stop_reason
+    assert len(reached) == 33
+    assert result.completed
+    valuation = result.data["generic_valuation_result"]
+    assert valuation.scope.value == "FULL_INTRINSIC"
+    assert not valuation.unvalued_segments
+    assert tuple(item.scenario_id for item in valuation.scenarios) == (
+        "Down",
+        "Base",
+        "Bull",
+    )
+    assert valuation.scenarios[1].value_per_share == Decimal(
+        "688109.2890322632528281931966"
+    )
+    report = result.data["final_report"]
+    assert "기타 유형자산 NAV 1,476억원" in report
+    assert "미평가 사업부 — 0원으로 간주하지 않음" not in report
+    assert "**투자판단** | 비중축소" in report
+    assert "market_comparison" in result.data
+    assert result.data["broker_research_audit_passed"]
+    assert len(
+        result.data["broker_research_prefreeze_result"].primary_verification_claims
+    ) == 2
 
 
 def test_koreazinc_market_quote_is_bound_to_issuer_price_ticker_and_timestamp(tmp_path):
@@ -235,9 +251,12 @@ def test_the_committed_kisco_run_replays_to_the_attested_expected_value(
             encoding="utf-8"
         )
     )
-    assert latest["artifact_id"] in Path(
-        published["versioned_report_path"]
-    ).read_text(encoding="utf-8")
+    public_report = Path(published["versioned_report_path"]).read_text(
+        encoding="utf-8"
+    )
+    assert latest["artifact_id"] not in public_report
+    assert "## 1. 투자판단 요약" in public_report
+    assert "<details" not in public_report
     assert latest["report_filename"].endswith(".md")
     assert (bundle / "control_plane_trace.json").is_file()
     assert (bundle / "audit.json").is_file()
@@ -257,7 +276,7 @@ def test_the_committed_kisco_run_replays_to_the_attested_expected_value(
     assert reused is not None
     assert reused["artifact_id"] == published["artifact_id"]
     assert reused["versioned_report_path"] == published["versioned_report_path"]
-    assert alias.read_text(encoding="utf-8") == report
+    assert alias.read_text(encoding="utf-8") == public_report
 
     changed_run = tmp_path / "changed-run"
     shutil.copytree(run_dir, changed_run, ignore=shutil.ignore_patterns("out"))
