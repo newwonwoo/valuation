@@ -189,15 +189,28 @@ def render_investor_report(
     reference_label = "부분 내재가치" if partial else "평가 기준가"
     current_price = _money(observation.price) if observation is not None else "미확보"
     current_as_of = f" ({observation.as_of})" if observation is not None else ""
-    if valuation.expected_value_per_share is not None:
+    bound_scenarios = data.get("bound_scenario_set")
+    probability_map = {
+        str(getattr(item, "scenario_id", "")): getattr(item, "probability", None)
+        for item in tuple(getattr(bound_scenarios, "scenarios", ()))
+    }
+    has_complete_probabilities = all(
+        isinstance(probability_map.get(scenario_id), Decimal)
+        for scenario_id in ("Down", "Base", "Bull")
+    )
+    if partial:
         probability_note = (
-            f"확률가중 기대값은 {_money(valuation.expected_value_per_share)}입니다."
-        )
-    elif partial:
-        probability_note = (
-            "확률가중 기대값은 산출되지 않았으며, 부분 평가이므로 현재가와의 "
+            "확률가중 기대값은 산출하지 않았으며, 부분 평가이므로 현재가와의 "
             "상승여력은 비교하지 않았습니다."
         )
+    elif valuation.expected_value_per_share is not None:
+        probability_note = f"확률가중 기대값은 {_money(valuation.expected_value_per_share)}입니다."
+        if has_complete_probabilities:
+            probability_note += (
+                " 적용 확률은 하방 "
+                f"{probability_map['Down']:.1%}, 기준 {probability_map['Base']:.1%}, "
+                f"상방 {probability_map['Bull']:.1%}입니다."
+            )
     else:
         probability_note = (
             "확률가중 기대값은 산출되지 않았습니다. 현재가는 확률 생성에 사용하지 "

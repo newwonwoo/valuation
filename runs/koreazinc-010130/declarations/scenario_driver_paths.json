@@ -1,0 +1,12 @@
+{
+  "paths": {
+    "Down": {"operating_margin": [0.0518]},
+    "Base": {"operating_margin": [0.074]},
+    "Bull": {"operating_margin": [0.0962]}
+  },
+  "rationale": "The filed 2025 consolidated operating margin of 7.4% is the disclosed earnings-state proxy. Down, Base, and Bull apply the valuation's exact 0.70, 1.00, and 1.30 normalized-EBITDA scalars to that proxy while holding revenue constant. The path is an auditable mapping of the declared cases, not a fit to the historical dispersion.",
+  "source_refs": [
+    "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929",
+    "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958"
+  ]
+}

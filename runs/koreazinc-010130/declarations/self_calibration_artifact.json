@@ -1,0 +1,151 @@
+{
+ "artifact_sha256": "ccdcb52efbcc001f0f3b465dd138d20899a651d906df92149252e4f65efa8ad2",
+ "current_conditioning": {
+  "first_seen_at": "2026-08-14T09:00:00+00:00",
+  "operating_margin": 0.107128012712859,
+  "source_hash": "24aaf574905c581117ab6648c6c0c2b64a8953e2eb223d3fba599497a1de2d9b"
+ },
+ "dependence": {
+  "correlation_matrix": [
+   [
+    1.0
+   ]
+  ],
+  "student_t_df": 6,
+  "version": "target_own_residual_correlation_v1"
+ },
+ "drivers": {
+  "operating_margin": {
+   "diagnostic": {
+    "company_count": 1,
+    "likelihood_weight": 0.756421839323501,
+    "quarter_count": 6,
+    "regime_similarity": 1.0,
+    "resolved_cases": 5,
+    "skill_windows": [
+     0.984638361425219,
+     0.885775293299105,
+     0.39885186324618
+    ],
+    "uncertainty_inflation": 1.22767931934963,
+    "walk_forward_steps": 3
+   },
+   "fit": {
+    "ar1_intercept": 0.0255777504609711,
+    "ar1_slope": 0.607559926244622,
+    "own_transitions": 5,
+    "residual_std": 0.0113565313878348
+   },
+   "path": {
+    "lower_bound": -0.0104499822569176,
+    "mean": [
+     0.0906644379635287
+    ],
+    "mean_uncertainty": [
+     0.00507879523436172
+    ],
+    "scale": [
+     0.0139421787243897
+    ],
+    "upper_bound": 0.188449982256918
+   },
+   "posterior": {
+    "mean": 0.0788,
+    "mean_strength": 5.0,
+    "scale": 0.0007384,
+    "shape": 3.5
+   }
+  }
+ },
+ "oos_split_order": [
+  "TRAIN",
+  "VALIDATION",
+  "HOLDOUT",
+  "FINAL_OOS"
+ ],
+ "oos_window_policy": "target_own_walk_forward_fixed_origin_v1",
+ "oos_windows": [
+  {
+   "evaluation_earliest_publication_at": "2021-06-30T09:00:00Z",
+   "evaluation_latest_publication_at": "2023-06-30T09:00:00Z",
+   "period_ends": [
+    "2020-12-31",
+    "2021-12-31",
+    "2022-12-31"
+   ],
+   "row_count": 3,
+   "split": "TRAIN"
+  },
+  {
+   "evaluation_earliest_publication_at": "2024-06-30T09:00:00Z",
+   "evaluation_latest_publication_at": "2024-06-30T09:00:00Z",
+   "period_ends": [
+    "2023-12-31"
+   ],
+   "row_count": 1,
+   "split": "VALIDATION",
+   "training_latest_publication_at": "2023-06-30T09:00:00Z"
+  },
+  {
+   "evaluation_earliest_publication_at": "2025-06-30T09:00:00Z",
+   "evaluation_latest_publication_at": "2025-06-30T09:00:00Z",
+   "period_ends": [
+    "2024-12-31"
+   ],
+   "row_count": 1,
+   "split": "HOLDOUT",
+   "training_latest_publication_at": "2023-06-30T09:00:00Z"
+  },
+  {
+   "evaluation_earliest_publication_at": "2026-03-16T09:00:00Z",
+   "evaluation_latest_publication_at": "2026-03-16T09:00:00Z",
+   "period_ends": [
+    "2025-12-31"
+   ],
+   "row_count": 1,
+   "split": "FINAL_OOS",
+   "training_latest_publication_at": "2023-06-30T09:00:00Z"
+  }
+ ],
+ "probability_source": "target_realized_dispersion_monte_carlo",
+ "provenance_hash": "f43db533d9bf45f35a0d7df37878c6e9462f384cf38346e1dde558613b3ee397",
+ "scenario_anchor_policy": "operator_declared_scenario_driver_paths_v1",
+ "scenarios": {
+  "Base": {
+   "driver_paths": {
+    "operating_margin": [
+     0.074
+    ]
+   },
+   "driver_weights": {
+    "operating_margin": 1.0
+   }
+  },
+  "Bull": {
+   "driver_paths": {
+    "operating_margin": [
+     0.0962
+    ]
+   },
+   "driver_weights": {
+    "operating_margin": 1.0
+   }
+  },
+  "Down": {
+   "driver_paths": {
+    "operating_margin": [
+     0.0518
+    ]
+   },
+   "driver_weights": {
+    "operating_margin": 1.0
+   }
+  }
+ },
+ "self_calibrated": true,
+ "series_basis": "Consolidated K-IFRS annual revenue and operating income on the same continuing reporting basis; no merger, spin-off, or restatement is treated as dividing the 2020-2025 series.",
+ "source_company_count": 1,
+ "source_row_count": 6,
+ "target_ticker": "010130",
+ "version": "1.0"
+}

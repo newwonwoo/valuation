@@ -1,0 +1,75 @@
+{
+ "current_conditioning_first_seen_at": "2026-08-14T09:00:00+00:00",
+ "current_conditioning_source_hash": "24aaf574905c581117ab6648c6c0c2b64a8953e2eb223d3fba599497a1de2d9b",
+ "current_conditioning_source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958",
+ "observation_periods": [
+  "2020-12-31",
+  "2021-12-31",
+  "2022-12-31",
+  "2023-12-31",
+  "2024-12-31",
+  "2025-12-31"
+ ],
+ "observation_source_refs": [
+  "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929",
+  "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2020&reprt_code=11011&fs_div=CFS",
+  "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2021&reprt_code=11011&fs_div=CFS",
+  "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2022&reprt_code=11011&fs_div=CFS",
+  "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2023&reprt_code=11011&fs_div=CFS",
+  "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2024&reprt_code=11011&fs_div=CFS"
+ ],
+ "oos_windows": [
+  {
+   "evaluation_earliest_publication_at": "2021-06-30T09:00:00Z",
+   "evaluation_latest_publication_at": "2023-06-30T09:00:00Z",
+   "period_ends": [
+    "2020-12-31",
+    "2021-12-31",
+    "2022-12-31"
+   ],
+   "row_count": 3,
+   "split": "TRAIN"
+  },
+  {
+   "evaluation_earliest_publication_at": "2024-06-30T09:00:00Z",
+   "evaluation_latest_publication_at": "2024-06-30T09:00:00Z",
+   "period_ends": [
+    "2023-12-31"
+   ],
+   "row_count": 1,
+   "split": "VALIDATION",
+   "training_latest_publication_at": "2023-06-30T09:00:00Z"
+  },
+  {
+   "evaluation_earliest_publication_at": "2025-06-30T09:00:00Z",
+   "evaluation_latest_publication_at": "2025-06-30T09:00:00Z",
+   "period_ends": [
+    "2024-12-31"
+   ],
+   "row_count": 1,
+   "split": "HOLDOUT",
+   "training_latest_publication_at": "2023-06-30T09:00:00Z"
+  },
+  {
+   "evaluation_earliest_publication_at": "2026-03-16T09:00:00Z",
+   "evaluation_latest_publication_at": "2026-03-16T09:00:00Z",
+   "period_ends": [
+    "2025-12-31"
+   ],
+   "row_count": 1,
+   "split": "FINAL_OOS",
+   "training_latest_publication_at": "2023-06-30T09:00:00Z"
+  }
+ ],
+ "probability_source": "target_realized_dispersion_monte_carlo",
+ "scenario_anchor_policy": "operator_declared_scenario_driver_paths_v1",
+ "scenario_path_rationale": "The filed 2025 consolidated operating margin of 7.4% is the disclosed earnings-state proxy. Down, Base, and Bull apply the valuation's exact 0.70, 1.00, and 1.30 normalized-EBITDA scalars to that proxy while holding revenue constant. The path is an auditable mapping of the declared cases, not a fit to the historical dispersion.",
+ "self_calibrated": true,
+ "series_basis": "Consolidated K-IFRS annual revenue and operating income on the same continuing reporting basis; no merger, spin-off, or restatement is treated as dividing the 2020-2025 series.",
+ "source_company_count": 1,
+ "source_provenance_hash": "f43db533d9bf45f35a0d7df37878c6e9462f384cf38346e1dde558613b3ee397",
+ "source_row_count": 6,
+ "target_ticker": "010130",
+ "training_latest_publication_at": "2023-06-30T09:00:00Z",
+ "version": "1.0"
+}

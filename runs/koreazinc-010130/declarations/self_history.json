@@ -1,0 +1,42 @@
+{
+  "series_basis": "Consolidated K-IFRS annual revenue and operating income on the same continuing reporting basis; no merger, spin-off, or restatement is treated as dividing the 2020-2025 series.",
+  "knowledge_time_policy": "The 2020-2024 published_at values use a conservative 30 June cutoff after each annual filing rather than claim an unverified exact receipt time; the 2025 value uses the exact annual-report receipt date.",
+  "observations": [
+    {
+      "period_end": "2020-12-31",
+      "published_at": "2021-06-30T09:00:00+00:00",
+      "values": {"operating_margin": 0.118},
+      "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2020&reprt_code=11011&fs_div=CFS"
+    },
+    {
+      "period_end": "2021-12-31",
+      "published_at": "2022-06-30T09:00:00+00:00",
+      "values": {"operating_margin": 0.110},
+      "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2021&reprt_code=11011&fs_div=CFS"
+    },
+    {
+      "period_end": "2022-12-31",
+      "published_at": "2023-06-30T09:00:00+00:00",
+      "values": {"operating_margin": 0.082},
+      "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2022&reprt_code=11011&fs_div=CFS"
+    },
+    {
+      "period_end": "2023-12-31",
+      "published_at": "2024-06-30T09:00:00+00:00",
+      "values": {"operating_margin": 0.068},
+      "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2023&reprt_code=11011&fs_div=CFS"
+    },
+    {
+      "period_end": "2024-12-31",
+      "published_at": "2025-06-30T09:00:00+00:00",
+      "values": {"operating_margin": 0.060},
+      "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json?corp_code=00102858&bsns_year=2024&reprt_code=11011&fs_div=CFS"
+    },
+    {
+      "period_end": "2025-12-31",
+      "published_at": "2026-03-16T09:00:00+00:00",
+      "values": {"operating_margin": 0.074},
+      "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929"
+    }
+  ]
+}

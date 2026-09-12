@@ -132,3 +132,13 @@ claims:
       Complete the three-segment Korea Zinc SOTP, bind Broker Research leads to
       company-primary IFRS 8 verification, and require a clean seven-section
       investor report for every committed KR live run.
+  - claim_id: koreazinc-self-probability
+    owner: codex
+    pull_request: 181
+    status: active
+    paths:
+      - "runs/koreazinc-010130/**"
+    note: >-
+      Replace the unweighted Korea Zinc scenario envelope with probabilities
+      fitted on the issuer's own filed operating-margin history and conditioned
+      on the achieved 2026 first-half result; regenerate the investor report.
