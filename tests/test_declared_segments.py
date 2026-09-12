@@ -557,7 +557,7 @@ def test_the_decomposer_refuses_a_declared_segment_without_its_receipt():
         decompose(IDENTITY, single_snapshot)
 
 
-def test_heterogeneous_declared_segment_matches_ifrs8_then_blocks_routing():
+def test_heterogeneous_declared_segment_is_preserved_outside_typed_routing():
     unresolved = DeclaredSegment(
         segment_id="other",
         disclosed_name="기타부문",
@@ -576,11 +576,64 @@ def test_heterogeneous_declared_segment_matches_ifrs8_then_blocks_routing():
         classification=load_kr_industry_classification(),
         declared_segments=declared,
     )
-    with pytest.raises(
-        GenericKRIndustryError,
-        match="UNRESOLVED_HETEROGENEOUS.*refusing to assign one KSIC",
-    ):
-        decompose(IDENTITY, snapshot)
+    segments = decompose(IDENTITY, snapshot)
+    assert tuple(item.segment_id for item in segments) == ("steel", "transport")
+
+    route = classified_industry_dna_router(
+        profile_fetcher=_refusing_profile_fetcher,
+        classification=load_kr_industry_classification(),
+        declared_segments=declared,
+    )
+    profiles = route(IDENTITY, segments, snapshot)
+    assert tuple(item.segment_id for item in profiles) == ("steel", "transport")
+    assert all(item.segment_id != "other" for item in profiles)
+
+
+def test_heterogeneous_segment_can_route_through_declared_valuation_proxy():
+    proxy = DeclaredSegment(
+        segment_id="other",
+        disclosed_name="기타부문",
+        ksic_code="38220",
+        rationale=(
+            "공시상 주된 활동인 폐기물처리를 평가 프록시로 삼되, 이질적인 "
+            "광산개발 활동을 별도 구성 활동으로 보존하고 집계 NAV만 사용한다."
+        ),
+        classification_status="RESOLVED_VALUATION_PROXY",
+        constituent_activities=("폐기물처리", "광물·광산개발"),
+    )
+    declared = _declaration(segments=(*_declaration().segments[:2], proxy))
+    snapshot = _load_snapshot(_fetch_bytes_multi, declared)
+    classification = load_kr_industry_classification()
+    decompose = classified_segment_decomposer(
+        profile_fetcher=_refusing_profile_fetcher,
+        classification=classification,
+        declared_segments=declared,
+    )
+
+    segments = decompose(IDENTITY, snapshot)
+    assert tuple(item.segment_id for item in segments) == (
+        "steel",
+        "transport",
+        "other",
+    )
+    profiles = classified_industry_dna_router(
+        profile_fetcher=_refusing_profile_fetcher,
+        classification=classification,
+        declared_segments=declared,
+    )(IDENTITY, segments, snapshot)
+    assert EconomicArchetype.ASSET_YIELD_NAV in profiles[-1].archetypes
+
+
+def test_valuation_proxy_requires_multiple_visible_constituents():
+    with pytest.raises(DeclaredSegmentsError, match="valuation proxy"):
+        DeclaredSegment(
+            segment_id="other",
+            disclosed_name="기타부문",
+            ksic_code="38220",
+            rationale="이질적 집계부문을 보수적인 자산가치 프록시로 평가한다.",
+            classification_status="RESOLVED_VALUATION_PROXY",
+            constituent_activities=("폐기물처리",),
+        ).validate()
 
 
 # ------------------------------------------------------------- declarations

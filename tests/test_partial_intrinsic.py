@@ -30,6 +30,7 @@ from valuation_engine.partial_valuation import promote_partial_valuation_plan
 from valuation_engine.post_freeze import compare_generic_to_market
 from valuation_engine.post_freeze_adapters import market_compare_adapter
 from valuation_engine.records import AuditReport, CalibrationStatus, MarketObservation
+from valuation_engine.report_form import _first_screen_required_fields
 from valuation_engine.report_localization import evaluator_assumption_groups_ko
 from valuation_engine.scenario_binding import BoundScenario, BoundScenarioSet
 from valuation_engine.valuation_adapter import deterministic_valuation_adapter
@@ -38,6 +39,7 @@ from valuation_engine.valuation_execution import (
     IntrinsicValuationScope,
     ParentAdjustmentPlan,
     SegmentValuationPlan,
+    UnvaluedSegment,
     UnvaluedSegmentStatus,
     execute_company_valuation,
 )
@@ -948,6 +950,35 @@ def test_segment_local_capability_gap_promotes_to_partial_without_zero_filling()
     assert unvalued.resolution_status == "CAPABILITY_GAP"
 
 
+def test_ready_plan_preserves_predeclared_unvalued_segment():
+    scenarios = _scenario_set()
+    unvalued = UnvaluedSegment(
+        asset_id="other-asset",
+        segment_id="other",
+        resolution_status="UNRESOLVED_HETEROGENEOUS",
+        rationale="공시가 여러 경제활동을 합산해 단일 원형을 배정할 수 없습니다.",
+    )
+    module_plan = replace(_module_plan(), segments=(_module_plan().segments[0],))
+    module_plan.validate()
+    inputs = replace(
+        _inputs(),
+        segment_bindings=(_inputs().segment_bindings[0],),
+        unvalued_segments=(unvalued,),
+    )
+    original = compile_company_valuation_plan(
+        module_plan,
+        scenarios,
+        evaluator_registry=_registry(),
+        capability_registry=load_default_method_capability_registry(),
+        inputs=inputs,
+    )
+
+    assert original.ready
+    assert original.plan is not None
+    assert original.plan.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
+    assert original.plan.unvalued_segments == (unvalued,)
+
+
 def test_unvalued_segment_ownership_is_not_required_for_partial_subtotal():
     scenarios, _, promoted = _partial_compilation()
     assert promoted.plan is not None
@@ -1038,12 +1069,16 @@ def test_partial_decision_impact_never_exposes_subtotal_as_full_intrinsic():
 
 def test_partial_report_labels_subtotal_and_unvalued_not_zero():
     valuation = _partial_result()
+    observation = MarketObservation(60000.0, "2026-08-25", "market")
     report = render_generic_report(
         {
             "company": "Example",
             "generic_valuation_result": valuation,
             "generic_audit_report": AuditReport(()),
             "doctrine_coverage": (),
+            "market_observation": observation,
+            "market_currency": "KRW",
+            "market_comparison_withheld_reason": "partial intrinsic",
         }
     )
     assert "부분 내재가치 — 평가 완료 사업부만 포함" in report
@@ -1054,6 +1089,9 @@ def test_partial_report_labels_subtotal_and_unvalued_not_zero():
     assert "평가완료 소계" in report
     assert "미평가 사업부 — 0원으로 간주하지 않음" in report
     assert "미평가 사업부는 0원으로 합산하지 않았습니다" in report
+    assert "60,000원 (2026-08-25)" in first_screen
+    assert "평가 완료 사업부 소계와 전체 기업 현재가의 차이는 계산하지 않습니다" in report
+    assert "**비교 보류:** 미평가 사업부가 있어" in report
 
     summary = render_report_visuals(
         {
@@ -1064,3 +1102,21 @@ def test_partial_report_labels_subtotal_and_unvalued_not_zero():
     )[0].svg
     assert "평가 완료 사업부 소계" in summary
     assert "결정론적 가치평가 결과" not in summary
+
+
+def test_partial_first_screen_contract_requires_partial_value_labels():
+    contract = SimpleNamespace(
+        first_screen_required_fields=(
+            "투자판단",
+            "현재가",
+            "기준 내재가치",
+            "가치평가 범위",
+        )
+    )
+
+    assert _first_screen_required_fields(contract, _partial_result()) == (
+        "투자판단",
+        "현재가",
+        "평가 완료 사업부 소계",
+        "평가 완료 사업부 범위",
+    )

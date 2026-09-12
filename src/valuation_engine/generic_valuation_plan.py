@@ -49,7 +49,7 @@ from .orchestrator import OrchestratorContext
 from .per import EconomicAssumptionFingerprint
 from .per_adapters import LivePERInputs, PERApplicability
 from .risk_adapters import LiveWACCStageResult
-from .valuation_execution import ParentAdjustmentPlan
+from .valuation_execution import ParentAdjustmentPlan, UnvaluedSegment
 from .valuation_plan_compiler import (
     CompanyValuationPlanInputs,
     SegmentMethodChoice,
@@ -193,6 +193,7 @@ def conventional_valuation_plan_inputs_loader(
     ev_adjustment_segments: frozenset[str] | None = None,
     segment_scoped_keys: bool = False,
     parent_adjustments: tuple[ParentAdjustmentPlan, ...] = (),
+    unvalued_segments: tuple[UnvaluedSegment, ...] = (),
 ):
     """ValuationPlanInputsLoader bound to the fixed assumption-key conventions.
 
@@ -242,6 +243,7 @@ def conventional_valuation_plan_inputs_loader(
                 for item in segments
             ),
             parent_adjustments=parent_adjustments,
+            unvalued_segments=unvalued_segments,
         )
 
     return load

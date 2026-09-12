@@ -44,7 +44,7 @@ from .report_localization import (
     valuation_family_value_term_ko,
     valuation_scope_label_ko,
 )
-from .records import AuditReport, RunManifest, RunStatus, iso_now
+from .records import AuditReport, MarketObservation, RunManifest, RunStatus, iso_now
 from .research_learning import ResearchLearningStore
 from .state import StateStore, thesis_delta
 from .street import StreetResearchReport
@@ -511,7 +511,20 @@ def _scenario_assumptions_line(
 
 def _market_interpretation(
     market: MarketComparisonBundle | None,
+    *,
+    observation: MarketObservation | None = None,
+    partial: bool = False,
+    currency: str = "",
 ) -> str:
+    if partial and observation is not None:
+        current_price = (
+            f"{_fmt_money(observation.price, currency)}"
+            f"{currency_label_ko(currency)} ({observation.as_of})"
+        )
+        return (
+            f"현재가는 {current_price}입니다. 다만 미평가 사업부가 있어 "
+            "평가 완료 사업부 소계와 전체 기업 현재가의 차이는 계산하지 않습니다."
+        )
     if market is None:
         return "현재 시장가격이 확보되지 않아 내재가치와의 차이는 제시하지 않습니다."
     preferred = next(
@@ -531,6 +544,53 @@ def _market_interpretation(
     if pct > 0:
         return f"기준 내재가치는 현재가보다 {pct:.1%} 높습니다. 하방 위험과 가정 실현 여부를 함께 점검해야 합니다."
     return "현재가는 기준 내재가치와 같은 수준입니다. 추가 상승여력은 상방 가정의 실현 여부에 달려 있습니다."
+
+
+def _investment_opinion(
+    valuation: GenericValuationResult,
+    market: MarketComparisonBundle | None,
+) -> tuple[str, str]:
+    """Derive a direction without inventing a target or an entry threshold.
+
+    A full scenario envelope can support a directional conclusion even when a
+    calibrated expected value is unavailable.  Probability is only necessary
+    when the market price sits inside that envelope.  Partial subtotals never
+    receive a whole-company opinion.
+    """
+
+    if valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC:
+        return (
+            "판단 유보",
+            "전체 기업가치가 아니라 평가 완료 사업부 기준이므로 현재가와 직접 비교하지 않습니다.",
+        )
+    if market is None or not valuation.scenarios:
+        return "판단 유보", "검증된 현재가와 전체 가치범위의 비교가 없습니다."
+
+    current = Decimal(str(market.observation.price))
+    values = tuple(item.value_per_share for item in valuation.scenarios)
+    lower, upper = min(values), max(values)
+    if current > upper:
+        return (
+            "비중축소",
+            "현재가가 상방 시나리오 가치도 웃돌아 확률가중값 없이 가치범위 기준 판단이 가능합니다.",
+        )
+    if current < lower:
+        return (
+            "매수 검토",
+            "현재가가 하방 시나리오 가치보다도 낮아 확률가중값 없이 가치범위 기준 판단이 가능합니다.",
+        )
+
+    expected = valuation.expected_value_per_share
+    if expected is None:
+        return (
+            "중립",
+            "현재가가 가치범위 안에 있어 방향 판단에는 보정된 확률가중 기대값이 필요합니다.",
+        )
+    if current < expected:
+        return "매수 검토", "현재가가 보정된 확률가중 기대값보다 낮습니다."
+    if current > expected:
+        return "비중축소", "현재가가 보정된 확률가중 기대값보다 높습니다."
+    return "중립", "현재가와 보정된 확률가중 기대값이 같은 수준입니다."
 
 
 def thesis_delta_adapter() -> StageAdapter:
@@ -587,6 +647,13 @@ def render_generic_report(
     )
     market = data.get("market_comparison")
     market_bundle = market if isinstance(market, MarketComparisonBundle) else None
+    market_observation = data.get("market_observation")
+    observation = (
+        market_observation
+        if isinstance(market_observation, MarketObservation)
+        else None
+    )
+    market_currency = str(data.get("market_currency", ""))
     street = data.get("street_comparison")
     street_bundle = street if isinstance(street, StreetComparisonBundle) else None
     thesis = _korean_text_or(
@@ -630,12 +697,17 @@ def render_generic_report(
         )
     )
     current_price = (
-        "미확보"
-        if market_bundle is None
-        else (
+        (
             f"{_fmt_money(market_bundle.observation.price, market_bundle.envelope.currency)}"
             f"{currency_label_ko(market_bundle.envelope.currency)}"
             f" ({market_bundle.observation.as_of})"
+        )
+        if market_bundle is not None
+        else (
+            f"{_fmt_money(observation.price, market_currency)}"
+            f"{currency_label_ko(market_currency)} ({observation.as_of})"
+            if observation is not None
+            else "미확보"
         )
     )
     street_reference = (
@@ -656,6 +728,10 @@ def render_generic_report(
         ) + " (미보정·기대값 미적용)"
     reference_label = "평가 완료 사업부 소계" if partial else "기준 내재가치"
     range_label = "평가 완료 사업부 범위" if partial else "가치평가 범위"
+    investment_opinion, opinion_reason = _investment_opinion(
+        valuation,
+        market_bundle,
+    )
     lines = [
         f"# {company} 투자보고서",
         "",
@@ -663,7 +739,7 @@ def render_generic_report(
         "",
         "| 핵심 판단 항목 | 내용 |",
         "| --- | --- |",
-        f"| **투자판단** | 판단 유보 — {entry_posture} |",
+        f"| **투자판단** | {investment_opinion} — {opinion_reason} |",
         f"| **현재가** | {current_price} |",
         f"| **{reference_label}** | {reference_value} |",
         f"| **{range_label}** | {value_range} |",
@@ -677,7 +753,7 @@ def render_generic_report(
         "### 투자포인트",
         "",
         f"- **가치동인:** {thesis}",
-        f"- **현재가 대비:** {_market_interpretation(market_bundle)}",
+        f"- **현재가 대비:** {_market_interpretation(market_bundle, observation=observation, partial=partial, currency=market_currency)}",
         (
             "- **남은 제약:** 실제 해결 이력 기반 확률 보정이 없어 시나리오 기대값과 구체 매수가를 사용하지 않습니다."
             if not calibration_applied
@@ -1002,6 +1078,16 @@ def render_generic_report(
                 f"{_fmt_money(abs(item.gap_per_share), market_bundle.envelope.currency)}"
                 f"{currency_label_ko(market_bundle.envelope.currency)} "
                 f"({abs(item.gap_pct_of_reference):.1%})"
+            )
+    elif observation is not None:
+        lines.append(
+            f"- **현재가:** {_fmt_money(observation.price, market_currency)}"
+            f"{currency_label_ko(market_currency)} ({observation.as_of})"
+        )
+        if data.get("market_comparison_withheld_reason"):
+            lines.append(
+                "- **비교 보류:** 미평가 사업부가 있어 평가 완료 사업부 소계를 "
+                "전체 기업 현재가와 비교하지 않았습니다."
             )
     elif data.get("market_comparison_withheld_reason"):
         lines.append("- **현재가:** 비교를 보류했습니다.")

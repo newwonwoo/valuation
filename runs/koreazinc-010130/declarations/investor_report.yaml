@@ -1,0 +1,51 @@
+investment_points:
+  - title: 본업 정상화 수익력이 기업가치의 대부분을 결정
+    content: 제조부문은 금속가격·제련수수료·회수율·가동률 변화에 따라 가치 변동폭이 큽니다.
+    evidence: 2025 사업보고서와 2026 반기보고서의 부문 손익 및 생산 자료
+  - title: 기타부문을 0원 처리하지 않고 집계 NAV로 반영
+    content: 자원순환·광산·신재생에너지·이차전지 소재를 개별 합산하지 않고 공시된 기타부문 유형자산만 반영했습니다.
+    evidence: 2025 사업보고서 기타부문 유형자산 1,476억원과 2026 반기보고서 기타부문 손익
+  - title: 현재가는 상방 시나리오 가치보다 높음
+    content: 확률가중 기대값이 없어도 현재가와 전체 가치범위의 위치를 이용한 방향 판단이 가능합니다.
+    evidence: 2026년 9월 4일 현재가 1,222,000원과 상방 주당가치 1,129,698원
+valuation_method: 제조·수출입부문 정상화 EV/EBITDA와 기타부문 유형자산 NAV를 합산한 SOTP
+major_assumptions: 제조 EBITDA는 하방 15,009억원·기준 21,441억원·상방 27,874억원, 적용배수는 각각 5.5배·7.5배·9.0배입니다. 수출입 EBITDA 1,920억원에 4.0배를 적용하고 기타부문 유형자산 1,476억원을 더한 뒤 순금융부채와 비지배지분을 차감했습니다.
+valuation_exclusions: 미국 통합제련소와 개발단계 신사업의 별도 옵션가치는 추가하지 않았습니다.
+prior_reference_per_share: 680874
+prior_scope_label: 평가 완료 사업부 소계
+segment_notes:
+  - segment_id: 비철금속 제조 및 판매
+    content: 정상화 EBITDA와 시나리오별 배수 적용
+    note: 평가 완료
+  - segment_id: 비철금속 수출입
+    content: 정상화 EBITDA 1,920억원과 4.0배 적용
+    note: 평가 완료
+  - segment_id: 기타부문
+    content: 공시 유형자산 1,476억원을 집계 NAV로 반영
+    note: 개발사업 별도 옵션가치는 미반영
+risks:
+  - 금속가격·제련수수료·회수율이 정상화 가정에 미달하면 제조 EBITDA가 낮아져 주당가치가 하락합니다.
+  - 기타부문은 적자 상태이므로 유형자산의 손상 또는 낮은 처분가치가 확인되면 NAV가 축소될 수 있습니다.
+  - 미국 통합제련소의 자금조달 부담이나 주식 희석이 확대되면 순금융부채와 주당가치에 부정적입니다.
+  - 자회사별 수익성이 엇갈리는 상황에서 법인별 수치를 단순 합산하면 제조·수출입·기타부문 가치가 중복 계산될 수 있습니다.
+  - 경영권 분쟁과 소송이 장기화되면 자본배분과 대규모 투자 의사결정의 불확실성이 커질 수 있습니다.
+conditions:
+  upside: 제조부문 정상화 EBITDA와 배수의 상방 가정이 공시 실적과 현금흐름으로 확인되고, 개발사업의 확정 자금조달·세후 수익성이 별도로 검증될 때입니다.
+  downside: 제조부문 정상화 EBITDA가 기준 대비 30% 이상 낮아지거나 기타부문 자산 손상, 추가 차입·희석이 확인될 때입니다.
+  actionable: 현재가는 상방 가치보다 높아 비중축소 판단이 가능합니다. 현재가가 가치범위 안으로 내려오면 비철금속 코호트 기반 확률가중 기대값을 추가 확인해야 합니다.
+sources:
+  - source_type: 공시
+    label: 2025 사업보고서
+    url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260316000929
+  - source_type: 공시
+    label: 2026 반기보고서
+    url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814003958
+  - source_type: IR
+    label: 고려아연 IR 자료
+    url: https://www.koreazinc.co.kr/?mainMenuId=kz-investment&menuId=kz-inv-ir-report-presentation&pageName=investment/presentation&subMenuId=kz-inv-ir-report
+  - source_type: 신용평가
+    label: 한국신용평가 고려아연 평가자료
+    url: https://m.kisrating.com/fileDown.do?fileName=rs20260513-9.pdf&gubun=2&menuCd=R8
+  - source_type: 시장가격
+    label: 고려아연 투자정보
+    url: https://www.koreazinc.co.kr/?mainMenuId=kz-investment&menuId=kz-inv-ir-report-presentation&pageName=investment/presentation&subMenuId=kz-inv-ir-report

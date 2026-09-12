@@ -9,6 +9,7 @@ from typing import Callable, Mapping
 from zipfile import BadZipFile, ZipFile
 
 from .cli_runtime import LiveAnalysisRequest
+from .broker_runtime import BrokerResearchLoader
 from .collection_plan import CollectorCapability, normalize_jurisdiction
 from .dart_facts import (
     DEFAULT_CORE_FACT_SPECS,
@@ -533,6 +534,7 @@ class KRLiveProviderExtensions:
     capacity_commitment_loader: object | None = None
     per_loader: PERInputsLoader | None = None
     calibration_loader: CalibrationSnapshotLoader | None = None
+    broker_research_loader: BrokerResearchLoader | None = None
     street_loader: StreetLoader | None = None
     market_loader: MarketLoader | None = None
 
@@ -563,6 +565,7 @@ class KRLiveProviderExtensions:
             dcf_fingerprint_loader=self.dcf_fingerprint_loader,
             per_loader=self.per_loader,
             calibration_loader=self.calibration_loader,
+            broker_research_loader=self.broker_research_loader,
             street_loader=self.street_loader,
             market_loader=self.market_loader,
         )
@@ -581,6 +584,7 @@ class KRLiveRuntimeFactory:
         default_factory=dict
     )
     market_currency: str | None = None
+    require_broker_research: bool = False
     capability_registry: MethodCapabilityRegistry | None = None
     impact_config: GenericDecisionImpactConfig | None = None
     initial_data: Mapping[str, object] = field(default_factory=dict)
@@ -659,6 +663,7 @@ class KRLiveRuntimeFactory:
             providers=providers,
             method_choices=self.method_choices,
             additional_required_evidence=dict(self.additional_required_evidence),
+            require_broker_research=self.require_broker_research,
             market_currency=self.market_currency,
             capability_registry=self.capability_registry,
             impact_config=self.impact_config,

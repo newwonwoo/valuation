@@ -17,8 +17,11 @@ but the operator ignores is a refusal, and so is a declared segment the filing
 never mentions. Routing still fails closed downstream — a declared KSIC code
 the classification map does not cover stops the run exactly as an unmapped
 company does. When the filing aggregates heterogeneous activities without
-decomposition weights, the declaration preserves that unresolved state instead
-of inventing one KSIC; the decomposer blocks after the IFRS 8 bijection is proven.
+decomposition weights, the declaration either preserves that unresolved state
+or records a ``RESOLVED_VALUATION_PROXY``. The proxy is an LLM/operator
+interpretation, not an accounting fact: it keeps every constituent visible,
+routes only to a source-compatible conservative evaluator, and remains subject
+to deterministic assumption and audit gates.
 """
 
 from __future__ import annotations
@@ -40,9 +43,14 @@ _DART_DOCUMENT_ID = re.compile(r"^DART_\d{14}$")
 _REPORTING_UNITS = frozenset({"원", "천원", "백만원", "억원"})
 _MAX_BOUND_REGION_CHARS = 16_384
 _RESOLVED_CLASSIFICATION = "RESOLVED"
+_RESOLVED_VALUATION_PROXY = "RESOLVED_VALUATION_PROXY"
 _UNRESOLVED_HETEROGENEOUS = "UNRESOLVED_HETEROGENEOUS"
 _CLASSIFICATION_STATUSES = frozenset(
-    {_RESOLVED_CLASSIFICATION, _UNRESOLVED_HETEROGENEOUS}
+    {
+        _RESOLVED_CLASSIFICATION,
+        _RESOLVED_VALUATION_PROXY,
+        _UNRESOLVED_HETEROGENEOUS,
+    }
 )
 _TABLE_ROW = re.compile(r"<TR\b[^>]*>(?P<body>.*?)</TR\s*>", re.IGNORECASE | re.DOTALL)
 _TABLE_CELL = re.compile(
@@ -528,7 +536,7 @@ def _normalize_name(name: str) -> str:
 
 @dataclass(frozen=True)
 class DeclaredSegment:
-    """One reportable segment's resolved or explicitly unresolved identity."""
+    """One reportable segment's resolved, proxy, or unresolved identity."""
 
     segment_id: str
     disclosed_name: str
@@ -553,12 +561,25 @@ class DeclaredSegment:
                 f"segment {self.segment_id} has unsupported classification_status "
                 f"{self.classification_status!r}"
             )
-        if self.classification_status == _RESOLVED_CLASSIFICATION:
+        if self.classification_status in {
+            _RESOLVED_CLASSIFICATION,
+            _RESOLVED_VALUATION_PROXY,
+        }:
             if not self.ksic_code.strip() or not self.ksic_code.strip().isdigit():
                 raise DeclaredSegmentsError(
                     f"segment {self.segment_id} requires a numeric ksic_code to "
                     "route its archetype through the classification map"
                 )
+            if self.classification_status == _RESOLVED_VALUATION_PROXY:
+                activities = tuple(
+                    activity.strip() for activity in self.constituent_activities
+                    if activity.strip()
+                )
+                if len(activities) < 2 or len(set(activities)) != len(activities):
+                    raise DeclaredSegmentsError(
+                        f"segment {self.segment_id} must preserve at least two distinct "
+                        "constituent_activities when using a valuation proxy"
+                    )
         else:
             activities = tuple(
                 activity.strip() for activity in self.constituent_activities

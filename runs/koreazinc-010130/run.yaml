@@ -2,6 +2,7 @@ company_query: 고려아연
 run_id: LIVE-KOREAZINC-2
 as_of: "2026-09-04"
 jurisdiction: KR
+require_broker_research: true
 scenario_ids: [Down, Base, Bull]
 segments:
   - segment_id: manufacturing

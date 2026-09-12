@@ -1,0 +1,32 @@
+investment_points:
+  - title: 보유자산 NAV가 가치평가의 핵심
+    content: 시나리오별 총자산가치 변화가 주당가치 범위를 결정합니다.
+    evidence: 하방 8,016억원·기준 16,032억원·상방 17,929억원의 유형자산 NAV 가정
+  - title: 지배주주 귀속률을 명시적으로 반영
+    content: 총자산가치에 지배주주 귀속률 77.8200%를 적용해 주당가치를 계산했습니다.
+    evidence: 2026 사업보고서의 지분 및 자산 자료
+  - title: 현재가는 확률가중 기대값보다 낮음
+    content: 보정된 시나리오 확률을 적용한 기대값과 현재가를 비교할 수 있습니다.
+    evidence: 현재가 5,510원과 확률가중 기대값 9,504원
+valuation_method: 시나리오별 유형자산 순자산가치법
+major_assumptions: 유형자산 NAV는 하방 8,016억원·기준 16,032억원·상방 17,929억원이며, 지배주주 귀속률 77.8200%와 희석주식수 124.940백만주를 적용했습니다.
+valuation_exclusions: 별도로 검증되지 않은 개발이익과 자산 재평가 차익은 추가하지 않았습니다.
+segment_notes:
+  - segment_id: 부동산 임대
+    content: 시나리오별 유형자산 NAV 적용
+    note: 평가 완료
+risks:
+  - 보유 부동산 가치가 하락하면 NAV와 주당가치가 직접 감소합니다.
+  - 금리와 요구수익률 상승은 부동산 평가가치에 부정적입니다.
+  - 지배주주 귀속률 또는 희석주식수가 불리하게 변하면 주당가치가 하락합니다.
+conditions:
+  upside: 기준·상방 NAV가 감정평가와 임대 현금흐름으로 확인될 때입니다.
+  downside: 보유자산 가치 하락, 요구수익률 상승 또는 주식수 증가가 확인될 때입니다.
+  actionable: 현재가가 확률가중 기대값보다 낮아 매수 검토가 가능하나, 보유자산 가치와 임대 현금흐름을 함께 확인해야 합니다.
+sources:
+  - source_type: 공시
+    label: 2026 사업보고서
+    url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260528000669
+  - source_type: 시장가격
+    label: 신한알파리츠 시장가격
+    url: https://m.stock.naver.com/api/stock/293940/price
