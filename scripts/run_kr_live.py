@@ -255,10 +255,19 @@ def _calibration_loader(run_dir: Path, calibration: dict):
     from valuation_engine.continuous_probability_assembly import (
         ContinuousCalibrationBinding,
         ContinuousConditioning,
+        SELF_PROBABILITY_SOURCE,
         build_continuous_probability_snapshot,
     )
 
     constants = calibration["constants"]
+    self_calibrated = bool(calibration.get("self_calibrated", False))
+    declared_source = str(calibration.get("external_probability_source") or "")
+    if self_calibrated != (declared_source == SELF_PROBABILITY_SOURCE):
+        raise RunbookError(
+            "run.yaml calibration self_calibrated flag contradicts "
+            f"external_probability_source={declared_source!r}; target-history "
+            f"calibration must declare {SELF_PROBABILITY_SOURCE}"
+        )
     conditioning_payload = json.loads(
         _resolve(run_dir, calibration["conditioning"]).read_text(encoding="utf-8")
     )
@@ -284,6 +293,7 @@ def _calibration_loader(run_dir: Path, calibration: dict):
             constants["expected_source_company_count"]
         ),
         excluded_ticker=constants["excluded_ticker"],
+        self_calibrated=self_calibrated,
         credible_level=Decimal(str(calibration.get("credible_level", "0.90"))),
         outer_draws=int(calibration.get("outer_draws", 300)),
         inner_draws=int(calibration.get("inner_draws", 200)),

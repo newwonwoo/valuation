@@ -240,7 +240,7 @@ def test_investor_report_keeps_module_diagnostics_out_of_decision_body():
     assert "확률 보정:** 미보정 · 수치 가중 보류" in report
 
 
-def test_full_envelope_above_market_supports_direction_without_probability_weight():
+def test_full_envelope_does_not_replace_missing_probability_weight():
     valuation = _valuation()
     observation = MarketObservation(100.0, "2026-09-04", "market")
     report = render_generic_report(
@@ -257,6 +257,6 @@ def test_full_envelope_above_market_supports_direction_without_probability_weigh
         }
     )
 
-    assert "**투자판단** | 비중축소" in report
-    assert "상방 시나리오 가치도 웃돌아" in report
+    assert "**투자판단** | 판단 유보" in report
+    assert "시나리오 확률이 보정되지 않아" in report
     assert "확률가중 기대값:** 미산출" in report

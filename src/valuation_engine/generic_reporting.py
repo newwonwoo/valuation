@@ -550,12 +550,12 @@ def _investment_opinion(
     valuation: GenericValuationResult,
     market: MarketComparisonBundle | None,
 ) -> tuple[str, str]:
-    """Derive a direction without inventing a target or an entry threshold.
+    """Derive direction only after intrinsic probability weighting is complete.
 
-    A full scenario envelope can support a directional conclusion even when a
-    calibrated expected value is unavailable.  Probability is only necessary
-    when the market price sits inside that envelope.  Partial subtotals never
-    receive a whole-company opinion.
+    Market price is a comparison input.  It must never substitute for missing
+    scenario probabilities or turn the outer scenario envelope into an
+    investment opinion.  Partial subtotals never receive a whole-company
+    opinion.
     """
 
     if valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC:
@@ -563,29 +563,15 @@ def _investment_opinion(
             "판단 유보",
             "전체 기업가치가 아니라 평가 완료 사업부 기준이므로 현재가와 직접 비교하지 않습니다.",
         )
-    if market is None or not valuation.scenarios:
-        return "판단 유보", "검증된 현재가와 전체 가치범위의 비교가 없습니다."
-
-    current = Decimal(str(market.observation.price))
-    values = tuple(item.value_per_share for item in valuation.scenarios)
-    lower, upper = min(values), max(values)
-    if current > upper:
-        return (
-            "비중축소",
-            "현재가가 상방 시나리오 가치도 웃돌아 확률가중값 없이 가치범위 기준 판단이 가능합니다.",
-        )
-    if current < lower:
-        return (
-            "매수 검토",
-            "현재가가 하방 시나리오 가치보다도 낮아 확률가중값 없이 가치범위 기준 판단이 가능합니다.",
-        )
-
     expected = valuation.expected_value_per_share
     if expected is None:
         return (
-            "중립",
-            "현재가가 가치범위 안에 있어 방향 판단에는 보정된 확률가중 기대값이 필요합니다.",
+            "판단 유보",
+            "시나리오 확률이 보정되지 않아 확률가중 기대값을 산출하지 못했습니다.",
         )
+    if market is None or not valuation.scenarios:
+        return "판단 유보", "확률가중 기대값과 비교할 검증된 현재가가 없습니다."
+    current = Decimal(str(market.observation.price))
     if current < expected:
         return "매수 검토", "현재가가 보정된 확률가중 기대값보다 낮습니다."
     if current > expected:
