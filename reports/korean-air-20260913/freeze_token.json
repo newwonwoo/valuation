@@ -1,0 +1,12 @@
+{
+  "assumption_set_hash": "4e505acfd5c2f583d4841dfe320f92c2a8c08550f0be3067ef933306cba9453b",
+  "audit_hash": "16e13bed5d67a7430cec7b8990d0bf86abb767ccba526ddca6e6084a16fe00fe",
+  "calibration_dataset_hash": "",
+  "calibration_snapshot_hash": "",
+  "industry_snapshot_hash": "faa8678d517453ae4e3311a5346ee70bd6fa783b658c24eeba414daaf7fa7e5d",
+  "ledger_snapshot_hash": "340b838a7d7090a7c26128b232ac8afedfff7c171dc856f1798de3c7b06400ba",
+  "run_id": "LIVE-KOREAN-AIR-1",
+  "source_snapshot_hash": "2197da52f0cd40b00f104557f9d552bd6f260025ca7020cf400165019870ccaf",
+  "token_hash": "38c8633e568384cb23f6920b1fa8e1b9312333ad3c86809524175235af8954e7",
+  "valuation_hash": "d9d0a70bbcc285f198eb58af40cab95e58d40251daadb1556e394cd92cd689ac"
+}

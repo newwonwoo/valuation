@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from decimal import Decimal
 from pathlib import Path
 import shutil
 import sys
@@ -190,3 +191,36 @@ def test_every_committed_run_declares_a_valid_public_report_profile(run_name):
     path = ROOT / "runs" / run_name / "declarations" / "investor_report.yaml"
     assert path.is_file()
     load_investor_report_profile(path)
+
+
+def test_negative_residual_is_disclosed_but_share_price_is_floored(koreazinc_result):
+    original = koreazinc_result.data["generic_valuation_result"]
+    values = {"Down": Decimal("-100"), "Base": Decimal("100"), "Bull": Decimal("1400000")}
+    valuation = replace(original, scenarios=tuple(
+        replace(item, value_per_share=values[item.scenario_id]) for item in original.scenarios
+    ), expected_value_per_share=Decimal("-20"))
+    report = render_investor_report(
+        {**koreazinc_result.data, "generic_valuation_result": valuation},
+        load_investor_report_profile(PROFILE_PATH),
+    )
+    assert "| 주당가치 | 0원 | 100원 | 1,400,000원 |" in report
+    assert "| 부채 차감 후 주당 잔여가치 | -100원 | 100원 | 1,400,000원 |" in report
+    assert "주주의 추가 납입 의무나 음수 주식가격을 뜻하지 않으며" in report
+    assert "유한책임 반영 전 확률가중 잔여가치: -20원" in report
+    assert "확률가중 기대값은 -20원입니다" not in report
+    assert "현재가는 기준보다 상방 시나리오에 가까워" in report
+    assert valuation.scenarios[0].value_per_share == values[valuation.scenarios[0].scenario_id]
+    assert valuation.expected_value_per_share == Decimal("-20")
+
+
+def test_partial_business_residual_is_not_given_equity_floor(koreazinc_result):
+    original = koreazinc_result.data["generic_valuation_result"]
+    valuation = replace(original, scope=IntrinsicValuationScope.PARTIAL_INTRINSIC,
+        unvalued_segments=(UnvaluedSegment(asset_id="recycling", segment_id="기타부문", resolution_status="ASSUMPTION_GAP", rationale="독립 현금흐름 미확인"),),
+        scenarios=tuple(replace(item, value_per_share=Decimal("-100")) for item in original.scenarios))
+    report = render_investor_report(
+        {**koreazinc_result.data, "generic_valuation_result": valuation},
+        load_investor_report_profile(PROFILE_PATH),
+    )
+    assert "| 주당가치 | -100원 | -100원 | -100원 |" in report
+    assert "주식가치의 하한은 0원" not in report

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+<title id="title">대한항공 투자 결론과 가치평가</title>
+<desc id="desc">회사 강점, 시나리오 가치, 현재가 및 매수 검토 기준을 요약한 한국어 카드</desc>
+<style>
+text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+</style>
+<rect x="0" y="0" width="1200" height="1500" rx="0" fill="#F3F0E8"/>
+<rect x="0" y="0" width="1200" height="250" rx="0" fill="#102D3E"/>
+<text x="70" y="70" font-size="24" font-weight="700" fill="#FFCB77" text-anchor="start">PRISM 최종보고서 · 1/2</text>
+<text x="70" y="145" font-size="54" font-weight="800" fill="#FFFFFF" text-anchor="start">대한항공</text>
+<text x="70" y="202" font-size="30" font-weight="500" fill="#D9E7EC" text-anchor="start">회사 강점 · 투자 결론 · 가치평가</text>
+<text x="70" y="295" font-size="24" font-weight="800" fill="#167C72" text-anchor="start">인공지능 연결 인사이트 · 가치평가 계산 비관여</text>
+<text x="70" y="345" font-size="24" font-weight="800" fill="#E26643" text-anchor="start">기업 강점</text>
+<text x="230" y="345" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">기존 항공기 엔진수리·정비 사업과 운영 경험</text>
+<text x="70" y="415" font-size="24" font-weight="800" fill="#E26643" text-anchor="start">재평가 연결</text>
+<text x="230" y="415" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">자체 항공 운영에서 축적한 정비역량을 외부 서비스매출로 전환할 가능성을 초기 비용과 함께</text>
+<text x="230" y="450" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">평가한다.</text>
+<text x="70" y="505" font-size="24" font-weight="800" fill="#E26643" text-anchor="start">가치 포착</text>
+<text x="230" y="505" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">기타부문의 외부 정비 매출과 마진에서 설비투자·운전자본을 차감한 FCFF</text>
+<text x="70" y="650" font-size="32" font-weight="800" fill="#102D3E" text-anchor="start">결정론적 가치평가 결과</text>
+<text x="1090" y="650" font-size="20" font-weight="400" fill="#607582" text-anchor="end">확률가중 전 개별 시나리오</text>
+<rect x="70" y="685" width="320" height="150" rx="20" fill="#FFFFFF"/>
+<text x="94" y="733" font-size="22" font-weight="700" fill="#607582" text-anchor="start">하방 (Down)</text>
+<text x="94" y="793" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">-26,761원</text>
+<rect x="408" y="685" width="320" height="150" rx="20" fill="#FFFFFF"/>
+<text x="432" y="733" font-size="22" font-weight="700" fill="#607582" text-anchor="start">기준 (Base)</text>
+<text x="432" y="793" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">3,672원</text>
+<rect x="746" y="685" width="320" height="150" rx="20" fill="#FFFFFF"/>
+<text x="770" y="733" font-size="22" font-weight="700" fill="#607582" text-anchor="start">상방 (Bull)</text>
+<text x="770" y="793" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">36,673원</text>
+<rect x="70" y="885" width="1060" height="170" rx="24" fill="#DDEAE7"/>
+<text x="105" y="937" font-size="24" font-weight="800" fill="#167C72" text-anchor="start">현재가</text>
+<text x="105" y="997" font-size="38" font-weight="800" fill="#102D3E" text-anchor="start">28,950원</text>
+<text x="1095" y="997" font-size="21" font-weight="400" fill="#607582" text-anchor="end">기준일 2026-09-11</text>
+<text x="70" y="1105" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">매수 검토 기준</text>
+<rect x="70" y="1133" width="1060" height="145" rx="22" fill="#FFF4DE"/>
+<text x="105" y="1183" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">실제 해결 이력 기반 확률 보정이 완료되지 않았습니다. 따라서 특정 매수가는 만들지 않고 현재가는</text>
+<text x="105" y="1221" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">참고값으로만 표시합니다.</text>
+<rect x="0" y="1370" width="1200" height="130" rx="0" fill="#102D3E"/>
+<text x="70" y="1415" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
+<text x="140" y="1415" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">공시 사실과 분석가 가정의 근거 주소는 보고서 본문 ‘정보 출처’에서 확인할 수 있습니다.</text>
+<a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803" target="_blank"><text x="70" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
+<a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260910000442" target="_blank"><text x="170" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 2</text></a>
+<a href="https://dart.fss.or.kr/report/viewer.do?rcpNo=20260724000006&amp;dcmNo=11493004&amp;eleId=1&amp;offset=620&amp;length=3475&amp;dtd=dart4.xsd" target="_blank"><text x="270" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 3</text></a>
+<a href="https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&amp;dcmNo=11534684&amp;eleId=13&amp;offset=297309&amp;length=54959&amp;dtd=dart4.xsd" target="_blank"><text x="370" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 4</text></a>
+<a href="https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&amp;dcmNo=11534684&amp;eleId=20&amp;offset=440701&amp;length=48993&amp;dtd=dart4.xsd" target="_blank"><text x="470" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 5</text></a>
+</svg>

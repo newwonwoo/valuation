@@ -1,0 +1,44 @@
+{
+  "linkages": [
+    {
+      "causal_chain": [
+        "항공기 운항과 기단 투자에 따른 정비 수요",
+        "외부 엔진 정비 처리능력 수요",
+        "기존 항공기엔진수리 사업 경험",
+        "외부 서비스 매출에서 초기 투자·원가 차감",
+        "기타부문 외부 계약과 실제 FCFF 개선"
+      ],
+      "company_strength": "기존 항공기 엔진수리·정비 사업과 운영 경험",
+      "confidence": 0.5,
+      "contradicting_evidence_ids": [],
+      "emergent_need": "엔진 가동을 유지할 외부 정비 처리능력",
+      "external_change": "항공기 운항과 장기 기단 투자에 따른 정비 수요",
+      "hypothesis_ids": [
+        "H:KAL:SERVICE"
+      ],
+      "id": "L:KAL:ENGINE",
+      "kill_conditions": [
+        "외부 매출 없이 내부거래만 증가"
+      ],
+      "linkage_thesis": "자체 항공 운영에서 축적한 정비역량을 외부 서비스매출로 전환할 가능성을 초기 비용과 함께 평가한다.",
+      "market_blind_spot": "별도 공시가 작은 기타부문에 들어간 엔진서비스의 초기 투자와 장기 수익을 같은 값으로 보지 않는다. 시장가격 대비 미반영 여부를 단정하지 않는다.",
+      "next_checks": [
+        "기타부문 외부매출과 유지투자",
+        "정비 고객·제품 구성"
+      ],
+      "recognition_triggers": [
+        "외부 정비 계약 체결",
+        "실제 신규시설 가동과 손익"
+      ],
+      "supporting_evidence_ids": [
+        "UW:KR:DART:00113526:activity_mix",
+        "UW:KR:DART:00113526:fleet_capex",
+        "UW:KR:DART:00113526:other_fcff_year_1",
+        "UW:KR:DART:00113526:other_fcff_year_5"
+      ],
+      "value_capture_path": "기타부문의 외부 정비 매출과 마진에서 설비투자·운전자본을 차감한 FCFF"
+    }
+  ],
+  "not_applicable_reason": null,
+  "status": "APPLICABLE"
+}

@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="2046" viewBox="0 0 1200 2046" role="img" aria-labelledby="title desc">
+<title id="title">대한항공 가치평가 가정</title>
+<desc id="desc">시나리오별 자유현금흐름, 영구성장률, 자본비용, 위험과 출처를 모두 표시한 한국어 카드</desc>
+<style>
+text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+</style>
+<rect x="0" y="0" width="1200" height="2046" rx="0" fill="#F3F0E8"/>
+<rect x="0" y="0" width="1200" height="250" rx="0" fill="#102D3E"/>
+<text x="70" y="70" font-size="24" font-weight="700" fill="#FFCB77" text-anchor="start">PRISM 최종보고서 · 2/2</text>
+<text x="70" y="145" font-size="54" font-weight="800" fill="#FFFFFF" text-anchor="start">대한항공</text>
+<text x="70" y="202" font-size="30" font-weight="500" fill="#D9E7EC" text-anchor="start">가치평가 가정 · 위험 · 출처</text>
+<text x="70" y="315" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">핵심 위험 입력</text>
+<rect x="70" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
+<text x="94" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">DCF 가중평균자본비용</text>
+<text x="94" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">7.10%</text>
+<rect x="425" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
+<text x="449" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">지배주주 귀속률</text>
+<text x="449" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">100.0000%</text>
+<rect x="780" y="350" width="330" height="135" rx="20" fill="#FFFFFF"/>
+<text x="804" y="397" font-size="21" font-weight="700" fill="#607582" text-anchor="start">주당 분모</text>
+<text x="804" y="455" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">389.669백만주</text>
+<text x="70" y="560" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">시나리오별 핵심 가정</text>
+<rect x="70" y="600" width="1060" height="894" rx="22" fill="#FFFFFF"/>
+<text x="100" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">구분</text>
+<text x="270" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">배수평가 부문</text>
+<text x="470" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">NAV 부문</text>
+<text x="675" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">현금흐름/NPV 부문</text>
+<text x="855" y="648" font-size="19" font-weight="800" fill="#607582" text-anchor="start">영구/기타 입력</text>
+<text x="1015" y="637" font-size="16" font-weight="800" fill="#607582" text-anchor="start">EV→지분</text>
+<text x="1015" y="658" font-size="16" font-weight="800" fill="#607582" text-anchor="start">모회사 조정</text>
+<line x1="95" y1="668" x2="1105" y2="668" stroke="#D6DFE3" stroke-width="2"/>
+<text x="100" y="712" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">하방(Down)</text>
+<text x="270" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="470" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">hotel 9,500억원</text>
+<text x="675" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">airline FCFF DCF ·</text>
+<text x="675" y="730" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">FCFF -22,199억원 /</text>
+<text x="675" y="748" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-17,036억원 /</text>
+<text x="675" y="766" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-8,613억원 / 1,631억원</text>
+<text x="675" y="784" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">/ 9,065억원;</text>
+<text x="675" y="802" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">aerospace FCFF DCF</text>
+<text x="675" y="820" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">· FCFF 74억원 / 123억원</text>
+<text x="675" y="838" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">/ 216억원 / 270억원 /</text>
+<text x="675" y="856" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">501억원; other FCFF</text>
+<text x="675" y="874" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">DCF · FCFF -693억원 /</text>
+<text x="675" y="892" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-295억원 / 105억원 /</text>
+<text x="675" y="910" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">111억원 / 126억원</text>
+<text x="855" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">영구성장률 1.5% · 영구</text>
+<text x="855" y="730" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">ROIC 6.5%; 영구성장률</text>
+<text x="855" y="748" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">1.5% · 영구 ROIC</text>
+<text x="855" y="766" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">6.5%; 영구성장률 1.5%</text>
+<text x="855" y="784" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">· 영구 ROIC 6.5%</text>
+<text x="1015" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">EV</text>
+<text x="1015" y="730" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-200,168억 모</text>
+<text x="1015" y="748" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-3,500억</text>
+<line x1="95" y1="942" x2="1105" y2="942" stroke="#E9EEF0" stroke-width="2"/>
+<text x="100" y="960" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">기준(Base)</text>
+<text x="270" y="960" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="470" y="960" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">hotel 12,500억원</text>
+<text x="675" y="960" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">airline FCFF DCF ·</text>
+<text x="675" y="978" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">FCFF -19,357억원 /</text>
+<text x="675" y="996" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-11,664억원 /</text>
+<text x="675" y="1014" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-1,762억원 / 8,383억원</text>
+<text x="675" y="1032" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">/ 14,261억원;</text>
+<text x="675" y="1050" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">aerospace FCFF DCF</text>
+<text x="675" y="1068" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">· FCFF 120억원 /</text>
+<text x="675" y="1086" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">220억원 / 380억원 /</text>
+<text x="675" y="1104" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">524억원 / 847억원;</text>
+<text x="675" y="1122" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">other FCFF DCF ·</text>
+<text x="675" y="1140" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">FCFF -655억원 /</text>
+<text x="675" y="1158" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-249억원 / 164억원 /</text>
+<text x="675" y="1176" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">194억원 / 228억원</text>
+<text x="855" y="960" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">영구성장률 2.0% · 영구</text>
+<text x="855" y="978" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">ROIC 8.0%; 영구성장률</text>
+<text x="855" y="996" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">2.0% · 영구 ROIC</text>
+<text x="855" y="1014" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">8.0%; 영구성장률 2.0%</text>
+<text x="855" y="1032" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">· 영구 ROIC 8.0%</text>
+<text x="1015" y="960" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">EV</text>
+<text x="1015" y="978" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-200,168억 모</text>
+<text x="1015" y="996" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-3,500억</text>
+<line x1="95" y1="1208" x2="1105" y2="1208" stroke="#E9EEF0" stroke-width="2"/>
+<text x="100" y="1226" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">상방(Bull)</text>
+<text x="270" y="1226" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
+<text x="470" y="1226" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">hotel 15,500억원</text>
+<text x="675" y="1226" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">airline FCFF DCF ·</text>
+<text x="675" y="1244" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">FCFF -19,026억원 /</text>
+<text x="675" y="1262" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-9,128억원 / 1,496억원</text>
+<text x="675" y="1280" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">/ 13,254억원 /</text>
+<text x="675" y="1298" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">19,332억원; aerospace</text>
+<text x="675" y="1316" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">FCFF DCF · FCFF</text>
+<text x="675" y="1334" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">69억원 / 242억원 /</text>
+<text x="675" y="1352" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">495억원 / 760억원 /</text>
+<text x="675" y="1370" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">1,225억원; other FCFF</text>
+<text x="675" y="1388" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">DCF · FCFF -625억원 /</text>
+<text x="675" y="1406" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-210억원 / 226억원 /</text>
+<text x="675" y="1424" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">271억원 / 324억원</text>
+<text x="855" y="1226" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">영구성장률 2.5% · 영구</text>
+<text x="855" y="1244" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">ROIC 10.0%; 영구성장률</text>
+<text x="855" y="1262" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">2.5% · 영구 ROIC</text>
+<text x="855" y="1280" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">10.0%; 영구성장률 2.5%</text>
+<text x="855" y="1298" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">· 영구 ROIC 10.0%</text>
+<text x="1015" y="1226" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">EV</text>
+<text x="1015" y="1244" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-200,168억 모</text>
+<text x="1015" y="1262" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-3,500억</text>
+<text x="70" y="1554" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">평가방법</text>
+<text x="250" y="1554" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">airline_transport/traffic_yield_dcf/1,</text>
+<text x="250" y="1585" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">contracted_backlog/normalized_dcf/1,</text>
+<text x="250" y="1616" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">asset_yield_nav/nav/1,</text>
+<text x="250" y="1647" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">service_operations/normalized_service_dcf/1</text>
+<text x="70" y="1690" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">정확한 계산식</text>
+<text x="250" y="1690" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">[DCF 부문 귀속 지분가치+NAV 부문 귀속 지분가치+모회사 조정]÷389,669,121주 (각 부문</text>
+<text x="250" y="1721" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">EV→지분 조정·귀속률 반영)</text>
+<text x="70" y="1764" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">확률 보정</text>
+<text x="250" y="1764" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">미완료</text>
+<text x="70" y="1826" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">매수구간</text>
+<text x="250" y="1826" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지</text>
+<rect x="0" y="1916" width="1200" height="130" rx="0" fill="#102D3E"/>
+<text x="70" y="1961" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
+<text x="140" y="1961" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">공시 사실과 분석가 가정의 근거 주소는 보고서 본문 ‘정보 출처’에서 확인할 수 있습니다.</text>
+<a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803" target="_blank"><text x="70" y="2003" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
+<a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260910000442" target="_blank"><text x="170" y="2003" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 2</text></a>
+<a href="https://dart.fss.or.kr/report/viewer.do?rcpNo=20260724000006&amp;dcmNo=11493004&amp;eleId=1&amp;offset=620&amp;length=3475&amp;dtd=dart4.xsd" target="_blank"><text x="270" y="2003" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 3</text></a>
+<a href="https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&amp;dcmNo=11534684&amp;eleId=13&amp;offset=297309&amp;length=54959&amp;dtd=dart4.xsd" target="_blank"><text x="370" y="2003" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 4</text></a>
+<a href="https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&amp;dcmNo=11534684&amp;eleId=20&amp;offset=440701&amp;length=48993&amp;dtd=dart4.xsd" target="_blank"><text x="470" y="2003" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 5</text></a>
+</svg>

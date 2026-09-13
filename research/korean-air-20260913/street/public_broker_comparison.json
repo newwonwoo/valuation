@@ -1,0 +1,34 @@
+{
+  "company": "대한항공", "ticker": "003490", "as_of": "2026-09-13",
+  "purpose": "Post-freeze comparison only; no model changes or calibration",
+  "authorization": "Parent reported AUDIT_GATE passed and stage 26 intrinsic freeze before commissioning this search",
+  "storage": "Derived facts and brief paraphrases only; no broker report body or PDF stored",
+  "verified_reports": [
+    {
+      "institution": "하나증권", "analyst": "안도현", "report_date": "2026-07-14",
+      "date_note": "Actual first-page date; URL directory and filename indicate July 13 and are not the publication-date authority",
+      "title": "2Q26 Re: 유류비가 두배인데 영업이익 서프라이즈",
+      "rating": "BUY 유지", "target_price_krw": 41000, "previous_target_price_krw": 38000, "target_horizon_months": 12,
+      "url": "https://file.hanaw.com/download/research/FileServer/WEB/industry/enterprise/2026/07/13/koreanair_260713.pdf",
+      "access_quality": "Public broker-hosted PDF read; first page verified",
+      "page": 1,
+      "argument_paraphrase": "운임 인상에도 여객·화물 수요가 유지되어 비용 급등을 흡수했다는 해석. 이후 연료비 완화와 프리미엄 수요 지속을 전망에 반영.",
+      "scope_caution": "본문의 2026년 영업이익 약 1.7조원은 별도 전망이며 연결 전망과 혼동하지 않는다. 실적 기준은 공식 재무제표를 우선한다."
+    },
+    {
+      "institution": "LS증권", "analyst": "이재혁", "report_date": "2026-07-15",
+      "title": "2Q26 Review: 어디서나 당당하게 걷기",
+      "rating": "Buy 유지", "target_price_krw": 33000, "target_change": "유지",
+      "url": "https://file.alphasquare.co.kr/media/pdfs/company-report/260715_KAL_2Q26_Review.pdf",
+      "access_quality": "Broker-authored PDF read at public third-party AlphaSquare mirror; original broker host not independently retrieved",
+      "page": 1,
+      "argument_paraphrase": "AI 투자 및 전자상거래 관련 화물, 방한·장거리 여객 수요를 이익 방어의 원인으로 해석. 연료비 안정과 연말 합병에 기대를 두되 유가 재상승과 아시아나 등 계열사 부진을 부담으로 인정."
+    }
+  ],
+  "unverified_newer_discovery": {
+    "institution": "미래에셋증권", "target_price_krw_in_search_snippets": 37000,
+    "dates_in_search_snippets": ["2026-09-08", "2026-09-09"],
+    "status": "Excluded from verified comparison: report original and exact publication date not verified. Portal/news snippets returned root URLs or unrelated default-company pages on opening.",
+    "not_latest_claim": "The two verified July reports are the accessible originals found, not a claim that no newer reports exist."
+  }
+}

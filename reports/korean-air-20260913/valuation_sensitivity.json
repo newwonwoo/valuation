@@ -1,0 +1,292 @@
+{
+  "findings": [
+    {
+      "blocking": false,
+      "check": "valuation_sensitivity_measured",
+      "detail": "2/3개 시나리오에서 커널 변수 민감도를 산출했습니다",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "valuation_sensitivity_monotonicity",
+      "detail": "모든 변수가 예상 방향으로 단조 반응했습니다",
+      "passed": true
+    },
+    {
+      "blocking": false,
+      "check": "valuation_sensitivity_concentration",
+      "detail": "소폭 변동만으로 가치가 크게 움직이는 변수가 있습니다: Bull/airline 가중평균자본비용 32.0% · Bull/airline 영구성장률 27.2% · Bull/airline 전 기간 현금흐름 수준 21.3%",
+      "passed": false
+    }
+  ],
+  "report_hash": "44cdb5537992c050cab969c698c51c5c610db951f28d273c2c1ac528b7bb2a37",
+  "reporting_unit": "KRW",
+  "scenarios": [
+    {
+      "base_value_per_share": null,
+      "rationale": "SOTP 구성요소 중 동결 DCF 커널로 독립 재현 가능한 부문이 없어 부문별 민감도를 산출하지 않았습니다",
+      "scenario_id": "Down",
+      "segments": [],
+      "status": "NOT_RECONSTRUCTIBLE",
+      "variables": []
+    },
+    {
+      "base_value_per_share": "3671.771423052940899362559501",
+      "rationale": "SOTP 5개 구성요소 중 2개 DCF 부문을 다른 부문·모회사 조정을 고정한 채 독립적으로 3점 변동시켰습니다",
+      "scenario_id": "Base",
+      "segments": [
+        {
+          "asset_id": "aerospace",
+          "attributable_equity_value": "1361704191927.827530012777342",
+          "attributable_value_per_share": "3494.513982615080064331752225",
+          "contribution_id": "aerospace:Base:contracted_backlog.normalized_dcf:v1",
+          "ownership_ratio": "1",
+          "variables": [
+            {
+              "base_input": "0.07104336745001877",
+              "base_value_per_share": "3671.771423052940899362559501",
+              "high_input": "0.07604336745001877",
+              "high_value_pct": "-0.09438712575621022",
+              "high_value_per_share": "3325.203471997184066064083456",
+              "label": "가중평균자본비용",
+              "low_input": "0.06604336745001877",
+              "low_value_pct": "0.1151207179064675",
+              "low_value_per_share": "4094.468385263246997975402883",
+              "monotonic": true,
+              "variable": "discount_rate"
+            },
+            {
+              "base_input": "0.02",
+              "base_value_per_share": "3671.771423052940899362559501",
+              "high_input": "0.025",
+              "high_value_pct": "0.09567324908445363",
+              "high_value_per_share": "4023.061724991863700467540906",
+              "label": "영구성장률",
+              "low_input": "0.015",
+              "low_value_pct": "-0.0786019606452324",
+              "low_value_per_share": "3383.162990159844884534458462",
+              "monotonic": true,
+              "variable": "terminal_growth"
+            },
+            {
+              "base_input": "1",
+              "base_value_per_share": "3671.771423052940899362559501",
+              "high_input": "1.10",
+              "high_value_pct": "0.09517242714715413",
+              "high_value_per_share": "4021.222821314448905795734725",
+              "label": "전 기간 현금흐름 수준",
+              "low_input": "0.90",
+              "low_value_pct": "-0.09517242714715402",
+              "low_value_per_share": "3322.320024791432892929384279",
+              "monotonic": true,
+              "variable": "fcff_level"
+            }
+          ]
+        },
+        {
+          "asset_id": "other",
+          "attributable_equity_value": "285326062783.9184871339333191",
+          "attributable_value_per_share": "732.2265157980493074121039196",
+          "contribution_id": "other:Base:service_operations.normalized_service_dcf:v1",
+          "ownership_ratio": "1",
+          "variables": [
+            {
+              "base_input": "0.07104336745001877",
+              "base_value_per_share": "3671.771423052940899362559501",
+              "high_input": "0.07604336745001877",
+              "high_value_pct": "-0.025183356851293137",
+              "high_value_per_share": "3579.303893029818459197456811",
+              "label": "가중평균자본비용",
+              "low_input": "0.06604336745001877",
+              "low_value_pct": "0.030775075933229035",
+              "low_value_per_share": "3784.770467406856053722182672",
+              "monotonic": true,
+              "variable": "discount_rate"
+            },
+            {
+              "base_input": "0.02",
+              "base_value_per_share": "3671.771423052940899362559501",
+              "high_input": "0.025",
+              "high_value_pct": "0.025813002802257623",
+              "high_value_per_share": "3766.550869085456096339716739",
+              "label": "영구성장률",
+              "low_input": "0.015",
+              "low_value_pct": "-0.021207104909830243",
+              "low_value_per_share": "3593.903781279340457073392243",
+              "monotonic": true,
+              "variable": "terminal_growth"
+            },
+            {
+              "base_input": "1",
+              "base_value_per_share": "3671.771423052940899362559501",
+              "high_input": "1.10",
+              "high_value_pct": "0.0199420506189687",
+              "high_value_per_share": "3744.994074632745830103769893",
+              "label": "전 기간 현금흐름 수준",
+              "low_input": "0.90",
+              "low_value_pct": "-0.01994205061896881",
+              "low_value_per_share": "3598.548771473135968621349109",
+              "monotonic": true,
+              "variable": "fcff_level"
+            }
+          ]
+        }
+      ],
+      "status": "RECONSTRUCTED",
+      "variables": []
+    },
+    {
+      "base_value_per_share": "36672.64317871873091084441320",
+      "rationale": "SOTP 5개 구성요소 중 3개 DCF 부문을 다른 부문·모회사 조정을 고정한 채 독립적으로 3점 변동시켰습니다",
+      "scenario_id": "Bull",
+      "segments": [
+        {
+          "asset_id": "airline",
+          "attributable_equity_value": "10447294536704.65990416385689",
+          "attributable_value_per_share": "26810.68109757832185056269031",
+          "contribution_id": "airline:Bull:airline_transport.traffic_yield_dcf:v1",
+          "ownership_ratio": "1",
+          "variables": [
+            {
+              "base_input": "0.07104336745001877",
+              "base_value_per_share": "36672.64317871873091084441320",
+              "high_input": "0.07604336745001877",
+              "high_value_pct": "-0.25621643780726466",
+              "high_value_per_share": "27276.50917849053555886220974",
+              "label": "가중평균자본비용",
+              "low_input": "0.06604336745001877",
+              "low_value_pct": "0.31967507430349795",
+              "low_value_per_share": "48395.97311178131011511857279",
+              "monotonic": true,
+              "variable": "discount_rate"
+            },
+            {
+              "base_input": "0.025",
+              "base_value_per_share": "36672.64317871873091084441320",
+              "high_input": "0.030",
+              "high_value_pct": "0.2720052969509814",
+              "high_value_per_share": "46647.79637652350458455589900",
+              "label": "영구성장률",
+              "low_input": "0.020",
+              "low_value_pct": "-0.21871623893236103",
+              "low_value_per_share": "28651.74059096086658251476855",
+              "monotonic": true,
+              "variable": "terminal_growth"
+            },
+            {
+              "base_input": "1",
+              "base_value_per_share": "36672.64317871873091084441320",
+              "high_input": "1.10",
+              "high_value_pct": "0.21318177293701068",
+              "high_value_per_share": "44490.58226984436821895532633",
+              "label": "전 기간 현금흐름 수준",
+              "low_input": "0.90",
+              "low_value_pct": "-0.2131817729370109",
+              "low_value_per_share": "28854.70408759309360273350010",
+              "monotonic": true,
+              "variable": "fcff_level"
+            }
+          ]
+        },
+        {
+          "asset_id": "aerospace",
+          "attributable_equity_value": "2146626214752.253199291375608",
+          "attributable_value_per_share": "5508.843526639754447700708643",
+          "contribution_id": "aerospace:Bull:contracted_backlog.normalized_dcf:v1",
+          "ownership_ratio": "1",
+          "variables": [
+            {
+              "base_input": "0.07104336745001877",
+              "base_value_per_share": "36672.64317871873091084441320",
+              "high_input": "0.07604336745001877",
+              "high_value_pct": "-0.01633767451460566",
+              "high_value_per_share": "36073.49747087455079591754097",
+              "label": "가중평균자본비용",
+              "low_input": "0.06604336745001877",
+              "low_value_pct": "0.02035857532715557",
+              "low_value_per_share": "37419.24594731857424758393532",
+              "monotonic": true,
+              "variable": "discount_rate"
+            },
+            {
+              "base_input": "0.025",
+              "base_value_per_share": "36672.64317871873091084441320",
+              "high_input": "0.030",
+              "high_value_pct": "0.017228821298252983",
+              "high_value_per_share": "37304.46959457947482856039938",
+              "label": "영구성장률",
+              "low_input": "0.020",
+              "low_value_pct": "-0.01385349122914592",
+              "low_value_per_share": "36164.59903809275142252450725",
+              "monotonic": true,
+              "variable": "terminal_growth"
+            },
+            {
+              "base_input": "1",
+              "base_value_per_share": "36672.64317871873091084441320",
+              "high_input": "1.10",
+              "high_value_pct": "0.01502167024011114",
+              "high_value_per_share": "37223.52753138270635561448406",
+              "label": "전 기간 현금흐름 수준",
+              "low_input": "0.90",
+              "low_value_pct": "-0.01502167024011114",
+              "low_value_per_share": "36121.75882605475546607434234",
+              "monotonic": true,
+              "variable": "fcff_level"
+            }
+          ]
+        },
+        {
+          "asset_id": "other",
+          "attributable_equity_value": "496275880741.0606768090393572",
+          "attributable_value_per_share": "1273.582775734135414874301413",
+          "contribution_id": "other:Bull:service_operations.normalized_service_dcf:v1",
+          "ownership_ratio": "1",
+          "variables": [
+            {
+              "base_input": "0.07104336745001877",
+              "base_value_per_share": "36672.64317871873091084441320",
+              "high_input": "0.07604336745001877",
+              "high_value_pct": "-0.00429622733922963",
+              "high_value_per_share": "36515.08916649250824106447034",
+              "label": "가중평균자본비용",
+              "low_input": "0.06604336745001877",
+              "low_value_pct": "0.0053585706811238865",
+              "low_value_per_share": "36869.15612925553422506510666",
+              "monotonic": true,
+              "variable": "discount_rate"
+            },
+            {
+              "base_input": "0.025",
+              "base_value_per_share": "36672.64317871873091084441320",
+              "high_input": "0.030",
+              "high_value_pct": "0.0045523683765262835",
+              "high_value_per_share": "36839.59055980916226574884475",
+              "label": "영구성장률",
+              "low_input": "0.020",
+              "low_value_pct": "-0.003660505514816781",
+              "low_value_per_share": "36538.40276612012267211343708",
+              "monotonic": true,
+              "variable": "terminal_growth"
+            },
+            {
+              "base_input": "1",
+              "base_value_per_share": "36672.64317871873091084441320",
+              "high_input": "1.10",
+              "high_value_pct": "0.0034728415116616063",
+              "high_value_per_share": "36800.00145629214445233184333",
+              "label": "전 기간 현금흐름 수준",
+              "low_input": "0.90",
+              "low_value_pct": "-0.0034728415116618283",
+              "low_value_per_share": "36545.28490114531736935698305",
+              "monotonic": true,
+              "variable": "fcff_level"
+            }
+          ]
+        }
+      ],
+      "status": "RECONSTRUCTED",
+      "variables": []
+    }
+  ]
+}

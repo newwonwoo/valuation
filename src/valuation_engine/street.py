@@ -181,8 +181,8 @@ def analyze_street_gap(
     reports: tuple[StreetResearchReport, ...],
     drivers: tuple[StreetGapDriver, ...] = (),
 ) -> StreetGapAnalysis:
-    if not isfinite(intrinsic_value_per_share) or intrinsic_value_per_share <= 0:
-        raise ValueError("intrinsic value must be finite and positive")
+    if not isfinite(intrinsic_value_per_share) or intrinsic_value_per_share < 0:
+        raise ValueError("comparison equity value must be finite and nonnegative")
     consensus = summarize_street_reports(reports)
     headline_gap = intrinsic_value_per_share - consensus.mean_target_price
     explained = sum(

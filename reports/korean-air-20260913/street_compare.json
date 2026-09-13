@@ -1,0 +1,49 @@
+{
+  "consensus": {
+    "latest_report_date": "2026-07-15",
+    "max_target_price": 41000.0,
+    "mean_target_price": 37000.0,
+    "median_target_price": 37000.0,
+    "min_target_price": 33000.0,
+    "report_count": 2,
+    "target_price_currency": "KRW"
+  },
+  "envelope": {
+    "comparison_hash": "e0438bd7ac5a084ca5c82379eb43e3252e2f0a023b592f7dbfc11225d81a3e25",
+    "currency": "KRW",
+    "expected_gap": null,
+    "expected_gap_withheld_reason": null,
+    "reference_as_of": "2026-07-15",
+    "reference_name": "Street mean target price",
+    "scenario_gaps": [
+      {
+        "comparison_equity_value_per_share": "0",
+        "gap_pct_of_reference": "-1",
+        "gap_per_share": "-37000.0",
+        "intrinsic_value_per_share": "-26760.87859725694337245749742",
+        "limited_liability_floor_applied": true,
+        "reference_value_per_share": "37000.0",
+        "scenario_id": "Down"
+      },
+      {
+        "comparison_equity_value_per_share": "3671.771423052940899362559501",
+        "gap_pct_of_reference": "-0.9007629345120826783956065",
+        "gap_per_share": "-33328.22857694705910063744050",
+        "intrinsic_value_per_share": "3671.771423052940899362559501",
+        "limited_liability_floor_applied": false,
+        "reference_value_per_share": "37000.0",
+        "scenario_id": "Base"
+      },
+      {
+        "comparison_equity_value_per_share": "36672.64317871873091084441320",
+        "gap_pct_of_reference": "-0.008847481656250515923123967568",
+        "gap_per_share": "-327.35682128126908915558680",
+        "intrinsic_value_per_share": "36672.64317871873091084441320",
+        "limited_liability_floor_applied": false,
+        "reference_value_per_share": "37000.0",
+        "scenario_id": "Bull"
+      }
+    ]
+  },
+  "expected_gap_analysis": null
+}

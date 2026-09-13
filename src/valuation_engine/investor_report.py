@@ -153,6 +153,8 @@ def _opinion(
     if valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC:
         return "부분 사업가치 평가", "전체 기업가치가 아니라 평가 완료 사업부 기준입니다."
     expected = valuation.expected_value_per_share
+    if any(item.value_per_share < 0 for item in valuation.scenarios):
+        return "시나리오 기준 평가", "하방·기준·상방의 주식가치와 각 회복 조건을 비교합니다."
     if expected is None:
         return "시나리오 기준 평가", "하방·기준·상방의 조건별 가치를 제시합니다. 보정된 시나리오 확률과 확률가중 기대값이 없습니다."
     if market is None or not valuation.scenarios:
@@ -182,7 +184,11 @@ def render_investor_report(
         if market is not None
         else observation_raw if isinstance(observation_raw, MarketObservation) else None
     )
-    scenarios = _scenario_map(valuation)
+    signed_scenarios = _scenario_map(valuation)
+    partial = valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC
+    scenarios = {key: value if partial else max(Decimal("0"), value)
+                 for key, value in signed_scenarios.items()}
+    floor_applied = scenarios != signed_scenarios
     missing = {"Down", "Base", "Bull"} - set(scenarios)
     if missing:
         raise ValueError("investor report requires Down/Base/Bull scenarios")
@@ -205,6 +211,11 @@ def render_investor_report(
             "확률가중 기대값은 산출하지 않았으며, 부분 평가이므로 현재가와의 "
             "상승여력은 비교하지 않았습니다."
         )
+    elif floor_applied:
+        probability_note = (
+            "주식가치는 시나리오별로 0원을 하한으로 표시합니다. "
+            "음수 잔여가치는 아래에 별도 공개하며, 유한책임 반영 전 기대값을 매매 판단에 사용하지 않습니다."
+        )
     elif valuation.expected_value_per_share is not None:
         probability_note = f"확률가중 기대값은 {_money(valuation.expected_value_per_share)}입니다."
         if has_complete_probabilities:
@@ -218,6 +229,16 @@ def render_investor_report(
             "확률가중 기대값은 산출되지 않았습니다. 현재가는 확률 생성에 사용하지 "
             "않으며, 각 시나리오의 성립 조건과 가치 범위로 판단합니다."
         )
+
+    if not partial and observation is not None:
+        current = Decimal(str(observation.price))
+        if scenarios["Bull"] > scenarios["Base"] and current > scenarios["Base"]:
+            if current >= scenarios["Bull"]:
+                opinion_reason += " 현재가는 상방 시나리오 가치 이상으로, 상방 가정을 충족하거나 넘어서는 실적이 필요합니다."
+            elif current - scenarios["Base"] >= scenarios["Bull"] - current:
+                opinion_reason += " 현재가는 기준보다 상방 시나리오에 가까워, 상방에 가까운 이익·현금흐름 회복을 요구합니다."
+            else:
+                opinion_reason += " 현재가는 기준 시나리오를 넘어서는 이익·현금흐름 회복을 요구합니다."
 
     lines = [
         f"# {company} 투자보고서",
@@ -256,6 +277,21 @@ def render_investor_report(
             f"- 평가 제외 항목: {profile.valuation_exclusions or '없음'}",
         )
     )
+    if floor_applied:
+        lines.extend((
+            "",
+            "| 구분 | 하방 | 기준 | 상방 |",
+            "|---|---:|---:|---:|",
+            "| 부채 차감 후 주당 잔여가치 | "
+            + " | ".join(_money(signed_scenarios[key]) for key in ("Down", "Base", "Bull")) + " |",
+            "- 음수 잔여가치는 추정 사업가치가 부채 등 선순위 청구액에 미달한다는 뜻입니다. "
+            "주주의 추가 납입 의무나 음수 주식가격을 뜻하지 않으며, 유한책임 주식가치의 하한은 0원입니다.",
+        ))
+        if valuation.expected_value_per_share is not None:
+            lines.append(
+                f"- 유한책임 반영 전 확률가중 잔여가치: {_money(valuation.expected_value_per_share)}. "
+                "시나리오별 0원 하한 적용 후의 확률가중 주식가치와 다릅니다."
+            )
     if profile.prior_reference_per_share is not None:
         delta = scenarios["Base"] - profile.prior_reference_per_share
         lines.append(

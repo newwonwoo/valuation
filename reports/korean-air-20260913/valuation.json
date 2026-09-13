@@ -1,0 +1,621 @@
+{
+  "equity_aggregation": {
+    "expected_equity_value": null,
+    "numeric_weighting_allowed": false,
+    "scenario_values": [
+      {
+        "aggregation_hash": "5a39283709e07b57f5619565a7bdf095d61fd9b52b7136eccced169bd6808392",
+        "components": [
+          {
+            "asset_id": "airline",
+            "attributable_equity_value": {
+              "amount": "-11860111495444.93838493590299",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "airline:Down:airline_transport.traffic_yield_dcf:v1",
+            "diagnostics": {
+              "discount_rate": "0.07104336745001877",
+              "execution_family": "explicit_fcff_dcf",
+              "fcff_path": [
+                "-2219.881376",
+                "-1703.644565",
+                "-861.305421",
+                "163.112074",
+                "906.480358"
+              ],
+              "forecast_years": 5,
+              "present_value_explicit": "-3491.675589898199393442090949",
+              "present_value_terminal": "11648.36409445326100850618796",
+              "terminal_growth": "0.015",
+              "terminal_roic": "0.065",
+              "value_unit": "KRW_billion"
+            },
+            "economic_path_ids": [
+              "path:airline:fcff_year_1",
+              "path:airline:fcff_year_2",
+              "path:airline:fcff_year_3",
+              "path:airline:fcff_year_4",
+              "path:airline:fcff_year_5",
+              "path:airline:terminal_growth",
+              "path:airline:terminal_roic",
+              "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:airline",
+              "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:airline"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "aerospace",
+            "attributable_equity_value": {
+              "amount": "734755524391.9492994504750321",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "aerospace:Down:contracted_backlog.normalized_dcf:v1",
+            "diagnostics": {
+              "discount_rate": "0.07104336745001877",
+              "execution_family": "explicit_fcff_dcf",
+              "fcff_path": [
+                "7.393695",
+                "12.338818",
+                "21.608434",
+                "27.019264",
+                "50.073373"
+              ],
+              "forecast_years": 5,
+              "present_value_explicit": "91.30762726568264343840232203",
+              "present_value_terminal": "643.4478971262666560120727101",
+              "terminal_growth": "0.015",
+              "terminal_roic": "0.065",
+              "value_unit": "KRW_billion"
+            },
+            "economic_path_ids": [
+              "path:aerospace:fcff_year_1",
+              "path:aerospace:fcff_year_2",
+              "path:aerospace:fcff_year_3",
+              "path:aerospace:fcff_year_4",
+              "path:aerospace:fcff_year_5",
+              "path:aerospace:terminal_growth",
+              "path:aerospace:terminal_roic",
+              "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:aerospace",
+              "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:aerospace"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "hotel",
+            "attributable_equity_value": {
+              "amount": "950000000000",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "hotel:Down:asset_yield_nav.nav:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:hotel:gross_asset_value",
+              "path:hotel:liabilities"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "other",
+            "attributable_equity_value": {
+              "amount": "97467930872.16295039313932910",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "other:Down:service_operations.normalized_service_dcf:v1",
+            "diagnostics": {
+              "discount_rate": "0.07104336745001877",
+              "execution_family": "explicit_fcff_dcf",
+              "fcff_path": [
+                "-69.336437",
+                "-29.500972",
+                "10.503005",
+                "11.118503",
+                "12.605406"
+              ],
+              "forecast_years": 5,
+              "present_value_explicit": "-64.51280853444391955537637030",
+              "present_value_terminal": "161.9807394066068699485156994",
+              "terminal_growth": "0.015",
+              "terminal_roic": "0.065",
+              "value_unit": "KRW_billion"
+            },
+            "economic_path_ids": [
+              "path:other:fcff_year_1",
+              "path:other:fcff_year_2",
+              "path:other:fcff_year_3",
+              "path:other:fcff_year_4",
+              "path:other:fcff_year_5",
+              "path:other:terminal_growth",
+              "path:other:terminal_roic",
+              "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:other",
+              "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:other"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "parent_noncontrolling_interest",
+            "attributable_equity_value": {
+              "amount": "-350000000000",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "parent:parent_noncontrolling_interest",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:airline:parent_noncontrolling_interest_adjustment"
+            ],
+            "ownership_ratio": null
+          }
+        ],
+        "equity_value": {
+          "amount": "-10427888040180.82613509228863",
+          "as_of": "2026-09-13",
+          "unit": "KRW"
+        },
+        "scenario_id": "Down"
+      },
+      {
+        "aggregation_hash": "e33e75691aa9eacac57e48c6624437961d5af5906963efba21ca111fd43ef4cc",
+        "components": [
+          {
+            "asset_id": "airline",
+            "attributable_equity_value": {
+              "amount": "-1116254311777.78740042715264",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "airline:Base:airline_transport.traffic_yield_dcf:v1",
+            "diagnostics": {
+              "discount_rate": "0.07104336745001877",
+              "execution_family": "explicit_fcff_dcf",
+              "fcff_path": [
+                "-1935.748145",
+                "-1166.406882",
+                "-176.168829",
+                "838.315441",
+                "1426.062165"
+              ],
+              "forecast_years": 5,
+              "present_value_explicit": "-1318.657224842109461797450605",
+              "present_value_terminal": "20219.20291306432206137029796",
+              "terminal_growth": "0.02",
+              "terminal_roic": "0.08",
+              "value_unit": "KRW_billion"
+            },
+            "economic_path_ids": [
+              "path:airline:fcff_year_1",
+              "path:airline:fcff_year_2",
+              "path:airline:fcff_year_3",
+              "path:airline:fcff_year_4",
+              "path:airline:fcff_year_5",
+              "path:airline:terminal_growth",
+              "path:airline:terminal_roic",
+              "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:airline",
+              "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:airline"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "aerospace",
+            "attributable_equity_value": {
+              "amount": "1361704191927.827530012777342",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "aerospace:Base:contracted_backlog.normalized_dcf:v1",
+            "diagnostics": {
+              "discount_rate": "0.07104336745001877",
+              "execution_family": "explicit_fcff_dcf",
+              "fcff_path": [
+                "11.972723",
+                "22.046343",
+                "38.045179",
+                "52.365491",
+                "84.669456"
+              ],
+              "forecast_years": 5,
+              "present_value_explicit": "161.2313419923049492387325144",
+              "present_value_terminal": "1200.472849935522580774044828",
+              "terminal_growth": "0.02",
+              "terminal_roic": "0.08",
+              "value_unit": "KRW_billion"
+            },
+            "economic_path_ids": [
+              "path:aerospace:fcff_year_1",
+              "path:aerospace:fcff_year_2",
+              "path:aerospace:fcff_year_3",
+              "path:aerospace:fcff_year_4",
+              "path:aerospace:fcff_year_5",
+              "path:aerospace:terminal_growth",
+              "path:aerospace:terminal_roic",
+              "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:aerospace",
+              "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:aerospace"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "hotel",
+            "attributable_equity_value": {
+              "amount": "1250000000000",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "hotel:Base:asset_yield_nav.nav:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:hotel:gross_asset_value",
+              "path:hotel:liabilities"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "other",
+            "attributable_equity_value": {
+              "amount": "285326062783.9184871339333191",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "other:Base:service_operations.normalized_service_dcf:v1",
+            "diagnostics": {
+              "discount_rate": "0.07104336745001877",
+              "execution_family": "explicit_fcff_dcf",
+              "fcff_path": [
+                "-65.495625",
+                "-24.923722",
+                "16.449561",
+                "19.364024",
+                "22.844138"
+              ],
+              "forecast_years": 5,
+              "present_value_explicit": "-38.56603177708080566084295622",
+              "present_value_terminal": "323.8920945609992927947762753",
+              "terminal_growth": "0.02",
+              "terminal_roic": "0.08",
+              "value_unit": "KRW_billion"
+            },
+            "economic_path_ids": [
+              "path:other:fcff_year_1",
+              "path:other:fcff_year_2",
+              "path:other:fcff_year_3",
+              "path:other:fcff_year_4",
+              "path:other:fcff_year_5",
+              "path:other:terminal_growth",
+              "path:other:terminal_roic",
+              "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:other",
+              "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:other"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "parent_noncontrolling_interest",
+            "attributable_equity_value": {
+              "amount": "-350000000000",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "parent:parent_noncontrolling_interest",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:airline:parent_noncontrolling_interest_adjustment"
+            ],
+            "ownership_ratio": null
+          }
+        ],
+        "equity_value": {
+          "amount": "1430775942933.958616719558021",
+          "as_of": "2026-09-13",
+          "unit": "KRW"
+        },
+        "scenario_id": "Base"
+      },
+      {
+        "aggregation_hash": "1c13f7a6b7bb9c26592d3aa1ba454433c919e275d6def2c0d0076b9f93328de6",
+        "components": [
+          {
+            "asset_id": "airline",
+            "attributable_equity_value": {
+              "amount": "10447294536704.65990416385689",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "airline:Bull:airline_transport.traffic_yield_dcf:v1",
+            "diagnostics": {
+              "discount_rate": "0.07104336745001877",
+              "execution_family": "explicit_fcff_dcf",
+              "fcff_path": [
+                "-1902.554261",
+                "-912.751448",
+                "149.558464",
+                "1325.408445",
+                "1933.231447"
+              ],
+              "forecast_years": 5,
+              "present_value_explicit": "-71.428040868524525847816877",
+              "present_value_terminal": "30535.52257757318443001167377",
+              "terminal_growth": "0.025",
+              "terminal_roic": "0.1",
+              "value_unit": "KRW_billion"
+            },
+            "economic_path_ids": [
+              "path:airline:fcff_year_1",
+              "path:airline:fcff_year_2",
+              "path:airline:fcff_year_3",
+              "path:airline:fcff_year_4",
+              "path:airline:fcff_year_5",
+              "path:airline:terminal_growth",
+              "path:airline:terminal_roic",
+              "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:airline",
+              "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:airline"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "aerospace",
+            "attributable_equity_value": {
+              "amount": "2146626214752.253199291375608",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "aerospace:Bull:contracted_backlog.normalized_dcf:v1",
+            "diagnostics": {
+              "discount_rate": "0.07104336745001877",
+              "execution_family": "explicit_fcff_dcf",
+              "fcff_path": [
+                "6.942215",
+                "24.171186",
+                "49.532182",
+                "76.002763",
+                "122.450921"
+              ],
+              "forecast_years": 5,
+              "present_value_explicit": "212.5055647687800211014547736",
+              "present_value_terminal": "1934.120649983473178189920834",
+              "terminal_growth": "0.025",
+              "terminal_roic": "0.1",
+              "value_unit": "KRW_billion"
+            },
+            "economic_path_ids": [
+              "path:aerospace:fcff_year_1",
+              "path:aerospace:fcff_year_2",
+              "path:aerospace:fcff_year_3",
+              "path:aerospace:fcff_year_4",
+              "path:aerospace:fcff_year_5",
+              "path:aerospace:terminal_growth",
+              "path:aerospace:terminal_roic",
+              "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:aerospace",
+              "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:aerospace"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "hotel",
+            "attributable_equity_value": {
+              "amount": "1550000000000",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "hotel:Bull:asset_yield_nav.nav:v1",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:hotel:gross_asset_value",
+              "path:hotel:liabilities"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "other",
+            "attributable_equity_value": {
+              "amount": "496275880741.0606768090393572",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "other:Bull:service_operations.normalized_service_dcf:v1",
+            "diagnostics": {
+              "discount_rate": "0.07104336745001877",
+              "execution_family": "explicit_fcff_dcf",
+              "fcff_path": [
+                "-62.532254",
+                "-20.969289",
+                "22.564878",
+                "27.061998",
+                "32.355185"
+              ],
+              "forecast_years": 5,
+              "present_value_explicit": "-14.77647338974673151476454220",
+              "present_value_terminal": "511.0523541308074083238038994",
+              "terminal_growth": "0.025",
+              "terminal_roic": "0.1",
+              "value_unit": "KRW_billion"
+            },
+            "economic_path_ids": [
+              "path:other:fcff_year_1",
+              "path:other:fcff_year_2",
+              "path:other:fcff_year_3",
+              "path:other:fcff_year_4",
+              "path:other:fcff_year_5",
+              "path:other:terminal_growth",
+              "path:other:terminal_roic",
+              "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:other",
+              "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:other"
+            ],
+            "ownership_ratio": "1"
+          },
+          {
+            "asset_id": "parent_noncontrolling_interest",
+            "attributable_equity_value": {
+              "amount": "-350000000000",
+              "as_of": "2026-09-13",
+              "unit": "KRW"
+            },
+            "contribution_id": "parent:parent_noncontrolling_interest",
+            "diagnostics": null,
+            "economic_path_ids": [
+              "path:airline:parent_noncontrolling_interest_adjustment"
+            ],
+            "ownership_ratio": null
+          }
+        ],
+        "equity_value": {
+          "amount": "14290196632197.97378026427186",
+          "as_of": "2026-09-13",
+          "unit": "KRW"
+        },
+        "scenario_id": "Bull"
+      }
+    ]
+  },
+  "expected_value_per_share": null,
+  "reporting_unit": "KRW",
+  "scenarios": [
+    {
+      "aggregation_hash": "5a39283709e07b57f5619565a7bdf095d61fd9b52b7136eccced169bd6808392",
+      "diluted_shares": "389669121",
+      "economic_path_ids": [
+        "path:airline:fcff_year_1",
+        "path:airline:fcff_year_2",
+        "path:airline:fcff_year_3",
+        "path:airline:fcff_year_4",
+        "path:airline:fcff_year_5",
+        "path:airline:terminal_growth",
+        "path:airline:terminal_roic",
+        "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:airline",
+        "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:airline",
+        "path:airline:ownership",
+        "path:airline:ev_adjustment",
+        "path:aerospace:fcff_year_1",
+        "path:aerospace:fcff_year_2",
+        "path:aerospace:fcff_year_3",
+        "path:aerospace:fcff_year_4",
+        "path:aerospace:fcff_year_5",
+        "path:aerospace:terminal_growth",
+        "path:aerospace:terminal_roic",
+        "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:aerospace",
+        "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:aerospace",
+        "path:aerospace:ownership",
+        "path:aerospace:ev_adjustment",
+        "path:hotel:gross_asset_value",
+        "path:hotel:liabilities",
+        "path:hotel:ownership",
+        "path:other:fcff_year_1",
+        "path:other:fcff_year_2",
+        "path:other:fcff_year_3",
+        "path:other:fcff_year_4",
+        "path:other:fcff_year_5",
+        "path:other:terminal_growth",
+        "path:other:terminal_roic",
+        "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:other",
+        "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:other",
+        "path:other:ownership",
+        "path:other:ev_adjustment",
+        "path:airline:parent_noncontrolling_interest_adjustment",
+        "path:airline:diluted_shares"
+      ],
+      "equity_value_amount": "-10427888040180.82613509228863",
+      "reporting_unit": "KRW",
+      "scenario_id": "Down",
+      "value_per_share": "-26760.87859725694337245749742"
+    },
+    {
+      "aggregation_hash": "e33e75691aa9eacac57e48c6624437961d5af5906963efba21ca111fd43ef4cc",
+      "diluted_shares": "389669121",
+      "economic_path_ids": [
+        "path:airline:fcff_year_1",
+        "path:airline:fcff_year_2",
+        "path:airline:fcff_year_3",
+        "path:airline:fcff_year_4",
+        "path:airline:fcff_year_5",
+        "path:airline:terminal_growth",
+        "path:airline:terminal_roic",
+        "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:airline",
+        "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:airline",
+        "path:airline:ownership",
+        "path:airline:ev_adjustment",
+        "path:aerospace:fcff_year_1",
+        "path:aerospace:fcff_year_2",
+        "path:aerospace:fcff_year_3",
+        "path:aerospace:fcff_year_4",
+        "path:aerospace:fcff_year_5",
+        "path:aerospace:terminal_growth",
+        "path:aerospace:terminal_roic",
+        "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:aerospace",
+        "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:aerospace",
+        "path:aerospace:ownership",
+        "path:aerospace:ev_adjustment",
+        "path:hotel:gross_asset_value",
+        "path:hotel:liabilities",
+        "path:hotel:ownership",
+        "path:other:fcff_year_1",
+        "path:other:fcff_year_2",
+        "path:other:fcff_year_3",
+        "path:other:fcff_year_4",
+        "path:other:fcff_year_5",
+        "path:other:terminal_growth",
+        "path:other:terminal_roic",
+        "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:other",
+        "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:other",
+        "path:other:ownership",
+        "path:other:ev_adjustment",
+        "path:airline:parent_noncontrolling_interest_adjustment",
+        "path:airline:diluted_shares"
+      ],
+      "equity_value_amount": "1430775942933.958616719558021",
+      "reporting_unit": "KRW",
+      "scenario_id": "Base",
+      "value_per_share": "3671.771423052940899362559501"
+    },
+    {
+      "aggregation_hash": "1c13f7a6b7bb9c26592d3aa1ba454433c919e275d6def2c0d0076b9f93328de6",
+      "diluted_shares": "389669121",
+      "economic_path_ids": [
+        "path:airline:fcff_year_1",
+        "path:airline:fcff_year_2",
+        "path:airline:fcff_year_3",
+        "path:airline:fcff_year_4",
+        "path:airline:fcff_year_5",
+        "path:airline:terminal_growth",
+        "path:airline:terminal_roic",
+        "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:airline",
+        "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:airline",
+        "path:airline:ownership",
+        "path:airline:ev_adjustment",
+        "path:aerospace:fcff_year_1",
+        "path:aerospace:fcff_year_2",
+        "path:aerospace:fcff_year_3",
+        "path:aerospace:fcff_year_4",
+        "path:aerospace:fcff_year_5",
+        "path:aerospace:terminal_growth",
+        "path:aerospace:terminal_roic",
+        "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:aerospace",
+        "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:aerospace",
+        "path:aerospace:ownership",
+        "path:aerospace:ev_adjustment",
+        "path:hotel:gross_asset_value",
+        "path:hotel:liabilities",
+        "path:hotel:ownership",
+        "path:other:fcff_year_1",
+        "path:other:fcff_year_2",
+        "path:other:fcff_year_3",
+        "path:other:fcff_year_4",
+        "path:other:fcff_year_5",
+        "path:other:terminal_growth",
+        "path:other:terminal_roic",
+        "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068:other",
+        "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d:other",
+        "path:other:ownership",
+        "path:other:ev_adjustment",
+        "path:airline:parent_noncontrolling_interest_adjustment",
+        "path:airline:diluted_shares"
+      ],
+      "equity_value_amount": "14290196632197.97378026427186",
+      "reporting_unit": "KRW",
+      "scenario_id": "Bull",
+      "value_per_share": "36672.64317871873091084441320"
+    }
+  ],
+  "scope": "FULL_INTRINSIC",
+  "unvalued_segments": [],
+  "valuation_hash": "d9d0a70bbcc285f198eb58af40cab95e58d40251daadb1556e394cd92cd689ac"
+}

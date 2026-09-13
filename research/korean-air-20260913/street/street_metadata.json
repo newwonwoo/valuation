@@ -1,0 +1,46 @@
+[
+  {
+    "broker": "하나증권",
+    "analyst": "안도현",
+    "published_date": "2026-07-14",
+    "target_price": 41000,
+    "target_price_currency": "KRW",
+    "valuation_method": "NOT_DISCLOSED",
+    "base_year": "NOT_DISCLOSED",
+    "estimates": [
+      {
+        "metric": "consolidated_operating_profit",
+        "period": "FY2027E",
+        "value": 2351.0,
+        "unit": "KRW billion"
+      }
+    ],
+    "source_ref": "https://file.hanaw.com/download/research/FileServer/WEB/industry/enterprise/2026/07/13/koreanair_260713.pdf",
+    "rating": "BUY 유지",
+    "access_quality": "Public broker-hosted PDF read; first page verified",
+    "argument_summary": "운임 인상에도 여객·화물 수요가 유지되어 비용 급등을 흡수했다는 해석. 이후 연료비 완화와 프리미엄 수요 지속을 전망에 반영.",
+    "valuation_basis_note": "PDF p1 attributes target increase to upward revisions to 2026 and 2027 forecasts, but does not disclose a target multiple/formula or a unique target-price base year. Current-price PER/PBR tables are not target valuation formulas."
+  },
+  {
+    "broker": "LS증권",
+    "analyst": "이재혁",
+    "published_date": "2026-07-15",
+    "target_price": 33000,
+    "target_price_currency": "KRW",
+    "valuation_method": "NOT_DISCLOSED",
+    "base_year": "NOT_DISCLOSED",
+    "estimates": [
+      {
+        "metric": "consolidated_operating_profit",
+        "period": "FY2027E",
+        "value": 2663,
+        "unit": "KRW billion"
+      }
+    ],
+    "source_ref": "https://file.alphasquare.co.kr/media/pdfs/company-report/260715_KAL_2Q26_Review.pdf",
+    "rating": "Buy 유지",
+    "access_quality": "Broker-authored PDF read at public third-party AlphaSquare mirror; original broker host not independently retrieved",
+    "argument_summary": "AI 투자 및 전자상거래 관련 화물, 방한·장거리 여객 수요를 이익 방어의 원인으로 해석. 연료비 안정과 연말 합병에 기대를 두되 유가 재상승과 아시아나 등 계열사 부진을 부담으로 인정.",
+    "valuation_basis_note": "PDF p1 maintains prior target; p13 includes 12-month-forward PBR band charts but does not identify a chosen target multiple or target BPS year. A chart band is not proof of the target valuation formula."
+  }
+]

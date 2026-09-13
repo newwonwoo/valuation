@@ -769,6 +769,13 @@ def render_generic_report(
             f"{_fmt_money(item.value_per_share, valuation.reporting_unit)}"
             f"{currency_label_ko(valuation.reporting_unit)}"
         )
+    if not partial and any(item.value_per_share < 0 for item in valuation.scenarios):
+        lines.append(
+            "- **음수 시나리오 해석:** 위 음수 값은 사업가치에서 부채 등을 차감한 "
+            "주당 자본 부족액입니다. 주식의 음수 거래가격을 뜻하지 않으며, "
+            "시장·증권사 가격 비교에는 유한책임에 따른 0원 하한을 적용합니다. "
+            "동결된 원래 계산값은 감사 기록에 보존합니다."
+        )
     if isinstance(probability_assessment, ScenarioProbabilityAssessment):
         lines.extend(
             (
