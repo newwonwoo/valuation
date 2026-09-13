@@ -19,7 +19,7 @@
   `scripts/compute_peer_betas.py`로 재현, 코호트는 타깃 제외 재적합.
 
 **실행자가 LLM 세션이라면**: `.claude/skills/kr-live-run`이 이 절차의 요약을
-자동 로드한다. 이 문서는 그 스킬의 원본이다.
+자동 로드한다. 공통 실행·확률·완료 계약은 `AGENTS.md`와 루트 `SKILL.md`이며, 이 문서는 KR 준비 절차를 제공한다.
 
 ## 0. 준비물과 원칙
 
@@ -113,6 +113,8 @@ eleId / offset / length`를 읽어 `report/viewer.do?…&dtd=dart4.xsd`를 받�
 
 ## 3. 오퍼레이터 선언 → `declarations/`
 
+아래 market/Street 선언 형식은 사후 비교용이다. 대상기업 현재가·증권사 전망의 실제 취득·열람은 감사와 내재가치 확정 뒤에 수행하며, 선언 준비를 이유로 선행 수집하지 않는다. 필요한 경우 post-freeze 요청에 응답하고 지원되는 실행 경로로 재개한다.
+
 - **`underwriting.yaml`** (필수): 방법이 요구하는 가정 키 전부. 키 목록은
   엔진에게 물어라 —
   `required_assumption_keys(method_choices=…, forecast_years=…)`.
@@ -158,29 +160,16 @@ eleId / offset / length`를 읽어 `report/viewer.do?…&dtd=dart4.xsd`를 받�
 
 ## 5. `run.yaml`
 
-`runs/kisco-104700/run.yaml`을 복사해 고쳐라. 핵심 필드:
+§2의 resolver가 생성한 run.yaml을 사용한다. 예시 파일은 형식 참고용이며 다른 회사의 식별·수치·확률을 복사하지 않는다. 핵심 필드:
 `company_query / as_of / scenario_ids / method(archetype/method[/version]) /
 filing(business_year·report_code·fs_div·fiscal_period_end) /
 extra_required_evidence / market_currency`.
 
-**기대값(확률가중)까지 원하면 `calibration:` 블록**: 코호트 아티팩트가 있어야
-한다. 없으면 —
-1. 동종사(타깃 **제외**) 5곳 이상 × 다년 실적 이력을 §2와 같은 원천에서 모아
-   `{"rows":[{company_id,period_end,published_at,values,source_ref}]}` 로 저장
-   (예: `config/kr_steel_cohort_dataset.json` 12사 91행,
-   `config/kr_reit_cohort_dataset.json` 7사 57행).
-   **결산 주기가 섞이면 안 된다** — 반기 결산 리츠의 6개월 성장률과 12월
-   결산사의 연간 성장률은 같은 축이 아니다. 타깃과 같은 주기의 회사만
-   코호트에 넣는다 (리츠 코호트가 반기 7사로 좁혀진 이유).
-2. `python scripts/build_calibration_artifact.py --dataset … --drivers … \
-   --scenarios Down,Base,Bull --path-length 5 --exclude-ticker <코드> \
-   --conditioning-json …` → 아티팩트·프로버넌스 파일과 **BindingConstants**가
-   출력된다. 그 상수를 `calibration.constants`에 그대로 붙여넣는다.
-3. conditioning은 **타깃 자신의 최신 실측**(값 + 출처 URL + first_seen_at +
-   원천 파일 sha256)이다.
+**기대값(확률가중)에는 검증된 `calibration:` 블록이 필요하다.** 대상기업 자신의 실현된 driver 이력을 공시 원문에서 확보하고 기간·단위·지식시점을 정규화한다. 현재 구현은 `scripts/build_self_calibration_artifact.py`의 `--help` 및 해당 스크립트의 입력 계약을 확인한다. 생성된 아티팩트·provenance·BindingConstants와 `self_calibrated: true`를 실제 출력에 맞게 연결한다. conditioning은 허용된 타깃 증거 및 실제 최초 확인 시점에 결합한다.
 
-캘리브레이션이 없으면 그 블록을 빼라 — 시나리오 범위는 나오고 기대값은
-정직하게 "미산출"로 남는다.
+동종사 영업실적을 대상기업 Down/Base/Bull 확률의 학습 표본으로 쓰지 않는다. 위의 과거 회귀 런과 산업 코호트 예시는 구현 이력을 설명하며 새 분석의 확률 정책을 정하지 않는다. Beta/PER 비교자료와 신사업 이익률 추정은 각각의 계약에 따라 별도로 사용할 수 있다.
+
+보정이 불가능하면 이유와 보완 시도를 남기고 지원되는 조건부 시나리오 보고 경로를 사용한다. 확률 블록을 임의로 삭제하거나 게이트를 완화해 성공으로 바꾸지 않는다. 확률가중 기대값과 매수가를 지어내지 않는다. 자료 보완 및 최종 산출물 생성은 `docs/RESEARCH_CAMPAIGN_RUNBOOK.md`를 따른다.
 
 ## 6. 실행과 막힘 대처
 
