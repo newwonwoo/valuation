@@ -145,7 +145,7 @@ def test_cli_three_research_misses_peer_margin_recovery_to_changed_report(tmp_pa
     inputs['years'][0]['year'] = 2027
     inputs['years'][1]['year'] = 2028
     inputs['years'][0]['adjustments'][0]['percentage_points']['base'] = '-12.5'
-    inputs['sources'][0]['url'] = baseline['declarations']['normalized_ebitda']['source_refs'][0]
+    inputs['sources'][0]['url'] = 'https://example.test/peer-fixture/annual-results'
     receipt = build_peer_margin_proposal(inputs)
     calls = []
     def research(order):
@@ -189,6 +189,7 @@ def test_cli_three_research_misses_peer_margin_recovery_to_changed_report(tmp_pa
     assert report.is_file()
     assert '650억원' in report.read_text()
     assert '600억원' not in report.read_text()
+    assert inputs['sources'][0]['url'] in report.read_text()
     numeric_report = (report.parent / 'final_report.md').read_text()
     base_value = re.search(r'기준 시나리오:\*\* 내재가치 주당 ([\d,]+)원', numeric_report)
     assert base_value and int(base_value.group(1).replace(',', '')) > 17339

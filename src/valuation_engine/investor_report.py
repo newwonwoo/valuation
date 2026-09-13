@@ -17,6 +17,8 @@ import yaml
 
 from .post_freeze import MarketComparisonBundle
 from .records import MarketObservation
+from .ledger import EvidenceLedger
+from .source_reporting import canonical_verification_url
 from .valuation_execution import GenericValuationResult, IntrinsicValuationScope
 
 
@@ -302,6 +304,21 @@ def render_investor_report(
         f"- {source_type}: [{label}]({url})"
         for source_type, label, url in profile.sources
     )
+    # A revised operating assumption may introduce sources absent from the
+    # prior editorial profile. Bind those links to the actual accepted ledger.
+    linked = {url for _, _, url in profile.sources}
+    ledger = data.get("evidence_ledger")
+    if isinstance(ledger, EvidenceLedger):
+        for record in ledger.active():
+            if not (getattr(record, "research_receipt", None) or getattr(record, "business_cashflow_receipt", None)):
+                continue
+            for source in getattr(record, "source_refs", ()):
+                url = canonical_verification_url(source)
+                if url is None:
+                    raise ValueError("research report requires public source links")
+                if url not in linked:
+                    lines.append(f"- 추정 근거: [비교자료·계산 원문]({url})")
+                    linked.add(url)
     report = "\n".join(lines).rstrip() + "\n"
     lowered = report.casefold()
     leaked = tuple(token for token in _FORBIDDEN_PUBLIC_TOKENS if token in lowered)
