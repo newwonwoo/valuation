@@ -32,6 +32,8 @@ Read/use:
 Output: segment decomposition + Sector Adapter + Economic Archetype candidates.
 
 ## 2. What must be researched before valuation?
+For missing inputs and new-business inference, use `docs/RESEARCH_CAMPAIGN_RUNBOOK.md` and `scripts/run_research_campaign.py`. The host can research independent work orders in parallel; the coordinator preserves typed responses and reuses unchanged research tasks. The resulting underwriting still enters the normal compiler and audit.
+
 Read/use:
 - `config/archetype_module_registry.yaml`
 - `config/knowledge_placement_policy.yaml`

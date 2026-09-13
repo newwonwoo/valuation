@@ -2,6 +2,8 @@
 
 Status: canonical runtime contract, merged into repository `SKILL.md` as v0.5.2. Control-plane authority and recovery semantics are defined in `docs/CONTROL_PLANE_ARCHITECTURE.md`.
 
+Prepared research may use `docs/RESEARCH_CAMPAIGN_RUNBOOK.md` before a new strict run: missing drivers create resumable host work orders, finite cash-flow sensitivity orders investigation, and accepted replies remain analyst underwriting with structured provenance. Research-task caching never substitutes for the canonical stage sequence or Audit/Freeze. Broker clues do not confer primary-evidence or calibrated-probability authority.
+
 ## Required order
 
 ```text

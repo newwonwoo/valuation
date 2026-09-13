@@ -1,0 +1,264 @@
+{
+  "request_id": "sensitivity-research-loop",
+  "base_revision": "245dfb29336a0de64c8d39f9739d83700df50c22",
+  "clauses": [
+    {
+      "clause_id": "A",
+      "desired_outcome": "민감도 기반 조사 순위와 독립 작업 재사용",
+      "scopes": [
+        "model_input"
+      ],
+      "root_unit_ids": [
+        "REVISION_REQUEST_ORCHESTRATOR"
+      ],
+      "acceptance_criteria": [
+        "tests/test_research_sensitivity.py tests/test_research_task_execution.py"
+      ],
+      "material_report_claim": false,
+      "claim_treatment": "not_applicable"
+    },
+    {
+      "clause_id": "B",
+      "desired_outcome": "실제 LLM 보완 응답과 대기/재개",
+      "scopes": [
+        "model_input"
+      ],
+      "root_unit_ids": [
+        "LLM_STAFF"
+      ],
+      "acceptance_criteria": [
+        "tests/test_staff_transport.py"
+      ],
+      "material_report_claim": false,
+      "claim_treatment": "not_applicable"
+    },
+    {
+      "clause_id": "C",
+      "desired_outcome": "신사업 현금흐름 수치화",
+      "scopes": [
+        "model_input"
+      ],
+      "root_unit_ids": [
+        "DETERMINISTIC_VALUATION"
+      ],
+      "acceptance_criteria": [
+        "tests/test_new_business_research.py"
+      ],
+      "material_report_claim": false,
+      "claim_treatment": "not_applicable"
+    },
+    {
+      "clause_id": "D",
+      "desired_outcome": "보완 답변 반입부터 기존 감사까지 통합",
+      "scopes": [
+        "model_input"
+      ],
+      "root_unit_ids": [
+        "PRIMARY_EVIDENCE_COLLECTION",
+        "EVIDENCE_LEDGER"
+      ],
+      "acceptance_criteria": [
+        "tests/test_research_campaign.py tests/test_research_campaign_cli.py tests/test_research_business_integration.py"
+      ],
+      "material_report_claim": false,
+      "claim_treatment": "not_applicable"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "A",
+      "clause_ids": [
+        "A"
+      ],
+      "owner": "A",
+      "unit_ids": [
+        "ASSUMPTION_COMPILER",
+        "AUDIT_GATE",
+        "DETERMINISTIC_VALUATION",
+        "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+        "FINAL_REPORT",
+        "INTRINSIC_FREEZE",
+        "REVISION_REQUEST_ORCHESTRATOR",
+        "SCENARIO_ENGINE"
+      ],
+      "read_set": [
+        "AGENTS.md"
+      ],
+      "write_set": [
+        "src/valuation_engine/research_sensitivity.py",
+        "src/valuation_engine/research_task_execution.py",
+        "tests/test_research_sensitivity.py",
+        "tests/test_research_task_execution.py"
+      ],
+      "depends_on": [],
+      "output_ids": [
+        "output:A"
+      ],
+      "validators": [
+        "tests/test_research_sensitivity.py tests/test_research_task_execution.py"
+      ]
+    },
+    {
+      "task_id": "B",
+      "clause_ids": [
+        "B"
+      ],
+      "owner": "B",
+      "unit_ids": [
+        "ASSUMPTION_COMPILER",
+        "AUDIT_GATE",
+        "DETERMINISTIC_VALUATION",
+        "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+        "FINAL_REPORT",
+        "INTRINSIC_FREEZE",
+        "LLM_STAFF",
+        "SCENARIO_ENGINE"
+      ],
+      "read_set": [
+        "AGENTS.md"
+      ],
+      "write_set": [
+        "src/valuation_engine/staff_transport.py",
+        "scripts/run_kr_live.py",
+        "tests/test_staff_transport.py"
+      ],
+      "depends_on": [],
+      "output_ids": [
+        "output:B"
+      ],
+      "validators": [
+        "tests/test_staff_transport.py"
+      ]
+    },
+    {
+      "task_id": "C",
+      "clause_ids": [
+        "C"
+      ],
+      "owner": "C",
+      "unit_ids": [
+        "ASSUMPTION_COMPILER",
+        "AUDIT_GATE",
+        "DETERMINISTIC_VALUATION",
+        "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+        "FINAL_REPORT",
+        "INTRINSIC_FREEZE",
+        "SCENARIO_ENGINE"
+      ],
+      "read_set": [
+        "AGENTS.md"
+      ],
+      "write_set": [
+        "src/valuation_engine/new_business_research.py",
+        "tests/test_new_business_research.py"
+      ],
+      "depends_on": [],
+      "output_ids": [
+        "output:C"
+      ],
+      "validators": [
+        "tests/test_new_business_research.py"
+      ]
+    },
+    {
+      "task_id": "D",
+      "clause_ids": [
+        "D"
+      ],
+      "owner": "D",
+      "unit_ids": [
+        "ASSUMPTION_COMPILER",
+        "AUDIT_GATE",
+        "DETERMINISTIC_VALUATION",
+        "EVIDENCE_LEDGER",
+        "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+        "FINAL_REPORT",
+        "INTRINSIC_FREEZE",
+        "PRIMARY_EVIDENCE_COLLECTION",
+        "SCENARIO_ENGINE"
+      ],
+      "read_set": [
+        "AGENTS.md"
+      ],
+      "write_set": [
+        "src/valuation_engine/research_campaign.py",
+        "src/valuation_engine/generic_underwriting.py",
+        "scripts/run_research_campaign.py",
+        "tests/test_research_campaign.py",
+        "tests/test_research_campaign_cli.py",
+        "tests/test_research_business_integration.py",
+        "docs/SENSITIVITY_RESEARCH_DESIGN.md",
+        "docs/RESEARCH_CAMPAIGN_RUNBOOK.md",
+        "docs/sensitivity-research-revision-plan.json",
+        "docs/V05_WORKFLOW_CONTRACT.md",
+        "docs/GENERIC_ENGINE_DESIGN.md",
+        "docs/README_V05_OPERATOR_INDEX.md"
+      ],
+      "depends_on": [
+        "A",
+        "B",
+        "C"
+      ],
+      "output_ids": [
+        "output:D"
+      ],
+      "validators": [
+        "tests/test_research_campaign.py tests/test_research_campaign_cli.py tests/test_research_business_integration.py"
+      ]
+    }
+  ],
+  "waves": [
+    {
+      "ordinal": 1,
+      "task_ids": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "task_ids": [
+        "D"
+      ]
+    }
+  ],
+  "selected_unit_ids": [
+    "ASSUMPTION_COMPILER",
+    "AUDIT_GATE",
+    "DETERMINISTIC_VALUATION",
+    "EVIDENCE_LEDGER",
+    "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+    "FINAL_REPORT",
+    "INTRINSIC_FREEZE",
+    "LLM_STAFF",
+    "PRIMARY_EVIDENCE_COLLECTION",
+    "REVISION_REQUEST_ORCHESTRATOR",
+    "SCENARIO_ENGINE"
+  ],
+  "skipped_unit_ids": [
+    "BLIND_RED_TEAM_B",
+    "BROKER_RESEARCH",
+    "DECISION_IMPACT",
+    "DOCTRINE_CONSTITUTION",
+    "HIERARCHICAL_BETA_ENGINE",
+    "IMPACT_PROPAGATION",
+    "INDUSTRY_DNA_ROUTER",
+    "INDUSTRY_KNOWLEDGE",
+    "KNOWLEDGE_PLACEMENT_GATE",
+    "MARKET_COMPARE",
+    "MODULE_PROMOTION",
+    "MODULE_REQUIREMENT_PLAN",
+    "ROCKET_INSIGHT_SCAN",
+    "SIGNAL_INTELLIGENCE",
+    "SOTP_AGGREGATOR",
+    "SOURCE_WATCH",
+    "STATE_LEARNING",
+    "STREET_GAP_ANALYZER",
+    "UPSTREAM_FUNDING_SCAN",
+    "VALUATION_CONTROL_PLANE",
+    "WACC_ENGINE",
+    "WARRANTED_PER_ENGINE"
+  ],
+  "plan_hash": "8733920e11efbdda7d115ac2b295a4696e90d0420bab4afaca6891a1b7727bab"
+}

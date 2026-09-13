@@ -3,6 +3,8 @@
 Status: implementation-ready design  
 Scope: actual-unit model, deterministic evaluators, registry, assumption compiler, conflict preservation, company collection plan, OCI primary-evidence migration
 
+Research implementation: `research_campaign.py` and `new_business_research.py` now prepare traceable analyst-underwriting inputs; `research_sensitivity.py` measures operating-path experiments before final valuation. These are proposal preparation, not alternative evaluators or freeze authority. See `docs/RESEARCH_CAMPAIGN_RUNBOOK.md` for file handoff, selective research replay, structured receipts and the explicit KR runner boundary.
+
 ## 1. 결정사항
 
 범용 엔진은 다음 단방향 파이프라인을 사용한다.
