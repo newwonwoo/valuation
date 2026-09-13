@@ -2,6 +2,8 @@
 
 Status: canonical runtime contract, merged into repository `SKILL.md` as v0.5.2. Control-plane authority and recovery semantics are defined in `docs/CONTROL_PLANE_ARCHITECTURE.md`.
 
+Prepared research may use `docs/RESEARCH_CAMPAIGN_RUNBOOK.md` before a new strict run: missing drivers create resumable host work orders, finite cash-flow sensitivity orders investigation, and accepted replies remain analyst underwriting with structured provenance. Research-task caching never substitutes for the canonical stage sequence or Audit/Freeze. Broker clues do not confer primary-evidence or calibrated-probability authority.
+
 ## Required order
 
 ```text
@@ -133,3 +135,5 @@ The key separation is:
 `calibration references → Beta/WACC/PER sanity only`
 
 `target Street/market → post-freeze comparison only`
+
+자료 부족 보완·비교기업 이익률 조정·최종 보고서 완주 계약: [RESEARCH_COMPLETION_DESIGN.md](RESEARCH_COMPLETION_DESIGN.md). 내부 단계 차단은 외부 보완 작업으로 전달하고 실제 불변 보고서 묶음 생성까지 검증한다.

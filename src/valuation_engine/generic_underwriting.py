@@ -61,6 +61,14 @@ class DeclaredUnderwritingEvidenceRecord(EvidenceRecord):
             )
 
 
+@dataclass(frozen=True)
+class ResearchUnderwritingEvidenceRecord(DeclaredUnderwritingEvidenceRecord):
+    """Structured research lineage survives ledger persistence and audit."""
+
+    research_receipt: Mapping | None = None
+    business_cashflow_receipt: Mapping | None = None
+
+
 def _declared_date(value: str, label: str) -> date:
     try:
         return date.fromisoformat(str(value)[:10])
@@ -217,6 +225,50 @@ def declared_underwriting_collector(
                 continue  # undeclared: a named coverage gap downstream
             for row in rows:
                 source_refs = tuple(row["source_refs"])
+                research = row.get("research_receipt")
+                business = row.get("business_cashflow_receipt")
+                record_type = DeclaredUnderwritingEvidenceRecord
+                extra = {}
+                if research is not None and business is not None:
+                    raise DeclaredUnderwritingError("one declaration cannot have two research authorities")
+                if research is not None:
+                    from .research_campaign import validate_response, fingerprint
+
+                    if not isinstance(research, Mapping):
+                        raise DeclaredUnderwritingError("research receipt must be an object")
+                    order = research.get("work_order", {})
+                    if (order.get("target_id"), order.get("as_of")) != (
+                        payload["target_id"], payload["as_of"]
+                    ):
+                        raise DeclaredUnderwritingError("research receipt target/cutoff mismatch")
+                    verified = validate_response(order, research.get("response", {}))
+                    if fingerprint(verified) != fingerprint(research):
+                        raise DeclaredUnderwritingError("research receipt was altered")
+                    if (str(row["value"]), row["unit"], str(metric), row.get("segment", "core")) != (
+                        verified["value"], verified["unit"], verified["metric"], verified["segment"]
+                    ) or source_refs != tuple(dict.fromkeys(s["url"] for s in verified["response"]["sources"])):
+                        raise DeclaredUnderwritingError("research receipt does not bind the declaration")
+                    record_type = ResearchUnderwritingEvidenceRecord
+                    extra = {"research_receipt": research}
+                if business is not None:
+                    from .new_business_research import validate_cashflow_receipt
+                    from .research_campaign import validate_response, fingerprint
+
+                    validate_cashflow_receipt(business, str(metric), str(row["value"]), str(row["unit"]))
+                    if business["path"]["periods"][0]["year"] != int(payload["as_of"][:4]) + 1:
+                        raise DeclaredUnderwritingError("cashflow receipt must begin in the year after underwriting as_of")
+                    if set(source_refs) != set(business.get("source_refs", ())):
+                        raise DeclaredUnderwritingError("cashflow declaration sources do not match receipt")
+                    for item in business.get("assumptions", {}).values():
+                        if item.get("status") != "ACCEPTED":
+                            continue
+                        order = item["work_order"]
+                        if (order["target_id"], order["as_of"]) != (payload["target_id"], payload["as_of"]):
+                            raise DeclaredUnderwritingError("cashflow research target/cutoff mismatch")
+                        if fingerprint(validate_response(order, item["response"])) != fingerprint(item):
+                            raise DeclaredUnderwritingError("cashflow research receipt changed")
+                    record_type = ResearchUnderwritingEvidenceRecord
+                    extra = {"business_cashflow_receipt": business}
                 # Single-row declarations keep the historical Evidence id so
                 # committed runs replay byte-identically; a multi-row metric
                 # appends the segment, because two segments' judgments are
@@ -227,7 +279,7 @@ def declared_underwriting_collector(
                     else f"UW:{payload['target_id']}:{metric}"
                 )
                 records.append(
-                    DeclaredUnderwritingEvidenceRecord(
+                    record_type(
                         id=record_id,
                     target=payload["target_id"],
                     metric=metric,
@@ -246,6 +298,7 @@ def declared_underwriting_collector(
                         + str(row["rationale"]).strip()
                     ),
                     source_refs=source_refs,
+                    **extra,
                 )
             )
         batch = EvidenceCollectionBatch(

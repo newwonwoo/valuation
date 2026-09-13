@@ -44,7 +44,16 @@ Execute in this order; unavailable live modules must be labelled `CONTRACT_ONLY`
 29. `MARKET_COMPARE`
 30. `THESIS_DELTA` / `SAVE_STATE` / `FINAL_REPORT`
 
-If a blocking issue remains after round three or a blocking audit fails, return `VALUATION BLOCKED`. Do not output fair value or load Street/current-price data.
+If a blocking issue remains after the inner research round three or a blocking audit fails, return the blocked stage to the completion coordinator. Do not output unaudited fair value or load Street/current-price data. A missing datum is a repair task, not the host assistant's final answer while defensible research methods remain.
+
+### Research-to-report completion
+
+- For missing disclosures, first search primary/company sources, then independent industry/customer/supplier material and broker discovery clues. When target operating history is inadequate, use comparable-business realized EBIT or EBITDA margins with explicit accounting/period normalization, comparability rationale, weights and year-specific percentage-point adjustments. Keep these as analyst assumptions; do not use peer operating history to calibrate target scenario probabilities.
+- Use `docs/RESEARCH_COMPLETION_DESIGN.md` and `docs/RESEARCH_CAMPAIGN_RUNBOOK.md`. The host creates the research plan, reads work orders, searches and writes valid responses itself; do not ask the user to prepare JSON or obtain an LLM API key. Missing data may be resolved by source-based calculations, peer adjustments or explicit bounded inference, never invented facts or silent zero inputs.
+- Run `scripts/run_research_campaign.py ... --run-dir <prepared-run>` for the accepted research and full report completion path. Optional host provider callbacks can supply research and repair inputs. With file handoff, process the emitted completion/staff work order and rerun in the same workspace within the ongoing task. The coordinator preserves the source run, stores revised inputs separately, reruns canonical audits and materializes prompt-bound deterministic replay before local report publication.
+- A changed input requires the host to review the investor narrative and record the review bound to that input and profile; update stale claims instead of carrying them into the revised report. No hash is displayed in the investor narrative.
+- Completion means a full-scope audited valuation plus an existing investor report, two SVG cards and verified immutable bundle. Partial scope, unanswered work orders or a report string alone are not completion. Uncalibrated probabilities permit a conditional scenario report but no fabricated probability-weighted expected value or buy price. Bounded host execution budgets preserve resumable work and exact missing action; they do not certify completion.
+- Actual source contradictions, unsupported financial models or integrity failures still require correction before publishing; never mark a gate passed merely to finish. The currently supplied prepared-run adapter is KR; do not portray its fixture completion as US live-company validation.
 
 ## Separation rules
 

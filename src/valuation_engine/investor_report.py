@@ -17,6 +17,8 @@ import yaml
 
 from .post_freeze import MarketComparisonBundle
 from .records import MarketObservation
+from .ledger import EvidenceLedger
+from .source_reporting import canonical_verification_url
 from .valuation_execution import GenericValuationResult, IntrinsicValuationScope
 
 
@@ -67,10 +69,10 @@ class InvestorReportProfile:
             raise ValueError("investor report requires all decision-change conditions")
         if not self.sources:
             raise ValueError("investor report requires public sources")
-        allowed = {"공시", "IR", "신용평가", "시장가격"}
+        allowed = {"공시", "IR", "신용평가", "시장가격", "산업자료", "비교기업 공시", "증권사 조사단서"}
         for source_type, label, url in self.sources:
             if source_type not in allowed or not label or not url.startswith("https://"):
-                raise ValueError("investor report source must be a public filing/IR/rating/market URL")
+                raise ValueError("investor report source must have a supported public source type and HTTPS URL")
 
 
 def _rows(
@@ -149,12 +151,12 @@ def _opinion(
     market: MarketComparisonBundle | None,
 ) -> tuple[str, str]:
     if valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC:
-        return "판단 유보", "전체 기업가치가 아니라 평가 완료 사업부 기준입니다."
+        return "부분 사업가치 평가", "전체 기업가치가 아니라 평가 완료 사업부 기준입니다."
     expected = valuation.expected_value_per_share
     if expected is None:
-        return "판단 유보", "보정된 시나리오 확률과 확률가중 기대값이 없습니다."
+        return "시나리오 기준 평가", "하방·기준·상방의 조건별 가치를 제시합니다. 보정된 시나리오 확률과 확률가중 기대값이 없습니다."
     if market is None or not valuation.scenarios:
-        return "판단 유보", "확률가중 기대값과 비교할 검증된 현재가가 없습니다."
+        return "내재가치 기준 평가", "내재가치는 산출했으며, 검증된 현재가가 없어 매매가격 비교는 제외합니다."
     current = Decimal(str(market.observation.price))
     if current < expected:
         return "매수 검토", "현재가가 확률가중 기대값보다 낮습니다."
@@ -214,7 +216,7 @@ def render_investor_report(
     else:
         probability_note = (
             "확률가중 기대값은 산출되지 않았습니다. 현재가는 확률 생성에 사용하지 "
-            "않으며, 보정값이 없으면 방향 판단을 유보합니다."
+            "않으며, 각 시나리오의 성립 조건과 가치 범위로 판단합니다."
         )
 
     lines = [
@@ -228,7 +230,7 @@ def render_investor_report(
     ]
     if partial:
         lines.append(
-            "- 판단 유보 사유: 전체 기업가치가 아니라 평가 완료 사업부 기준이며, "
+            "- 평가 범위: 전체 기업가치가 아니라 평가 완료 사업부 기준이며, "
             "미평가 사업부는 0원으로 처리하지 않았습니다."
         )
     lines.extend(("", "## 2. 핵심 투자포인트"))
@@ -302,6 +304,21 @@ def render_investor_report(
         f"- {source_type}: [{label}]({url})"
         for source_type, label, url in profile.sources
     )
+    # A revised operating assumption may introduce sources absent from the
+    # prior editorial profile. Bind those links to the actual accepted ledger.
+    linked = {url for _, _, url in profile.sources}
+    ledger = data.get("evidence_ledger")
+    if isinstance(ledger, EvidenceLedger):
+        for record in ledger.active():
+            if not (getattr(record, "research_receipt", None) or getattr(record, "business_cashflow_receipt", None)):
+                continue
+            for source in getattr(record, "source_refs", ()):
+                url = canonical_verification_url(source)
+                if url is None:
+                    raise ValueError("research report requires public source links")
+                if url not in linked:
+                    lines.append(f"- 추정 근거: [비교자료·계산 원문]({url})")
+                    linked.add(url)
     report = "\n".join(lines).rstrip() + "\n"
     lowered = report.casefold()
     leaked = tuple(token for token in _FORBIDDEN_PUBLIC_TOKENS if token in lowered)

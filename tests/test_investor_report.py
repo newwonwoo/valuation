@@ -108,7 +108,7 @@ def test_partial_report_names_scope_and_does_not_zero_fill(koreazinc_result):
         load_investor_report_profile(PROFILE_PATH),
     )
 
-    assert "- 투자의견: 판단 유보" in report
+    assert "- 투자의견: 부분 사업가치 평가" in report
     assert "- 부분 내재가치: 688,109원" in report
     assert "전체 기업가치가 아니라 평가 완료 사업부 기준" in report
     assert "| 기타부문 | 미평가, 추가 확인 필요 |" in report
@@ -127,7 +127,7 @@ def test_market_price_cannot_replace_missing_probability_weight(koreazinc_result
         load_investor_report_profile(PROFILE_PATH),
     )
 
-    assert "- 투자의견: 판단 유보" in report
+    assert "- 투자의견: 시나리오 기준 평가" in report
     assert "보정된 시나리오 확률과 확률가중 기대값이 없습니다." in report
     assert "현재가는 확률 생성에 사용하지 않으며" in report
 

@@ -3,6 +3,8 @@
 Status: implementation-ready design  
 Scope: actual-unit model, deterministic evaluators, registry, assumption compiler, conflict preservation, company collection plan, OCI primary-evidence migration
 
+Research implementation: `research_campaign.py` and `new_business_research.py` now prepare traceable analyst-underwriting inputs; `research_sensitivity.py` measures operating-path experiments before final valuation. These are proposal preparation, not alternative evaluators or freeze authority. See `docs/RESEARCH_CAMPAIGN_RUNBOOK.md` for file handoff, selective research replay, structured receipts and the explicit KR runner boundary.
+
 ## 1. 결정사항
 
 범용 엔진은 다음 단방향 파이프라인을 사용한다.
@@ -753,3 +755,5 @@ Merge gate:
 - legacy Evidence가 live valuation에서 자동 차단되는가?
 - blocked compilation이 부분 assumption을 evaluator에 넘기지 않는가?
 - operating multi-segment와 legal holding aggregator가 구분되는가?
+
+자료 부족 보완·비교기업 이익률 조정·최종 보고서 완주 계약: [RESEARCH_COMPLETION_DESIGN.md](RESEARCH_COMPLETION_DESIGN.md). 내부 단계 차단은 외부 보완 작업으로 전달하고 실제 불변 보고서 묶음 생성까지 검증한다.

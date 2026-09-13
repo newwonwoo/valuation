@@ -95,7 +95,7 @@ from valuation_engine.live_primary_adapters import (  # noqa: E402
     live_opendart_company_resolver,
 )
 from valuation_engine.strict_live_runtime import run_prism  # noqa: E402
-from valuation_engine.llm_transport import TransportError  # noqa: E402
+from valuation_engine.staff_transport import StaffTransport, StaffWorkRequired  # noqa: E402
 from valuation_engine.valuation_execution import ParentAdjustmentPlan  # noqa: E402
 from valuation_engine.valuation_plan_compiler import SegmentMethodChoice  # noqa: E402
 
@@ -112,7 +112,7 @@ class RunbookError(ValueError):
     pass
 
 
-class _StaffUnavailableError(RunbookError, TransportError):
+class _StaffUnavailableError(RunbookError, StaffWorkRequired):
     """A missing proposal is a reader failure, not undisclosed evidence."""
 
 
@@ -198,55 +198,14 @@ def _build_network(run_dir: Path) -> OpenDartNetwork:
     )
 
 
-class _StaffTransport:
-    """Per-role proposal files; an array scripts the repair loop's turns.
-
-    The last answer repeats so a rejection surfaces as the engine's own
-    contract error, never as transport exhaustion.
-
-    When ``VALUATION_LLM_TRANSPORT`` is set, roles WITHOUT a file are
-    delegated to that live transport (same ``module:callable`` contract as
-    ``generic_kr_cli``) — a declared file always wins, so a committed run
-    replays byte-identically whether or not a live model is configured.
-    """
-
-    def __init__(self, staff_dir: Path) -> None:
-        self._answers: dict[str, list[str]] = {}
-        if staff_dir.is_dir():
-            for path in staff_dir.glob("*.json"):
-                payload = json.loads(path.read_text(encoding="utf-8"))
-                turns = payload if isinstance(payload, list) else [payload]
-                self._answers[path.stem] = [
-                    json.dumps(turn, ensure_ascii=False) for turn in turns
-                ]
-        self._counts: dict[str, int] = {}
-        self._live = None
-
-    def supports_role(self, role: str) -> bool:
-        return bool(self._answers.get(role)) or bool(
-            os.environ.get("VALUATION_LLM_TRANSPORT", "").strip()
-        )
-
-    def _live_transport(self):
-        if self._live is None:
-            from valuation_engine.generic_kr_cli import _load_transport
-
-            self._live = _load_transport()
-        return self._live
+class _StaffTransport(StaffTransport):
+    """Preserve the runbook error contract while exposing repair handoffs."""
 
     def complete(self, *, role: str, prompt: str) -> str:
-        answers = self._answers.get(role)
-        if not answers:
-            if os.environ.get("VALUATION_LLM_TRANSPORT", "").strip():
-                return self._live_transport().complete(role=role, prompt=prompt)
-            raise _StaffUnavailableError(
-                f"no staff proposal file for role {role!r}; add "
-                f"declarations/staff/{role}.json per the runbook, or set "
-                "VALUATION_LLM_TRANSPORT to let a live model take the seat"
-            )
-        index = self._counts.get(role, 0)
-        self._counts[role] = index + 1
-        return answers[min(index, len(answers) - 1)]
+        try:
+            return super().complete(role=role, prompt=prompt)
+        except StaffWorkRequired as exc:
+            raise _StaffUnavailableError(str(exc)) from exc
 
 
 def _calibration_loader(run_dir: Path, calibration: dict):
@@ -569,7 +528,8 @@ def _run_input_sha256(run_dir: str | Path) -> str:
                 and path.suffix not in {".pyc", ".pyo"}
             ):
                 add(f"repo/{path.relative_to(ROOT).as_posix()}", path)
-    for path in (Path(__file__).resolve(), ROOT / "pyproject.toml"):
+    for path in (Path(__file__).resolve(), ROOT / "scripts/run_research_campaign.py",
+                 ROOT / "scripts/research_report_completion.py", ROOT / "pyproject.toml"):
         add(f"repo/{path.relative_to(ROOT).as_posix()}", path)
 
     def bind_referenced_files(value: object, pointer: str = "run.yaml") -> None:
@@ -967,7 +927,8 @@ def reuse_published_report_bundle(
     return None
 
 
-def execute_run(run_dir: str | Path, *, state_root: str | None = None):
+def execute_run(run_dir: str | Path, *, state_root: str | None = None,
+                staff_mode: str | None = None, underwriting_path: str | Path | None = None):
     """Run one prepared directory; returns (reached, stop_stage, stop_reason, result)."""
     run_dir = Path(run_dir).resolve()
     config = _load_run(run_dir)
@@ -1036,7 +997,7 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
             segment_id=str(filing.get("segment_id", "core")),
         ),
         forecast_years=int(config.get("forecast_years", 5)),
-        declared_underwriting_path=str(run_dir / "declarations" / "underwriting.yaml"),
+        declared_underwriting_path=str(underwriting_path or run_dir / "declarations" / "underwriting.yaml"),
         declared_risk_path=_optional_path(run_dir, "risk_pack.yaml"),
         declared_segments_path=_optional_path(run_dir, "segments.yaml"),
         declared_broker_research_path=_optional_path(
@@ -1055,7 +1016,11 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None):
     )
     factory = build_generic_kr_runtime_factory(
         network=network,
-        transport=_StaffTransport(run_dir / "declarations" / "staff"),
+        transport=_StaffTransport(
+            run_dir / "declarations" / "staff",
+            mode=staff_mode or os.environ.get("VALUATION_STAFF_MODE", "replay"),
+            request_dir=run_dir / "out" / "staff_requests",
+        ),
         spec=spec,
     )
 
@@ -1095,21 +1060,27 @@ def main() -> int:
         "--report-out",
         help="write the mutable latest-report alias here (immutable bundle stays under <run_dir>/out/bundles)",
     )
+    parser.add_argument("--staff-mode", choices=("replay", "assisted", "live"),
+                        default=os.environ.get("VALUATION_STAFF_MODE", "replay"))
+    parser.add_argument("--underwriting-path", help="alternate underwriting input; noncanonical inputs are not published")
     args = parser.parse_args()
     run_dir = Path(args.run_dir)
     output_root = run_dir / "out"
+    publishable = (args.staff_mode == "replay" and (not args.underwriting_path or
+                   Path(args.underwriting_path).resolve() == (run_dir / "declarations" / "underwriting.yaml").resolve()))
     reused = reuse_published_report_bundle(
         run_dir,
         output_dir=output_root,
         report_alias=args.report_out,
-    )
+    ) if publishable else None
     if reused is not None:
         print("\n  stages: previously completed — REUSED")
         print(f"  report: {reused['versioned_report_path']}")
         print(f"  manifest: {reused['latest_manifest_path']}")
         return 0
     reached, stop_stage, stop_reason, result = execute_run(
-        run_dir, state_root=str(output_root / "state" / _run_input_sha256(run_dir))
+        run_dir, state_root=(str(output_root / "state" / _run_input_sha256(run_dir)) if publishable else None),
+        staff_mode=args.staff_mode, underwriting_path=args.underwriting_path,
     )
     for stage in reached:
         print(f"  OK  {stage}")
@@ -1122,6 +1093,9 @@ def main() -> int:
         )
         return 1
     print(f"\n  stages: {len(reached)}/{len(result.stage_traces)} — COMPLETED")
+    if not publishable:
+        print("Validated execution only; publication withheld. Materialize canonical underwriting and replay staff files, then rerun in replay mode to publish.")
+        return 0
     report = result.data.get("final_report")
     if isinstance(report, str):
         published = publish_report_bundle(
