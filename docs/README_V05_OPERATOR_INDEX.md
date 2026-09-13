@@ -163,3 +163,5 @@ PYTHONPATH=src pytest -q
 Read `SIGNAL_INTELLIGENCE_LAYER_V1.md` when a workflow uses permits, procurement, interconnection queues, patents, jobs, credit markets, short interest, insider transactions, customs/logistics, clinical registries, or remote sensing. `SignalClass` is orthogonal to `KnowledgeLayer`; do not infer evidence authority from signal type alone.
 
 Critical market-data split: financing market references may support WACC/funding through a Bridge; target-equity market references remain post-freeze only; positioning signals never mutate same-run intrinsic value.
+
+자료 부족 보완·비교기업 이익률 조정·최종 보고서 완주 계약: [RESEARCH_COMPLETION_DESIGN.md](RESEARCH_COMPLETION_DESIGN.md). 내부 단계 차단은 외부 보완 작업으로 전달하고 실제 불변 보고서 묶음 생성까지 검증한다.

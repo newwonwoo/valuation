@@ -9,7 +9,7 @@ from __future__ import annotations
 from copy import deepcopy
 from dataclasses import asdict
 from datetime import date
-from decimal import Decimal, InvalidOperation
+from decimal import Context, Decimal, InvalidOperation, localcontext
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -24,6 +24,22 @@ from .source_reporting import canonical_verification_url
 
 class ResearchCampaignError(ValueError):
     pass
+
+
+RESEARCH_APPROACHES = (
+    ("primary", "공시·IR·계약·인허가에서 직접 확인하거나 공시 숫자로 산출하세요."),
+    ("independent", "고객·공급자·산업 통계와 증권사 원자료 단서로 교차 확인하세요."),
+    ("peer_adjusted", "유사 사업의 실제 이익률·단위경제성을 찾고 규모·가동률·회계기준 차이를 명시적으로 조정하세요."),
+    ("bounded_inference", "남은 불확실성을 명시적 가정과 하방·기준·상방 범위로 수치화하세요. 근거 없는 기본값은 쓰지 마세요."),
+)
+
+
+def research_recovery_context(attempt: int, feedback: str | None = None) -> dict:
+    """Change the research method after a miss without changing answer identity."""
+    tier, instructions = RESEARCH_APPROACHES[min(attempt, len(RESEARCH_APPROACHES) - 1)]
+    return {"attempt": attempt + 1, "approach": tier, "instructions": instructions,
+            "previous_issue": feedback,
+            "remaining_approaches": [x[0] for x in RESEARCH_APPROACHES[attempt + 1:]]}
 
 
 def fingerprint(value: object) -> str:
@@ -146,12 +162,72 @@ def make_work_order(plan: Mapping, request: Mapping, dependencies: Mapping) -> d
             "공시·IR와 고객·공급자·인허가 원문을 읽고 확인값/추정값을 구분하세요. "
             "부족하면 증권사 자료에서 영업 단서와 추정 방법을 찾되 목표가·현재가·등급·목표배수는 제외하세요. "
             "추정 범위, 근거 요약, 반대 증거, 폐기 조건과 원문 출처를 기록하세요. "
-            "검색 실패는 부재 증거가 아닙니다. 방어 가능한 값이 없으면 unresolved로 반환하세요. "
+            "직접 수치가 없으면 유사 사업자 실적을 조정하거나 단위경제성·범위 추정을 사용하세요. "
+            "검색 실패는 부재 증거가 아닙니다. unresolved는 다음 조사 방식으로 넘기는 보완 요청이며 최종 판단이 아닙니다. "
             "내부 사고과정 대신 검토 가능한 산식·입력·판단 근거 요약을 제출하세요."
         ),
     }
     body["request_hash"] = fingerprint(body)
     return body
+
+
+def _validate_peer_margin(order: Mapping, response: Mapping, value: Decimal,
+                          low: Decimal, high: Decimal, sources: list) -> None:
+    """Bind adjusted margins or margin × target revenue to a research answer."""
+    from .peer_margin_research import build_peer_margin_proposal, validate_peer_margin_receipt
+
+    selection = _mapping(response["peer_margin"], "peer_margin")
+    receipt = _mapping(selection.get("receipt"), "peer margin receipt")
+    expected = build_peer_margin_proposal(receipt.get("inputs"))
+    req = order["request"]
+    if response["kind"] != "inferred":
+        raise ResearchCampaignError("peer margins remain inferred assumptions")
+    if (expected["target"], expected["segment"], expected["as_of"], expected["economic_path_id"]) != (
+        order["target_id"], req["segment"], order["as_of"], req["economic_path_id"]
+    ):
+        raise ResearchCampaignError("peer margin target/segment/cutoff/path mismatch")
+    if req.get("margin_basis") != expected["metric"]:
+        raise ResearchCampaignError("request margin_basis must explicitly match EBIT or EBITDA")
+    source_map = {s["source_id"]: s for s in sources}
+    for s in expected["inputs"]["sources"]:
+        original = source_map.get(s["source_id"], {})
+        if any(original.get(k) != s.get(k) for k in (
+            "url", "published_at", "first_seen_at", "locator", "content_sha256"
+        )):
+            raise ResearchCampaignError("peer margin sources differ from response provenance")
+    year, case = selection.get("year"), selection.get("case")
+    if req.get("forecast_year") != year:
+        raise ResearchCampaignError("peer margin forecast year differs from requested year")
+    expected_basis = {
+        "normalized_ebitda": "EBITDA", "ebitda": "EBITDA", "ebitda_margin": "EBITDA",
+        "normalized_ebit": "EBIT", "ebit": "EBIT", "operating_profit": "EBIT", "operating_margin": "EBIT",
+    }.get(req["metric"])
+    if expected_basis and expected_basis != expected["metric"]:
+        raise ResearchCampaignError("peer metric cannot substitute EBIT for EBITDA or vice versa")
+    row = next((r for r in expected["years"] if r["year"] == year), None)
+    if row is None or case not in {"low", "base", "high"}:
+        raise ResearchCampaignError("peer margin forecast year/case missing")
+    validate_peer_margin_receipt(receipt, year, case, row[case], economic_path_id=req["economic_path_id"])
+    factor = Decimal(1)
+    revenue = selection.get("revenue")
+    if revenue is not None:
+        _mapping(revenue, "target revenue")
+        if revenue.get("unit") != req["unit"] or unit_def(req["unit"]).dimension != Dimension.MONEY:
+            raise ResearchCampaignError("peer profit projection requires target revenue in output money unit")
+        refs = revenue.get("source_ids")
+        if not isinstance(refs, list) or not refs or not set(refs).issubset(source_map):
+            raise ResearchCampaignError("target revenue requires known source IDs")
+        if revenue.get("year") != year:
+            raise ResearchCampaignError("target revenue and peer margin forecast years must match")
+        _text(revenue.get("rationale"), "target revenue rationale", 20)
+        factor = _number(revenue.get("value"), "target revenue")
+        if factor < 0:
+            raise ResearchCampaignError("target revenue must be nonnegative")
+    elif req["unit"] != "ratio":
+        raise ResearchCampaignError("margin-only output requires ratio unit")
+    with localcontext(Context(prec=40)):
+        if value != Decimal(row[case]) * factor or low != Decimal(row["low"]) * factor or high != Decimal(row["high"]) * factor:
+            raise ResearchCampaignError("peer margin projection or bounds do not reproduce response")
 
 
 def validate_response(order: Mapping, response: Mapping) -> dict:
@@ -233,6 +309,10 @@ def validate_response(order: Mapping, response: Mapping) -> dict:
                 raise ResearchCampaignError("broker estimates remain inferred underwriting")
             _text(response.get("independent_reasoning"), "independent reasoning", 20)
     calculation = response.get("calculation")
+    if "peer_margin" in response:
+        if calculation is not None:
+            raise ResearchCampaignError("peer margin response cannot declare a second calculation authority")
+        _validate_peer_margin(order, response, value, low, high, sources)
     if response["kind"] == "calculated":
         if not isinstance(calculation, dict):
             raise ResearchCampaignError("calculated values require a reproducible calculation")

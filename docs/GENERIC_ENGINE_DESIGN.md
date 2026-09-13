@@ -755,3 +755,5 @@ Merge gate:
 - legacy Evidence가 live valuation에서 자동 차단되는가?
 - blocked compilation이 부분 assumption을 evaluator에 넘기지 않는가?
 - operating multi-segment와 legal holding aggregator가 구분되는가?
+
+자료 부족 보완·비교기업 이익률 조정·최종 보고서 완주 계약: [RESEARCH_COMPLETION_DESIGN.md](RESEARCH_COMPLETION_DESIGN.md). 내부 단계 차단은 외부 보완 작업으로 전달하고 실제 불변 보고서 묶음 생성까지 검증한다.

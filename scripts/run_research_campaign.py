@@ -23,7 +23,7 @@ import yaml
 
 from valuation_engine.research_campaign import (
     ResearchCampaignError, fingerprint, merge_underwriting, run_campaign,
-    validate_campaign, validate_response, write_immutable_json,
+    validate_campaign, validate_response, write_immutable_json, research_recovery_context,
 )
 
 
@@ -33,7 +33,8 @@ def _read(path: Path):
 
 def _code_identity() -> str:
     paths = [*sorted((ROOT / "src/valuation_engine").glob("*.py")),
-             *sorted((ROOT / "config").glob("*.yaml")), Path(__file__)]
+             *sorted((ROOT / "config").glob("*.yaml")), Path(__file__),
+             ROOT / "scripts/research_report_completion.py", ROOT / "scripts/run_kr_live.py"]
     return fingerprint({str(p.relative_to(ROOT)): sha256(p.read_bytes()).hexdigest() for p in paths})
 
 
@@ -101,7 +102,7 @@ def model_evaluator(plan: dict):
 
 
 def _execute_campaign(plan_path: Path, workspace: Path, *, underwriting_path: Path | None = None,
-                     provider=None, max_rounds: int = 3, max_workers: int = 4) -> tuple[dict, Path | None]:
+                     provider=None, max_rounds: int = 5, max_workers: int = 4) -> tuple[dict, Path | None]:
     if not 1 <= max_rounds <= 10:
         raise ResearchCampaignError("max_rounds must be between 1 and 10")
     plan = validate_campaign(_read(plan_path))
@@ -116,6 +117,7 @@ def _execute_campaign(plan_path: Path, workspace: Path, *, underwriting_path: Pa
     cache_path = workspace / "cache.json"
     cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
     evaluator = model_evaluator(plan)
+    attempts = {}
 
     def versions():
         return {req["request_id"]: sha256(path.read_bytes()).hexdigest()
@@ -161,14 +163,22 @@ def _execute_campaign(plan_path: Path, workspace: Path, *, underwriting_path: Pa
             return None
         # Advisory feedback is outside the canonical work-order identity. The
         # response still cites the original request_hash, never a repaired value.
-        prompt = {**order, "repair_feedback": feedback} if feedback else order
+        rid = order["request"]["request_id"]
+        attempt = attempts.get(rid, 0)
+        prompt = {**order, "recovery": research_recovery_context(attempt, feedback)}
+        if feedback:
+            prompt["repair_feedback"] = feedback
+        attempts[rid] = attempt + 1
         response = provider(prompt)
+        write_immutable_json(workspace / "attempt_history", {
+            "request_hash": order["request_hash"], "recovery": prompt["recovery"],
+            "response": response,
+        }, rid)
         if response is not None:
             write_immutable_json(workspace / "response_history", response, order["request"]["request_id"])
             path.write_text(json.dumps(response, indent=2, ensure_ascii=False, allow_nan=False) + "\n")
         return response
 
-    previous = None
     for _ in range(max_rounds if provider else 1):
         response_versions = versions()
         result = run_campaign(plan, responder=respond, cache=cache, evaluator=evaluator,
@@ -189,9 +199,14 @@ def _execute_campaign(plan_path: Path, workspace: Path, *, underwriting_path: Pa
         temp = workspace / "cache.tmp"
         temp.write_text(json.dumps(cache, sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n")
         temp.replace(cache_path)
-        if result["status"] == "READY_FOR_COMPILATION" or fingerprint(result["outputs"]) == previous:
+        if result["status"] == "READY_FOR_COMPILATION":
             break
-        previous = fingerprint(result["outputs"])
+    if result["status"] != "READY_FOR_COMPILATION":
+        result["continuation"] = {
+            "status": "HOST_ACTION_REQUIRED" if provider is None else "RESEARCH_BUDGET_REACHED",
+            "instructions": "추가 조사 또는 범위·유사기업 조정 추정을 보완하고 같은 작업공간에서 재개하세요.",
+            "attempts": attempts,
+        }
     merged_path = None
     if result["status"] == "READY_FOR_COMPILATION" and underwriting is not None:
         merged = merge_underwriting(underwriting, result)
@@ -264,7 +279,9 @@ def main(argv=None) -> int:
     parser.add_argument("--workspace", type=Path, required=True)
     parser.add_argument("--underwriting", type=Path)
     parser.add_argument("--provider", help="optional host module:callable, no vendor SDK required")
-    parser.add_argument("--max-rounds", type=int, default=3)
+    parser.add_argument("--max-rounds", type=int, default=5)
+    parser.add_argument("--recovery-provider", help="host module:callable to repair isolated run inputs and staff replies")
+    parser.add_argument("--completion-rounds", type=int, default=10)
     parser.add_argument("--max-workers", type=int, default=4)
     parser.add_argument("--run-dir", type=Path, help="optional prepared KR run; final audit remains mandatory")
     parser.add_argument("--staff-mode", choices=("assisted", "live", "replay"), default="assisted")
@@ -275,6 +292,12 @@ def main(argv=None) -> int:
         if not separator:
             parser.error("provider must be module:callable")
         provider = getattr(importlib.import_module(module), name)
+    recovery_provider = None
+    if args.recovery_provider:
+        module, separator, name = args.recovery_provider.partition(":")
+        if not separator:
+            parser.error("recovery-provider must be module:callable")
+        recovery_provider = getattr(importlib.import_module(module), name)
     underwriting = args.underwriting
     if args.run_dir and underwriting is None:
         underwriting = args.run_dir / "declarations/underwriting.yaml"
@@ -290,21 +313,22 @@ def main(argv=None) -> int:
         if merged:
             print(f"추정값과 근거: {merged}")
         if args.run_dir:
-            from run_kr_live import execute_run
-            reached, stopped, reason, run = execute_run(args.run_dir,
-                staff_mode=args.staff_mode, underwriting_path=merged)
-            print(f"계산/감사: {stopped or ('COMPLETED' if run.completed else 'BLOCKED')}; {reason}")
-            if stopped:
-                gap = {"schema_version": "valuation-research-gap/v1", "target_id": result["target_id"],
-                    "as_of": result["as_of"], "campaign_hash": result["plan_hash"],
-                    "blocked_stage": stopped, "reason": reason,
-                    "accepted_request_ids": [k for k, v in result["outputs"].items() if v["status"] == "ACCEPTED"],
-                    "instructions": "차단 사유를 읽고 필요한 자료 요청 또는 해당 역할 응답을 보완한 뒤 같은 명령으로 재개하세요. 감사 통과 여부를 임의로 바꾸지 마세요."}
-                path = write_immutable_json(args.workspace / "requests", gap, "valuation-gap")
-                print(f"후속 보완 작업지시: {path}")
-            # External proposal inputs intentionally do not publish canonical state.
-            print("외부 추정값 검증 실행입니다. 최종 배포는 canonical 입력 반영 후 replay 검증을 통과해야 합니다.")
-            return 1 if stopped else 0
+            from run_kr_live import _run_input_sha256
+            from research_report_completion import complete_research_report
+            identity = fingerprint({"source": _run_input_sha256(args.run_dir),
+                                    "underwriting": sha256(merged.read_bytes()).hexdigest()})
+            completion = complete_research_report(args.run_dir,
+                args.workspace / "completion" / identity, merged,
+                staff_mode=args.staff_mode, recovery_provider=recovery_provider,
+                max_rounds=args.completion_rounds)
+            if completion["status"] == "COMPLETED":
+                print(f"투자보고서: {completion['versioned_report_path']}")
+                print(f"보고서 검증 기록: {completion['latest_manifest_path']}")
+                return 0
+            path = write_immutable_json(args.workspace / "requests", completion, "valuation-gap")
+            print(f"후속 보완: {completion['blocked_stage']} — {completion['reason']}")
+            print(f"재개 작업지시: {path}")
+            return 2
         return 0
     except (ValueError, TypeError, OSError) as exc:
         print(f"조사 입력 오류: {exc}", file=sys.stderr)

@@ -528,7 +528,8 @@ def _run_input_sha256(run_dir: str | Path) -> str:
                 and path.suffix not in {".pyc", ".pyo"}
             ):
                 add(f"repo/{path.relative_to(ROOT).as_posix()}", path)
-    for path in (Path(__file__).resolve(), ROOT / "pyproject.toml"):
+    for path in (Path(__file__).resolve(), ROOT / "scripts/run_research_campaign.py",
+                 ROOT / "scripts/research_report_completion.py", ROOT / "pyproject.toml"):
         add(f"repo/{path.relative_to(ROOT).as_posix()}", path)
 
     def bind_referenced_files(value: object, pointer: str = "run.yaml") -> None:

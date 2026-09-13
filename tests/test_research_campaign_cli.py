@@ -14,6 +14,38 @@ from run_research_campaign import execute_campaign, main
 from tests.test_research_campaign import answer, campaign_plan
 
 
+def test_missing_direct_data_changes_research_method_before_completion(tmp_path):
+    plan_path = tmp_path / "plan.yaml"
+    plan_path.write_text(yaml.safe_dump(campaign_plan()))
+    approaches = []
+
+    def provider(order):
+        approaches.append(order["recovery"]["approach"])
+        if order["recovery"]["approach"] != "bounded_inference":
+            return {"schema_version": "research-response/v1", "request_id": "capacity",
+                    "request_hash": order["request_hash"], "status": "unresolved",
+                    "reason": "No direct target disclosure found."}
+        assert order["repair_feedback"] == "No direct target disclosure found."
+        return answer(order)
+
+    result, _ = execute_campaign(plan_path, tmp_path / "work", provider=provider)
+    assert result["status"] == "READY_FOR_COMPILATION"
+    assert approaches == ["primary", "independent", "peer_adjusted", "bounded_inference"]
+    assert len(list((tmp_path / "work/attempt_history").glob("*.json"))) == 4
+
+
+def test_exhausted_research_is_resumable_without_fabricated_value(tmp_path):
+    plan_path = tmp_path / "plan.yaml"
+    plan_path.write_text(yaml.safe_dump(campaign_plan()))
+    workspace = tmp_path / "work"
+    result, merged = execute_campaign(plan_path, workspace, provider=lambda _: None)
+    assert result["status"] == "WORK_REQUIRED" and merged is None
+    assert result["continuation"]["status"] == "RESEARCH_BUDGET_REACHED"
+    assert "value" not in result["outputs"]["capacity"]
+    resumed, _ = execute_campaign(plan_path, workspace, provider=answer)
+    assert resumed["status"] == "READY_FOR_COMPILATION"
+
+
 def test_cli_file_handoff_resume_and_changed_code_context(tmp_path, monkeypatch):
     import run_research_campaign as cli
     plan_path = tmp_path / "plan.yaml"

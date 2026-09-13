@@ -1,0 +1,212 @@
+{
+  "request_id": "research-to-final-report",
+  "base_revision": "4f4b6d55e001e1b7092f567a5cae9cac7eef14b7",
+  "clauses": [
+    {
+      "clause_id": "A",
+      "desired_outcome": "유사 사업 이익률을 근거와 조정폭으로 재현",
+      "scopes": [
+        "model_input"
+      ],
+      "root_unit_ids": [
+        "EVIDENCE_TO_ASSUMPTION_BRIDGE"
+      ],
+      "acceptance_criteria": [
+        "peer margin tests and source/metric binding"
+      ],
+      "material_report_claim": false,
+      "claim_treatment": "not_applicable"
+    },
+    {
+      "clause_id": "B",
+      "desired_outcome": "자료 및 역할 보완 후 전체 투자보고서 완주",
+      "scopes": [
+        "model_input"
+      ],
+      "root_unit_ids": [
+        "FINAL_REPORT"
+      ],
+      "acceptance_criteria": [
+        "full pipeline recovery and immutable report artifacts"
+      ],
+      "material_report_claim": false,
+      "claim_treatment": "not_applicable"
+    },
+    {
+      "clause_id": "C",
+      "desired_outcome": "조사 경로 전환과 완주 CLI 및 조건부 보고서 통합",
+      "scopes": [
+        "model_input",
+        "report_content"
+      ],
+      "root_unit_ids": [
+        "FINAL_REPORT"
+      ],
+      "acceptance_criteria": [
+        "CLI peer inference to report and full regression"
+      ],
+      "material_report_claim": false,
+      "claim_treatment": "not_applicable"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "A",
+      "clause_ids": [
+        "A"
+      ],
+      "owner": "peer_margin",
+      "unit_ids": [
+        "ASSUMPTION_COMPILER",
+        "AUDIT_GATE",
+        "DETERMINISTIC_VALUATION",
+        "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+        "FINAL_REPORT",
+        "INTRINSIC_FREEZE",
+        "SCENARIO_ENGINE"
+      ],
+      "read_set": [
+        "AGENTS.md"
+      ],
+      "write_set": [
+        "src/valuation_engine/peer_margin_research.py",
+        "tests/test_peer_margin_research.py"
+      ],
+      "depends_on": [],
+      "output_ids": [
+        "유사 사업 이익률을 근거와 조정폭으로 재현"
+      ],
+      "validators": [
+        "peer margin tests and source/metric binding"
+      ]
+    },
+    {
+      "task_id": "B",
+      "clause_ids": [
+        "B"
+      ],
+      "owner": "completion_review",
+      "unit_ids": [
+        "ASSUMPTION_COMPILER",
+        "AUDIT_GATE",
+        "DETERMINISTIC_VALUATION",
+        "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+        "FINAL_REPORT",
+        "INTRINSIC_FREEZE",
+        "SCENARIO_ENGINE"
+      ],
+      "read_set": [
+        "AGENTS.md"
+      ],
+      "write_set": [
+        "scripts/research_report_completion.py",
+        "tests/test_research_report_completion.py"
+      ],
+      "depends_on": [],
+      "output_ids": [
+        "자료 및 역할 보완 후 전체 투자보고서 완주"
+      ],
+      "validators": [
+        "full pipeline recovery and immutable report artifacts"
+      ]
+    },
+    {
+      "task_id": "C",
+      "clause_ids": [
+        "C"
+      ],
+      "owner": "root",
+      "unit_ids": [
+        "ASSUMPTION_COMPILER",
+        "AUDIT_GATE",
+        "DETERMINISTIC_VALUATION",
+        "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+        "FINAL_REPORT",
+        "INTRINSIC_FREEZE",
+        "SCENARIO_ENGINE"
+      ],
+      "read_set": [
+        "AGENTS.md"
+      ],
+      "write_set": [
+        "src/valuation_engine/research_campaign.py",
+        "scripts/run_research_campaign.py",
+        "scripts/run_kr_live.py",
+        "src/valuation_engine/investor_report.py",
+        "tests/test_research_campaign_cli.py",
+        "tests/test_investor_report.py",
+        ".agents/skills/valuation-analysis/SKILL.md",
+        "SKILL.md",
+        "docs/RESEARCH_COMPLETION_DESIGN.md",
+        "docs/RESEARCH_CAMPAIGN_RUNBOOK.md",
+        "docs/V05_WORKFLOW_CONTRACT.md",
+        "docs/GENERIC_ENGINE_DESIGN.md",
+        "docs/README_V05_OPERATOR_INDEX.md",
+        "docs/research-completion-revision-plan.json"
+      ],
+      "depends_on": [
+        "A",
+        "B"
+      ],
+      "output_ids": [
+        "조사 경로 전환과 완주 CLI 및 조건부 보고서 통합"
+      ],
+      "validators": [
+        "CLI peer inference to report and full regression"
+      ]
+    }
+  ],
+  "waves": [
+    {
+      "ordinal": 1,
+      "task_ids": [
+        "A",
+        "B"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "task_ids": [
+        "C"
+      ]
+    }
+  ],
+  "selected_unit_ids": [
+    "ASSUMPTION_COMPILER",
+    "AUDIT_GATE",
+    "DETERMINISTIC_VALUATION",
+    "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+    "FINAL_REPORT",
+    "INTRINSIC_FREEZE",
+    "SCENARIO_ENGINE"
+  ],
+  "skipped_unit_ids": [
+    "BLIND_RED_TEAM_B",
+    "BROKER_RESEARCH",
+    "DECISION_IMPACT",
+    "DOCTRINE_CONSTITUTION",
+    "EVIDENCE_LEDGER",
+    "HIERARCHICAL_BETA_ENGINE",
+    "IMPACT_PROPAGATION",
+    "INDUSTRY_DNA_ROUTER",
+    "INDUSTRY_KNOWLEDGE",
+    "KNOWLEDGE_PLACEMENT_GATE",
+    "LLM_STAFF",
+    "MARKET_COMPARE",
+    "MODULE_PROMOTION",
+    "MODULE_REQUIREMENT_PLAN",
+    "PRIMARY_EVIDENCE_COLLECTION",
+    "REVISION_REQUEST_ORCHESTRATOR",
+    "ROCKET_INSIGHT_SCAN",
+    "SIGNAL_INTELLIGENCE",
+    "SOTP_AGGREGATOR",
+    "SOURCE_WATCH",
+    "STATE_LEARNING",
+    "STREET_GAP_ANALYZER",
+    "UPSTREAM_FUNDING_SCAN",
+    "VALUATION_CONTROL_PLANE",
+    "WACC_ENGINE",
+    "WARRANTED_PER_ENGINE"
+  ],
+  "plan_hash": "dbe494f8b9d1fbbd62eb94508c001b69477fb28cd5b2305bfb8393b60089ce9a"
+}
