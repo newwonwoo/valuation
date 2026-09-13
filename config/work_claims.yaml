@@ -142,3 +142,18 @@ claims:
       Replace the unweighted Korea Zinc scenario envelope with probabilities
       fitted on the issuer's own filed operating-margin history and conditioned
       on the achieved 2026 first-half result; regenerate the investor report.
+
+  - claim_id: korean-air-analysis-runtime
+    owner: codex
+    pull_request: 184
+    status: active
+    paths:
+      - "runs/korean-air-003490/**"
+      - "config/kr_industry_classification_map.yaml"
+      - "config/archetype_module_registry.yaml"
+      - "config/archetype_control_requirements.yaml"
+      - "config/valuation_method_capability_registry.yaml"
+      - "config/industry_taxonomy.yaml"
+    note: >-
+      Korean Air 003490 official-filing valuation; airline traffic/yield/lease
+      economics and public-source financial collection with canonical audits.
