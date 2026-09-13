@@ -1,0 +1,80 @@
+company_query: 대한항공
+run_id: LIVE-KOREAN-AIR-1
+as_of: '2026-09-13'
+jurisdiction: KR
+scenario_ids:
+- Down
+- Base
+- Bull
+segments:
+- segment_id: airline
+  method: airline_transport/traffic_yield_dcf
+- segment_id: aerospace
+  method: contracted_backlog/normalized_dcf
+- segment_id: hotel
+  method: asset_yield_nav/nav
+- segment_id: other
+  method: service_operations/normalized_service_dcf
+parent_adjustments:
+- asset_id: parent_noncontrolling_interest
+  assumption_key: parent_noncontrolling_interest_adjustment
+market_currency: KRW
+filing:
+  business_year: '2026'
+  report_code: '11012'
+  fs_div: CFS
+  fiscal_period_end: '2026-06-30'
+  segment_id: airline
+public_filing_facts_path: public_filing_facts.json
+extra_required_evidence:
+- revenue
+- operating_income
+- net_income
+- total_assets
+- total_liabilities
+- total_equity
+- cash_and_cash_equivalents
+- down_airline_fcff_year_1
+- down_aerospace_fcff_year_1
+- down_other_fcff_year_1
+- down_airline_fcff_year_2
+- down_aerospace_fcff_year_2
+- down_other_fcff_year_2
+- down_airline_fcff_year_3
+- down_aerospace_fcff_year_3
+- down_other_fcff_year_3
+- down_airline_fcff_year_4
+- down_aerospace_fcff_year_4
+- down_other_fcff_year_4
+- down_airline_fcff_year_5
+- down_aerospace_fcff_year_5
+- down_other_fcff_year_5
+- down_airline_terminal_growth
+- down_airline_terminal_roic
+- down_aerospace_terminal_growth
+- down_aerospace_terminal_roic
+- down_other_terminal_growth
+- down_other_terminal_roic
+- down_hotel_gross_asset_value
+- bull_airline_fcff_year_1
+- bull_aerospace_fcff_year_1
+- bull_other_fcff_year_1
+- bull_airline_fcff_year_2
+- bull_aerospace_fcff_year_2
+- bull_other_fcff_year_2
+- bull_airline_fcff_year_3
+- bull_aerospace_fcff_year_3
+- bull_other_fcff_year_3
+- bull_airline_fcff_year_4
+- bull_aerospace_fcff_year_4
+- bull_other_fcff_year_4
+- bull_airline_fcff_year_5
+- bull_aerospace_fcff_year_5
+- bull_other_fcff_year_5
+- bull_airline_terminal_growth
+- bull_airline_terminal_roic
+- bull_aerospace_terminal_growth
+- bull_aerospace_terminal_roic
+- bull_other_terminal_growth
+- bull_other_terminal_roic
+- bull_hotel_gross_asset_value

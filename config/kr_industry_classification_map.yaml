@@ -7,6 +7,66 @@ purpose: >-
   reviewable, versioned data change - not an inference made silently at runtime.
   Longest ksic_prefix match wins (5821 games beats 582 software).
 classifications:
+  - ksic_prefix: "31311"
+    # https://www.igs.or.kr/prtl/code/selectStdInduClsfItemCd.do?pageIndex=97
+    # Contracted aircraft/program route; a mixed segment must declare its proxy limits.
+    label: 유인 항공기, 항공 우주선 및 보조장치 제조업
+    sector_adapter: transport_industrial.aerospace_defense
+    archetypes: [contracted_backlog]
+    structure:
+      revenue_recognition: contracted_program_delivery_or_progress
+      price_formation: negotiated_program_and_maintenance_prices
+      asset_ownership: aircraft_assembly_and_maintenance_facilities
+      capital_intensity: high
+      regulation_intensity: high
+      customer_structure: aircraft_OEMs_and_government_program_customers
+      reinvestment_model: program_tooling_and_maintenance_facilities
+      cashflow_duration: multiyear_contracts_and_aftermarket
+  - ksic_prefix: "68112"
+    # Nonresidential rental proxy must explicitly disclose any hotel operations.
+    label: 비주거용 건물 임대업
+    sector_adapter: real_assets.property_hospitality
+    archetypes: [asset_yield_nav]
+    structure:
+      revenue_recognition: rent_accrual_and_disclosed_hospitality_services
+      price_formation: occupancy_rents_and_property_cash_yield
+      asset_ownership: owned_income_producing_property
+      capital_intensity: very-high
+      regulation_intensity: medium
+      customer_structure: commercial_tenants_and_disclosed_hotel_guests
+      reinvestment_model: property_refurbishment_and_maintenance
+      cashflow_duration: property_economic_life_and_lease_terms
+  - ksic_prefix: "62021"
+    # https://www.narastat.kr/sps/esi/cmm/suplst.do?pageIndex=2703
+    # A mixed segment is RESOLVED_VALUATION_PROXY, never a claimed single industry.
+    label: 컴퓨터 시스템 통합 자문 및 구축 서비스업
+    sector_adapter: software.it_services
+    archetypes: [service_operations]
+    structure:
+      revenue_recognition: service_delivery_and_contract_progress
+      price_formation: contracted_service_fees_over_labor_and_subcontractor_cost
+      asset_ownership: service_personnel_and_delivery_infrastructure
+      capital_intensity: medium
+      regulation_intensity: medium
+      customer_structure: enterprise_and_affiliated_service_customers
+      reinvestment_model: personnel_systems_and_contract_working_capital
+      cashflow_duration: contract_renewals_and_service_customer_retention
+  - ksic_prefix: "511"
+    # KSIC 511/5110/51100: 항공 여객 운송업; segment evidence remains authoritative.
+    # Official statistical survey classification (page 9):
+    # https://www.k-stat.go.kr/comb100/file-download?fileDnKey=sZdvSnzKYFmf41GYBuoQtojg0SdT5ISM0m%2BY5I8BXBw%3D
+    label: 항공 여객 운송업
+    sector_adapter: transport_industrial.airline
+    archetypes: [airline_transport]
+    structure:
+      revenue_recognition: passenger_and_cargo_transport_delivery
+      price_formation: route_yield_and_load_factor_over_fuel_and_nonfuel_costs
+      asset_ownership: owned_and_leased_aircraft
+      capital_intensity: high
+      regulation_intensity: high
+      customer_structure: passenger_and_cargo_customers_across_route_networks
+      reinvestment_model: fleet_replacement_growth_and_lease_funding
+      cashflow_duration: traffic_cycle_with_long_lived_fleet_commitments
   - ksic_prefix: "261"
     label: 반도체 제조업
     sector_adapter: semiconductor.manufacturing

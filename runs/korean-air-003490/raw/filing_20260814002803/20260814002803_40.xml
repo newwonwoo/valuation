@@ -1,0 +1,281 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>16. 투자부동산 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>투자부동산에 대한 세부 정보 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='141' height='23'>토지</TH>
+  <TH width='141' height='23'>건물</TH>
+  <TH width='141' height='23'>자산의 분류 &nbsp;합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='141' height='23'>기초 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>77,391</TD>
+  <TD width='141' height='23' align='RIGHT'>191,810</TD>
+  <TD width='141' height='23' align='RIGHT'>269,201</TD>
+</TR>
+<TR height='53'>
+  <TD width='141' height='46'>감가상각비, 투자부동산</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+  <TD width='141' height='46' align='RIGHT'>(3,559)</TD>
+  <TD width='141' height='46' align='RIGHT'>(3,559)</TD>
+</TR>
+<TR height='76'>
+  <TD width='141' height='69'>기타 변동을 통한 증가(감소), 투자부동산</TD>
+  <TD width='141' height='69' align='RIGHT'>578</TD>
+  <TD width='141' height='69' align='RIGHT'>12,287</TD>
+  <TD width='141' height='69' align='RIGHT'>12,865</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>기말 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>77,969</TD>
+  <TD width='141' height='23' align='RIGHT'>200,538</TD>
+  <TD width='141' height='23' align='RIGHT'>278,507</TD>
+</TR>
+<TR height='145'>
+  <TD width='141' height='138'>기타증감에 대한 기술</TD>
+  <TD width='141' height='138'>　</TD>
+  <TD width='141' height='138'>　</TD>
+  <TD width='141' height='138'>기타증감은 주로 유형자산과 투자부동산의 대체 및 해외소재 자산의 환율변동효과로 인하여 발생하였습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='141' height='23'>토지</TH>
+  <TH width='141' height='23'>건물</TH>
+  <TH width='141' height='23'>자산의 분류 &nbsp;합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='141' height='23'>기초 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>77,399</TD>
+  <TD width='141' height='23' align='RIGHT'>200,464</TD>
+  <TD width='141' height='23' align='RIGHT'>277,863</TD>
+</TR>
+<TR height='53'>
+  <TD width='141' height='46'>감가상각비, 투자부동산</TD>
+  <TD width='141' height='46' align='RIGHT'>0</TD>
+  <TD width='141' height='46' align='RIGHT'>(3,680)</TD>
+  <TD width='141' height='46' align='RIGHT'>(3,680)</TD>
+</TR>
+<TR height='76'>
+  <TD width='141' height='69'>기타 변동을 통한 증가(감소), 투자부동산</TD>
+  <TD width='141' height='69' align='RIGHT'>9,696</TD>
+  <TD width='141' height='69' align='RIGHT'>(8,887)</TD>
+  <TD width='141' height='69' align='RIGHT'>809</TD>
+</TR>
+<TR height='30'>
+  <TD width='141' height='23'>기말 투자부동산</TD>
+  <TD width='141' height='23' align='RIGHT'>87,095</TD>
+  <TD width='141' height='23' align='RIGHT'>187,897</TD>
+  <TD width='141' height='23' align='RIGHT'>274,992</TD>
+</TR>
+<TR height='145'>
+  <TD width='141' height='138'>기타증감에 대한 기술</TD>
+  <TD width='141' height='138'>　</TD>
+  <TD width='141' height='138'>　</TD>
+  <TD width='141' height='138'>기타증감은 주로 유형자산과 투자부동산의 대체 및 해외소재 자산의 환율변동효과로 인하여 발생하였습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>투자부동산과 관련된 손익에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>투자부동산에서 발생한 임대수익</TD>
+  <TD width='291' height='23' align='RIGHT'>14,420</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>투자부동산에서 발생한 임대수익</TD>
+  <TD width='291' height='23' align='RIGHT'>14,352</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

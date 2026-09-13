@@ -1,0 +1,135 @@
+target_id: KR:DART:00113526
+as_of: '2026-09-13'
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260910000442
+cash_flow_currency: KRW
+risk_free_rate:
+  time: '20260911'
+  value: 4.571
+  unit: 연%
+  name: 국고채 10년 관측수익률(국가부도스프레드 차감 전 대용치)
+  source_ref: https://m.stock.naver.com/front-api/marketIndex/prices?category=bond&reutersCode=KR10YT%3DRR&page=1
+country_risk:
+  country: Korea
+  as_of: '2026-01-05'
+  mature_market_erp: 0.0423
+  country_risk_premium: 0.006390645163649599
+  total_equity_risk_premium: 0.0486906451636496
+  adjusted_default_spread: 0.004195048511608233
+  corporate_tax_rate: 0.264
+  rating: Aa2
+  source_ref: https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctryprem.html
+country_risk_lambda: 1.0
+country_risk_exposure_source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260910000442
+marginal_debt:
+  series:
+    time: '20260911'
+    value: 4.843
+    unit: 연%
+    name: '분석가 추정 Kd: 118-2 실제쿠폰4.710% + KR3Y(9/11 4.023%-6/10 3.890%); 신용스프레드불변 가정'
+    source_ref: https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/audita_20262Q.pdf#page=33
+  credit_rating: A0
+  maturity: 3Y
+  rating_source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260910000442
+beta_levels:
+  L1_BROAD_SECTOR:
+    selection_rationale: 항공·육상 운송망, 연료비와 경기민감 물량을 공유하는 광의 운송업 관측치. 여객 항공사와의 차이는 상위
+      레벨에만 배치하며 FedEx는 2026년 분사로 제외.
+    risk_driver_features:
+    - transport demand
+    - fuel costs
+    - network fixed costs
+    peers:
+    - peer_id: UPS
+      beta:
+        beta: 0.854369977361254
+        observations: 103
+        start_date: '2024-09-19'
+        end_date: '2026-09-11'
+        benchmark: S&P 500 USD price index; weekly adjusted peer USD log returns
+        method: OLS with intercept, weekly log returns, 103 observations; Lufthansa
+          adjusted EUR close converted to USD at common-date EURUSD
+      beta_standard_error: 0.2301796996334176
+      capital:
+        debt: 28673
+        equity_market_value: 85316.37600440826
+        tax_rate: 0.25
+        as_of: '2026-09-11'
+        source_ref: https://www.sec.gov/Archives/edgar/data/1090727/000162828026053249/ups-20260630.htm
+      beta_source_ref: https://query1.finance.yahoo.com/v8/finance/chart/UPS?range=2y&interval=1d
+  L2_INDUSTRY:
+    selection_rationale: United Airlines는 장거리 국제선과 네트워크 운항, 항공기 투자 및 리스 부담을 공유하는 독립
+      상장 항공사로 산업 레벨에 배치.
+    risk_driver_features:
+    - international passenger demand
+    - aircraft capex
+    - lease financing
+    peers:
+    - peer_id: UAL
+      beta:
+        beta: 1.2800174266889632
+        observations: 103
+        start_date: '2024-09-19'
+        end_date: '2026-09-11'
+        benchmark: S&P 500 USD price index; weekly adjusted peer USD log returns
+        method: OLS with intercept, weekly log returns, 103 observations; Lufthansa
+          adjusted EUR close converted to USD at common-date EURUSD
+      beta_standard_error: 0.3513693795425917
+      capital:
+        debt: 33668
+        equity_market_value: 35645.789741984896
+        tax_rate: 0.25
+        as_of: '2026-09-11'
+        source_ref: https://data.sec.gov/api/xbrl/companyfacts/CIK0000100517.json
+      beta_source_ref: https://query1.finance.yahoo.com/v8/finance/chart/UAL?range=2y&interval=1d
+  L3_RISK_DRIVER_SUBINDUSTRY:
+    selection_rationale: Delta는 프리미엄 여객 수요, 항공유 비용, 보유·리스 혼합 항공기와 정비 사업 동인을 공유한다.
+      대한항공 지분 관계는 있으나 연결 종속회사가 아닌 독립 상장사.
+    risk_driver_features:
+    - premium passenger yield
+    - fuel costs
+    - lease financing
+    - maintenance
+    peers:
+    - peer_id: DAL
+      beta:
+        beta: 1.1303232466390383
+        observations: 103
+        start_date: '2024-09-19'
+        end_date: '2026-09-11'
+        benchmark: S&P 500 USD price index; weekly adjusted peer USD log returns
+        method: OLS with intercept, weekly log returns, 103 observations; Lufthansa
+          adjusted EUR close converted to USD at common-date EURUSD
+      beta_standard_error: 0.2944391140722003
+      capital:
+        debt: 21733
+        equity_market_value: 52550.658735587465
+        tax_rate: 0.25
+        as_of: '2026-09-11'
+        source_ref: https://ir.delta.com/news/news-details/2026/Delta-Air-Lines-Announces-June-Quarter-2026-Financial-Results/default.aspx
+      beta_source_ref: https://query1.finance.yahoo.com/v8/finance/chart/DAL?range=2y&interval=1d
+  L4_ECONOMIC_TWINS:
+    selection_rationale: Lufthansa Group은 네트워크 FSC 여객, 독립 화물 운항 및 대형 외부 MRO를 병행해 대한항공
+      경제적 동인에 가장 가깝다. 유럽 노무·허브 구조 차이는 남으며 완전 동일 기업이라는 뜻은 아니다.
+    risk_driver_features:
+    - network FSC
+    - dedicated cargo
+    - external MRO
+    - fleet investment
+    peers:
+    - peer_id: LHA.DE
+      beta:
+        beta: 1.042824749875287
+        observations: 103
+        start_date: '2024-09-19'
+        end_date: '2026-09-11'
+        benchmark: S&P 500 USD price index; weekly adjusted peer USD log returns
+        method: OLS with intercept, weekly log returns, 103 observations; Lufthansa
+          adjusted EUR close converted to USD at common-date EURUSD
+      beta_standard_error: 0.28293131497872664
+      capital:
+        debt: 14840
+        equity_market_value: 9282.460285118255
+        tax_rate: 0.2993
+        as_of: '2026-09-11'
+        source_ref: https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/financial-reports/interims-reports/LH-QR-2026-2-e.pdf
+      beta_source_ref: https://query1.finance.yahoo.com/v8/finance/chart/LHA.DE?range=2y&interval=1d

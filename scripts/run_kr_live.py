@@ -998,6 +998,10 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None,
         ),
         forecast_years=int(config.get("forecast_years", 5)),
         declared_underwriting_path=str(underwriting_path or run_dir / "declarations" / "underwriting.yaml"),
+        public_filing_facts_path=(
+            str(_resolve(run_dir, config["public_filing_facts_path"]))
+            if config.get("public_filing_facts_path") else None
+        ),
         declared_risk_path=_optional_path(run_dir, "risk_pack.yaml"),
         declared_segments_path=_optional_path(run_dir, "segments.yaml"),
         declared_broker_research_path=_optional_path(

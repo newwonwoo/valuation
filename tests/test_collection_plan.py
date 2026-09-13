@@ -845,3 +845,39 @@ def test_primary_evidence_stage_fails_closed_when_plan_has_no_runnable_collector
         "core:required_evidence:utilization",
         "core:required_evidence:backlog",
     )
+
+
+def test_same_metric_in_two_segments_selects_only_scope_compatible_collectors(tmp_path):
+    plan = module_plan(
+        segment_plan('airline', required=('operating_income',)),
+        segment_plan('other', required=('operating_income',)),
+    )
+    core = CollectorCapability('core-financials', 'KR_OPENDART', ('operating_income',),
+        ('KR',), 'tests.public-core', supported_segments=('airline',))
+    other = CollectorCapability('other-financials', 'KR_OPENDART', ('operating_income',),
+        ('KR',), 'tests.other', supported_segments=('other',))
+    result = compile_company_collection_plan(plan, company=identity(),
+        source_registry_path=source_registry(tmp_path), collector_capabilities=(core, other))
+    assert result.authorized_segment_metrics_for_collector('core-financials') == (('airline', 'operating_income'),)
+    assert result.authorized_segment_metrics_for_collector('other-financials') == (('other', 'operating_income'),)
+    # No emitted amount is relabelled to another segment to satisfy coverage.
+    from valuation_engine.evidence_collection import EvidenceCollectionRequest
+    from valuation_engine.live_runtime import LiveCollectorProvider, _task_bound_collector
+    for capability, segment in ((core, 'airline'), (other, 'other')):
+        source = LiveCollectorProvider(capability, collector('KR_OPENDART', evidence('operating_income', segment=segment)))
+        bound = _task_bound_collector(source, task=result.task_for_collector(capability.collector_id), collection_plan=result)
+        batch = bound(EvidenceCollectionRequest('T', ('operating_income',)))
+        assert {(record.segment, record.metric) for record in batch.records} == {(segment, 'operating_income')}
+
+
+def test_other_only_metric_does_not_schedule_airline_core_collector(tmp_path):
+    plan = module_plan(segment_plan('airline', required=('backlog',)),
+                       segment_plan('other', required=('operating_income',)))
+    core = CollectorCapability('core-financials', 'KR_OPENDART', ('operating_income',),
+        ('KR',), 'tests.public-core', supported_segments=('airline',))
+    result = compile_company_collection_plan(plan, company=identity(),
+        source_registry_path=source_registry(tmp_path), collector_capabilities=(core,))
+    assert 'core-financials' not in result.runnable_collector_ids
+    core.validate()
+    assert not core.supports(metric='operating_income', jurisdiction='KR', segment_id='other')
+    assert core.supports(metric='operating_income', jurisdiction='KR', segment_id='airline')

@@ -1,0 +1,79 @@
+{
+  "capacity_audit_result": {
+    "report": {
+      "findings": [
+        {
+          "check": "material_capacity_evidence_consumed",
+          "passed": true,
+          "blocking": true,
+          "detail": "every Core-required project has capacity/CAPEX/ramp consumption"
+        },
+        {
+          "check": "capacity_commitment_hash_binding",
+          "passed": true,
+          "blocking": true,
+          "detail": "one capacity assessment hash is shared across all downstream artifacts"
+        },
+        {
+          "check": "core_capacity_floor_respected",
+          "passed": true,
+          "blocking": true,
+          "detail": "valuation consumed the complete mandatory Core capacity path"
+        },
+        {
+          "check": "baseline_capacity_not_double_counted",
+          "passed": true,
+          "blocking": true,
+          "detail": "baseline-included projects are not added again"
+        },
+        {
+          "check": "dcf_per_capacity_consistency",
+          "passed": true,
+          "blocking": true,
+          "detail": "PER is bound to the same capacity valuation identity"
+        },
+        {
+          "check": "capacity_double_count",
+          "passed": true,
+          "blocking": true,
+          "detail": "Core capacity Evidence is not reused as Expansion PER evidence"
+        }
+      ]
+    },
+    "audit_hash": "70234dcc54ee218f94099b7b42a1190631e080d24e264406baab929a8f12314d"
+  },
+  "capacity_audit_hash": "70234dcc54ee218f94099b7b42a1190631e080d24e264406baab929a8f12314d",
+  "audit_hash": "16e13bed5d67a7430cec7b8990d0bf86abb767ccba526ddca6e6084a16fe00fe",
+  "completed_stages": [
+    "COMPANY_RESOLUTION",
+    "LOAD_COMPANY_STATE",
+    "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT",
+    "SOURCE_FRESHNESS_PRECHECK",
+    "SEGMENT_DECOMPOSITION",
+    "INDUSTRY_DNA_ROUTE",
+    "MODULE_REQUIREMENT_PLAN",
+    "PRIMARY_EVIDENCE_COLLECTION",
+    "EVIDENCE_LEDGER",
+    "ROCKET_INSIGHT_SCAN",
+    "UPSTREAM_FUNDING_SCAN",
+    "RESEARCHER_A",
+    "BLIND_RED_TEAM_B",
+    "RESEARCH_LOOP",
+    "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+    "SCENARIO_BUILD",
+    "VALUATION_METHOD_INTENT",
+    "HIERARCHICAL_BETA_ESTIMATION",
+    "WACC_VALIDATION",
+    "DETERMINISTIC_VALUATION",
+    "HIERARCHICAL_WARRANTED_PER",
+    "DCF_PER_ASSUMPTION_CONSISTENCY_GATE",
+    "CROSS_METHOD_DOUBLE_COUNT_AUDIT",
+    "PROBABILITY_DISTRIBUTION_ANALYSIS",
+    "AUDIT_GATE",
+    "INTRINSIC_VALUE_FREEZE"
+  ],
+  "pre_market": true,
+  "note": "Strict runtime scrubs frozen values when a later stage is incomplete. Stage trace confirms INTRINSIC_VALUE_FREEZE passed before external target quote retrieval. Underwriting values are preserved and will be identical in the completed canonical run.",
+  "underwriting_sha256": "a607f29ce33bb505220ed65a37d4008d95f6bc07cbf4e50cbc85744074fbce2d",
+  "model_sha256": "82af805e515bde3f72e84628494b289e57e9e8abf4065550d8d39f2390277a67"
+}

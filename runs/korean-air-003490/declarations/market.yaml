@@ -1,0 +1,4 @@
+market_comparison:
+  price: 28950
+  as_of: '2026-09-11'
+  source_ref: https://m.stock.naver.com/api/stock/003490/price

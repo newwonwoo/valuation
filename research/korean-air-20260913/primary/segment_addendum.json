@@ -1,0 +1,230 @@
+{
+  "unit": "KRW_million",
+  "column_order": [
+    "항공운송",
+    "항공우주",
+    "호텔",
+    "기타",
+    "연결조정",
+    "합계"
+  ],
+  "source_2025": "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20254Q.pdf#page=37",
+  "source_2026H1": "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/audita_20262Q.pdf#page=15",
+  "FY2025": {
+    "gross_revenue": [
+      24960049,
+      779626,
+      199325,
+      420589,
+      -1134047,
+      25225542
+    ],
+    "intersegment_revenue": [
+      -989553,
+      -3,
+      -49018,
+      -95473,
+      1134047,
+      0
+    ],
+    "external_revenue": [
+      23970496,
+      779623,
+      150307,
+      325116,
+      0,
+      25225542
+    ],
+    "ebit": [
+      1174260,
+      24234,
+      -21766,
+      33191,
+      -96330,
+      1113589
+    ],
+    "DA_expense_signed": [
+      -3115458,
+      -14577,
+      -44250,
+      -5662,
+      324783,
+      -2855164
+    ],
+    "assets": [
+      50122091,
+      1858549,
+      1625986,
+      1217807,
+      -4418361,
+      50406072
+    ]
+  },
+  "H12026": {
+    "gross_revenue": [
+      13731769,
+      462301,
+      110834,
+      192909,
+      -609695,
+      13888118
+    ],
+    "intersegment_revenue": [
+      -543614,
+      0,
+      -14698,
+      -51383,
+      609695,
+      0
+    ],
+    "external_revenue": [
+      13188155,
+      462301,
+      96136,
+      141526,
+      0,
+      13888118
+    ],
+    "ebit": [
+      347182,
+      36712,
+      -8115,
+      7437,
+      -72943,
+      310273
+    ],
+    "DA_expense_signed": [
+      -1650836,
+      -10007,
+      -23153,
+      -2895,
+      176807,
+      -1510084
+    ],
+    "assets": [
+      52685723,
+      1914947,
+      1738126,
+      1179768,
+      -4694178,
+      52824386
+    ]
+  },
+  "H12025": {
+    "external_revenue": [
+      12193700,
+      297405,
+      83283,
+      128180,
+      0,
+      12702568
+    ],
+    "ebit": [
+      821342,
+      4980,
+      -11326,
+      15334,
+      -29200,
+      801130
+    ],
+    "DA_expense_signed": [
+      -1510069,
+      -6583,
+      -23569,
+      -2710,
+      149779,
+      -1393152
+    ],
+    "assets": [
+      47285653,
+      1551211,
+      1544087,
+      998459,
+      -4041411,
+      47337999
+    ]
+  },
+  "subsidiaries_source_pdfpage": 21,
+  "subsidiary_direct_group_holdings_percent": {
+    "아시아나항공": 63.88,
+    "진에어": 54.91,
+    "에어부산": 58.4,
+    "한국공항": 59.54,
+    "아시아나아이디티": 76.22,
+    "한진정보통신": 99.35,
+    "아이에이티": 100,
+    "항공종합서비스": 100,
+    "에어서울": 100,
+    "Hanjin Int’l Corp.": 100
+  },
+  "subsidiary_notes": [
+    "Direct holdings of companies within group; not ultimate Korean Air economic ownership. AirBusan ownership increased41.91to58.40 following Asiana perpetual convertible exercise.",
+    "Hanjin Int’l Corp. hotel and building rental US; 항공종합서비스 hotel operating agency. Waikiki not confirmed in this report; KAL호텔네트워크 is otherrelatedparty not consolidated subsidiary.",
+    "Asiana acquired deemed2024-12-31 (annualPDF38); all2025 and2026H1 income includesAsiana.",
+    "Segment 기타 includes engine repair though 항공우주 includes maintenance; do not indiscriminately shift all MRO to aerospace."
+  ],
+  "minorities_H12026": {
+    "source_pdfpage": 23,
+    "order": [
+      "아시아나항공",
+      "진에어",
+      "한국공항"
+    ],
+    "effective_nci_percent": [
+      36.1,
+      44.38,
+      38.36
+    ],
+    "book_nci": [
+      -79203,
+      153014,
+      153486
+    ],
+    "profit_nci": [
+      -293223,
+      -18559,
+      7791
+    ],
+    "group_total_nci": 252744.277299,
+    "warning": "Book NCI includes perpetual capital securities, seeannualPDF75:199389mn. Avoid combined NCI + separately subtracting same perpetual claim."
+  },
+  "shares": {
+    "source_annual_pdfpage": 74,
+    "common_issued": 368220661,
+    "preferred_issued": 1110794,
+    "treasury_allclasses_2025end": 54,
+    "h12026_weighted_common_outstanding": 368220609,
+    "h12026_weighted_preferred_outstanding": 1110791,
+    "source_h1_pdfpage": 49,
+    "warning": "Share counts confirmed DART;8/25cancellation expected notactualconfirmation; merger count20,337,721plan confirmedJun26DART.",
+    "source_h1_dart": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=7&offset=53971&length=51030&dtd=dart4.xsd",
+    "h12026_treasury_common": 52,
+    "h12026_treasury_preferred": 3,
+    "h12026_end_common_outstanding": 368220609,
+    "h12026_end_preferred_outstanding": 1110791,
+    "cancellation_board_date": "2026-08-12",
+    "cancellation_effective_planned_date": "2026-08-25",
+    "cancellation_shares_common": 52,
+    "cancellation_shares_preferred": 3
+  },
+  "noncash_ROU_additions": {
+    "source_h1_pdfpage": 55,
+    "H12026": 524532,
+    "H12025": 1481560
+  },
+  "merger_exact": {
+    "source": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260626000005&dcmNo=11448313&eleId=3&offset=7532&length=37052&dtd=dart4.xsd",
+    "publication_date": "2026-06-26",
+    "planned_common_new_shares": 20337721,
+    "preferred_new_shares": 0,
+    "planned_common_outstanding_derived": 388558330,
+    "preferred_outstanding": 1110791,
+    "effective_merger_planned": "2026-12-16",
+    "registration_planned": "2026-12-17",
+    "listing_planned": "2027-01-04",
+    "excluded_asiana_shares": "KoreanAir-held Asiana shares; Asiana treasury incl future share appraisal purchases",
+    "status": "plan confirmed filed, future closing not achieved",
+    "latest_corroboration_source": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260724000006&dcmNo=11493004&eleId=1&offset=620&length=3475&dtd=dart4.xsd",
+    "latest_corroboration_date": "2026-07-24"
+  }
+}

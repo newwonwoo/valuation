@@ -1,0 +1,376 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>2-1. 연결 재무상태표</A></P>
+<TABLE class='nb' width='595'>
+<COLGROUP>
+<COL width='595'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='586' height='23' align='CENTER'>연결 재무상태표</TD>
+</TR>
+<TR height='30'>
+  <TD width='586' height='23' align='CENTER'>제 65 기 반기말 2026.06.30 현재</TD>
+</TR>
+<TR height='30'>
+  <TD width='586' height='23' align='CENTER'>제 64 기말 &nbsp; &nbsp; &nbsp; &nbsp;2025.12.31 현재</TD>
+</TR>
+<TR height='30'>
+  <TD width='586' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='596'>
+<COLGROUP>
+<COL width='296'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='287' height='23'>　</TH>
+  <TH width='141' height='23'>제 65 기 반기말</TH>
+  <TH width='141' height='23'>제 64 기말</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='287' height='23'>자산</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　유동 자산</TD>
+  <TD width='141' height='23' align='RIGHT'>10,114,707,875,491</TD>
+  <TD width='141' height='23' align='RIGHT'>9,709,042,248,026</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　현금및현금성자산 (주5)</TD>
+  <TD width='141' height='23' align='RIGHT'>2,601,185,116,110</TD>
+  <TD width='141' height='23' align='RIGHT'>1,869,988,073,408</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　단기금융상품 (주6,20)</TD>
+  <TD width='141' height='23' align='RIGHT'>2,820,684,411,001</TD>
+  <TD width='141' height='23' align='RIGHT'>3,474,508,250,345</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　유동성리스채권 (주10,15)</TD>
+  <TD width='141' height='23' align='RIGHT'>189,418,378,531</TD>
+  <TD width='141' height='23' align='RIGHT'>95,462,010,824</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　매출채권및기타채권 (주7,37)</TD>
+  <TD width='141' height='23' align='RIGHT'>1,657,333,075,507</TD>
+  <TD width='141' height='23' align='RIGHT'>1,466,989,933,425</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　미청구공사 (주29)</TD>
+  <TD width='141' height='23' align='RIGHT'>12,526,957,428</TD>
+  <TD width='141' height='23' align='RIGHT'>109,383,517,796</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　유동성상각후원가측정금융자산 (주8)</TD>
+  <TD width='141' height='23' align='RIGHT'>15,031,250,103</TD>
+  <TD width='141' height='23' align='RIGHT'>18,028,489,104</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　유동성파생상품자산 (주25,37)</TD>
+  <TD width='141' height='23' align='RIGHT'>212,234,220,814</TD>
+  <TD width='141' height='23' align='RIGHT'>67,916,018,487</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　재고자산</TD>
+  <TD width='141' height='23' align='RIGHT'>1,658,887,862,444</TD>
+  <TD width='141' height='23' align='RIGHT'>1,448,919,064,257</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　당기 법인세자산</TD>
+  <TD width='141' height='23' align='RIGHT'>6,303,331,206</TD>
+  <TD width='141' height='23' align='RIGHT'>11,011,578,137</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　기타 유동 금융자산 (주9)</TD>
+  <TD width='141' height='23' align='RIGHT'>52,034,665,572</TD>
+  <TD width='141' height='23' align='RIGHT'>60,810,432,921</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　기타 유동 자산 (주18,29)</TD>
+  <TD width='141' height='23' align='RIGHT'>887,635,678,576</TD>
+  <TD width='141' height='23' align='RIGHT'>1,084,591,951,123</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　매각예정자산 (주38,40)</TD>
+  <TD width='141' height='23' align='RIGHT'>1,432,928,199</TD>
+  <TD width='141' height='23' align='RIGHT'>1,432,928,199</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　비유동 자산</TD>
+  <TD width='141' height='23' align='RIGHT'>42,709,678,016,607</TD>
+  <TD width='141' height='23' align='RIGHT'>40,697,029,850,919</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　장기금융상품 (주6)</TD>
+  <TD width='141' height='23' align='RIGHT'>28,006,670,540</TD>
+  <TD width='141' height='23' align='RIGHT'>24,942,676,479</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　장기매출채권및기타채권 (주7,37)</TD>
+  <TD width='141' height='23' align='RIGHT'>7,269,543,120</TD>
+  <TD width='141' height='23' align='RIGHT'>3,012,478,780</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　공정가치측정금융자산 (주6,8)</TD>
+  <TD width='141' height='23' align='RIGHT'>748,742,974,752</TD>
+  <TD width='141' height='23' align='RIGHT'>718,597,391,982</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　상각후원가측정금융자산 (주8)</TD>
+  <TD width='141' height='23' align='RIGHT'>40,431,730,702</TD>
+  <TD width='141' height='23' align='RIGHT'>40,165,592,317</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　리스채권 (주10,15)</TD>
+  <TD width='141' height='23' align='RIGHT'>680,341,372,062</TD>
+  <TD width='141' height='23' align='RIGHT'>688,830,702,340</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　파생상품자산 (주25,37)</TD>
+  <TD width='141' height='23' align='RIGHT'>93,625,261,291</TD>
+  <TD width='141' height='23' align='RIGHT'>75,412,715,628</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　관계기업투자 (주12,15,37)</TD>
+  <TD width='141' height='23' align='RIGHT'>182,371,315,008</TD>
+  <TD width='141' height='23' align='RIGHT'>173,023,003,155</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　유형자산 (주13,14,15,38)</TD>
+  <TD width='141' height='23' align='RIGHT'>34,530,984,595,535</TD>
+  <TD width='141' height='23' align='RIGHT'>32,943,641,212,277</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　투자부동산 (주13,15,16)</TD>
+  <TD width='141' height='23' align='RIGHT'>278,507,133,070</TD>
+  <TD width='141' height='23' align='RIGHT'>269,201,210,345</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　무형자산 (주15,17)</TD>
+  <TD width='141' height='23' align='RIGHT'>2,929,457,225,556</TD>
+  <TD width='141' height='23' align='RIGHT'>2,986,314,751,084</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　이연법인세자산</TD>
+  <TD width='141' height='23' align='RIGHT'>2,478,926,990,474</TD>
+  <TD width='141' height='23' align='RIGHT'>2,268,926,673,167</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　기타금융자산 (주9)</TD>
+  <TD width='141' height='23' align='RIGHT'>417,622,315,968</TD>
+  <TD width='141' height='23' align='RIGHT'>387,673,573,710</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　기타자산 (주18,29)</TD>
+  <TD width='141' height='23' align='RIGHT'>293,390,888,529</TD>
+  <TD width='141' height='23' align='RIGHT'>117,287,869,655</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　자산총계</TD>
+  <TD width='141' height='23' align='RIGHT'>52,824,385,892,098</TD>
+  <TD width='141' height='23' align='RIGHT'>50,406,072,098,945</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>부채</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　유동 부채</TD>
+  <TD width='141' height='23' align='RIGHT'>17,234,748,936,334</TD>
+  <TD width='141' height='23' align='RIGHT'>15,081,470,974,297</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　매입채무및기타채무 (주19,37)</TD>
+  <TD width='141' height='23' align='RIGHT'>2,781,316,821,991</TD>
+  <TD width='141' height='23' align='RIGHT'>2,777,306,333,940</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　단기차입금 (주15,20,37)</TD>
+  <TD width='141' height='23' align='RIGHT'>2,118,102,740,000</TD>
+  <TD width='141' height='23' align='RIGHT'>2,027,009,390,000</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　유동성장기부채 (주6,15,20,37,38)</TD>
+  <TD width='141' height='23' align='RIGHT'>2,845,740,693,081</TD>
+  <TD width='141' height='23' align='RIGHT'>1,437,525,929,701</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　유동성리스부채 (주15,21,37,38)</TD>
+  <TD width='141' height='23' align='RIGHT'>2,271,812,087,892</TD>
+  <TD width='141' height='23' align='RIGHT'>2,190,549,115,697</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　유동성파생상품부채 (주25,37)</TD>
+  <TD width='141' height='23' align='RIGHT'>9,564,470,383</TD>
+  <TD width='141' height='23' align='RIGHT'>33,438,899,568</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　유동성충당부채 (주23)</TD>
+  <TD width='141' height='23' align='RIGHT'>645,201,311,351</TD>
+  <TD width='141' height='23' align='RIGHT'>638,924,453,187</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　유동성이연수익 (주24,29)</TD>
+  <TD width='141' height='23' align='RIGHT'>924,849,317,223</TD>
+  <TD width='141' height='23' align='RIGHT'>910,667,144,227</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　초과청구공사 (주29)</TD>
+  <TD width='141' height='23' align='RIGHT'>115,677,446,332</TD>
+  <TD width='141' height='23' align='RIGHT'>25,549,833,702</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　당기 법인세부채</TD>
+  <TD width='141' height='23' align='RIGHT'>120,350,868,219</TD>
+  <TD width='141' height='23' align='RIGHT'>240,952,361,164</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　기타 유동 금융부채 (주26)</TD>
+  <TD width='141' height='23' align='RIGHT'>43,632,398,844</TD>
+  <TD width='141' height='23' align='RIGHT'>10,370,259,402</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　기타 유동 부채 (주27,29)</TD>
+  <TD width='141' height='23' align='RIGHT'>5,358,500,781,018</TD>
+  <TD width='141' height='23' align='RIGHT'>4,789,177,253,709</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　비유동 부채</TD>
+  <TD width='141' height='23' align='RIGHT'>24,824,347,663,165</TD>
+  <TD width='141' height='23' align='RIGHT'>23,865,502,697,355</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　장기매입채무및기타채무 (주19,37)</TD>
+  <TD width='141' height='23' align='RIGHT'>25,967,193,865</TD>
+  <TD width='141' height='23' align='RIGHT'>29,473,919,478</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　장기차입금 (주15,20,37,38)</TD>
+  <TD width='141' height='23' align='RIGHT'>3,029,260,890,737</TD>
+  <TD width='141' height='23' align='RIGHT'>3,277,465,790,737</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　사채 (주20,37,38)</TD>
+  <TD width='141' height='23' align='RIGHT'>2,981,046,896,858</TD>
+  <TD width='141' height='23' align='RIGHT'>2,623,259,302,544</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　자산유동화차입금 (주20,38)</TD>
+  <TD width='141' height='23' align='RIGHT'>0</TD>
+  <TD width='141' height='23' align='RIGHT'>85,236,008,707</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　리스부채 (주15,21,37,38)</TD>
+  <TD width='141' height='23' align='RIGHT'>11,400,593,147,377</TD>
+  <TD width='141' height='23' align='RIGHT'>10,847,009,942,214</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　순확정급여부채 (주22)</TD>
+  <TD width='141' height='23' align='RIGHT'>2,759,171,036,070</TD>
+  <TD width='141' height='23' align='RIGHT'>2,751,991,507,469</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　충당부채 (주23,39)</TD>
+  <TD width='141' height='23' align='RIGHT'>1,008,172,111,876</TD>
+  <TD width='141' height='23' align='RIGHT'>895,634,734,056</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　이연수익 (주24,29)</TD>
+  <TD width='141' height='23' align='RIGHT'>3,142,656,714,476</TD>
+  <TD width='141' height='23' align='RIGHT'>2,871,143,746,628</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　파생상품부채 (주25,37)</TD>
+  <TD width='141' height='23' align='RIGHT'>19,438,370,487</TD>
+  <TD width='141' height='23' align='RIGHT'>8,000,641,816</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　이연법인세부채</TD>
+  <TD width='141' height='23' align='RIGHT'>166,358,752,329</TD>
+  <TD width='141' height='23' align='RIGHT'>169,973,231,451</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　기타금융부채 (주26)</TD>
+  <TD width='141' height='23' align='RIGHT'>44,316,608,145</TD>
+  <TD width='141' height='23' align='RIGHT'>63,628,127,881</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　기타부채 (주27,29)</TD>
+  <TD width='141' height='23' align='RIGHT'>247,365,940,945</TD>
+  <TD width='141' height='23' align='RIGHT'>242,685,744,374</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　부채총계</TD>
+  <TD width='141' height='23' align='RIGHT'>42,059,096,599,499</TD>
+  <TD width='141' height='23' align='RIGHT'>38,946,973,671,652</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>자본</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+  <TD width='141' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　지배기업의 소유주에게 귀속되는 자본</TD>
+  <TD width='141' height='23' align='RIGHT'>10,512,545,015,300</TD>
+  <TD width='141' height='23' align='RIGHT'>10,954,036,206,278</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　자본금 (주1)</TD>
+  <TD width='141' height='23' align='RIGHT'>1,846,657,275,000</TD>
+  <TD width='141' height='23' align='RIGHT'>1,846,657,275,000</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　기타불입자본</TD>
+  <TD width='141' height='23' align='RIGHT'>4,108,758,831,320</TD>
+  <TD width='141' height='23' align='RIGHT'>4,144,648,643,694</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　기타자본구성요소 (주14,28,40)</TD>
+  <TD width='141' height='23' align='RIGHT'>1,119,092,852,936</TD>
+  <TD width='141' height='23' align='RIGHT'>1,013,337,904,353</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　　이익잉여금</TD>
+  <TD width='141' height='23' align='RIGHT'>3,438,036,056,044</TD>
+  <TD width='141' height='23' align='RIGHT'>3,949,392,383,231</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　비지배지분 (주11)</TD>
+  <TD width='141' height='23' align='RIGHT'>252,744,277,299</TD>
+  <TD width='141' height='23' align='RIGHT'>505,062,221,015</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>　자본총계</TD>
+  <TD width='141' height='23' align='RIGHT'>10,765,289,292,599</TD>
+  <TD width='141' height='23' align='RIGHT'>11,459,098,427,293</TD>
+</TR>
+<TR height='30'>
+  <TD width='287' height='23'>부채와자본총계</TD>
+  <TD width='141' height='23' align='RIGHT'>52,824,385,892,098</TD>
+  <TD width='141' height='23' align='RIGHT'>50,406,072,098,945</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

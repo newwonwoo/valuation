@@ -588,11 +588,18 @@ class KRLiveRuntimeFactory:
     capability_registry: MethodCapabilityRegistry | None = None
     impact_config: GenericDecisionImpactConfig | None = None
     initial_data: Mapping[str, object] = field(default_factory=dict)
+    core_collector_override: LiveCollectorProvider | None = None
 
     def validate(self) -> None:
         self.network.validate()
         self.filing.validate()
         self.scenario_binding_spec.validate()
+        if self.core_collector_override is not None:
+            capability = self.core_collector_override.capability
+            if capability.source_id != self.filing.source_id:
+                raise ValueError("core collector override must use canonical filing source")
+            if set(capability.supported_metrics) - set(self.filing.supported_metrics):
+                raise ValueError("core collector override exceeds filing metric scope")
         for choice in self.method_choices:
             choice.validate()
         if (
@@ -625,11 +632,12 @@ class KRLiveRuntimeFactory:
             self.network.fetch_validated_corp_archive,
             api_key=self.network.api_key,
         )
-        collector = LiveCollectorProvider(
+        collector = self.core_collector_override or LiveCollectorProvider(
             capability=CollectorCapability(
                 collector_id=self.filing.collector_id,
                 source_id=self.filing.source_id,
                 supported_metrics=self.filing.supported_metrics,
+                supported_segments=(self.filing.segment_id,),
                 jurisdictions=(_KR_JURISDICTION,),
                 implementation_ref=(
                     "valuation_engine.kr_opendart_provider."

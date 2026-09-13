@@ -193,6 +193,7 @@ class GenericKRRuntimeSpec:
     require_broker_research: bool = False
     #: Prepared, committed metric-to-receipt declarations for model-free replay.
     table_cell_receipts_path: str | Path | None = None
+    public_filing_facts_path: str | Path | None = None
     #: Extra evidence metrics this run requires beyond the method's assumption
     #: keys — the door multi-scenario runs use for scenario-qualified inputs
     #: (down_normalized_ebitda, bull_normalized_multiple, …): declaring them
@@ -570,16 +571,26 @@ def build_generic_kr_runtime_factory(
                 )
             )
         )
-    # Extras route to the segment whose namespace prefixes them (multi-segment
-    # scenario variants like steel_down_fcff_year_1); anything unprefixed —
-    # every single-segment extra — binds to the filing segment as before.
+    # Match the compiler's complete economic key first. Scenario qualifiers
+    # precede that complete key: down_aerospace_fcff_year_1. Legacy segment-
+    # prefixed research metrics retain their existing routing as a fallback.
+    from .assumption_compiler import _metric_matches_key
+
     for extra in spec.extra_required_evidence:
-        owner = next(
-            (
-                segment_id
-                for segment_id in keys_by_segment
-                if multi_segment and extra.startswith(f"{segment_id}_")
-            ),
+        canonical_owners = tuple(
+            segment_id for segment_id, segment_keys in keys_by_segment.items()
+            if multi_segment and any(
+                key.startswith(f"{segment_id}_") and _metric_matches_key(extra, key)
+                for key in segment_keys
+            )
+        )
+        if len(canonical_owners) > 1:
+            raise GenericValuationPlanError(
+                f"extra evidence metric {extra!r} matches multiple segment keys"
+            )
+        owner = canonical_owners[0] if canonical_owners else next(
+            (segment_id for segment_id in keys_by_segment
+             if multi_segment and extra.startswith(f"{segment_id}_")),
             spec.filing.segment_id,
         )
         additional_required[owner] = tuple(
@@ -596,7 +607,15 @@ def build_generic_kr_runtime_factory(
                 )
             )
         )
+    core_collector_override = None
+    if spec.public_filing_facts_path is not None:
+        from .public_filing_facts import public_filing_fact_provider
+
+        core_collector_override = public_filing_fact_provider(
+            spec.public_filing_facts_path, filing=spec.filing, run_as_of=spec.as_of
+        )
     return KRLiveRuntimeFactory(
+        core_collector_override=core_collector_override,
         network=network,
         filing=spec.filing,
         extensions=extensions,

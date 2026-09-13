@@ -1,0 +1,857 @@
+{
+  "schema": "korean-air-driver-model/v1",
+  "as_of": "2026-09-13",
+  "unit": "KRW_billion",
+  "tax_rate": 0.264,
+  "periods": [
+    "12 months ending 2027-09-13",
+    "12 months ending 2028-09-13",
+    "12 months ending 2029-09-13",
+    "12 months ending 2030-09-13",
+    "12 months ending 2031-09-13"
+  ],
+  "scenarios": {
+    "Down": {
+      "inputs": {
+        "growth": [
+          0.01,
+          0.02,
+          0.02,
+          0.02,
+          0.02
+        ],
+        "margin": [
+          0.035,
+          0.04,
+          0.045,
+          0.05,
+          0.055
+        ],
+        "synergy": [
+          0,
+          30,
+          60,
+          90,
+          100
+        ],
+        "integration": [
+          220,
+          160,
+          80,
+          30,
+          0
+        ],
+        "capex": [
+          4900,
+          4800,
+          4300,
+          3700,
+          3305.8893458639527
+        ],
+        "rou": [
+          1200,
+          1100,
+          1100,
+          1000,
+          950
+        ],
+        "da": [
+          3400,
+          3550,
+          3700,
+          3850,
+          4000
+        ],
+        "aero_growth": [
+          0.1,
+          0.1,
+          0.08,
+          0.06,
+          0.04
+        ],
+        "aero_margin": [
+          0.055,
+          0.06,
+          0.065,
+          0.065,
+          0.065
+        ],
+        "engine_sales": [
+          5,
+          15,
+          30,
+          45,
+          60
+        ],
+        "engine_margin": [
+          0.025,
+          0.035,
+          0.04,
+          0.045,
+          0.045
+        ],
+        "hotel_value": 950,
+        "g": 0.015,
+        "roic": 0.065
+      },
+      "paths": [
+        {
+          "year": 1,
+          "airline": {
+            "revenue": 25214.60051,
+            "ebit": 662.5110178500001,
+            "margin": 0.035,
+            "synergy": 0,
+            "integration": 220,
+            "depreciation": 3400,
+            "cash_capex": 4900,
+            "rou_additions": 1200,
+            "delta_nwc": 7.489485299999978,
+            "fcff": -2219.8813761624
+          },
+          "aerospace": {
+            "revenue": 1038.9709,
+            "ebit": 57.1433995,
+            "depreciation": 23.8963307,
+            "capex": 41.558836,
+            "delta_nwc": 17.001342000000005,
+            "fcff": 7.393694732000004
+          },
+          "other": {
+            "existing_revenue": 341.84662,
+            "engine_external_revenue": 5,
+            "engine_ebit_margin": 0.025,
+            "ebit": 18.9265641,
+            "depreciation": 6.243239159999999,
+            "capex": 88.6711655,
+            "delta_nwc": 0.8384619999999985,
+            "fcff": -69.33643716239999
+          }
+        },
+        {
+          "year": 2,
+          "airline": {
+            "revenue": 25718.8925202,
+            "ebit": 898.755700808,
+            "margin": 0.04,
+            "synergy": 30,
+            "integration": 160,
+            "depreciation": 3550,
+            "cash_capex": 4800,
+            "rou_additions": 1100,
+            "delta_nwc": 15.128760305999966,
+            "fcff": -1703.6445645113117
+          },
+          "aerospace": {
+            "revenue": 1142.8679900000002,
+            "ebit": 68.5720794,
+            "depreciation": 26.285963770000002,
+            "capex": 45.71471960000001,
+            "delta_nwc": 18.701476200000027,
+            "fcff": 12.338818408399977
+          },
+          "other": {
+            "existing_revenue": 345.2650862,
+            "engine_external_revenue": 15,
+            "engine_ebit_margin": 0.035,
+            "ebit": 19.514579741,
+            "depreciation": 6.484771551599999,
+            "capex": 49.006627155000004,
+            "delta_nwc": 1.3418466200000012,
+            "fcff": -29.500971534024007
+          }
+        },
+        {
+          "year": 3,
+          "airline": {
+            "revenue": 26233.270370604,
+            "ebit": 1160.49716667718,
+            "margin": 0.045,
+            "synergy": 60,
+            "integration": 80,
+            "depreciation": 3700,
+            "cash_capex": 4300,
+            "rou_additions": 1100,
+            "delta_nwc": 15.431335512120057,
+            "fcff": -861.3054208377159
+          },
+          "aerospace": {
+            "revenue": 1234.2974292000004,
+            "ebit": 80.22933289800002,
+            "depreciation": 28.388840871600006,
+            "capex": 49.37189716800002,
+            "delta_nwc": 16.45729905600003,
+            "fcff": 21.608433660527975
+          },
+          "other": {
+            "existing_revenue": 348.71773706199997,
+            "engine_external_revenue": 30,
+            "engine_ebit_margin": 0.04,
+            "ebit": 20.37947553841,
+            "depreciation": 6.816919267115999,
+            "capex": 9.467943426549999,
+            "delta_nwc": 1.8452650861999986,
+            "fcff": 10.503004750635757
+          }
+        },
+        {
+          "year": 4,
+          "airline": {
+            "revenue": 26757.935778016083,
+            "ebit": 1397.8967889008043,
+            "margin": 0.05,
+            "synergy": 90,
+            "integration": 30,
+            "depreciation": 3850,
+            "cash_capex": 3700,
+            "rou_additions": 1000,
+            "delta_nwc": 15.739962222362445,
+            "fcff": 163.11207440862975
+          },
+          "aerospace": {
+            "revenue": 1308.3552749520004,
+            "ebit": 85.04309287188003,
+            "depreciation": 30.092171323896007,
+            "capex": 52.33421099808002,
+            "delta_nwc": 13.330412235360008,
+            "fcff": 27.01926444415969
+          },
+          "other": {
+            "existing_revenue": 352.20491443261994,
+            "engine_external_revenue": 45,
+            "engine_ebit_margin": 0.045,
+            "ebit": 21.396270293794096,
+            "depreciation": 7.149688459787159,
+            "capex": 9.9301228608155,
+            "delta_nwc": 1.8487177370619976,
+            "fcff": 11.118502798142117
+          }
+        },
+        {
+          "year": 5,
+          "airline": {
+            "revenue": 27293.094493576406,
+            "ebit": 1601.1201971467024,
+            "margin": 0.055,
+            "synergy": 100,
+            "integration": 0,
+            "depreciation": 4000,
+            "cash_capex": 3305.8893458639527,
+            "rou_additions": 950,
+            "delta_nwc": 16.054761466809687,
+            "fcff": 906.48035776921
+          },
+          "aerospace": {
+            "revenue": 1360.6894859500806,
+            "ebit": 88.44481658675524,
+            "depreciation": 31.29585817685185,
+            "capex": 36.89771212208631,
+            "delta_nwc": 9.420157979654427,
+            "fcff": 50.07337308296297
+          },
+          "other": {
+            "existing_revenue": 355.72696357694616,
+            "engine_external_revenue": 60,
+            "engine_ebit_margin": 0.045,
+            "ebit": 22.264982996732037,
+            "depreciation": 7.483085344385031,
+            "capex": 9.412502157397357,
+            "delta_nwc": 1.8522049144326218,
+            "fcff": 12.60540575814983
+          }
+        }
+      ],
+      "valuation_assumptions": {
+        "airline_fcff_year_1": -2219.8813761624,
+        "aerospace_fcff_year_1": 7.393694732000004,
+        "other_fcff_year_1": -69.33643716239999,
+        "airline_fcff_year_2": -1703.6445645113117,
+        "aerospace_fcff_year_2": 12.338818408399977,
+        "other_fcff_year_2": -29.500971534024007,
+        "airline_fcff_year_3": -861.3054208377159,
+        "aerospace_fcff_year_3": 21.608433660527975,
+        "other_fcff_year_3": 10.503004750635757,
+        "airline_fcff_year_4": 163.11207440862975,
+        "aerospace_fcff_year_4": 27.01926444415969,
+        "other_fcff_year_4": 11.118502798142117,
+        "airline_fcff_year_5": 906.48035776921,
+        "aerospace_fcff_year_5": 50.07337308296297,
+        "other_fcff_year_5": 12.60540575814983,
+        "airline_terminal_growth": 0.015,
+        "airline_terminal_roic": 0.065,
+        "aerospace_terminal_growth": 0.015,
+        "aerospace_terminal_roic": 0.065,
+        "other_terminal_growth": 0.015,
+        "other_terminal_roic": 0.065,
+        "hotel_gross_asset_value": 950
+      }
+    },
+    "Base": {
+      "inputs": {
+        "growth": [
+          0.035,
+          0.04,
+          0.04,
+          0.035,
+          0.03
+        ],
+        "margin": [
+          0.05,
+          0.06,
+          0.07,
+          0.0775,
+          0.08
+        ],
+        "synergy": [
+          30,
+          90,
+          150,
+          180,
+          200
+        ],
+        "integration": [
+          180,
+          120,
+          60,
+          20,
+          0
+        ],
+        "capex": [
+          5000,
+          4800,
+          4400,
+          3900,
+          3699.321271451168
+        ],
+        "rou": [
+          1200,
+          1150,
+          1100,
+          1050,
+          1000
+        ],
+        "da": [
+          3450,
+          3650,
+          3850,
+          4050,
+          4250
+        ],
+        "aero_growth": [
+          0.18,
+          0.16,
+          0.12,
+          0.1,
+          0.07
+        ],
+        "aero_margin": [
+          0.075,
+          0.08,
+          0.085,
+          0.09,
+          0.09
+        ],
+        "engine_sales": [
+          15,
+          40,
+          75,
+          110,
+          140
+        ],
+        "engine_margin": [
+          0.045,
+          0.055,
+          0.065,
+          0.075,
+          0.075
+        ],
+        "hotel_value": 1250,
+        "g": 0.02,
+        "roic": 0.08
+      },
+      "paths": [
+        {
+          "year": 1,
+          "airline": {
+            "revenue": 25838.724285,
+            "ebit": 1141.9362142500001,
+            "margin": 0.05,
+            "synergy": 30,
+            "integration": 180,
+            "depreciation": 3450,
+            "cash_capex": 5000,
+            "rou_additions": 1200,
+            "delta_nwc": 26.213198549999976,
+            "fcff": -1935.7481448620001
+          },
+          "aerospace": {
+            "revenue": 1114.53242,
+            "ebit": 83.58993149999999,
+            "depreciation": 25.63424566,
+            "capex": 44.581296800000004,
+            "delta_nwc": 30.602415599999997,
+            "fcff": 11.972722843999993
+          },
+          "other": {
+            "existing_revenue": 352.00048,
+            "engine_external_revenue": 15,
+            "engine_ebit_margin": 0.045,
+            "ebit": 27.075035999999997,
+            "depreciation": 6.606008639999999,
+            "capex": 89.175012,
+            "delta_nwc": 2.8538479999999993,
+            "fcff": -65.495624864
+          }
+        },
+        {
+          "year": 2,
+          "airline": {
+            "revenue": 26872.2732564,
+            "ebit": 1582.3363953839998,
+            "margin": 0.06,
+            "synergy": 90,
+            "integration": 120,
+            "depreciation": 3650,
+            "cash_capex": 4800,
+            "rou_additions": 1150,
+            "delta_nwc": 31.006469141999986,
+            "fcff": -1166.4068821393764
+          },
+          "aerospace": {
+            "revenue": 1292.8576071999998,
+            "ebit": 103.42860857599999,
+            "depreciation": 29.735724965599996,
+            "capex": 51.714304287999994,
+            "delta_nwc": 32.09853369599997,
+            "fcff": 22.04634289353603
+          },
+          "other": {
+            "existing_revenue": 366.0804992,
+            "engine_external_revenue": 40,
+            "engine_ebit_margin": 0.055,
+            "ebit": 29.65603744,
+            "depreciation": 7.3094489856,
+            "capex": 50.15201248,
+            "delta_nwc": 3.908001920000004,
+            "fcff": -24.923721858560008
+          }
+        },
+        {
+          "year": 3,
+          "airline": {
+            "revenue": 27947.164186656002,
+            "ebit": 2046.30149306592,
+            "margin": 0.07,
+            "synergy": 150,
+            "integration": 60,
+            "depreciation": 3850,
+            "cash_capex": 4400,
+            "rou_additions": 1100,
+            "delta_nwc": 32.24672790768007,
+            "fcff": -176.16882901116247
+          },
+          "aerospace": {
+            "revenue": 1448.000520064,
+            "ebit": 123.08004420544002,
+            "depreciation": 33.304011961472,
+            "capex": 57.92002080256,
+            "delta_nwc": 27.925724315520036,
+            "fcff": 38.04517937859581
+          },
+          "other": {
+            "existing_revenue": 380.72371916800006,
+            "engine_external_revenue": 75,
+            "engine_ebit_margin": 0.065,
+            "ebit": 33.4292789376,
+            "depreciation": 8.203026945024,
+            "capex": 11.393092979200002,
+            "delta_nwc": 4.964321996800004,
+            "fcff": 16.449561267097593
+          }
+        },
+        {
+          "year": 4,
+          "airline": {
+            "revenue": 28925.31493318896,
+            "ebit": 2401.7119073221447,
+            "margin": 0.0775,
+            "synergy": 180,
+            "integration": 20,
+            "depreciation": 4050,
+            "cash_capex": 3900,
+            "rou_additions": 1050,
+            "delta_nwc": 29.344522395988786,
+            "fcff": 838.3154413931098
+          },
+          "aerospace": {
+            "revenue": 1592.8005720704002,
+            "ebit": 143.35205148633602,
+            "depreciation": 36.63441315761921,
+            "capex": 63.71202288281601,
+            "delta_nwc": 26.064009361152028,
+            "fcff": 52.36549080759447
+          },
+          "other": {
+            "existing_revenue": 395.95266793472007,
+            "engine_external_revenue": 110,
+            "engine_ebit_margin": 0.075,
+            "ebit": 37.946450095104005,
+            "depreciation": 9.10714802282496,
+            "capex": 12.648816698368002,
+            "delta_nwc": 5.022894876672002,
+            "fcff": 19.364023717781503
+          }
+        },
+        {
+          "year": 5,
+          "airline": {
+            "revenue": 29793.07438118463,
+            "ebit": 2583.4459504947704,
+            "margin": 0.08,
+            "synergy": 200,
+            "integration": 0,
+            "depreciation": 4250,
+            "cash_capex": 3699.321271451168,
+            "rou_additions": 1000,
+            "delta_nwc": 26.032783439870034,
+            "fcff": 1426.062164673113
+          },
+          "aerospace": {
+            "revenue": 1704.2966121153283,
+            "ebit": 153.38669509037953,
+            "depreciation": 39.198822078652555,
+            "capex": 47.35268676719532,
+            "delta_nwc": 20.06928720808706,
+            "fcff": 84.6694556898895
+          },
+          "other": {
+            "existing_revenue": 411.7907746521089,
+            "engine_external_revenue": 140,
+            "engine_ebit_margin": 0.075,
+            "ebit": 41.384308098908164,
+            "depreciation": 9.932233943737959,
+            "capex": 12.963135962198178,
+            "delta_nwc": 4.583810671738883,
+            "fcff": 22.844138070597307
+          }
+        }
+      ],
+      "valuation_assumptions": {
+        "airline_fcff_year_1": -1935.7481448620001,
+        "aerospace_fcff_year_1": 11.972722843999993,
+        "other_fcff_year_1": -65.495624864,
+        "airline_fcff_year_2": -1166.4068821393764,
+        "aerospace_fcff_year_2": 22.04634289353603,
+        "other_fcff_year_2": -24.923721858560008,
+        "airline_fcff_year_3": -176.16882901116247,
+        "aerospace_fcff_year_3": 38.04517937859581,
+        "other_fcff_year_3": 16.449561267097593,
+        "airline_fcff_year_4": 838.3154413931098,
+        "aerospace_fcff_year_4": 52.36549080759447,
+        "other_fcff_year_4": 19.364023717781503,
+        "airline_fcff_year_5": 1426.062164673113,
+        "aerospace_fcff_year_5": 84.6694556898895,
+        "other_fcff_year_5": 22.844138070597307,
+        "airline_terminal_growth": 0.02,
+        "airline_terminal_roic": 0.08,
+        "aerospace_terminal_growth": 0.02,
+        "aerospace_terminal_roic": 0.08,
+        "other_terminal_growth": 0.02,
+        "other_terminal_roic": 0.08,
+        "hotel_gross_asset_value": 1250
+      }
+    },
+    "Bull": {
+      "inputs": {
+        "growth": [
+          0.06,
+          0.065,
+          0.06,
+          0.05,
+          0.04
+        ],
+        "margin": [
+          0.065,
+          0.08,
+          0.09,
+          0.0975,
+          0.1
+        ],
+        "synergy": [
+          50,
+          130,
+          200,
+          230,
+          240
+        ],
+        "integration": [
+          150,
+          90,
+          35,
+          0,
+          0
+        ],
+        "capex": [
+          5300,
+          5100,
+          4750,
+          4250,
+          4156.769356709697
+        ],
+        "rou": [
+          1250,
+          1200,
+          1200,
+          1150,
+          1100
+        ],
+        "da": [
+          3500,
+          3750,
+          4050,
+          4350,
+          4650
+        ],
+        "aero_growth": [
+          0.25,
+          0.22,
+          0.18,
+          0.13,
+          0.1
+        ],
+        "aero_margin": [
+          0.08,
+          0.09,
+          0.1,
+          0.105,
+          0.105
+        ],
+        "engine_sales": [
+          25,
+          65,
+          115,
+          165,
+          210
+        ],
+        "engine_margin": [
+          0.05,
+          0.065,
+          0.08,
+          0.085,
+          0.085
+        ],
+        "hotel_value": 1550,
+        "g": 0.025,
+        "roic": 0.1
+      },
+      "paths": [
+        {
+          "year": 1,
+          "airline": {
+            "revenue": 26462.848060000004,
+            "ebit": 1620.0851239000003,
+            "margin": 0.065,
+            "synergy": 50,
+            "integration": 150,
+            "depreciation": 3500,
+            "cash_capex": 5300,
+            "rou_additions": 1250,
+            "delta_nwc": 44.93691180000009,
+            "fcff": -1902.5542606096003
+          },
+          "aerospace": {
+            "revenue": 1180.64875,
+            "ebit": 94.45190000000001,
+            "depreciation": 27.15492125,
+            "capex": 47.225950000000005,
+            "delta_nwc": 42.503355000000006,
+            "fcff": 6.942214649999997
+          },
+          "other": {
+            "existing_revenue": 358.76972,
+            "engine_external_revenue": 25,
+            "engine_ebit_margin": 0.05,
+            "ebit": 33.5392748,
+            "depreciation": 6.90785496,
+            "capex": 89.594243,
+            "delta_nwc": 4.530772000000002,
+            "fcff": -62.532253787200005
+          }
+        },
+        {
+          "year": 2,
+          "airline": {
+            "revenue": 28182.933183900004,
+            "ebit": 2294.6346547120006,
+            "margin": 0.08,
+            "synergy": 130,
+            "integration": 90,
+            "depreciation": 3750,
+            "cash_capex": 5100,
+            "rou_additions": 1200,
+            "delta_nwc": 51.602553717000006,
+            "fcff": -912.7514478489676
+          },
+          "aerospace": {
+            "revenue": 1440.3914750000001,
+            "ebit": 129.63523275,
+            "depreciation": 33.129003925,
+            "capex": 57.61565900000001,
+            "delta_nwc": 46.75369050000001,
+            "fcff": 24.17118572899998
+          },
+          "other": {
+            "existing_revenue": 380.2959032,
+            "engine_external_revenue": 65,
+            "engine_ebit_margin": 0.065,
+            "ebit": 38.451631288,
+            "depreciation": 8.0153262576,
+            "capex": 51.13239758,
+            "delta_nwc": 6.152618319999999,
+            "fcff": -20.969289014432004
+          }
+        },
+        {
+          "year": 3,
+          "airline": {
+            "revenue": 29873.909174934008,
+            "ebit": 2853.6518257440607,
+            "margin": 0.09,
+            "synergy": 200,
+            "integration": 35,
+            "depreciation": 4050,
+            "cash_capex": 4750,
+            "rou_additions": 1200,
+            "delta_nwc": 50.72927973102011,
+            "fcff": 149.55846401660895
+          },
+          "aerospace": {
+            "revenue": 1699.6619405000001,
+            "ebit": 169.96619405,
+            "depreciation": 39.0922246315,
+            "capex": 67.98647762,
+            "delta_nwc": 46.668683789999996,
+            "fcff": 49.532182042300015
+          },
+          "other": {
+            "existing_revenue": 403.113657392,
+            "engine_external_revenue": 115,
+            "engine_ebit_margin": 0.08,
+            "ebit": 45.48022916528,
+            "depreciation": 9.326045833056,
+            "capex": 12.952841434800002,
+            "delta_nwc": 7.2817754192,
+            "fcff": 22.564877644702083
+          }
+        },
+        {
+          "year": 4,
+          "airline": {
+            "revenue": 31367.60463368071,
+            "ebit": 3288.341451783869,
+            "margin": 0.0975,
+            "synergy": 230,
+            "integration": 0,
+            "depreciation": 4350,
+            "cash_capex": 4250,
+            "rou_additions": 1150,
+            "delta_nwc": 44.81086376240102,
+            "fcff": 1325.4084447505265
+          },
+          "aerospace": {
+            "revenue": 1920.617992765,
+            "ebit": 201.664889240325,
+            "depreciation": 44.174213833595,
+            "capex": 76.82471971060001,
+            "delta_nwc": 39.77208940769999,
+            "fcff": 76.00276319617419
+          },
+          "other": {
+            "existing_revenue": 427.30047683552,
+            "engine_external_revenue": 165,
+            "engine_ebit_margin": 0.085,
+            "ebit": 52.48204291519679,
+            "depreciation": 10.661408583039359,
+            "capex": 14.807511920887999,
+            "delta_nwc": 7.418681944352,
+            "fcff": 27.061998303384204
+          }
+        },
+        {
+          "year": 5,
+          "airline": {
+            "revenue": 32622.308819027938,
+            "ebit": 3502.230881902794,
+            "margin": 0.1,
+            "synergy": 240,
+            "integration": 0,
+            "depreciation": 4650,
+            "cash_capex": 4156.769356709697,
+            "rou_additions": 1100,
+            "delta_nwc": 37.641125560416874,
+            "fcff": 1933.2314468103423
+          },
+          "aerospace": {
+            "revenue": 2112.6797920415,
+            "ebit": 221.83137816435752,
+            "depreciation": 48.5916352169545,
+            "capex": 54.837484929426275,
+            "delta_nwc": 34.57112386977001,
+            "fcff": 122.45092074672533
+          },
+          "other": {
+            "existing_revenue": 452.93850544565123,
+            "engine_external_revenue": 210,
+            "engine_ebit_margin": 0.085,
+            "ebit": 58.614465490108614,
+            "depreciation": 11.93289309802172,
+            "capex": 15.654151887188581,
+            "delta_nwc": 7.063802861013125,
+            "fcff": 32.35518495053996
+          }
+        }
+      ],
+      "valuation_assumptions": {
+        "airline_fcff_year_1": -1902.5542606096003,
+        "aerospace_fcff_year_1": 6.942214649999997,
+        "other_fcff_year_1": -62.532253787200005,
+        "airline_fcff_year_2": -912.7514478489676,
+        "aerospace_fcff_year_2": 24.17118572899998,
+        "other_fcff_year_2": -20.969289014432004,
+        "airline_fcff_year_3": 149.55846401660895,
+        "aerospace_fcff_year_3": 49.532182042300015,
+        "other_fcff_year_3": 22.564877644702083,
+        "airline_fcff_year_4": 1325.4084447505265,
+        "aerospace_fcff_year_4": 76.00276319617419,
+        "other_fcff_year_4": 27.061998303384204,
+        "airline_fcff_year_5": 1933.2314468103423,
+        "aerospace_fcff_year_5": 122.45092074672533,
+        "other_fcff_year_5": 32.35518495053996,
+        "airline_terminal_growth": 0.025,
+        "airline_terminal_roic": 0.1,
+        "aerospace_terminal_growth": 0.025,
+        "aerospace_terminal_roic": 0.1,
+        "other_terminal_growth": 0.025,
+        "other_terminal_roic": 0.1,
+        "hotel_gross_asset_value": 1550
+      }
+    }
+  },
+  "method_notes": [
+    "Every forecast is analyst judgment. TTM group airline external revenue 24964.951 anchors the path; passenger yields and cargo fuel surcharges are not perpetual real growth.",
+    "Asiana is already consolidated. Only incremental operating synergies enter EBIT. Company 300bn total synergy includes financing benefit, therefore Base operating run-rate is only200bn. Do not also add that interest benefit to FCFF.",
+    "Existing connected-company gross EBIT is reconciled by allocating the current elimination cost to airline normalization. Modeled margins are AFTER recurring group eliminations and BEFORE incremental synergy/integration.",
+    "Lease-inclusive net debt requires depreciation including ROU and new ROU additions in economic CAPEX. Lease principal is not subtracted again. Aircraft order headline through late2030s is not wholly spent within five years.",
+    "Aerospace includes existing airframe contracts and maintenance. New engine external sales enter other only; internal engine savings remain within airline margin recovery, with no second sales contribution.",
+    "Engine comparison is Lufthansa Technik actual2025 adjustedEBIT/revenue 7.5%, not net margin. Base ramp margins 4.5/5.5/6.5/7.5/7.5% reflect scale/ramp discounts. Customer mix and adjusted accounting limit comparability.",
+    "Engine plant 578bn committed construction predates forecast; residual 80/40bn commissioning spend in first two periods is explicitly assigned to other, with group airline fleet capex excluding this residual.",
+    "Hotel value is gross operating asset NAV based on 1738.126bn reported assets, reduced for cash/intercompany/other nonoperating items already in the group bridge and operating underperformance. 950/1250/1550bn is an uncertain analyst range, not an appraisal. All group debt is deducted once through airline bridge.",
+    "Forecast periods end each September to match valuation date. June balance sheet rolls forward to September with explicit700bn funding assumption; this stub is not forecast-year1 cash flow.",
+    "Remaining post-merger NCI is a350bn proxy, anchored to252.744bn group book NCI less negative79.203bn Asiana NCI, allowing modest uplift. It includes perpetual claims; no second perpetual subtraction. Fair value uncertainty remains material.",
+    "Common and preferred shares are treated as equal economic participation for allocation, acknowledging preferred dividend rights. Merger shares are included; no extra Asiana EV is added.",
+    "Year5 is normalized terminal entry: each business net reinvestment=NOPAT*g/ROIC; cash CAPEX=NOPAT*g/ROIC+D&A−ROU additions−delta NWC. Earlier-year investment plans are not blindly perpetuated. All three component cash flows reconcile to this identity.",
+    "D&A anchor: airline grossTTM3256.225bn less group consolidation elimination351.811bn =2904.414bn net. Base year1 3450bn is a forecast increase545.586bn; 6200bn cash/lease additions at roughly11-year blended depreciable life support that scale. Not a filed D&A figure. Timing, retirements and fleet life remain uncertain.",
+    "Hotel scenario NAV is net of nonfinancial operating obligations as well as duplicated cash/intercompany assets. The aggregate188.126--788.126bn reduction from reported assets is an analyst reserve for these combined claims and realization discounts, not an itemized audited bridge. Financial debt remains entirely in the group debt bridge.",
+    "Year5 is a transition to terminal reinvestment intensity. Its explicit sales growth can differ from terminal g; following-year terminal NOPAT and FCFF then both grow at g. This is a stated transition approximation, not a claim of a fully steady year5 operating state."
+  ]
+}

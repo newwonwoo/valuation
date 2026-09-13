@@ -1,0 +1,1233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>4. 부문정보 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='720'></COL>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23' colspan='2'>영업부문에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='711' height='23'>당반기</TD>
+  <TD width='711' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1440'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1191' height='23' colspan='10'>부문의 합계</TH>
+  <TH width='111' height='143' rowspan='5'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='591' height='23' colspan='5'>영업부문</TH>
+  <TH width='591' height='23' colspan='5'>중요한 조정사항</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+  <TH width='471' height='23' colspan='4'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='111' height='53' rowspan='2'>기타부문</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='111' height='53' rowspan='2'>기타부문</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>항공운송</TH>
+  <TH width='111' height='23'>항공우주</TH>
+  <TH width='111' height='23'>호텔</TH>
+  <TH width='111' height='23'>항공운송</TH>
+  <TH width='111' height='23'>항공우주</TH>
+  <TH width='111' height='23'>호텔</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>수익</TD>
+  <TD width='111' height='23' align='RIGHT'>13,731,769</TD>
+  <TD width='111' height='23' align='RIGHT'>462,301</TD>
+  <TD width='111' height='23' align='RIGHT'>110,834</TD>
+  <TD width='111' height='23' align='RIGHT'>192,909</TD>
+  <TD width='111' height='23' align='RIGHT'>14,497,813</TD>
+  <TD width='111' height='23' align='RIGHT'>(543,614)</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>(14,698)</TD>
+  <TD width='111' height='23' align='RIGHT'>(51,383)</TD>
+  <TD width='111' height='23' align='RIGHT'>(609,695)</TD>
+  <TD width='111' height='23' align='RIGHT'>13,888,118</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>영업이익(손실)</TD>
+  <TD width='111' height='23' align='RIGHT'>347,182</TD>
+  <TD width='111' height='23' align='RIGHT'>36,712</TD>
+  <TD width='111' height='23' align='RIGHT'>(8,115)</TD>
+  <TD width='111' height='23' align='RIGHT'>7,437</TD>
+  <TD width='111' height='23' align='RIGHT'>383,216</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(72,943)</TD>
+  <TD width='111' height='23' align='RIGHT'>310,273</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>유무형자산상각비</TD>
+  <TD width='111' height='46' align='RIGHT'>(1,650,836)</TD>
+  <TD width='111' height='46' align='RIGHT'>(10,007)</TD>
+  <TD width='111' height='46' align='RIGHT'>(23,153)</TD>
+  <TD width='111' height='46' align='RIGHT'>(2,895)</TD>
+  <TD width='111' height='46' align='RIGHT'>(1,686,891)</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>176,807</TD>
+  <TD width='111' height='46' align='RIGHT'>(1,510,084)</TD>
+</TR>
+<TR height='122'>
+  <TD width='111' height='115'>각 보고부문이 수익을 창출하는 제품과 용역의 유형에 대한 기술</TD>
+  <TD width='111' height='115'>여객 및 화물운송</TD>
+  <TD width='111' height='115'>항공기 정비 및 항공기 부품제작</TD>
+  <TD width='111' height='115'>호텔숙박서비스</TD>
+  <TD width='111' height='115'>IT서비스, 항공기엔진수리, 전자상거래 등</TD>
+  <TD width='111' height='115'>　</TD>
+  <TD width='111' height='115'>여객 및 화물운송</TD>
+  <TD width='111' height='115'>항공기 정비 및 항공기 부품제작</TD>
+  <TD width='111' height='115'>호텔숙박서비스</TD>
+  <TD width='111' height='115'>IT서비스, 항공기엔진수리, 전자상거래 등</TD>
+  <TD width='111' height='115'>　</TD>
+  <TD width='111' height='115'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='1440'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='720'></COL>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23'>전반기</TD>
+  <TD width='711' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1440'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1191' height='23' colspan='10'>부문의 합계</TH>
+  <TH width='111' height='143' rowspan='5'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='591' height='23' colspan='5'>영업부문</TH>
+  <TH width='591' height='23' colspan='5'>중요한 조정사항</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+  <TH width='471' height='23' colspan='4'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='111' height='53' rowspan='2'>기타부문</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='111' height='53' rowspan='2'>기타부문</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>항공운송</TH>
+  <TH width='111' height='23'>항공우주</TH>
+  <TH width='111' height='23'>호텔</TH>
+  <TH width='111' height='23'>항공운송</TH>
+  <TH width='111' height='23'>항공우주</TH>
+  <TH width='111' height='23'>호텔</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>수익</TD>
+  <TD width='111' height='23' align='RIGHT'>12,606,795</TD>
+  <TD width='111' height='23' align='RIGHT'>297,405</TD>
+  <TD width='111' height='23' align='RIGHT'>97,664</TD>
+  <TD width='111' height='23' align='RIGHT'>173,853</TD>
+  <TD width='111' height='23' align='RIGHT'>13,175,717</TD>
+  <TD width='111' height='23' align='RIGHT'>(413,095)</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>(14,381)</TD>
+  <TD width='111' height='23' align='RIGHT'>(45,673)</TD>
+  <TD width='111' height='23' align='RIGHT'>(473,149)</TD>
+  <TD width='111' height='23' align='RIGHT'>12,702,568</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>영업이익(손실)</TD>
+  <TD width='111' height='23' align='RIGHT'>821,342</TD>
+  <TD width='111' height='23' align='RIGHT'>4,980</TD>
+  <TD width='111' height='23' align='RIGHT'>(11,326)</TD>
+  <TD width='111' height='23' align='RIGHT'>15,334</TD>
+  <TD width='111' height='23' align='RIGHT'>830,330</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(29,200)</TD>
+  <TD width='111' height='23' align='RIGHT'>801,130</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>유무형자산상각비</TD>
+  <TD width='111' height='46' align='RIGHT'>(1,510,069)</TD>
+  <TD width='111' height='46' align='RIGHT'>(6,583)</TD>
+  <TD width='111' height='46' align='RIGHT'>(23,569)</TD>
+  <TD width='111' height='46' align='RIGHT'>(2,710)</TD>
+  <TD width='111' height='46' align='RIGHT'>(1,542,931)</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>149,779</TD>
+  <TD width='111' height='46' align='RIGHT'>(1,393,152)</TD>
+</TR>
+<TR height='122'>
+  <TD width='111' height='115'>각 보고부문이 수익을 창출하는 제품과 용역의 유형에 대한 기술</TD>
+  <TD width='111' height='115'>여객 및 화물운송</TD>
+  <TD width='111' height='115'>항공기 정비 및 항공기 부품제작</TD>
+  <TD width='111' height='115'>호텔숙박서비스</TD>
+  <TD width='111' height='115'>IT서비스, 항공기엔진수리, 전자상거래 등</TD>
+  <TD width='111' height='115'>　</TD>
+  <TD width='111' height='115'>여객 및 화물운송</TD>
+  <TD width='111' height='115'>항공기 정비 및 항공기 부품제작</TD>
+  <TD width='111' height='115'>호텔숙박서비스</TD>
+  <TD width='111' height='115'>IT서비스, 항공기엔진수리, 전자상거래 등</TD>
+  <TD width='111' height='115'>　</TD>
+  <TD width='111' height='115'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='1440'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='720'></COL>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23' colspan='2'>영업부문 자산총계에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='711' height='23'>당반기</TD>
+  <TD width='711' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1440'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1191' height='23' colspan='10'>부문의 합계</TH>
+  <TH width='111' height='143' rowspan='5'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='591' height='23' colspan='5'>영업부문</TH>
+  <TH width='591' height='23' colspan='5'>중요한 조정사항</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+  <TH width='471' height='23' colspan='4'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='111' height='53' rowspan='2'>기타부문</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='111' height='53' rowspan='2'>기타부문</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>항공운송</TH>
+  <TH width='111' height='23'>항공우주</TH>
+  <TH width='111' height='23'>호텔</TH>
+  <TH width='111' height='23'>항공운송</TH>
+  <TH width='111' height='23'>항공우주</TH>
+  <TH width='111' height='23'>호텔</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>자산총계</TD>
+  <TD width='111' height='23' align='RIGHT'>52,685,723</TD>
+  <TD width='111' height='23' align='RIGHT'>1,914,947</TD>
+  <TD width='111' height='23' align='RIGHT'>1,738,126</TD>
+  <TD width='111' height='23' align='RIGHT'>1,179,768</TD>
+  <TD width='111' height='23' align='RIGHT'>57,518,564</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(4,694,178)</TD>
+  <TD width='111' height='23' align='RIGHT'>52,824,386</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>지분법적용 투자지분</TD>
+  <TD width='111' height='46' align='RIGHT'>182,371</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>182,371</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>182,371</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='1440'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='720'></COL>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23'>전반기</TD>
+  <TD width='711' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1440'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1191' height='23' colspan='10'>부문의 합계</TH>
+  <TH width='111' height='143' rowspan='5'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='591' height='23' colspan='5'>영업부문</TH>
+  <TH width='591' height='23' colspan='5'>중요한 조정사항</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+  <TH width='471' height='23' colspan='4'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='111' height='53' rowspan='2'>기타부문</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='111' height='53' rowspan='2'>기타부문</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>항공운송</TH>
+  <TH width='111' height='23'>항공우주</TH>
+  <TH width='111' height='23'>호텔</TH>
+  <TH width='111' height='23'>항공운송</TH>
+  <TH width='111' height='23'>항공우주</TH>
+  <TH width='111' height='23'>호텔</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>자산총계</TD>
+  <TD width='111' height='23' align='RIGHT'>47,285,653</TD>
+  <TD width='111' height='23' align='RIGHT'>1,551,211</TD>
+  <TD width='111' height='23' align='RIGHT'>1,544,087</TD>
+  <TD width='111' height='23' align='RIGHT'>998,459</TD>
+  <TD width='111' height='23' align='RIGHT'>51,379,410</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(4,041,411)</TD>
+  <TD width='111' height='23' align='RIGHT'>47,337,999</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>지분법적용 투자지분</TD>
+  <TD width='111' height='46' align='RIGHT'>159,809</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>3,259</TD>
+  <TD width='111' height='46' align='RIGHT'>163,068</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>163,068</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1440'>
+<COLGROUP>
+<COL width='1440'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1431' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='360'></COL>
+<COL width='360'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23' colspan='2'>영업부문 순매출액에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='351' height='23'>당반기</TD>
+  <TD width='351' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='720'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='111' height='53' rowspan='2'>기타부문</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>항공운송</TH>
+  <TH width='111' height='23'>항공우주</TH>
+  <TH width='111' height='23'>호텔</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>수익</TD>
+  <TD width='111' height='23' align='RIGHT'>13,188,155</TD>
+  <TD width='111' height='23' align='RIGHT'>462,301</TD>
+  <TD width='111' height='23' align='RIGHT'>96,136</TD>
+  <TD width='111' height='23' align='RIGHT'>141,526</TD>
+  <TD width='111' height='23' align='RIGHT'>13,888,118</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='360'></COL>
+<COL width='360'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='351' height='23'>전반기</TD>
+  <TD width='351' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='720'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>부문</TH>
+  <TH width='111' height='83' rowspan='3'>부문 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>보고부문</TH>
+  <TH width='111' height='53' rowspan='2'>기타부문</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>항공운송</TH>
+  <TH width='111' height='23'>항공우주</TH>
+  <TH width='111' height='23'>호텔</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>수익</TD>
+  <TD width='111' height='23' align='RIGHT'>12,193,700</TD>
+  <TD width='111' height='23' align='RIGHT'>297,405</TD>
+  <TD width='111' height='23' align='RIGHT'>83,283</TD>
+  <TD width='111' height='23' align='RIGHT'>128,180</TD>
+  <TD width='111' height='23' align='RIGHT'>12,702,568</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>관계기업 및 공동기업투자에 대한 기술</TD>
+</TR>
+<TR height='53'>
+  <TD width='591' height='46'>당반기말 현재 항공운송의 자산금액에는 관계기업 및 공동기업투자가 각각 182,371백만원이 포함되어 있습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1680'>
+<COLGROUP>
+<COL width='840'></COL>
+<COL width='840'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1671' height='23' colspan='2'>지역에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='831' height='23'>당반기</TD>
+  <TD width='831' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1680'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1431' height='23' colspan='12'>부문의 합계</TH>
+  <TH width='111' height='143' rowspan='5'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='711' height='23' colspan='6'>영업부문</TH>
+  <TH width='711' height='23' colspan='6'>중요한 조정사항</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='591' height='23' colspan='5'>지역</TH>
+  <TH width='111' height='83' rowspan='3'>지역 &nbsp;합계</TH>
+  <TH width='591' height='23' colspan='5'>지역</TH>
+  <TH width='111' height='83' rowspan='3'>지역 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>본사 소재지 국가</TH>
+  <TH width='231' height='23' colspan='2'>외국</TH>
+  <TH width='351' height='23' colspan='3'>본사 소재지 국가</TH>
+  <TH width='231' height='23' colspan='2'>외국</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>국내선 및 내수</TH>
+  <TH width='111' height='23'>국제선 및 수출</TH>
+  <TH width='111' height='23'>국내</TH>
+  <TH width='111' height='23'>미주</TH>
+  <TH width='111' height='23'>아시아 등</TH>
+  <TH width='111' height='23'>국내선 및 내수</TH>
+  <TH width='111' height='23'>국제선 및 수출</TH>
+  <TH width='111' height='23'>국내</TH>
+  <TH width='111' height='23'>미주</TH>
+  <TH width='111' height='23'>아시아 등</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>수익</TD>
+  <TD width='111' height='23' align='RIGHT'>1,527,007</TD>
+  <TD width='111' height='23' align='RIGHT'>12,824,991</TD>
+  <TD width='111' height='23' align='RIGHT'>14,351,998</TD>
+  <TD width='111' height='23' align='RIGHT'>114,284</TD>
+  <TD width='111' height='23' align='RIGHT'>31,531</TD>
+  <TD width='111' height='23' align='RIGHT'>14,497,813</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(557,722)</TD>
+  <TD width='111' height='23' align='RIGHT'>(21,084)</TD>
+  <TD width='111' height='23' align='RIGHT'>(30,889)</TD>
+  <TD width='111' height='23' align='RIGHT'>(609,695)</TD>
+  <TD width='111' height='23' align='RIGHT'>13,888,118</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>영업이익(손실)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>387,753</TD>
+  <TD width='111' height='23' align='RIGHT'>(8,685)</TD>
+  <TD width='111' height='23' align='RIGHT'>4,148</TD>
+  <TD width='111' height='23' align='RIGHT'>383,216</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(72,943)</TD>
+  <TD width='111' height='23' align='RIGHT'>310,273</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1680'>
+<COLGROUP>
+<COL width='1680'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1671' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1680'>
+<COLGROUP>
+<COL width='840'></COL>
+<COL width='840'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='831' height='23'>전반기</TD>
+  <TD width='831' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1680'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1431' height='23' colspan='12'>부문의 합계</TH>
+  <TH width='111' height='143' rowspan='5'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='711' height='23' colspan='6'>영업부문</TH>
+  <TH width='711' height='23' colspan='6'>중요한 조정사항</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='591' height='23' colspan='5'>지역</TH>
+  <TH width='111' height='83' rowspan='3'>지역 &nbsp;합계</TH>
+  <TH width='591' height='23' colspan='5'>지역</TH>
+  <TH width='111' height='83' rowspan='3'>지역 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>본사 소재지 국가</TH>
+  <TH width='231' height='23' colspan='2'>외국</TH>
+  <TH width='351' height='23' colspan='3'>본사 소재지 국가</TH>
+  <TH width='231' height='23' colspan='2'>외국</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>국내선 및 내수</TH>
+  <TH width='111' height='23'>국제선 및 수출</TH>
+  <TH width='111' height='23'>국내</TH>
+  <TH width='111' height='23'>미주</TH>
+  <TH width='111' height='23'>아시아 등</TH>
+  <TH width='111' height='23'>국내선 및 내수</TH>
+  <TH width='111' height='23'>국제선 및 수출</TH>
+  <TH width='111' height='23'>국내</TH>
+  <TH width='111' height='23'>미주</TH>
+  <TH width='111' height='23'>아시아 등</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>수익</TD>
+  <TD width='111' height='23' align='RIGHT'>1,407,218</TD>
+  <TD width='111' height='23' align='RIGHT'>11,653,315</TD>
+  <TD width='111' height='23' align='RIGHT'>13,060,533</TD>
+  <TD width='111' height='23' align='RIGHT'>99,740</TD>
+  <TD width='111' height='23' align='RIGHT'>15,444</TD>
+  <TD width='111' height='23' align='RIGHT'>13,175,717</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(438,266)</TD>
+  <TD width='111' height='23' align='RIGHT'>(19,740)</TD>
+  <TD width='111' height='23' align='RIGHT'>(15,143)</TD>
+  <TD width='111' height='23' align='RIGHT'>(473,149)</TD>
+  <TD width='111' height='23' align='RIGHT'>12,702,568</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>영업이익(손실)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>842,416</TD>
+  <TD width='111' height='23' align='RIGHT'>(11,787)</TD>
+  <TD width='111' height='23' align='RIGHT'>(299)</TD>
+  <TD width='111' height='23' align='RIGHT'>830,330</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(29,200)</TD>
+  <TD width='111' height='23' align='RIGHT'>801,130</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1680'>
+<COLGROUP>
+<COL width='1680'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1671' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='600'></COL>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23' colspan='2'>지역별 총자산에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='591' height='23'>당반기</TD>
+  <TD width='591' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1200'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='951' height='23' colspan='8'>부문의 합계</TH>
+  <TH width='111' height='143' rowspan='5'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>영업부문</TH>
+  <TH width='471' height='23' colspan='4'>중요한 조정사항</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>지역</TH>
+  <TH width='111' height='83' rowspan='3'>지역 &nbsp;합계</TH>
+  <TH width='351' height='23' colspan='3'>지역</TH>
+  <TH width='111' height='83' rowspan='3'>지역 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='53' rowspan='2'>본사 소재지 국가</TH>
+  <TH width='231' height='23' colspan='2'>외국</TH>
+  <TH width='111' height='53' rowspan='2'>본사 소재지 국가</TH>
+  <TH width='231' height='23' colspan='2'>외국</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>미주</TH>
+  <TH width='111' height='23'>아시아 등</TH>
+  <TH width='111' height='23'>미주</TH>
+  <TH width='111' height='23'>아시아 등</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>자산총계</TD>
+  <TD width='111' height='23' align='RIGHT'>55,690,411</TD>
+  <TD width='111' height='23' align='RIGHT'>1,736,444</TD>
+  <TD width='111' height='23' align='RIGHT'>91,709</TD>
+  <TD width='111' height='23' align='RIGHT'>57,518,564</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(4,694,178)</TD>
+  <TD width='111' height='23' align='RIGHT'>52,824,386</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='1200'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='600'></COL>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>전반기</TD>
+  <TD width='591' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1200'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='951' height='23' colspan='8'>부문의 합계</TH>
+  <TH width='111' height='143' rowspan='5'>부문의 합계 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>영업부문</TH>
+  <TH width='471' height='23' colspan='4'>중요한 조정사항</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>지역</TH>
+  <TH width='111' height='83' rowspan='3'>지역 &nbsp;합계</TH>
+  <TH width='351' height='23' colspan='3'>지역</TH>
+  <TH width='111' height='83' rowspan='3'>지역 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='53' rowspan='2'>본사 소재지 국가</TH>
+  <TH width='231' height='23' colspan='2'>외국</TH>
+  <TH width='111' height='53' rowspan='2'>본사 소재지 국가</TH>
+  <TH width='231' height='23' colspan='2'>외국</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>미주</TH>
+  <TH width='111' height='23'>아시아 등</TH>
+  <TH width='111' height='23'>미주</TH>
+  <TH width='111' height='23'>아시아 등</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>자산총계</TD>
+  <TD width='111' height='23' align='RIGHT'>49,766,446</TD>
+  <TD width='111' height='23' align='RIGHT'>1,542,144</TD>
+  <TD width='111' height='23' align='RIGHT'>70,820</TD>
+  <TD width='111' height='23' align='RIGHT'>51,379,410</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(4,041,411)</TD>
+  <TD width='111' height='23' align='RIGHT'>47,337,999</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1200'>
+<COLGROUP>
+<COL width='1200'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1191' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>지역별 순매출액에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>지역</TH>
+  <TH width='111' height='83' rowspan='3'>지역 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='53' rowspan='2'>본사 소재지 국가</TH>
+  <TH width='231' height='23' colspan='2'>외국</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>미국</TH>
+  <TH width='111' height='23'>아시아 등</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>수익</TD>
+  <TD width='111' height='23' align='RIGHT'>13,794,276</TD>
+  <TD width='111' height='23' align='RIGHT'>93,200</TD>
+  <TD width='111' height='23' align='RIGHT'>642</TD>
+  <TD width='111' height='23' align='RIGHT'>13,888,118</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전반기</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>지역</TH>
+  <TH width='111' height='83' rowspan='3'>지역 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='53' rowspan='2'>본사 소재지 국가</TH>
+  <TH width='231' height='23' colspan='2'>외국</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>미국</TH>
+  <TH width='111' height='23'>아시아 등</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>수익</TD>
+  <TD width='111' height='23' align='RIGHT'>12,622,267</TD>
+  <TD width='111' height='23' align='RIGHT'>80,000</TD>
+  <TD width='111' height='23' align='RIGHT'>301</TD>
+  <TD width='111' height='23' align='RIGHT'>12,702,568</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>주요 고객에 대한 정보</TD>
+</TR>
+<TR height='53'>
+  <TD width='591' height='46'>당반기와 전반기 중 연결실체의 매출액에서 10% 이상의 비중을 차지하는 단일 고객은 없습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

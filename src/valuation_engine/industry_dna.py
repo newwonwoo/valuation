@@ -5,6 +5,8 @@ from enum import Enum
 
 
 class EconomicArchetype(str, Enum):
+    SERVICE_OPERATIONS = "service_operations"
+    AIRLINE_TRANSPORT = "airline_transport"
     CONTRACTED_BACKLOG = "contracted_backlog"
     CAPACITY_MANUFACTURING = "capacity_manufacturing"
     RECURRING_SUBSCRIPTION = "recurring_subscription"
@@ -64,6 +66,10 @@ def compose_modules(profile: IndustryDNAProfile, overlays: tuple[str, ...] = ())
     archetype_modules = tuple(a.value for a in profile.archetypes)
 
     methods: set[str] = set()
+    if EconomicArchetype.SERVICE_OPERATIONS in profile.archetypes:
+        methods.add("normalized_service_dcf")
+    if EconomicArchetype.AIRLINE_TRANSPORT in profile.archetypes:
+        methods.add("traffic_yield_dcf")
     if EconomicArchetype.CONTRACTED_BACKLOG in profile.archetypes:
         methods.update(
             (

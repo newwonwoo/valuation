@@ -92,6 +92,10 @@ execution_families:
     canonical_refs: [src/valuation_engine/sotp.py, src/valuation_engine/valuation_execution.py, tests/test_generic_evaluator_sotp.py]
 
 bindings:
+  service_operations:
+    normalized_service_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+  airline_transport:
+    traffic_yield_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
   contracted_backlog:
     backlog_burn_dcf:
       execution_family: contracted_backlog_dcf
