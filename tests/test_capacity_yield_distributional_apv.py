@@ -18,6 +18,8 @@ from valuation_engine.capacity_yield_operating_paths import (
 )
 from valuation_engine.distributional_apv import (
     APVPathInput,
+    NonOperatingAssetDisposal,
+    DistributionalAPVError,
     PathAPVResult,
     SegmentCashFlowPath,
     TaxShieldSchedule,
@@ -33,6 +35,7 @@ from valuation_engine.dynamic_driver_distribution import (
     DynamicDriverPosterior,
     TargetDriverObservation,
     TargetDriverPanel,
+    StructuralBreak,
     fit_dynamic_driver_posterior,
     simulate_driver_paths,
 )
@@ -229,12 +232,12 @@ def test_target_panel_rejects_mixed_frequency_and_peer_company_outcomes():
         replace(panel, frequency="QUARTERLY", observations=tuple(observations[:-1]) + (peer,)).validate()
 
 
-def test_rolling_origin_fit_records_proper_scores_and_authorizes_only_positive_skill():
+def _historical_driver_panel(count=44):
     observations = []
     value = D("10")
     year, month = 2015, 3
     seasonal = (D("0.4"), D("-0.2"), D("0.3"), D("-0.1"))
-    for index in range(44):
+    for index in range(count):
         period_end = date(year, month, 28)
         published = datetime.combine(period_end, datetime.min.time()) + timedelta(days=20)
         value = (
@@ -257,16 +260,13 @@ def test_rolling_origin_fit_records_proper_scores_and_authorizes_only_positive_s
         if month > 12:
             month -= 12
             year += 1
-    posterior = fit_dynamic_driver_posterior(
-        TargetDriverPanel(
-            "target-a",
-            "QUARTERLY",
-            "consolidated",
-            tuple(observations),
-            (),
-            "TARGET-PANEL",
-        )
+    return TargetDriverPanel(
+        "target-a", "QUARTERLY", "consolidated", tuple(observations), (), "TARGET-PANEL"
     )
+
+
+def test_rolling_origin_fit_records_proper_scores_and_authorizes_only_positive_skill():
+    posterior = fit_dynamic_driver_posterior(_historical_driver_panel())
     diagnostic = posterior.calibration_diagnostics.driver_diagnostics[0]
     assert diagnostic.crps_skill > D("0")
     assert diagnostic.model_crps < diagnostic.benchmark_crps
@@ -1018,3 +1018,80 @@ def test_ambiguity_robust_entry_rejects_a_single_prior_as_false_precision():
             valuation_values_authorized=True,
             distribution_hash="EVENT-PAYOFFS",
         )
+
+
+def test_structural_break_excludes_old_regime_from_fit_and_oos():
+    panel = _historical_driver_panel(80)
+    boundary = panel.observations[40].period_end
+    broken = replace(panel, structural_breaks=(StructuralBreak(boundary, "merger"),))
+    fitted = fit_dynamic_driver_posterior(broken)
+    isolated = fit_dynamic_driver_posterior(replace(panel, observations=panel.observations[40:]))
+    assert fitted.seasonal_terms == isolated.seasonal_terms
+    assert fitted.transition_matrix == isolated.transition_matrix
+    assert fitted.calibration_diagnostics == isolated.calibration_diagnostics
+    assert fitted.parameter_draws_hash != isolated.parameter_draws_hash
+    poisoned = replace(broken, observations=tuple(
+        replace(row, values=(("activity", D("999999")),)) if index < 40 else row
+        for index, row in enumerate(panel.observations)
+    ))
+    assert fit_dynamic_driver_posterior(poisoned) == fitted
+    changed_reason = replace(broken, structural_breaks=(StructuralBreak(boundary, "accounting"),))
+    assert fit_dynamic_driver_posterior(changed_reason).parameter_draws_hash != fitted.parameter_draws_hash
+    changed_date = replace(broken, structural_breaks=(StructuralBreak(panel.observations[44].period_end, "merger"),))
+    assert fit_dynamic_driver_posterior(changed_date).parameter_draws_hash != fitted.parameter_draws_hash
+
+
+def test_latest_structural_break_with_insufficient_history_cannot_authorize():
+    panel = _historical_driver_panel(80)
+    panel = replace(panel, structural_breaks=(
+        StructuralBreak(panel.observations[20].period_end, "perimeter"),
+        StructuralBreak(panel.observations[60].period_end, "merger"),
+    ))
+    with pytest.raises(DriverDistributionError, match="32 comparable"):
+        fit_dynamic_driver_posterior(panel)
+
+
+def _asset_sale_apv(cost_rate=D("0")):
+    spec = replace(
+        _one_period_spec(), opening_cash=D("0"), debt_schedules=(), lease_schedules=(),
+        refinancing_facilities=(), minimum_operating_cash=D("10"),
+        asset_sale_policy=AssetSalePolicy((D("100"),), cost_rate),
+        equity_raise_policy=EquityRaisePolicy((D("0"),), D("0"), (D("0"),)),
+    )
+    financing = evaluate_financing_path(
+        inputs=(FinancingPeriodInput(1, D("0"), D("0"), D("0")),), spec=spec,
+    )
+    assert not financing.distressed
+    assert financing.periods[0].actions[0].action_type is FinancingActionType.ASSET_SALE
+    return APVPathInput(
+        path_id="sale", segments=(SegmentCashFlowPath("ops", "ops", (D("20"),), D("0.1"), D("0")),),
+        tax_shield_schedule=TaxShieldSchedule((D("0"),), (D("0"),), D("0"), D("0")),
+        financing_result=financing, non_operating_assets_present=D("80"),
+        non_operating_assets_at_horizon=D("100"), distributions_to_old_holders=(D("0"),),
+        equity_required_return=D("0.1"), initial_shares=D("1"),
+    )
+
+
+@pytest.mark.parametrize("cost_rate", [D("0"), D("0.2")])
+def test_asset_sale_removes_asset_value_separately_from_net_cash(cost_rate):
+    path = _asset_sale_apv(cost_rate)
+    with pytest.raises(DistributionalAPVError, match="matching disposed-asset"):
+        evaluate_apv_path(path)
+    action = path.financing_result.periods[0].actions[0]
+    # Carrying/economic values deliberately differ from gross sale proceeds.
+    path = replace(path, asset_disposals=(NonOperatingAssetDisposal(1, action.gross_amount, D("24"), D("30")),))
+    result = evaluate_apv_path(path)
+    assert result.terminal_old_equity_payoff == D("200") + D("100") - D("30") + D("10")
+    assert result.operating_apv == D("220") / D("1.1") + D("80") - D("24") - action.transaction_cost / D("1.1")
+    assert result.explicit_financing_cost_present_value == action.transaction_cost / D("1.1")
+
+
+@pytest.mark.parametrize("disposal", [
+    NonOperatingAssetDisposal(1, D("11"), D("24"), D("30")),
+    NonOperatingAssetDisposal(2, D("10"), D("24"), D("30")),
+    NonOperatingAssetDisposal(1, D("10"), D("81"), D("30")),
+    NonOperatingAssetDisposal(1, D("10"), D("24"), D("101")),
+])
+def test_unreconciled_or_excess_asset_disposals_are_rejected(disposal):
+    with pytest.raises(DistributionalAPVError):
+        evaluate_apv_path(replace(_asset_sale_apv(), asset_disposals=(disposal,)))

@@ -1,10 +1,11 @@
 import json
+from hashlib import sha256
 from pathlib import Path
 from decimal import Decimal
 
 import pytest
 
-from scripts.build_governed_distribution_report import build
+from scripts.build_governed_distribution_report import build, _source_valuation_snapshot
 from valuation_engine.governed_event_distribution import GovernedDistributionError
 from valuation_engine.probability_ambiguity import (
     AmbiguityValueStatus,
@@ -58,6 +59,42 @@ def _isolated_spec(tmp_path: Path) -> tuple[Path, Path]:
     spec["entry_policy"]["policy_version"] = "three_year_return_quantile/v1"
     spec["entry_policy"]["quantile_role"] = "PRIMARY_POLICY"
     spec["entry_policy"]["probability_success_claim_authorized"] = True
+    snapshot = json.loads(Path(spec["source_valuation_snapshot"]).read_text())
+    source = tmp_path / "source"
+    source.mkdir()
+    source_files = {
+        "valuation.json": {
+            "valuation_hash": snapshot["source_valuation_hash"],
+            "equity_aggregation": {"scenario_values": [
+                {"scenario_id": row["scenario_id"], "equity_value": {
+                    "amount": row["equity_value_KRW"], "unit": "KRW", "as_of": spec["as_of"]}}
+                for row in snapshot["scenario_values"]]},
+        },
+        "audit.json": {"findings": [{"check": "test-only", "passed": True, "blocking": True}]},
+        "manifest.json": {"status": "COMPLETED", "audit_passed": True,
+                          "run_id": snapshot["source_run_id"], "ticker": spec["ticker"]},
+        "freeze_token.json": {"run_id": snapshot["source_run_id"],
+                              "valuation_hash": snapshot["source_valuation_hash"],
+                              "audit_hash": snapshot["source_audit_hash"]},
+        "compiled_assumptions.json": {"target_id": spec["target_id"]},
+    }
+    for name, payload in source_files.items():
+        (source / name).write_text(json.dumps(payload))
+    manifest = {
+        "schema_version": "kr-live-report-bundle/v1",
+        "artifact_id": snapshot["source_artifact_id"], "run_id": snapshot["source_run_id"],
+        "as_of": spec["as_of"], "ticker": spec["ticker"],
+        "valuation_hash": snapshot["source_valuation_hash"], "audit_hash": snapshot["source_audit_hash"],
+        "files": [{"filename": name, "sha256": sha256((source / name).read_bytes()).hexdigest()}
+                  for name in source_files],
+    }
+    manifest_path = source / "report_bundle_manifest.json"
+    manifest_path.write_text(json.dumps(manifest))
+    spec["source_bundle_manifest"] = str(manifest_path)
+    spec["source_bundle_manifest_sha256"] = sha256(manifest_path.read_bytes()).hexdigest()
+    snapshot_path = tmp_path / "snapshot.json"
+    snapshot_path.write_text(json.dumps(snapshot))
+    spec["source_valuation_snapshot"] = str(snapshot_path)
     spec_path = tmp_path / "run" / "declarations" / "governed_distribution_spec.json"
     spec_path.parent.mkdir(parents=True)
     spec_path.write_text(json.dumps(spec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -65,7 +102,7 @@ def _isolated_spec(tmp_path: Path) -> tuple[Path, Path]:
 
 
 def test_korean_air_current_merton_overlay_is_rejected_as_primary_value(tmp_path):
-    with pytest.raises(GovernedDistributionError, match="promised claim amount"):
+    with pytest.raises(ValueError, match="source bundle manifest"):
         build(SPEC, tmp_path)
     assert not tuple(tmp_path.iterdir())
 
@@ -117,77 +154,93 @@ def test_korean_air_signed_scenarios_produce_an_ambiguity_value_range_not_a_floo
     assert not result.calibrated_probability_claim_authorized
 
 
-def test_explicitly_qualified_structural_fixture_builds_audited_bundle(tmp_path):
+def test_qualified_fixture_remains_uncertified_and_never_promotes_latest(tmp_path):
     spec_path, _ = _isolated_spec(tmp_path / "inputs")
-    bundle = build(spec_path, tmp_path / "output")
-    manifest = json.loads((bundle / "bundle_manifest.json").read_text(encoding="utf-8"))
-    distribution = json.loads((bundle / "equity_value_distribution.json").read_text(encoding="utf-8"))
-    entry = json.loads((bundle / "entry_price.json").read_text(encoding="utf-8"))
-    broker = json.loads((bundle / "broker_comparison.json").read_text(encoding="utf-8"))
-    audit = json.loads((bundle / "audit.json").read_text(encoding="utf-8"))
-    report = (bundle / "final_report.md").read_text(encoding="utf-8")
-
-    assert manifest["status"] == "AUDITED_FINAL"
-    assert manifest["audit_passed"] is True
-    assert manifest["distribution_hash"] == distribution["distribution_hash"] == entry["distribution_hash"]
-    assert manifest["supersedes_artifact_id"] == "003490-20260913-DIST-8B3A2C1C58D8"
-    assert int(Decimal(entry["entry_price"])) > 0
-    assert Decimal(entry["realized_success_probability"]) >= Decimal(entry["target_success_probability"])
-    assert distribution["authorization_status"] == (
-        "CALIBRATED_EVENT_PROBABILITY_WITH_QUALIFIED_STRUCTURAL_VALUE"
-    )
-    assert "확률가중 평균가치" in report
-    assert "구체 매수가" in report
-    assert "하방 상태도" in report
-    assert "## 증권사·시장 비교" in report
-    assert "미래에셋증권" in report
-    assert "하나증권" in report
-    assert "LS증권" in report
-    assert "공개 원문 검증 표본" in report
-    assert "PBR 1.1x" in report
-    assert report.index("## 핵심 가정과 위험") < report.index("## 증권사·시장 비교") < report.index("## 원문")
-    assert "확률이 보정되지 않아" not in report
-    assert "Σ[확률×max(0" not in report
-    assert broker["sample"]["report_count"] == 3
-    assert Decimal(broker["sample"]["median_target_price"]) == Decimal("37000")
-    assert Decimal(broker["sample"]["min_target_price"]) == Decimal("33000")
-    assert Decimal(broker["sample"]["max_target_price"]) == Decimal("41000")
-    assert broker["intrinsic_distribution_unchanged"] is True
-    assert audit["checks"]["broker_loaded_only_after_intrinsic_freeze"] is True
-    assert audit["checks"]["broker_targets_excluded_from_intrinsic_inputs"] is True
-    assert manifest["post_freeze_comparison_hash"] == broker["post_freeze_comparison_hash"]
-    assert (bundle / "valuation_summary.svg").is_file()
-    assert (bundle / "assumptions_risk_sources.svg").is_file()
+    run = spec_path.parent.parent
+    output = run / "out"
+    output.mkdir()
+    latest = output / "003490_LATEST_DISTRIBUTIONAL_REPORT.json"
+    latest.write_text("last-good")
+    spec = json.loads(spec_path.read_text())
+    spec["source_market_observation"] = "/missing/market.json"
+    spec["source_broker_comparison"] = "/missing/broker.json"
+    spec_path.write_text(json.dumps(spec))
+    bundle = build(spec_path, output)
+    manifest = json.loads((bundle / "bundle_manifest.json").read_text())
+    audit = json.loads((bundle / "audit.json").read_text())
+    assert manifest["status"] == "DIAGNOSTIC_ONLY"
+    assert manifest["audit_passed"] is False
+    assert audit["passed"] is False
+    assert audit["diagnostic_checks_passed"] is True
+    assert audit["canonical_audit_status"] == "NOT_RUN"
+    assert "intrinsic_freeze_hash" not in manifest
+    assert "supersedes_artifact_id" not in manifest
+    assert latest.read_text() == "last-good"
+    assert not (bundle / "final_report.md").exists()
+    assert not (bundle / "broker_comparison.json").exists()
+    for receipt in manifest["files"]:
+        assert sha256((bundle / receipt["filename"]).read_bytes()).hexdigest() == receipt["sha256"]
 
 
-def test_broker_targets_change_comparison_but_not_frozen_intrinsic_value(tmp_path):
-    spec_path, broker_path = _isolated_spec(tmp_path)
-    before = build(spec_path, tmp_path / "before")
-    before_manifest = json.loads((before / "bundle_manifest.json").read_text(encoding="utf-8"))
-    before_distribution = json.loads(
-        (before / "equity_value_distribution.json").read_text(encoding="utf-8")
-    )
-
-    broker = json.loads(broker_path.read_text(encoding="utf-8"))
-    broker["verified_reports"][0]["target_price_krw"] = 39000
-    broker_path.write_text(json.dumps(broker, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    after = build(spec_path, tmp_path / "after")
-    after_manifest = json.loads((after / "bundle_manifest.json").read_text(encoding="utf-8"))
-    after_distribution = json.loads(
-        (after / "equity_value_distribution.json").read_text(encoding="utf-8")
-    )
-
-    assert after_distribution["distribution_hash"] == before_distribution["distribution_hash"]
-    assert after_manifest["intrinsic_freeze_hash"] == before_manifest["intrinsic_freeze_hash"]
-    assert after_manifest["post_freeze_comparison_hash"] != before_manifest["post_freeze_comparison_hash"]
-    assert after_manifest["artifact_id"] != before_manifest["artifact_id"]
+def test_source_snapshot_cannot_replace_verified_scenario_values(tmp_path):
+    spec_path, _ = _isolated_spec(tmp_path)
+    spec = json.loads(spec_path.read_text())
+    snapshot_path = Path(spec["source_valuation_snapshot"])
+    snapshot = json.loads(snapshot_path.read_text())
+    snapshot["scenario_values"][0]["equity_value_KRW"] = "9999999999999999"
+    snapshot_path.write_text(json.dumps(snapshot))
+    with pytest.raises(ValueError, match="scenario values"):
+        build(spec_path, tmp_path / "out")
+    assert not (tmp_path / "out").exists()
 
 
-def test_broker_report_after_cutoff_fails_closed(tmp_path):
-    spec_path, broker_path = _isolated_spec(tmp_path)
-    broker = json.loads(broker_path.read_text(encoding="utf-8"))
-    broker["verified_reports"][0]["report_date"] = "2026-09-14"
-    broker_path.write_text(json.dumps(broker, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+@pytest.mark.parametrize("filename", ["valuation.json", "audit.json", "freeze_token.json", "manifest.json"])
+def test_source_artifact_tampering_is_rejected(tmp_path, filename):
+    spec_path, _ = _isolated_spec(tmp_path)
+    spec = json.loads(spec_path.read_text())
+    source = Path(spec["source_bundle_manifest"]).parent
+    (source / filename).write_text("{}")
+    with pytest.raises(ValueError, match="artifact hash mismatch"):
+        build(spec_path, tmp_path / "out")
 
-    with pytest.raises(ValueError, match="after the intrinsic cutoff"):
-        build(spec_path, tmp_path / "future")
+
+@pytest.mark.parametrize("field,value", [("target_id", "OTHER"), ("as_of", "2026-09-12"),
+                                          ("source_audit_hash", "fake"), ("source_valuation_hash", "fake")])
+def test_snapshot_identity_and_receipts_are_bound(tmp_path, field, value):
+    spec_path, _ = _isolated_spec(tmp_path)
+    spec = json.loads(spec_path.read_text())
+    snapshot_path = Path(spec["source_valuation_snapshot"])
+    snapshot = json.loads(snapshot_path.read_text())
+    snapshot[field] = value
+    snapshot_path.write_text(json.dumps(snapshot))
+    with pytest.raises(ValueError, match="mismatch"):
+        build(spec_path, tmp_path / "out")
+
+
+def test_generic_diagnostic_uses_input_branches_company_and_policy(tmp_path):
+    spec_path, _ = _isolated_spec(tmp_path)
+    spec = json.loads(spec_path.read_text())
+    spec["company"] = "시험 운송사"
+    for row, label in zip(spec["branches"], ("Weak", "Normal", "Strong")):
+        row["branch_id"] = label
+    spec["entry_policy"]["horizon_years"] = 4
+    spec["entry_policy"]["required_annual_return"] = "0.15"
+    spec["annual_asset_volatility"] = "0.18"
+    spec_path.write_text(json.dumps(spec))
+    bundle = build(spec_path, tmp_path / "out")
+    report = (bundle / "diagnostic_report.md").read_text()
+    assert report.startswith("# 시험 운송사")
+    assert "Weak" in report and "Normal" in report and "Strong" in report
+    assert "4년 · 연 15.0%" in report and "18.0%" in report
+    assert "현재가에서는 신규매수 보류" not in report
+    assert "통합·회복 실패" not in report
+
+
+def test_qualification_gate_is_preserved_after_source_verification(tmp_path):
+    spec_path, _ = _isolated_spec(tmp_path)
+    spec = json.loads(spec_path.read_text())
+    original = json.loads(SPEC.read_text())
+    spec["structural_model_qualification"] = original["structural_model_qualification"]
+    spec_path.write_text(json.dumps(spec))
+    with pytest.raises(GovernedDistributionError, match="promised claim amount"):
+        build(spec_path, tmp_path / "out")

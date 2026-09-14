@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""Build an immutable audited report from an audited scenario valuation.
+"""Build an uncertified diagnostic from a verified source scenario bundle.
 
 The script is generic: all company identity, scenario labels, claims and prior
-weights arrive in the spec.  It does not read market data until after the
-intrinsic distribution and entry result have been calculated and hash-frozen.
+weights arrive in the spec.  It never reads market/broker data or certifies a new intrinsic result.
+Canonical audit/freeze must occur in the orchestrator, not this script.
 """
 
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict
 from decimal import Decimal, ROUND_HALF_UP
 from hashlib import sha256
 import html
@@ -63,18 +62,62 @@ def _source_valuation_snapshot(run_dir: Path, spec: dict) -> tuple[dict, dict]:
         raise ValueError("source valuation run is not completed and audited")
     if not snapshot.get("source_valuation_hash") or not snapshot.get("source_audit_hash"):
         raise ValueError("source valuation snapshot is missing immutable receipts")
-    valuation = {
+    manifest_ref = spec.get("source_bundle_manifest")
+    manifest_hash = spec.get("source_bundle_manifest_sha256")
+    if not manifest_ref or not manifest_hash:
+        raise ValueError("source bundle manifest and pinned SHA256 are required")
+    manifest_path = (run_dir / manifest_ref).resolve()
+    if _sha(manifest_path) != manifest_hash:
+        raise ValueError("source bundle manifest hash mismatch")
+    manifest = _json(manifest_path)
+    if manifest.get("schema_version") != "kr-live-report-bundle/v1":
+        raise ValueError("unsupported source bundle manifest")
+    expected = {
+        "artifact_id": snapshot.get("source_artifact_id"),
+        "run_id": snapshot.get("source_run_id"),
+        "as_of": spec["as_of"],
+        "ticker": spec["ticker"],
         "valuation_hash": snapshot["source_valuation_hash"],
-        "equity_aggregation": {
-            "scenario_values": [
-                {
-                    "scenario_id": row["scenario_id"],
-                    "equity_value": {"amount": row["equity_value_KRW"]},
-                }
-                for row in snapshot["scenario_values"]
-            ]
-        },
+        "audit_hash": snapshot["source_audit_hash"],
     }
+    if any(not value or manifest.get(key) != value for key, value in expected.items()):
+        raise ValueError("source bundle identity or hash mismatch")
+    if snapshot.get("target_id") != spec["target_id"] or snapshot.get("as_of") != spec["as_of"]:
+        raise ValueError("source snapshot target or cutoff mismatch")
+    root = manifest_path.parent
+    receipts = manifest.get("files", [])
+    names = [row["filename"] for row in receipts]
+    required = {"valuation.json", "audit.json", "manifest.json", "freeze_token.json", "compiled_assumptions.json"}
+    if len(names) != len(set(names)) or not required.issubset(names):
+        raise ValueError("source bundle receipts are incomplete or duplicated")
+    for row in receipts:
+        path = (root / row["filename"]).resolve()
+        if not path.is_relative_to(root) or not path.is_file():
+            raise ValueError("source bundle artifact is missing or outside its bundle")
+        if _sha(path) != row["sha256"]:
+            raise ValueError(f"source artifact hash mismatch: {row['filename']}")
+    valuation = _json(root / "valuation.json")
+    audit = _json(root / "audit.json")
+    run = _json(root / "manifest.json")
+    freeze = _json(root / "freeze_token.json")
+    assumptions = _json(root / "compiled_assumptions.json")
+    if (run.get("status") != "COMPLETED" or run.get("audit_passed") is not True
+            or run.get("run_id") != expected["run_id"] or run.get("ticker") != spec["ticker"]
+            or assumptions.get("target_id") != spec["target_id"]):
+        raise ValueError("source run is not a completed matching target")
+    findings = audit.get("findings", [])
+    if not findings or any(row.get("blocking") and row.get("passed") is not True for row in findings):
+        raise ValueError("source audit contains blocking failures or no findings")
+    if (valuation.get("valuation_hash") != expected["valuation_hash"]
+            or any(freeze.get(key) != expected[key] for key in ("run_id", "valuation_hash", "audit_hash"))):
+        raise ValueError("source valuation and canonical freeze receipts disagree")
+    source_rows = valuation["equity_aggregation"]["scenario_values"]
+    actual = [(row["scenario_id"], Decimal(row["equity_value"]["amount"])) for row in source_rows]
+    claimed = [(row["scenario_id"], Decimal(row["equity_value_KRW"])) for row in snapshot["scenario_values"]]
+    if (len({key for key, _ in actual}) != len(actual) or actual != claimed
+            or any(not value.is_finite() for _, value in actual)
+            or any(row["equity_value"]["unit"] != "KRW" or row["equity_value"]["as_of"] != spec["as_of"] for row in source_rows)):
+        raise ValueError("source snapshot scenario values, units or cutoff mismatch")
     return snapshot, valuation
 
 
@@ -102,79 +145,6 @@ def _mean_sensitivity(branch_values, sets):
             }
         )
     return rows
-
-
-def _broker_rows(snapshot: dict, *, spec: dict, market_price: Decimal, result) -> tuple[list[dict], dict]:
-    if snapshot.get("schema_version") != "post-freeze-broker-comparison/v1":
-        raise ValueError("unsupported broker comparison snapshot")
-    if snapshot.get("company") != spec["company"] or snapshot.get("ticker") != spec["ticker"]:
-        raise ValueError("broker comparison identity does not match the valuation target")
-    if snapshot.get("as_of") != spec["as_of"]:
-        raise ValueError("broker comparison cutoff does not match the valuation cutoff")
-    raw_rows = snapshot.get("verified_reports") or []
-    if len(raw_rows) < 2:
-        raise ValueError("broker comparison requires at least two verified reports")
-    rows = []
-    institutions = set()
-    for raw in raw_rows:
-        institution = raw.get("institution", "").strip()
-        if not institution or institution in institutions:
-            raise ValueError("broker comparison institutions must be unique")
-        institutions.add(institution)
-        if raw.get("report_date", "") > spec["as_of"]:
-            raise ValueError("broker report date is after the intrinsic cutoff")
-        if raw.get("target_price_currency") != spec["reporting_currency"]:
-            raise ValueError("broker target currency does not match the report currency")
-        source_url = raw.get("url", "")
-        if not source_url.startswith(("http://", "https://")):
-            raise ValueError("broker report requires a directly clickable HTTP(S) source")
-        target = Decimal(str(raw.get("target_price_krw", "0")))
-        if target <= 0:
-            raise ValueError("broker target price must be positive")
-        rows.append(
-            {
-                "institution": institution,
-                "analyst": raw.get("analyst", "미공개"),
-                "report_date": raw["report_date"],
-                "title": raw.get("title", ""),
-                "rating": raw.get("rating", "미공개"),
-                "target_price": str(target),
-                "target_price_currency": raw["target_price_currency"],
-                "target_upside_vs_market_pct": str((target / market_price - Decimal("1")) * Decimal("100")),
-                "premium_vs_p50_pct": str((target / result.p50 - Decimal("1")) * Decimal("100")),
-                "premium_vs_probability_weighted_mean_pct": str(
-                    (target / result.mean - Decimal("1")) * Decimal("100")
-                ),
-                "valuation_method": raw.get("valuation_method", "NOT_DISCLOSED"),
-                "base_year": raw.get("base_year", "NOT_DISCLOSED"),
-                "target_multiple": raw.get("target_multiple", "NOT_DISCLOSED"),
-                "disclosed_estimates": raw.get("disclosed_estimates", []),
-                "valuation_basis_note": raw.get("valuation_basis_note", ""),
-                "load_bearing_assumption": raw.get("load_bearing_assumption", ""),
-                "source_url": source_url,
-                "access_quality": raw.get("access_quality", ""),
-            }
-        )
-    targets = sorted(Decimal(row["target_price"]) for row in rows)
-    midpoint = len(targets) // 2
-    median = targets[midpoint] if len(targets) % 2 else (targets[midpoint - 1] + targets[midpoint]) / Decimal("2")
-    sample = {
-        "report_count": len(rows),
-        "latest_report_date": max(row["report_date"] for row in rows),
-        "min_target_price": str(targets[0]),
-        "median_target_price": str(median),
-        "mean_target_price": str(sum(targets, Decimal("0")) / Decimal(len(targets))),
-        "max_target_price": str(targets[-1]),
-        "median_premium_vs_market_pct": str((median / market_price - Decimal("1")) * Decimal("100")),
-        "median_premium_vs_p50_pct": str((median / result.p50 - Decimal("1")) * Decimal("100")),
-        "median_premium_vs_probability_weighted_mean_pct": str(
-            (median / result.mean - Decimal("1")) * Decimal("100")
-        ),
-        "probability_weighted_mean_discount_to_median_pct": str(
-            (Decimal("1") - result.mean / median) * Decimal("100")
-        ),
-    }
-    return rows, sample
 
 
 def _svg(title: str, lines: list[str], *, distribution_hash: str) -> str:
@@ -272,34 +242,10 @@ def build(spec_path: Path, output_root: Path) -> Path:
         raise ValueError(
             "qualified structural reporting requires calibrated event probabilities"
         )
-    # Intrinsic freeze occurs here. Broker targets and market data are
-    # intentionally inaccessible until after this point.
-    intrinsic_freeze_hash = sha256(
+    # A deterministic calculation hash is not a canonical intrinsic freeze.
+    # No target market data may be loaded by this unaudited diagnostic path.
+    calculation_hash = sha256(
         (result.distribution_hash + str(result.entry_price) + policy["policy_version"]).encode("utf-8")
-    ).hexdigest()
-
-    broker_path = (run_dir / spec["source_broker_comparison"]).resolve()
-    broker_snapshot = _json(broker_path)
-    market_path = (run_dir / spec["source_market_observation"]).resolve()
-    market_rows = _json(market_path)
-    market = market_rows[0]
-    market_price = Decimal(str(market["closePrice"]).replace(",", ""))
-    if market["localTradedAt"] > spec["as_of"]:
-        raise ValueError("post-freeze market observation is after the intrinsic cutoff")
-    broker_rows, broker_sample = _broker_rows(
-        broker_snapshot,
-        spec=spec,
-        market_price=market_price,
-        result=result,
-    )
-    post_freeze_comparison_hash = sha256(
-        (
-            intrinsic_freeze_hash
-            + _sha(broker_path)
-            + _sha(market_path)
-            + market["localTradedAt"]
-            + str(market_price)
-        ).encode("utf-8")
     ).hexdigest()
 
     values = {name: value for name, value, _ in result.branch_values_per_share}
@@ -311,7 +257,9 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "schema_version": "equity-value-distribution/governed-event-v1",
         "target_id": spec["target_id"],
         "as_of": spec["as_of"],
-        "authorization_status": result.authorization_status,
+        "authorization_status": "DIAGNOSTIC_ONLY",
+        "input_qualification_status": result.authorization_status,
+        "valuation_distribution_authorized": False,
         "not_claimed": spec["probability_authorization"]["not_claimed"],
         "branch_values_per_share": [
             {"branch_id": name, "value": str(value), "probability": str(probability)}
@@ -325,7 +273,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "probability_weighted_mean": str(result.mean),
         "distribution_hash": result.distribution_hash,
         "source_bridge_hash": source_bridge_hash,
-        "intrinsic_freeze_hash": intrinsic_freeze_hash,
+        "calculation_hash": calculation_hash,
         "probability_sensitivity": sensitivity,
         "asset_volatility": spec["annual_asset_volatility"],
         "asset_volatility_basis": spec["asset_volatility_basis"],
@@ -335,6 +283,8 @@ def build(spec_path: Path, output_root: Path) -> Path:
     }
     entry_payload = {
         "schema_version": "return-quantile-entry/v1",
+        "status": "DIAGNOSTIC_ONLY",
+        "probability_success_claim_authorized": False,
         "entry_price": str(result.entry_price),
         "horizon_years": policy["horizon_years"],
         "required_annual_return": policy["required_annual_return"],
@@ -346,25 +296,8 @@ def build(spec_path: Path, output_root: Path) -> Path:
             for rate, value in result.entry_price_sensitivities
         ],
         "distribution_hash": result.distribution_hash,
-        "intrinsic_freeze_hash": intrinsic_freeze_hash,
+        "calculation_hash": calculation_hash,
         "market_price_used": False,
-    }
-    broker_payload = {
-        "schema_version": "post-freeze-broker-comparison-result/v1",
-        "target_id": spec["target_id"],
-        "as_of": spec["as_of"],
-        "intrinsic_freeze_hash": intrinsic_freeze_hash,
-        "post_freeze_comparison_hash": post_freeze_comparison_hash,
-        "intrinsic_distribution_unchanged": True,
-        "market": {
-            "date": market["localTradedAt"],
-            "price": str(market_price),
-            "currency": spec["reporting_currency"],
-        },
-        "sample_policy": broker_snapshot["sample_policy"],
-        "coverage_limit": broker_snapshot["coverage_limit"],
-        "sample": broker_sample,
-        "reports": broker_rows,
     }
     claim_bridge = spec["claim_bridge"]
     disclosed_gross_claims = Decimal(
@@ -387,182 +320,91 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "legacy_net_claim_bridge_reproduced": reconstructed_net_claim_proxy
         == Decimal(claim_bridge["legacy_net_claim_proxy_KRW"]),
         "probabilities_sum_to_one": sum((b.probability for b in branches), Decimal("0")) == Decimal("1"),
-        "central_branch_is_unique_mode": max(b.probability for b in branches) == next(b.probability for b in branches if b.is_central),
+        "central_branch_is_unique_mode": all(
+            b.is_central or b.probability < next(c.probability for c in branches if c.is_central)
+            for b in branches
+        ),
         "nearest_anchor_probability_absent": True,
-        "down_branch_structural_value_positive": values["Down"] > 0,
+        "branch_structural_values_nonnegative": all(value >= 0 for value in values.values()),
         "report_time_point_dcf_floor_absent": True,
         "entry_is_pre_market_and_hash_bound": True,
         "realized_success_meets_policy_minimum": result.realized_success_probability
         >= result.target_success_probability,
-        "broker_loaded_only_after_intrinsic_freeze": True,
-        "broker_report_dates_not_after_cutoff": all(
-            row["report_date"] <= spec["as_of"] for row in broker_rows
-        ),
-        "broker_targets_excluded_from_intrinsic_inputs": True,
-        "broker_sources_are_clickable_http": all(
-            row["source_url"].startswith(("http://", "https://")) for row in broker_rows
-        ),
-        "broker_sample_uses_unique_institutions": len(
-            {row["institution"] for row in broker_rows}
-        )
-        == len(broker_rows),
-        "market_loaded_only_after_intrinsic_freeze": True,
+
     }
     if not all(audit_checks.values()):
         raise ValueError("distribution audit failed")
     audit_payload = {
         "schema_version": "governed-distribution-audit/v1",
-        "passed": True,
+        "passed": False,
+        "canonical_audit_status": "NOT_RUN",
+        "diagnostic_checks_passed": True,
         "checks": audit_checks,
         "source_audit_hash": source_snapshot["source_audit_hash"],
         "source_audit_passed": True,
         "distribution_hash": result.distribution_hash,
-        "intrinsic_freeze_hash": intrinsic_freeze_hash,
-        "post_freeze_comparison_hash": post_freeze_comparison_hash,
+        "calculation_hash": calculation_hash,
     }
 
-    broker_table = []
-    for row in broker_rows:
-        basis = row["target_multiple"]
-        if basis == "NOT_DISCLOSED":
-            basis = "산식·배수 비공개"
-        broker_table.append(
-            f"| {row['institution']} ({row['report_date']}) | "
-            f"{_money(Decimal(row['target_price']))} · {row['rating']} | "
-            f"{_pct(Decimal(row['target_upside_vs_market_pct']))} | {basis} | "
-            f"{row['load_bearing_assumption']} |"
-        )
-    broker_source_lines = "\n".join(
-        f"- [{row['institution']} {row['report_date']} — {row['title']}]({row['source_url']})"
-        for row in broker_rows
+    branch_table = "\n".join(
+        f"| {name} | {_pct(probability * Decimal('100'))} | {_money(value)} |"
+        for name, value, probability in result.branch_values_per_share
     )
+    policy_label = (
+        f"{policy['horizon_years']}년 · 연 {_pct(Decimal(policy['required_annual_return']) * 100)}"
+        f" · 하위 {_pct(Decimal(policy['success_quantile']) * 100)}"
+    )
+    report = f"""# {spec['company']} 분포 진단 — 미인증
 
-    report = f"""# 대한항공 최종 투자자 보고서 — 구조형 분포 APV 보완
+기준일: {spec['as_of']}. 정식 감사·내재가치 동결을 거치지 않은 계산입니다.
+최종 적정가·투자판정·매수가로 사용할 수 없습니다. 현재가와 증권사 자료는 읽지 않았습니다.
 
-| 항목 | 결과 |
+## 조건부 계산
+
+| 항목 | 진단값 |
 |---|---:|
-| 기준일 | {spec['as_of']} |
-| 판정 | **현재가에서는 신규매수 보류** |
-| 중앙 적정가(P50) | **{_money(result.p50)}** |
-| 확률가중 평균가치 | **{_money(result.mean)}** |
-| 구체 매수가(3년, 연 12%, 하위 25% 기준) | **{_money(result.entry_price)}** |
-| 검증 증권사 표본 | **{_money(Decimal(broker_sample['min_target_price']))}~{_money(Decimal(broker_sample['max_target_price']))}** · 중앙값 {_money(Decimal(broker_sample['median_target_price']))} |
+| P50 | {_money(result.p50)} |
+| 확률가중 평균 | {_money(result.mean)} |
+| 진입가격 계산 ({policy_label}) | {_money(result.entry_price)} |
+| P10~P90 | {_money(result.p10)}~{_money(result.p90)} |
 
-## 무엇을 고쳤는가
-
-기존 34.74%/9.45%/55.81%는 관측치를 가장 가까운 Down/Base/Bull 기준점에 배정해 양끝 꼬리가 확률을 과점한 결과였다. 폐기했다. 새 분포는 통합 실패 20%, 점진적 회복 60%, 실행 성공 20%의 상호배타적 보정 사건확률을 사용하며 중앙 경로가 유일한 최빈 상태다. 확률의 근거와 민감도는 산출물에 고정했다.
-
-## 가치와 하방
-
-| 상태 | 사전확률 | 구조적 구주주가치/주 |
+| 입력 상태 | 입력 확률 | 조건부 구주주가치/주 |
 |---|---:|---:|
-| 통합·회복 실패 | 20% | {_money(values['Down'])} |
-| 점진적 회복 | 60% | {_money(values['Central'])} |
-| 실행 성공 | 20% | {_money(values['Upside'])} |
+{branch_table}
 
-하방을 0원으로 잘라 평균하지 않았다. 감사된 기업가치에 적격 유동자산을 되더하고, 리스 포함 공시부채·기준일까지의 자금소요·기타 선순위청구권을 총청구액으로 한 번만 반영했다. 자산변동성 22%와 5년 청구기간을 사용해 **만기가 있는 잔여청구권**으로 평가했다. 그 결과 하방 상태도 {_money(values['Down'])}이며, 법적 유한책임은 미래 만기 지급액에서만 작동한다.
+## 입력 가정
 
-가중 평균은 {_money(result.mean)}, 중앙값은 {_money(result.p50)}이다. prior 민감도에서 가중 평균은 {_money(min(Decimal(row['probability_weighted_mean']) for row in sensitivity))}~{_money(max(Decimal(row['probability_weighted_mean']) for row in sensitivity))}이다. P10~P90은 {_money(result.p10)}~{_money(result.p90)}이다. 현재가 {_money(market_price)}({market['localTradedAt']})은 이 내재가치와 매수가 계산을 끝내고 동결한 뒤에만 비교했다.
-
-## 매수가
-
-매수가는 목표가의 임의 25% 할인이 아니다. 각 상태의 3년 후 주주가치를 요구수익률로 할인한 뒤 하위 25% 경계로 정했다.
-
-| 요구 연수익률 | 매수가 |
-|---:|---:|
-""" + "\n".join(
-        f"| {rate * Decimal('100'):.0f}% | {_money(value)} |"
-        for rate, value in result.entry_price_sensitivities
-    ) + f"""
-
-따라서 기본 매수가는 {_money(result.entry_price)}이다. 현재가 대비 싼 가격을 역산한 것이 아니라, 연 12% 수익 달성확률을 최소 75%로 요구한 결과다. 이산 사건분포에서 실제 달성확률은 {result.realized_success_probability * Decimal('100'):.0f}%로 최소기준을 충족한다.
-
-## 투자판단
-
-현재가 {_money(market_price)}은 P50 {_money(result.p50)}과 가중 평균 {_money(result.mean)}을 모두 웃돈다. 통합 시너지와 항공우주·MRO 전환이 실행 성공 경로에 가깝게 확인되지 않는 한 신규매수 근거가 약하다. 실적 확인 포인트는 연결 항공부문 마진, 투자 후 잉여현금흐름, 리스 포함 순차입금, 아시아나 손실 축소다.
-
-## 핵심 가정과 위험
-
-- 공통 적용계약은 용량×가동률×단가, 높은 고정비·재투자, 장기자산·리스 및 금융청구권 구조를 기준으로 선택한다. 항공 업종명은 회사 지표를 공통 입력에 연결하는 역할만 한다.
-- 확률은 별도 보정 증거와 감사된 조건부 가치에 결속한 사건확률이다. 보정되지 않은 단일 analyst prior는 이 보고경로를 승인할 수 없다.
-- 구조적 옵션은 보고서 단계의 0원 하한을 대체한다. 다중 만기 waterfall의 모든 비공개 약정을 완전히 복원한 값은 아니다.
-- 구조형 자산에는 적격 유동자산을 되더하고, 총청구액에는 공시부채·기준일까지의 자금소요·비지배/기타 청구권을 한 번씩만 합산했다. 세부 은행차입 만기와 담보순위 공백은 남는다.
-- 기존 보고서는 감사 이력으로 보존하며 이 보고서가 의사결정 방법론을 대체한다.
-
-## 증권사·시장 비교
-
-기준일 이전에 내용과 목표가를 확인할 수 있었던 증권사별 최신 공개자료 표본 3건을 비교했다. 표본 중앙값은 {_money(Decimal(broker_sample['median_target_price']))}, 범위는 {_money(Decimal(broker_sample['min_target_price']))}~{_money(Decimal(broker_sample['max_target_price']))}이다. 이는 전체 시장 컨센서스가 아니라 **공개 원문 검증 표본**이다.
-
-| 증권사·보고일 | 목표가·의견 | 현재가 대비 | 공개된 평가기준 | 목표가를 지탱하는 핵심 가정 |
-|---|---:|---:|---|---|
-""" + "\n".join(broker_table) + f"""
-
-표본 중앙값 {_money(Decimal(broker_sample['median_target_price']))}은 현재가보다 {_pct(Decimal(broker_sample['median_premium_vs_market_pct']))}, 우리 P50보다 {_pct(Decimal(broker_sample['median_premium_vs_p50_pct']))}, 확률가중 평균보다 {_pct(Decimal(broker_sample['median_premium_vs_probability_weighted_mean_pct']))} 높다. 반대로 우리 확률가중 평균은 표본 중앙값보다 {_pct(Decimal(broker_sample['probability_weighted_mean_discount_to_median_pct']))} 낮다.
-
-### 왜 차이가 나는가
-
-- **영업경로:** 미래에셋은 3Q26 연결 영업이익 4,887억원과 원화 강세, LS는 FY2027 연결 영업이익 2.663조원·영업이익률 9.1%, 하나는 통합 LCC 효과의 2028년 본격화를 전제로 한다. 세 보고서 모두 여객·화물 단가와 통합 시너지를 회복축으로 본다.
-- **평가정책:** 미래에셋은 과거 PBR 밴드 상단을 웃도는 1.1배를 적용한다. 우리 값은 목표 배수를 주가에 적용하지 않고, 상태별 사업자산에서 총금융청구권을 반영한 구주주 잔여가치를 확률분포로 계산한다.
-- **재무·자본구조:** 우리 모형은 리스 포함 공시부채, 기준일까지의 자금소요와 기타 선순위청구권을 총 25.697조원으로 명시하고 적격 유동자산을 별도 되더한다. 공개자료에서 하나·LS의 목표가 산식, 기준연도, 순차입금·CAPEX 처리가 모두 공개되지 않아 이 부분의 가격 차이는 정량 분해하지 않았다.
-- **상방의 위치:** 우리 실행 성공 값 {_money(values['Upside'])}은 증권사 목표가 상단 {_money(Decimal(broker_sample['max_target_price']))}보다 높다. 따라서 차이는 상방을 막아서라기보다, 상방 실현확률과 통합 전후 현금흐름·금융청구권을 언제 인식하느냐에서 발생한다.
-- **남는 오차:** 증권사별 비공개 세부 산식 때문에 영업·금융·배수 효과를 합계 100%로 억지 배분하지 않았다. LS 자료는 증권사 작성본 전체를 확인했지만 공개 제3자 미러라는 출처 제약도 남긴다.
-
-## 원문
-
-- [대한항공 재무정보·분기 IR 아카이브](https://www.koreanair.com/contents/footer/about-us/investor-relations/financial-information)
-- [대한항공 2026 반기보고서](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803)
-- [2026년 7월 24일 합병 투자설명서](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260724000006)
-- [Merton, corporate debt structural model](https://dspace.mit.edu/handle/1721.1/1875)
-- [네이버증권 대한항공 가격 이력](https://m.stock.naver.com/api/stock/003490/price)
-{broker_source_lines}
+- 확률 근거: {spec['probability_authorization']['basis']}
+- 자산변동성: {_pct(Decimal(spec['annual_asset_volatility']) * 100)}
+- 총청구액: {_money(claims)}
+- 청구기간: {spec['claim_horizon_years']}년
+- 원본 시나리오 파일은 고정된 번들의 파일 해시·대상·기준일·값과 대조했습니다.
+- 원본의 감사 통과는 이 분포 및 진입가격 계산의 감사 통과를 의미하지 않습니다.
 """
-    forbidden = (
-        "가장 가까운 시나리오",
-        "확률이 보정되지 않아",
-        "목표가 대비 25% 안전마진",
-        "Σ[확률×max(0",
-    )
-    if any(text in report for text in forbidden):
-        raise ValueError("report contains a retired valuation phrase")
 
     artifact_basis = sha256(
         (
-            result.distribution_hash
-            + intrinsic_freeze_hash
-            + post_freeze_comparison_hash
+            "diagnostic/v1" + result.distribution_hash
+            + calculation_hash
             + _sha(spec_path)
         ).encode("utf-8")
     ).hexdigest()
-    artifact_id = f"{spec['ticker']}-{spec['as_of'].replace('-', '')}-DIST-{artifact_basis[:12].upper()}"
+    artifact_id = f"{spec['ticker']}-{spec['as_of'].replace('-', '')}-DIAGNOSTIC-{artifact_basis[:12].upper()}"
     bundle = output_root / artifact_id
     bundle.mkdir(parents=True, exist_ok=True)
     files = {
         "equity_value_distribution.json": json.dumps(distribution_payload, ensure_ascii=False, indent=2) + "\n",
         "entry_price.json": json.dumps(entry_payload, ensure_ascii=False, indent=2) + "\n",
-        "broker_comparison.json": json.dumps(broker_payload, ensure_ascii=False, indent=2) + "\n",
         "audit.json": json.dumps(audit_payload, ensure_ascii=False, indent=2) + "\n",
-        "final_report.md": report,
+        "diagnostic_report.md": report,
         "valuation_summary.svg": _svg(
-            "대한항공 가치평가·투자 결론",
-            [
-                f"P50 {_money(result.p50)} · 확률가중 평균 {_money(result.mean)}",
-                f"구체 매수가 {_money(result.entry_price)} (3년·연 12%·최소 75% 성공 기준)",
-                f"현재가 {_money(market_price)} · 신규매수 보류",
-                f"하방 {_money(values['Down'])} · 중앙 {_money(values['Central'])} · 상방 {_money(values['Upside'])}",
-            ],
+            f"{spec['company']} 분포 진단 · 미인증",
+            [f"P50 {_money(result.p50)} · 평균 {_money(result.mean)}",
+             f"진입가격 계산 {_money(result.entry_price)}",
+             policy_label, "정식 감사·동결 미실행 · 투자판정에 사용 불가"],
             distribution_hash=result.distribution_hash,
         ),
-        "assumptions_risk_sources.svg": _svg(
-            "가정·위험·출처",
-            [
-                "보정 사건확률 20% / 60% / 20% · 중앙 상태가 유일한 최빈값",
-                "자산변동성 22% · 총청구액 25.696557조원 · 5년",
-                "보고서 단계 0원 하한 없음 · 현재가는 내재가치 동결 후 비교",
-                "주요 위험: 통합손실 · 리스/차입 차환 · 투자 후 현금흐름",
-                f"증권사 공개 3건 {_money(Decimal(broker_sample['min_target_price']))}~{_money(Decimal(broker_sample['max_target_price']))}",
-            ],
-            distribution_hash=result.distribution_hash,
-        ),
+
     }
     for name, contents in files.items():
         path = bundle / name
@@ -578,14 +420,12 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "company": spec["company"],
         "ticker": spec["ticker"],
         "as_of": spec["as_of"],
-        "status": "AUDITED_FINAL",
-        "audit_passed": True,
+        "status": "DIAGNOSTIC_ONLY",
+        "audit_passed": False,
         "distribution_hash": result.distribution_hash,
-        "intrinsic_freeze_hash": intrinsic_freeze_hash,
-        "post_freeze_comparison_hash": post_freeze_comparison_hash,
+        "calculation_hash": calculation_hash,
         "source_valuation_hash": source_snapshot["source_valuation_hash"],
         "source_audit_hash": source_snapshot["source_audit_hash"],
-        "supersedes_artifact_id": spec["supersedes_artifact_id"],
         "spec_sha256": _sha(spec_path),
         "files": receipts,
     }
@@ -594,21 +434,6 @@ def build(spec_path: Path, output_root: Path) -> Path:
     if manifest_path.exists() and manifest_path.read_text(encoding="utf-8") != manifest_text:
         raise ValueError(f"immutable artifact collision: {manifest_path}")
     manifest_path.write_text(manifest_text, encoding="utf-8")
-    run_output = (run_dir / "out").resolve()
-    if bundle.resolve().is_relative_to(run_output):
-        latest = {
-            "schema_version": "governed-distribution-latest/v1",
-            "artifact_id": artifact_id,
-            "bundle_directory": str(bundle.resolve().relative_to(run_output)),
-            "report_filename": "final_report.md",
-            "distribution_hash": result.distribution_hash,
-            "intrinsic_freeze_hash": intrinsic_freeze_hash,
-            "post_freeze_comparison_hash": post_freeze_comparison_hash,
-            "audit_passed": True,
-            "supersedes_artifact_id": spec["supersedes_artifact_id"],
-        }
-        latest_path = run_output / f"{spec['ticker']}_LATEST_DISTRIBUTIONAL_REPORT.json"
-        latest_path.write_text(json.dumps(latest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return bundle
 
 

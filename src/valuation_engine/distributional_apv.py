@@ -90,6 +90,20 @@ class TaxShieldSchedule:
 
 
 @dataclass(frozen=True)
+class NonOperatingAssetDisposal:
+    """Disposed values on the same basis as the APV's pre-sale asset balances.
+
+    Sale price is not a proxy for retained asset value. Operating-asset sales
+    require rebuilt operating paths and are not supported by this bridge.
+    """
+
+    period: int
+    gross_proceeds: Decimal
+    present_asset_value: Decimal
+    horizon_asset_value: Decimal
+
+
+@dataclass(frozen=True)
 class APVPathInput:
     path_id: str
     segments: tuple[SegmentCashFlowPath, ...]
@@ -100,6 +114,7 @@ class APVPathInput:
     distributions_to_old_holders: tuple[Decimal, ...]
     equity_required_return: Decimal
     initial_shares: Decimal
+    asset_disposals: tuple[NonOperatingAssetDisposal, ...] = ()
 
     def validate(self) -> None:
         if not self.path_id or not self.segments:
@@ -132,6 +147,34 @@ class APVPathInput:
         _rate(self.equity_required_return, "equity required return")
         if _decimal(self.initial_shares, "initial shares") <= ZERO:
             raise DistributionalAPVError("initial shares must be positive")
+        sales = tuple(
+            (period.period, action.gross_amount)
+            for period in self.financing_result.periods
+            for action in period.actions
+            if action.action_type is FinancingActionType.ASSET_SALE
+        )
+        for disposal in self.asset_disposals:
+            if not 1 <= disposal.period <= horizon:
+                raise DistributionalAPVError("asset disposal period is outside the horizon")
+            for field in ("gross_proceeds", "present_asset_value", "horizon_asset_value"):
+                if _decimal(getattr(disposal, field), field) <= ZERO:
+                    raise DistributionalAPVError("disposed asset values must be positive")
+        if sales != tuple((item.period, item.gross_proceeds) for item in self.asset_disposals):
+            raise DistributionalAPVError("asset sales require matching disposed-asset values")
+        if sales and self.financing_result.distressed:
+            raise DistributionalAPVError("asset sales in distress require a reconciled recovery asset bridge")
+        if any(
+            action.source_id != "NON_CORE_ASSET_SALE"
+            for period in self.financing_result.periods
+            for action in period.actions
+            if action.action_type is FinancingActionType.ASSET_SALE
+        ):
+            raise DistributionalAPVError("operating asset sales require rebuilt operating paths")
+        if (sum((item.present_asset_value for item in self.asset_disposals), ZERO)
+                > self.non_operating_assets_present
+            or sum((item.horizon_asset_value for item in self.asset_disposals), ZERO)
+                > self.non_operating_assets_at_horizon):
+            raise DistributionalAPVError("disposed assets exceed the pre-sale asset balance")
         action_costs = tuple(
             action.transaction_cost
             for period in self.financing_result.periods
@@ -268,6 +311,7 @@ def evaluate_apv_path(path: APVPathInput) -> PathAPVResult:
         + shield_pv
         - financing_cost_pv
         + path.non_operating_assets_present
+        - sum((item.present_asset_value for item in path.asset_disposals), ZERO)
     )
 
     realized_periods = (
@@ -297,6 +341,7 @@ def evaluate_apv_path(path: APVPathInput) -> PathAPVResult:
         terminal_payoff = max(
             terminal_enterprise_value
             + path.non_operating_assets_at_horizon
+            - sum((item.horizon_asset_value for item in path.asset_disposals), ZERO)
             + path.financing_result.ending_cash
             - path.financing_result.horizon_senior_claims,
             ZERO,
@@ -457,6 +502,7 @@ def decimal_quantile(values: tuple[Decimal, ...], probability: Decimal) -> Decim
 
 __all__ = [
     "APVPathInput",
+    "NonOperatingAssetDisposal",
     "DistributionalAPVError",
     "EquityValueDistribution",
     "PathAPVResult",

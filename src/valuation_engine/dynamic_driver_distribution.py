@@ -294,7 +294,17 @@ def fit_dynamic_driver_posterior(
     _require_decimal(shrinkage_strength, "shrinkage strength")
     if shrinkage_strength < ZERO:
         raise DriverDistributionError("shrinkage strength cannot be negative")
-    if holdout_count < 12 or holdout_count >= len(panel.observations) - 8:
+    # A break period is the first quarter of the new comparable regime.
+    # Never train or score across a declared perimeter/accounting change.
+    observations = panel.observations
+    if panel.structural_breaks:
+        regime_start = max(item.period_end for item in panel.structural_breaks)
+        observations = tuple(item for item in observations if item.period_end >= regime_start)
+        if len(observations) < 32:
+            raise DriverDistributionError(
+                "structural break leaves fewer than 32 comparable observations"
+            )
+    if holdout_count < 12 or holdout_count >= len(observations) - 8:
         raise DriverDistributionError("rolling-origin holdout count is not supportable")
     if student_t_df < 3:
         raise DriverDistributionError("Student-t degrees of freedom must be at least 3")
@@ -308,20 +318,25 @@ def fit_dynamic_driver_posterior(
 
     rows = tuple(
         tuple(observation.as_map()[driver_id] for driver_id in driver_ids)
-        for observation in panel.observations
+        for observation in observations
     )
     seasonal, transition, covariance, uncertainty = _fit_parameters(
-        rows, tuple(_quarter_index(item.period_end) % 4 for item in panel.observations), shrinkage_strength
+        rows, tuple(_quarter_index(item.period_end) % 4 for item in observations), shrinkage_strength
     )
     diagnostics = _rolling_diagnostics(
         rows,
-        tuple(_quarter_index(item.period_end) % 4 for item in panel.observations),
+        tuple(_quarter_index(item.period_end) % 4 for item in observations),
         driver_ids,
         holdout_count,
         shrinkage_strength,
     )
     parameter_payload = {
         "target_id": panel.target_id,
+        "perimeter": panel.perimeter,
+        "structural_breaks": sorted(
+            (item.period_end.isoformat(), item.reason) for item in panel.structural_breaks
+        ),
+        "regime_start": observations[0].period_end.isoformat(),
         "driver_ids": driver_ids,
         "seasonal": [[str(value) for value in row] for row in seasonal],
         "transition": [[str(value) for value in row] for row in transition],
@@ -339,7 +354,7 @@ def fit_dynamic_driver_posterior(
         student_t_df=student_t_df,
         parameter_uncertainty=uncertainty,
         last_state=rows[-1],
-        last_quarter=_quarter_index(panel.observations[-1].period_end) % 4,
+        last_quarter=_quarter_index(observations[-1].period_end) % 4,
         lower_bounds=tuple(lower_bounds.get(item) for item in driver_ids),
         upper_bounds=tuple(upper_bounds.get(item) for item in driver_ids),
         parameter_draws_hash=parameter_hash,
