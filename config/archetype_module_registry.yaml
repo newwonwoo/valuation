@@ -1,4 +1,4 @@
-version: 1.0
+version: 1.1
 principle: Common Core always runs first. Archetype modules add operating economics;
   they may narrow but never bypass evidence, risk, audit, or blind-value gates.
 modules:
@@ -32,6 +32,24 @@ modules:
     double_count_traps: [lease_principal_in_FCFF_and_lease_debt_deduction, merger_synergy_in_margin_and_separate_asset, aircraft_orders_without_delivery_capex, consolidated_subsidiary_cashflows_plus_same_equity_stake]
     forbidden_methods: [unadjusted_peer_EBITDAR_multiple, perpetual_growth_without_fleet_replacement, generic_plant_spread_proxy]
     allowed_valuation_methods: [traffic_yield_dcf]
+  capacity_yield_levered:
+    # Reusable capacity×yield economics with fixed operating commitments and
+    # nonlinear debt/lease claims. Sector adapters map their own metric names.
+    required_evidence: [service_capacity, realized_volume, utilization_or_load, realized_unit_yield, variable_input_cost, nonvariable_operating_cost, committed_asset_capex, lease_liabilities, debt_maturities, minimum_operating_liquidity]
+    normalization:
+      - capacity_volume_yield_period_unit_and_perimeter_consistency
+      - fixed_variable_and_pass_through_cost_separation
+      - owned_and_leased_asset_reinvestment_consistency
+      - lease_cashflows_and_financial_claims_single_counting
+      - debt_maturity_refinancing_and_minimum_liquidity_reconciliation
+    beta_peer_features: [demand_cyclicality, utilization_sensitivity, yield_volatility, fixed_cost_intensity, asset_ownership, lease_and_debt_refinancing_exposure]
+    per_peer_features: [normalized_utilization, normalized_yield, cash_conversion, sustaining_reinvestment, leverage_and_dilution_risk]
+    scenario_variables: [service_capacity, realized_volume, utilization_or_load, realized_unit_yield, variable_input_cost, nonvariable_operating_cost, committed_asset_capex, lease_additions, refinancing_capacity]
+    funding_scan: asset_commitment_lease_maturities_debt_refinancing_and_minimum_liquidity
+    terminal_policy: Capacity, utilization and unit yield must converge with sustaining asset replacement, lease renewals and evidenced financing capacity; distress and dilution are explicit path events.
+    double_count_traps: [lease_cashflow_plus_lease_claim, distress_spread_plus_explicit_distress_cost, asset_sale_proceeds_plus_retained_asset_value, capacity_growth_without_committed_reinvestment]
+    forbidden_methods: [nearest_scenario_anchor_probability, report_time_equity_zero_floor, unlimited_refinancing, current_price_implied_distribution]
+    allowed_valuation_methods: [driver_distributional_apv]
   contracted_backlog:
     required_evidence:
     - orders

@@ -11,7 +11,7 @@ adapters:
     key_evidence: [asset_value, noi_or_ffo, occupancy, rent, cap_rate, debt, maturities]
     special_risks: [hotel_operating_lease_mix, refinancing, maintenance_capex]
   transport_industrial.airline:
-    default_archetypes: [airline_transport]
+    default_archetypes: [airline_transport, capacity_yield_levered]
     key_evidence: [passenger_capacity, passenger_traffic, passenger_yield, cargo_traffic, cargo_yield, fuel_cost, nonfuel_operating_cost, fleet_capex, lease_liabilities]
     special_risks: [fuel_and_FX_exposure, aircraft_delivery_funding, traffic_disruption, merger_integration]
   semiconductor.memory:
@@ -351,6 +351,7 @@ adapters:
     - slots
   transport_industrial.shipping:
     default_archetypes:
+    - capacity_yield_levered
     - asset_yield_nav
     - commodity_price_taker
     key_evidence:

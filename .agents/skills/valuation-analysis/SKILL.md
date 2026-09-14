@@ -210,6 +210,13 @@ Only after intrinsic freeze, load recent broker references. Record broker/date/s
 
 Use 10k–100k simulations only when a calibrated stochastic implementation exists and preserve realistic correlations. Current price is never a distribution input. Otherwise report probabilities as `UNCALIBRATED`; do not fabricate Monte Carlo output.
 
+### Reusable capacity-yield leveraged distributional APV route
+
+- Route an evidenced capacity×unit-yield business with material fixed operating commitments and debt/lease claims to the exact method `capacity_yield_levered/driver_distributional_apv`. Airline, shipping or another sector label is only an adapter; a company name, ticker or `target_id` may bind data but must never select a formula. Keep `airline_transport/traffic_yield_dcf` as a distinct legacy cross-check, never an alias or silent fallback for the new method.
+- Keep the reusable core separate from sector and company inputs. The core owns capacity×utilization×yield operating paths, variable-input and fixed-cost transmission, committed-asset/CAPEX/lease roll-forward, recursive target-driver distributions, APV, refinancing/dilution/distress waterfall, old-shareholder value distribution and governed entry-price arithmetic. Sector/company adapters own metric names and units, comparable-perimeter target history, structural breaks, asset and claim schedules, capital-action evidence and SOTP declarations.
+- Permit a self-history distribution only after same-frequency target-company history passes rolling-origin proper-score, interval-coverage, dependence-reproduction and seed/draw stability gates. When a merger makes current-group history too short, permit a `COMPOSED_SEGMENT_POSTERIOR` only if each material predecessor/segment passes its own history gate, a source-bound transaction bridge reconciles the current perimeter, and merger-specific outcomes are isolated as mutually exclusive `GOVERNED_EVENT_PRIOR` branches with prior-source and full sensitivity disclosure. Never fabricate historical pro-forma rows or call an analyst prior calibrated. Peer-company operating outcomes cannot calibrate the target's path probabilities. Scenario labels summarize distribution regions and never create their probabilities.
+- Apply limited liability only to an explicit dated old-shareholder terminal payoff or evidenced distress waterfall. A report or point-DCF layer may not floor a negative scenario value to zero. Freeze P50, Mean, P20–P80, tail quantiles, distress/dilution risks and a versioned return/quantile entry policy to the same distribution hash before Street or current-price access.
+
 ## Verification
 
 Before reporting/publishing model changes:

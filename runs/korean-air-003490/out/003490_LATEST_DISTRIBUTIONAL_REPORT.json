@@ -1,0 +1,10 @@
+{
+  "schema_version": "governed-distribution-latest/v1",
+  "artifact_id": "003490-20260913-DIST-00C763B0C92C",
+  "bundle_directory": "distributional_bundles/003490-20260913-DIST-00C763B0C92C",
+  "report_filename": "final_report.md",
+  "distribution_hash": "349b06908b6e5cb7e1b33887971dd018dd1833508ccbdc3b17779e8fc6fa0fc4",
+  "intrinsic_freeze_hash": "768f0d1eb65f06246d04e200cd20faac5f0eb2dcbef8cbfdce8220a192acb937",
+  "audit_passed": true,
+  "supersedes_artifact_id": "003490-20260913-TP20813-47FF05D6D4DC"
+}

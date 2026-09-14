@@ -1,0 +1,41 @@
+{
+  "schema_version": "governed-distribution-report-bundle/v1",
+  "artifact_id": "003490-20260913-DIST-00C763B0C92C",
+  "company": "대한항공",
+  "ticker": "003490",
+  "as_of": "2026-09-13",
+  "status": "AUDITED_FINAL",
+  "audit_passed": true,
+  "distribution_hash": "349b06908b6e5cb7e1b33887971dd018dd1833508ccbdc3b17779e8fc6fa0fc4",
+  "intrinsic_freeze_hash": "768f0d1eb65f06246d04e200cd20faac5f0eb2dcbef8cbfdce8220a192acb937",
+  "source_valuation_hash": "fa91fc4535385b9f2deb0c9e3160321c1d3829768429677445ce5a6bb358e8bb",
+  "source_audit_hash": "40b78a4babb0a5c63d8f5ab794600516c6ffe338ae2321150184b7062a4b9d3c",
+  "supersedes_artifact_id": "003490-20260913-TP20813-47FF05D6D4DC",
+  "spec_sha256": "6fecbbbf2b6c5625b6dc5113b95227a59173fbfec4ca674a62434b2d362bed1d",
+  "files": [
+    {
+      "filename": "assumptions_risk_sources.svg",
+      "sha256": "0ba45f6d0a85065622e81a1b092a20ba0fc3f9a44c648d90c699753a659bfc5e"
+    },
+    {
+      "filename": "audit.json",
+      "sha256": "3cce33b5e32f1e3d58d3131423e65fc83a95f4995002ff60f2a414dc305ad60c"
+    },
+    {
+      "filename": "entry_price.json",
+      "sha256": "5a648a0bd91dad431e4f7cad2a898ee7e470de9fa30a2d7580cf392080072497"
+    },
+    {
+      "filename": "equity_value_distribution.json",
+      "sha256": "b7722fb417d6b591441e6965c6d9005bc5a03d6283a2efcbd0b370d687f1d035"
+    },
+    {
+      "filename": "final_report.md",
+      "sha256": "e6cb98183d7da27ca29c94e6748adafeb5da654ce0856a290f7862bf6acafb1f"
+    },
+    {
+      "filename": "valuation_summary.svg",
+      "sha256": "ea70bca8ac48052aa909eb4606bbfc325a1cfad0dbfc6a1ca8308bf40ed8988f"
+    }
+  ]
+}

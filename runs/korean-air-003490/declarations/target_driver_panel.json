@@ -1,0 +1,184 @@
+{
+  "schema_version": "target-driver-panel-composition/capacity-yield-v2",
+  "target_id": "KR:DART:00113526",
+  "as_of": "2026-09-13",
+  "frequency_required": "quarterly",
+  "minimum_comparable_observations_per_operating_segment": 32,
+  "minimum_rolling_origin_holdouts": 12,
+  "panel_mode": "SEGMENT_POSTERIOR_SOTP_COMPOSITION",
+  "full_group_panel": {
+    "perimeter": "KOREAN_AIR_CONSOLIDATED_GROUP_POST_ASIANA_ACQUISITION",
+    "qualified_observations": [],
+    "same_perimeter_complete_row_count": 0,
+    "qualification_status": "NOT_MATERIALIZABLE_FROM_DISCLOSED_HISTORY",
+    "distribution_authorized": false,
+    "reason": "Asiana was deemed acquired on 2024-12-31. No pre-acquisition quarter has the current consolidated perimeter, and the post-acquisition group filing does not disclose one complete capacity, utilization, yield and cost vector across all consolidated carriers.",
+    "prohibited_repair": "Do not add Korean Air and Asiana observations into a synthetic consolidated time row or join parent-only traffic metrics to group costs and financing."
+  },
+  "source_inventory": {
+    "issuer_ir_archive_source_ref": "https://www.koreanair.com/contents/footer/about-us/investor-relations/financial-information",
+    "archive_ranges_visible": [
+      "current_to_2026",
+      "2025_to_2021",
+      "2020_to_2016",
+      "2015_to_2011",
+      "2010_to_2006"
+    ],
+    "quarterly_ir_periods_visible": "2007Q1 through 2026Q2",
+    "quarterly_ir_release_count_visible_minimum": 78,
+    "inventory_note": "The archive exposes four quarterly IR releases for each year from 2007 through 2025 and Q1-Q2 for 2026. The earlier count of 27 described only a recent English-language filename subset and must not be treated as the archive total.",
+    "directly_verified_examples": [
+      "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/2007_1Q_IR_Report_ko.pdf",
+      "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/2016_1Q_IR_Report_ko.pdf",
+      "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/2016_2Q_IR_Report_ko.pdf",
+      "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/2016_3Q_IR_Report_ko.pdf",
+      "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/2016_4Q_IR_Report_ko.pdf",
+      "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/2026_2Q_IR_Report_ko.pdf"
+    ]
+  },
+  "segment_panels": [
+    {
+      "segment_panel_id": "korean_air_standalone_air_transport",
+      "issuer": "Korean Air Lines Co., Ltd.",
+      "perimeter": "KOREAN_AIR_STANDALONE",
+      "posterior_role": "OPERATING_CORE",
+      "source_availability": "32_PLUS_QUARTERLY_SOURCE_DOCUMENTS_AVAILABLE",
+      "candidate_contiguous_window": "2016Q1 through 2023Q4 (32 quarters)",
+      "candidate_window_scope": "Korean Air standalone operating perimeter; retain explicit K-IFRS 16 and cargo-definition structural breaks",
+      "materialization_status": "EXTRACTION_HASHING_AND_DEFINITION_BRIDGE_PENDING",
+      "materialized_observations": [],
+      "distribution_authorized": false,
+      "authorization_condition": "Materialize at least 32 contiguous same-definition quarterly rows with period_end, published_at, first_seen_at, source URL and content hash; then pass at least 12 rolling-origin holdouts and interval calibration tests.",
+      "operating_driver_ids_for_panel": [
+        "passenger_ask",
+        "passenger_load_factor",
+        "passenger_yield",
+        "cargo_actk",
+        "cargo_load_factor",
+        "cargo_yield",
+        "fuel_consumption",
+        "jet_fuel_unit_price",
+        "fuel_fx_translation",
+        "nonfuel_operating_expense"
+      ],
+      "definition_bridge_required": [
+        "AFTK/FTK to ACTK/CTK cargo metric labels by source period",
+        "international and domestic passenger columns to one documented standalone passenger vector",
+        "pre-K-IFRS-16 rent and post-K-IFRS-16 lease-adjusted cost consistency",
+        "cumulative interim financial values to standalone quarter-only values where applicable"
+      ],
+      "source_ref": "https://www.koreanair.com/contents/footer/about-us/investor-relations/financial-information"
+    },
+    {
+      "segment_panel_id": "asiana_standalone_air_transport",
+      "issuer": "Asiana Airlines, Inc.",
+      "perimeter": "ASIANA_STANDALONE_PRE_LEGAL_MERGER",
+      "posterior_role": "ACQUIRED_OPERATING_SEGMENT",
+      "source_availability": "PUBLIC_QUARTERLY_FILINGS_AND_OPERATING_STATISTICS_EXIST",
+      "materialization_status": "EQUIVALENT_QUARTER_COUNT_AND_METRIC_BRIDGE_NOT_YET_AUDITED",
+      "materialized_observations": [],
+      "distribution_authorized": false,
+      "authorization_condition": "Use only Asiana's own same-perimeter quarters. Confirm the exact equivalent-quarter count and metric definitions from DART/KRX and official aviation-statistics originals before fitting a segment posterior.",
+      "current_financial_conditioning": {
+        "period_end": "2026-06-30",
+        "frequency": "half_year",
+        "subconsolidated_revenue_before_parent_eliminations_KRW_million": 3524559,
+        "subconsolidated_operating_income_before_parent_eliminations_KRW_million": -408636,
+        "use": "conditioning_anchor_only_not_a_quarterly_training_row"
+      },
+      "source_refs": [
+        "https://www.airportal.go.kr/file/htmlOpen/upload/airline/detail/%5B%EC%95%84%EC%8B%9C%EC%95%84%EB%82%98%ED%95%AD%EA%B3%B5%5D%5B%EC%A0%95%EC%A0%95%5D%EC%82%AC%EC%97%85%EB%B3%B4%EA%B3%A0%EC%84%9C%282022%29.pdf",
+        "https://kind.krx.co.kr/common/disclsviewer.do?acptno=20250310001201&langTpCd=0&method=search&orgid=G&rcpno=20250310001201&tran=Y",
+        "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803"
+      ]
+    }
+  ],
+  "structural_break_distribution": {
+    "event_id": "asiana_legal_merger_and_pmi",
+    "event_type": "ACQUISITION_INTEGRATION",
+    "history_role": "SEPARATE_EVENT_NOT_A_SYNTHETIC_OPERATING_QUARTER",
+    "status_as_of": "PLANNED_NOT_CLOSED",
+    "planned_merger_effective_date": "2026-12-16",
+    "planned_new_common_shares": 20337721,
+    "old_common_shareholder_retention_if_closed": 0.9476585124297811,
+    "company_stated_annual_total_synergy_KRW": 300000000000,
+    "synergy_warning": "The company plan includes financing benefits; do not add the full amount to operating EBIT and again to financing effects.",
+    "uncertain_parameters_source": "declarations/analyst_prior_sensitivity.json",
+    "source_refs": [
+      "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/shareholder_meeting_ko.pdf",
+      "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260626000005&dcmNo=11448313&eleId=3&offset=7532&length=37052&dtd=dart4.xsd"
+    ]
+  },
+  "partial_current_group_observation": {
+    "period_end": "2026-06-30",
+    "frequency": "half_year",
+    "perimeter": "KOREAN_AIR_CONSOLIDATED_GROUP_POST_ASIANA_ACQUISITION",
+    "values": {
+      "airline_gross_revenue_KRW_million": 13731769,
+      "airline_operating_income_KRW_million": 347182,
+      "consolidated_cash_PPE_acquisition_KRW": 2273364369778,
+      "consolidated_noncash_ROU_additions_KRW_million": 524532
+    },
+    "use": "group_value_reconciliation_and_forecast_conditioning_only",
+    "missing_load_bearing_values": [
+      "consolidated_passenger_available_capacity",
+      "consolidated_passenger_utilized_volume",
+      "consolidated_passenger_unit_price",
+      "consolidated_cargo_available_capacity",
+      "consolidated_cargo_utilized_volume",
+      "consolidated_cargo_unit_price",
+      "consolidated_fuel_unit_price_and_usage",
+      "consolidated_nonfuel_unit_cost"
+    ],
+    "source_documents": [
+      {
+        "covered_values": ["airline_gross_revenue_KRW_million", "airline_operating_income_KRW_million"],
+        "source_ref": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=28&offset=699122&length=123903&dtd=dart4.xsd",
+        "source_hash": "705c95fbc4bc4d3cdfe84a8830b708c2ebb7aab6b4989402ad39ee7b5c031181"
+      },
+      {
+        "covered_values": ["consolidated_cash_PPE_acquisition_KRW"],
+        "source_ref": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=23&offset=612895&length=82835&dtd=dart4.xsd",
+        "source_hash": "624749f758e8616e1fd6edf4903e60019f0d6e3e75ee0535e4f519b78eebe178"
+      },
+      {
+        "covered_values": ["consolidated_noncash_ROU_additions_KRW_million"],
+        "source_ref": "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/audita_20262Q.pdf#page=55",
+        "source_hash": null,
+        "hash_status": "WEB_OBSERVED_NOT_LOCALLY_HASHED"
+      }
+    ]
+  },
+  "composition_contract": {
+    "route": "segment_posterior_structural_break_sotp_apv",
+    "steps": [
+      "fit or sensitivity-run Korean Air standalone operating segment",
+      "fit or sensitivity-run Asiana standalone acquired segment",
+      "apply merger and PMI as a separate incremental event distribution",
+      "reconcile post-acquisition eliminations, NCI and group conditioning values",
+      "apply the consolidated financing and lease waterfall once",
+      "divide old-shareholder payoff by the path-specific post-event share count"
+    ],
+    "shared_exogenous_factors": ["jet_fuel_price", "KRW_USD", "regional_passenger_demand", "global_air_cargo_demand"],
+    "dependence_rule": "Couple segment paths only through the same documented exogenous draws. Do not assume perfect correlation or estimate cross-segment residual correlation from unaligned histories.",
+    "no_double_count_rules": [
+      "Do not add Asiana enterprise value after its assets and cash flows are included in the post-acquisition group bridge.",
+      "Do not count the company synergy plan in both operating EBIT and interest savings.",
+      "Do not subtract consolidated lease liabilities more than once.",
+      "Do not subtract NCI and merger dilution as if they were the same claim."
+    ]
+  },
+  "completion_policy": {
+    "audited_final_report_allowed": true,
+    "route_until_segment_oos_is_complete": "VERSIONED_ANALYST_PRIOR_HYBRID_SENSITIVITY",
+    "prior_file": "declarations/analyst_prior_sensitivity.json",
+    "required_output_labels": [
+      "prior_predictive_P50_not_calibrated_posterior",
+      "broad_P20_P80_sensitivity_range",
+      "pathwise_distress_and_dilution_sensitivity",
+      "return_threshold_entry_price"
+    ],
+    "forbidden_output_label": "calibrated_target_company_probability",
+    "report_rule": "Lack of a current-perimeter 32-quarter panel changes the confidence label and width; it must not cause the final report to omit all value and entry-price numbers."
+  }
+}

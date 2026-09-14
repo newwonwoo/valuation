@@ -22,8 +22,14 @@ def profile():
 
 def test_passenger_airline_route_does_not_import_plant_or_retail_requirements():
     routed = profile()
-    assert routed.archetypes == (EconomicArchetype.AIRLINE_TRANSPORT,)
-    assert compose_modules(routed).allowed_valuation_methods == ("traffic_yield_dcf",)
+    assert routed.archetypes == (
+        EconomicArchetype.AIRLINE_TRANSPORT,
+        EconomicArchetype.CAPACITY_YIELD_LEVERED,
+    )
+    assert compose_modules(routed).allowed_valuation_methods == (
+        "driver_distributional_apv",
+        "traffic_yield_dcf",
+    )
     plan = build_module_requirement_plan_from_repo(routed, repo_root=ROOT)
     assert {"passenger_capacity", "passenger_traffic", "passenger_yield", "cargo_traffic",
             "cargo_yield", "fuel_cost", "nonfuel_operating_cost", "fleet_capex",
@@ -72,7 +78,13 @@ def test_four_reportable_segments_route_to_evidenced_methods_with_isolated_value
     profiles = []
     for segment, code, archetype, method in routes:
         entry = mapping.lookup(code)
-        assert entry.archetypes == (EconomicArchetype(archetype),)
+        if segment == "airline":
+            assert entry.archetypes == (
+                EconomicArchetype.AIRLINE_TRANSPORT,
+                EconomicArchetype.CAPACITY_YIELD_LEVERED,
+            )
+        else:
+            assert entry.archetypes == (EconomicArchetype(archetype),)
         routed = IndustryDNAProfile(segment_id=segment, sector_adapter=entry.sector_adapter,
             archetypes=entry.archetypes, evidence_keys=("EV-ROUTE-" + segment,), **entry.structure)
         profiles.append(routed)

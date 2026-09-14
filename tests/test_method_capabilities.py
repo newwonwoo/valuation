@@ -34,9 +34,9 @@ def registry():
 
 def test_method_capability_registry_covers_every_exact_binding_once():
     summary = registry().coverage_summary()
-    assert summary.total == 44
+    assert summary.total == 45
     assert len(summary.runtime_ready) == 28
-    assert len(summary.partial_runtime) == 16
+    assert len(summary.partial_runtime) == 17
     assert summary.not_implemented == ()
 
 
@@ -88,9 +88,9 @@ def test_deterministic_readiness_uses_exact_method_coverage():
     )
     coverage = report.deterministic_method_coverage
     assert coverage is not None
-    assert coverage.total == 34
+    assert coverage.total == 35
     assert len(coverage.runtime_ready) == 18
-    assert len(coverage.partial_runtime) == 16
+    assert len(coverage.partial_runtime) == 17
     assert coverage.not_implemented == ()
     assert "asset_yield_nav/nav" in coverage.runtime_ready
     assert "reserve_depletion/nav" in coverage.runtime_ready

@@ -1,4 +1,4 @@
-version: 1.0
+version: 1.1
 purpose: Canonical static contract map for PRISM units. Defines what each unit consumes, emits, who consumes it, and which decision/value paths it may affect.
 principles:
   - this_registry_is_static_design_truth
@@ -280,13 +280,13 @@ units:
     implementation_status: implemented_binding_core
     stages: [SCENARIO_BUILD, PROBABILITY_DISTRIBUTION_ANALYSIS]
     purpose: Bind compiled assumptions into coherent scenarios and calibrated distributions without current-price anchoring.
-    inputs: [compiled_assumption_set, event_probabilities, correlation_policy]
-    outputs: [scenario_set, probability_distribution, scenario_hash]
+    inputs: [compiled_assumption_set, event_probabilities, correlation_policy, target_driver_panel, structural_breaks, exogenous_driver_paths]
+    outputs: [scenario_set, probability_distribution, scenario_hash, dynamic_driver_posterior, recursive_driver_paths, calibration_diagnostics, valuation_distribution_authorized]
     consumers: [DETERMINISTIC_VALUATION, DECISION_IMPACT, AUDIT_GATE]
     effect_types: [probability_effect, assumption_effect, value_effect]
     final_outputs: [value_distribution]
-    canonical_refs: [src/valuation_engine/probability_calibration.py, src/valuation_engine/probability_adapter.py, src/valuation_engine/scenario_binding.py, src/valuation_engine/shadow_adapters.py, config/probability_calibration_policy.yaml, src/valuation_engine/engine.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md]
-    forbidden_effects: [price_implied_probability, uncalibrated_precision_as_fact]
+    canonical_refs: [src/valuation_engine/probability_calibration.py, src/valuation_engine/probability_adapter.py, src/valuation_engine/scenario_binding.py, src/valuation_engine/shadow_adapters.py, config/probability_calibration_policy.yaml, src/valuation_engine/engine.py, docs/LIVE_COMPANY_VALIDATION_AND_CALIBRATION.md, docs/KOREAN_AIR_DISTRIBUTIONAL_APV_DESIGN.md]
+    forbidden_effects: [price_implied_probability, uncalibrated_precision_as_fact, nearest_scenario_anchor_probability, peer_company_outcome_as_target_probability_sample]
 
   - unit_id: HIERARCHICAL_BETA_ENGINE
     unit_type: risk_engine
@@ -319,13 +319,13 @@ units:
     implementation_status: implemented_shadow_stage_with_initial_evaluator
     stages: [DETERMINISTIC_VALUATION]
     purpose: Apply exact industry/evaluator formulas to compiled assumptions only.
-    inputs: [compiled_assumption_set, evaluator_key, valuation_context]
-    outputs: [segment_valuations, enterprise_or_equity_values, component_traces]
+    inputs: [compiled_assumption_set, evaluator_key, valuation_context, recursive_driver_paths, capacity_yield_company_profile, capacity_yield_metric_mapping, financing_path_spec, entry_price_policy]
+    outputs: [segment_valuations, enterprise_or_equity_values, component_traces, equity_value_distribution, distress_probability, dilution_probability, old_shareholder_retention, governed_entry_price]
     consumers: [SOTP_AGGREGATOR, AUDIT_GATE, DECISION_IMPACT]
     effect_types: [value_effect]
     final_outputs: [intrinsic_value_components]
-    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/dcf_evaluators.py, src/valuation_engine/finite_life_evaluators.py, src/valuation_engine/rnpv_evaluator.py, src/valuation_engine/valuation_execution.py, src/valuation_engine/valuation_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md, docs/FINITE_LIFE_NPV_EVALUATORS.md, docs/CALIBRATED_RNPV_EVALUATOR.md]
-    forbidden_effects: [network_access, evidence_interpretation, current_price_access, unknown_model_generic_fallback]
+    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/dcf_evaluators.py, src/valuation_engine/finite_life_evaluators.py, src/valuation_engine/rnpv_evaluator.py, src/valuation_engine/valuation_execution.py, src/valuation_engine/valuation_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md, docs/FINITE_LIFE_NPV_EVALUATORS.md, docs/CALIBRATED_RNPV_EVALUATOR.md, docs/KOREAN_AIR_DISTRIBUTIONAL_APV_DESIGN.md]
+    forbidden_effects: [network_access, evidence_interpretation, current_price_access, unknown_model_generic_fallback, target_id_formula_selection, report_time_equity_zero_floor, unbounded_refinancing_or_asset_sale]
 
   - unit_id: WARRANTED_PER_ENGINE
     unit_type: valuation_engine
@@ -384,21 +384,21 @@ units:
     implementation_status: implemented_generic_and_legacy
     stages: [DCF_PER_ASSUMPTION_CONSISTENCY_GATE, CROSS_METHOD_DOUBLE_COUNT_AUDIT, AUDIT_GATE]
     purpose: Independently validate price isolation, probability integrity, sensitivity direction, traceability, duplicate paths, and valuation consistency.
-    inputs: [compiled_assumptions, valuation_outputs, method_outputs, traceability, doctrine_coverage]
-    outputs: [audit_findings, audit_pass, blocking_reasons, audit_hash]
+    inputs: [compiled_assumptions, valuation_outputs, method_outputs, traceability, doctrine_coverage, calibration_diagnostics, lease_reconciliation, recovery_waterfall, equity_value_distribution, entry_price_policy]
+    outputs: [audit_findings, audit_pass, blocking_reasons, audit_hash, distribution_authorization, entry_price_authorization]
     consumers: [INTRINSIC_FREEZE, VALUATION_CONTROL_PLANE, DECISION_IMPACT]
     effect_types: [guardrail_effect, value_effect]
     final_outputs: [run_validity, freeze_eligibility]
     canonical_refs: [src/valuation_engine/generic_audit.py, src/valuation_engine/audit_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/audit.py, SKILL.md]
-    forbidden_effects: [override_failure_without_new_run]
+    forbidden_effects: [override_failure_without_new_run, authorize_distribution_without_oos_skill, authorize_entry_price_from_current_market_price, authorize_report_time_equity_zero_floor]
 
   - unit_id: INTRINSIC_FREEZE
     unit_type: gate
     implementation_status: implemented_contract
     stages: [INTRINSIC_VALUE_FREEZE]
     purpose: Seal intrinsic value and all upstream hashes before any target-company Street or current-price access.
-    inputs: [audit_pass, doctrine_coverage_complete, assumption_set_hash, valuation_hash, source_snapshot_hash, industry_snapshot_hash]
-    outputs: [intrinsic_freeze_token, frozen_intrinsic_value]
+    inputs: [audit_pass, doctrine_coverage_complete, assumption_set_hash, valuation_hash, source_snapshot_hash, industry_snapshot_hash, distribution_hash, entry_policy_version]
+    outputs: [intrinsic_freeze_token, frozen_intrinsic_value, frozen_equity_value_distribution, frozen_entry_price]
     consumers: [STREET_REFERENCE_LOAD, STREET_GAP_ANALYZER, MARKET_PRICE_LOAD, MARKET_COMPARE]
     effect_types: [guardrail_effect, reporting_effect]
     final_outputs: [frozen_intrinsic_value]

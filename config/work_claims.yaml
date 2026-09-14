@@ -154,6 +154,7 @@ claims:
       - "config/archetype_control_requirements.yaml"
       - "config/valuation_method_capability_registry.yaml"
       - "config/industry_taxonomy.yaml"
+      - "src/valuation_engine/evaluator_registry.py"
     note: >-
       Korean Air 003490 official-filing valuation; airline traffic/yield/lease
       economics and public-source financial collection with canonical audits.

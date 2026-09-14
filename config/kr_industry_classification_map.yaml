@@ -57,7 +57,7 @@ classifications:
     # https://www.k-stat.go.kr/comb100/file-download?fileDnKey=sZdvSnzKYFmf41GYBuoQtojg0SdT5ISM0m%2BY5I8BXBw%3D
     label: 항공 여객 운송업
     sector_adapter: transport_industrial.airline
-    archetypes: [airline_transport]
+    archetypes: [airline_transport, capacity_yield_levered]
     structure:
       revenue_recognition: passenger_and_cargo_transport_delivery
       price_formation: route_yield_and_load_factor_over_fuel_and_nonfuel_costs

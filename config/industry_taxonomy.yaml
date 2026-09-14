@@ -8,6 +8,9 @@ economic_archetypes:
   airline_transport:
     drivers: [passenger_capacity, passenger_traffic, passenger_yield, cargo_traffic, cargo_yield, fuel_cost, nonfuel_operating_cost, fleet_capex, lease_liabilities]
     leading_indicators: [forward_bookings, passenger_load_factor, cargo_load_factor, jet_fuel_price, aircraft_deliveries]
+  capacity_yield_levered:
+    drivers: [service_capacity, realized_volume, utilization_or_load, realized_unit_yield, variable_input_cost, nonvariable_operating_cost, committed_asset_capex, lease_liabilities, debt_maturities, refinancing_capacity]
+    leading_indicators: [forward_demand, utilization_or_load, unit_yield, input_cost, asset_deliveries, lease_and_debt_maturities, refinancing_terms]
   contracted_backlog:
     drivers:
     - backlog

@@ -1,0 +1,73 @@
+{
+  "schema_version": "governed-structural-distribution/v1",
+  "target_id": "KR:DART:00113526",
+  "company": "대한항공",
+  "ticker": "003490",
+  "as_of": "2026-09-13",
+  "reporting_currency": "KRW",
+  "source_valuation_bundle": "out/bundles/003490_20260913_TP20813_47FF05D6D4DC",
+  "source_financing_spec": "declarations/financing_path_spec.json",
+  "source_risk_pack": "declarations/risk_pack.yaml",
+  "source_market_observation": "../../research/korean-air-20260913/market/naver_price.json",
+  "supersedes_artifact_id": "003490-20260913-TP20813-47FF05D6D4DC",
+  "scenario_ids": {
+    "down": "Down",
+    "central": "Base",
+    "upside": "Bull"
+  },
+  "gross_claim_face_value_KRW": "25696557000000",
+  "gross_claim_basis": "Disclosed debt including leases KRW 24.646557tn plus KRW 0.7000tn run-date funding bridge and KRW 0.3500tn parent noncontrolling/other senior claim, each included once.",
+  "claim_bridge": {
+    "disclosed_debt_including_leases_KRW": "24646557000000",
+    "run_date_funding_bridge_KRW": "700000000000",
+    "parent_noncontrolling_and_other_claim_KRW": "350000000000",
+    "eligible_liquid_assets_KRW": "5329757000000",
+    "legacy_net_claim_proxy_KRW": "20366800000000",
+    "note": "The structural model adds eligible liquid assets back to enterprise assets and uses gross claims as the strike. The difference reproduces the audited legacy net-claim bridge exactly; it does not use net debt itself as debt face value."
+  },
+  "annual_asset_volatility": "0.22",
+  "asset_volatility_basis": "Rounded annualized log-width implied by the audited Down/Upside business-value envelope over five years; no current share price is used.",
+  "risk_free_rate": "0.04571",
+  "claim_horizon_years": "5",
+  "diluted_shares": "389669121",
+  "branches": [
+    {
+      "branch_id": "Down",
+      "source_scenario": "Down",
+      "probability": "0.20",
+      "is_central": false,
+      "rationale": "Integration and margin recovery materially miss plan; refinancing remains available only at restrictive terms."
+    },
+    {
+      "branch_id": "Central",
+      "source_scenario": "Base",
+      "probability": "0.60",
+      "is_central": true,
+      "rationale": "Gradual operating recovery and integration execution broadly track the source-bound base underwriting."
+    },
+    {
+      "branch_id": "Upside",
+      "source_scenario": "Bull",
+      "probability": "0.20",
+      "is_central": false,
+      "rationale": "Integration savings, aerospace/MRO conversion and cash generation reach the audited upside path."
+    }
+  ],
+  "probability_authorization": {
+    "status": "GOVERNED_EVENT_PRIOR_WITH_AUDITED_SCENARIO_VALUE_BRIDGE",
+    "not_claimed": "CALIBRATED_CURRENT_GROUP_HISTORY",
+    "basis": "Current merged-group history is short and predecessor panels are not yet OOS-qualified. The audited scenario values are retained as the value bridge and the integration outcome is an explicit, versioned 20/60/20 analyst prior. The central branch is the unique mode; probabilities do not come from nearest-anchor classification, and no segment posterior is claimed.",
+    "sensitivity_sets": [
+      {"label": "downside_heavier", "probabilities": ["0.30", "0.50", "0.20"]},
+      {"label": "governed_base", "probabilities": ["0.20", "0.60", "0.20"]},
+      {"label": "execution_success", "probabilities": ["0.15", "0.60", "0.25"]}
+    ]
+  },
+  "entry_policy": {
+    "policy_version": "three_year_return_quantile/v1",
+    "horizon_years": 3,
+    "required_annual_return": "0.12",
+    "success_quantile": "0.25",
+    "sensitivity_returns": ["0.10", "0.12", "0.15"]
+  }
+}

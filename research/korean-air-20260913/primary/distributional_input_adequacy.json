@@ -1,0 +1,92 @@
+{
+  "schema_version": "distributional-input-adequacy/v2",
+  "target_id": "KR:DART:00113526",
+  "as_of": "2026-09-13",
+  "decision": "FULL_GROUP_PANEL_INELIGIBLE_SEGMENT_HYBRID_ROUTE_AVAILABLE",
+  "quarterly_panel_assessment": {
+    "minimum_required_per_segment": 32,
+    "minimum_rolling_origin_holdouts": 12,
+    "official_korean_air_ir_archive": {
+      "source_ref": "https://www.koreanair.com/contents/footer/about-us/investor-relations/financial-information",
+      "visible_periods": "2007Q1 through 2026Q2",
+      "visible_quarterly_releases_minimum": 78,
+      "archive_ranges": ["current_to_2026", "2025_to_2021", "2020_to_2016", "2015_to_2011", "2010_to_2006"],
+      "correction": "A prior count of 27 covered only recent English-language filenames and was not the official archive total."
+    },
+    "current_consolidated_group": {
+      "same_perimeter_complete_row_count": 0,
+      "oos_qualification": "IMPOSSIBLE_FROM_REPORTED_HISTORY_AS_OF_RUN_DATE",
+      "reason": "Asiana was deemed acquired on 2024-12-31 and the current group does not disclose a full carrier-wide quarterly capacity, utilization, yield and same-scope cost vector."
+    },
+    "korean_air_standalone_segment": {
+      "source_document_eligibility": "32_PLUS_QUARTERS_AVAILABLE",
+      "candidate_contiguous_window": "2016Q1 through 2023Q4 (32 quarters)",
+      "oos_qualification": "PENDING_EXTRACTION_HASHING_DEFINITION_BRIDGE_AND_ROLLING_TESTS",
+      "reason": "Official quarterly IR extends back to 2007 and includes standalone ASK/RPK/load factor/yield plus cargo AFTK/FTK or ACTK/CTK/yield and cost disclosures. Metric-label, accounting and quarter-only bridges still must be audited before calibration is claimed."
+    },
+    "asiana_standalone_segment": {
+      "source_document_eligibility": "PUBLIC_HISTORY_AVAILABLE_BUT_EXACT_EQUIVALENT_QUARTER_COUNT_NOT_YET_AUDITED",
+      "oos_qualification": "PENDING",
+      "reason": "Asiana's own DART/KRX filings and official aviation statistics may support a separate predecessor segment panel. They cannot be counted as Korean Air observations or combined into synthetic full-group quarters."
+    }
+  },
+  "financing_schedule_assessment": {
+    "balance_sheet_date": "2026-06-30",
+    "bonds": "RECONCILED_BY_SERIES_AND_MATURITY",
+    "asset_backed_borrowing": "RECONCILED",
+    "bank_borrowings": "RECONCILED_TO_CURRENT_AND_NONCURRENT_BALANCES_ONLY",
+    "leases": "RECONCILED_TO_UNDISCOUNTED_ONE_YEAR_ONE_TO_FIVE_YEAR_AND_OVER_FIVE_YEAR_BUCKETS",
+    "pathwise_annual_schedule": "PRIMARY_SOURCE_INCOMPLETE",
+    "reconciled_total_debt_including_leases_KRW_million": 24646557,
+    "reconciled_undiscounted_lease_payments_KRW_million": 16090638,
+    "recognized_lease_liability_KRW_million": 13672405,
+    "unresolved_primary_evidence": [
+      "bank-loan principal amortization by forecast year",
+      "lease payments for each individual year inside the disclosed one-to-five-year bucket",
+      "minimum operating cash",
+      "auditable undrawn committed facilities",
+      "claim-level collateral values and recovery priority",
+      "distress sale haircuts and transaction costs"
+    ],
+    "legal_alternate_treatment": "Use a versioned, wide analyst-prior sensitivity for timing, minimum cash and recovery; show its contribution and never label it calibrated. Treat unverified committed capacity as zero available capacity."
+  },
+  "lawful_completion_route": {
+    "route": "segment_posterior_structural_break_sotp_apv",
+    "may_complete_full_company_audited_report": true,
+    "components": [
+      "Korean Air standalone operating posterior when extracted and OOS-qualified, otherwise disclosed analyst-prior sensitivity",
+      "Asiana standalone predecessor segment, separately fitted when qualified and otherwise separately disclosed analyst-prior sensitivity",
+      "merger and PMI as a separate structural-break/event distribution",
+      "current consolidated filing values as conditioning and reconciliation anchors, not invented history",
+      "one consolidated debt, lease, NCI and dilution waterfall after segment SOTP composition"
+    ],
+    "numeric_outputs_required": [
+      "prior-predictive P50 fair value",
+      "broad P20-P80 sensitivity range",
+      "distress and dilution sensitivity",
+      "required-return-derived entry price"
+    ],
+    "label_until_oos_passes": "HYBRID_PRIOR_PREDICTIVE_NOT_CALIBRATED_TARGET_POSTERIOR",
+    "prohibited_label": "CALIBRATED_TARGET_COMPANY_PROBABILITY",
+    "report_rule": "The data limitation must widen the range and lower the evidence grade; it must not terminate the final report with no target or entry-price number."
+  },
+  "prohibited_repairs": [
+    "counting two issuers in one quarter as two target-company time observations",
+    "using peer-airline outcomes as target-company probability samples",
+    "joining Korean Air standalone operating KPIs to consolidated group costs or financing as if scopes matched",
+    "backfilling the current group with a simple sum of predecessor companies",
+    "assuming the disclosed one-to-five-year lease bucket is an exact annual maturity schedule",
+    "hard-coding old-shareholder recovery to zero before an explicit claim waterfall"
+  ],
+  "primary_source_refs": [
+    "https://www.koreanair.com/contents/footer/about-us/investor-relations/financial-information",
+    "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/2007_1Q_IR_Report_ko.pdf",
+    "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/2016_1Q_IR_Report_ko.pdf",
+    "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803",
+    "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=44&offset=1267716&length=474227&dtd=dart4.xsd",
+    "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=45&offset=1741943&length=107303&dtd=dart4.xsd",
+    "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260910000442",
+    "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260626000005&dcmNo=11448313&eleId=3&offset=7532&length=37052&dtd=dart4.xsd",
+    "https://kind.krx.co.kr/common/disclsviewer.do?acptno=20250310001201&langTpCd=0&method=search&orgid=G&rcpno=20250310001201&tran=Y"
+  ]
+}

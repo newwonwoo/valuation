@@ -1,0 +1,67 @@
+{
+  "schema_version": "company-source-adapter/capacity-yield-v1",
+  "target_id": "KR:DART:00113526",
+  "issuer_name": "대한항공",
+  "ticker": "003490",
+  "as_of": "2026-09-13",
+  "profile_path": "declarations/capacity_yield_company_profile.json",
+  "engine_mapping_path": "declarations/capacity_yield_metric_mapping.json",
+  "industry_method_binding": "capacity_yield_levered/driver_distributional_apv",
+  "valuation_perimeter": "SOTP_OF_SEPARATE_OPERATING_SEGMENTS_WITH_POST_ACQUISITION_GROUP_BRIDGE",
+  "operating_perimeters": [
+    {
+      "segment_panel_id": "korean_air_standalone_air_transport",
+      "perimeter": "KOREAN_AIR_STANDALONE",
+      "history_source": "issuer_quarterly_IR_2007Q1_to_2026Q2"
+    },
+    {
+      "segment_panel_id": "asiana_standalone_air_transport",
+      "perimeter": "ASIANA_STANDALONE_PRE_LEGAL_MERGER",
+      "history_source": "asiana_DART_KRX_and_official_aviation_statistics"
+    },
+    {
+      "segment_panel_id": "asiana_legal_merger_and_pmi",
+      "perimeter": "INCREMENTAL_STRUCTURAL_BREAK_ONLY",
+      "history_source": "merger_primary_documents_and_versioned_analyst_prior"
+    }
+  ],
+  "company_metric_mappings": [
+    {"driver_id": "passenger_ask", "company_metric": "ASK", "definition": "available seat kilometres", "unit": "million_seat_km", "required_scope": "one declared standalone airline segment per panel"},
+    {"driver_id": "passenger_load_factor", "company_metric": "passenger load factor", "definition": "RPK divided by ASK", "unit": "ratio", "required_scope": "same standalone airline segment and period as passenger_ask"},
+    {"driver_id": "passenger_yield", "company_metric": "passenger yield", "definition": "passenger revenue divided by RPK", "unit": "KRW_per_passenger_km", "required_scope": "same standalone airline segment and period as passenger_ask"},
+    {"driver_id": "cargo_actk", "company_metric": "ACTK, ATK or AFTK", "definition": "available cargo tonne kilometres; retain and bridge the issuer label and cargo-only versus total-weight basis for each source period", "unit": "million_tonne_km", "required_scope": "one declared standalone airline segment per panel"},
+    {"driver_id": "cargo_load_factor", "company_metric": "cargo load factor", "definition": "CTK divided by ACTK, FTK divided by AFTK, or RTK divided by ATK on the same disclosed basis", "unit": "ratio", "required_scope": "same standalone airline segment and definition basis as cargo_actk"},
+    {"driver_id": "cargo_yield", "company_metric": "cargo yield", "definition": "cargo revenue divided by CTK, FTK or RTK on the same disclosed basis", "unit": "KRW_per_tonne_km", "required_scope": "same standalone airline segment and definition basis as cargo_actk"},
+    {"driver_id": "fuel_consumption", "company_metric": "fuel consumption", "definition": "issuer-disclosed aircraft fuel consumption", "unit": "source_unit_then_normalized", "required_scope": "same perimeter as capacity drivers"},
+    {"driver_id": "jet_fuel_unit_price", "company_metric": "jet fuel unit price", "definition": "issuer-disclosed aircraft fuel unit price", "unit": "source_currency_per_source_volume_then_normalized", "required_scope": "same perimeter as capacity drivers"},
+    {"driver_id": "fuel_fx_translation", "company_metric": "fuel FX translation factor", "definition": "period average operating translation rate normalized to the fuel-price currency", "unit": "ratio", "required_scope": "same period as fuel price"},
+    {"driver_id": "nonfuel_operating_expense", "company_metric": "non-fuel operating expense", "definition": "operating expenses excluding aircraft fuel and lease-adjusted depreciation", "unit": "KRW", "required_scope": "same standalone airline segment as capacity and revenue; group values are conditioning anchors only"},
+    {"driver_id": "lease_adjusted_depreciation_and_amortization", "company_metric": "depreciation and amortization including right-of-use assets", "definition": "lease-adjusted D&A used with lease claims in financing", "unit": "KRW", "required_scope": "consolidated"},
+    {"driver_id": "cash_owned_asset_capex", "company_metric": "cash acquisition of PPE", "definition": "consolidated cash acquisition of property, aircraft and equipment", "unit": "KRW", "required_scope": "consolidated"},
+    {"driver_id": "noncash_lease_additions", "company_metric": "non-cash right-of-use asset additions", "definition": "additions to right-of-use assets not included in cash PPE purchases", "unit": "KRW", "required_scope": "consolidated"},
+    {"driver_id": "change_in_working_capital", "company_metric": "change in operating working capital", "definition": "cash-flow impact of operating receivables, inventories, payables and contract liabilities; excludes financing claims", "unit": "KRW", "required_scope": "consolidated"}
+  ],
+  "forbidden_mappings": [
+    "parent-only ASK or yield joined to consolidated cost, CAPEX or financing",
+    "ACTK/CTK and ATK/RTK definitions joined without a period-specific bridge",
+    "lease principal deducted in operating cash flow and again as a financing claim",
+    "group non-fuel cost divided by parent-only ASK",
+    "Korean Air and Asiana predecessor rows summed into a synthetic current-group history",
+    "merger synergy or integration cost inserted into either predecessor's realized operating history"
+  ],
+  "structural_breaks": [
+    {
+      "period_end": "2024-12-31",
+      "reason": "Asiana Airlines control acquisition changed the consolidated perimeter from 2025."
+    },
+    {
+      "period_end": "2026-12-31",
+      "reason": "Planned legal merger is after the run date and is a forward event, not realized history."
+    }
+  ],
+  "source_refs": [
+    "https://www.koreanair.com/contents/footer/about-us/investor-relations/financial-information",
+    "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803",
+    "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260626000005&dcmNo=11448313&eleId=3&offset=7532&length=37052&dtd=dart4.xsd"
+  ]
+}

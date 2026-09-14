@@ -1,0 +1,16 @@
+{
+  "target_id": "KR:DART:00113526",
+  "economic_archetype": "capacity_yield_levered",
+  "reporting_currency": "KRW",
+  "accounting_basis": "K-IFRS lease-adjusted operating economics with IFRS 16 claims in financing",
+  "active_module_ids": [
+    "passenger_transport",
+    "cargo_transport"
+  ],
+  "non_capacity_segment_ids": [
+    "aerospace",
+    "hotel",
+    "other"
+  ],
+  "metric_mapping_version": "korean-air-003490-v1"
+}
