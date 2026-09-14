@@ -111,6 +111,7 @@ def test_distribution_contract_forbids_anchor_probability_and_report_floor():
     } <= set(scenario["outputs"])
     assert "nearest_scenario_anchor_probability" in scenario["forbidden_effects"]
     assert "peer_company_outcome_as_target_probability_sample" in scenario["forbidden_effects"]
+    assert "src/valuation_engine/distribution_route_policy.py" in scenario["canonical_refs"]
 
     assert {
         "equity_value_distribution",

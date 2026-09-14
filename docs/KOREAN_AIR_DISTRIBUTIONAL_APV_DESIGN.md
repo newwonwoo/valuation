@@ -1,6 +1,6 @@
 # 용량·가동률·단가형 고정비 사업의 범용 연속분포 APV·재무곤경 가치평가 설계
 
-Status: implementation-ready design; runtime not yet promoted  
+Status: reusable engine policy implemented; company data/runtime not yet promoted
 Reusable route: `capacity_yield_levered/driver_distributional_apv`
 
 First production proof: 대한항공 003490 / PR #184
@@ -29,7 +29,7 @@ flowchart TD
     F --> G["P50 적정가·수익률 기반 매수가"]
 ```
 
-기존 3개 시나리오 DCF는 회귀 비교와 투자자 설명을 위해 남기되 새 실행의 확률 또는 목표가를 만들지 않는다. 기존 `continuous_financial_path_probability/v1`도 다른 실행의 호환성을 위해 삭제하지 않는다. 새 method/version은 회사명이나 업종명이 아니라 `capacity × utilization × unit price` 매출구조, 높은 고정비, 장기 실물자산·리스, 다중 만기 금융청구권이라는 경제구조로 exact route한다. 대한항공은 이 구조를 검증하는 첫 `LIVE_PRIMARY` 회사이지 공통 모델의 정의가 아니다.
+기존 3개 시나리오 DCF는 회귀 비교와 투자자 설명을 위해 남기되 새 실행의 확률 또는 목표가를 만들지 않는다. 기존 `continuous_financial_path_probability/v1`도 다른 실행의 호환성을 위해 삭제하지 않지만, exact snapshot hash가 있는 과거 재현만 허용한다. 신규 분석에서는 인증서를 발급하지 않는다. 새 method/version은 회사명이나 업종명이 아니라 `capacity × utilization × unit price` 매출구조, 높은 고정비, 장기 실물자산·리스, 다중 만기 금융청구권이라는 경제구조로 exact route한다. 대한항공은 이 구조를 검증하는 첫 `LIVE_PRIMARY` 회사이지 공통 모델의 정의가 아니다.
 
 ## 2. 현재 결과의 폐기 사유
 
@@ -461,7 +461,7 @@ class EntryPricePolicy:
 
 ## 9. 구현 경계와 파일 계획
 
-기존 v1 확률경로를 직접 고쳐 다른 종목의 회귀를 깨뜨리지 않는다.
+기존 v1 확률경로의 산술과 과거 결과는 바꾸지 않는다. 대신 policy와 runtime socket에서 이를 exact-hash 재현 전용으로 격리하고, 신규 분석은 별도 route authorization을 통과시킨다.
 
 | 구분 | 파일 | 변경 |
 |---|---|---|
@@ -472,6 +472,7 @@ class EntryPricePolicy:
 | 구조형 영업경로 | `src/valuation_engine/capacity_yield_operating_paths.py` | canonical capacity·utilization·unit price, 고정비·단위원가, 자산·재투자 |
 | 리스·재무곤경 | `src/valuation_engine/levered_financing_paths.py` | 업종 독립 리스 대사, 유동성, 차환·증자·waterfall |
 | 경로별 가치 | `src/valuation_engine/distributional_apv.py` | segment APV/SOTP와 구주주가치분포 |
+| 경로 승인 | `src/valuation_engine/distribution_route_policy.py` | pathwise·ambiguity·legacy replay를 구분하고 허용 산출물 고정 |
 | 확률집합 | `src/valuation_engine/probability_ambiguity.py` | 출처 결합 확률벡터 검증, 부호 보존 기대가치 구간 |
 | 매수가 | `src/valuation_engine/entry_price.py` | 보정분포 quantile 또는 ambiguity-set 최악 기대지급액 기반 pure function |
 | Registry 연결 | `src/valuation_engine/evaluator_registry.py`, `generic_valuation_plan.py`, `valuation_execution.py` | 새 method/version exact binding; legacy fallback 금지 |

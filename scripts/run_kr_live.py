@@ -987,6 +987,9 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None,
             ),
             calibration_cohort_key=calibration["cohort_key"],
             external_probability_source=calibration["external_probability_source"],
+            legacy_continuous_probability_replay_receipt=calibration.get(
+                "legacy_replay_snapshot_hash"
+            ),
         )
     market_path = _optional_path(run_dir, "market.yaml")
     parent_adjustments = tuple(

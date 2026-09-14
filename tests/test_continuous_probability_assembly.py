@@ -1,10 +1,10 @@
-"""The continuous probability route runs for any company, not one hard-coded ticker.
+"""The legacy continuous probability replay is company-neutral and receipt-bound.
 
 Every fixture here describes a company that does not exist in this repository: a
 different cohort, different drivers, a different forecast length and a different
-scenario set. If the assembler still produces a weighting-grade certificate from
-it, the route is generic; if it needed SK hynix's names, sizes or hashes, these
-tests fail.
+scenario set. The assembler remains generic for exact historical replay, while
+the runtime refuses to treat a newly supplied nearest-anchor snapshot as an
+investment-decision probability without the exact frozen receipt.
 """
 
 from __future__ import annotations
@@ -24,6 +24,9 @@ from valuation_engine.continuous_probability_assembly import (
     conditioning_from_mapping,
     stable_hash,
 )
+from valuation_engine.control_plane import ExecutionMode, StageStatus
+from valuation_engine.orchestrator import OrchestratorContext
+from valuation_engine.probability_adapter import probability_calibration_load_adapter
 from valuation_engine.probability_calibration import CalibrationCertificate
 from valuation_engine.records import CalibrationStatus
 from valuation_engine.skhynix_continuous_probability import (
@@ -212,6 +215,43 @@ def test_that_snapshot_issues_a_certificate_the_runtime_socket_accepts(bound):
     assert isinstance(certificate, CalibrationCertificate)
     certificate.validate_for_weighting()
     assert certificate.cohort_key == "shipbuilding|5y_path|continuous_v1"
+
+
+def test_nearest_anchor_snapshot_is_diagnostic_without_exact_replay_receipt(bound):
+    snapshot = _build(bound)
+    adapter = probability_calibration_load_adapter(
+        loader=lambda _context: snapshot,
+        expected_cohort_key=snapshot.cohort_key,
+    )
+    result = adapter(OrchestratorContext("RUN", ExecutionMode.LIVE_PRIMARY, {}))
+
+    assert result.status is StageStatus.WARNING
+    assert "legacy replay only" in result.rationale
+    assert "probability_calibration_certificate" not in result.outputs
+    assert not snapshot.new_investment_decision_authorized
+
+
+def test_exact_snapshot_receipt_allows_only_frozen_legacy_replay(bound):
+    snapshot = _build(bound)
+    adapter = probability_calibration_load_adapter(
+        loader=lambda _context: snapshot,
+        expected_cohort_key=snapshot.cohort_key,
+    )
+    result = adapter(
+        OrchestratorContext(
+            "RUN",
+            ExecutionMode.LIVE_PRIMARY,
+            {
+                "legacy_continuous_probability_replay_receipt": (
+                    snapshot.legacy_replay_receipt
+                )
+            },
+        )
+    )
+
+    assert result.status is StageStatus.PASS
+    assert "frozen scenario weighting" in result.rationale
+    assert "probability_calibration_certificate" in result.outputs
 
 
 def test_continuous_snapshot_accepts_mean_outside_central_quantile_interval(bound):

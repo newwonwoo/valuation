@@ -1,11 +1,11 @@
-version: "3.2"
+version: "3.2-legacy"
+runtime_scope: frozen_replay_and_non_actionable_diagnostics_only
 purpose: >-
-  Dynamic hierarchical Bayesian probability estimation for investment valuation.
-  Historical calibration estimates continuous financial-driver distributions;
-  Monte Carlo generates continuous financial paths and assigns each path to the
-  nearest predeclared economic scenario. Statistical weakness widens uncertainty
-  and reduces likelihood weight; only provenance/data-integrity violations may
-  hard-block probability estimation.
+  Historical v3.2 scenario-quantization contract retained only to reproduce
+  immutable prior outputs. It estimates continuous financial-driver paths and
+  assigns them to the nearest predeclared economic scenario; that assignment is
+  a discretization artifact, not a calibrated outcome probability, and cannot
+  authorize a new target, entry price, or success-probability claim.
 
 probability_value_isolation:
   probability_contract: evidence_only
@@ -71,7 +71,7 @@ continuous_financial_path_model:
   current_company_conditioning: allowed_without_market_price
 
 scenario_assembly:
-  default_method: continuous_financial_path_monte_carlo
+  legacy_method: continuous_financial_path_monte_carlo
   direct_historical_down_core_bull_frequency: forbidden
   binary_event_state_to_scenario_mapping: forbidden
   bull_requires_all_risk_events_inactive: forbidden
@@ -84,7 +84,9 @@ scenario_assembly:
   emit_probability_credible_intervals: required
 
 valuation_binding:
-  numeric_weighting_allowed_when: integrity_passed_and_probability_snapshot_frozen
+  numeric_weighting_allowed_when: frozen_pre_migration_replay_receipt_only
+  new_target_or_entry_price_authorization: forbidden
+  success_probability_claim_authorization: forbidden
   weak_predictive_skill_action: reduce_weight_and_widen_interval
   no_minimum_leaf_sample_for_probability_existence: true
   target_price_or_market_price_tuning: forbidden
@@ -94,4 +96,14 @@ legacy_compatibility:
   v1_probability_calibration: preserved
   v2_hierarchical_promotion_gate: preserved_for_replay
   v3_boolean_event_scenario_assembly: legacy_replay_only
-  v3_default_for_new_investment_probability_work: continuous_financial_path_monte_carlo
+  v3_default_for_new_investment_probability_work: false
+
+successor_live_route:
+  policy_contract: distribution_route_authorization/v1
+  authorization_module: src/valuation_engine/distribution_route_policy.py
+  calibrated_distribution: continuous_driver_paths_valued_path_by_path
+  uncalibrated_event_distribution: source_bound_probability_ambiguity_set
+  scenario_role: post_valuation_summary_only
+  path_assignment_before_valuation: forbidden
+  report_time_equity_floor: forbidden
+  current_market_price_in_probability_or_entry: forbidden

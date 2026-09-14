@@ -101,9 +101,11 @@ def build_skhynix_live_primary_config(
         snapshot_path=snapshot_path,
         post_freeze_snapshot_path=post_freeze_snapshot_path,
     )
+    calibration_loader = _continuous_calibration_loader(snapshot)
+    frozen_probability_snapshot = calibration_loader(None)
     providers = replace(
         base.providers,
-        calibration_loader=_continuous_calibration_loader(snapshot),
+        calibration_loader=lambda _context: frozen_probability_snapshot,
     )
     binding_spec = replace(
         base.scenario_binding_spec,
@@ -118,6 +120,9 @@ def build_skhynix_live_primary_config(
             "probability_authority": "CONTINUOUS_FINANCIAL_PATH_SNAPSHOT_REQUIRED",
             "probability_method_version": "v3.2_continuous_financial_path",
             "legacy_boolean_probability_mapping": "FORBIDDEN",
+            "legacy_continuous_probability_replay_receipt": (
+                frozen_probability_snapshot.legacy_replay_receipt
+            ),
         }
     )
     return replace(

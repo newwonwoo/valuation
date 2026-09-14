@@ -1,3 +1,11 @@
+"""Legacy nearest-anchor quantization of continuous financial paths.
+
+Kept for immutable replay compatibility. New investment work must retain the
+draws through pathwise valuation; the scenario masses produced here are not a
+calibrated outcome distribution and cannot independently authorize a new
+target, entry price or success-probability claim.
+"""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -112,11 +120,12 @@ def simulate_continuous_financial_paths(
     inner_draws: int = 200,
     seed: int = 20260829,
 ) -> ContinuousFinancialPathSimulation:
-    """Estimate scenario probabilities from continuous financial paths.
+    """Reproduce legacy scenario masses from continuous financial paths.
 
     LLM callbacks may propose evidence/hypotheses, but cannot execute this
     probability decision. The simulation contains no market-price, target-price,
-    intrinsic-value, or return inputs.
+    intrinsic-value, or return inputs. Its nearest-anchor output is replay-only;
+    it is not the live pathwise integration route.
     """
     forbid_llm_decision(DecisionDomain.PROBABILITY)
     if not drivers or len(scenarios) < 2:

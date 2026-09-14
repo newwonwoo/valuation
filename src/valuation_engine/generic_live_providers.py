@@ -212,6 +212,9 @@ class GenericKRRuntimeSpec:
     calibration_snapshot_loader: object | None = None
     calibration_cohort_key: str | None = None
     external_probability_source: str | None = None
+    #: Exact snapshot hash required to reproduce a historical v3.2
+    #: nearest-anchor weighting. Omit for every new investment analysis.
+    legacy_continuous_probability_replay_receipt: str | None = None
     market_config_path: str | Path | None = None
     street_export_path: str | Path | None = None
     market_currency: str | None = None
@@ -231,6 +234,12 @@ class GenericKRRuntimeSpec:
             raise GenericValuationPlanError(
                 "a calibration snapshot loader requires calibration_cohort_key "
                 "and external_probability_source"
+            )
+        if self.legacy_continuous_probability_replay_receipt is not None and (
+            self.calibration_snapshot_loader is None
+        ):
+            raise GenericValuationPlanError(
+                "a legacy probability replay receipt requires a calibration snapshot"
             )
         if self.market_config_path is not None and not self.market_currency:
             raise GenericValuationPlanError(
@@ -635,6 +644,15 @@ def build_generic_kr_runtime_factory(
         require_broker_research=spec.require_broker_research,
         initial_data={
             "data_cutoff": spec.as_of,
+            **(
+                {
+                    "legacy_continuous_probability_replay_receipt": (
+                        spec.legacy_continuous_probability_replay_receipt
+                    )
+                }
+                if spec.legacy_continuous_probability_replay_receipt is not None
+                else {}
+            ),
             **(
                 {
                     "investor_entry_margin_of_safety": (

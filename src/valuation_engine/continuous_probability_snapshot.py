@@ -64,6 +64,22 @@ class ContinuousProbabilityCalibrationSnapshot:
     status: CalibrationStatus
     snapshot_hash: str
 
+    @property
+    def legacy_replay_receipt(self) -> str:
+        """Return the exact receipt required for nearest-anchor replay.
+
+        Continuous v3.2 snapshots quantize draws around declared scenario
+        anchors. They remain reproducible historical artifacts, but a caller
+        must bind this exact hash before the old weighting socket accepts them.
+        New distribution work uses pathwise valuation instead.
+        """
+
+        return self.snapshot_hash
+
+    @property
+    def new_investment_decision_authorized(self) -> bool:
+        return False
+
     def validate(self) -> None:
         if not all(
             (

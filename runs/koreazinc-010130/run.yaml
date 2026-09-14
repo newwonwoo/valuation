@@ -27,6 +27,7 @@ extra_required_evidence:
   - down_manufacturing_normalized_multiple
   - bull_manufacturing_normalized_multiple
 calibration:
+  legacy_replay_snapshot_hash: 2b390a5c630deb30cd8d5e3b262e4a578d6fabaf69d596914f3f05cb1808f4a6
   cohort_key: kr.self.koreazinc|1y_earnings_state|self_v1
   self_calibrated: true
   external_probability_source: target_realized_dispersion_monte_carlo

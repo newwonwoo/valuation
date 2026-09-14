@@ -46,8 +46,10 @@ FORBIDDEN_FIELD_TOKENS = (
 def main() -> int:
     path = ROOT / "config" / "probability_engine_v3_policy.yaml"
     payload = yaml.safe_load(path.read_text(encoding="utf-8"))
-    if payload.get("version") != "3.2":
-        raise ValueError("probability engine v3 policy version drift")
+    if payload.get("version") != "3.2-legacy":
+        raise ValueError("probability engine v3 policy must be explicitly legacy")
+    if payload.get("runtime_scope") != "frozen_replay_and_non_actionable_diagnostics_only":
+        raise ValueError("v3 nearest-anchor policy cannot remain a live decision route")
 
     isolation = payload.get("probability_value_isolation") or {}
     if isolation.get("probability_contract") != "evidence_only":
@@ -138,8 +140,10 @@ def main() -> int:
         raise ValueError("continuous financial path model must retain fat-tail predictive sampling")
 
     assembly = payload.get("scenario_assembly") or {}
-    if assembly.get("default_method") != "continuous_financial_path_monte_carlo":
-        raise ValueError("continuous financial path Monte Carlo must remain the default scenario assembler")
+    if assembly.get("legacy_method") != "continuous_financial_path_monte_carlo":
+        raise ValueError("v3 replay must retain its historical Monte Carlo method")
+    if "default_method" in assembly:
+        raise ValueError("nearest-anchor assembly cannot remain a default method")
     if assembly.get("binary_event_state_to_scenario_mapping") != "forbidden":
         raise ValueError("binary event state to scenario mapping must remain forbidden")
     if assembly.get("bull_requires_all_risk_events_inactive") != "forbidden":
@@ -149,11 +153,17 @@ def main() -> int:
     if assembly.get("current_market_price_in_assignment") != "forbidden":
         raise ValueError("current market price cannot classify probability paths")
     if assembly.get("path_assignment") != "nearest_predeclared_economic_scenario_path":
-        raise ValueError("continuous path assignment contract drifted")
+        raise ValueError("legacy replay assignment contract drifted")
 
     binding = payload.get("valuation_binding") or {}
     if not binding.get("no_minimum_leaf_sample_for_probability_existence"):
         raise ValueError("v3 must calculate probabilities for sparse leaves")
+    if binding.get("numeric_weighting_allowed_when") != "frozen_pre_migration_replay_receipt_only":
+        raise ValueError("v3 numeric weighting must be limited to frozen replay")
+    if binding.get("new_target_or_entry_price_authorization") != "forbidden":
+        raise ValueError("v3 replay cannot authorize a new target or entry price")
+    if binding.get("success_probability_claim_authorization") != "forbidden":
+        raise ValueError("v3 replay cannot authorize a success-probability claim")
     if binding.get("target_price_or_market_price_tuning") != "forbidden":
         raise ValueError("market/target price tuning must remain forbidden")
     if binding.get("intrinsic_value_consumption") != "after_probability_snapshot_hash_is_frozen":
@@ -162,10 +172,24 @@ def main() -> int:
     legacy = payload.get("legacy_compatibility") or {}
     if legacy.get("v3_boolean_event_scenario_assembly") != "legacy_replay_only":
         raise ValueError("boolean event scenario assembly cannot remain a live default")
+    if legacy.get("v3_default_for_new_investment_probability_work") is not False:
+        raise ValueError("nearest-anchor v3 cannot remain the default for new work")
+
+    successor = payload.get("successor_live_route") or {}
+    if successor.get("policy_contract") != "distribution_route_authorization/v1":
+        raise ValueError("successor distribution route contract is missing")
+    if successor.get("calibrated_distribution") != "continuous_driver_paths_valued_path_by_path":
+        raise ValueError("calibrated successor must value every continuous path")
+    if successor.get("uncalibrated_event_distribution") != "source_bound_probability_ambiguity_set":
+        raise ValueError("uncalibrated successor must use an ambiguity set")
+    if successor.get("path_assignment_before_valuation") != "forbidden":
+        raise ValueError("successor cannot assign paths to scenario anchors")
+    if successor.get("report_time_equity_floor") != "forbidden":
+        raise ValueError("successor cannot floor signed present values at report time")
 
     print(
         "probability engine v3 policy: PASS "
-        "continuous_paths=true boolean_scenario_mapping=false price_isolation=true"
+        "legacy_replay_only=true successor_pathwise=true price_isolation=true"
     )
     return 0
 

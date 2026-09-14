@@ -39,6 +39,7 @@ execution_families:
       - src/valuation_engine/capacity_yield_operating_paths.py
       - src/valuation_engine/levered_financing_paths.py
       - src/valuation_engine/distributional_apv.py
+      - src/valuation_engine/distribution_route_policy.py
       - src/valuation_engine/probability_ambiguity.py
       - src/valuation_engine/entry_price.py
       - src/valuation_engine/governed_event_distribution.py
