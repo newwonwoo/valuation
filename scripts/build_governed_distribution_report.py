@@ -303,11 +303,11 @@ def build(spec_path: Path, output_root: Path) -> Path:
 
 ## 방법과 한계
 
-- 공통 route: `capacity_yield_levered/driver_distributional_apv`; 항공사는 metric adapter일 뿐이다.
-- 확률 상태: `{result.authorization_status}`. 현재 그룹·전신 회사의 OOS 보정 또는 segment posterior로 표시하지 않는다.
+- 공통 적용계약은 용량×가동률×단가, 높은 고정비·재투자, 장기자산·리스 및 금융청구권 구조를 기준으로 선택한다. 항공 업종명은 회사 지표를 공통 입력에 연결하는 역할만 한다.
+- 확률은 감사된 조건부 가치에 결속한 사건 사전확률이다. 현재 그룹·전신 회사의 OOS 보정 또는 segment posterior로 표시하지 않는다.
 - 구조적 옵션은 보고서 단계의 0원 하한을 대체한다. 다중 만기 waterfall의 모든 비공개 약정을 완전히 복원한 값은 아니다.
 - 구조형 자산에는 적격 유동자산을 되더하고, 총청구액에는 공시부채·기준일까지의 자금소요·비지배/기타 청구권을 한 번씩만 합산했다. 세부 은행차입 만기와 담보순위 공백은 남는다.
-- 기존 `003490-20260913-TP20813-47FF05D6D4DC`는 감사 이력으로 보존하며 이 보고서가 의사결정 방법론을 대체한다.
+- 기존 보고서는 감사 이력으로 보존하며 이 보고서가 의사결정 방법론을 대체한다.
 
 ## 원문
 
@@ -315,9 +315,6 @@ def build(spec_path: Path, output_root: Path) -> Path:
 - [대한항공 2026 반기보고서](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803)
 - [2026년 7월 24일 합병 투자설명서](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260724000006)
 - [Merton, corporate debt structural model](https://dspace.mit.edu/handle/1721.1/1875)
-
-- Distribution hash: `{result.distribution_hash}`
-- Intrinsic freeze: `{intrinsic_freeze_hash}`
 """
     forbidden = (
         "가장 가까운 시나리오",
