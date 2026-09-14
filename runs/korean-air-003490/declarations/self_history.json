@@ -1,0 +1,65 @@
+{
+  "series_basis": "2019-2024 K-IFRS consolidated revenue and operating income for Korean Air and Asiana Airlines are added year by year to reconstruct the same two-airline economic perimeter before legal merger. The series ends before Korean Air's 2024-12-31 acquisition accounting; no post-acquisition reported year is mixed into training, and peer-company outcomes are excluded.",
+  "observations": [
+    {
+      "period_end": "2019-12-31",
+      "published_at": "2022-03-31T09:00:00+09:00",
+      "values": {"operating_margin": -0.013830108011089635},
+      "source_refs": [
+        "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20204Q.pdf",
+        "https://m.kisrating.com/fileDown.do?fileName=rs20220331-2.pdf&gubun=2&menuCd=R8"
+      ],
+      "calculation": "(Korean Air EBIT KRW 176.086528359bn + Asiana EBIT KRW -443.7bn) / (Korean Air revenue KRW 12,384.263746893bn + Asiana revenue KRW 6,965.8bn)."
+    },
+    {
+      "period_end": "2020-12-31",
+      "published_at": "2022-03-31T09:00:00+09:00",
+      "values": {"operating_margin": -0.01469480694748441},
+      "source_refs": [
+        "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20214Q.pdf",
+        "https://m.kisrating.com/fileDown.do?fileName=rs20220331-2.pdf&gubun=2&menuCd=R8"
+      ],
+      "calculation": "(Korean Air EBIT KRW 107.324035915bn + Asiana EBIT KRW -276.4bn) / (Korean Air revenue KRW 7,610.530916271bn + Asiana revenue KRW 3,895.3bn). Korean Air's later restated comparative is used."
+    },
+    {
+      "period_end": "2021-12-31",
+      "published_at": "2022-03-31T09:00:00+09:00",
+      "values": {"operating_margin": 0.1131408561375547},
+      "source_refs": [
+        "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20214Q.pdf",
+        "https://m.kisrating.com/fileDown.do?fileName=rs20220331-2.pdf&gubun=2&menuCd=R8"
+      ],
+      "calculation": "(Korean Air EBIT KRW 1,417.968632826bn + Asiana EBIT KRW 93.2bn) / (Korean Air revenue KRW 9,016.824640301bn + Asiana revenue KRW 4,339.7bn)."
+    },
+    {
+      "period_end": "2022-12-31",
+      "published_at": "2023-03-31T09:00:00+09:00",
+      "values": {"operating_margin": 0.16886087585423307},
+      "source_refs": [
+        "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20224Q.pdf",
+        "https://www.airportal.go.kr/file/htmlOpen/upload/airline/detail/%5B%EC%95%84%EC%8B%9C%EC%95%84%EB%82%98%ED%95%AD%EA%B3%B5%5D%5B%EC%A0%95%EC%A0%95%5D%EC%82%AC%EC%97%85%EB%B3%B4%EA%B3%A0%EC%84%9C%282022%29.pdf"
+      ],
+      "calculation": "(Korean Air EBIT KRW 2,830.586753727bn + Asiana reported EBIT KRW 598.2bn) / (Korean Air revenue KRW 14,096.094819146bn + Asiana reported revenue KRW 6,209.3bn)."
+    },
+    {
+      "period_end": "2023-12-31",
+      "published_at": "2025-03-10T09:00:00+09:00",
+      "values": {"operating_margin": 0.10153794803542897},
+      "source_refs": [
+        "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20234Q.pdf",
+        "https://kind.krx.co.kr/common/disclsviewer.do?acptno=20250310001201&langTpCd=0&method=search&orgid=G&rcpno=20250310001201&tran=Y"
+      ],
+      "calculation": "(Korean Air EBIT KRW 1,790.089190805bn + Asiana audited comparative EBIT KRW 619.928673329bn) / (Korean Air revenue KRW 16,111.796106147bn + Asiana audited comparative revenue KRW 7,623.348347364bn)."
+    },
+    {
+      "period_end": "2024-12-31",
+      "published_at": "2025-03-12T09:00:00+09:00",
+      "values": {"operating_margin": 0.09110177708106182},
+      "source_refs": [
+        "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20244Q.pdf",
+        "https://kind.krx.co.kr/common/disclsviewer.do?acptno=20250310001201&langTpCd=0&method=search&orgid=G&rcpno=20250310001201&tran=Y"
+      ],
+      "calculation": "(Korean Air EBIT KRW 2,110.200077994bn + Asiana EBIT KRW 275.690391993bn) / (Korean Air revenue KRW 17,870.718495804bn + Asiana revenue KRW 8,318.567228711bn)."
+    }
+  ]
+}

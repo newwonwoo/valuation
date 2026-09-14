@@ -32,7 +32,7 @@
   {
     "blocking": false,
     "module_id": "KNOWLEDGE_PLACEMENT_GATE",
-    "rationale": "MODULE_REQUIREMENT_PLAN=pass: compiled canonical Module Requirement Plan and non-destructive learned research loadout | PRIMARY_EVIDENCE_COLLECTION=pass: primary evidence collected with complete required segment/metric coverage and planned source lineage | EVIDENCE_TO_ASSUMPTION_BRIDGE=pass: no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed | HIERARCHICAL_BETA_ESTIMATION=pass: live L1→L4 Economic-Twin Beta estimated and relevered with one target structure | WACC_VALIDATION=pass: currency-consistent WACC computed from live Beta and independent marginal financing inputs | HIERARCHICAL_WARRANTED_PER=skipped_not_applicable: no authorized same-as-of Economic-Twin residual PER pack is declared for this run; PER is withheld rather than approximated | Warranted PER is not applicable; capacity PER double-count path is closed | SCENARIO_BUILD=pass: no Core-inclusion capacity project requires bridge consumption | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding | INTRINSIC_VALUE_FREEZE=pass: freeze prerequisites are being validated atomically",
+    "rationale": "MODULE_REQUIREMENT_PLAN=pass: compiled canonical Module Requirement Plan and non-destructive learned research loadout | PRIMARY_EVIDENCE_COLLECTION=pass: primary evidence collected with complete required segment/metric coverage and planned source lineage | EVIDENCE_TO_ASSUMPTION_BRIDGE=pass: no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed | HIERARCHICAL_BETA_ESTIMATION=pass: live L1→L4 Economic-Twin Beta estimated and relevered with one target structure | WACC_VALIDATION=pass: currency-consistent WACC computed from live Beta and independent marginal financing inputs | HIERARCHICAL_WARRANTED_PER=skipped_not_applicable: no authorized same-as-of Economic-Twin residual PER pack is declared for this run; PER is withheld rather than approximated | Warranted PER is not applicable; capacity PER double-count path is closed | SCENARIO_BUILD=pass: no Core-inclusion capacity project requires bridge consumption | calibration promotion gate passed; certificate is available for LIVE_PRIMARY probability weighting | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding | INTRINSIC_VALUE_FREEZE=pass: freeze prerequisites are being validated atomically",
     "status": "pass"
   },
   {
@@ -104,14 +104,14 @@
   {
     "blocking": false,
     "module_id": "ASSUMPTION_COMPILER",
-    "rationale": "EVIDENCE_TO_ASSUMPTION_BRIDGE=pass: no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed | SCENARIO_BUILD=pass: no Core-inclusion capacity project requires bridge consumption | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding",
+    "rationale": "EVIDENCE_TO_ASSUMPTION_BRIDGE=pass: no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed | SCENARIO_BUILD=pass: no Core-inclusion capacity project requires bridge consumption | calibration promotion gate passed; certificate is available for LIVE_PRIMARY probability weighting | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding",
     "status": "pass"
   },
   {
     "blocking": false,
     "module_id": "SCENARIO_ENGINE",
-    "rationale": "SCENARIO_BUILD=pass: no Core-inclusion capacity project requires bridge consumption | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding | PROBABILITY_DISTRIBUTION_ANALYSIS=warning: scenario probabilities are not calibration-authorized; numeric expected value remains disabled",
-    "status": "warning"
+    "rationale": "SCENARIO_BUILD=pass: no Core-inclusion capacity project requires bridge consumption | calibration promotion gate passed; certificate is available for LIVE_PRIMARY probability weighting | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding | PROBABILITY_DISTRIBUTION_ANALYSIS=pass: calibrated probability weighting is authorized by the bound scenario set",
+    "status": "pass"
   },
   {
     "blocking": false,

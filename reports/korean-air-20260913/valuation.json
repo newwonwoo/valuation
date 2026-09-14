@@ -1,7 +1,11 @@
 {
   "equity_aggregation": {
-    "expected_equity_value": null,
-    "numeric_weighting_allowed": false,
+    "expected_equity_value": {
+      "amount": "4487506793800.257178818407804",
+      "as_of": "2026-09-13",
+      "unit": "KRW"
+    },
+    "numeric_weighting_allowed": true,
     "scenario_values": [
       {
         "aggregation_hash": "5a39283709e07b57f5619565a7bdf095d61fd9b52b7136eccced169bd6808392",
@@ -467,7 +471,7 @@
       }
     ]
   },
-  "expected_value_per_share": null,
+  "expected_value_per_share": "11516.19810747143389588318907",
   "reporting_unit": "KRW",
   "scenarios": [
     {
@@ -617,5 +621,5 @@
   ],
   "scope": "FULL_INTRINSIC",
   "unvalued_segments": [],
-  "valuation_hash": "d9d0a70bbcc285f198eb58af40cab95e58d40251daadb1556e394cd92cd689ac"
+  "valuation_hash": "fa91fc4535385b9f2deb0c9e3160321c1d3829768429677445ce5a6bb358e8bb"
 }

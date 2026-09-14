@@ -1,0 +1,7 @@
+{
+  "values": {"operating_margin": 0.0252831226624916},
+  "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803",
+  "first_seen_at": "2026-08-14T09:00:00+09:00",
+  "source_hash": "734774c2a8966bd373203ff1cb834b98210bb218df78804e1604a7273cd20358",
+  "calculation": "2026 first-half airline segment EBIT KRW 347,182m divided by gross segment revenue KRW 13,731,769m. This achieved post-acquisition margin conditions the forecast but is not a training observation."
+}

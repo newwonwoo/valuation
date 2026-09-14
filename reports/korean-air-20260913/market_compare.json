@@ -1,9 +1,9 @@
 {
   "envelope": {
-    "comparison_hash": "169ddac1aff591d93ceda721b7ed9a24377bc34f4f91b46d84022a1ea6369897",
+    "comparison_hash": "e5c5a2f7e446ca1b95e50fd6ee58b371c401b7a0dea098075d460d449311d2c3",
     "currency": "KRW",
     "expected_gap": null,
-    "expected_gap_withheld_reason": null,
+    "expected_gap_withheld_reason": "Limited-liability expected comparison requires calibrated scenario weights applied after each scenario floor; signed frozen expectation retained.",
     "reference_as_of": "2026-09-11",
     "reference_name": "Current market price",
     "scenario_gaps": [

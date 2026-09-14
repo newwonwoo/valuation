@@ -88,6 +88,7 @@ from valuation_engine.kr_opendart_provider import (  # noqa: E402
 )
 from valuation_engine.investor_report import (  # noqa: E402
     load_investor_report_profile,
+    probability_weighted_equity_value,
     render_investor_report,
 )
 from valuation_engine.live_primary_adapters import (  # noqa: E402
@@ -590,6 +591,11 @@ def _reference_value_per_share(result) -> Decimal:
     scenarios = tuple(getattr(valuation, "scenarios", ()))
     if not scenarios:
         raise RunbookError("completed run carries no intrinsic scenario values")
+    equity_target = probability_weighted_equity_value(
+        valuation, result.data.get("bound_scenario_set")
+    )
+    if equity_target is not None:
+        return equity_target
     expected = getattr(valuation, "expected_value_per_share", None)
     if expected is not None:
         return Decimal(expected)
@@ -935,6 +941,12 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None,
     filing = config["filing"]
     network = _build_network(run_dir)
     _enforce_production_calibration(run_dir, config, network=network)
+    investor_profile_path = run_dir / "declarations" / "investor_report.yaml"
+    investor_profile = (
+        load_investor_report_profile(investor_profile_path)
+        if investor_profile_path.is_file()
+        else None
+    )
 
     def _parse_method(text: str, label: str) -> tuple[str, str, str | None]:
         archetype, _, rest = str(text).partition("/")
@@ -1015,6 +1027,11 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None,
         street_export_path=_optional_path(run_dir, "street.json"),
         market_currency=(
             str(config.get("market_currency", "KRW")) if market_path else None
+        ),
+        investor_entry_margin_of_safety=(
+            investor_profile.entry_margin_of_safety
+            if investor_profile is not None
+            else None
         ),
         **spec_kwargs,
     )

@@ -19,6 +19,31 @@ parent_adjustments:
 - asset_id: parent_noncontrolling_interest
   assumption_key: parent_noncontrolling_interest_adjustment
 market_currency: KRW
+calibration:
+  cohort_key: kr.self.korean_air_combined|5y_path|self_v1
+  self_calibrated: true
+  external_probability_source: target_realized_dispersion_monte_carlo
+  forecast_class: kr.self.continuous_financial_path
+  horizon: 5y_path
+  method_version: probability_engine_v3.2_self_v1
+  mapping_version: korean_air_combined_margin_v1
+  driver_ids: [operating_margin]
+  scenario_ids: [Down, Base, Bull]
+  path_length: 5
+  artifact: declarations/self_calibration_artifact.json
+  provenance: declarations/self_calibration_provenance.json
+  conditioning: declarations/self_conditioning.json
+  seed: 20260913
+  outer_draws: 300
+  inner_draws: 200
+  constants:
+    expected_artifact_sha256: 8a6b7a0a12470a0ceb0046cbbbd866fb1600c7c9701224e2e6e8e6dad3db281d
+    expected_provenance_artifact_sha256: ca03af8b16e262b3e82fe2fb85c052baff15f526a84df6cc338136d03cdd9aa4
+    expected_dataset_sha256: no_cohort_dataset_self_calibrated
+    expected_provenance_hash: feb89948a5c78258503b8770cc403e19f5815d71e71254386a526f410e01f8bb
+    expected_source_row_count: 6
+    expected_source_company_count: 1
+    excluded_ticker: '003490'
 filing:
   business_year: '2026'
   report_code: '11012'

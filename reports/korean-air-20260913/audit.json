@@ -57,7 +57,7 @@
     {
       "blocking": true,
       "check": "probability_integrity",
-      "detail": "uncalibrated/descriptive scenarios must not emit numeric expected value",
+      "detail": "calibrated weights require a numeric expected value",
       "passed": true
     },
     {

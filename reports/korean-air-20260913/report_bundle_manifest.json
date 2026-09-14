@@ -1,27 +1,27 @@
 {
-  "artifact_id": "003490-20260913-TP3672-2A6F1B668B99",
+  "artifact_id": "003490-20260913-TP20813-47FF05D6D4DC",
   "as_of": "2026-09-13",
-  "audit_hash": "16e13bed5d67a7430cec7b8990d0bf86abb767ccba526ddca6e6084a16fe00fe",
+  "audit_hash": "40b78a4babb0a5c63d8f5ab794600516c6ffe338ae2321150184b7062a4b9d3c",
   "files": [
     {
       "filename": "003490_20260913_투자보고서.md",
-      "sha256": "55cec501aad33c1f9e4a067259aa304d8ddca8466b05b88ae201c852a4099194"
+      "sha256": "8fe572e7a312d82521d36fd39dea367442cac1b54cf594035ddb23543db954a0"
     },
     {
       "filename": "PRISM_003490_01_summary.svg",
-      "sha256": "627f240d03e33ce191f5bbf756a521d53d3762a6949d479cfa77d4b03436e320"
+      "sha256": "12ad2d54de686e235b80062d58fde4690fb5d1af534ef22d25ebbb831e68f59f"
     },
     {
       "filename": "PRISM_003490_02_assumptions.svg",
-      "sha256": "e3dda09a53f92ba3560269c9570ec2e61fb10b2c2693dd1d92f451b0c7b666ca"
+      "sha256": "62c5edd85ff33f7416c1fe94e1b5b15c6cd2e3318dc2407f99fe542f954754f8"
     },
     {
       "filename": "audit.json",
-      "sha256": "9d0d7d6b27efc3bce30f9532d7ca72fbcc2d1c27d3aed9f7c6ce861e3a19376b"
+      "sha256": "aad6bec99c2156b7fefc24618de6e9cfe85945e98faf5a0ae7b366afae5d87ba"
     },
     {
       "filename": "calibration_certificate.json",
-      "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+      "sha256": "ebb8de23bd5bc211dd3a5b395af733b8a4117e78881ce6a6ec3507d83edc003e"
     },
     {
       "filename": "compiled_assumptions.json",
@@ -33,11 +33,11 @@
     },
     {
       "filename": "control_plane_trace.json",
-      "sha256": "214bbbdc22edcf49c17c3873c1a2db2875cf5db09da80c4065ab61e2bca80cd4"
+      "sha256": "17d44ee817e18c0d110093705fb1d3a95c97f8e1d3d998fe59bdb74be3875ad4"
     },
     {
       "filename": "doctrine_coverage.json",
-      "sha256": "30332510eeefe9fcedcbdab61c240b7c6043d26203be2d103cc6c07a11932cab"
+      "sha256": "1851fda83dfeebae7d3b469962f9273e26e13c68a75dee61829e6f8c475a3d73"
     },
     {
       "filename": "evidence_composition.json",
@@ -45,27 +45,27 @@
     },
     {
       "filename": "execution_attestation.json",
-      "sha256": "9e53bb637f308a7e4550e26a77534abc21ac519433415f7af872619621742024"
+      "sha256": "e1aa7a2cb903191d5b3789d645125bd3e12fcf6c5b86c63ed750d536fb2bc91f"
     },
     {
       "filename": "final_report.md",
-      "sha256": "1a6ac8efc9d6771938f16ce114c81aafba96586b4987ed45d5e7bf6a8963b320"
+      "sha256": "0f3a87c37ac92c974502f410ed05fa672e97996fff10a45bc3523f7e37b2e78e"
     },
     {
       "filename": "freeze_token.json",
-      "sha256": "b45b36f0132c62f3f09cb0215b45c487bc754babb3bf29c943fd41c5287471bd"
+      "sha256": "8e87240a9011fcfebbb0daa7a4f2e3069dea3730f3dbfe6c52d17c3972d971a5"
     },
     {
       "filename": "manifest.json",
-      "sha256": "0104d8a9e71f0d830dcd71fdf4e3bec8e37e2b5b3d08c07185c91e0a7e95e9ed"
+      "sha256": "70a025a9e138169fd6f7a37e223cdeb384a669a2e0e1990eedfeee3b17d1eb75"
     },
     {
       "filename": "market_compare.json",
-      "sha256": "17717d261dacb7f1afe5aabb61ff53649acbcf325dbbe3e69eedae6d2d27975b"
+      "sha256": "90f56eb9331984766faff25d921b0195985778f0e5a745008bc545a7d00b3bcf"
     },
     {
       "filename": "module_impact.json",
-      "sha256": "54fa113bd4ab07fb371f54faf210b9adb6faade4aab9345ef6361e29f01a7b88"
+      "sha256": "22cb5264b2bd9295bcbb34c5a91661c4c8ff7e5e72f523d8cff3a4ece835ba48"
     },
     {
       "filename": "probability_forecast_drafts.json",
@@ -73,7 +73,7 @@
     },
     {
       "filename": "reverse_dcf.json",
-      "sha256": "4fba52a0971ff9547daee52e16b944317846df8bf0dbeaa5e29a9418cc84be84"
+      "sha256": "168f39ce1b29bd32dd5e5d1c5766ddf83b5d8d47e9f5429870ef3ef6f238ba94"
     },
     {
       "filename": "scenario_probability_assessment.json",
@@ -81,11 +81,11 @@
     },
     {
       "filename": "scenario_set.json",
-      "sha256": "23bd17890db164cebed1df6b4a85e5003285f73acdf6c3f9f6d3061dab1081b8"
+      "sha256": "74f0969f1c06d299aa1dd3fb36a21d37943add1990bbca90838c445dedc77063"
     },
     {
       "filename": "street_compare.json",
-      "sha256": "a459bcd98de4c83efaaa91d2f7cfdd5dc53a905b6e20307e936c3828cd2ad3d1"
+      "sha256": "0b540222755ef06caa9db0a995f18ff90fa0f4300158ceb42ce37b84c7643dba"
     },
     {
       "filename": "thesis_delta.json",
@@ -93,18 +93,18 @@
     },
     {
       "filename": "valuation.json",
-      "sha256": "fed320b561bf4c656964ce604afe50f59a057421d763905c3b1de3b4f298cf0d"
+      "sha256": "c72c13691d738775d7f113f23334f8d7bc746e850e45d1675a7b5479268386fb"
     },
     {
       "filename": "valuation_sensitivity.json",
-      "sha256": "be9ee96fd01c16b261a759b0701ba9b7db782f2a7c5048f653d23f58f31ba725"
+      "sha256": "6ef71640338aff3e7d42dd47669a4bd66684a2aa496ea58ad365941e1a59ef77"
     }
   ],
-  "reference_value_per_share": "3671.771423052940899362559501",
+  "reference_value_per_share": "20813.37334680178272832439271",
   "report_filename": "003490_20260913_투자보고서.md",
   "run_id": "LIVE-KOREAN-AIR-1",
-  "run_input_sha256": "b8f9645c8c52e4902b727f9801c15912c7cb09aab8886dcc897922586f1e234b",
+  "run_input_sha256": "93b3a803178d61a20bc9299adbad8e5cdd8c0a8b32f5529c51e4749fdbdb70f9",
   "schema_version": "kr-live-report-bundle/v1",
   "ticker": "003490",
-  "valuation_hash": "d9d0a70bbcc285f198eb58af40cab95e58d40251daadb1556e394cd92cd689ac"
+  "valuation_hash": "fa91fc4535385b9f2deb0c9e3160321c1d3829768429677445ce5a6bb358e8bb"
 }

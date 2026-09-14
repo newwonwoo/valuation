@@ -4,11 +4,13 @@
 
 | 핵심 판단 항목 | 내용 |
 | --- | --- |
-| **투자판단** | 판단 유보 — 시나리오 확률이 보정되지 않아 확률가중 기대값을 산출하지 못했습니다. |
+| **투자판단** | 비중축소 — 현재가가 주주 유한책임을 반영한 확률가중 목표가보다 높습니다. |
 | **현재가** | 28,950원 (2026-09-11) |
 | **기준 내재가치** | 주당 3,672원 |
 | **가치평가 범위** | 주당 -26,761~36,673원 |
-| **시나리오 가능성** | 미산출 |
+| **확률가중 목표가** | 20,813원 |
+| **구체 매수가** | 15,600원 이하 (목표가 대비 25% 안전마진) |
+| **시나리오 가능성** | 하방 35% · 기준 9% · 상방 56% (보정 완료) |
 | **증권사 참고값** | 37,000원 (2건, 가치평가 확정 후 참고) |
 
 ### 한 문장 결론
@@ -19,29 +21,30 @@
 
 - **가치동인:** 연결 실제 손익을 출발점으로 항공 통합·항공우주 수주·엔진 외부서비스·호텔 자산을 구분합니다 · 수익 개선은 가설이며 대규모 투자와 초기 비용이 먼저 발생하는 현금흐름을 함께 반영합니다 · 이미 연결된 아시아나 매출이나 리스원금을 중복 반영하지 않습니다.
 - **현재가 대비:** 기준 내재가치는 현재가보다 87.3% 낮습니다. 상방 시나리오의 실현 조건 확인이 필요합니다.
-- **남은 제약:** 실제 해결 이력 기반 확률 보정이 없어 시나리오 기대값과 구체 매수가를 사용하지 않습니다.
+- **매수 규칙:** 주주 유한책임을 반영한 확률가중 목표가 20,813원에 25% 안전마진을 적용한 15,600원 이하에서만 신규 매수를 검토합니다.
 
 ### 판단 변경 조건
 
 - **상방 확인:** 기준·상방 가정의 핵심 동인이 공시 실적과 현금흐름으로 전환되면 판단 근거가 강화됩니다.
 - **하방 훼손:** 핵심 가정이 미달하거나 하방 시나리오의 조건이 현실화되면 가치평가 신뢰도와 행동 여력이 낮아집니다.
-- **행동 가능 조건:** 실제 해결 이력 기반 확률 보정과 별도 진입 규칙이 모두 갖춰지기 전까지 구체적인 매수가는 제시하지 않습니다.
+- **행동 가능 조건:** 주주 유한책임을 반영한 확률가중 목표가 20,813원에 25% 안전마진을 적용한 15,600원 이하에서만 신규 매수를 검토합니다.
 
 ## 가치평가
 - **하방 시나리오:** 내재가치 주당 -26,761원
 - **기준 시나리오:** 내재가치 주당 3,672원
 - **상방 시나리오:** 내재가치 주당 36,673원
 - **음수 시나리오 해석:** 위 음수 값은 사업가치에서 부채 등을 차감한 주당 자본 부족액입니다. 주식의 음수 거래가격을 뜻하지 않으며, 시장·증권사 가격 비교에는 유한책임에 따른 0원 하한을 적용합니다. 동결된 원래 계산값은 감사 기록에 보존합니다.
-- **확률가중 기대값:** 미산출 — 실제 해결 이력 기반 보정이 끝나지 않아 수치 가중을 보류했습니다.
+- **유한책임 반영 전 확률가중 잔여가치:** 주당 11,516원
+- **주주 유한책임 반영 확률가중 목표가:** 주당 20,813원
+- **구체 매수가:** 주당 15,600원 이하 (목표가 대비 25% 안전마진)
 
 ## 핵심 가정과 위험
 - **평가방법:** 등록된 결정론적 가치평가법, 유형자산 순자산가치법
 - **위험 입력:** 계층형 베타 1.032 · 가중평균자본비용 7.104%
-- **확률 보정:** 미보정 · 수치 가중 보류
+- **확률 보정:** 보정 완료 · 수치 가중 적용
 - **하방 가정:** hotel 유형자산 NAV 9,500억원 · 공통 지배주주 귀속률 100.0000% · EV→지분 조정 -200,168억원 · 모회사 조정 -3,500억원 · 주당 분모 389.669백만주 · 산식 [DCF 부문 귀속 지분가치+NAV 부문 귀속 지분가치+모회사 조정]÷389,669,121주 (각 부문 EV→지분 조정·귀속률 반영) · airline FCFF DCF · FCFF -22,199억원 / -17,036억원 / -8,613억원 / 1,631억원 / 9,065억원 · 영구성장률 1.5% · 영구 ROIC 6.5% · aerospace FCFF DCF · FCFF 74억원 / 123억원 / 216억원 / 270억원 / 501억원 · 영구성장률 1.5% · 영구 ROIC 6.5% · other FCFF DCF · FCFF -693억원 / -295억원 / 105억원 / 111억원 / 126억원 · 영구성장률 1.5% · 영구 ROIC 6.5%
 - **기준 가정:** hotel 유형자산 NAV 12,500억원 · 공통 지배주주 귀속률 100.0000% · EV→지분 조정 -200,168억원 · 모회사 조정 -3,500억원 · 주당 분모 389.669백만주 · 산식 [DCF 부문 귀속 지분가치+NAV 부문 귀속 지분가치+모회사 조정]÷389,669,121주 (각 부문 EV→지분 조정·귀속률 반영) · airline FCFF DCF · FCFF -19,357억원 / -11,664억원 / -1,762억원 / 8,383억원 / 14,261억원 · 영구성장률 2.0% · 영구 ROIC 8.0% · aerospace FCFF DCF · FCFF 120억원 / 220억원 / 380억원 / 524억원 / 847억원 · 영구성장률 2.0% · 영구 ROIC 8.0% · other FCFF DCF · FCFF -655억원 / -249억원 / 164억원 / 194억원 / 228억원 · 영구성장률 2.0% · 영구 ROIC 8.0%
 - **상방 가정:** hotel 유형자산 NAV 15,500억원 · 공통 지배주주 귀속률 100.0000% · EV→지분 조정 -200,168억원 · 모회사 조정 -3,500억원 · 주당 분모 389.669백만주 · 산식 [DCF 부문 귀속 지분가치+NAV 부문 귀속 지분가치+모회사 조정]÷389,669,121주 (각 부문 EV→지분 조정·귀속률 반영) · airline FCFF DCF · FCFF -19,026억원 / -9,128억원 / 1,496억원 / 13,254억원 / 19,332억원 · 영구성장률 2.5% · 영구 ROIC 10.0% · aerospace FCFF DCF · FCFF 69억원 / 242억원 / 495억원 / 760억원 / 1,225억원 · 영구성장률 2.5% · 영구 ROIC 10.0% · other FCFF DCF · FCFF -625억원 / -210억원 / 226억원 / 271억원 / 324억원 · 영구성장률 2.5% · 영구 ROIC 10.0%
-- **핵심 제약:** 실제 해결 전망의 누적 이력이 부족해 시나리오 확률과 기대값을 투자판단에 사용할 수 없습니다.
 
 ## 증권사·시장 비교
 - **증권사 평균 목표가:** 37,000원 (2건)
@@ -158,7 +161,7 @@
 
 ### 4. 가치평가·오류 점검·결과 확정 — 경고 (7/7)
 - 결과: 가치평가와 오류 점검을 마치고 결과를 확정했습니다
-- 잔여위험: 시나리오 확률 보정 점검: 실제 해결 이력 기반 확률 보정이 완료되지 않아 확률가중 기대값을 산출하지 않았습니다 | 가정 타당성 점검: 근거 구성 또는 가치 민감도에서 확인 필요 항목이 기록되었습니다 · 다음 단계: 증권사·시장 비교·보고서 저장
+- 잔여위험: 가정 타당성 점검: 근거 구성 또는 가치 민감도에서 확인 필요 항목이 기록되었습니다 · 다음 단계: 증권사·시장 비교·보고서 저장
 
 ### 5. 증권사·시장 비교·보고서 저장 — 경고 (7/7)
 - 결과: 시장·증권사 비교 후 한국어 최종보고서와 요약 이미지 2장을 저장했습니다
@@ -170,7 +173,7 @@
 - **증거 수집·산업 라우팅:** 1 기업 식별=통과 · 2 기존 분석 상태 불러오기=통과 · 3 산업 지식 기준일 설정=통과 · 4 출처 최신성 사전점검=통과 · 5 사업부 분해=통과 · 6 산업 특성 분류=통과 · 7 필수 분석 모듈 확정=통과 · 8 1차 근거 수집=통과 · 9 근거 기록 확정=통과
 - **인사이트 도출·반증 검토:** 10 환경 변화 인사이트 탐색=경고 · 11 상류 자금흐름 점검=경고 · 12 주 분석가 가설 도출=통과 · 13 독립 반증 검토=통과 · 14 추가 조사 반복=해당 없음
 - **가정·평가방법·위험:** 15 근거·가정 연결=통과 · 16 시나리오 구성=통과 · 17 가치평가 방법 확정=통과 · 18 계층형 베타 추정=통과 · 19 가중평균자본비용 검증=통과
-- **가치평가·오류 점검·결과 확정:** 20 결정론적 가치평가=통과 · 21 계층형 적정 주가수익비율=해당 없음 · 22 현금흐름·주가수익비율 가정 정합성=통과 · 23 평가방법 간 이중계상 감사=통과 · 24 시나리오 확률 보정 점검=경고 · 25 최종 감사=경고 · 26 가치평가 결과 확정=통과
+- **가치평가·오류 점검·결과 확정:** 20 결정론적 가치평가=통과 · 21 계층형 적정 주가수익비율=해당 없음 · 22 현금흐름·주가수익비율 가정 정합성=통과 · 23 평가방법 간 이중계상 감사=통과 · 24 시나리오 확률 보정 점검=통과 · 25 최종 감사=경고 · 26 가치평가 결과 확정=통과
 - **증권사·시장 비교·보고서 저장:** 27 증권사 자료 불러오기=통과 · 28 증권사 목표가 비교=통과 · 29 현재 시장가격 불러오기=통과 · 30 시장가격 비교=경고 · 31 투자논지 변화 점검=통과 · 32 분석 결과 저장=통과 · 33 최종보고서 생성=통과
 - 단계별 사유와 출력값 식별자는 별도 분석 기록에 보존됩니다.
 
@@ -199,14 +202,14 @@
 
 - 실행 식별자: `LIVE-KOREAN-AIR-1`
 - 실행 모드: `live_primary`
-- 작성 확인 해시: `14824b314d0ae74e4c7c64ac5da3a665e7f974e8b3b878338ccaca1f2fef4638`
+- 작성 확인 해시: `86e0255aed36d39f7d6302d5c499464c40f90e2d675c7dd62da67d82dffaaebb`
 - 증거 해시: `340b838a7d7090a7c26128b232ac8afedfff7c171dc856f1798de3c7b06400ba`
 - 가정 해시: `4e505acfd5c2f583d4841dfe320f92c2a8c08550f0be3067ef933306cba9453b`
-- 시나리오 해시: `c75ddd6ae378070abd8d10ea51d5943d67cc11fa6223984004e9a85009dc99d9`
-- 가치평가 해시: `d9d0a70bbcc285f198eb58af40cab95e58d40251daadb1556e394cd92cd689ac`
-- 오류 점검 해시: `16e13bed5d67a7430cec7b8990d0bf86abb767ccba526ddca6e6084a16fe00fe`
-- 가치평가 확정 해시: `38c8633e568384cb23f6920b1fa8e1b9312333ad3c86809524175235af8954e7`
-- 보조 결속정보: 베타 `ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d` · 가중평균자본비용 `6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068` · 생산능력 평가 `a3545801a2b8a62a817dc8625fd5baccc104aa9ed22e1476e89b8c440ce55462` · 생산능력 시나리오 `749eb5803378d1917242a7bbc628d9f735b5a3101a0593da19d5c3fa3a17ff24` · 생산능력 가치평가 `d9bd1d79233f8eb072fedb61e149e4bf8b7413356e5306ff42af861831286423` · 생산능력 주가수익비율 `85dcf60787bab542d74fefe15d221022301e0298f1f396e5082a8a0b97af91d4` · 생산능력 정합성 `8750b48e564d3cc93648511698254d38f25b6a4d8bebac785d8075d1f43bf29c` · 생산능력 오류 점검 `70234dcc54ee218f94099b7b42a1190631e080d24e264406baab929a8f12314d`
-- 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=warning · 11 `UPSTREAM_FUNDING_SCAN`=warning · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=pass · 19 `WACC_VALIDATION`=pass · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=warning · 25 `AUDIT_GATE`=warning · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=warning · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
+- 시나리오 해시: `7f83d95a55bd2104d3d12d2ccf88d6ab5f772db5bbe5556ba2b89535b9b2c47e`
+- 가치평가 해시: `fa91fc4535385b9f2deb0c9e3160321c1d3829768429677445ce5a6bb358e8bb`
+- 오류 점검 해시: `40b78a4babb0a5c63d8f5ab794600516c6ffe338ae2321150184b7062a4b9d3c`
+- 가치평가 확정 해시: `e0551b01a6d19b634334a76df630a8b652e9f26acb3e7a9e4bb49b1818eb2247`
+- 보조 결속정보: 베타 `ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d` · 가중평균자본비용 `6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068` · 생산능력 평가 `a3545801a2b8a62a817dc8625fd5baccc104aa9ed22e1476e89b8c440ce55462` · 생산능력 시나리오 `749eb5803378d1917242a7bbc628d9f735b5a3101a0593da19d5c3fa3a17ff24` · 생산능력 가치평가 `825d9a8b24d07b87dc9deaacaf4c320303027147497ea4e382a7f80d3ad33e83` · 생산능력 주가수익비율 `11062779b62ab54dbbf0a8d95a226ceeb57bfbd8be5fa1e541b68854326733f8` · 생산능력 정합성 `176414539158f8872616a61561cbaf38a948ad79d7db3ae8a89667b8291a1dc3` · 생산능력 오류 점검 `b554806f1f68b9ab41b08a3e90e369c6579c0b400662643a61d625ba87c5e860`
+- 단계 기술 식별자: 1 `COMPANY_RESOLUTION`=pass · 2 `LOAD_COMPANY_STATE`=pass · 3 `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`=pass · 4 `SOURCE_FRESHNESS_PRECHECK`=pass · 5 `SEGMENT_DECOMPOSITION`=pass · 6 `INDUSTRY_DNA_ROUTE`=pass · 7 `MODULE_REQUIREMENT_PLAN`=pass · 8 `PRIMARY_EVIDENCE_COLLECTION`=pass · 9 `EVIDENCE_LEDGER`=pass · 10 `ROCKET_INSIGHT_SCAN`=warning · 11 `UPSTREAM_FUNDING_SCAN`=warning · 12 `RESEARCHER_A`=pass · 13 `BLIND_RED_TEAM_B`=pass · 14 `RESEARCH_LOOP`=skipped_not_applicable · 15 `EVIDENCE_TO_ASSUMPTION_BRIDGE`=pass · 16 `SCENARIO_BUILD`=pass · 17 `VALUATION_METHOD_INTENT`=pass · 18 `HIERARCHICAL_BETA_ESTIMATION`=pass · 19 `WACC_VALIDATION`=pass · 20 `DETERMINISTIC_VALUATION`=pass · 21 `HIERARCHICAL_WARRANTED_PER`=skipped_not_applicable · 22 `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`=pass · 23 `CROSS_METHOD_DOUBLE_COUNT_AUDIT`=pass · 24 `PROBABILITY_DISTRIBUTION_ANALYSIS`=pass · 25 `AUDIT_GATE`=warning · 26 `INTRINSIC_VALUE_FREEZE`=pass · 27 `STREET_REFERENCE_LOAD`=pass · 28 `STREET_GAP_ANALYZER`=pass · 29 `MARKET_PRICE_LOAD`=pass · 30 `MARKET_COMPARE`=warning · 31 `THESIS_DELTA`=pass · 32 `SAVE_STATE`=pass · 33 `FINAL_REPORT`=pass
 
 </details>

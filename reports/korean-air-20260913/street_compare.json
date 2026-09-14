@@ -9,10 +9,10 @@
     "target_price_currency": "KRW"
   },
   "envelope": {
-    "comparison_hash": "e0438bd7ac5a084ca5c82379eb43e3252e2f0a023b592f7dbfc11225d81a3e25",
+    "comparison_hash": "e3d94a5dd25ec282a5bf9a1a2c4085f5213d3282dc450e7b346cc021b1b50a81",
     "currency": "KRW",
     "expected_gap": null,
-    "expected_gap_withheld_reason": null,
+    "expected_gap_withheld_reason": "Limited-liability expected comparison requires calibrated scenario weights applied after each scenario floor; signed frozen expectation retained.",
     "reference_as_of": "2026-07-15",
     "reference_name": "Street mean target price",
     "scenario_gaps": [

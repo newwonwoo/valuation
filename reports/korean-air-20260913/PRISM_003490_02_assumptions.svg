@@ -30,6 +30,7 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="1015" y="658" font-size="16" font-weight="800" fill="#607582" text-anchor="start">모회사 조정</text>
 <line x1="95" y1="668" x2="1105" y2="668" stroke="#D6DFE3" stroke-width="2"/>
 <text x="100" y="712" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">하방(Down)</text>
+<text x="100" y="730" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">34.7%</text>
 <text x="270" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
 <text x="470" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">hotel 9,500억원</text>
 <text x="675" y="712" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">airline FCFF DCF ·</text>
@@ -54,6 +55,7 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="1015" y="748" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-3,500억</text>
 <line x1="95" y1="942" x2="1105" y2="942" stroke="#E9EEF0" stroke-width="2"/>
 <text x="100" y="960" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">기준(Base)</text>
+<text x="100" y="978" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">9.4%</text>
 <text x="270" y="960" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
 <text x="470" y="960" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">hotel 12,500억원</text>
 <text x="675" y="960" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">airline FCFF DCF ·</text>
@@ -79,6 +81,7 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="1015" y="996" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">-3,500억</text>
 <line x1="95" y1="1208" x2="1105" y2="1208" stroke="#E9EEF0" stroke-width="2"/>
 <text x="100" y="1226" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">상방(Bull)</text>
+<text x="100" y="1244" font-size="16" font-weight="700" fill="#142A3A" text-anchor="start">55.8%</text>
 <text x="270" y="1226" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">—</text>
 <text x="470" y="1226" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">hotel 15,500억원</text>
 <text x="675" y="1226" font-size="14" font-weight="500" fill="#142A3A" text-anchor="start">airline FCFF DCF ·</text>
@@ -110,9 +113,9 @@ text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun G
 <text x="250" y="1690" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">[DCF 부문 귀속 지분가치+NAV 부문 귀속 지분가치+모회사 조정]÷389,669,121주 (각 부문</text>
 <text x="250" y="1721" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">EV→지분 조정·귀속률 반영)</text>
 <text x="70" y="1764" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">확률 보정</text>
-<text x="250" y="1764" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">미완료</text>
+<text x="250" y="1764" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">완료</text>
 <text x="70" y="1826" font-size="22" font-weight="800" fill="#E26643" text-anchor="start">매수구간</text>
-<text x="250" y="1826" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지</text>
+<text x="250" y="1826" font-size="21" font-weight="400" fill="#344B5A" text-anchor="start">15,600원 이하 (확률가중 목표가 20,813원, 안전마진 25%)</text>
 <rect x="0" y="1916" width="1200" height="130" rx="0" fill="#102D3E"/>
 <text x="70" y="1961" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
 <text x="140" y="1961" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">공시 사실과 분석가 가정의 근거 주소는 보고서 본문 ‘정보 출처’에서 확인할 수 있습니다.</text>

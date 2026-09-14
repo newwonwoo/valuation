@@ -4,7 +4,7 @@
       "assumption_hash": "4e505acfd5c2f583d4841dfe320f92c2a8c08550f0be3067ef933306cba9453b",
       "blocked_reasons": [],
       "conclusion_tags": [],
-      "intrinsic_value_per_share": null,
+      "intrinsic_value_per_share": 11516.198107471433,
       "route_hash": "33d12777101ea54febe82ccdb7bf0ffab22445e3bac8eaffa4c0ee7cf251a5d4",
       "selected_methods": [
         "airline_transport/traffic_yield_dcf/1",

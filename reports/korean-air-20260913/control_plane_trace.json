@@ -213,12 +213,17 @@
       "capacity_scenario_binding_hash",
       "capacity_scenario_binding_result",
       "compiled_assumption_set",
+      "continuous_probability_calibration_snapshot",
+      "probability_calibration_certificate",
+      "probability_calibration_dataset_hash",
+      "probability_calibration_snapshot",
+      "probability_calibration_snapshot_hash",
       "probability_calibration_status",
       "probability_weighting_allowed",
       "scenario_binding_findings",
       "scenario_set_hash"
     ],
-    "rationale": "no Core-inclusion capacity project requires bridge consumption | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding",
+    "rationale": "no Core-inclusion capacity project requires bridge consumption | calibration promotion gate passed; certificate is available for LIVE_PRIMARY probability weighting | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding",
     "stage": "SCENARIO_BUILD",
     "status": "pass"
   },
@@ -327,9 +332,9 @@
     "output_keys": [
       "probability_distribution_status"
     ],
-    "rationale": "scenario probabilities are not calibration-authorized; numeric expected value remains disabled",
+    "rationale": "calibrated probability weighting is authorized by the bound scenario set",
     "stage": "PROBABILITY_DISTRIBUTION_ANALYSIS",
-    "status": "warning"
+    "status": "pass"
   },
   {
     "blocking": false,

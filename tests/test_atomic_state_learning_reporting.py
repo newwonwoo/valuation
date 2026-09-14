@@ -1,5 +1,6 @@
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -260,3 +261,62 @@ def test_full_envelope_does_not_replace_missing_probability_weight():
     assert "**투자판단** | 판단 유보" in report
     assert "시나리오 확률이 보정되지 않아" in report
     assert "확률가중 기대값:** 미산출" in report
+
+
+def test_calibrated_negative_residual_report_publishes_equity_target_and_entry_price():
+    scenarios = tuple(
+        ScenarioPerShareValue(
+            scenario_id=scenario_id,
+            equity_value_amount=value * Decimal("10"),
+            reporting_unit="KRW",
+            diluted_shares=Decimal("10"),
+            value_per_share=value,
+            aggregation_hash=f"AGG:{scenario_id}",
+            economic_path_ids=(f"PATH:{scenario_id}",),
+        )
+        for scenario_id, value in (
+            ("Down", Decimal("-30000")),
+            ("Base", Decimal("10000")),
+            ("Bull", Decimal("40000")),
+        )
+    )
+    valuation = GenericValuationResult(
+        scenarios=scenarios,
+        equity_aggregation=ScenarioEquityAggregation((), None, False),
+        expected_value_per_share=Decimal("6000"),
+        reporting_unit="KRW",
+        valuation_hash="VALUATION",
+    )
+    bound = SimpleNamespace(
+        calibration_status=SimpleNamespace(value="CALIBRATED"),
+        numeric_weighting_allowed=True,
+        scenarios=tuple(
+            SimpleNamespace(scenario_id=scenario_id, probability=probability)
+            for scenario_id, probability in (
+                ("Down", Decimal("0.4")),
+                ("Base", Decimal("0.2")),
+                ("Bull", Decimal("0.4")),
+            )
+        ),
+    )
+    observation = MarketObservation(25000.0, "2026-09-04", "market")
+    report = render_generic_report(
+        {
+            "company": "Example",
+            "generic_valuation_result": valuation,
+            "bound_scenario_set": bound,
+            "generic_audit_report": _audit(),
+            "doctrine_coverage": _coverage(),
+            "market_comparison": compare_generic_to_market(
+                valuation, observation, currency="KRW"
+            ),
+            "investor_entry_margin_of_safety": Decimal("0.25"),
+        }
+    )
+
+    assert "**확률가중 목표가** | 18,000원" in report
+    assert "**구체 매수가** | 13,500원 이하" in report
+    assert "하방 40% · 기준 20% · 상방 40% (보정 완료)" in report
+    assert "**유한책임 반영 전 확률가중 잔여가치:** 주당 6,000원" in report
+    assert "**주주 유한책임 반영 확률가중 목표가:** 주당 18,000원" in report
+    assert "구체적인 매수가는 제시하지 않습니다" not in report

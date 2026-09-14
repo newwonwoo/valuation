@@ -1,9 +1,9 @@
 {
-  "calibration_dataset_hash": null,
-  "calibration_snapshot_hash": null,
-  "calibration_status": "UNCALIBRATED",
-  "numeric_weighting_allowed": false,
-  "scenario_set_hash": "c75ddd6ae378070abd8d10ea51d5943d67cc11fa6223984004e9a85009dc99d9",
+  "calibration_dataset_hash": "no_cohort_dataset_self_calibrated",
+  "calibration_snapshot_hash": "f83ff1e76fc37d0d1bc414daba1259fd48f714c507173d7b69709a7d8f69ea03",
+  "calibration_status": "CALIBRATED",
+  "numeric_weighting_allowed": true,
+  "scenario_set_hash": "7f83d95a55bd2104d3d12d2ccf88d6ab5f772db5bbe5556ba2b89535b9b2c47e",
   "scenarios": [
     {
       "assumptions": [
@@ -616,7 +616,7 @@
           "transform_id": "identity_observation"
         }
       ],
-      "probability": null,
+      "probability": "0.3474166666666666326291666667",
       "scenario_id": "Down"
     },
     {
@@ -1230,7 +1230,7 @@
           "transform_id": "identity_observation"
         }
       ],
-      "probability": null,
+      "probability": "0.09449999999999999527500000000",
       "scenario_id": "Base"
     },
     {
@@ -1844,7 +1844,7 @@
           "transform_id": "identity_observation"
         }
       ],
-      "probability": null,
+      "probability": "0.5580833333333333720958333333",
       "scenario_id": "Bull"
     }
   ],

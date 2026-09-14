@@ -21,8 +21,13 @@ major_assumptions: 평가일은 2026년9월13일이며, 향후 5개 연간 기�
   연결 영업이익 전망은 약2.35조~2.66조원으로, 본 모형보다 빠른 실적 개선을 기대합니다. 본 모형은 매년9월까지의 향후12개월 기준이므로
   달력연도 전망과 직접 같은 기간은 아닙니다.
 valuation_exclusions: 공시된 네 사업부를 모두 포함했습니다. 미확정 MOU를 확정수주로 보지 않았으며, 아시아나 매출과 이자 절감은
-  중복 가산하지 않았습니다. 통합 이후와 동일한 범위의 장기 실적 이력이 짧아 시나리오 확률을 임의로 붙이지 않았습니다. 아래 시나리오 값은 각
-  가정이 성립할 때의 조건부 가치입니다. 순부채 차감 후 음수인 경우는 자본가치 부족액으로 읽어야 하며 주식의 음수 거래가격을 뜻하지 않습니다.
+  중복 가산하지 않았습니다. 확률은 동종사 실적이 아니라 2019~2024년 대한항공·아시아나의 연결 매출과 영업이익을 연도별 합산해 동일한 통합
+  경제범위로 재구성한 6개년 영업이익률 이력에서 보정했습니다. 2026년 반기 통합 항공부문 이익률은 현재 조건으로만 사용했습니다. 순부채 차감 후
+  음수인 경우는 감사용 자본가치 부족액으로 보존하며, 투자자용 확률가중 주식가치에는 유한책임에 따른 0원 하한을 적용합니다. 표본은 최소 요건인
+  6개년이고 코로나 충격을 포함해 오차범위가 넓으므로, 확률은 고정 예측이 아니라 추가 실적 공시 때 갱신할 조건부 추정입니다.
+entry_rule:
+  margin_of_safety: 0.25
+  rationale: 합병 통합비용, 약 20조원의 리스 포함 순차입금, 유가·환율 민감도와 초기 3년의 높은 항공기 투자 부담 때문에 확률가중 목표가 대비 25% 안전마진을 요구합니다.
 segment_notes:
 - segment_id: 항공운송
   content: 연결 항공사업의 수익성 회복·통합 비용·항공기 투자·신규리스를 현금흐름에 반영
@@ -47,9 +52,8 @@ risks:
 conditions:
   upside: 아시아나 손실 축소와 통합 비용 절감이 연결 영업이익으로 확인되고, 엔진 정비 외부 수주와 양산 매출이 초기 비용을 넘어설 때입니다.
   downside: 연결 이익률이 회복되지 않거나 항공기·리스 투자와 추가 차입이 기준 경로를 지속적으로 초과할 때입니다.
-  actionable: 현재가는 기준 시나리오보다 상방 시나리오에 가까운 회복을 요구합니다. 신규 매수의 가격 매력은 낮다고 판단합니다. 아시아나
-    손실 축소·연결 이익률 회복·투자 후 현금흐름 개선이 함께 확인되는지 점검해야 합니다. 이는 확률가중 목표가가 아닌 조건부 시나리오에 따른
-    판단입니다.
+  actionable: 확률가중 목표가에 25% 안전마진을 적용한 구체 매수가 이하에서만 신규 매수를 검토합니다. 그 전에는 아시아나 손실 축소·연결
+    이익률 회복·투자 후 현금흐름 개선이 함께 확인되는지 점검합니다.
 sources:
 - source_type: 공시
   label: 대한항공 2026 반기보고서
@@ -57,6 +61,18 @@ sources:
 - source_type: 공시
   label: 2026년7월24일 합병 투자설명서
   url: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260724000006
+- source_type: IR
+  label: 대한항공 2019~2024 연결 감사보고서 목록
+  url: https://www.koreanair.com/contents/footer/about-us/investor-relations/financial-information
+- source_type: 신용평가
+  label: 아시아나항공 2019~2021 연결 실적표
+  url: https://m.kisrating.com/fileDown.do?fileName=rs20220331-2.pdf&gubun=2&menuCd=R8
+- source_type: 공시
+  label: 아시아나항공 2022 사업보고서
+  url: https://www.airportal.go.kr/file/htmlOpen/upload/airline/detail/%5B%EC%95%84%EC%8B%9C%EC%95%84%EB%82%98%ED%95%AD%EA%B3%B5%5D%5B%EC%A0%95%EC%A0%95%5D%EC%82%AC%EC%97%85%EB%B3%B4%EA%B3%A0%EC%84%9C%282022%29.pdf
+- source_type: 공시
+  label: 아시아나항공 2024 감사보고서 제출
+  url: https://kind.krx.co.kr/common/disclsviewer.do?acptno=20250310001201&langTpCd=0&method=search&orgid=G&rcpno=20250310001201&tran=Y
 - source_type: IR
   label: 대한항공 2026년2분기 별도 실적
   url: https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf

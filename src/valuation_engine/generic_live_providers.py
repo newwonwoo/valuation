@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import date
+from decimal import Decimal
 import json
 from pathlib import Path
 
@@ -214,6 +215,10 @@ class GenericKRRuntimeSpec:
     market_config_path: str | Path | None = None
     street_export_path: str | Path | None = None
     market_currency: str | None = None
+    #: Report-only price discipline. It is carried to SAVE_STATE so the visual
+    #: summary can show the same concrete entry price as the public report; no
+    #: intrinsic-value or probability stage reads it.
+    investor_entry_margin_of_safety: Decimal | None = None
 
     def validate(self) -> None:
         if not self.as_of or not self.scenario_ids or not self.method_choices:
@@ -230,6 +235,12 @@ class GenericKRRuntimeSpec:
         if self.market_config_path is not None and not self.market_currency:
             raise GenericValuationPlanError(
                 "market_currency is required with a market config"
+            )
+        if self.investor_entry_margin_of_safety is not None and not (
+            Decimal("0") < self.investor_entry_margin_of_safety < Decimal("1")
+        ):
+            raise GenericValuationPlanError(
+                "investor entry margin of safety must be between zero and one"
             )
         if self.require_broker_research and self.declared_broker_research_path is None:
             raise GenericValuationPlanError(
@@ -622,7 +633,18 @@ def build_generic_kr_runtime_factory(
         additional_required_evidence=additional_required,
         market_currency=spec.market_currency,
         require_broker_research=spec.require_broker_research,
-        initial_data={"data_cutoff": spec.as_of},
+        initial_data={
+            "data_cutoff": spec.as_of,
+            **(
+                {
+                    "investor_entry_margin_of_safety": (
+                        spec.investor_entry_margin_of_safety
+                    )
+                }
+                if spec.investor_entry_margin_of_safety is not None
+                else {}
+            ),
+        },
         scenario_binding_spec=ScenarioBindingSpec(
             scenario_ids=spec.scenario_ids,
             required_keys=keys,
