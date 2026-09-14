@@ -30,6 +30,18 @@
   "asset_volatility_basis": "Rounded annualized log-width implied by the audited Down/Upside business-value envelope over five years; no current share price is used.",
   "risk_free_rate": "0.04571",
   "claim_horizon_years": "5",
+  "probability_basis": "GOVERNED_EVENT_PRIOR",
+  "structural_model_qualification": {
+    "claim_basis": "CURRENT_CARRYING_AMOUNT",
+    "asset_basis": "DCF_DERIVED",
+    "volatility_basis": "SCENARIO_ENVELOPE_PROXY",
+    "maturity_basis": "MULTI_MATURITY_AGGREGATE_PROXY",
+    "evidence_path_ids": [
+      "declarations/governed_source_valuation_snapshot.json",
+      "declarations/financing_path_spec.json"
+    ],
+    "permitted_role": "DIAGNOSTIC_CROSS_CHECK_ONLY"
+  },
   "diluted_shares": "389669121",
   "branches": [
     {
@@ -55,20 +67,32 @@
     }
   ],
   "probability_authorization": {
-    "status": "GOVERNED_EVENT_PRIOR_WITH_AUDITED_SCENARIO_VALUE_BRIDGE",
+    "status": "GOVERNED_EVENT_PRIOR_AMBIGUITY_SET",
     "not_claimed": "CALIBRATED_CURRENT_GROUP_HISTORY",
-    "basis": "Current merged-group history is short and predecessor panels are not yet OOS-qualified. The audited scenario values are retained as the value bridge and the integration outcome is an explicit, versioned 20/60/20 analyst prior. The central branch is the unique mode; probabilities do not come from nearest-anchor classification, and no segment posterior is claimed.",
+    "basis": "Current merged-group history is short and predecessor panels are not yet OOS-qualified. The audited signed scenario values are retained as the value bridge and the integration outcome is represented by a set of three versioned analyst probability vectors. The vectors do not come from nearest-anchor classification, and none is claimed as a calibrated segment posterior.",
+    "permitted_outputs": [
+      "SIGNED_EXPECTED_VALUE_INTERVAL_ACROSS_ALL_VECTORS",
+      "WORST_PRIOR_EXPECTED_RETURN_ENTRY_ONLY_AFTER_PATHWISE_PAYOFF_AUTHORIZATION"
+    ],
+    "forbidden_outputs": [
+      "SINGLE_PROBABILITY_WEIGHTED_TARGET",
+      "CALIBRATED_SUCCESS_PROBABILITY",
+      "ACTIONABLE_DISCRETE_Q25_WHEN_SUPPORTING_BRANCH_CHANGES"
+    ],
     "sensitivity_sets": [
-      {"label": "downside_heavier", "probabilities": ["0.30", "0.50", "0.20"]},
-      {"label": "governed_base", "probabilities": ["0.20", "0.60", "0.20"]},
-      {"label": "execution_success", "probabilities": ["0.15", "0.60", "0.25"]}
+      {"label": "downside_heavier", "probabilities": ["0.30", "0.50", "0.20"], "evidence_path_ids": ["declarations/analyst_prior_sensitivity.json", "declarations/governed_source_valuation_snapshot.json"]},
+      {"label": "governed_base", "probabilities": ["0.20", "0.60", "0.20"], "evidence_path_ids": ["declarations/analyst_prior_sensitivity.json", "declarations/governed_source_valuation_snapshot.json"]},
+      {"label": "execution_success", "probabilities": ["0.15", "0.60", "0.25"], "evidence_path_ids": ["declarations/analyst_prior_sensitivity.json", "declarations/governed_source_valuation_snapshot.json"]}
     ]
   },
   "entry_policy": {
-    "policy_version": "three_year_return_quantile/v1",
+    "policy_version": "ambiguity_robust_expected_return_entry/v1",
     "horizon_years": 3,
     "required_annual_return": "0.12",
     "success_quantile": "0.25",
+    "quantile_role": "DIAGNOSTIC_ONLY",
+    "probability_success_claim_authorized": false,
+    "robust_entry_authorization": "WITHHELD_UNTIL_PATHWISE_FUTURE_PAYOFFS_AND_WATERFALL",
     "sensitivity_returns": ["0.10", "0.12", "0.15"]
   }
 }

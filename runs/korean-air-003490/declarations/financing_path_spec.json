@@ -183,6 +183,7 @@
   ],
   "deterministic_route_usable": true,
   "distributional_distress_route_authorized": false,
-  "hybrid_prior_predictive_route_authorized": true,
-  "hybrid_output_label": "ANALYST_PRIOR_SENSITIVITY_NOT_CALIBRATED_FINANCING_POSTERIOR"
+  "hybrid_prior_expected_value_range_authorized": true,
+  "hybrid_prior_robust_entry_authorized": false,
+  "hybrid_output_label": "ANALYST_PRIOR_AMBIGUITY_SET_NOT_CALIBRATED_FINANCING_POSTERIOR"
 }

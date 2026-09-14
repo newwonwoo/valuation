@@ -5,6 +5,13 @@ from decimal import Decimal
 import pytest
 
 from scripts.build_governed_distribution_report import build
+from valuation_engine.governed_event_distribution import GovernedDistributionError
+from valuation_engine.probability_ambiguity import (
+    AmbiguityValueStatus,
+    ProbabilityVector,
+    SignedOutcomeValue,
+    calculate_ambiguity_expected_value_range,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,6 +20,7 @@ RUN_DIR = SPEC.parent.parent
 
 
 def _isolated_spec(tmp_path: Path) -> tuple[Path, Path]:
+    tmp_path.mkdir(parents=True, exist_ok=True)
     spec = json.loads(SPEC.read_text(encoding="utf-8"))
     broker_source = (RUN_DIR / spec["source_broker_comparison"]).resolve()
     broker_path = tmp_path / "broker_comparison.json"
@@ -25,14 +33,93 @@ def _isolated_spec(tmp_path: Path) -> tuple[Path, Path]:
     ):
         spec[key] = str((RUN_DIR / spec[key]).resolve())
     spec["source_broker_comparison"] = str(broker_path)
+    # Synthetic happy-path qualification for reporter plumbing only.  The
+    # production Korean Air input intentionally lacks these qualifications and
+    # must fail closed because it aggregates current carrying claims across
+    # multiple maturities.
+    spec["structural_model_qualification"] = {
+        "claim_basis": "PROMISED_AT_HORIZON",
+        "asset_basis": "MARKET_CALIBRATED",
+        "volatility_basis": "CALIBRATED_ASSET_RETURNS",
+        "maturity_basis": "SINGLE_MATURITY",
+        "evidence_path_ids": ["test-only:qualified-structural-inputs"],
+        "permitted_role": "PRIMARY_VALUE",
+    }
+    spec["probability_basis"] = "CALIBRATED_EVENT_PROBABILITY"
+    spec["probability_authorization"]["status"] = (
+        "CALIBRATED_EVENT_PROBABILITY"
+    )
+    spec["probability_authorization"]["not_claimed"] = (
+        "TEST_FIXTURE_NOT_LIVE_COMPANY_VALIDATION"
+    )
+    spec["probability_authorization"]["basis"] = (
+        "Test-only calibrated probability fixture for report plumbing."
+    )
+    spec["entry_policy"]["policy_version"] = "three_year_return_quantile/v1"
+    spec["entry_policy"]["quantile_role"] = "PRIMARY_POLICY"
+    spec["entry_policy"]["probability_success_claim_authorized"] = True
     spec_path = tmp_path / "run" / "declarations" / "governed_distribution_spec.json"
     spec_path.parent.mkdir(parents=True)
     spec_path.write_text(json.dumps(spec, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return spec_path, broker_path
 
 
-def test_korean_air_governed_distribution_builds_audited_final_bundle(tmp_path):
-    bundle = build(SPEC, tmp_path)
+def test_korean_air_current_merton_overlay_is_rejected_as_primary_value(tmp_path):
+    with pytest.raises(GovernedDistributionError, match="promised claim amount"):
+        build(SPEC, tmp_path)
+    assert not tuple(tmp_path.iterdir())
+
+
+def test_korean_air_signed_scenarios_produce_an_ambiguity_value_range_not_a_floor():
+    spec = json.loads(SPEC.read_text(encoding="utf-8"))
+    snapshot = json.loads(
+        (RUN_DIR / spec["source_valuation_snapshot"]).read_text(encoding="utf-8")
+    )
+    source_values = {
+        row["scenario_id"]: Decimal(row["equity_value_KRW"])
+        for row in snapshot["scenario_values"]
+    }
+    shares = Decimal(spec["diluted_shares"])
+    branch_ids = tuple(row["branch_id"] for row in spec["branches"])
+    outcomes = tuple(
+        SignedOutcomeValue(
+            outcome_id=row["branch_id"],
+            present_value=source_values[row["source_scenario"]] / shares,
+            evidence_path_ids=(snapshot["source_valuation_hash"],),
+        )
+        for row in spec["branches"]
+    )
+    vectors = tuple(
+        ProbabilityVector(
+            vector_id=row["label"],
+            weights=tuple(
+                (branch_id, Decimal(weight))
+                for branch_id, weight in zip(branch_ids, row["probabilities"])
+            ),
+            evidence_path_ids=tuple(row["evidence_path_ids"]),
+        )
+        for row in spec["probability_authorization"]["sensitivity_sets"]
+    )
+    result = calculate_ambiguity_expected_value_range(
+        outcomes=outcomes,
+        probability_vectors=vectors,
+        values_authorized=True,
+        value_set_hash=snapshot["source_valuation_hash"],
+    )
+    assert result.status is AmbiguityValueStatus.AVAILABLE
+    assert result.minimum_expected_value == Decimal(
+        "1142.150768093133620112913164"
+    )
+    assert result.maximum_expected_value == Decimal(
+        "7357.091858922905761460014388"
+    )
+    assert outcomes[0].present_value < 0
+    assert not result.calibrated_probability_claim_authorized
+
+
+def test_explicitly_qualified_structural_fixture_builds_audited_bundle(tmp_path):
+    spec_path, _ = _isolated_spec(tmp_path / "inputs")
+    bundle = build(spec_path, tmp_path / "output")
     manifest = json.loads((bundle / "bundle_manifest.json").read_text(encoding="utf-8"))
     distribution = json.loads((bundle / "equity_value_distribution.json").read_text(encoding="utf-8"))
     entry = json.loads((bundle / "entry_price.json").read_text(encoding="utf-8"))
@@ -46,7 +133,9 @@ def test_korean_air_governed_distribution_builds_audited_final_bundle(tmp_path):
     assert manifest["supersedes_artifact_id"] == "003490-20260913-DIST-8B3A2C1C58D8"
     assert int(Decimal(entry["entry_price"])) > 0
     assert Decimal(entry["realized_success_probability"]) >= Decimal(entry["target_success_probability"])
-    assert distribution["authorization_status"] == "GOVERNED_EVENT_PRIOR_WITH_AUDITED_SCENARIO_VALUE_BRIDGE"
+    assert distribution["authorization_status"] == (
+        "CALIBRATED_EVENT_PROBABILITY_WITH_QUALIFIED_STRUCTURAL_VALUE"
+    )
     assert "확률가중 평균가치" in report
     assert "구체 매수가" in report
     assert "하방 상태도" in report

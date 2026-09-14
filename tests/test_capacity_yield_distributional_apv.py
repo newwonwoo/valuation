@@ -37,9 +37,12 @@ from valuation_engine.dynamic_driver_distribution import (
     simulate_driver_paths,
 )
 from valuation_engine.entry_price import (
+    EntryPriceError,
     EntryPricePolicy,
     EntryPriceStatus,
     ExitPayoffPath,
+    ProbabilityVector,
+    calculate_ambiguity_robust_entry_price,
     calculate_entry_price,
 )
 from valuation_engine.levered_financing_paths import (
@@ -60,6 +63,11 @@ from valuation_engine.levered_financing_paths import (
     apply_recovery_waterfall,
     evaluate_financing_path,
     reconcile_lease_schedule,
+)
+from valuation_engine.probability_ambiguity import (
+    AmbiguityValueStatus,
+    SignedOutcomeValue,
+    calculate_ambiguity_expected_value_range,
 )
 
 
@@ -702,3 +710,163 @@ def test_entry_price_is_withheld_when_distribution_is_not_authorized():
     assert result.status is EntryPriceStatus.WITHHELD
     assert result.entry_price is None
     assert result.withheld_reason == "VALUATION_DISTRIBUTION_NOT_AUTHORIZED"
+
+
+def test_event_prior_uses_worst_expected_value_when_q25_branch_is_unstable():
+    payoffs = (
+        ExitPayoffPath("Down", D("100"), D("0")),
+        ExitPayoffPath("Central", D("200"), D("0")),
+        ExitPayoffPath("Upside", D("400"), D("0")),
+    )
+    vectors = (
+        ProbabilityVector(
+            "downside_heavier",
+            (("Down", D("0.30")), ("Central", D("0.50")), ("Upside", D("0.20"))),
+            ("prior:downside",),
+        ),
+        ProbabilityVector(
+            "governed_base",
+            (("Down", D("0.20")), ("Central", D("0.60")), ("Upside", D("0.20"))),
+            ("prior:base",),
+        ),
+        ProbabilityVector(
+            "execution_success",
+            (("Down", D("0.15")), ("Central", D("0.60")), ("Upside", D("0.25"))),
+            ("prior:upside",),
+        ),
+    )
+    policy = EntryPricePolicy(
+        "ambiguity-entry-v1",
+        3,
+        D("0.12"),
+        D("0.25"),
+        (D("0.10"), D("0.12"), D("0.15")),
+    )
+    result = calculate_ambiguity_robust_entry_price(
+        payoffs=payoffs,
+        probability_vectors=vectors,
+        policy=policy,
+        valuation_values_authorized=True,
+        distribution_hash="EVENT-PAYOFFS",
+    )
+    assert result.status is EntryPriceStatus.AVAILABLE
+    assert result.worst_case_expected_payoff == D("210")
+    assert result.best_case_expected_payoff == D("235")
+    assert result.entry_price == D("210") / (D("1.12") ** 3)
+    assert result.binding_probability_vector_id == "downside_heavier"
+    assert not result.diagnostic_quantile_stable
+    assert result.diagnostic_quantile_entry_price is None
+    assert not result.probability_success_claim_authorized
+    assert "current_market_price" not in signature(
+        calculate_ambiguity_robust_entry_price
+    ).parameters
+
+
+def test_event_prior_expected_value_is_a_signed_range_without_zero_floor():
+    outcomes = (
+        SignedOutcomeValue("Down", D("-100"), ("value:down",)),
+        SignedOutcomeValue("Central", D("20"), ("value:central",)),
+        SignedOutcomeValue("Upside", D("200"), ("value:upside",)),
+    )
+    vectors = (
+        ProbabilityVector(
+            "downside_heavier",
+            (("Down", D("0.30")), ("Central", D("0.50")), ("Upside", D("0.20"))),
+            ("prior:downside",),
+        ),
+        ProbabilityVector(
+            "governed_base",
+            (("Down", D("0.20")), ("Central", D("0.60")), ("Upside", D("0.20"))),
+            ("prior:base",),
+        ),
+        ProbabilityVector(
+            "execution_success",
+            (("Down", D("0.15")), ("Central", D("0.60")), ("Upside", D("0.25"))),
+            ("prior:upside",),
+        ),
+    )
+    result = calculate_ambiguity_expected_value_range(
+        outcomes=outcomes,
+        probability_vectors=vectors,
+        values_authorized=True,
+        value_set_hash="SIGNED-VALUES",
+    )
+    assert result.status is AmbiguityValueStatus.AVAILABLE
+    assert result.minimum_expected_value == D("20")
+    assert result.maximum_expected_value == D("47")
+    assert result.binding_minimum_vector_id == "downside_heavier"
+    assert not result.calibrated_probability_claim_authorized
+
+
+def test_event_prior_expected_value_is_withheld_when_values_are_unauthorized():
+    result = calculate_ambiguity_expected_value_range(
+        outcomes=(
+            SignedOutcomeValue("Down", D("-100"), ("value:down",)),
+            SignedOutcomeValue("Upside", D("200"), ("value:upside",)),
+        ),
+        probability_vectors=(
+            ProbabilityVector(
+                "lower",
+                (("Down", D("0.60")), ("Upside", D("0.40"))),
+                ("prior:lower",),
+            ),
+            ProbabilityVector(
+                "upper",
+                (("Down", D("0.40")), ("Upside", D("0.60"))),
+                ("prior:upper",),
+            ),
+        ),
+        values_authorized=False,
+        value_set_hash="UNAUTHORIZED-VALUES",
+    )
+    assert result.status is AmbiguityValueStatus.WITHHELD
+    assert result.minimum_expected_value is None
+    assert result.vector_results == ()
+    assert result.withheld_reason == "OUTCOME_VALUES_NOT_AUTHORIZED"
+
+
+def test_ambiguity_robust_entry_requires_source_bound_complete_probability_vectors():
+    with pytest.raises(EntryPriceError, match="exact outcome set"):
+        calculate_ambiguity_robust_entry_price(
+            payoffs=(
+                ExitPayoffPath("Down", D("100"), D("0")),
+                ExitPayoffPath("Upside", D("300"), D("0")),
+            ),
+            probability_vectors=(
+                ProbabilityVector(
+                    "incomplete", (("Down", D("1")),), ("prior:one",)
+                ),
+                ProbabilityVector(
+                    "complete",
+                    (("Down", D("0.5")), ("Upside", D("0.5"))),
+                    ("prior:two",),
+                ),
+            ),
+            policy=EntryPricePolicy(
+                "ambiguity-entry-v1", 3, D("0.12"), D("0.25"), (D("0.12"),)
+            ),
+            valuation_values_authorized=True,
+            distribution_hash="EVENT-PAYOFFS",
+        )
+
+
+def test_ambiguity_robust_entry_rejects_a_single_prior_as_false_precision():
+    with pytest.raises(EntryPriceError, match="at least two probability vectors"):
+        calculate_ambiguity_robust_entry_price(
+            payoffs=(
+                ExitPayoffPath("Down", D("100"), D("0")),
+                ExitPayoffPath("Upside", D("300"), D("0")),
+            ),
+            probability_vectors=(
+                ProbabilityVector(
+                    "only-prior",
+                    (("Down", D("0.5")), ("Upside", D("0.5"))),
+                    ("prior:only",),
+                ),
+            ),
+            policy=EntryPricePolicy(
+                "ambiguity-entry-v1", 3, D("0.12"), D("0.25"), (D("0.12"),)
+            ),
+            valuation_values_authorized=True,
+            distribution_hash="EVENT-PAYOFFS",
+        )

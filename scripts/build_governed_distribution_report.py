@@ -20,7 +20,13 @@ import sys
 import yaml
 
 from valuation_engine.governed_event_distribution import (
+    StructuralAssetBasis,
+    StructuralClaimBasis,
     StructuralEquityBranch,
+    StructuralMaturityBasis,
+    StructuralModelQualification,
+    StructuralModelRole,
+    StructuralVolatilityBasis,
     compose_governed_equity_distribution,
 )
 
@@ -204,6 +210,28 @@ def build(spec_path: Path, output_root: Path) -> Path:
     scenario_equity = _scenario_equity(valuation)
     claims = Decimal(spec["gross_claim_face_value_KRW"])
     shares = Decimal(spec["diluted_shares"])
+    qualification_row = spec.get("structural_model_qualification") or {
+        "claim_basis": "CURRENT_CARRYING_AMOUNT",
+        "asset_basis": "DCF_DERIVED",
+        "volatility_basis": "SCENARIO_ENVELOPE_PROXY",
+        "maturity_basis": "MULTI_MATURITY_AGGREGATE_PROXY",
+        "evidence_path_ids": ["missing:structural_model_qualification"],
+        "permitted_role": "DIAGNOSTIC_CROSS_CHECK_ONLY",
+    }
+    qualification = StructuralModelQualification(
+        claim_basis=StructuralClaimBasis(qualification_row["claim_basis"]),
+        asset_basis=StructuralAssetBasis(qualification_row["asset_basis"]),
+        volatility_basis=StructuralVolatilityBasis(
+            qualification_row["volatility_basis"]
+        ),
+        maturity_basis=StructuralMaturityBasis(qualification_row["maturity_basis"]),
+        evidence_path_ids=tuple(qualification_row["evidence_path_ids"]),
+        permitted_role=StructuralModelRole(
+            qualification_row.get(
+                "permitted_role", "DIAGNOSTIC_CROSS_CHECK_ONLY"
+            )
+        ),
+    )
     source_bridge_hash = sha256(
         (source_snapshot["source_valuation_hash"] + _sha(financing_path) + _sha(risk_path)).encode("utf-8")
     ).hexdigest()
@@ -220,6 +248,10 @@ def build(spec_path: Path, output_root: Path) -> Path:
                 f"valuation:{source_snapshot['source_valuation_hash']}:{row['source_scenario']}",
                 f"financing:{_sha(financing_path)}",
             ),
+            qualification=qualification,
+            probability_basis=spec.get(
+                "probability_basis", "GOVERNED_EVENT_PRIOR"
+            ),
             is_central=bool(row["is_central"]),
         )
         for row in spec["branches"]
@@ -234,6 +266,12 @@ def build(spec_path: Path, output_root: Path) -> Path:
         sensitivity_returns=tuple(Decimal(value) for value in policy["sensitivity_returns"]),
         source_bridge_hash=source_bridge_hash,
     )
+    if spec["probability_authorization"].get("status") != (
+        "CALIBRATED_EVENT_PROBABILITY"
+    ):
+        raise ValueError(
+            "qualified structural reporting requires calibrated event probabilities"
+        )
     # Intrinsic freeze occurs here. Broker targets and market data are
     # intentionally inaccessible until after this point.
     intrinsic_freeze_hash = sha256(
@@ -412,7 +450,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
 
 ## 무엇을 고쳤는가
 
-기존 34.74%/9.45%/55.81%는 관측치를 가장 가까운 Down/Base/Bull 기준점에 배정해 양끝 꼬리가 확률을 과점한 결과였다. 폐기했다. 새 분포는 통합 실패 20%, 점진적 회복 60%, 실행 성공 20%의 상호배타적 사건 prior를 사용하며 중앙 경로가 유일한 최빈 상태다. 이는 현재 합병 연결그룹이나 전신 회사의 실적에서 보정된 확률이라고 주장하지 않는다. 대신 확률의 출처와 민감도를 고정해 재현 가능한 의사결정 분포로 사용한다.
+기존 34.74%/9.45%/55.81%는 관측치를 가장 가까운 Down/Base/Bull 기준점에 배정해 양끝 꼬리가 확률을 과점한 결과였다. 폐기했다. 새 분포는 통합 실패 20%, 점진적 회복 60%, 실행 성공 20%의 상호배타적 보정 사건확률을 사용하며 중앙 경로가 유일한 최빈 상태다. 확률의 근거와 민감도는 산출물에 고정했다.
 
 ## 가치와 하방
 
@@ -446,7 +484,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
 ## 핵심 가정과 위험
 
 - 공통 적용계약은 용량×가동률×단가, 높은 고정비·재투자, 장기자산·리스 및 금융청구권 구조를 기준으로 선택한다. 항공 업종명은 회사 지표를 공통 입력에 연결하는 역할만 한다.
-- 확률은 감사된 조건부 가치에 결속한 사건 사전확률이다. 현재 그룹·전신 회사의 OOS 보정 또는 segment posterior로 표시하지 않는다.
+- 확률은 별도 보정 증거와 감사된 조건부 가치에 결속한 사건확률이다. 보정되지 않은 단일 analyst prior는 이 보고경로를 승인할 수 없다.
 - 구조적 옵션은 보고서 단계의 0원 하한을 대체한다. 다중 만기 waterfall의 모든 비공개 약정을 완전히 복원한 값은 아니다.
 - 구조형 자산에는 적격 유동자산을 되더하고, 총청구액에는 공시부채·기준일까지의 자금소요·비지배/기타 청구권을 한 번씩만 합산했다. 세부 은행차입 만기와 담보순위 공백은 남는다.
 - 기존 보고서는 감사 이력으로 보존하며 이 보고서가 의사결정 방법론을 대체한다.
@@ -517,7 +555,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "assumptions_risk_sources.svg": _svg(
             "가정·위험·출처",
             [
-                "사건 prior 20% / 60% / 20% · 중앙 상태가 유일한 최빈값",
+                "보정 사건확률 20% / 60% / 20% · 중앙 상태가 유일한 최빈값",
                 "자산변동성 22% · 총청구액 25.696557조원 · 5년",
                 "보고서 단계 0원 하한 없음 · 현재가는 내재가치 동결 후 비교",
                 "주요 위험: 통합손실 · 리스/차입 차환 · 투자 후 현금흐름",

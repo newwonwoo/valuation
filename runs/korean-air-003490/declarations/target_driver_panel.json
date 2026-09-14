@@ -169,16 +169,16 @@
     ]
   },
   "completion_policy": {
-    "audited_final_report_allowed": true,
-    "route_until_segment_oos_is_complete": "VERSIONED_ANALYST_PRIOR_HYBRID_SENSITIVITY",
+    "audited_final_report_allowed": false,
+    "route_until_segment_oos_is_complete": "VERSIONED_ANALYST_PRIOR_AMBIGUITY_SET",
     "prior_file": "declarations/analyst_prior_sensitivity.json",
     "required_output_labels": [
-      "prior_predictive_P50_not_calibrated_posterior",
-      "broad_P20_P80_sensitivity_range",
+      "signed_expected_value_interval_across_probability_vectors",
+      "conditional_scenario_values_without_zero_floor",
       "pathwise_distress_and_dilution_sensitivity",
-      "return_threshold_entry_price"
+      "worst_prior_expected_return_entry_only_if_future_payoffs_authorized"
     ],
     "forbidden_output_label": "calibrated_target_company_probability",
-    "report_rule": "Lack of a current-perimeter 32-quarter panel changes the confidence label and width; it must not cause the final report to omit all value and entry-price numbers."
+    "report_rule": "Lack of a current-perimeter 32-quarter panel changes the confidence label and requires an ambiguity-set value interval. It does not authorize a single weighted target or success probability. A concrete entry ceiling requires separately authorized future shareholder payoffs and financing waterfall."
   }
 }

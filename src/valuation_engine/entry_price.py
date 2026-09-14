@@ -9,6 +9,11 @@ from hashlib import sha256
 import json
 
 from .distributional_apv import decimal_quantile
+from .probability_ambiguity import (
+    ProbabilityAmbiguityError,
+    ProbabilityVector,
+    validate_probability_ambiguity_set,
+)
 
 
 ZERO = Decimal("0")
@@ -97,6 +102,42 @@ class EntryPriceResult:
     withheld_reason: str | None
 
 
+@dataclass(frozen=True)
+class ProbabilityVectorEntry:
+    vector_id: str
+    expected_terminal_payoff: Decimal
+    diagnostic_quantile_payoff: Decimal
+    diagnostic_quantile_branch_id: str
+
+
+@dataclass(frozen=True)
+class AmbiguityRobustEntryResult:
+    """Entry ceiling robust to a declared set of probability assessments.
+
+    The entry price is the lowest expected payoff across the supplied
+    probability set, discounted at the required return.  It is an expected
+    return criterion, not a claim that the return succeeds with a calibrated
+    frequency.  The ordinary quantile result remains diagnostic and is exposed
+    only when every probability vector selects the same supporting branch.
+    """
+
+    status: EntryPriceStatus
+    entry_price: Decimal | None
+    worst_case_expected_payoff: Decimal | None
+    best_case_expected_payoff: Decimal | None
+    binding_probability_vector_id: str | None
+    vector_results: tuple[ProbabilityVectorEntry, ...]
+    diagnostic_quantile_stable: bool
+    diagnostic_quantile_entry_price: Decimal | None
+    probability_success_claim_authorized: bool
+    sensitivities: tuple[EntryPriceSensitivity, ...]
+    policy_version: str
+    distribution_hash: str
+    ambiguity_set_hash: str
+    calculation_hash: str
+    withheld_reason: str | None
+
+
 def calculate_entry_price(
     *,
     payoffs: tuple[ExitPayoffPath, ...],
@@ -173,6 +214,253 @@ def calculate_entry_price(
     )
 
 
+def calculate_ambiguity_robust_entry_price(
+    *,
+    payoffs: tuple[ExitPayoffPath, ...],
+    probability_vectors: tuple[ProbabilityVector, ...],
+    policy: EntryPricePolicy,
+    valuation_values_authorized: bool,
+    distribution_hash: str,
+) -> AmbiguityRobustEntryResult:
+    """Calculate a worst-prior expected-return entry ceiling.
+
+    This policy is for a small set of mutually exclusive event payoffs whose
+    probabilities are governed analyst assessments rather than a calibrated,
+    high-resolution payoff distribution.  A weighted quantile over only a few
+    branches is discontinuous in the weights; it therefore remains a
+    diagnostic.  The actionable price uses the lowest expected payoff across
+    the entire declared ambiguity set.
+    """
+
+    policy.validate()
+    if not payoffs or not distribution_hash:
+        raise EntryPriceError(
+            "ambiguity-robust entry requires payoffs and a distribution hash"
+        )
+    payoff_ids = tuple(item.path_id for item in payoffs)
+    if len(payoff_ids) != len(set(payoff_ids)):
+        raise EntryPriceError("entry payoff branches contain duplicate IDs")
+    for payoff in payoffs:
+        payoff.validate()
+    try:
+        probability_vectors, ambiguity_set_hash = (
+            validate_probability_ambiguity_set(
+                probability_vectors=probability_vectors,
+                outcome_ids=payoff_ids,
+            )
+        )
+    except ProbabilityAmbiguityError as exc:
+        raise EntryPriceError(str(exc)) from exc
+
+    total_payoffs = {
+        item.path_id: item.exit_share_value + item.cumulative_dividends
+        for item in payoffs
+    }
+    vector_results = tuple(
+        _probability_vector_entry(
+            vector=vector,
+            total_payoffs=total_payoffs,
+            quantile=policy.success_quantile,
+        )
+        for vector in probability_vectors
+    )
+    quantile_branches = {
+        item.diagnostic_quantile_branch_id for item in vector_results
+    }
+    quantile_stable = len(quantile_branches) == 1
+    divisor = (ONE + policy.required_annual_return) ** policy.horizon_years
+    quantile_entry = (
+        vector_results[0].diagnostic_quantile_payoff / divisor
+        if quantile_stable
+        else None
+    )
+
+    if not valuation_values_authorized:
+        return _ambiguity_withheld_result(
+            payoffs=payoffs,
+            vector_results=vector_results,
+            policy=policy,
+            distribution_hash=distribution_hash,
+            ambiguity_set_hash=ambiguity_set_hash,
+            quantile_stable=quantile_stable,
+            quantile_entry=quantile_entry,
+            reason="VALUATION_VALUES_NOT_AUTHORIZED",
+        )
+
+    binding = min(
+        vector_results,
+        key=lambda item: (item.expected_terminal_payoff, item.vector_id),
+    )
+    best = max(
+        vector_results,
+        key=lambda item: (item.expected_terminal_payoff, item.vector_id),
+    )
+    entry = binding.expected_terminal_payoff / divisor
+    sensitivities = tuple(
+        EntryPriceSensitivity(
+            required_annual_return=rate,
+            entry_price=binding.expected_terminal_payoff
+            / ((ONE + rate) ** policy.horizon_years),
+        )
+        for rate in policy.sensitivity_returns
+    )
+    if entry <= ZERO:
+        return _ambiguity_withheld_result(
+            payoffs=payoffs,
+            vector_results=vector_results,
+            policy=policy,
+            distribution_hash=distribution_hash,
+            ambiguity_set_hash=ambiguity_set_hash,
+            quantile_stable=quantile_stable,
+            quantile_entry=quantile_entry,
+            reason="NON_POSITIVE_WORST_CASE_EXPECTED_PAYOFF",
+            worst=binding.expected_terminal_payoff,
+            best=best.expected_terminal_payoff,
+            binding_vector_id=binding.vector_id,
+            sensitivities=sensitivities,
+        )
+    calculation_hash = _ambiguity_calculation_hash(
+        payoffs=payoffs,
+        vector_results=vector_results,
+        policy=policy,
+        distribution_hash=distribution_hash,
+        ambiguity_set_hash=ambiguity_set_hash,
+        entry=entry,
+        reason=None,
+    )
+    return AmbiguityRobustEntryResult(
+        status=EntryPriceStatus.AVAILABLE,
+        entry_price=entry,
+        worst_case_expected_payoff=binding.expected_terminal_payoff,
+        best_case_expected_payoff=best.expected_terminal_payoff,
+        binding_probability_vector_id=binding.vector_id,
+        vector_results=vector_results,
+        diagnostic_quantile_stable=quantile_stable,
+        diagnostic_quantile_entry_price=quantile_entry,
+        probability_success_claim_authorized=False,
+        sensitivities=sensitivities,
+        policy_version=policy.policy_version,
+        distribution_hash=distribution_hash,
+        ambiguity_set_hash=ambiguity_set_hash,
+        calculation_hash=calculation_hash,
+        withheld_reason=None,
+    )
+
+
+def _probability_vector_entry(
+    *,
+    vector: ProbabilityVector,
+    total_payoffs: dict[str, Decimal],
+    quantile: Decimal,
+) -> ProbabilityVectorEntry:
+    weights = vector.as_map()
+    expected = sum(
+        (total_payoffs[branch_id] * weights[branch_id] for branch_id in total_payoffs),
+        ZERO,
+    )
+    ordered = sorted(total_payoffs.items(), key=lambda item: (item[1], item[0]))
+    cumulative = ZERO
+    quantile_branch_id = ordered[-1][0]
+    quantile_payoff = ordered[-1][1]
+    for branch_id, payoff in ordered:
+        cumulative += weights[branch_id]
+        if cumulative >= quantile:
+            quantile_branch_id = branch_id
+            quantile_payoff = payoff
+            break
+    return ProbabilityVectorEntry(
+        vector_id=vector.vector_id,
+        expected_terminal_payoff=expected,
+        diagnostic_quantile_payoff=quantile_payoff,
+        diagnostic_quantile_branch_id=quantile_branch_id,
+    )
+
+
+def _ambiguity_withheld_result(
+    *,
+    payoffs: tuple[ExitPayoffPath, ...],
+    vector_results: tuple[ProbabilityVectorEntry, ...],
+    policy: EntryPricePolicy,
+    distribution_hash: str,
+    ambiguity_set_hash: str,
+    quantile_stable: bool,
+    quantile_entry: Decimal | None,
+    reason: str,
+    worst: Decimal | None = None,
+    best: Decimal | None = None,
+    binding_vector_id: str | None = None,
+    sensitivities: tuple[EntryPriceSensitivity, ...] = (),
+) -> AmbiguityRobustEntryResult:
+    calculation_hash = _ambiguity_calculation_hash(
+        payoffs=payoffs,
+        vector_results=vector_results,
+        policy=policy,
+        distribution_hash=distribution_hash,
+        ambiguity_set_hash=ambiguity_set_hash,
+        entry=None,
+        reason=reason,
+    )
+    return AmbiguityRobustEntryResult(
+        status=EntryPriceStatus.WITHHELD,
+        entry_price=None,
+        worst_case_expected_payoff=worst,
+        best_case_expected_payoff=best,
+        binding_probability_vector_id=binding_vector_id,
+        vector_results=vector_results,
+        diagnostic_quantile_stable=quantile_stable,
+        diagnostic_quantile_entry_price=quantile_entry,
+        probability_success_claim_authorized=False,
+        sensitivities=sensitivities,
+        policy_version=policy.policy_version,
+        distribution_hash=distribution_hash,
+        ambiguity_set_hash=ambiguity_set_hash,
+        calculation_hash=calculation_hash,
+        withheld_reason=reason,
+    )
+
+
+def _ambiguity_calculation_hash(
+    *,
+    payoffs: tuple[ExitPayoffPath, ...],
+    vector_results: tuple[ProbabilityVectorEntry, ...],
+    policy: EntryPricePolicy,
+    distribution_hash: str,
+    ambiguity_set_hash: str,
+    entry: Decimal | None,
+    reason: str | None,
+) -> str:
+    payload = {
+        "contract": "ambiguity_robust_expected_return_entry/v1",
+        "payoffs": [
+            (item.path_id, str(item.exit_share_value), str(item.cumulative_dividends))
+            for item in payoffs
+        ],
+        "vectors": [
+            (
+                item.vector_id,
+                str(item.expected_terminal_payoff),
+                str(item.diagnostic_quantile_payoff),
+                item.diagnostic_quantile_branch_id,
+            )
+            for item in vector_results
+        ],
+        "policy": {
+            "version": policy.policy_version,
+            "horizon": policy.horizon_years,
+            "return": str(policy.required_annual_return),
+            "quantile": str(policy.success_quantile),
+            "sensitivities": [str(value) for value in policy.sensitivity_returns],
+        },
+        "distribution_hash": distribution_hash,
+        "ambiguity_set_hash": ambiguity_set_hash,
+        "entry": str(entry) if entry is not None else None,
+        "reason": reason,
+    }
+    return sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
 def _discounted_payoffs(
     payoffs: tuple[ExitPayoffPath, ...], annual_return: Decimal, horizon_years: int
 ) -> tuple[Decimal, ...]:
@@ -241,11 +529,15 @@ def _calculation_hash(
 
 
 __all__ = [
+    "AmbiguityRobustEntryResult",
     "EntryPriceError",
     "EntryPricePolicy",
     "EntryPriceResult",
     "EntryPriceSensitivity",
     "EntryPriceStatus",
     "ExitPayoffPath",
+    "ProbabilityVector",
+    "ProbabilityVectorEntry",
+    "calculate_ambiguity_robust_entry_price",
     "calculate_entry_price",
 ]

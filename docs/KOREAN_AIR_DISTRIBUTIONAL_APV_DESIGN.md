@@ -187,9 +187,9 @@ opening lease liability
 2. 합병일 현재의 연결 재무·부문 매출·영업이익·내부거래 제거·취득회계가 source-bound bridge로 대사된다.
 3. 통합비용·시너지·사업매각·고객이탈 같은 거래 고유 사건은 영업 시계열에 섞지 않고 별도의 상호배타적 사건분포로 선언한다.
 4. 사건분포의 확률은 출처가 있는 경영진 범위, 계약상 마일스톤, 유사한 **대상 회사 자신의** 과거 집행 이력 또는 versioned analyst prior 중 어느 것인지 표시한다.
-5. analyst prior가 load-bearing이면 prior 범위 전체의 목표가·매수가 민감도와 prior 제거 결과를 함께 보고한다.
+5. analyst prior가 load-bearing이면 단일 확률벡터를 정답처럼 쓰지 않고, 출처와 경계가 있는 둘 이상의 확률벡터로 `ambiguity set`을 선언한다. 전체 집합의 기대가치 구간·최악 prior 요구수익률 매수가·prior 제거 결과를 함께 보고한다.
 
-이 합성 route는 `CALIBRATED_SELF_HISTORY`라고 부르지 않는다. 사업부별 posterior는 보정 상태를 각각 보존하고 거래 사건은 `GOVERNED_EVENT_PRIOR`로 표시한다. 다만 모든 중요 사업부 이력과 연결 bridge가 재현되고 prior 민감도까지 감사되면 확률가중 가치와 매수가를 만들 수 있다. 이는 자료가 없다는 일반 문구로 계산을 회피하거나, 존재하지 않는 과거 연결실적을 발명하는 두 극단을 피한다.
+이 합성 route는 `CALIBRATED_SELF_HISTORY`라고 부르지 않는다. 사업부별 posterior는 보정 상태를 각각 보존하고 거래 사건은 `GOVERNED_EVENT_PRIOR`로 표시한다. 모든 중요 사업부 이력과 연결 bridge가 재현되고 prior 민감도까지 감사되면 기대가치 **구간**과 최악 prior 기준 요구수익률 매수가를 만들 수 있다. 그러나 이를 보정 확률가중 단일 목표가나 성공확률로 표시하지 않는다. 이는 자료가 없다는 일반 문구로 계산을 회피하거나, 존재하지 않는 과거 연결실적과 정밀한 확률을 발명하는 두 극단을 피한다.
 
 현재 2019~2024년 6개 연간 관측치와 2026년 반기 조건값을 결합한 인증서는 새 분포형 가치평가의 입력자격을 자동 상실한다. 기존 인증서를 삭제하지 않고 `legacy_scenario_classification_only`로 보존한다.
 
@@ -290,6 +290,17 @@ old_shareholder_present_value[k]
 
 Merton 구조모형은 자산변동성과 부채청구권으로 얻은 주식 옵션가치가 위 결과와 크게 어긋나는지 보는 cross-check로만 사용한다. 대한항공의 다중 만기 차입금과 리스는 단일만기 모형으로 대체하지 않는다.
 
+구조모형을 주 평가값으로 승격하려면 다음 네 조건을 모두 만족해야 한다.
+
+| 입력 | 주 평가 허용 | 진단 전용 |
+|---|---|---|
+| 청구액 | 모형 만기일의 약정 상환액 | 현재 장부금액·현재가치 |
+| 자산가치 | 시장 관측치에 공동 보정 | DCF 시나리오에서 역산 |
+| 자산변동성 | 자산수익률에 보정 | Down/Base/Bull 폭을 변동성으로 대용 |
+| 만기구조 | 실제 단일만기 또는 독립 검증된 등가만기 | 다중 만기 부채·리스를 한 금액과 한 만기로 합산 |
+
+현재 장부청구액을 미래 strike로 넣으면 그 금액을 다시 무위험이자율로 할인하므로 부채가 이중으로 현재가치화된다. 따라서 네 조건 중 하나라도 실패한 구조모형 값은 보고서의 진단 민감도에만 남고 목표가·매수가·Intrinsic Freeze를 승인하지 못한다. 다중 만기 회사의 주 평가는 연도별 청구권과 현금흐름을 직접 통과시키는 APV·차환·희석·waterfall 경로가 담당한다.
+
 ## 7. 목표가·시나리오·매수가 정책
 
 ### 7.1 보고할 가치
@@ -322,7 +333,9 @@ Mean은 경제적으로 유효한 보조값이지만, 오른쪽 꼬리가 큰 �
 
 ### 7.3 구체 매수가
 
-매수가는 임의 안전마진율이 아니라 투자기간과 요구수익률에서 역산한다.
+매수가는 임의 안전마진율이 아니라 투자기간과 요구수익률에서 역산한다. 다만 확률의 증거상태에 따라 산식과 표현을 분리한다.
+
+#### 보정된 고해상도 경로분포
 
 경로 `k`, 투자기간 `H=3`, 기본 요구수익률 `h=12%`에 대해:
 
@@ -334,12 +347,27 @@ entry_price
   = Q25(discounted_payoff)
 ```
 
-이는 보정된 모형 안에서 제시 매수가 이하의 투자자가 연 12% 이상을 달성할 확률을 약 75%로 정하는 정책이다. 3년·12%·Q25는 보편적 금융법칙이 아니라 이번 실행 전에 고정할 versioned 투자정책이며, 보고서는 10%·12%·15% 요구수익률 민감도를 함께 표시한다.
+이는 보정된 모형 안에서 제시 매수가 이하의 투자자가 연 12% 이상을 달성할 확률을 약 75%로 정하는 정책이다. 충분한 draw 수와 seed·draw 안정성 검증이 전제된다. 3년·12%·Q25는 보편적 금융법칙이 아니라 이번 실행 전에 고정할 versioned 투자정책이며, 보고서는 10%·12%·15% 요구수익률 민감도를 함께 표시한다.
+
+#### 보정되지 않은 소수 사건분기
+
+Down/Central/Upside처럼 소수의 상호배타 사건과 analyst prior만 있을 때는 Q25가 확률의 작은 변화에도 지지 branch를 바꾼다. 예를 들어 Down 확률이 20%이면 Q25는 Central이고 30%이면 Down이므로, 그 값을 '75% 성공 매수가'로 사용할 수 없다.
+
+이 경우 `P`를 출처와 범위가 명시된 둘 이상의 확률벡터로 구성한 ambiguity set, `V_i`를 각 사건의 명시적 미래 구주주 지급액으로 두고 다음을 사용한다.
+
+```text
+expected_payoff[p] = sum_i p_i * V_i
+
+robust_entry_price
+  = min_{p in P}(expected_payoff[p]) / (1 + h)^H
+```
+
+보고서는 확률벡터별 기대가치 범위와 최악 prior를 공개한다. 이 값은 모든 선언 prior에서 요구 기대수익률을 충족시키기 위한 상한이지, 연 12% 달성확률이 75%라는 주장이 아니다. 가중 Q25는 진단값으로만 계산하며, ambiguity set 안에서 Q25를 지지하는 branch가 달라지면 구체 Q25 숫자도 숨긴다. 단일 analyst prior만 있거나 사건별 지급액이 pathwise waterfall로 승인되지 않으면 robust entry도 만들지 않는다.
 
 - 현재 주가는 매수가 산식의 입력이 아니다.
 - 매수가와 현재가의 비교는 Intrinsic Freeze 이후에만 수행한다.
 - `P(distress)`, P10 손실 및 희석확률을 함께 표시한다.
-- Q25가 0 이하이거나 분포 승인에 실패하면 매수가를 만들지 않고 전체 최종보고서 생성을 차단한다. 조건부 숫자를 최종 숫자로 승격하지 않는다.
+- 보정 경로분포의 Q25가 0 이하이거나, ambiguity set의 최악 기대지급액이 0 이하이거나, 기초 지급액 승인에 실패하면 매수가를 만들지 않고 전체 최종보고서 생성을 차단한다. 조건부 숫자를 최종 숫자로 승격하지 않는다.
 
 ## 8. 신규 데이터 계약
 
@@ -407,6 +435,21 @@ class EquityValueDistribution:
     distribution_hash: str
 
 @dataclass(frozen=True)
+class ProbabilityVector:
+    vector_id: str
+    weights: tuple[tuple[str, Decimal], ...]
+    evidence_path_ids: tuple[str, ...]
+
+@dataclass(frozen=True)
+class AmbiguityExpectedValueResult:
+    minimum_expected_value: Decimal
+    maximum_expected_value: Decimal
+    binding_minimum_vector_id: str
+    binding_maximum_vector_id: str
+    ambiguity_set_hash: str
+    calibrated_probability_claim_authorized: bool
+
+@dataclass(frozen=True)
 class EntryPricePolicy:
     horizon_years: int
     required_annual_return: Decimal
@@ -429,7 +472,8 @@ class EntryPricePolicy:
 | 구조형 영업경로 | `src/valuation_engine/capacity_yield_operating_paths.py` | canonical capacity·utilization·unit price, 고정비·단위원가, 자산·재투자 |
 | 리스·재무곤경 | `src/valuation_engine/levered_financing_paths.py` | 업종 독립 리스 대사, 유동성, 차환·증자·waterfall |
 | 경로별 가치 | `src/valuation_engine/distributional_apv.py` | segment APV/SOTP와 구주주가치분포 |
-| 매수가 | `src/valuation_engine/entry_price.py` | 요구수익률·quantile 기반 pure function |
+| 확률집합 | `src/valuation_engine/probability_ambiguity.py` | 출처 결합 확률벡터 검증, 부호 보존 기대가치 구간 |
+| 매수가 | `src/valuation_engine/entry_price.py` | 보정분포 quantile 또는 ambiguity-set 최악 기대지급액 기반 pure function |
 | Registry 연결 | `src/valuation_engine/evaluator_registry.py`, `generic_valuation_plan.py`, `valuation_execution.py` | 새 method/version exact binding; legacy fallback 금지 |
 | Audit | `src/valuation_engine/generic_audit.py`, `audit_adapter.py` | anchor 미사용, 0-floor 금지, lease/waterfall/분포 안정성 검사 |
 | Reporting | `investor_report.py`, `generic_reporting.py`, `visual_reporting.py` | P50·범위·위험·매수가 표시, 기존 문구 삭제 |
@@ -534,13 +578,13 @@ T1과 T2만 write set이 겹치지 않아 함께 진행할 수 있다. 모델 �
 4. 차입금·리스·현금·차환·희석·waterfall이 대사됨
 5. APV와 기존 WACC DCF의 차이가 설명됨
 6. 0원 하한의 report-time 적용이 없음
-7. P50·Mean·P20~P80·P(distress)·P(dilution)과 매수가가 동일 distribution hash에서 생성됨
+7. 보정 경로분포이면 P50·Mean·P20~P80·P(distress)·P(dilution)과 Q25 매수가가 동일 distribution hash에서 생성됨. governed prior이면 확률집합 기대가치 구간과, 승인된 미래 지급액이 있을 때만 최악 prior 요구수익률 매수가가 동일 hash에 결속됨
 8. Audit 이후에만 Street와 현재가가 로드됨
 9. 새 불변 manifest가 기존 보고서를 `supersedes`로 연결함
 10. 필수 CI 전체가 최종 head에서 통과함
 11. 비항공 동형 사업 검증에서 회사별 입력·metric mapping 외 공통 코드 변경이 없음
 
-자기이력 OOS 보정이 실패하면 그 확률을 보정치로 배포하지 않는다. 다만 감사된 조건부 가치 경로와 source-bound 재무 bridge가 있으면, 명시적 `GOVERNED_EVENT_PRIOR`와 넓은 민감도를 사용한 prior-predictive 숫자는 별도 상태로 배포할 수 있다. 어떤 경우에도 기존 20,813원·15,600원을 대신 표시하지 않는다.
+자기이력 OOS 보정이 실패하면 그 확률을 보정치로 배포하지 않는다. 다만 감사된 조건부 가치 경로와 source-bound 재무 bridge가 있으면, 명시적 `GOVERNED_EVENT_PRIOR` ambiguity set의 기대가치 구간을 별도 상태로 배포할 수 있다. 구체 매수가는 pathwise 미래 구주주 지급액까지 승인된 경우의 최악 prior 요구수익률 상한으로만 허용한다. 어떤 경우에도 단일 prior 평균이나 기존 20,813원·15,600원을 대신 표시하지 않는다.
 
 ## 13. 근거
 
@@ -548,6 +592,9 @@ T1과 T2만 write set이 겹치지 않아 함께 진행할 수 있다. 모델 �
 - distress를 단순 고할인율로만 처리하면 계속기업 가정이 남으므로 생존가치와 distress sale value를 분리해야 한다: [Aswath Damodaran, Distress in DCF Valuation](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/distresspaper.htm)
 - APV는 사업가치와 금융효과를 분리한다: [Stewart Myers, Interactions of Corporate Financing and Investment Decisions](https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1974.tb00021.x)
 - 주식의 옵션 성격은 자산가치뿐 아니라 부채청구액, 변동성 및 만기를 요구한다: [Robert Merton, On the Pricing of Corporate Debt](https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1974.tb03058.x)
+- 이표와 복수 지급일을 가진 부채의 구조적 평가는 단일 strike가 아니라 복합옵션 구조를 요구한다: [Robert Geske, The Valuation of Corporate Liabilities as Compound Options](https://ideas.repec.org/a/cup/jfinqa/v12y1977i04p541-552_02.html)
+- 하나의 정확한 prior를 정당화할 수 없을 때 여러 prior에 대한 최악 기대효용은 고전적 ambiguity 의사결정 기준이다: [Gilboa and Schmeidler, Maxmin Expected Utility with Non-Unique Prior](https://www.sciencedirect.com/science/article/pii/0304406889900189)
+- 분포적으로 강건한 최적화는 명시적 ambiguity set 안의 최악 기대손실을 의사결정 기준으로 사용한다: [Esfahani and Kuhn, Data-driven Distributionally Robust Optimization](https://repository.tudelft.nl/file/File_3ac9d19f-a219-45b6-88ec-9b78a0d73c56)
 - 리스를 부채로 재분류할 때 영업이익, 재투자, 할인율과 EV-to-equity 처리가 함께 일관돼야 한다: [Aswath Damodaran, Operating Leases](https://pages.stern.nyu.edu/~adamodar/New_Home_Page/valquestions/oplease.htm)
 - 상태전환은 경기·충격 국면에 따라 자기회귀 모수가 달라지는 경우의 후보모형이다: [James Hamilton, A New Approach to the Economic Analysis of Nonstationary Time Series and the Business Cycle](https://www.ssc.wisc.edu/~bhansen/718/Hamilton1989.pdf)
 - 확률예측은 적중률이 아니라 proper scoring rule로 전체 예측분포를 검증해야 한다: [Gneiting and Raftery, Strictly Proper Scoring Rules, Prediction, and Estimation](https://sites.stat.washington.edu/raftery/Research/PDF/Gneiting2007jasa.pdf)

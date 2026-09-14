@@ -4,11 +4,11 @@
   "target_id": "KR:DART:00113526",
   "as_of": "2026-09-13",
   "status": "ANALYST_PRIOR_NOT_TARGET_HISTORY_CALIBRATION",
-  "purpose": "Permit a fully numeric audited hybrid SOTP/APV result while same-perimeter segment panels are materialized and tested. These wide priors must be replaced segment by segment when an OOS-qualified posterior is available.",
+  "purpose": "Permit a signed expected-value interval across a governed ambiguity set while same-perimeter segment panels are materialized and tested. A concrete expected-return entry ceiling is permitted only after the future old-shareholder payoffs and financing waterfall are independently authorized. These wide priors must be replaced segment by segment when an OOS-qualified posterior is available.",
   "interpretation_rules": [
     "A triangular mode is an explicit analyst center, not an empirical most-likely frequency.",
     "Do not relabel prior-predictive path weights as calibrated target-company probabilities.",
-    "Publish the prior version, endpoints, sensitivity contribution and replacement status beside P50 and entry price.",
+    "Publish the prior version, endpoints, probability-vector expected-value range, sensitivity contribution and replacement status. Do not publish one prior-weighted P50 or a success-probability entry price.",
     "Do not use current share price, broker target price or prior valuation output to set a bound or mode."
   ],
   "korean_air_standalone_current_anchor": {

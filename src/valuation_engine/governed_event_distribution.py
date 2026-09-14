@@ -6,14 +6,18 @@ auditable but the current legal perimeter is too new to have its own long
 history.  Branch probabilities are explicit analyst priors, never inferred by
 assigning observations to the nearest scenario anchor.
 
-The structural-equity calculation prices the dated residual claim on business
-assets.  It therefore does not apply ``max(point DCF, 0)`` in a report layer.
+The structural-equity calculation prices a dated residual claim on business
+assets.  It is a diagnostic unless the strike, asset value, asset volatility,
+and maturity structure pass the explicit primary-use qualification gate.  It
+therefore cannot be used as a convenient replacement for either
+``max(point DCF, 0)`` or a pathwise financing waterfall.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal
+from enum import Enum
 from hashlib import sha256
 import json
 from math import erf, exp, log, sqrt
@@ -25,6 +29,112 @@ ONE = Decimal("1")
 
 class GovernedDistributionError(ValueError):
     """Raised when an event-prior distribution is not decision-auditable."""
+
+
+class EventProbabilityBasis(str, Enum):
+    """Evidence status of branch weights used for distributional claims."""
+
+    CALIBRATED_EVENT_PROBABILITY = "CALIBRATED_EVENT_PROBABILITY"
+    GOVERNED_EVENT_PRIOR = "GOVERNED_EVENT_PRIOR"
+
+
+class StructuralClaimBasis(str, Enum):
+    """Time basis of the amount used as the structural-option strike."""
+
+    PROMISED_AT_HORIZON = "PROMISED_AT_HORIZON"
+    CURRENT_CARRYING_AMOUNT = "CURRENT_CARRYING_AMOUNT"
+
+
+class StructuralAssetBasis(str, Enum):
+    """Evidence basis for the current business-asset value."""
+
+    MARKET_CALIBRATED = "MARKET_CALIBRATED"
+    DCF_DERIVED = "DCF_DERIVED"
+
+
+class StructuralVolatilityBasis(str, Enum):
+    """Evidence basis for asset volatility."""
+
+    CALIBRATED_ASSET_RETURNS = "CALIBRATED_ASSET_RETURNS"
+    SCENARIO_ENVELOPE_PROXY = "SCENARIO_ENVELOPE_PROXY"
+
+
+class StructuralMaturityBasis(str, Enum):
+    """How the issuer's liability schedule is represented."""
+
+    SINGLE_MATURITY = "SINGLE_MATURITY"
+    VALIDATED_EQUIVALENT_MATURITY = "VALIDATED_EQUIVALENT_MATURITY"
+    MULTI_MATURITY_AGGREGATE_PROXY = "MULTI_MATURITY_AGGREGATE_PROXY"
+
+
+class StructuralModelRole(str, Enum):
+    """Maximum decision role authorized for the structural-model output."""
+
+    PRIMARY_VALUE = "PRIMARY_VALUE"
+    DIAGNOSTIC_CROSS_CHECK_ONLY = "DIAGNOSTIC_CROSS_CHECK_ONLY"
+
+
+@dataclass(frozen=True)
+class StructuralModelQualification:
+    """Separate a structural-credit diagnostic from a primary valuation.
+
+    The Merton strike is a promised payment at the model horizon, not a
+    current balance-sheet carrying amount.  Primary use also requires asset
+    value and asset volatility calibrated jointly to market observations and
+    a liability maturity representation that is genuinely single-date or
+    independently validated.  DCF-derived assets, scenario-width volatility,
+    and a multi-maturity aggregate can be shown only as diagnostics.
+    """
+
+    claim_basis: StructuralClaimBasis
+    asset_basis: StructuralAssetBasis
+    volatility_basis: StructuralVolatilityBasis
+    maturity_basis: StructuralMaturityBasis
+    evidence_path_ids: tuple[str, ...]
+    permitted_role: StructuralModelRole = StructuralModelRole.PRIMARY_VALUE
+
+    def validate(self) -> None:
+        if not self.evidence_path_ids:
+            raise GovernedDistributionError(
+                "structural-model qualification requires evidence paths"
+            )
+
+    @property
+    def primary_valuation_authorized(self) -> bool:
+        self.validate()
+        return (
+            self.permitted_role is StructuralModelRole.PRIMARY_VALUE
+            and self.claim_basis is StructuralClaimBasis.PROMISED_AT_HORIZON
+            and self.asset_basis is StructuralAssetBasis.MARKET_CALIBRATED
+            and self.volatility_basis
+            is StructuralVolatilityBasis.CALIBRATED_ASSET_RETURNS
+            and self.maturity_basis
+            in {
+                StructuralMaturityBasis.SINGLE_MATURITY,
+                StructuralMaturityBasis.VALIDATED_EQUIVALENT_MATURITY,
+            }
+        )
+
+    @property
+    def blocking_reasons(self) -> tuple[str, ...]:
+        reasons: list[str] = []
+        if self.permitted_role is not StructuralModelRole.PRIMARY_VALUE:
+            reasons.append("STRUCTURAL_MODEL_ROLE_IS_DIAGNOSTIC_ONLY")
+        if self.claim_basis is not StructuralClaimBasis.PROMISED_AT_HORIZON:
+            reasons.append("CLAIM_AMOUNT_IS_NOT_PROMISED_AT_HORIZON")
+        if self.asset_basis is not StructuralAssetBasis.MARKET_CALIBRATED:
+            reasons.append("ASSET_VALUE_IS_NOT_MARKET_CALIBRATED")
+        if (
+            self.volatility_basis
+            is not StructuralVolatilityBasis.CALIBRATED_ASSET_RETURNS
+        ):
+            reasons.append("ASSET_VOLATILITY_IS_NOT_RETURN_CALIBRATED")
+        if self.maturity_basis not in {
+            StructuralMaturityBasis.SINGLE_MATURITY,
+            StructuralMaturityBasis.VALIDATED_EQUIVALENT_MATURITY,
+        }:
+            reasons.append("MULTI_MATURITY_CLAIMS_ARE_AGGREGATED")
+        return tuple(reasons)
 
 
 def _finite(value: Decimal, label: str) -> Decimal:
@@ -49,14 +159,19 @@ class StructuralEquityBranch:
     risk_free_rate: Decimal
     claim_horizon_years: Decimal
     evidence_path_ids: tuple[str, ...]
-    probability_basis: str = "GOVERNED_EVENT_PRIOR"
+    qualification: StructuralModelQualification
+    probability_basis: str = EventProbabilityBasis.GOVERNED_EVENT_PRIOR.value
     is_central: bool = False
 
     def validate(self) -> None:
         if not self.branch_id or not self.evidence_path_ids:
             raise GovernedDistributionError("branch identity and evidence paths are required")
-        if self.probability_basis != "GOVERNED_EVENT_PRIOR":
-            raise GovernedDistributionError("event branches must disclose governed-prior status")
+        if self.probability_basis not in {
+            item.value for item in EventProbabilityBasis
+        }:
+            raise GovernedDistributionError(
+                "event branches must disclose a recognized probability basis"
+            )
         if not ZERO < _finite(self.probability, "branch probability") < ONE:
             raise GovernedDistributionError("branch probability must lie within (0,1)")
         if _finite(self.business_asset_value, "business asset value") <= ZERO:
@@ -69,6 +184,14 @@ class StructuralEquityBranch:
             raise GovernedDistributionError("risk-free rate lies outside [0,1)")
         if _finite(self.claim_horizon_years, "claim horizon") <= ZERO:
             raise GovernedDistributionError("claim horizon must be positive")
+        self.qualification.validate()
+        if (
+            self.qualification.claim_basis
+            is not StructuralClaimBasis.PROMISED_AT_HORIZON
+        ):
+            raise GovernedDistributionError(
+                "structural strike must be the promised claim amount at the horizon"
+            )
 
 
 @dataclass(frozen=True)
@@ -90,7 +213,12 @@ class GovernedEquityDistribution:
 
 
 def structural_equity_value(branch: StructuralEquityBranch) -> Decimal:
-    """Black-Scholes-Merton residual-claim value for one explicit branch."""
+    """Black-Scholes-Merton residual value using a promised horizon claim.
+
+    This pure calculation may be used for a diagnostic branch.  Primary
+    distribution authorization is enforced by
+    :func:`compose_governed_equity_distribution`.
+    """
 
     branch.validate()
     assets = float(branch.business_asset_value)
@@ -162,6 +290,25 @@ def compose_governed_equity_distribution(
         raise GovernedDistributionError("branch IDs must be unique")
     for branch in branches:
         branch.validate()
+    qualifications = tuple(branch.qualification for branch in branches)
+    if len(set(qualifications)) != 1:
+        raise GovernedDistributionError(
+            "all structural branches must share one qualification basis"
+        )
+    qualification = qualifications[0]
+    if not qualification.primary_valuation_authorized:
+        raise GovernedDistributionError(
+            "Merton structural value is diagnostic-only for these inputs: "
+            + ",".join(qualification.blocking_reasons)
+        )
+    probability_bases = {branch.probability_basis for branch in branches}
+    if probability_bases != {
+        EventProbabilityBasis.CALIBRATED_EVENT_PROBABILITY.value
+    }:
+        raise GovernedDistributionError(
+            "a single governed event prior cannot authorize a probability-weighted "
+            "target or quantile success entry; use a source-bound ambiguity set"
+        )
     if sum((item.probability for item in branches), ZERO) != ONE:
         raise GovernedDistributionError("branch probabilities must sum exactly to one")
     central = tuple(item for item in branches if item.is_central)
@@ -217,6 +364,15 @@ def compose_governed_equity_distribution(
     payload = {
         "contract": "capacity_yield_levered/governed_event_distribution/v1",
         "source_bridge_hash": source_bridge_hash,
+        "structural_model_qualification": {
+            "claim_basis": qualification.claim_basis.value,
+            "asset_basis": qualification.asset_basis.value,
+            "volatility_basis": qualification.volatility_basis.value,
+            "maturity_basis": qualification.maturity_basis.value,
+            "evidence_path_ids": qualification.evidence_path_ids,
+            "permitted_role": qualification.permitted_role.value,
+            "primary_valuation_authorized": True,
+        },
         "branches": [
             {
                 "id": item.branch_id,
@@ -227,6 +383,7 @@ def compose_governed_equity_distribution(
                 "risk_free_rate": str(item.risk_free_rate),
                 "claim_horizon_years": str(item.claim_horizon_years),
                 "evidence_path_ids": item.evidence_path_ids,
+                "probability_basis": item.probability_basis,
                 "is_central": item.is_central,
                 "equity_value_per_share": str(value),
             }
@@ -262,6 +419,8 @@ def compose_governed_equity_distribution(
         entry_quantile=entry_quantile,
         target_success_probability=ONE - entry_quantile,
         realized_success_probability=realized_success,
-        authorization_status="GOVERNED_EVENT_PRIOR_WITH_AUDITED_SCENARIO_VALUE_BRIDGE",
+        authorization_status=(
+            "CALIBRATED_EVENT_PROBABILITY_WITH_QUALIFIED_STRUCTURAL_VALUE"
+        ),
         distribution_hash=distribution_hash,
     )
