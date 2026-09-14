@@ -103,6 +103,12 @@ successor_live_route:
   authorization_module: src/valuation_engine/distribution_route_policy.py
   calibrated_distribution: continuous_driver_paths_valued_path_by_path
   uncalibrated_event_distribution: source_bound_probability_ambiguity_set
+  uncalibrated_entry_contract: two_layer_dated_payoff_ambiguity_entry/v1
+  uncalibrated_entry_module: src/valuation_engine/payoff_model_ambiguity.py
+  uncalibrated_entry_rule: minimum_expected_present_value_across_complete_probability_and_payoff_model_vertices
+  lowest_individual_probability_entry_rule: forbidden
+  branchwise_model_case_cherry_pick: forbidden
+  undated_cumulative_payoff_discounting: forbidden
   scenario_role: post_valuation_summary_only
   path_assignment_before_valuation: forbidden
   report_time_equity_floor: forbidden

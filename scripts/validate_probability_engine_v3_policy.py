@@ -182,6 +182,21 @@ def main() -> int:
         raise ValueError("calibrated successor must value every continuous path")
     if successor.get("uncalibrated_event_distribution") != "source_bound_probability_ambiguity_set":
         raise ValueError("uncalibrated successor must use an ambiguity set")
+    if successor.get("uncalibrated_entry_contract") != "two_layer_dated_payoff_ambiguity_entry/v1":
+        raise ValueError("uncalibrated entry must use dated two-layer ambiguity")
+    if successor.get("uncalibrated_entry_module") != "src/valuation_engine/payoff_model_ambiguity.py":
+        raise ValueError("uncalibrated entry module is missing")
+    if successor.get("uncalibrated_entry_rule") != (
+        "minimum_expected_present_value_across_complete_probability_and_payoff_model_vertices"
+    ):
+        raise ValueError("uncalibrated entry rule drifted")
+    for forbidden in (
+        "lowest_individual_probability_entry_rule",
+        "branchwise_model_case_cherry_pick",
+        "undated_cumulative_payoff_discounting",
+    ):
+        if successor.get(forbidden) != "forbidden":
+            raise ValueError(f"successor route must forbid {forbidden}")
     if successor.get("path_assignment_before_valuation") != "forbidden":
         raise ValueError("successor cannot assign paths to scenario anchors")
     if successor.get("report_time_equity_floor") != "forbidden":
@@ -189,7 +204,8 @@ def main() -> int:
 
     print(
         "probability engine v3 policy: PASS "
-        "legacy_replay_only=true successor_pathwise=true price_isolation=true"
+        "legacy_replay_only=true successor_pathwise=true "
+        "dated_ambiguity_entry=true price_isolation=true"
     )
     return 0
 

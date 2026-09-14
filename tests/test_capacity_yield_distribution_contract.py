@@ -117,13 +117,24 @@ def test_distribution_contract_forbids_anchor_probability_and_report_floor():
         "equity_value_distribution",
         "distress_probability",
         "dilution_probability",
+        "dated_shareholder_payoffs",
+        "payoff_model_set_hash",
         "governed_entry_price",
     } <= set(valuation["outputs"])
     assert "target_id_formula_selection" in valuation["forbidden_effects"]
     assert "report_time_equity_zero_floor" in valuation["forbidden_effects"]
+    assert "lowest_individual_probability_as_entry_rule" in valuation["forbidden_effects"]
+    assert "undated_cumulative_payoff_discounting" in valuation["forbidden_effects"]
+    assert "branchwise_payoff_model_cherry_pick" in valuation["forbidden_effects"]
+    assert "src/valuation_engine/payoff_model_ambiguity.py" in valuation["canonical_refs"]
 
     assert "authorize_distribution_without_oos_skill" in audit["forbidden_effects"]
     assert "authorize_entry_price_from_current_market_price" in audit["forbidden_effects"]
+    assert (
+        "authorize_payoff_ambiguity_without_calculation_and_route_replay"
+        in audit["forbidden_effects"]
+    )
+    assert "payoff_ambiguity_audit_hash" in audit["outputs"]
     assert "frozen_equity_value_distribution" in freeze["outputs"]
     assert "frozen_entry_price" in freeze["outputs"]
 

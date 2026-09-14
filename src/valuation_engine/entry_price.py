@@ -66,6 +66,14 @@ class EntryPricePolicy:
 
 @dataclass(frozen=True)
 class ExitPayoffPath:
+    """Legacy horizon payoff used only for calibrated terminal distributions.
+
+    ``cumulative_dividends`` is retained for artifact compatibility but new
+    entry calculations reject any non-zero value because it has no payment
+    date.  Use ``payoff_model_ambiguity.DatedShareholderPayoffPath`` whenever
+    intermediate distributions or early recovery are possible.
+    """
+
     path_id: str
     exit_share_value: Decimal
     cumulative_dividends: Decimal
@@ -159,6 +167,10 @@ def calculate_entry_price(
         raise EntryPriceError("entry payoff paths contain duplicate IDs")
     for payoff in payoffs:
         payoff.validate()
+    if any(payoff.cumulative_dividends != ZERO for payoff in payoffs):
+        raise EntryPriceError(
+            "undated cumulative dividends are forbidden; use dated shareholder cash flows"
+        )
 
     target_success_probability = ONE - policy.success_quantile
     if not valuation_distribution_authorized:
@@ -222,14 +234,12 @@ def calculate_ambiguity_robust_entry_price(
     valuation_values_authorized: bool,
     distribution_hash: str,
 ) -> AmbiguityRobustEntryResult:
-    """Calculate a worst-prior expected-return entry ceiling.
+    """Retained diagnostic for the former undated single-model contract.
 
-    This policy is for a small set of mutually exclusive event payoffs whose
-    probabilities are governed analyst assessments rather than a calibrated,
-    high-resolution payoff distribution.  A weighted quantile over only a few
-    branches is discontinuous in the weights; it therefore remains a
-    diagnostic.  The actionable price uses the lowest expected payoff across
-    the entire declared ambiguity set.
+    It still replays expected terminal payoffs and the unstable quantile
+    diagnostic for old artifacts, but it cannot authorize a new entry price.
+    New work must use ``payoff_model_ambiguity`` so cash flows carry dates and
+    financing uncertainty is represented by complete payoff-model cases.
     """
 
     policy.validate()
@@ -319,31 +329,19 @@ def calculate_ambiguity_robust_entry_price(
             binding_vector_id=binding.vector_id,
             sensitivities=sensitivities,
         )
-    calculation_hash = _ambiguity_calculation_hash(
+    return _ambiguity_withheld_result(
         payoffs=payoffs,
         vector_results=vector_results,
         policy=policy,
         distribution_hash=distribution_hash,
         ambiguity_set_hash=ambiguity_set_hash,
-        entry=entry,
-        reason=None,
-    )
-    return AmbiguityRobustEntryResult(
-        status=EntryPriceStatus.AVAILABLE,
-        entry_price=entry,
-        worst_case_expected_payoff=binding.expected_terminal_payoff,
-        best_case_expected_payoff=best.expected_terminal_payoff,
-        binding_probability_vector_id=binding.vector_id,
-        vector_results=vector_results,
-        diagnostic_quantile_stable=quantile_stable,
-        diagnostic_quantile_entry_price=quantile_entry,
-        probability_success_claim_authorized=False,
-        sensitivities=sensitivities,
-        policy_version=policy.policy_version,
-        distribution_hash=distribution_hash,
-        ambiguity_set_hash=ambiguity_set_hash,
-        calculation_hash=calculation_hash,
-        withheld_reason=None,
+        quantile_stable=quantile_stable,
+        quantile_entry=quantile_entry,
+        reason="UNDATED_SINGLE_MODEL_ENTRY_RETIRED_USE_DATED_PAYOFF_AMBIGUITY",
+        worst=binding.expected_terminal_payoff,
+        best=best.expected_terminal_payoff,
+        binding_vector_id=binding.vector_id,
+        sensitivities=(),
     )
 
 

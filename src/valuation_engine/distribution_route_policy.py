@@ -54,6 +54,9 @@ class DistributionRouteRequest:
     ambiguity_set_validated: bool = False
     ambiguity_vector_count: int = 0
     future_shareholder_payoffs_authorized: bool = False
+    future_payoff_authorization_receipt: str | None = None
+    payoff_horizon_years: int | None = None
+    payoff_model_case_count: int = 0
     frozen_legacy_replay_receipt: str | None = None
 
     def validate(self) -> None:
@@ -69,6 +72,10 @@ class DistributionRouteRequest:
             raise DistributionRouteError("distribution route repeats an evidence path")
         if self.ambiguity_vector_count < 0:
             raise DistributionRouteError("ambiguity vector count cannot be negative")
+        if self.payoff_model_case_count < 0:
+            raise DistributionRouteError("payoff model case count cannot be negative")
+        if self.payoff_horizon_years is not None and self.payoff_horizon_years <= 0:
+            raise DistributionRouteError("payoff horizon must be positive")
 
 
 @dataclass(frozen=True)
@@ -109,10 +116,10 @@ def authorize_distribution_route(
         if not reasons:
             pathwise = True
             point_target = True
-            entry = request.future_shareholder_payoffs_authorized
-            success_claim = request.future_shareholder_payoffs_authorized
-            if not request.future_shareholder_payoffs_authorized:
-                reasons.append("FUTURE_SHAREHOLDER_PAYOFFS_NOT_AUTHORIZED")
+            payoff_reasons = _future_payoff_authorization_reasons(request)
+            entry = not payoff_reasons
+            success_claim = not payoff_reasons
+            reasons.extend(payoff_reasons)
         status = (
             DistributionRouteStatus.AUTHORIZED
             if pathwise and entry
@@ -130,9 +137,9 @@ def authorize_distribution_route(
             reasons.append("NON_DEGENERATE_AMBIGUITY_SET_REQUIRED")
         if not reasons:
             interval = True
-            entry = request.future_shareholder_payoffs_authorized
-            if not request.future_shareholder_payoffs_authorized:
-                reasons.append("FUTURE_SHAREHOLDER_PAYOFFS_NOT_AUTHORIZED")
+            payoff_reasons = _future_payoff_authorization_reasons(request)
+            entry = not payoff_reasons
+            reasons.extend(payoff_reasons)
         status = (
             DistributionRouteStatus.AUTHORIZED
             if interval and entry
@@ -207,6 +214,11 @@ def _authorization_hash(
             "future_shareholder_payoffs_authorized": (
                 request.future_shareholder_payoffs_authorized
             ),
+            "future_payoff_authorization_receipt": (
+                request.future_payoff_authorization_receipt
+            ),
+            "payoff_horizon_years": request.payoff_horizon_years,
+            "payoff_model_case_count": request.payoff_model_case_count,
             "frozen_legacy_replay_receipt": request.frozen_legacy_replay_receipt,
         },
         "authorization": {
@@ -223,6 +235,23 @@ def _authorization_hash(
     return sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
+
+
+def _future_payoff_authorization_reasons(
+    request: DistributionRouteRequest,
+) -> tuple[str, ...]:
+    """Require an evaluator receipt, not a free-standing LLM assertion."""
+
+    if not request.future_shareholder_payoffs_authorized:
+        return ("FUTURE_SHAREHOLDER_PAYOFFS_NOT_AUTHORIZED",)
+    reasons: list[str] = []
+    if not request.future_payoff_authorization_receipt:
+        reasons.append("FUTURE_PAYOFF_AUTHORIZATION_RECEIPT_REQUIRED")
+    if request.payoff_horizon_years is None:
+        reasons.append("DATED_FUTURE_PAYOFF_HORIZON_REQUIRED")
+    if request.payoff_model_case_count <= 0:
+        reasons.append("COMPLETE_PAYOFF_MODEL_CASE_REQUIRED")
+    return tuple(reasons)
 
 
 __all__ = [

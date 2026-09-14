@@ -1,4 +1,4 @@
-version: 1.1
+version: 1.2
 purpose: Canonical static contract map for PRISM units. Defines what each unit consumes, emits, who consumes it, and which decision/value paths it may affect.
 principles:
   - this_registry_is_static_design_truth
@@ -319,13 +319,13 @@ units:
     implementation_status: implemented_shadow_stage_with_initial_evaluator
     stages: [DETERMINISTIC_VALUATION]
     purpose: Apply exact industry/evaluator formulas to compiled assumptions only.
-    inputs: [compiled_assumption_set, evaluator_key, valuation_context, recursive_driver_paths, capacity_yield_company_profile, capacity_yield_metric_mapping, financing_path_spec, entry_price_policy]
-    outputs: [segment_valuations, enterprise_or_equity_values, component_traces, equity_value_distribution, distress_probability, dilution_probability, old_shareholder_retention, governed_entry_price]
+    inputs: [compiled_assumption_set, evaluator_key, valuation_context, recursive_driver_paths, capacity_yield_company_profile, capacity_yield_metric_mapping, financing_path_spec, entry_price_policy, payoff_model_cases, probability_ambiguity_set]
+    outputs: [segment_valuations, enterprise_or_equity_values, component_traces, equity_value_distribution, distress_probability, dilution_probability, old_shareholder_retention, dated_shareholder_payoffs, payoff_model_set_hash, governed_entry_price]
     consumers: [SOTP_AGGREGATOR, AUDIT_GATE, DECISION_IMPACT]
     effect_types: [value_effect]
     final_outputs: [intrinsic_value_components]
-    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/dcf_evaluators.py, src/valuation_engine/finite_life_evaluators.py, src/valuation_engine/rnpv_evaluator.py, src/valuation_engine/valuation_execution.py, src/valuation_engine/valuation_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/distributional_apv.py, src/valuation_engine/probability_ambiguity.py, src/valuation_engine/entry_price.py, src/valuation_engine/governed_event_distribution.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md, docs/FINITE_LIFE_NPV_EVALUATORS.md, docs/CALIBRATED_RNPV_EVALUATOR.md, docs/KOREAN_AIR_DISTRIBUTIONAL_APV_DESIGN.md]
-    forbidden_effects: [network_access, evidence_interpretation, current_price_access, unknown_model_generic_fallback, target_id_formula_selection, report_time_equity_zero_floor, unbounded_refinancing_or_asset_sale, current_carrying_claim_as_horizon_strike, diagnostic_structural_option_as_primary_value]
+    canonical_refs: [src/valuation_engine/evaluator_registry.py, src/valuation_engine/dcf_evaluators.py, src/valuation_engine/finite_life_evaluators.py, src/valuation_engine/rnpv_evaluator.py, src/valuation_engine/valuation_execution.py, src/valuation_engine/valuation_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/distributional_apv.py, src/valuation_engine/probability_ambiguity.py, src/valuation_engine/payoff_model_ambiguity.py, src/valuation_engine/entry_price.py, src/valuation_engine/governed_event_distribution.py, src/valuation_engine/engine.py, docs/GENERIC_ENGINE_DESIGN.md, docs/FINITE_LIFE_NPV_EVALUATORS.md, docs/CALIBRATED_RNPV_EVALUATOR.md, docs/KOREAN_AIR_DISTRIBUTIONAL_APV_DESIGN.md]
+    forbidden_effects: [network_access, evidence_interpretation, current_price_access, unknown_model_generic_fallback, target_id_formula_selection, report_time_equity_zero_floor, unbounded_refinancing_or_asset_sale, current_carrying_claim_as_horizon_strike, diagnostic_structural_option_as_primary_value, lowest_individual_probability_as_entry_rule, undated_cumulative_payoff_discounting, branchwise_payoff_model_cherry_pick]
 
   - unit_id: WARRANTED_PER_ENGINE
     unit_type: valuation_engine
@@ -384,13 +384,13 @@ units:
     implementation_status: implemented_generic_and_legacy
     stages: [DCF_PER_ASSUMPTION_CONSISTENCY_GATE, CROSS_METHOD_DOUBLE_COUNT_AUDIT, AUDIT_GATE]
     purpose: Independently validate price isolation, probability integrity, sensitivity direction, traceability, duplicate paths, and valuation consistency.
-    inputs: [compiled_assumptions, valuation_outputs, method_outputs, traceability, doctrine_coverage, calibration_diagnostics, lease_reconciliation, recovery_waterfall, equity_value_distribution, entry_price_policy]
-    outputs: [audit_findings, audit_pass, blocking_reasons, audit_hash, distribution_authorization, entry_price_authorization]
+    inputs: [compiled_assumptions, valuation_outputs, method_outputs, traceability, doctrine_coverage, calibration_diagnostics, lease_reconciliation, recovery_waterfall, equity_value_distribution, entry_price_policy, payoff_model_cases, payoff_ambiguity_result, distribution_route_authorization]
+    outputs: [audit_findings, audit_pass, blocking_reasons, audit_hash, distribution_authorization, entry_price_authorization, payoff_ambiguity_audit_hash]
     consumers: [INTRINSIC_FREEZE, VALUATION_CONTROL_PLANE, DECISION_IMPACT]
     effect_types: [guardrail_effect, value_effect]
     final_outputs: [run_validity, freeze_eligibility]
-    canonical_refs: [src/valuation_engine/generic_audit.py, src/valuation_engine/audit_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/audit.py, SKILL.md]
-    forbidden_effects: [override_failure_without_new_run, authorize_distribution_without_oos_skill, authorize_entry_price_from_current_market_price, authorize_report_time_equity_zero_floor, authorize_diagnostic_structural_option_as_primary_value, authorize_uncalibrated_discrete_quantile_success_claim]
+    canonical_refs: [src/valuation_engine/generic_audit.py, src/valuation_engine/audit_adapter.py, src/valuation_engine/risk_impact.py, src/valuation_engine/audit.py, src/valuation_engine/payoff_model_ambiguity.py, SKILL.md]
+    forbidden_effects: [override_failure_without_new_run, authorize_distribution_without_oos_skill, authorize_entry_price_from_current_market_price, authorize_report_time_equity_zero_floor, authorize_diagnostic_structural_option_as_primary_value, authorize_uncalibrated_discrete_quantile_success_claim, authorize_payoff_ambiguity_without_calculation_and_route_replay, authorize_undated_shareholder_payoff]
 
   - unit_id: INTRINSIC_FREEZE
     unit_type: gate

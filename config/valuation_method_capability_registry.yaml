@@ -1,4 +1,4 @@
-version: 1.3
+version: 1.4
 purpose: Classify each exact Industry DNA archetype/method binding by execution role and runtime family. Archetype permission remains authoritative in archetype_module_registry.yaml; this registry owns execution metadata only.
 execution_families:
   normalized_multiple:
@@ -41,12 +41,14 @@ execution_families:
       - src/valuation_engine/distributional_apv.py
       - src/valuation_engine/distribution_route_policy.py
       - src/valuation_engine/probability_ambiguity.py
+      - src/valuation_engine/payoff_model_ambiguity.py
       - src/valuation_engine/entry_price.py
       - src/valuation_engine/governed_event_distribution.py
       - scripts/build_governed_distribution_report.py
       - docs/KOREAN_AIR_DISTRIBUTIONAL_APV_DESIGN.md
       - tests/test_capacity_yield_distribution_contract.py
       - tests/test_capacity_yield_distributional_apv.py
+      - tests/test_payoff_model_ambiguity.py
       - tests/test_governed_event_distribution.py
       - tests/test_governed_distribution_report.py
   finite_life_npv:

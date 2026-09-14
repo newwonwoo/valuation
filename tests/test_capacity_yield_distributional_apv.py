@@ -69,6 +69,10 @@ from valuation_engine.probability_ambiguity import (
     SignedOutcomeValue,
     calculate_ambiguity_expected_value_range,
 )
+from valuation_engine.payoff_model_ambiguity import (
+    create_payoff_model_case_from_apv_results,
+    dated_payoff_from_apv_result,
+)
 
 
 D = Decimal
@@ -634,6 +638,21 @@ def _apv_result(path_id: str = "p1") -> PathAPVResult:
     return result
 
 
+def test_apv_result_carries_audit_receipt_and_converts_to_dated_payoffs():
+    result = _apv_result()
+    payoff = dated_payoff_from_apv_result(branch_id="Central", result=result)
+    assert result.path_calculation_hash
+    assert payoff.payoff_calculation_hash == result.path_calculation_hash
+    assert tuple(item.period for item in payoff.cash_flows) == (1,)
+    assert payoff.present_value(result.equity_required_return) == result.value_per_initial_share
+    case = create_payoff_model_case_from_apv_results(
+        model_case_id="reported-schedule",
+        branch_results=(("Central", result),),
+        evidence_path_ids=("debt:schedule",),
+    )
+    case.validate(("Central",), 1)
+
+
 def test_distribution_headline_is_p50_mean_secondary_and_signed_values_are_not_floored():
     base = _apv_result()
     signed = (
@@ -712,7 +731,7 @@ def test_entry_price_is_withheld_when_distribution_is_not_authorized():
     assert result.withheld_reason == "VALUATION_DISTRIBUTION_NOT_AUTHORIZED"
 
 
-def test_event_prior_uses_worst_expected_value_when_q25_branch_is_unstable():
+def test_undated_single_model_event_entry_is_diagnostic_only_and_retired():
     payoffs = (
         ExitPayoffPath("Down", D("100"), D("0")),
         ExitPayoffPath("Central", D("200"), D("0")),
@@ -749,17 +768,32 @@ def test_event_prior_uses_worst_expected_value_when_q25_branch_is_unstable():
         valuation_values_authorized=True,
         distribution_hash="EVENT-PAYOFFS",
     )
-    assert result.status is EntryPriceStatus.AVAILABLE
+    assert result.status is EntryPriceStatus.WITHHELD
     assert result.worst_case_expected_payoff == D("210")
     assert result.best_case_expected_payoff == D("235")
-    assert result.entry_price == D("210") / (D("1.12") ** 3)
+    assert result.entry_price is None
     assert result.binding_probability_vector_id == "downside_heavier"
     assert not result.diagnostic_quantile_stable
     assert result.diagnostic_quantile_entry_price is None
     assert not result.probability_success_claim_authorized
+    assert result.withheld_reason == (
+        "UNDATED_SINGLE_MODEL_ENTRY_RETIRED_USE_DATED_PAYOFF_AMBIGUITY"
+    )
     assert "current_market_price" not in signature(
         calculate_ambiguity_robust_entry_price
     ).parameters
+
+
+def test_quantile_entry_rejects_undated_cumulative_dividends():
+    with pytest.raises(EntryPriceError, match="undated cumulative dividends"):
+        calculate_entry_price(
+            payoffs=(ExitPayoffPath("p", D("100"), D("5")),),
+            policy=EntryPricePolicy(
+                "entry-v1", 3, D("0.12"), D("0.25"), (D("0.12"),)
+            ),
+            valuation_distribution_authorized=True,
+            distribution_hash="DISTRIBUTION",
+        )
 
 
 def test_event_prior_expected_value_is_a_signed_range_without_zero_floor():

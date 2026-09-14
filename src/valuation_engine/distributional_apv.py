@@ -7,8 +7,9 @@ distress waterfall; aggregation never floors a signed valuation after the fact.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 from decimal import Decimal
+from enum import Enum
 from hashlib import sha256
 import json
 
@@ -169,6 +170,11 @@ class PathAPVResult:
     distress_old_shareholder_recovery: Decimal | None
     old_shareholder_present_value: Decimal
     value_per_initial_share: Decimal
+    initial_shares: Decimal
+    distributions_to_old_holders: tuple[Decimal, ...]
+    realized_periods: int
+    equity_required_return: Decimal
+    path_calculation_hash: str
 
 
 @dataclass(frozen=True)
@@ -298,6 +304,29 @@ def evaluate_apv_path(path: APVPathInput) -> PathAPVResult:
         payoff_pv = terminal_payoff / ((ONE + path.equity_required_return) ** horizon)
         retention = path.financing_result.old_shareholder_ownership
     old_shareholder_pv = distribution_pv + payoff_pv
+    calculated = {
+        "segments": tuple(segment_results),
+        "usable_tax_shields": shields,
+        "tax_shield_present_value": shield_pv,
+        "explicit_financing_cost_present_value": financing_cost_pv,
+        "operating_apv": operating_apv,
+        "terminal_old_equity_payoff": terminal_payoff,
+        "distress_old_shareholder_recovery": distress_recovery,
+        "old_shareholder_present_value": old_shareholder_pv,
+        "value_per_initial_share": old_shareholder_pv / path.initial_shares,
+        "realized_periods": realized_periods,
+    }
+    path_calculation_hash = sha256(
+        json.dumps(
+            {
+                "contract": "distributional_apv_path/v1",
+                "input": _jsonable(asdict(path)),
+                "calculated": _jsonable(calculated),
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+    ).hexdigest()
     return PathAPVResult(
         path_id=path.path_id,
         segments=tuple(segment_results),
@@ -312,7 +341,26 @@ def evaluate_apv_path(path: APVPathInput) -> PathAPVResult:
         distress_old_shareholder_recovery=distress_recovery,
         old_shareholder_present_value=old_shareholder_pv,
         value_per_initial_share=old_shareholder_pv / path.initial_shares,
+        initial_shares=path.initial_shares,
+        distributions_to_old_holders=path.distributions_to_old_holders,
+        realized_periods=realized_periods,
+        equity_required_return=path.equity_required_return,
+        path_calculation_hash=path_calculation_hash,
     )
+
+
+def _jsonable(value: object) -> object:
+    if isinstance(value, Decimal):
+        return str(value)
+    if isinstance(value, Enum):
+        return value.value
+    if is_dataclass(value) and not isinstance(value, type):
+        return _jsonable(asdict(value))
+    if isinstance(value, dict):
+        return {str(key): _jsonable(item) for key, item in value.items()}
+    if isinstance(value, (tuple, list)):
+        return [_jsonable(item) for item in value]
+    return value
 
 
 def aggregate_equity_distribution(
