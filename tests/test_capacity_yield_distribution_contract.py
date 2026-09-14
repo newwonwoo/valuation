@@ -123,6 +123,8 @@ def test_distribution_contract_forbids_anchor_probability_and_report_floor():
     } <= set(valuation["outputs"])
     assert "target_id_formula_selection" in valuation["forbidden_effects"]
     assert "report_time_equity_zero_floor" in valuation["forbidden_effects"]
+    assert "unpaid_due_claim_disappearance" in valuation["forbidden_effects"]
+    assert "src/valuation_engine/levered_financing_paths.py" in valuation["canonical_refs"]
     assert "lowest_individual_probability_as_entry_rule" in valuation["forbidden_effects"]
     assert "undated_cumulative_payoff_discounting" in valuation["forbidden_effects"]
     assert "branchwise_payoff_model_cherry_pick" in valuation["forbidden_effects"]

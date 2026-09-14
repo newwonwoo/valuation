@@ -538,8 +538,122 @@ def test_refinancing_then_dilution_then_distress_and_waterfall_recovery():
     assert result.distressed and result.dilution_occurred
     assert result.old_shareholder_ownership == D("0.70")
     assert result.recovery is not None
-    assert result.recovery.residual_equity == D("20")
-    assert result.recovery.old_shareholder_recovery == D("7.000")
+    assert result.recovery.residual_equity == D("19")
+    assert result.recovery.old_shareholder_recovery == D("6.6500")
+
+
+def test_distress_claims_restore_unpaid_current_principal_and_interest():
+    debt = DebtSchedule(
+        claim_id="maturing-debt",
+        seniority=0,
+        periods=(DebtPeriod(1, D("100"), D("0"), D("10"), D("100"), D("0")),),
+    )
+    spec = FinancingPathSpec(
+        opening_cash=D("0"),
+        minimum_operating_cash=D("0"),
+        debt_schedules=(debt,),
+        lease_schedules=(),
+        refinancing_facilities=(),
+        asset_sale_policy=AssetSalePolicy((D("0"),), D("0")),
+        equity_raise_policy=EquityRaisePolicy((D("0"),), D("0"), (D("0"),)),
+        recovery_waterfall=RecoveryWaterfallPolicy(D("0"), D("0"), D("1")),
+    )
+
+    result = evaluate_financing_path(
+        inputs=(FinancingPeriodInput(1, D("0"), D("0"), D("200")),),
+        spec=spec,
+    )
+
+    assert result.distressed
+    assert result.horizon_claims == (
+        ClaimBalance("maturing-debt", ClaimType.DEBT, 0, D("110")),
+    )
+    assert result.recovery is not None
+    assert result.recovery.creditor_allocations[0].claim_amount == D("110")
+    assert result.recovery.residual_equity == D("90")
+
+
+def test_cash_available_at_distress_pays_seniority_then_same_tier_pro_rata():
+    senior_large = DebtSchedule(
+        claim_id="z-large",
+        seniority=0,
+        periods=(DebtPeriod(1, D("80"), D("0"), D("0"), D("80"), D("0")),),
+    )
+    senior_small = DebtSchedule(
+        claim_id="a-small",
+        seniority=0,
+        periods=(DebtPeriod(1, D("20"), D("0"), D("0"), D("20"), D("0")),),
+    )
+    junior_lease = LeaseSchedule(
+        claim_id="junior-lease",
+        seniority=1,
+        periods=(LeasePeriod(1, D("50"), D("0"), D("0"), D("50"), D("0")),),
+    )
+    spec = FinancingPathSpec(
+        opening_cash=D("50"),
+        minimum_operating_cash=D("0"),
+        debt_schedules=(senior_large, senior_small),
+        lease_schedules=(junior_lease,),
+        refinancing_facilities=(),
+        asset_sale_policy=AssetSalePolicy((D("0"),), D("0")),
+        equity_raise_policy=EquityRaisePolicy((D("0"),), D("0"), (D("0"),)),
+        recovery_waterfall=RecoveryWaterfallPolicy(D("0"), D("0"), D("0")),
+    )
+
+    result = evaluate_financing_path(
+        inputs=(FinancingPeriodInput(1, D("0"), D("0"), D("0")),),
+        spec=spec,
+    )
+
+    claims = {item.claim_id: item.amount for item in result.horizon_claims}
+    assert claims == {
+        "a-small": D("10"),
+        "z-large": D("40"),
+        "junior-lease": D("50"),
+    }
+
+
+def test_distress_claims_restore_unpaid_refinancing_interest():
+    maturing_debt = DebtSchedule(
+        claim_id="original-debt",
+        seniority=0,
+        periods=(
+            DebtPeriod(1, D("100"), D("0"), D("0"), D("100"), D("0")),
+            DebtPeriod(2, D("0"), D("0"), D("0"), D("0"), D("0")),
+        ),
+    )
+    spec = FinancingPathSpec(
+        opening_cash=D("0"),
+        minimum_operating_cash=D("0"),
+        debt_schedules=(maturing_debt,),
+        lease_schedules=(),
+        refinancing_facilities=(
+            RefinancingFacility(
+                "term-refi",
+                0,
+                (D("100"), D("0")),
+                D("0"),
+                cash_interest_rate=D("0.10"),
+            ),
+        ),
+        asset_sale_policy=AssetSalePolicy((D("0"), D("0")), D("0")),
+        equity_raise_policy=EquityRaisePolicy(
+            (D("0"), D("0")), D("0"), (D("0"), D("0"))
+        ),
+        recovery_waterfall=RecoveryWaterfallPolicy(D("0"), D("0"), D("1")),
+    )
+
+    result = evaluate_financing_path(
+        inputs=(
+            FinancingPeriodInput(1, D("0"), D("0"), D("0")),
+            FinancingPeriodInput(2, D("0"), D("0"), D("200")),
+        ),
+        spec=spec,
+    )
+
+    assert result.distress_period == 2
+    claims = {item.claim_id: item.amount for item in result.horizon_claims}
+    assert claims["term-refi:1"] == D("110.00")
 
 
 def test_distress_recovery_is_zero_or_positive_only_from_explicit_waterfall():

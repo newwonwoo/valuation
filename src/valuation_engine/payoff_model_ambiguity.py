@@ -379,23 +379,6 @@ def calculate_robust_payoff_ambiguity_entry(
     canonical_cases = tuple(
         sorted(payoff_model_cases, key=lambda item: item.model_case_id)
     )
-    payoff_vectors = {
-        tuple(
-            (
-                payoff.branch_id,
-                tuple(
-                    (item.period, str(item.amount_per_share))
-                    for item in sorted(payoff.cash_flows, key=lambda item: item.period)
-                ),
-            )
-            for payoff in sorted(model_case.payoffs, key=lambda item: item.branch_id)
-        )
-        for model_case in canonical_cases
-    }
-    if len(canonical_cases) > 1 and len(payoff_vectors) != len(canonical_cases):
-        raise PayoffModelAmbiguityError(
-            "payoff model cases must contain distinct payoff assessments"
-        )
 
     try:
         canonical_priors, prior_hash = validate_probability_ambiguity_set(

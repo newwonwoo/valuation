@@ -163,6 +163,7 @@ claims:
       - "src/valuation_engine/evaluator_registry.py"
       - "src/valuation_engine/distribution_route_policy.py"
       - "src/valuation_engine/distributional_apv.py"
+      - "src/valuation_engine/levered_financing_paths.py"
       - "src/valuation_engine/probability_ambiguity.py"
       - "src/valuation_engine/payoff_model_ambiguity.py"
       - "src/valuation_engine/entry_price.py"

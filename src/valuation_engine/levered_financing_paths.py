@@ -460,6 +460,7 @@ def evaluate_financing_path(
     period_results: list[FinancingPeriodResult] = []
     financing_costs: list[Decimal] = []
     recovery: DistressRecovery | None = None
+    distress_claims: tuple[ClaimBalance, ...] | None = None
     distressed = False
     distress_period: int | None = None
 
@@ -585,11 +586,22 @@ def evaluate_financing_path(
         if shortfall > ZERO:
             distressed = True
             distress_period = path_input.period
-            claims = _claims_at_period(spec, index, tuple(refinancing_claims.values()))
+            total_scheduled_obligations = debt_interest + debt_principal + lease_payment
+            available_cash_for_obligations = min(
+                max(total_scheduled_obligations + pre_action + action_net_cash, ZERO),
+                total_scheduled_obligations,
+            )
+            distress_claims = _claims_at_distress(
+                spec=spec,
+                index=index,
+                refinancing_claims=tuple(refinancing_claims.values()),
+                facility_by_id=facility_by_id,
+                available_cash_for_obligations=available_cash_for_obligations,
+            )
             recovery = apply_recovery_waterfall(
                 period=path_input.period,
                 gross_asset_proceeds=path_input.distress_asset_proceeds,
-                claims=claims,
+                claims=distress_claims,
                 policy=spec.recovery_waterfall,
                 old_shareholder_ownership=old_ownership,
             )
@@ -627,8 +639,11 @@ def evaluate_financing_path(
         if distressed:
             break
 
-    horizon_index = (distress_period - 1) if distress_period is not None else horizon - 1
-    claims = _claims_at_period(spec, horizon_index, tuple(refinancing_claims.values()))
+    claims = (
+        distress_claims
+        if distress_claims is not None
+        else _claims_at_period(spec, horizon - 1, tuple(refinancing_claims.values()))
+    )
     return FinancingPathResult(
         periods=tuple(period_results),
         distressed=distressed,
@@ -677,6 +692,101 @@ def _claims_at_period(
         for schedule in spec.lease_schedules
     )
     claims.extend(refinancing_claims)
+    return tuple(sorted(claims, key=lambda item: (item.seniority, item.claim_id)))
+
+
+def _claims_at_distress(
+    *,
+    spec: FinancingPathSpec,
+    index: int,
+    refinancing_claims: tuple[ClaimBalance, ...],
+    facility_by_id: dict[str, RefinancingFacility],
+    available_cash_for_obligations: Decimal,
+) -> tuple[ClaimBalance, ...]:
+    """Restore scheduled obligations that remain unpaid at a distress date.
+
+    The contractual schedules assume that current interest, principal and lease
+    payments were made.  When the liquidity path instead stops in distress,
+    those unpaid amounts remain creditor claims.  Cash available after mandatory
+    capex and minimum operating liquidity is allocated by seniority and pro rata
+    within a tier before the unpaid balance is added back to the scheduled
+    closing claim.
+    """
+
+    due_obligations = [
+        ClaimBalance(
+            claim_id=schedule.claim_id,
+            claim_type=ClaimType.DEBT,
+            seniority=schedule.seniority,
+            amount=schedule.periods[index].interest_due
+            + schedule.periods[index].principal_due,
+        )
+        for schedule in spec.debt_schedules
+    ]
+    due_obligations.extend(
+        ClaimBalance(
+            claim_id=schedule.claim_id,
+            claim_type=ClaimType.LEASE,
+            seniority=schedule.seniority,
+            amount=schedule.periods[index].lease_payment,
+        )
+        for schedule in spec.lease_schedules
+    )
+    due_obligations.extend(
+        ClaimBalance(
+            claim_id=claim.claim_id,
+            claim_type=ClaimType.REFINANCING,
+            seniority=claim.seniority,
+            amount=claim.amount
+            * facility_by_id[claim.claim_id.rsplit(":", 1)[0]].cash_interest_rate,
+        )
+        for claim in refinancing_claims
+    )
+
+    total_due = sum((item.amount for item in due_obligations), ZERO)
+    if not ZERO <= available_cash_for_obligations <= total_due:
+        raise FinancingPathError("cash available for distress obligations is invalid")
+
+    unpaid_by_id: dict[str, Decimal] = {}
+    remaining_cash = available_cash_for_obligations
+    for seniority in sorted({item.seniority for item in due_obligations}):
+        tier = tuple(item for item in due_obligations if item.seniority == seniority)
+        tier_due = sum((item.amount for item in tier), ZERO)
+        tier_payment = min(tier_due, remaining_cash)
+        remaining_cash -= tier_payment
+        for obligation in tier:
+            payment = ZERO if tier_due == ZERO else tier_payment * obligation.amount / tier_due
+            unpaid_by_id[obligation.claim_id] = obligation.amount - payment
+
+    claims = [
+        ClaimBalance(
+            claim_id=schedule.claim_id,
+            claim_type=ClaimType.DEBT,
+            seniority=schedule.seniority,
+            amount=schedule.periods[index].closing_principal
+            + unpaid_by_id[schedule.claim_id],
+        )
+        for schedule in spec.debt_schedules
+    ]
+    claims.extend(
+        ClaimBalance(
+            claim_id=schedule.claim_id,
+            claim_type=ClaimType.LEASE,
+            seniority=schedule.seniority,
+            amount=schedule.periods[index].closing_liability
+            + unpaid_by_id[schedule.claim_id],
+        )
+        for schedule in spec.lease_schedules
+    )
+    claims.extend(
+        ClaimBalance(
+            claim_id=claim.claim_id,
+            claim_type=claim.claim_type,
+            seniority=claim.seniority,
+            amount=claim.amount + unpaid_by_id[claim.claim_id],
+        )
+        for claim in refinancing_claims
+    )
     return tuple(sorted(claims, key=lambda item: (item.seniority, item.claim_id)))
 
 

@@ -199,20 +199,28 @@ def test_every_model_case_must_cover_the_same_complete_branch_set():
         )
 
 
-def test_duplicate_payoff_vectors_cannot_masquerade_as_model_uncertainty():
+def test_distinct_model_cases_may_converge_to_the_same_payoff_vector():
     duplicate = create_payoff_model_case(
         model_case_id="duplicate",
         payoffs=_cases()[0].payoffs,
         evidence_path_ids=("model:duplicate",),
     )
-    with pytest.raises(PayoffModelAmbiguityError, match="distinct payoff assessments"):
-        calculate_robust_payoff_ambiguity_entry(
-            payoff_model_cases=(_cases()[0], duplicate),
-            probability_vectors=_priors(),
-            policy=_policy(),
-            future_payoffs_authorized=True,
-            source_payoff_hash="apv-paths:abc",
-        )
+    result = calculate_robust_payoff_ambiguity_entry(
+        payoff_model_cases=(_cases()[0], duplicate),
+        probability_vectors=_priors(),
+        policy=_policy(),
+        future_payoffs_authorized=True,
+        source_payoff_hash="apv-paths:abc",
+    )
+    assert result.status is PayoffModelAmbiguityStatus.AVAILABLE
+    assert len(result.combination_results) == len(_priors()) * 2
+    downside_pairs = tuple(
+        item
+        for item in result.combination_results
+        if item.probability_vector_id == "downside_heavier"
+    )
+    assert {item.expected_undiscounted_payoff for item in downside_pairs} == {D("195")}
+    assert len({item.expected_present_value for item in downside_pairs}) == 1
 
 
 def test_probability_vector_still_has_to_cover_every_payoff_branch():
