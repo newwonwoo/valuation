@@ -1,246 +1,51 @@
 ---
 name: insight-valuation-analysis
-description: Run evidence-first equity research and deterministic valuation when the user says "분석시작 기업명", asks to update a thesis, validate assumptions, compare intrinsic value with market/Street references, inspect funding constraints, or inspect kill conditions. Use for Korean and global equities; not for simple price/news lookup without valuation intent.
+description: Complete or revise company valuations through newwonwoo/valuation's orchestrator and deliver verified investor reports. Use for valuation runs and thesis or valuation-report updates.
 ---
 
-# Insight Valuation Analysis v0.5.2
+# Valuation analysis through final delivery
 
-Read `AGENTS.md`, `01_Rocketesla_Insight_Valuation_Framework.md`, `docs/V04_ROCKETSLA_EXTENSION.md`, `docs/V05_WORKFLOW_CONTRACT.md`, `docs/README_V05_OPERATOR_INDEX.md`, `docs/SIGNAL_INTELLIGENCE_LAYER_V1.md`, `docs/GENERIC_ENGINE_DESIGN.md`, and `docs/LIVE_VALIDATION_AND_CALIBRATION.md` before changing model architecture.
+Use `AGENTS.md` for task completion, authority and targeted reading. All paths here are repository-root-relative, including when this file is loaded from `.agents/skills/valuation-analysis/`. This skill applies to supported Korean and global company valuations; check actual country/method support instead of assuming all providers exist.
 
-The current CLI remains a v0.3-alpha offline vertical slice unless a newer live adapter is explicitly implemented. Never present fixture evidence or contract-only modules as current research.
+## Start from the real state
 
-## Required workflow
+Identify the company, requested scope and as-of date from the task and existing run. Inspect the relevant executable entrypoint, saved state and current inputs. Reuse valid existing research and resume work; do not repeat finished stages by habit or substitute an offline fixture. The runtime exists, but a particular provider or evaluator may still be missing.
 
-Execute in this order; unavailable live modules must be labelled `CONTRACT_ONLY` or `NOT_IMPLEMENTED`.
+The Control Plane owns stage order and access in `config/control_plane_stage_registry.yaml`. The host supplies original-source interpretation and typed responses; the compiler, deterministic engines and audit own committed assumptions, values and freeze. Never compose a replacement valuation in chat.
 
-1. `COMPANY_RESOLUTION`
-2. `LOAD_COMPANY_STATE`
-3. `LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT`
-4. `SOURCE_FRESHNESS_PRECHECK`
-5. `SEGMENT_DECOMPOSITION`
-6. `INDUSTRY_DNA_ROUTE`
-7. `MODULE_REQUIREMENT_PLAN`
-8. `PRIMARY_EVIDENCE_COLLECTION`
-9. `EVIDENCE_LEDGER`
-10. `ROCKET_INSIGHT_SCAN`
-11. `UPSTREAM_FUNDING_SCAN` when external finance is material
-12. `RESEARCHER_A`
-13. `BLIND_RED_TEAM_B`
-14. up to three targeted `RESEARCH_LOOP` rounds
-15. `EVIDENCE_TO_ASSUMPTION_BRIDGE`
-16. `SCENARIO_BUILD`
-17. `HIERARCHICAL_BETA_ESTIMATION` when peer beta is used
-18. `WACC_VALIDATION`
-19. `DETERMINISTIC_VALUATION`
-20. `HIERARCHICAL_WARRANTED_PER` when PER is allowed
-21. `DCF_PER_ASSUMPTION_CONSISTENCY_GATE`
-22. `CROSS_METHOD_DOUBLE_COUNT_AUDIT`
-23. `PROBABILITY_DISTRIBUTION_ANALYSIS` when likelihood/forecast inputs are declared or calibrated
-24. `AUDIT_GATE`
-25. `INTRINSIC_VALUE_FREEZE`
-26. `STREET_REFERENCE_LOAD`
-27. `STREET_GAP_ANALYZER` including consensus-lag reverse check
-28. `MARKET_PRICE_LOAD`
-29. `MARKET_COMPARE`
-30. `THESIS_DELTA` / `SAVE_STATE` / `FINAL_REPORT`
+## Complete the research-to-report loop
 
-If a blocking issue remains after the inner research round three or a blocking audit fails, return the blocked stage to the completion coordinator. Do not output unaudited fair value or load Street/current-price data. A missing datum is a repair task, not the host assistant's final answer while defensible research methods remain.
+For research gaps or recovery, read `docs/RESEARCH_CAMPAIGN_RUNBOOK.md` and use the supported `scripts/run_research_campaign.py <campaign> --workspace <workspace> --run-dir <prepared-run>` path. For initial KR preparation read `docs/RUNBOOK_KR_LIVE.md`. The prepared-run campaign adapter is currently KR; do not claim it validates other jurisdictions.
 
-### Research-to-report completion
+An emitted work order is the host's next action. Read research/staff/completion requests, search original sources, create correctly bound responses and resume the same workspace. The user does not prepare JSON or obtain an LLM API key. Verify supported assisted/replay modes from the current runner. Do not replay an answer bound to an older prompt or reuse a cached result after its inputs change.
 
-- For missing disclosures, first search primary/company sources, then independent industry/customer/supplier material and broker discovery clues. When target operating history is inadequate, use comparable-business realized EBIT or EBITDA margins with explicit accounting/period normalization, comparability rationale, weights and year-specific percentage-point adjustments. Keep these as analyst assumptions; do not use peer operating history to calibrate target scenario probabilities.
-- Use `docs/RESEARCH_COMPLETION_DESIGN.md` and `docs/RESEARCH_CAMPAIGN_RUNBOOK.md`. The host creates the research plan, reads work orders, searches and writes valid responses itself; do not ask the user to prepare JSON or obtain an LLM API key. Missing data may be resolved by source-based calculations, peer adjustments or explicit bounded inference, never invented facts or silent zero inputs.
-- Run `scripts/run_research_campaign.py ... --run-dir <prepared-run>` for the accepted research and full report completion path. Optional host provider callbacks can supply research and repair inputs. With file handoff, process the emitted completion/staff work order and rerun in the same workspace within the ongoing task. The coordinator preserves the source run, stores revised inputs separately, reruns canonical audits and materializes prompt-bound deterministic replay before local report publication.
-- A changed input requires the host to review the investor narrative and record the review bound to that input and profile; update stale claims instead of carrying them into the revised report. No hash is displayed in the investor narrative.
-- Completion means a full-scope audited valuation plus an existing investor report, two SVG cards and verified immutable bundle. Partial scope, unanswered work orders or a report string alone are not completion. Uncalibrated probabilities permit a conditional scenario report but no fabricated probability-weighted expected value or buy price. Bounded host execution budgets preserve resumable work and exact missing action; they do not certify completion.
-- Actual source contradictions, unsupported financial models or integrity failures still require correction before publishing; never mark a gate passed merely to finish. The currently supplied prepared-run adapter is KR; do not portray its fixture completion as US live-company validation.
+Missing disclosed numbers are research problems, not automatic final answers. Use primary/company sources first; then independent sources and broker discovery clues; then comparable-business realized margins with explicit adjustments or defensible bounded inference. Normalize EBIT versus EBITDA, period, accounting basis, scale, utilization and year-specific adjustments. Keep analyst assumptions distinct from reported facts; peer operating data may support margins, not the target's scenario probability calibration. See the campaign runbook for response schemas and peer-margin receipts only when needed.
 
-## Separation rules
+Carry material business/new-project assumptions through executable capacity, demand/contracts, price and mix, costs/margins, tax, investment and working capital to cash flow, net debt/dilution and per-share value as applicable. Announced capacity is not automatically executable or sold. Reflect upside supported by new contracts, capacity and achieved milestones as well as failure paths; historical averages are not an automatic ceiling and optimism is not evidence.
 
-`Evidence → Hypothesis → Bridge → Assumption → Valuation → Frozen Intrinsic Value → Street/Market Comparison`
+Repair and rerun until the authorized request's completion criteria hold. Respect research/completion budgets and actual permissions; save resumable work and the exact remaining issue if a genuine blocker survives. A failed gate cannot be converted into PASS, and partial valuation cannot be presented as full-company completion.
 
-- Evidence is external observation; Hypothesis is causal reasoning, not fact.
-- Every valuation assumption requires a Bridge; every Bridge must identify Evidence, economic path, kill condition and verification event.
-- Deterministic code owns units, valuation math, beta/PER pooling, WACC arithmetic, probability weighting, duplicate-path detection and audit.
-- LLM reasoning owns interpretation, Economic-Twin rationale, counter-theses and missing-evidence requests.
-- Street reports and target-company price are comparison objects, not intrinsic inputs.
+## Preserve valuation integrity
 
-### Claim-to-Value Synchronization Gate
-
-- A new title, headline or investment point that says a disclosure, policy or event changes value must map within the same new run through `Evidence → Hypothesis → Bridge → compiled Assumption → Valuation`.
-- Show the previous intrinsic value, revised intrinsic value, changed assumption and value delta in the decision-facing report.
-- If verified transmission does not change an intrinsic input, classify the claim `REFERENCE_ONLY`. It may appear only in context or risk, never as the title, headline conclusion or valued catalyst.
-- Fail report generation when a `VALUED` headline has no active Evidence/Bridge/Assumption mapping or when its revised intrinsic value equals the prior run.
-- Do not force a value change from policy intent alone. A policy claim becomes `VALUED` only when company exposure and a causal transmission path are separately evidenced; otherwise the correct outcome is `REFERENCE_ONLY` and no valuation-changing headline.
-
-### Revision Request Efficiency Gate
-
-- Convert each user correction into atomic clauses with the requested outcome, affected Unit Contract roots, read/write set and observable acceptance criteria. Do not call unrelated research or valuation units.
-- Use the Unit Contract graph only to identify impact. Build a separate acyclic task graph for execution because the impact graph intentionally permits feedback cycles.
-- Run tasks in parallel only when they have no dependency and disjoint write sets. Same-file or same-artifact writers require one owner or an explicit sequential dependency.
-- Preserve the sequence `Evidence → Bridge → Compiler/model → report/artifacts → targeted validation → full regression → publish/merge`. Report-only copy/layout changes stop at the reporter unless they add a material valuation claim; a `VALUED` claim automatically requires the full model-to-report path.
-- When a task fails or a clause changes, rerun only that task and its descendants. Reuse independent completed work only when the base revision and `plan_hash` still match; any scope expansion creates a new plan.
-- Block merge for an unmapped clause, missing acceptance validator, dependency cycle, unordered write overlap, unplanned file change, stale plan result or generated artifact that predates its upstream model.
-- Deliver a hash-bound immutable report filename containing the as-of date and reference intrinsic value. A mutable latest alias is automation-only and must never be the user-facing download link.
-
-## Industry Knowledge & Signal Intelligence v0.5.2
-
-- Freeze `industry_knowledge_snapshot_hash`, `source_watch_snapshot_hash`, taxonomy/module versions and routing evidence for every valuation run. Later reports cannot silently mutate an in-progress run.
-- Decompose economically distinct segments before routing. `INDUSTRY_DNA_ROUTE` is multi-label and evidence-driven: one or more Economic Archetypes may apply, while Sector Adapters are defaults rather than authority. Keyword matching cannot finalize the route.
-- Compile `MODULE_REQUIREMENT_PLAN` before collection: required evidence/KPIs, accounting normalization, Beta/PER twin features, scenario variables, funding checks, forbidden methods, terminal policy, double-count traps and kill conditions.
-- Fail closed instead of generic-DCF fallback when no supported archetype can be established, a critical module input is missing/definition-conflicted, or a method is forbidden by a material archetype without segment split.
-- Assign every source to a Knowledge Layer and enforce `config/knowledge_placement_policy.yaml` plus `config/workflow_source_injection_map.yaml`. Classification/metric/provenance standards define requirements; structural input-output data is a prior; primary/company evidence may reach a Bridge; broker/alternative data is discovery/corroboration; target Street/market remains post-freeze.
-- Broker/IB material before freeze may supply value-chain maps, KPI definitions, mechanism candidates, investor debates, channel-check leads and underlying-data locations. Target-company broker revenue/EPS forecasts, target price, rating, target multiple and consensus are forbidden before freeze. Multiple brokers sharing one underlying data family do not count as independent corroboration.
-- `SignalClass` is orthogonal to evidence authority. Permit, procurement, interconnection, patent, hiring, physical-production, customs/logistics, credit, clinical and remote-sensing signals require the same provenance/placement gates as other evidence.
-- Split market inputs into: `financing_market_reference` (funding/WACC only through an economic Bridge), `positioning_market_signal` (monitoring/post-freeze; never mutates intrinsic), and `target_equity_market_reference` (post-freeze only).
-- `NOT_OBSERVED != NO_EVENT`. Negative evidence requires complete/near-complete coverage, mandatory or near-mandatory reporting, elapsed reporting lag, healthy source and no known alternate channel. `SOURCE_FAILURE` is operational evidence only.
-- Apply the Representativeness Gate before extrapolating spot/channel/alternative data: coverage share, selection bias, duplicate risk, granularity match, mapping stability and definition stability.
-- Track project realization as evidence-backed states (`announced → applied → funded → permitted → awarded/contracted → under construction → commissioned/delivered → revenue`) rather than treating announced capacity as funded demand.
-- Preserve `event_time`, `effective_as_of`, `published_at`, `first_seen_at`, `revised_at` and expected reporting lag. Historical/backtest analysis may not use a revision before its first-seen time.
-- Dynamic Economic-Twin candidate generation may use product-text similarity, end-market mix, supply-chain topology, patent similarity, revenue model, capital intensity, customer concentration and contract structure. Final Beta/PER peers still require an auditable systematic-risk/fundamental-driver rationale.
-
-## Non-negotiable gates
-
-- Never use current price to select assumptions, probabilities, discount rates or multiples.
-- Never load broker target prices/forecasts before `INTRINSIC_VALUE_FREEZE`.
-- A Street-discovered claim cannot mutate the same frozen run. Verify it from primary/independently validated evidence and start a new run.
-- Never convert policy price directly into company ASP without an economic bridge.
-- Never promote company plans to realized evidence.
-- Never double count the same evidence/economic path across operating value, option/SOTP, funding, WACC or PER premium.
-- Never deduct gross CAPEX again when expansion economics already include the same investment through future EBITDA/funding gap/terminal debt.
-- Mark uncalibrated probabilities `UNCALIBRATED`.
-- An uncalibrated analyst prior may be displayed only as a clearly labelled 5% band; never bind it into scenario weights or expected value. Declared binary forecasts from an audit-passed live run must be captured append-only before resolution. Resolve them only with explicit first-seen primary Evidence and a directly verifiable source link; synthetic or post-hoc history is forbidden.
-- Red Team input excludes price, Street target, intrinsic value, market gap, position data and market/Street loader access.
-- Blocked runs are saved but never promoted to current state.
-
-## Upstream Funding & Constraint Ladder
-
-When demand depends materially on external finance, analyze `Funded Demand`:
-
-`product/project → buyer cash flow → financing channel → collateral value → lending terms (LTV/advance rate/haircut/covenant/guarantee/tenor) → credit spread → maturity-matched benchmark/swap rate → market plumbing → policy/liquidity backstop`
-
-Rules:
-- Ask who prices the layer immediately above the current one.
-- Funding condition is benchmark + spread + collateral/lending terms + tenor/refinancing availability, not one Treasury yield.
-- Collateral rental/resale/residual value can lead purchasing capacity.
-- `Policy Intent ≠ Transmission Effect`.
-- Preserve `confirmed fact → first-order mechanism → second-order transmission → investment hypothesis` and evidence confidence.
-- Prefer upstream kill conditions when they lead downstream orders.
-
-## Hierarchical Bottom-up Beta
-
-For non-financial companies using peer beta:
-
-`L1 Broad Sector → L2 Industry → L3 Risk-Driver Subindustry → L4 Economic Twins`
-
-- Estimate/normalize comparable betas consistently and preserve estimation uncertainty where available.
-- Blume/Vasicek adjustment is allowed and auditable; apply non-synchronous-trading correction when material/data permit.
-- Unlever every comparable before pooling.
-- L4 Economic Twins are chosen by systematic-risk drivers, not labels: product, end demand, geography, backlog/order structure, operating leverage, capital intensity, pricing power, concentration and cyclicality.
-- Fixed 10/20/30/40-style weights and simple level averages are forbidden.
-- Use Bayesian/precision-weighted partial pooling; small/noisy L4 samples shrink to upper priors, precise L4 may move the posterior materially.
-- Relever only after business-risk beta is fixed, using target capital structure.
-- Financial institutions use sector-specific cost-of-equity methods rather than industrial D/E unlevering.
-
-## WACC Validation Engine
-
-- Risk-free rate must match cash-flow currency and nominal/real convention.
-- ERP is market-level; do not use company-specific ERP as a plug.
-- Country risk is exposure-adjusted, not headquarters-only.
-- Generic small-cap premium is forbidden without explicit liquidity/refinancing/other risk evidence.
-- Cost of Debt is marginal/current, not merely historical coupon.
-- Use market-value Target Capital Structure; the same target D/E must be used in beta relevering and WACC weights.
-- WACC is state-dependent: a lower future WACC requires evidence that business/credit risk actually declined, not simply passage of time.
-- Terminal checks require `WACC > g`, currency and nominal/real consistency, and `reinvestment_rate = g / terminal_ROIC`.
-
-### Customer Advances / Contract Liabilities
-
-First reflect:
-
-`Customer Advances ↑ → NWC Need ↓ → External Funding Need ↓ → FCFF ↑ → Invested Capital ↓ → Incremental ROIC ↑`
-
-When possible calculate `Customer-Funded Growth Ratio = growth-order-related advances / (growth CAPEX + incremental NWC need)`.
-
-Do not lower WACC merely because advances rose. A second-order WACC reduction requires recurring/structural advances plus verified credit improvement: better Net Debt/EBITDA and interest coverage, slower external borrowing growth, lower actual borrowing rate/credit spread, and lower liquidity/refinancing risk. Check prepayment discounts, delay penalties, performance/refund obligations, fixed-price inflation exposure and cancellation rights. Audit direct FCFF benefit versus indirect WACC benefit for double counting.
-
-## Hierarchical Warranted PER Engine v1.0
-
-PER is permitted only where the industry router and EPS quality allow it. Never start from current P/E, broker target P/E or raw peer average.
-
-### EPS Quality Gate
-Use positive, economically normalized forward EPS. Adjust/flag one-offs, asset sales, abnormal tax/FX, aggressive capitalization, stock-based compensation economics, dilution, peak-cycle earnings, acquisition accounting and one-off subsidies. Non-positive/non-normalizable EPS blocks PER.
-
-### Three layers
-1. `Core Fundamental PER` — identical economic worldview to Core DCF/operating model.
-2. `Expansion-Adjusted Fundamental PER` — extends growth duration only with committed/pre-invested capacity or equivalent verified evidence.
-3. `Market-Realization PER` — applies pooled residual market premium/discount from peer fundamentals.
-
-Do not average these layers.
-
-### DCF–PER Assumption Consistency Gate
-Core PER must use the same growth path, margin normalization, EPS economics, reinvestment/capital intensity, growth duration and risk assumptions as Core DCF. Do not borrow Street EPS or silently extend high growth beyond the DCF horizon. Only Expansion-Adjusted PER may extend duration, and only after its evidence gate passes.
-
-### Fundamental PER economics
-Treat P/E as compressed equity-cash-flow valuation driven by normalized forward EPS, Cost of Equity, growth and duration, ROE/ROIC, incremental returns, required reinvestment, FCFE/EPS conversion and terminal growth. Growth alone never justifies a premium.
-
-### Hierarchical residual pooling
-For each peer estimate its own fundamental PER, then:
-
-`Residual_i = ln(Market Forward PER_i / Fundamental PER_i)`
-
-Pool the residual — not raw peer P/E — through L1→L4. Small/noisy L4 samples shrink toward upper priors.
-
-`Market-Realization PER = applicable Fundamental PER × exp(Pooled Residual Premium)`
-
-PER Economic Twins emphasize growth rate/duration, ROE/ROIC, reinvestment, cash conversion, margin stability, revenue visibility, cyclicality, capital intensity, balance-sheet risk, concentration, pricing power and dilution. They need not be identical to Beta twins.
-
-## Cross-method double-count gate
-
-Track material qualitative/risk drivers with `economic_path_id`. Do not capitalize the same cyclicality/visibility/leverage/concentration advantage independently through lower Beta, lower WACC, higher FCF/probability and higher PER residual without distinct mechanisms and evidence.
-
-If DCF and PER differ materially, do not average them. Reconcile EPS normalization, growth/duration, margin, reinvestment, incremental ROIC, FCFE/FCF conversion, Cost of Equity/WACC, terminal assumptions and market residual premium.
-
-## Street Gap Analyzer
-
-Only after intrinsic freeze, load recent broker references. Record broker/date/source, target price/currency, method/base year, estimates and disclosed WACC/g/net debt/CAPEX/multiples. Decompose gap into operating, financing, valuation-policy, option and capital-structure drivers.
-
-`Different from Street` is not alpha. A gap mainly driven by lower WACC/higher multiple is low-quality unless separately justified. `Consensus Lag` requires observable operating/policy/funding change plus stale/omitting Street estimates. Preserve unexplained residuals.
-
-## Probability / Monte Carlo
-
-Use 10k–100k simulations only when a calibrated stochastic implementation exists and preserve realistic correlations. Current price is never a distribution input. Otherwise report probabilities as `UNCALIBRATED`; do not fabricate Monte Carlo output.
+- Keep Evidence, Hypothesis, Bridge, Assumption and Model Output separate. Every compiled valuation assumption needs a sourced economic bridge and a verification/kill condition.
+- Current target share price and Street forecasts/targets cannot set assumptions or probabilities. Load them only after audit and intrinsic freeze; use broker material before freeze only for permitted discovery/corroboration. A Street-discovered claim requires independent verification in a new run.
+- Fit target scenario probabilities using the target's own realized driver history and governed forward evidence. Peer panels may support Beta/PER market quantities. Do not invent equal weights, fabricate Monte Carlo, label a prior calibrated or use nearest-scenario-anchor counts as target probabilities.
+- If calibration remains unsupported, default to conditional scenarios without a probability-weighted expected value or specific buy price. A numeric prior-predictive result is permitted only when a registered evaluator and audit bind an explicit versioned governed prior, full probability/assumption sensitivities, a source-bound value and claims bridge, and a return-based entry policy. Label it as a governed analyst prior rather than calibrated target history; never let missing calibration silently reuse an older weighted target or buy price.
+- Preserve source timing, full material segment coverage, supported method routing, unit/currency/accounting consistency, funding and CAPEX double-count protection, EV-to-equity and dilution checks, blinded Red Team, audit/freeze and last-good-state protections.
 
 ### Reusable capacity-yield leveraged distributional APV route
 
-- Route an evidenced capacity×unit-yield business with material fixed operating commitments and debt/lease claims to the exact method `capacity_yield_levered/driver_distributional_apv`. Airline, shipping or another sector label is only an adapter; a company name, ticker or `target_id` may bind data but must never select a formula. Keep `airline_transport/traffic_yield_dcf` as a distinct legacy cross-check, never an alias or silent fallback for the new method.
-- Keep the reusable core separate from sector and company inputs. The core owns capacity×utilization×yield operating paths, variable-input and fixed-cost transmission, committed-asset/CAPEX/lease roll-forward, recursive target-driver distributions, APV, refinancing/dilution/distress waterfall, old-shareholder value distribution and governed entry-price arithmetic. Sector/company adapters own metric names and units, comparable-perimeter target history, structural breaks, asset and claim schedules, capital-action evidence and SOTP declarations.
-- Permit a self-history distribution only after same-frequency target-company history passes rolling-origin proper-score, interval-coverage, dependence-reproduction and seed/draw stability gates. When a merger makes current-group history too short, permit a `COMPOSED_SEGMENT_POSTERIOR` only if each material predecessor/segment passes its own history gate, a source-bound transaction bridge reconciles the current perimeter, and merger-specific outcomes are isolated as mutually exclusive `GOVERNED_EVENT_PRIOR` branches with prior-source and full sensitivity disclosure. Never fabricate historical pro-forma rows or call an analyst prior calibrated. Peer-company operating outcomes cannot calibrate the target's path probabilities. Scenario labels summarize distribution regions and never create their probabilities.
-- Apply limited liability only to an explicit dated old-shareholder terminal payoff or evidenced distress waterfall. A report or point-DCF layer may not floor a negative scenario value to zero. Freeze P50, Mean, P20–P80, tail quantiles, distress/dilution risks and a versioned return/quantile entry policy to the same distribution hash before Street or current-price access.
+- Route an evidenced capacity×unit-yield business with material fixed operating commitments and debt/lease claims to `capacity_yield_levered/driver_distributional_apv`. Industry labels are only metric adapters; company name, ticker and `target_id` may bind data but never select a formula. Keep `airline_transport/traffic_yield_dcf` as a distinct legacy cross-check.
+- Keep the reusable core separate from sector/company inputs. The core owns capacity×utilization×unit-yield operating paths, fixed/variable cost transmission, committed-asset/CAPEX/lease roll-forward, recursive driver distributions, APV, refinancing/dilution/distress waterfall, old-shareholder value distribution and return-based entry arithmetic. Adapters own metric names, units, comparable-perimeter history, structural breaks, asset/claim schedules and SOTP declarations.
+- Permit a self-history distribution only after same-frequency target history passes rolling-origin proper-score, interval-coverage, dependence-reproduction and seed/draw stability gates. Permit `COMPOSED_SEGMENT_POSTERIOR` after a merger only when every material predecessor/segment passes its own history gate and a source-bound transaction bridge reconciles the current perimeter. Isolate data-short merger outcomes as mutually exclusive `GOVERNED_EVENT_PRIOR` branches with the prior source and full sensitivity disclosure. Never fabricate pro-forma history or call an analyst prior calibrated.
+- Apply limited liability only to an explicit dated old-shareholder terminal payoff or evidenced distress waterfall. A report or point-DCF layer may not floor negative present-value scenarios to zero. Freeze P50, mean, tail quantiles, distress/dilution risks and the versioned entry policy to the same distribution hash before Street or current-price access.
 
-## Verification
+Read the applicable sections of `docs/VALUATION_RUNTIME_DETAILS.md` for source placement, claim-to-value binding, Industry DNA, funding, Beta, WACC, PER and cross-method requirements. Read `docs/VALUATION_AGENT_CONTRACTS.md` for runtime/calibration gates and revision/delivery details. These constraints remain mandatory when relevant; a short entrypoint does not relax them.
 
-Before reporting/publishing model changes:
+## Revisions and delivery
 
-```bash
-pytest -q
-valuation-engine examples/oci/company.yaml
-valuation-engine "분석시작 OCI홀딩스" --state-root <temporary-path>
-```
+Use the smallest supported affected path. Preserve unchanged research, but changed economic inputs must reach new calculations, reviewed investor text and regenerated artifacts. Do not patch a report's numbers manually, skip the orchestrator or reuse an older bundle. A changed claim with unchanged value needs an explained, verified reference-only classification.
 
-Confirm: OCI regression ±1 KRW unless intentionally changed; market/Street isolation; probability sum; units; EV-to-equity; CAPEX/economic-path/funding double counts; beta small/noisy L4 shrinkage; WACC currency/target-structure/customer-advance/terminal gates; positive normalized EPS; Expansion PER evidence gate; residual-not-raw-PER pooling; DCF–PER consistency; blocked-run suppression; and byte-identical root/canonical Skills.
+Before final delivery, confirm full material scope, audit/freeze and saved state; read the actual versioned Korean investor report and verify its claims and figures against the same run. Confirm both SVG cards, immutable bundle/manifest and delivery link. The report order is 투자 요약 → 가치평가 → 핵심 가정과 위험 → 증권사·시장 비교 → 원문 출처. Conclusions, scenario assumptions, risks, dates and original-source links belong in the report; hashes, internal paths, JSON and maintenance identifiers do not belong in its narrative.
 
-## Methodology status
-
-The v0.4 finance-calibration architecture remains **academically grounded engineering synthesis**. v0.5.2 adds evidence-governed Industry Knowledge, Broker Research, Freshness/Revision Watch and Signal Intelligence orchestration; these are repository-specific operating contracts, not a claim that every causal mechanism is academically established. Established components include Blume/Vasicek beta shrinkage, non-synchronous-trading corrections, unlever/relever bottom-up beta practice, standard WACC consistency principles, and fundamental/forward-earnings multiple literature. The L1→L4 Economic-Twin taxonomy, customer-advance transmission gate, three-layer Hierarchical Warranted PER, residual pooling orchestration and cross-method fail-closed gates are repository-specific synthesis. See `docs/V04_ROCKETSLA_EXTENSION.md` for references, practical value and limitations.
-
-## Report contract
-
-Lead with conclusion, thesis delta, frozen industry-knowledge/source-freshness status, known vs underappreciated evidence, strongest Red Team objection, funded-demand constraints when material, scenario worldviews, Core/Expected/Verified Bull values, Beta/WACC/PER audit summary, frozen intrinsic value, Street Gap/Consensus Lag or reverse-check, current-market comparison, kill conditions, next verification events, data quality and limitations. Clearly label fixture, stale, uncalibrated, contract-only or missing evidence.
-
-The Control Plane owns five major progress gates: Evidence and Routing; Insight and Challenge; Assumptions, Method and Risk; Valuation, Audit and Freeze; and Post-Freeze Comparison and Persistence. At completion or blocking termination of each gate, emit only status, decisive result, residual risk and next action. Preserve all 33 stage identities/statuses in the compact verified audit appendix and exact rationales/output keys in the immutable trace artifact instead of streaming them as routine progress. Target 3–4 pages for the decision-facing body, 1–2 pages for the audit appendix and 6 pages maximum combined. Use body text of at least 13pt, primary headings of at least 22pt and section headings of at least 18pt; dense wide tables are forbidden. Never shorten by hiding a material blocker, uncertainty or integrity record.
-
-Source provenance is mandatory and exempt from omission. Every active Evidence claim and each reported identity, Beta, WACC, PER, Street and market reference must map to a directly clickable HTTP(S) original-source link. Group claims that share one document into one compact source entry with covered metrics and effective dates; when a source covers many records, show the count and representative metrics while retaining every exact Evidence ID/metric/date mapping in the immutable Evidence Ledger. A missing, non-HTTP or credential-bearing source reference blocks a `LIVE_PRIMARY` final report.
-
-The user-facing final report is Korean by default. Keep technical IDs and original-source names intact, but render headings, conclusions, explanations and gate summaries in Korean. The decision-facing body must use a Korean brokerage-report order—투자 요약 → 가치평가 → 핵심 가정과 위험 → 증권사·시장 비교 → 원문 출처—and appear before the audit appendix. The first-screen `투자 요약` is the primary investment report, not a preface: it must show 투자판단, 현재가, 기준 내재가치, 가치평가 범위, a one-sentence conclusion, no more than three investment points, and the conditions that strengthen, weaken, or unlock action. Raw stage IDs, enums and hashes belong only in collapsed technical detail or immutable machine artifacts; visible stage names and statuses use Korean labels. Put LLM-authored environment-change/company-strength reasoning in a separate `인공지능 인사이트` section capped at 1,000 characters; deterministic assumptions, calculations, Audit and Freeze results stay outside it. Save the complete typed insight in `context_strength_linkages.json`.
-
-Every successful final report includes two deterministic SVG cards generated from the same immutable run payload: `회사 강점·투자 결론·가치평가` and `가치평가 가정·위험·출처`. Count both cards inside the 3–4 page main-body target, not in addition to the six-page cap. The cards must preserve direct source access. When probability calibration or a governed entry rule is unavailable, show scenario values and current price but explicitly withhold a specific buy price.
+Deliver the actual verified report, not a plan or a rewritten chat substitute. State known limitations plainly. Do not claim live-company validation from fixture tests or that a pending merge/CI has finished.
