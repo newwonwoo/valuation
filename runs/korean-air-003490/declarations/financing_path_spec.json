@@ -1,0 +1,189 @@
+{
+  "schema_version": "financing-path-spec/v1",
+  "target_id": "KR:DART:00113526",
+  "as_of": "2026-09-13",
+  "reporting_currency": "KRW",
+  "balance_sheet_date": "2026-06-30",
+  "schedule_status": "PARTIAL_PRIMARY_SOURCE_RECONCILIATION",
+  "opening_liquidity": {
+    "cash_and_cash_equivalents": 2601185116110,
+    "short_term_financial_assets": 2820684411001,
+    "known_restricted_KRW_deposits": 89781000000,
+    "known_restricted_USD_deposits": 1614000,
+    "minimum_operating_cash": null,
+    "minimum_operating_cash_status": "NOT_DISCLOSED_DO_NOT_ASSUME_ZERO",
+    "source_ref": "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/audita_20262Q.pdf"
+  },
+  "claim_balance_reconciliation_KRW_million": {
+    "short_term_borrowings": 2118103,
+    "current_portion_long_term_borrowings": 1911222,
+    "noncurrent_long_term_borrowings": 3029261,
+    "current_bonds": 804541,
+    "noncurrent_bonds": 2981047,
+    "current_asset_backed_borrowings": 129978,
+    "noncurrent_asset_backed_borrowings": 0,
+    "current_lease_liabilities": 2271812,
+    "noncurrent_lease_liabilities": 11400593,
+    "total_debt_including_leases": 24646557,
+    "source_ref": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=44&offset=1267716&length=474227&dtd=dart4.xsd",
+    "source_hashes": [
+      "6cc8a8ca90f36335b64b2c9fbd44b3006566e1757032310f0bb3230d4542dfed",
+      "b630c5c9bbfd8be37664f1e84303a130f96db832132c9bd9bf34616b4e20dd2f"
+    ]
+  },
+  "lease_payment_buckets_KRW_million": [
+    {
+      "start_exclusive": "2026-06-30",
+      "end_inclusive": "2027-06-30",
+      "undiscounted_payment": 2400466
+    },
+    {
+      "start_exclusive": "2027-06-30",
+      "end_inclusive": "2031-06-30",
+      "undiscounted_payment": 6888909
+    },
+    {
+      "start_exclusive": "2031-06-30",
+      "end_inclusive": null,
+      "undiscounted_payment": 6801263
+    }
+  ],
+  "lease_reconciliation_KRW_million": {
+    "undiscounted_total_payments": 16090638,
+    "present_value_discount": -2418233,
+    "recognized_lease_liability": 13672405,
+    "current_lease_liability": 2271812,
+    "noncurrent_lease_liability": 11400593,
+    "source_ref": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=45&offset=1741943&length=107303&dtd=dart4.xsd",
+    "source_hash": "b630c5c9bbfd8be37664f1e84303a130f96db832132c9bd9bf34616b4e20dd2f"
+  },
+  "bond_schedule_basis": "nominal_principal",
+  "bond_schedule_KRW_million": [
+    {"series": "104", "maturity": "2026-07-27", "principal": 95198, "coupon": 0.0122, "guarantee": "하나은행"},
+    {"series": "105-2", "maturity": "2026-11-10", "principal": 120000, "coupon": 0.0540, "guarantee": null},
+    {"series": "106-2", "maturity": "2027-02-26", "principal": 210000, "coupon": 0.0450, "guarantee": null},
+    {"series": "106-3", "maturity": "2029-02-28", "principal": 90000, "coupon": 0.0479, "guarantee": null},
+    {"series": "107-2", "maturity": "2027-06-25", "principal": 227000, "coupon": 0.0399, "guarantee": null},
+    {"series": "107-3", "maturity": "2029-06-25", "principal": 84000, "coupon": 0.0416, "guarantee": null},
+    {"series": "108-1", "maturity": "2027-10-22", "principal": 100000, "coupon": 0.0370, "guarantee": null},
+    {"series": "108-2", "maturity": "2029-10-23", "principal": 50000, "coupon": 0.0414, "guarantee": null},
+    {"series": "109", "maturity": "2028-01-24", "principal": 285594, "coupon": 0.0116, "guarantee": "한국수출입은행"},
+    {"series": "110-1", "maturity": "2028-01-31", "principal": 287000, "coupon": 0.0349, "guarantee": null},
+    {"series": "110-2", "maturity": "2030-01-31", "principal": 63000, "coupon": 0.0398, "guarantee": null},
+    {"series": "106-private", "maturity": "2026-12-24", "principal": 50000, "coupon": 0.0487, "guarantee": null},
+    {"series": "111-1", "maturity": "2027-05-28", "principal": 20000, "coupon": 0.0293, "guarantee": null},
+    {"series": "111-2", "maturity": "2028-05-26", "principal": 230000, "coupon": 0.0312, "guarantee": null},
+    {"series": "111-3", "maturity": "2030-05-28", "principal": 100000, "coupon": 0.0357, "guarantee": null},
+    {"series": "112-1", "maturity": "2028-09-29", "principal": 185000, "coupon": 0.0305, "guarantee": null},
+    {"series": "112-2", "maturity": "2030-09-30", "principal": 85000, "coupon": 0.0332, "guarantee": null},
+    {"series": "112-3", "maturity": "2032-09-30", "principal": 30000, "coupon": 0.0373, "guarantee": null},
+    {"series": "113", "maturity": "2030-09-30", "principal": 462450, "coupon": 0.0400, "guarantee": "한국산업은행"},
+    {"series": "AirBusan-7-private", "maturity": "2026-11-20", "principal": 40000, "coupon": 0.0510, "guarantee": null},
+    {"series": "AirSeoul-1-private", "maturity": "2026-11-25", "principal": 20000, "coupon": 0.0500, "guarantee": null},
+    {"series": "AirSeoul-2-private", "maturity": "2027-06-10", "principal": 8000, "coupon": 0.0530, "guarantee": null},
+    {"series": "AirSeoul-3-private", "maturity": "2027-06-11", "principal": 10000, "coupon": 0.0520, "guarantee": null},
+    {"series": "114", "maturity": "2028-11-13", "principal": 190933, "coupon": 0.0043, "guarantee": "한국수출입은행"},
+    {"series": "115-1", "maturity": "2029-03-09", "principal": 232000, "coupon": 0.0439, "guarantee": null},
+    {"series": "115-2", "maturity": "2031-03-10", "principal": 72000, "coupon": 0.0456, "guarantee": null},
+    {"series": "116", "maturity": "2029-04-10", "principal": 50000, "coupon": 0.0431, "guarantee": null},
+    {"series": "117", "maturity": "2029-04-13", "principal": 10000, "coupon": 0.0431, "guarantee": null},
+    {"series": "118-1", "maturity": "2028-06-09", "principal": 205000, "coupon": 0.0454, "guarantee": null},
+    {"series": "118-2", "maturity": "2029-06-11", "principal": 195000, "coupon": 0.0471, "guarantee": null}
+  ],
+  "bond_schedule_reconciliation_KRW_million": {
+    "nominal_principal_total": 3807175,
+    "carrying_amount_total": 3785588,
+    "present_value_discount": -21587
+  },
+  "asset_backed_borrowing": {
+    "maturity": "2026-12-15",
+    "nominal_principal_KRW_million": 131250,
+    "carrying_amount_KRW_million": 129978,
+    "collateral": "domestic passenger-card receivables and mileage settlement receivables",
+    "early_maturity_trigger": "Asiana merger agreement",
+    "source_ref": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=44&offset=1267716&length=474227&dtd=dart4.xsd"
+  },
+  "bank_borrowing_schedule": {
+    "gross_principal_KRW_million": 4940483,
+    "due_within_one_year_KRW_million": 1911222,
+    "noncurrent_KRW_million": 3029261,
+    "later_annual_principal_schedule": null,
+    "status": "FINAL_MATURITIES_DISCLOSED_BUT_INTERIM_AMORTIZATION_BY_YEAR_NOT_DISCLOSED",
+    "do_not_use": "Do not place each facility's full outstanding balance at its disclosed final maturity while also subtracting the current portion."
+  },
+  "committed_facilities": [],
+  "committed_facilities_status": "NO_AUDITABLE_UNDRAWN_COMMITTED_LIMIT_FOUND_DO_NOT_ASSUME_AVAILABILITY",
+  "planned_capital_actions": [
+    {
+      "action_id": "MERGER_SHARE_ISSUE_2026",
+      "status": "PLANNED_NOT_CLOSED",
+      "planned_effective_date": "2026-12-16",
+      "new_common_shares": 20337721,
+      "preexisting_common_shares": 368220609,
+      "post_action_common_shares": 388558330,
+      "old_common_shareholder_retention": 0.9476585124297811,
+      "source_ref": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260626000005&dcmNo=11448313&eleId=3&offset=7532&length=37052&dtd=dart4.xsd",
+      "source_hash": "0ae601329a730c7d6b786c1c82d024331b3d11ab7f41367c046af89aa1ffb6cc"
+    },
+    {
+      "action_id": "BOND_122_REFINANCING",
+      "status": "SCHEDULED_NOT_CLOSED_AS_OF_RUN_DATE",
+      "payment_date": "2026-09-16",
+      "gross_proceeds_KRW_million": 350000,
+      "use_of_proceeds": [
+        {"purpose": "refinance bond 105-2", "KRW_million": 120000},
+        {"purpose": "aircraft lease payments from 2027-02-01 through 2027-06-30", "KRW_million": 250945}
+      ],
+      "note": "The uses exceed gross proceeds; the filing says fees and any shortage use company funds. Do not add gross proceeds to cash without the matched debt and lease payments.",
+      "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260910000442",
+      "source_hash": "be848f8bf07efd74c976ea23311d8a4079937cf5da2d741b97785001d323e595"
+    }
+  ],
+  "recovery_waterfall": {
+    "status": "NOT_FULLY_SPECIFIED",
+    "secured_borrowings_and_bonds_KRW_million": 2892601,
+    "collateral_by_claim_and_forced_sale_recovery": null,
+    "old_shareholder_recovery_floor": null,
+    "rule": "A zero or positive old-shareholder recovery may be calculated only after collateral, senior claims, distress costs and asset proceeds are evidenced; no report-time zero floor is permitted."
+  },
+  "analyst_prior_schedule_completion": {
+    "prior_version": "korean-air-financing-gaps-20260913-v1",
+    "status": "WIDE_SENSITIVITY_NOT_CALIBRATED",
+    "source": "declarations/analyst_prior_sensitivity.json",
+    "minimum_operating_cash": {
+      "basis": "days_of_path_cash_operating_cost",
+      "sensitivity_days": [15, 30, 45]
+    },
+    "lease_one_to_five_year_bucket_allocation_cases": {
+      "front_loaded": [0.30, 0.25, 0.20, 0.15, 0.10],
+      "level": [0.20, 0.20, 0.20, 0.20, 0.20],
+      "back_loaded": [0.10, 0.15, 0.20, 0.25, 0.30],
+      "rule": "Multiply only the disclosed KRW6,888,909m one-to-five-year bucket by one case; do not change the bucket total."
+    },
+    "noncurrent_bank_principal_allocation_cases": {
+      "forecast_years_after_first_year": 4,
+      "front_loaded": [0.40, 0.30, 0.20, 0.10],
+      "level": [0.25, 0.25, 0.25, 0.25],
+      "back_loaded": [0.10, 0.20, 0.30, 0.40],
+      "rule": "Apply to the disclosed KRW3,029,261m noncurrent balance only; the KRW1,911,222m current portion remains in year one."
+    },
+    "committed_facility_available_amount": 0,
+    "committed_facility_rule": "Zero means no unverified facility is credited to liquidity; it is not a claim that the group has no facilities.",
+    "distress_asset_proceeds_ratio": {"minimum": 0.30, "mode": 0.50, "maximum": 0.70},
+    "distress_transaction_cost_ratio_of_proceeds": {"minimum": 0.05, "mode": 0.15, "maximum": 0.30},
+    "old_shareholder_recovery_rule": "Compute the residual after senior claims and distress costs. Do not set recovery to zero before the waterfall and do not apply a zero floor to present-date DCF values."
+  },
+  "unresolved_for_pathwise_financing": [
+    "bank-loan principal amortization by forecast year",
+    "lease payments for each individual year inside the disclosed one-to-five-year bucket",
+    "minimum operating cash",
+    "auditable undrawn committed refinancing facilities",
+    "claim-level collateral values and recovery priority",
+    "distress sale haircuts and transaction costs"
+  ],
+  "deterministic_route_usable": true,
+  "distributional_distress_route_authorized": false,
+  "hybrid_prior_expected_value_range_authorized": true,
+  "hybrid_prior_robust_entry_authorized": false,
+  "hybrid_output_label": "ANALYST_PRIOR_AMBIGUITY_SET_NOT_CALIBRATED_FINANCING_POSTERIOR"
+}

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<rect width="1200" height="630" fill="#0b1220"/>
+<rect x="48" y="48" width="1104" height="534" rx="24" fill="#111c31" stroke="#2f80ed" stroke-width="2"/>
+<text x="88" y="112" fill="#8fc5ff" font-size="34" font-family="sans-serif" font-weight="700">가정·위험·출처</text>
+<text x="88" y="174" fill="#f3f6fb" font-size="25" font-family="sans-serif">사건 prior 20% / 60% / 20% · 중앙 상태가 유일한 최빈값</text>
+<text x="88" y="227" fill="#f3f6fb" font-size="25" font-family="sans-serif">자산변동성 22% · 총청구액 25.696557조원 · 5년</text>
+<text x="88" y="280" fill="#f3f6fb" font-size="25" font-family="sans-serif">보고서 단계 0원 하한 없음 · 현재가는 내재가치 동결 후 비교</text>
+<text x="88" y="333" fill="#f3f6fb" font-size="25" font-family="sans-serif">주요 위험: 통합손실 · 리스/차입 차환 · 투자 후 현금흐름</text>
+<text x="88" y="386" fill="#f3f6fb" font-size="25" font-family="sans-serif">원문: 대한항공 IR · DART 반기보고서 · 합병 투자설명서</text>
+<text x="88" y="552" fill="#7f91ac" font-size="16" font-family="monospace">distribution 349b06908b6e5cb7e1b33887</text>
+</svg>

@@ -1,0 +1,130 @@
+{
+  "sources": {
+    "annual2025": {
+      "url": "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20254Q.pdf",
+      "report_date": "2026-03-11"
+    },
+    "half2026": {
+      "url": "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/audita_20262Q.pdf",
+      "report_date": "2026-08-13"
+    },
+    "ir2026q2": {
+      "url": "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/2026_2Q_IR_Report_ko.pdf",
+      "scope": "separate, preliminary"
+    },
+    "merger": {
+      "url": "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/shareholder_meeting_ko.pdf",
+      "report_date": "2026-06-19"
+    }
+  },
+  "unit": "KRW",
+  "scope": "consolidated unless stated",
+  "FY2025": {
+    "revenue": 25225542379502,
+    "ebit": 1113589428051,
+    "depreciation": 2737739724778,
+    "amortization": 117424139669,
+    "ebitda_derived": 3968753292498,
+    "cfo": 4075191178550,
+    "ppe_cash_acquisition": 4289140065128,
+    "intangible_cash_acquisition": 6979969630,
+    "lease_principal_paid": 2179684240828,
+    "interest_paid_financing": 828056137978,
+    "net_income_parent": 779673735522,
+    "cash": 1869988073408,
+    "short_term_financial_assets": 3474508250345,
+    "debt_including_leases_derived": 22488055479600,
+    "net_debt_cash_st_unadjusted_derived": 17143559155847,
+    "nci_book": 505062221015,
+    "common_issued": 368220661,
+    "preferred_issued": 1110794,
+    "pdf_pages_1based": [
+      10,
+      11,
+      12,
+      14,
+      15,
+      16,
+      74,
+      90
+    ]
+  },
+  "H12026": {
+    "revenue": 13888117795942,
+    "ebit": 310273431929,
+    "Q2_ebit": -207110889990,
+    "depreciation": 1451317975473,
+    "amortization": 58765687309,
+    "ebitda_derived": 1820357094711,
+    "cfo": 2753479947149,
+    "ppe_cash_acquisition": 2273364369778,
+    "intangible_cash_acquisition": 3351875138,
+    "lease_principal_paid": 1118499463877,
+    "interest_paid_financing": 461431506058,
+    "net_income_parent": -266065815767,
+    "cash": 2601185116110,
+    "short_term_financial_assets": 2820684411001,
+    "short_term_debt": 2118102740000,
+    "current_long_debt": 2845740693081,
+    "current_lease": 2271812087892,
+    "long_debt": 3029260890737,
+    "bonds": 2981046896858,
+    "noncurrent_lease": 11400593147377,
+    "debt_including_leases_derived": 24646556455945,
+    "net_debt_cash_st_unadjusted_derived": 19224686928834,
+    "nci_book": 252744277299,
+    "nci_asiana_book": -79203000000,
+    "restricted_short_term_krw": 89781000000,
+    "restricted_short_term_usd": 1614000,
+    "aerospace_revenue": 462301000000,
+    "aerospace_ebit": 36712000000,
+    "asiana_subconsolidated_revenue_pre_elimination": 3524559000000,
+    "asiana_subconsolidated_ebit_pre_elimination": -408636000000,
+    "pdf_pages_1based": [
+      6,
+      7,
+      8,
+      10,
+      11,
+      12,
+      15,
+      17,
+      22,
+      23,
+      60
+    ]
+  },
+  "H12025_comparative": {
+    "revenue": 12702567826636,
+    "ebit": 801130020209,
+    "depreciation": 1335720511201,
+    "amortization": 57431014869,
+    "cfo": 2303052185270,
+    "ppe_cash_acquisition": 1956834095059,
+    "intangible_cash_acquisition": 2884746444
+  },
+  "merger": {
+    "share_exchange_ratio": "0.2736432",
+    "new_issue_existing_shares_ratio_rounded": "0.0552",
+    "target_launch": "2026-12-17",
+    "board_approval_observed": "2026-08-12",
+    "annual_synergy_company_plan_krw": 300000000000,
+    "asiana_owned_shares_no_new_issue": 131578947,
+    "pdf_pages_1based": [
+      5,
+      7,
+      9
+    ]
+  },
+  "warnings": [
+    "2026Q2 IR profit261.8bn is separate, consolidated loss207.110889990bn; do not mix.",
+    "CFO excludes financing interest and lease principal; CFO less cash CAPEX is not equity FCF.",
+    "Lease debt included: model must use consistent lease CAPEX/D&A; future ROU additions not captured by cash CAPEX.",
+    "NCI book is not independently estimated fair value; Asiana NCI negative book. Do not remove NCI and dilute simultaneously without bridge.",
+    "Restricted deposits not free cash. Net-debt arithmetic shown is unadjusted.",
+    "Company300bn synergy includes interest savings; not entirely EBIT.",
+    "2024 income consolidation scope differs from2025 after Dec2024 Asiana acquisition.",
+    "Publication dates are report signatures; first-seen in this research2026-09-13.",
+    "Official PDF web read succeeded, local direct downloads returned timeout/proxy errors; no claim of PDF storage success."
+  ]
+}

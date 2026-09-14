@@ -2,6 +2,15 @@ version: 1.0
 principle: Route by economic DNA before sector label. Segment-first and multi-label;
   never generic-DCF fallback.
 economic_archetypes:
+  service_operations:
+    drivers: [service_revenue, operating_income, depreciation_amortization, maintenance_capex, working_capital, customer_concentration, activity_mix]
+    leading_indicators: [contract_renewals, labor_cost, customer_activity, utilization]
+  airline_transport:
+    drivers: [passenger_capacity, passenger_traffic, passenger_yield, cargo_traffic, cargo_yield, fuel_cost, nonfuel_operating_cost, fleet_capex, lease_liabilities]
+    leading_indicators: [forward_bookings, passenger_load_factor, cargo_load_factor, jet_fuel_price, aircraft_deliveries]
+  capacity_yield_levered:
+    drivers: [service_capacity, realized_volume, utilization_or_load, realized_unit_yield, variable_input_cost, nonvariable_operating_cost, committed_asset_capex, lease_liabilities, debt_maturities, refinancing_capacity]
+    leading_indicators: [forward_demand, utilization_or_load, unit_yield, input_cost, asset_deliveries, lease_and_debt_maturities, refinancing_terms]
   contracted_backlog:
     drivers:
     - backlog
@@ -274,6 +283,7 @@ sector_adapters_phase1:
   - distributed_power
   - project_developer
   software:
+  - it_services
   - saas
   - usage_cloud
   - database
@@ -300,12 +310,14 @@ sector_adapters_phase1:
   - distributor
   - ecommerce
   transport_industrial:
+  - airline
   - automotive_oem
   - auto_parts
   - shipbuilder
   - shipping
   - aerospace_defense
   real_assets:
+  - property_hospitality
   - reit
   - oil_gas_ep
   - mining

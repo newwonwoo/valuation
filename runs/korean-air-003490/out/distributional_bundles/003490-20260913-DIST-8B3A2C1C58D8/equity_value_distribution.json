@@ -1,0 +1,59 @@
+{
+  "schema_version": "equity-value-distribution/governed-event-v1",
+  "target_id": "KR:DART:00113526",
+  "as_of": "2026-09-13",
+  "authorization_status": "GOVERNED_EVENT_PRIOR_WITH_AUDITED_SCENARIO_VALUE_BRIDGE",
+  "not_claimed": "CALIBRATED_CURRENT_GROUP_HISTORY",
+  "branch_values_per_share": [
+    {
+      "branch_id": "Down",
+      "value": "3740.700274909336221178274991",
+      "probability": "0.20"
+    },
+    {
+      "branch_id": "Central",
+      "value": "22286.09088095281227069568081",
+      "probability": "0.60"
+    },
+    {
+      "branch_id": "Upside",
+      "value": "51549.68115649902882604854902",
+      "probability": "0.20"
+    }
+  ],
+  "p20": "3740.700274909336221178274991",
+  "p50": "22286.09088095281227069568081",
+  "p80": "22286.09088095281227069568081",
+  "p10": "3740.700274909336221178274991",
+  "p90": "51549.68115649902882604854902",
+  "probability_weighted_mean": "24429.73081485336037186277329",
+  "distribution_hash": "349b06908b6e5cb7e1b33887971dd018dd1833508ccbdc3b17779e8fc6fa0fc4",
+  "source_bridge_hash": "f44fb29b9f1bc60ba2b40d1b55c155ab2300b619a43816add3cb754a3e796ed7",
+  "intrinsic_freeze_hash": "768f0d1eb65f06246d04e200cd20faac5f0eb2dcbef8cbfdce8220a192acb937",
+  "probability_sensitivity": [
+    {
+      "label": "downside_heavier",
+      "probability_weighted_mean": "22575.19175424901276691103270"
+    },
+    {
+      "label": "governed_base",
+      "probability_weighted_mean": "24429.73081485336037186277329"
+    },
+    {
+      "label": "execution_success",
+      "probability_weighted_mean": "26820.17985893284500210628700"
+    }
+  ],
+  "asset_volatility": "0.22",
+  "asset_volatility_basis": "Rounded annualized log-width implied by the audited Down/Upside business-value envelope over five years; no current share price is used.",
+  "gross_claim_face_value_KRW": "25696557000000",
+  "claim_bridge": {
+    "disclosed_debt_including_leases_KRW": "24646557000000",
+    "run_date_funding_bridge_KRW": "700000000000",
+    "parent_noncontrolling_and_other_claim_KRW": "350000000000",
+    "eligible_liquid_assets_KRW": "5329757000000",
+    "legacy_net_claim_proxy_KRW": "20366800000000",
+    "note": "The structural model adds eligible liquid assets back to enterprise assets and uses gross claims as the strike. The difference reproduces the audited legacy net-claim bridge exactly; it does not use net debt itself as debt face value."
+  },
+  "limited_liability_treatment": "DATED_STRUCTURAL_RESIDUAL_CLAIM; NO REPORT_TIME POINT_DCF FLOOR"
+}

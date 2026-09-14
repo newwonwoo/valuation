@@ -4,6 +4,26 @@ purpose: Metric-keyword screens the generic scanner runners apply to the run's o
   silent pass. External scan sources remain provider work; this file only routes attention
   over collected Evidence.
 screens:
+  # Module-requirement aliases use the same ledger-only evidence contract.
+  CUSTOMER_ADVANCE:
+    metric_keywords: [customer_advance, contract_liabilit]
+  LEAD_TIME_SLOT:
+    metric_keywords: [lead_time, slot, delivery_schedule]
+  LEASE_DEBT_MATURITY:
+    metric_keywords: [lease, debt, maturit]
+  NAV_CAP_RATE:
+    metric_keywords: [asset_value, cap_rate, noi, ffo]
+  SERVICE_ACTIVITY_MIX:
+    metric_keywords: [service_revenue, activity_mix, customer_concentration]
+  SERVICE_CASH_CONVERSION:
+    metric_keywords: [operating_income, depreciation_amortization, maintenance_capex, working_capital]
+  # Ledger-only attention screens, not completed external airline research.
+  AIRLINE_TRAFFIC_YIELD:
+    metric_keywords: [passenger_capacity, passenger_traffic, passenger_yield, cargo_traffic, cargo_yield]
+  AIRLINE_FUEL_COST:
+    metric_keywords: [fuel_cost, nonfuel_operating_cost]
+  AIRLINE_FLEET_FUNDING:
+    metric_keywords: [fleet_capex, lease_liabilities]
   AD_MONETIZATION:
     metric_keywords:
     - ad_revenue

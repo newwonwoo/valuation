@@ -1,0 +1,127 @@
+{
+  "schema_version": "post-freeze-broker-comparison-result/v1",
+  "target_id": "KR:DART:00113526",
+  "as_of": "2026-09-13",
+  "intrinsic_freeze_hash": "768f0d1eb65f06246d04e200cd20faac5f0eb2dcbef8cbfdce8220a192acb937",
+  "post_freeze_comparison_hash": "5be102c78550f8fb97a6863ce4e0672bdec3f18ba57c6d661fa5c0e36b5917fa",
+  "intrinsic_distribution_unchanged": true,
+  "market": {
+    "date": "2026-09-11",
+    "price": "28950",
+    "currency": "KRW"
+  },
+  "sample_policy": "Latest publicly accessible, content-verified report found per included broker on or before the cutoff. This is a three-report comparison sample, not the full sell-side consensus.",
+  "coverage_limit": "Three verified public reports only. It does not establish that no other or newer broker research existed before the cutoff. The LS document is an author-identifiable full-report mirror rather than a broker-hosted copy.",
+  "sample": {
+    "report_count": 3,
+    "latest_report_date": "2026-09-08",
+    "min_target_price": "33000",
+    "median_target_price": "37000",
+    "mean_target_price": "37000",
+    "max_target_price": "41000",
+    "median_premium_vs_market_pct": "27.80656303972366148531951640",
+    "median_premium_vs_p50_pct": "66.02283548804281844206957050",
+    "median_premium_vs_probability_weighted_mean_pct": "51.45480022032773575544233110",
+    "probability_weighted_mean_discount_to_median_pct": "33.97370050039632331928980192"
+  },
+  "reports": [
+    {
+      "institution": "미래에셋증권",
+      "analyst": "류제현",
+      "report_date": "2026-09-08",
+      "title": "통합을 앞두고 나타난 원화 강세",
+      "rating": "매수 유지",
+      "target_price": "37000",
+      "target_price_currency": "KRW",
+      "target_upside_vs_market_pct": "27.80656303972366148531951640",
+      "premium_vs_p50_pct": "66.02283548804281844206957050",
+      "premium_vs_probability_weighted_mean_pct": "51.45480022032773575544233110",
+      "valuation_method": "PBR",
+      "base_year": "Forward book value; exact reference date not disclosed in the public page body",
+      "target_multiple": "PBR 1.1x",
+      "disclosed_estimates": [
+        {
+          "metric": "consolidated_revenue",
+          "period": "3Q26E",
+          "value": 7259.5,
+          "unit": "KRW billion"
+        },
+        {
+          "metric": "consolidated_operating_profit",
+          "period": "3Q26E",
+          "value": 488.7,
+          "unit": "KRW billion"
+        },
+        {
+          "metric": "consolidated_operating_margin",
+          "period": "3Q26E",
+          "value": 6.7,
+          "unit": "percent"
+        }
+      ],
+      "valuation_basis_note": "목표 PBR 1.1배는 과거 0.7~1.0배 밴드 상단을 소폭 웃돈다. 통합 후 ROE 개선과 화물 수익성으로 프리미엄을 정당화한다.",
+      "load_bearing_assumption": "3Q26 연결 영업이익 4,887억원과 영업이익률 6.7%, 국제선 RPK +8.3% YoY 및 Yield +9.1% YoY",
+      "source_url": "https://securities.miraeasset.com/bbs/download/2147190.pdf?attachmentId=2147190",
+      "access_quality": "Public broker-hosted PDF link and official report page body verified"
+    },
+    {
+      "institution": "하나증권",
+      "analyst": "안도현",
+      "report_date": "2026-08-18",
+      "title": "통합 진에어, 메가 LCC 탄생의 의미",
+      "rating": "BUY 유지",
+      "target_price": "41000",
+      "target_price_currency": "KRW",
+      "target_upside_vs_market_pct": "41.62348877374784110535405870",
+      "premium_vs_p50_pct": "83.97125013539879881418519980",
+      "premium_vs_probability_weighted_mean_pct": "67.82829213603884232359825880",
+      "valuation_method": "NOT_DISCLOSED",
+      "base_year": "NOT_DISCLOSED",
+      "target_multiple": "NOT_DISCLOSED",
+      "disclosed_estimates": [],
+      "valuation_basis_note": "산업 보고서의 Top Pick 표에 대한항공 목표가 41,000원이 제시되지만 목표 산식·배수·기준연도는 공개 본문에 없다.",
+      "load_bearing_assumption": "통합 LCC 합병 효과는 2028년부터 본격화; 비용보다 운임·탑승률·공급 증가를 우선 확인",
+      "source_url": "https://file.hanaw.com/download/research/FileServer/WEB/industry/industry/2026/08/14/transport_260814.pdf",
+      "access_quality": "Public broker-hosted PDF verified"
+    },
+    {
+      "institution": "LS증권",
+      "analyst": "이재혁",
+      "report_date": "2026-07-15",
+      "title": "2Q26 Review: 어디서나 당당하게 걷기",
+      "rating": "Buy 유지",
+      "target_price": "33000",
+      "target_price_currency": "KRW",
+      "target_upside_vs_market_pct": "13.98963730569948186528497410",
+      "premium_vs_p50_pct": "48.07442084068683806995394130",
+      "premium_vs_probability_weighted_mean_pct": "35.08130830461662918728640350",
+      "valuation_method": "NOT_DISCLOSED",
+      "base_year": "NOT_DISCLOSED",
+      "target_multiple": "NOT_DISCLOSED",
+      "disclosed_estimates": [
+        {
+          "metric": "consolidated_revenue",
+          "period": "FY2027E",
+          "value": 29128,
+          "unit": "KRW billion"
+        },
+        {
+          "metric": "consolidated_operating_profit",
+          "period": "FY2027E",
+          "value": 2663,
+          "unit": "KRW billion"
+        },
+        {
+          "metric": "consolidated_operating_margin",
+          "period": "FY2027E",
+          "value": 9.1,
+          "unit": "percent"
+        }
+      ],
+      "valuation_basis_note": "목표가 33,000원을 유지했으나 이 보고서 공개 본문에는 선택한 목표 배수·산식·기준연도가 제시되지 않는다.",
+      "load_bearing_assumption": "FY2027 연결 영업이익 2.663조원과 영업이익률 9.1%; 2027년 조정 항공유 105달러/배럴 및 원/달러 1,483원",
+      "source_url": "https://file.alphasquare.co.kr/media/pdfs/company-report/260715_KAL_2Q26_Review.pdf",
+      "access_quality": "Broker-authored PDF verified at a public AlphaSquare mirror; original LS host was not retrieved"
+    }
+  ]
+}

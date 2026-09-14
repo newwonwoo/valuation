@@ -204,7 +204,7 @@ def test_warranted_per_is_withheld_not_approximated(full_run):
 
 
 def test_the_beta_wacc_split_of_the_families_and_the_declared_door():
-    """Nine of fourteen families require beta and WACC. They no longer dead-end:
+    """Ten of fifteen families require beta. Nine also require WACC. They no longer dead-end:
     ``GenericKRRuntimeSpec.declared_risk_path`` is the operator's declared door
     to the discount rate, and without it those stages still refuse to run —
     the split is between families that need the door and families that don't,
@@ -224,5 +224,5 @@ def test_the_beta_wacc_split_of_the_families_and_the_declared_door():
         "net_asset_value",
         "sotp",
     }
-    assert len(registry) - len(beta_free) == 9
+    assert len(registry) - len(beta_free) == 10
     assert "declared_risk_path" in GenericKRRuntimeSpec.__dataclass_fields__

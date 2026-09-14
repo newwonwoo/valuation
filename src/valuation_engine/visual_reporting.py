@@ -8,6 +8,10 @@ import textwrap
 from typing import Any
 
 from .context_strength_reporting import resolve_context_strength_linkage
+from .investor_report import (
+    entry_price_with_margin,
+    probability_weighted_equity_value,
+)
 from .report_localization import (
     evaluator_assumption_groups_ko,
     valuation_family_value_term_ko,
@@ -274,7 +278,12 @@ def _summary_card(data: dict[str, Any], filename: str) -> ReportVisual:
                     fill="#607582",
                 ),
                 _svg_text(
-                    _price_text(scenario.value_per_share, valuation.reporting_unit),
+                    _price_text(
+                        scenario.value_per_share
+                        if partial
+                        else max(Decimal("0"), scenario.value_per_share),
+                        valuation.reporting_unit,
+                    ),
                     x=x + 24,
                     y=y + 108,
                     size=34,
@@ -313,12 +322,27 @@ def _summary_card(data: dict[str, Any], filename: str) -> ReportVisual:
 
     scenario_set = data.get("bound_scenario_set")
     weighted = bool(getattr(scenario_set, "numeric_weighting_allowed", False))
-    expected = valuation.expected_value_per_share
-    if weighted and expected is not None:
+    equity_target = probability_weighted_equity_value(valuation, scenario_set)
+    margin = data.get("investor_entry_margin_of_safety")
+    if equity_target is not None and isinstance(margin, Decimal):
+        entry_price = entry_price_with_margin(equity_target, margin)
         entry_text = (
-            f"확률가중 기대값은 {_price_text(expected, valuation.reporting_unit)}입니다. "
-            "다만 별도 매수 규칙이 등록되지 않아 특정 매수가는 제시하지 않습니다."
+            f"확률가중 목표가 {_price_text(equity_target, valuation.reporting_unit)}, "
+            f"구체 매수가는 {_price_text(entry_price, valuation.reporting_unit)} 이하입니다. "
+            f"목표가 대비 {margin:.0%} 안전마진을 적용했습니다."
         )
+    elif equity_target is not None:
+        if any(item.value_per_share < 0 for item in valuation.scenarios):
+            entry_text = (
+                f"주주 유한책임 반영 확률가중 목표가는 "
+                f"{_price_text(equity_target, valuation.reporting_unit)}입니다. "
+                "다만 별도 매수 규칙이 등록되지 않아 특정 매수가는 제시하지 않습니다."
+            )
+        else:
+            entry_text = (
+                f"확률가중 기대값은 {_price_text(equity_target, valuation.reporting_unit)}입니다. "
+                "다만 별도 매수 규칙이 등록되지 않아 특정 매수가는 제시하지 않습니다."
+            )
     else:
         entry_text = (
             "실제 해결 이력 기반 확률 보정이 완료되지 않았습니다. "
@@ -789,6 +813,25 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
         None,
     )
     calibration = getattr(getattr(scenario_set, "calibration_status", None), "value", "UNCALIBRATED")
+    valuation = data.get("generic_valuation_result")
+    probability_target = (
+        probability_weighted_equity_value(valuation, scenario_set)
+        if isinstance(valuation, GenericValuationResult)
+        else None
+    )
+    entry_margin = data.get("investor_entry_margin_of_safety")
+    entry_price = (
+        entry_price_with_margin(probability_target, entry_margin)
+        if probability_target is not None and isinstance(entry_margin, Decimal)
+        else None
+    )
+    entry_detail = (
+        f"{_price_text(entry_price, valuation.reporting_unit)} 이하 "
+        f"(확률가중 목표가 {_price_text(probability_target, valuation.reporting_unit)}, "
+        f"안전마진 {entry_margin:.0%})"
+        if entry_price is not None and probability_target is not None
+        else "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"
+    )
     compilation = data.get("valuation_plan_compilation")
     if not isinstance(compilation, ValuationPlanCompilation):
         compilation = None
@@ -1179,14 +1222,14 @@ def _assumptions_card(data: dict[str, Any], filename: str) -> ReportVisual:
             ("평가방법", method_text),
             ("정확한 계산식", formula or "부문별 가치·귀속률·주식수로 결정론적 재계산"),
             ("확률 보정", "완료" if calibration == "CALIBRATED" else "미완료"),
-            ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
+            ("매수구간", entry_detail),
         )
         if multiple_table is not None
         else (
             ("평가방법", method_text),
             ("핵심 자본적지출", capex),
             ("생산능력 반영", project_text),
-            ("매수구간", "확률 보정 및 별도 진입 규칙 미충족 시 자동 산출 금지"),
+            ("매수구간", entry_detail),
         )
     )
     y = table_bottom + 60

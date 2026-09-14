@@ -1,0 +1,14 @@
+{
+  "companies": [
+    {
+      "corp_code": "00113526",
+      "corp_name": "대한항공",
+      "stock_code": "003490"
+    }
+  ],
+  "_provenance": {
+    "kind": "normalized_public_dart_metadata",
+    "not_api_response": true,
+    "checked_at": "2026-09-13"
+  }
+}

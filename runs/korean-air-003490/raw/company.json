@@ -1,0 +1,19 @@
+{
+  "status": "000",
+  "message": "공개 DART 기업개황 정규화",
+  "corp_code": "00113526",
+  "corp_name": "(주)대한항공",
+  "stock_name": "대한항공",
+  "stock_code": "003490",
+  "corp_cls": "Y",
+  "induty_code": "51100",
+  "acc_mt": "12",
+  "est_dt": "19620619",
+  "ceo_nm": "조원태 우기홍",
+  "adres": "서울특별시 강서구 하늘길 260",
+  "_provenance": {
+    "kind": "normalized_public_dart_metadata",
+    "not_api_response": true,
+    "checked_at": "2026-09-13"
+  }
+}

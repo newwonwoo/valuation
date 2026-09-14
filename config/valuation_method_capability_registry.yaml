@@ -1,4 +1,4 @@
-version: 1.2
+version: 1.4
 purpose: Classify each exact Industry DNA archetype/method binding by execution role and runtime family. Archetype permission remains authoritative in archetype_module_registry.yaml; this registry owns execution metadata only.
 execution_families:
   normalized_multiple:
@@ -28,6 +28,29 @@ execution_families:
     requires_beta: true
     requires_wacc: true
     canonical_refs: [src/valuation_engine/dcf_evaluators.py, docs/EXPLICIT_FCFF_DCF_EVALUATORS.md, tests/test_explicit_fcff_dcf_evaluators.py]
+  distributional_apv:
+    kind: aggregator
+    runtime_status: PARTIAL_RUNTIME
+    requires_beta: true
+    requires_wacc: false
+    stage: DETERMINISTIC_VALUATION
+    canonical_refs:
+      - src/valuation_engine/dynamic_driver_distribution.py
+      - src/valuation_engine/capacity_yield_operating_paths.py
+      - src/valuation_engine/levered_financing_paths.py
+      - src/valuation_engine/distributional_apv.py
+      - src/valuation_engine/distribution_route_policy.py
+      - src/valuation_engine/probability_ambiguity.py
+      - src/valuation_engine/payoff_model_ambiguity.py
+      - src/valuation_engine/entry_price.py
+      - src/valuation_engine/governed_event_distribution.py
+      - scripts/build_governed_distribution_report.py
+      - docs/KOREAN_AIR_DISTRIBUTIONAL_APV_DESIGN.md
+      - tests/test_capacity_yield_distribution_contract.py
+      - tests/test_capacity_yield_distributional_apv.py
+      - tests/test_payoff_model_ambiguity.py
+      - tests/test_governed_event_distribution.py
+      - tests/test_governed_distribution_report.py
   finite_life_npv:
     kind: segment_evaluator
     runtime_status: RUNTIME_READY
@@ -92,6 +115,12 @@ execution_families:
     canonical_refs: [src/valuation_engine/sotp.py, src/valuation_engine/valuation_execution.py, tests/test_generic_evaluator_sotp.py]
 
 bindings:
+  service_operations:
+    normalized_service_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+  airline_transport:
+    traffic_yield_dcf: {execution_family: explicit_fcff_dcf, output_kind: enterprise_value}
+  capacity_yield_levered:
+    driver_distributional_apv: {execution_family: distributional_apv, output_kind: equity_value_distribution}
   contracted_backlog:
     backlog_burn_dcf:
       execution_family: contracted_backlog_dcf

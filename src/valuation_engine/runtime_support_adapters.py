@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Callable
 
+from .assumption_compiler import CompiledAssumptionSet
+from .per_adapters import (LivePERInputs, PERApplicability, PERInputsLoader, _reject_target_market_leakage)
 from .control_plane import StageStatus
 from .llm_staff import RedTeamProposal
 from .module_plan import ModuleRequirementPlan
@@ -414,6 +416,8 @@ def recovery_aware_bridge_adapter(inner: StageAdapter) -> StageAdapter:
 
 def dcf_consistency_fingerprint_adapter(
     loader: DCFConsistencyFingerprintLoader | None,
+    *,
+    per_loader: PERInputsLoader | None = None,
 ) -> StageAdapter:
     def run(context: OrchestratorContext) -> StageExecutionResult:
         intent = context.data.get("valuation_method_intent")
@@ -429,6 +433,33 @@ def dcf_consistency_fingerprint_adapter(
                 "no Warranted PER cross-check requires a DCF fingerprint",
             )
         if loader is None:
+            # A potential archetype cross-check is not an applicable PER model.
+            # Only a validated, target-bound NOT_APPLICABLE answer can withhold
+            # this cross-method dependency. Missing or applicable PER stays blocked.
+            if per_loader is not None:
+                try:
+                    _reject_target_market_leakage(context)
+                    compiled = context.data.get("compiled_assumption_set")
+                    if not isinstance(compiled, CompiledAssumptionSet):
+                        raise ValueError("CompiledAssumptionSet is required before PER applicability")
+                    per_inputs = per_loader(context)
+                    if not isinstance(per_inputs, LivePERInputs):
+                        raise TypeError("PER loader must return LivePERInputs")
+                    per_inputs.validate()
+                    if per_inputs.target_id != compiled.target_id:
+                        raise ValueError("PER target_id must match CompiledAssumptionSet target")
+                    if per_inputs.applicability is PERApplicability.NOT_APPLICABLE:
+                        return StageExecutionResult(
+                            StageStatus.SKIPPED_NOT_APPLICABLE,
+                            "DCF cross-method fingerprint withheld: " + per_inputs.applicability_rationale,
+                            {"dcf_fingerprint_withholding_rationale": per_inputs.applicability_rationale},
+                        )
+                except Exception as exc:
+                    return StageExecutionResult(
+                        StageStatus.RECOVERY_REQUIRED,
+                        f"PER applicability precheck failed: {type(exc).__name__}: {exc}",
+                        blocking=True,
+                    )
             return StageExecutionResult(
                 StageStatus.NOT_IMPLEMENTED,
                 "Warranted PER requires a driver-specific DCF EconomicAssumptionFingerprint provider",

@@ -1,0 +1,39 @@
+{
+  "version": "korean-air-003490-v1",
+  "modules": [
+    {
+      "module_id": "passenger_transport",
+      "capacity_driver_id": "passenger_ask",
+      "unit_yield_driver_id": "passenger_yield",
+      "utilization_driver_id": "passenger_load_factor",
+      "economic_path_id": "passenger_capacity_yield"
+    },
+    {
+      "module_id": "cargo_transport",
+      "capacity_driver_id": "cargo_actk",
+      "unit_yield_driver_id": "cargo_yield",
+      "utilization_driver_id": "cargo_load_factor",
+      "economic_path_id": "cargo_capacity_yield"
+    }
+  ],
+  "variable_cost_rules": [
+    {
+      "rule_id": "aircraft_fuel_total",
+      "module_id": null,
+      "basis": "FIXED",
+      "factor_driver_ids": [
+        "fuel_consumption",
+        "jet_fuel_unit_price",
+        "fuel_fx_translation"
+      ],
+      "constant_factor": "1"
+    }
+  ],
+  "fixed_cost_driver_ids": [
+    "nonfuel_operating_expense"
+  ],
+  "depreciation_driver_id": "lease_adjusted_depreciation_and_amortization",
+  "owned_capex_driver_id": "cash_owned_asset_capex",
+  "lease_additions_driver_id": "noncash_lease_additions",
+  "change_in_working_capital_driver_id": "change_in_working_capital"
+}

@@ -1,0 +1,51 @@
+{
+  "June_actual": {
+    "source": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=44&offset=1267716&length=474227&dtd=dart4.xsd",
+    "publication_date": "2026-08-14",
+    "bonds": [
+      {
+        "series": "118-1",
+        "issued": "2026-06-11",
+        "maturity": "2028-06-09",
+        "coupon": "0.0454",
+        "amount_KRW": 205000000000,
+        "security": "unsecured"
+      },
+      {
+        "series": "118-2",
+        "issued": "2026-06-11",
+        "maturity": "2029-06-11",
+        "coupon": "0.0471",
+        "amount_KRW": 195000000000,
+        "security": "unsecured"
+      }
+    ]
+  },
+  "September_pending": {
+    "source": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260910000442",
+    "publication_date": "2026-09-10",
+    "subscription_and_payment_date": "2026-09-16",
+    "absolute_coupon_set_from_prior_business_day": "2026-09-15",
+    "absolute_coupon_status_asof_20260913": "NOT_YET_DETERMINED",
+    "credit_rating": "A0",
+    "rating_dates": [
+      "2026-09-02",
+      "2026-09-03"
+    ],
+    "bonds": [
+      {
+        "series": "122-1",
+        "maturity": "2028-09-15",
+        "amount_KRW": 170000000000,
+        "spread_to_issuer_2y_curve_bps": 0
+      },
+      {
+        "series": "122-2",
+        "maturity": "2029-09-14",
+        "amount_KRW": 180000000000,
+        "spread_to_issuer_3y_curve_bps": -3
+      }
+    ],
+    "proceeds": "refinance existing105-2bond120bn and leasepayments; do not addcashwithout offsetdebt"
+  }
+}

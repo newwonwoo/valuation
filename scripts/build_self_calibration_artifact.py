@@ -17,7 +17,7 @@ route that gets one without borrowing another company's distribution:
 Three inputs, and which is measured and which is declared is the whole point.
 
 * ``--observations`` is MEASURED: {"observations": [{period_end, published_at,
-  values, source_ref}]} read off the target's own filed statements. It is the
+  values, source_ref/source_refs}]} read off the target's own filed statements. It is the
   only thing the dispersion is fitted on, and it must be the target alone —
   peer rows have no place here.
 * ``--scenario-paths`` is DECLARED: {"paths": {scenario_id: {driver_id:
@@ -176,4 +176,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -1,0 +1,77 @@
+{
+ "current_conditioning_first_seen_at": "2026-08-14T09:00:00+09:00",
+ "current_conditioning_source_hash": "734774c2a8966bd373203ff1cb834b98210bb218df78804e1604a7273cd20358",
+ "current_conditioning_source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803",
+ "observation_periods": [
+  "2019-12-31",
+  "2020-12-31",
+  "2021-12-31",
+  "2022-12-31",
+  "2023-12-31",
+  "2024-12-31"
+ ],
+ "observation_source_refs": [
+  "https://kind.krx.co.kr/common/disclsviewer.do?acptno=20250310001201&langTpCd=0&method=search&orgid=G&rcpno=20250310001201&tran=Y",
+  "https://m.kisrating.com/fileDown.do?fileName=rs20220331-2.pdf&gubun=2&menuCd=R8",
+  "https://www.airportal.go.kr/file/htmlOpen/upload/airline/detail/%5B%EC%95%84%EC%8B%9C%EC%95%84%EB%82%98%ED%95%AD%EA%B3%B5%5D%5B%EC%A0%95%EC%A0%95%5D%EC%82%AC%EC%97%85%EB%B3%B4%EA%B3%A0%EC%84%9C%282022%29.pdf",
+  "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20204Q.pdf",
+  "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20214Q.pdf",
+  "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20224Q.pdf",
+  "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20234Q.pdf",
+  "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/audita-20244Q.pdf"
+ ],
+ "oos_windows": [
+  {
+   "evaluation_earliest_publication_at": "2022-03-31T00:00:00Z",
+   "evaluation_latest_publication_at": "2022-03-31T00:00:00Z",
+   "period_ends": [
+    "2019-12-31",
+    "2020-12-31",
+    "2021-12-31"
+   ],
+   "row_count": 3,
+   "split": "TRAIN"
+  },
+  {
+   "evaluation_earliest_publication_at": "2023-03-31T00:00:00Z",
+   "evaluation_latest_publication_at": "2023-03-31T00:00:00Z",
+   "period_ends": [
+    "2022-12-31"
+   ],
+   "row_count": 1,
+   "split": "VALIDATION",
+   "training_latest_publication_at": "2022-03-31T00:00:00Z"
+  },
+  {
+   "evaluation_earliest_publication_at": "2025-03-10T00:00:00Z",
+   "evaluation_latest_publication_at": "2025-03-10T00:00:00Z",
+   "period_ends": [
+    "2023-12-31"
+   ],
+   "row_count": 1,
+   "split": "HOLDOUT",
+   "training_latest_publication_at": "2022-03-31T00:00:00Z"
+  },
+  {
+   "evaluation_earliest_publication_at": "2025-03-12T00:00:00Z",
+   "evaluation_latest_publication_at": "2025-03-12T00:00:00Z",
+   "period_ends": [
+    "2024-12-31"
+   ],
+   "row_count": 1,
+   "split": "FINAL_OOS",
+   "training_latest_publication_at": "2022-03-31T00:00:00Z"
+  }
+ ],
+ "probability_source": "target_realized_dispersion_monte_carlo",
+ "scenario_anchor_policy": "operator_declared_scenario_driver_paths_v1",
+ "scenario_path_rationale": "Each path is airline EBIT divided by airline revenue in the filed-figure valuation model. EBIT includes the scenario's declared operating margin, merger synergy and integration cost, so it is comparable with the realized combined reported operating margin used for training.",
+ "self_calibrated": true,
+ "series_basis": "2019-2024 K-IFRS consolidated revenue and operating income for Korean Air and Asiana Airlines are added year by year to reconstruct the same two-airline economic perimeter before legal merger. The series ends before Korean Air's 2024-12-31 acquisition accounting; no post-acquisition reported year is mixed into training, and peer-company outcomes are excluded.",
+ "source_company_count": 1,
+ "source_provenance_hash": "feb89948a5c78258503b8770cc403e19f5815d71e71254386a526f410e01f8bb",
+ "source_row_count": 6,
+ "target_ticker": "003490",
+ "training_latest_publication_at": "2022-03-31T00:00:00Z",
+ "version": "1.0"
+}

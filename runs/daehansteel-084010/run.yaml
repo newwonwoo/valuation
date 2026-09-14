@@ -37,6 +37,7 @@ extra_required_evidence:
   - down_steel_terminal_growth
   - bull_steel_terminal_growth
 calibration:
+  legacy_replay_snapshot_hash: e38719c52a933b344ecd1b9d32ef641a8fc432c9d02429be2aa54545ccfca1f2
   cohort_key: kr.steel.long|5y_path|continuous_v1
   external_probability_source: continuous_financial_path_monte_carlo
   forecast_class: kr.steel.long.continuous_financial_path

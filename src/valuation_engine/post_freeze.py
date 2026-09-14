@@ -26,6 +26,8 @@ class ScenarioReferenceGap:
     reference_value_per_share: Decimal
     gap_per_share: Decimal
     gap_pct_of_reference: Decimal
+    comparison_equity_value_per_share: Decimal
+    limited_liability_floor_applied: bool
 
 
 @dataclass(frozen=True)
@@ -36,6 +38,7 @@ class ReferenceGapEnvelope:
     scenario_gaps: tuple[ScenarioReferenceGap, ...]
     expected_gap: ScenarioReferenceGap | None
     comparison_hash: str
+    expected_gap_withheld_reason: str | None = None
 
     def get(self, scenario_id: str) -> ScenarioReferenceGap:
         for item in self.scenario_gaps:
@@ -58,17 +61,22 @@ class MarketComparisonBundle:
 
 
 def _gap_point(scenario_id: str, intrinsic: Decimal, reference: Decimal) -> ScenarioReferenceGap:
-    if intrinsic <= 0:
-        raise ValueError(f"intrinsic value must be positive for {scenario_id}")
-    if reference <= 0:
-        raise ValueError("comparison reference must be positive")
-    gap = intrinsic - reference
+    if not intrinsic.is_finite():
+        raise ValueError(f"intrinsic value must be finite for {scenario_id}")
+    if not reference.is_finite() or reference <= 0:
+        raise ValueError("comparison reference must be finite and positive")
+    # Preserve the signed frozen residual. A limited-liability share cannot
+    # have a tradable price below zero; comparison is a distinct output only.
+    comparison_equity = max(Decimal("0"), intrinsic)
+    gap = comparison_equity - reference
     return ScenarioReferenceGap(
         scenario_id=scenario_id,
         intrinsic_value_per_share=intrinsic,
         reference_value_per_share=reference,
         gap_per_share=gap,
         gap_pct_of_reference=gap / reference,
+        comparison_equity_value_per_share=comparison_equity,
+        limited_liability_floor_applied=intrinsic < 0,
     )
 
 
@@ -96,9 +104,21 @@ def _envelope(
         _gap_point(item.scenario_id, item.value_per_share, reference_value)
         for item in valuation.scenarios
     )
+    expected_withheld = None
+    if valuation.expected_value_per_share is not None:
+        if not valuation.expected_value_per_share.is_finite():
+            raise ValueError("expected intrinsic value must be finite")
+        if (any(item.limited_liability_floor_applied for item in scenario_gaps)
+                or valuation.expected_value_per_share < 0):
+            # E[max(V, 0)] is not max(E[V], 0). The frozen result does not
+            # carry scenario weights, so do not fabricate a capped expectation.
+            expected_withheld = (
+                "Limited-liability expected comparison requires calibrated scenario "
+                "weights applied after each scenario floor; signed frozen expectation retained."
+            )
     expected_gap = (
         _gap_point("Expected", valuation.expected_value_per_share, reference_value)
-        if valuation.expected_value_per_share is not None
+        if valuation.expected_value_per_share is not None and expected_withheld is None
         else None
     )
     payload = "\n".join(
@@ -113,6 +133,8 @@ def _envelope(
             else f"expected={expected_gap.intrinsic_value_per_share}|{expected_gap.gap_per_share}|{expected_gap.gap_pct_of_reference}"
         ]
     )
+    if expected_withheld is not None:
+        payload += "\nexpected_withheld=" + expected_withheld
     return ReferenceGapEnvelope(
         reference_name=reference_name,
         reference_as_of=reference_as_of,
@@ -120,6 +142,7 @@ def _envelope(
         scenario_gaps=scenario_gaps,
         expected_gap=expected_gap,
         comparison_hash=sha256(payload.encode("utf-8")).hexdigest(),
+        expected_gap_withheld_reason=expected_withheld,
     )
 
 
@@ -139,8 +162,8 @@ def compare_generic_to_street(
         currency=consensus.target_price_currency,
     )
     expected_analysis = (
-        analyze_street_gap(float(valuation.expected_value_per_share), reports, drivers)
-        if valuation.expected_value_per_share is not None
+        analyze_street_gap(float(envelope.expected_gap.comparison_equity_value_per_share), reports, drivers)
+        if envelope.expected_gap is not None
         else None
     )
     return StreetComparisonBundle(consensus, envelope, expected_analysis)

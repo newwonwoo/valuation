@@ -21,6 +21,7 @@ extra_required_evidence:
   - down_gross_asset_value
   - bull_gross_asset_value
 calibration:
+  legacy_replay_snapshot_hash: 191930463eb010fd0a93717a9e2ef3165bce8b96009fd0e6728076d396275ba1
   cohort_key: kr.reit.office|5y_path|continuous_v1
   external_probability_source: continuous_financial_path_monte_carlo
   forecast_class: kr.reit.office.continuous_financial_path

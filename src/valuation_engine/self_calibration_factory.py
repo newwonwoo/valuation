@@ -98,16 +98,27 @@ class TargetObservation:
     published_at: str
     values: tuple[tuple[str, float], ...]
     source_ref: str
+    additional_source_refs: tuple[str, ...] = ()
+
+    @property
+    def source_refs(self) -> tuple[str, ...]:
+        """Every public source used to construct this target observation."""
+        return (self.source_ref, *self.additional_source_refs)
 
     def validate(self, driver_ids: Sequence[str]) -> None:
         if not self.period_end or not self.source_ref:
             raise CalibrationFactoryError(
                 "target observation requires period_end and source_ref"
             )
-        if not self.source_ref.startswith("http"):
+        if len(self.source_refs) != len(set(self.source_refs)):
             raise CalibrationFactoryError(
-                f"target observation {self.period_end} needs an HTTP source_ref"
+                f"target observation {self.period_end} repeats a source_ref"
             )
+        for source_ref in self.source_refs:
+            if not source_ref.startswith("http"):
+                raise CalibrationFactoryError(
+                    f"target observation {self.period_end} needs HTTP source_refs"
+                )
         parse_timestamp(self.published_at, label="published_at")
         keys = tuple(driver_id for driver_id, _ in self.values)
         if set(keys) != set(driver_ids) or len(keys) != len(set(keys)):
@@ -460,7 +471,11 @@ def build_self_calibration_artifact(
     # ticker; here the inputs are the target's own filed periods and the basis
     # they share, so those are what the lineage is made of.
     lineage = {
-        "source_refs": sorted({item.source_ref for item in observations}),
+        "source_refs": sorted({
+            source_ref
+            for item in observations
+            for source_ref in item.source_refs
+        }),
         "observation_periods": sorted(periods),
         "target_ticker": target_ticker,
         "series_basis": series_basis,
@@ -481,9 +496,11 @@ def build_self_calibration_artifact(
         ),
         "oos_windows": oos_window_receipts,
         "observation_periods": sorted(periods),
-        "observation_source_refs": sorted(
-            {item.source_ref for item in observations}
-        ),
+        "observation_source_refs": sorted({
+            source_ref
+            for item in observations
+            for source_ref in item.source_refs
+        }),
         "current_conditioning_source_ref": conditioning.source_ref,
         "current_conditioning_source_hash": conditioning.source_hash,
         "current_conditioning_first_seen_at": conditioning.first_seen_at,
@@ -563,6 +580,23 @@ def load_target_observations(
         values = row.get("values")
         if not isinstance(values, dict):
             raise CalibrationFactoryError("observation values must be a mapping")
+        source_refs = row.get("source_refs")
+        if source_refs is not None:
+            if not isinstance(source_refs, list) or not all(
+                isinstance(item, str) and item for item in source_refs
+            ):
+                raise CalibrationFactoryError(
+                    "observation source_refs must be a non-empty list of URLs"
+                )
+            if not source_refs:
+                raise CalibrationFactoryError(
+                    "observation source_refs must be a non-empty list of URLs"
+                )
+            primary_source_ref = source_refs[0]
+            additional_source_refs = tuple(source_refs[1:])
+        else:
+            primary_source_ref = str(row.get("source_ref") or "")
+            additional_source_refs = ()
         result.append(
             TargetObservation(
                 period_end=str(row.get("period_end") or ""),
@@ -572,8 +606,8 @@ def load_target_observations(
                     for driver_id in driver_ids
                     if driver_id in values
                 ),
-                source_ref=str(row.get("source_ref") or ""),
+                source_ref=primary_source_ref,
+                additional_source_refs=additional_source_refs,
             )
         )
     return tuple(result)
-

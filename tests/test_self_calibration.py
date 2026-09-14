@@ -35,6 +35,7 @@ from valuation_engine.self_calibration_factory import (
     SELF_PROBABILITY_SOURCE,
     TargetObservation,
     build_self_calibration_artifact,
+    load_target_observations,
 )
 
 DRIVERS = ("revenue_growth", "operating_margin")
@@ -170,6 +171,43 @@ def test_one_company_calibrates_itself_and_says_which_basis_it_used(tmp_path: Pa
     assert snapshot.certificate().status is CalibrationStatus.CALIBRATED
     total = sum((item.probability for item in snapshot.estimates), Decimal("0"))
     assert abs(total - Decimal("1")) < Decimal("1e-12")
+
+
+def test_merged_target_observation_binds_every_component_source(tmp_path: Path):
+    second_source = "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20250310001201"
+    payload = {
+        "observations": [
+            {
+                "period_end": period,
+                "published_at": f"{published}T09:00:00+00:00",
+                "values": {
+                    "revenue_growth": growth,
+                    "operating_margin": margin,
+                },
+                "source_refs": [SOURCE, second_source],
+            }
+            for period, published, growth, margin in HISTORY
+        ]
+    }
+    observations = load_target_observations(payload, DRIVERS)
+    result = build_self_calibration_artifact(
+        observations=observations,
+        conditioning=_conditioning(),
+        scenarios=_scenarios(),
+        driver_ids=DRIVERS,
+        scenario_ids=SCENARIOS,
+        path_length=YEARS,
+        target_ticker=TICKER,
+        series_basis=(
+            "Pro-forma combined consolidated IFRS revenue and operating income; "
+            "the same two-company perimeter is reconstructed in every period."
+        ),
+    )
+
+    assert result.provenance["observation_source_refs"] == sorted(
+        [SOURCE, second_source]
+    )
+    assert result.artifact["provenance_hash"] == result.constants.expected_provenance_hash
 
 
 def test_one_load_bearing_driver_is_valid_for_target_history(tmp_path: Path):

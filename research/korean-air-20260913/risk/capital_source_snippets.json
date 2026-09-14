@@ -1,0 +1,61 @@
+{
+  "schema": "exact-source-snippets/v1",
+  "snippets": {
+    "UPS_shares": {
+      "source_file": "UPS_10q.html",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1090727/000162828026053249/ups-20260630.htm",
+      "source_sha256": "c2777f461c8359906248b04ec5e8b690a307c8976288ac517effd735658275a8",
+      "start_character": 220794,
+      "end_character": 221295,
+      "raw_text": "There were <ix:nonFraction unitRef=\"shares\" contextRef=\"c-4\" decimals=\"INF\" name=\"dei:EntityCommonStockSharesOutstanding\" format=\"ixt:num-dot-decimal\" scale=\"0\" id=\"f-30\">101,432,177</ix:nonFraction> class&#160;A shares, and <ix:nonFraction unitRef=\"shares\" contextRef=\"c-5\" decimals=\"INF\" name=\"dei:EntityCommonStockSharesOutstanding\" format=\"ixt:num-dot-decimal\" scale=\"0\" id=\"f-31\">749,349,405</ix:nonFraction> class B shares, with a par value of $0.01 per share, outstanding at July&#160;17, 2026.",
+      "raw_utf8_sha256": "de1d467d9293425298c410887b82572bf955499c35316635998808b5d89b307e",
+      "extraction": "exact character slice of source_file; no whitespace or field rewriting"
+    },
+    "DAL_saleleaseback": {
+      "source_file": "delta_q2_release.html",
+      "source_url": "https://ir.delta.com/news/news-details/2026/Delta-Air-Lines-Announces-June-Quarter-2026-Financial-Results/default.aspx",
+      "source_sha256": "d0b7ee1b2eaf9d59843fbd04358968e5aa14d8ad668295ab85c495ca9fbf09ec",
+      "start_character": 341803,
+      "end_character": 342492,
+      "raw_text": "<tr><td class=\"prngen4\" colspan=\"1\" rowspan=\"1\" nowrap=\"nowrap\"><p class=\"prnml4\"><span class=\"prnews_span\">Plus: sale-leaseback financing liabilities</span></p></td><td class=\"prngen36\" colspan=\"1\" rowspan=\"1\" nowrap=\"nowrap\"><p class=\"prnml4\"><span class=\"prnews_span\">1,749</span></p></td><td class=\"prngen36\" colspan=\"1\" rowspan=\"1\" nowrap=\"nowrap\"><p class=\"prnml4\"><span class=\"prnews_span\">1,779</span></p></td><td class=\"prngen36\" colspan=\"1\" rowspan=\"1\" nowrap=\"nowrap\"><p class=\"prnml4\"><span class=\"prnews_span\">1,807</span></p></td><td class=\"prngen36\" colspan=\"1\" rowspan=\"1\" nowrap=\"nowrap\"><br></td><td class=\"prngen36\" colspan=\"1\" rowspan=\"1\" nowrap=\"nowrap\"><br></td></tr>",
+      "raw_utf8_sha256": "3ececfd3e3d4b66d4b8247a43c2be72065c91b26dc9f1006916df8a66abe274f",
+      "extraction": "exact character slice of source_file; no whitespace or field rewriting"
+    },
+    "LHA_debt": {
+      "source_file": "lufthansa_q2.txt",
+      "source_url": "https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/financial-reports/interims-reports/LH-QR-2026-2-e.pdf",
+      "source_sha256": "b268cf3f032d969b2b16c8e3889a18e4d490a94f3ea9cf0bd94cdd7fdf6603bc",
+      "start_character": 44337,
+      "end_character": 44373,
+      "raw_text": "Group indebtedness \n-14,840 \n-14,554",
+      "raw_utf8_sha256": "2dc2d14be4a12c207a5871358a147def4dde05f299548ae44e9c711b5ed67435",
+      "extraction": "exact character slice of source_file; no whitespace or field rewriting",
+      "original_pdf_sha256": "40607c6f77f697cad65217baf162256292ad483c3336a0d8acf20f1718a4d7ed",
+      "text_extraction": "PyMuPDF page text with PAGE n prefixes; exact clip preserved from saved full text"
+    },
+    "LHA_issued": {
+      "source_file": "lufthansa_q2.txt",
+      "source_url": "https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/financial-reports/interims-reports/LH-QR-2026-2-e.pdf",
+      "source_sha256": "b268cf3f032d969b2b16c8e3889a18e4d490a94f3ea9cf0bd94cdd7fdf6603bc",
+      "start_character": 133188,
+      "end_character": 133439,
+      "raw_text": "are capital \nDeutsche Lufthansa AG’s share capital totals EUR 3,077,332,211.20. It is divided into \n1,202,082,895 registered shares with transfer restrictions, with each share representing \nEUR 2.56 of the share capital. The share capital was increase",
+      "raw_utf8_sha256": "d70d6e90a0c18ba5f9f1c96c2c29cc0b50f6c04c8a54f06d09fc75cdbb908b19",
+      "extraction": "exact character slice of source_file; no whitespace or field rewriting",
+      "original_pdf_sha256": "40607c6f77f697cad65217baf162256292ad483c3336a0d8acf20f1718a4d7ed",
+      "text_extraction": "PyMuPDF page text with PAGE n prefixes; exact clip preserved from saved full text"
+    },
+    "LHA_treasury": {
+      "source_file": "lufthansa_q2.txt",
+      "source_url": "https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/financial-reports/interims-reports/LH-QR-2026-2-e.pdf",
+      "source_sha256": "b268cf3f032d969b2b16c8e3889a18e4d490a94f3ea9cf0bd94cdd7fdf6603bc",
+      "start_character": 137786,
+      "end_character": 137954,
+      "raw_text": "As of 30 June 2026, Deutsche Lufthansa AG held 3,105 treasury shares, which originated \nfrom capital increases from Authorised Capital B over the past two years. These ",
+      "raw_utf8_sha256": "a00d5aef1781429f4ca7eaddf3ee22b91f51ec0933fbf2dfffd9633ad3717de7",
+      "extraction": "exact character slice of source_file; no whitespace or field rewriting",
+      "original_pdf_sha256": "40607c6f77f697cad65217baf162256292ad483c3336a0d8acf20f1718a4d7ed",
+      "text_extraction": "PyMuPDF page text with PAGE n prefixes; exact clip preserved from saved full text"
+    }
+  }
+}

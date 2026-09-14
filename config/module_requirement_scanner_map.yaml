@@ -10,6 +10,36 @@ common_units:
   - INTRINSIC_FREEZE
 
 archetype_scanners:
+  service_operations:
+    interaction_group: service_operating_cashflows
+    scanners:
+      - {scanner_id: SERVICE_ACTIVITY_MIX, mandatory: true}
+      - {scanner_id: SERVICE_CASH_CONVERSION, mandatory: true}
+    kill_conditions:
+      - actual activity mix invalidates the declared service economics
+      - normalized margin or required reinvestment breaks the cashflow path
+  airline_transport:
+    interaction_group: airline_traffic_cost_and_fleet
+    scanners:
+      - {scanner_id: AIRLINE_TRAFFIC_YIELD, mandatory: true}
+      - {scanner_id: AIRLINE_FUEL_COST, mandatory: true}
+      - {scanner_id: AIRLINE_FLEET_FUNDING, mandatory: true}
+    kill_conditions:
+      - traffic and yield fail to cover fuel and nonfuel operating costs
+      - fleet replacement and lease commitments exceed modeled funding
+      - merger perimeter or minority leakage invalidates attributable cashflow
+  capacity_yield_levered:
+    interaction_group: capacity_yield_and_financing
+    scanners:
+      - {scanner_id: TRAFFIC_DEMAND, mandatory: true}
+      - {scanner_id: UTILIZATION, mandatory: true}
+      - {scanner_id: CAPEX_EXECUTION, mandatory: true}
+      - {scanner_id: LEASE_DEBT_MATURITY, mandatory: true, interaction_group: asset_nav}
+      - {scanner_id: REFINANCING, mandatory: true}
+    kill_conditions:
+      - capacity, utilization and realized unit yield do not reconcile on one economic perimeter
+      - sustaining asset commitments exceed evidenced operating cash flow and financing capacity
+      - dated debt and lease claims cannot be reconciled through refinancing, dilution and distress paths
   contracted_backlog:
     interaction_group: demand_visibility
     scanners:

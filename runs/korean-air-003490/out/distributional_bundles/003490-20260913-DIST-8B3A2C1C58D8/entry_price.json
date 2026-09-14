@@ -1,0 +1,26 @@
+{
+  "schema_version": "return-quantile-entry/v1",
+  "entry_price": "15862.79929003679353724580961",
+  "horizon_years": 3,
+  "required_annual_return": "0.12",
+  "success_quantile": "0.25",
+  "target_success_probability": "0.75",
+  "realized_success_probability": "0.80",
+  "sensitivities": [
+    {
+      "required_annual_return": "0.10",
+      "entry_price": "16743.86993309752988031230715"
+    },
+    {
+      "required_annual_return": "0.12",
+      "entry_price": "15862.79929003679353724580961"
+    },
+    {
+      "required_annual_return": "0.15",
+      "entry_price": "14653.46651168098119220559271"
+    }
+  ],
+  "distribution_hash": "349b06908b6e5cb7e1b33887971dd018dd1833508ccbdc3b17779e8fc6fa0fc4",
+  "intrinsic_freeze_hash": "768f0d1eb65f06246d04e200cd20faac5f0eb2dcbef8cbfdce8220a192acb937",
+  "market_price_used": false
+}

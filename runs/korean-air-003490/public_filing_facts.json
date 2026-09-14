@@ -1,0 +1,115 @@
+{
+  "schema_version": "public-filing-facts/v1",
+  "target_id": "KR:DART:00113526",
+  "issuer_name": "대한항공",
+  "as_of": "2026-09-13",
+  "rcept_no": "20260814002803",
+  "fs_div": "CFS",
+  "business_year": "2026",
+  "report_code": "11012",
+  "fiscal_period_end": "2026-06-30",
+  "identity_document": {
+    "path": "raw/filing_20260814002803/main.html",
+    "sha256": "e5fcb654c198c87fc85c4a36f04a50b5ef97da51ab54714d2c817f3c1a0505be",
+    "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803"
+  },
+  "documents": [
+    {
+      "path": "raw/filing_20260814002803/20260814002803_20.xml",
+      "sha256": "e03438d2f713cefe032ccfd5ed08ef3e1fbaf514833d49b0c3a2b2902fb69be7",
+      "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=20&offset=440701&length=48993&dtd=dart4.xsd",
+      "document_id": "20",
+      "scope_quote": "연결 재무상태표",
+      "period_quote": "제 65 기 반기말 2026.06.30 현재",
+      "unit_quote": "(단위 : 원)"
+    },
+    {
+      "path": "raw/filing_20260814002803/20260814002803_21.xml",
+      "sha256": "f795e50fae87b61b9d9d3d37fb7a78a6e70049c67b2acc784a1f8c9c09228d73",
+      "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=21&offset=489694&length=44931&dtd=dart4.xsd",
+      "document_id": "21",
+      "scope_quote": "연결 포괄손익계산서",
+      "period_quote": "제 65 기 반기 2026.01.01 부터 2026.06.30 까지",
+      "unit_quote": "(단위 : 원)"
+    }
+  ],
+  "observations": [
+    {
+      "metric": "cash_and_cash_equivalents",
+      "document_id": "20",
+      "table_index": 1,
+      "row_index": 3,
+      "column_index": 1,
+      "row_label": "현금및현금성자산 (주5)",
+      "column_label": "제 65 기 반기말",
+      "value": "2601185116110",
+      "unit": "KRW"
+    },
+    {
+      "metric": "total_assets",
+      "document_id": "20",
+      "table_index": 1,
+      "row_index": 29,
+      "column_index": 1,
+      "row_label": "자산총계",
+      "column_label": "제 65 기 반기말",
+      "value": "52824385892098",
+      "unit": "KRW"
+    },
+    {
+      "metric": "total_liabilities",
+      "document_id": "20",
+      "table_index": 1,
+      "row_index": 56,
+      "column_index": 1,
+      "row_label": "부채총계",
+      "column_label": "제 65 기 반기말",
+      "value": "42059096599499",
+      "unit": "KRW"
+    },
+    {
+      "metric": "total_equity",
+      "document_id": "20",
+      "table_index": 1,
+      "row_index": 64,
+      "column_index": 1,
+      "row_label": "자본총계",
+      "column_label": "제 65 기 반기말",
+      "value": "10765289292599",
+      "unit": "KRW"
+    },
+    {
+      "metric": "revenue",
+      "document_id": "21",
+      "table_index": 1,
+      "row_index": 2,
+      "column_index": 2,
+      "row_label": "매출 (주4,29,37)",
+      "column_label": "제 65 기 반기",
+      "value": "13888117795942",
+      "unit": "KRW"
+    },
+    {
+      "metric": "operating_income",
+      "document_id": "21",
+      "table_index": 1,
+      "row_index": 6,
+      "column_index": 2,
+      "row_label": "영업이익(손실) (주4)",
+      "column_label": "제 65 기 반기",
+      "value": "310273431929",
+      "unit": "KRW"
+    },
+    {
+      "metric": "net_income",
+      "document_id": "21",
+      "table_index": 1,
+      "row_index": 14,
+      "column_index": 2,
+      "row_label": "반기순이익(손실)",
+      "column_label": "제 65 기 반기",
+      "value": "-566416729479",
+      "unit": "KRW"
+    }
+  ]
+}

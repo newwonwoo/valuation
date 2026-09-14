@@ -22,7 +22,9 @@ RUNS = ROOT / "runs"
 
 #: Files a prepared run directory may carry at its top level. Each one is
 #: hashed into the run's identity, so adding to this set is a deliberate act.
-_ALLOWED_TOP_LEVEL = frozenset({"run.yaml", "RESEARCH_STATUS.md"})
+# Public viewer observations bind source files, hashes and coordinates; they are
+# replayable primary-evidence inputs, not generated output or fabricated API rows.
+_ALLOWED_TOP_LEVEL = frozenset({"run.yaml", "RESEARCH_STATUS.md", "public_filing_facts.json"})
 
 #: Directories whose contents are run inputs.
 _INPUT_DIRECTORIES = frozenset({"declarations", "raw"})
@@ -45,6 +47,7 @@ def test_the_repository_carries_the_runs_the_runbook_names():
         "shinhanalpha-293940",
         "daehansteel-084010",
         "koreazinc-010130",
+        "korean-air-003490",
     }
 
 

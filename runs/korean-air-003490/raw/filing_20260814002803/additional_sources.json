@@ -1,0 +1,62 @@
+[
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_1.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=1&offset=833&length=4508&dtd=dart4.xsd",
+    "sha256": "1dc45811c1c6eb1387d66205eb4518f60d5e970ba35cfad4f37d567c7954b641"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_20.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=20&offset=440701&length=48993&dtd=dart4.xsd",
+    "sha256": "e03438d2f713cefe032ccfd5ed08ef3e1fbaf514833d49b0c3a2b2902fb69be7"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_21.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=21&offset=489694&length=44931&dtd=dart4.xsd",
+    "sha256": "f795e50fae87b61b9d9d3d37fb7a78a6e70049c67b2acc784a1f8c9c09228d73"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_23.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=23&offset=612895&length=82835&dtd=dart4.xsd",
+    "sha256": "624749f758e8616e1fd6edf4903e60019f0d6e3e75ee0535e4f519b78eebe178"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_25.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=25&offset=695893&length=1068&dtd=dart4.xsd",
+    "sha256": "dc65b11f654f165b79f5ad4ab0048af5fcb8765936f52acdef47a6115e51f127"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_29.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=29&offset=823025&length=6542&dtd=dart4.xsd",
+    "sha256": "bf412c8fd1e0c7932592832d568b3f03edca9bd3433abeca022c387e496246d5"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_30.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=30&offset=829567&length=11700&dtd=dart4.xsd",
+    "sha256": "bc25067f6ac53e2d2357c21a33a9bcbcb6a4f84da1f817d075f4853482ea3515"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_35.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=35&offset=918096&length=29966&dtd=dart4.xsd",
+    "sha256": "879090b51a61bd75130db7a38a48c88c1c8fb10c1b8d4831f527a38fbc5cb948"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_38.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=38&offset=963285&length=190457&dtd=dart4.xsd",
+    "sha256": "fdc5f2fb9f2ef8c80e7230b80815c76aba104c6232e63ffe6bf1ee23c0f7dcd1"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_40.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=40&offset=1186529&length=19656&dtd=dart4.xsd",
+    "sha256": "317260c38b55d7cb816c21290e538e1cf6e6cc83bcad938ac7a05cc35714f909"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_41.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=41&offset=1206185&length=33078&dtd=dart4.xsd",
+    "sha256": "983beaa670d1999ffff2722d2179870eafa54c7973249590d6ef286e145ab6e0"
+  },
+  {
+    "path": "runs/korean-air-003490/raw/filing_20260814002803/20260814002803_45.xml",
+    "url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=45&offset=1741943&length=107303&dtd=dart4.xsd",
+    "sha256": "b630c5c9bbfd8be37664f1e84303a130f96db832132c9bd9bf34616b4e20dd2f"
+  }
+]

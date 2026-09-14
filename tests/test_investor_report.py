@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from decimal import Decimal
 from pathlib import Path
 import shutil
 import sys
@@ -19,6 +20,7 @@ from run_kr_live import (  # noqa: E402
 )
 from valuation_engine.investor_report import (  # noqa: E402
     load_investor_report_profile,
+    probability_weighted_equity_value,
     render_investor_report,
 )
 from valuation_engine.valuation_execution import (  # noqa: E402
@@ -190,3 +192,122 @@ def test_every_committed_run_declares_a_valid_public_report_profile(run_name):
     path = ROOT / "runs" / run_name / "declarations" / "investor_report.yaml"
     assert path.is_file()
     load_investor_report_profile(path)
+
+
+def test_negative_residual_is_disclosed_but_share_price_is_floored(koreazinc_result):
+    original = koreazinc_result.data["generic_valuation_result"]
+    values = {"Down": Decimal("-100"), "Base": Decimal("100"), "Bull": Decimal("1400000")}
+    valuation = replace(original, scenarios=tuple(
+        replace(item, value_per_share=values[item.scenario_id]) for item in original.scenarios
+    ), expected_value_per_share=Decimal("-20"))
+    report = render_investor_report(
+        {**koreazinc_result.data, "generic_valuation_result": valuation},
+        load_investor_report_profile(PROFILE_PATH),
+    )
+    assert "| 주당가치 | 0원 | 100원 | 1,400,000원 |" in report
+    assert "| 부채 차감 후 주당 잔여가치 | -100원 | 100원 | 1,400,000원 |" in report
+    assert "주주의 추가 납입 의무나 음수 주식가격을 뜻하지 않으며" in report
+    assert "유한책임 반영 전 확률가중 잔여가치: -20원" in report
+    assert "확률가중 기대값은 -20원입니다" not in report
+    assert "현재가는 기준보다 상방 시나리오에 가까워" in report
+    assert valuation.scenarios[0].value_per_share == values[valuation.scenarios[0].scenario_id]
+    assert valuation.expected_value_per_share == Decimal("-20")
+
+
+def test_negative_residual_report_publishes_floored_target_and_entry_price(
+    koreazinc_result,
+):
+    original = koreazinc_result.data["generic_valuation_result"]
+    values = {
+        "Down": Decimal("-100"),
+        "Base": Decimal("100"),
+        "Bull": Decimal("1400000"),
+    }
+    valuation = replace(
+        original,
+        scenarios=tuple(
+            replace(item, value_per_share=values[item.scenario_id])
+            for item in original.scenarios
+        ),
+        expected_value_per_share=Decimal("-20"),
+    )
+    profile = replace(
+        load_investor_report_profile(PROFILE_PATH),
+        entry_margin_of_safety=Decimal("0.25"),
+        entry_rule_rationale=(
+            "High leverage and cyclical cash flows require a declared discount "
+            "to the probability-weighted stock value."
+        ),
+    )
+    probabilities = {
+        item.scenario_id: item.probability
+        for item in koreazinc_result.data["bound_scenario_set"].scenarios
+    }
+    target = sum(
+        probabilities[scenario_id] * max(Decimal("0"), values[scenario_id])
+        for scenario_id in values
+    )
+    entry = (target * Decimal("0.75") / Decimal("100")).quantize(
+        Decimal("1")
+    ) * Decimal("100")
+    report = render_investor_report(
+        {**koreazinc_result.data, "generic_valuation_result": valuation},
+        profile,
+    )
+
+    assert f"- 확률가중 목표가: {target:,.0f}원" in report
+    assert f"- 구체 매수가: {entry:,.0f}원 이하" in report
+    assert "Σ[보정확률 × max(0원" in report
+    assert "유한책임 반영 전 확률가중 잔여가치: -20원" in report
+
+
+def test_probability_weighted_equity_value_accepts_core_scenario_alias(
+    koreazinc_result,
+):
+    original = koreazinc_result.data["generic_valuation_result"]
+    valuation = replace(
+        original,
+        scenarios=tuple(
+            replace(item, scenario_id="Core")
+            if item.scenario_id == "Base"
+            else item
+            for item in original.scenarios
+        ),
+    )
+    original_bound = koreazinc_result.data["bound_scenario_set"]
+    bound = replace(
+        original_bound,
+        scenarios=tuple(
+            replace(item, scenario_id="Core")
+            if item.scenario_id == "Base"
+            else item
+            for item in original_bound.scenarios
+        ),
+    )
+    expected = sum(
+        item.probability
+        * max(
+            Decimal("0"),
+            next(
+                scenario.value_per_share
+                for scenario in valuation.scenarios
+                if scenario.scenario_id == item.scenario_id
+            ),
+        )
+        for item in bound.scenarios
+    )
+
+    assert probability_weighted_equity_value(valuation, bound) == expected
+
+
+def test_partial_business_residual_is_not_given_equity_floor(koreazinc_result):
+    original = koreazinc_result.data["generic_valuation_result"]
+    valuation = replace(original, scope=IntrinsicValuationScope.PARTIAL_INTRINSIC,
+        unvalued_segments=(UnvaluedSegment(asset_id="recycling", segment_id="기타부문", resolution_status="ASSUMPTION_GAP", rationale="독립 현금흐름 미확인"),),
+        scenarios=tuple(replace(item, value_per_share=Decimal("-100")) for item in original.scenarios))
+    report = render_investor_report(
+        {**koreazinc_result.data, "generic_valuation_result": valuation},
+        load_investor_report_profile(PROFILE_PATH),
+    )
+    assert "| 주당가치 | -100원 | -100원 | -100원 |" in report
+    assert "주식가치의 하한은 0원" not in report

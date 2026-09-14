@@ -1,0 +1,604 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>11. 종속기업 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='999'>
+<COLGROUP>
+<COL width='999'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='2866'>
+  <TD width='990' height='2859'>
+<P>(1) 당반기말 및 전기말 현재 종속기업의 세부내역은 다음과 같습니다.</P>
+<TABLE border='1' width='984'>
+<COLGROUP>
+<COL width='337'></COL>
+<COL width='242'></COL>
+<COL width='95'></COL>
+<COL width='107'></COL>
+<COL width='107'></COL>
+<COL width='96'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='328' height='76' rowspan='2'>회사명</TH>
+  <TH width='233' height='76' rowspan='2'>주요영업활동</TH>
+  <TH width='86' height='76' rowspan='2'>법인설립 및<BR/>영업소재지</TH>
+  <TH width='205' height='46' colspan='2'>연결실체 내 기업이 소유한<BR/>지분율 및 의결권비율</TH>
+  <TH width='87' height='76' rowspan='2'>결산월</TH>
+</TR>
+<TR height='30'>
+  <TH width='98' height='23'>당반기말</TH>
+  <TH width='98' height='23'>전기말</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='328' height='23'>아시아나항공(주)</TD>
+  <TD width='233' height='23' align='CENTER'>항공운송업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>63.88%</TD>
+  <TD width='98' height='23' align='CENTER'>63.88%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>(주)진에어</TD>
+  <TD width='233' height='23' align='CENTER'>항공운송업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>54.91%</TD>
+  <TD width='98' height='23' align='CENTER'>54.91%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>에어부산(주)(*1)(*2)</TD>
+  <TD width='233' height='23' align='CENTER'>항공운송업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>58.40%</TD>
+  <TD width='98' height='23' align='CENTER'>41.91%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>한국공항(주)</TD>
+  <TD width='233' height='23' align='CENTER'>항공 운송지원 서비스업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>59.54%</TD>
+  <TD width='98' height='23' align='CENTER'>59.54%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>아시아나아이디티(주)</TD>
+  <TD width='233' height='23' align='CENTER'>정보통신사업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>76.22%</TD>
+  <TD width='98' height='23' align='CENTER'>76.22%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>한진정보통신(주)</TD>
+  <TD width='233' height='23' align='CENTER'>시스템 소프트웨어 개발 및 공급업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>99.35%</TD>
+  <TD width='98' height='23' align='CENTER'>99.35%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>아이에이티(주)</TD>
+  <TD width='233' height='23' align='CENTER'>항공기 엔진 수리업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>(주)항공종합서비스</TD>
+  <TD width='233' height='23' align='CENTER'>호텔운영대행업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>(주)왕산레저개발(*3)</TD>
+  <TD width='233' height='23' align='CENTER'>스포츠 및 오락 관련 서비스업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>(주)한국글로발로지스틱스시스템</TD>
+  <TD width='233' height='23' align='CENTER'>부가통신업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>95.00%</TD>
+  <TD width='98' height='23' align='CENTER'>95.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>(주)싸이버스카이</TD>
+  <TD width='233' height='23' align='CENTER'>인터넷 통신판매</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>케이에비에이션(주)</TD>
+  <TD width='233' height='23' align='CENTER'>소형항공기운송업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>(주)에어코리아</TD>
+  <TD width='233' height='23' align='CENTER'>항공 운송지원 서비스업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>케이웨이프라퍼티(주)</TD>
+  <TD width='233' height='23' align='CENTER'>사업시설 유지 및 관리 서비스업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>한진세이버(주)(*4)</TD>
+  <TD width='233' height='23' align='CENTER'>컴퓨터예약서비스중개</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>80.00%</TD>
+  <TD width='98' height='23' align='CENTER'>80.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>아시아나에어포트(주)</TD>
+  <TD width='233' height='23' align='CENTER'>기타항공운송지원</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>에어서울(주)</TD>
+  <TD width='233' height='23' align='CENTER'>항공운송업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>아시아나티앤아이(주)(*7)</TD>
+  <TD width='233' height='23' align='CENTER'>기타금융업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>80.00%</TD>
+  <TD width='98' height='23' align='CENTER'>80.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>케이브이아이(주)(*5)</TD>
+  <TD width='233' height='23' align='CENTER'>기타금융업</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>Hanjin Int'l Corp.</TD>
+  <TD width='233' height='23' align='CENTER'>호텔업 및 빌딩임대사업</TD>
+  <TD width='86' height='23' align='CENTER'>미국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>Total Aviation Service LLC</TD>
+  <TD width='233' height='23' align='CENTER'>인력공급업</TD>
+  <TD width='86' height='23' align='CENTER'>미국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>Hanjin International F&amp;B LLC(*3)</TD>
+  <TD width='233' height='23' align='CENTER'>음식점업</TD>
+  <TD width='86' height='23' align='CENTER'>미국</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>Hanjin Int'l Japan Co.,Ltd.</TD>
+  <TD width='233' height='23' align='CENTER'>항공 운송지원 서비스업</TD>
+  <TD width='86' height='23' align='CENTER'>일본</TD>
+  <TD width='98' height='23' align='CENTER'>75.00%</TD>
+  <TD width='98' height='23' align='CENTER'>75.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>Korean Air Investment Japan Co., Ltd.(*3)</TD>
+  <TD width='233' height='23' align='CENTER'>투자 및 부동산임대업</TD>
+  <TD width='86' height='23' align='CENTER'>일본</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>Korean Air Airport Service Co., Ltd.</TD>
+  <TD width='233' height='23' align='CENTER'>항공 운송지원 서비스업</TD>
+  <TD width='86' height='23' align='CENTER'>일본</TD>
+  <TD width='98' height='23' align='CENTER'>65.00%</TD>
+  <TD width='98' height='23' align='CENTER'>65.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>Korean Air Technics Japan Co., Ltd.(*3)</TD>
+  <TD width='233' height='23' align='CENTER'>운항정비업</TD>
+  <TD width='86' height='23' align='CENTER'>일본</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>Korean Air Investment Singapore Pte., Ltd.</TD>
+  <TD width='233' height='23' align='CENTER'>동남아 내 투자업</TD>
+  <TD width='86' height='23' align='CENTER'>싱가포르</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>Asiana Staff Service, Inc.(*6)</TD>
+  <TD width='233' height='23' align='CENTER'>기타항공운송지원</TD>
+  <TD width='86' height='23' align='CENTER'>일본</TD>
+  <TD width='98' height='23' align='CENTER'>-&nbsp;</TD>
+  <TD width='98' height='23' align='CENTER'>100.00%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+<TR height='30'>
+  <TD width='328' height='23'>색동이제이십육차유동화전문유한회사(*8)</TD>
+  <TD width='233' height='23' align='CENTER'>유동화증권의 발행 및 상환</TD>
+  <TD width='86' height='23' align='CENTER'>한국</TD>
+  <TD width='98' height='23' align='CENTER'>0.50%</TD>
+  <TD width='98' height='23' align='CENTER'>0.50%</TD>
+  <TD width='87' height='23' align='CENTER'>12월</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='990'>
+<COLGROUP>
+<COL width='990'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='981' height='23'>(*1) 당반기 중 아시아나항공(주)가 보유한 영구전환사채의 전환권 행사에 따라 해당 종속기업에 대한 지분율이 변동되었습니다.</TD>
+</TR>
+<TR height='53'>
+  <TD width='981' height='46'>(*2) 연결실체는 에어부산(주)에 대하여 유효지분율이 과반 미만이나 주주 간의 계약상 약정을 통해 실질적 지배력을 행사할 수 있으므로 연결대상으로 판단하였습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='981' height='23'>(*3) 당반기 중 해당 종속기업에 대하여 추가 출자하였습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='981' height='23'>(*4) 당반기 중 아시아나세이버(주)에서 한진세이버(주)로 사명을 변경하였습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='981' height='23'>(*5) 당반기말 현재 매각예정자산으로 분류되었습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='981' height='23'>(*6) 당반기말 현재 Hanjin Int'l Japan Co.,Ltd.에 흡수합병되어 소멸하였습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='981' height='23'>(*7) 당반기말 이후 해산사유가 발생하여 청산절차를 진행 중입니다(주석 42 참조).</TD>
+</TR>
+<TR height='53'>
+  <TD width='981' height='46'>(*8) 연결실체는 해당 구조화기업에 대하여 단순히 보유 지분율에 의한 판단이 아닌 지배력 판단 기준요소인 '힘', '변동이익', '힘과 변동이익의 연관'을 종합적으로 고려한 판단에 의거하여 연결실체가 지배하고 있다고 판단되어 연결대상에 포함하였습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P>(2) 당반기말 현재 주요 종속기업의 요약 재무상태는 아래와 같습니다.</P>
+<TABLE border='1' width='828'>
+<COLGROUP>
+<COL width='207'></COL>
+<COL width='207'></COL>
+<COL width='207'></COL>
+<COL width='207'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='819' height='23' colspan='4' align='RIGHT'>(단위: 백만원)</TH>
+</TR>
+<TR height='30'>
+  <TH width='198' height='23'>구 &nbsp;분</TH>
+  <TH width='198' height='23'>아시아나항공(주)(*1)</TH>
+  <TH width='198' height='23'>(주)진에어</TH>
+  <TH width='198' height='23'>한국공항(주)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='198' height='23'>유동자산</TD>
+  <TD width='198' height='23' align='RIGHT'>1,361,502</TD>
+  <TD width='198' height='23' align='RIGHT'>616,773</TD>
+  <TD width='198' height='23' align='RIGHT'>166,587</TD>
+</TR>
+<TR height='30'>
+  <TD width='198' height='23'>비유동자산</TD>
+  <TD width='198' height='23' align='RIGHT'>10,590,225</TD>
+  <TD width='198' height='23' align='RIGHT'>695,166</TD>
+  <TD width='198' height='23' align='RIGHT'>379,471</TD>
+</TR>
+<TR height='30'>
+  <TD width='198' height='23' align='CENTER'>자산계</TD>
+  <TD width='198' height='23' align='RIGHT'>11,951,727</TD>
+  <TD width='198' height='23' align='RIGHT'>1,311,939</TD>
+  <TD width='198' height='23' align='RIGHT'>546,058</TD>
+</TR>
+<TR height='30'>
+  <TD width='198' height='23'>유동부채</TD>
+  <TD width='198' height='23' align='RIGHT'>4,897,388</TD>
+  <TD width='198' height='23' align='RIGHT'>581,382</TD>
+  <TD width='198' height='23' align='RIGHT'>63,489</TD>
+</TR>
+<TR height='30'>
+  <TD width='198' height='23'>비유동부채</TD>
+  <TD width='198' height='23' align='RIGHT'>6,840,781</TD>
+  <TD width='198' height='23' align='RIGHT'>552,237</TD>
+  <TD width='198' height='23' align='RIGHT'>72,232</TD>
+</TR>
+<TR height='30'>
+  <TD width='198' height='23' align='CENTER'>부채계</TD>
+  <TD width='198' height='23' align='RIGHT'>11,738,169</TD>
+  <TD width='198' height='23' align='RIGHT'>1,133,619</TD>
+  <TD width='198' height='23' align='RIGHT'>135,721</TD>
+</TR>
+<TR height='30'>
+  <TD width='198' height='23' align='CENTER'>자본계</TD>
+  <TD width='198' height='23' align='RIGHT'>213,558</TD>
+  <TD width='198' height='23' align='RIGHT'>178,320</TD>
+  <TD width='198' height='23' align='RIGHT'>410,337</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='827'>
+<COLGROUP>
+<COL width='827'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='818' height='23'>(*1) 아시아나항공(주)의 연결재무제표 상 금액입니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P>상기 요약 재무상태는 내부거래를 제거하기 전 금액입니다.</P>
+<P><BR/>(3) 당반기 중 주요 종속기업의 요약 경영성과는 아래와 같습니다.</P>
+<TABLE border='1' width='829'>
+<COLGROUP>
+<COL width='208'></COL>
+<COL width='207'></COL>
+<COL width='207'></COL>
+<COL width='207'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='820' height='23' colspan='4' align='RIGHT'>(단위: 백만원)</TH>
+</TR>
+<TR height='30'>
+  <TH width='199' height='23'>구 &nbsp;분</TH>
+  <TH width='198' height='23'>아시아나항공(주)(*1)</TH>
+  <TH width='198' height='23'>(주)진에어</TH>
+  <TH width='198' height='23'>한국공항(주)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='199' height='23'>매출액</TD>
+  <TD width='198' height='23' align='RIGHT'>3,524,559</TD>
+  <TD width='198' height='23' align='RIGHT'>783,274</TD>
+  <TD width='198' height='23' align='RIGHT'>307,785</TD>
+</TR>
+<TR height='30'>
+  <TD width='199' height='23'>영업이익(손실)</TD>
+  <TD width='198' height='23' align='RIGHT'>(408,636)</TD>
+  <TD width='198' height='23' align='RIGHT'>(15,490)</TD>
+  <TD width='198' height='23' align='RIGHT'>25,327</TD>
+</TR>
+<TR height='30'>
+  <TD width='199' height='23'>반기순이익(손실)</TD>
+  <TD width='198' height='23' align='RIGHT'>(658,846)</TD>
+  <TD width='198' height='23' align='RIGHT'>(45,872)</TD>
+  <TD width='198' height='23' align='RIGHT'>20,317</TD>
+</TR>
+<TR height='30'>
+  <TD width='199' height='23'>기타포괄손익</TD>
+  <TD width='198' height='23' align='RIGHT'>58,149</TD>
+  <TD width='198' height='23' align='RIGHT'>(244)</TD>
+  <TD width='198' height='23' align='RIGHT'>(728)</TD>
+</TR>
+<TR height='30'>
+  <TD width='199' height='23'>반기총포괄이익(손실)</TD>
+  <TD width='198' height='23' align='RIGHT'>(600,697)</TD>
+  <TD width='198' height='23' align='RIGHT'>(46,116)</TD>
+  <TD width='198' height='23' align='RIGHT'>19,589</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='830'>
+<COLGROUP>
+<COL width='830'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='821' height='23'>(*1) 아시아나항공(주)의 연결재무제표 상 금액입니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P>상기 요약 경영성과는 내부거래를 제거하기 전의 금액입니다.</P>
+<P><BR/></P>
+<P>(4) 당반기 중 주요 종속기업의 요약 현금흐름의 내용은 아래와 같습니다.</P>
+<TABLE border='1' width='938'>
+<COLGROUP>
+<COL width='310'></COL>
+<COL width='210'></COL>
+<COL width='209'></COL>
+<COL width='209'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='929' height='23' colspan='4' align='RIGHT'>(단위: 백만원)</TH>
+</TR>
+<TR height='30'>
+  <TH width='301' height='23'>구 &nbsp;분</TH>
+  <TH width='201' height='23'>아시아나항공(주)(*1)</TH>
+  <TH width='200' height='23'>(주)진에어</TH>
+  <TH width='200' height='23'>한국공항(주)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='301' height='23'>영업활동으로 인한 현금흐름</TD>
+  <TD width='201' height='23' align='RIGHT'>76,216</TD>
+  <TD width='200' height='23' align='RIGHT'>84,128</TD>
+  <TD width='200' height='23' align='RIGHT'>40,498</TD>
+</TR>
+<TR height='30'>
+  <TD width='301' height='23'>투자활동으로 인한 현금흐름</TD>
+  <TD width='201' height='23' align='RIGHT'>(273,295)</TD>
+  <TD width='200' height='23' align='RIGHT'>(11,039)</TD>
+  <TD width='200' height='23' align='RIGHT'>(12,897)</TD>
+</TR>
+<TR height='30'>
+  <TD width='301' height='23'>재무활동으로 인한 현금흐름</TD>
+  <TD width='201' height='23' align='RIGHT'>(234,082)</TD>
+  <TD width='200' height='23' align='RIGHT'>(72,343)</TD>
+  <TD width='200' height='23' align='RIGHT'>(14,628)</TD>
+</TR>
+<TR height='30'>
+  <TD width='301' height='23'>현금및현금성자산의 순증감</TD>
+  <TD width='201' height='23' align='RIGHT'>(431,161)</TD>
+  <TD width='200' height='23' align='RIGHT'>746</TD>
+  <TD width='200' height='23' align='RIGHT'>12,973</TD>
+</TR>
+<TR height='30'>
+  <TD width='301' height='23'>외화표시 현금및현금성자산의 환율변동 효과</TD>
+  <TD width='201' height='23' align='RIGHT'>4,264</TD>
+  <TD width='200' height='23' align='RIGHT'>1,722</TD>
+  <TD width='200' height='23' align='RIGHT'>31</TD>
+</TR>
+<TR height='30'>
+  <TD width='301' height='23'>기초 현금및현금성자산</TD>
+  <TD width='201' height='23' align='RIGHT'>788,037</TD>
+  <TD width='200' height='23' align='RIGHT'>42,490</TD>
+  <TD width='200' height='23' align='RIGHT'>71,596</TD>
+</TR>
+<TR height='30'>
+  <TD width='301' height='23'>반기말 현금및현금성자산</TD>
+  <TD width='201' height='23' align='RIGHT'>361,140</TD>
+  <TD width='200' height='23' align='RIGHT'>44,958</TD>
+  <TD width='200' height='23' align='RIGHT'>84,600</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='937'>
+<COLGROUP>
+<COL width='937'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='928' height='23'>(*1) 아시아나항공(주)의 연결재무제표 상 금액입니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P>상기 요약 현금흐름은 내부거래를 제거하기 전의 금액입니다.</P>
+<P><BR/></P>
+<P>(5) 연결실체에 중요한 각 종속기업별로 비지배지분이 보유한 소유지분율과 재무상태, 경영성과 및 배당금액 중 비지배지분에 귀속되는 몫의 내역은 아래와 같습니다.</P>
+<TABLE border='1' width='929'>
+<COLGROUP>
+<COL width='286'></COL>
+<COL width='215'></COL>
+<COL width='214'></COL>
+<COL width='214'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='920' height='23' colspan='4' align='RIGHT'>(단위: 백만원)</TH>
+</TR>
+<TR height='30'>
+  <TH width='277' height='23'>구 &nbsp;분</TH>
+  <TH width='206' height='23'>아시아나항공(주)(*2)</TH>
+  <TH width='205' height='23'>(주)진에어</TH>
+  <TH width='205' height='23'>한국공항(주)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='277' height='23'>비지배지분이 보유한 소유지분율(*1)</TD>
+  <TD width='206' height='23' align='RIGHT'>36.10%</TD>
+  <TD width='205' height='23' align='RIGHT'>44.38%</TD>
+  <TD width='205' height='23' align='RIGHT'>38.36%</TD>
+</TR>
+<TR height='30'>
+  <TD width='277' height='23'>누적 비지배지분</TD>
+  <TD width='206' height='23' align='RIGHT'>(79,203)</TD>
+  <TD width='205' height='23' align='RIGHT'>153,014</TD>
+  <TD width='205' height='23' align='RIGHT'>153,486</TD>
+</TR>
+<TR height='30'>
+  <TD width='277' height='23'>비지배지분에 귀속되는 반기순이익</TD>
+  <TD width='206' height='23' align='RIGHT'>(293,223)</TD>
+  <TD width='205' height='23' align='RIGHT'>(18,559)</TD>
+  <TD width='205' height='23' align='RIGHT'>7,791</TD>
+</TR>
+<TR height='30'>
+  <TD width='277' height='23'>당반기 중 비지배지분에게 지급된 배당금</TD>
+  <TD width='206' height='23' align='RIGHT'>2,320</TD>
+  <TD width='205' height='23' align='RIGHT'>-</TD>
+  <TD width='205' height='23' align='RIGHT'>1,173</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='942'>
+<COLGROUP>
+<COL width='942'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='76'>
+  <TD width='933' height='69'>(*1) '비지배지분이 보유한 소유지분율'은 자기주식 매입분을 제외한 유통주식수를 기준으로 산출한 유효 지분율로서, 각 종속기업의 100%지분에서 연결실체 내 기업(또는 기업들)이 해당 종속기업에 대하여 직접 보유하고 있는 지분을 단순합산한 지분율을 차감하여 계산한 지분율과는 차이가 발생할 수 있습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='933' height='23'>(*2) 아시아나항공(주) 연결재무제표 기준 비지배지분 정보입니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

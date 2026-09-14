@@ -1,0 +1,7 @@
+{
+  "wacc": "0.07104336745001877",
+  "cost_of_equity": "0.09577089965527585",
+  "target_asset_beta": "0.6818416691122398",
+  "target_levered_beta": "1.0323937232062945",
+  "probability_calibration_status": "CalibrationStatus.UNCALIBRATED"
+}

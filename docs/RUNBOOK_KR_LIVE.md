@@ -18,6 +18,25 @@
   L1~L4 피어 회귀베타는 커밋된 공개 시세에서
   `scripts/compute_peer_betas.py`로 재현, 코호트는 타깃 제외 재적합.
 
+### 대한항공 공개 뷰어 입력 예제
+
+`runs/korean-air-003490/`은 항공운송·항공우주·호텔·기타의 공시 4부문을
+각각 항공 DCF·수주사업 DCF·호텔/부동산 NAV·서비스 DCF로 연결한다.
+호텔과 기타의 혼합 활동은 `declarations/segments.yaml`에서 평가용 대리분류와
+적용 한계를 명시하며, 호텔 NAV에 포함한 부채를 회사 합산에서 다시 차감하지 않는다.
+
+OpenDART 재무 API 대신 공개 공시 뷰어를 사용한 관측치는
+`run.yaml`의 `public_filing_facts_path: public_filing_facts.json`으로 연결한다.
+이 파일은 원문 위치·해시·기간·단위가 연결된 **입력**이며 원본은 `raw/`에 보존한다.
+공개 뷰어에서 읽은 값을 OpenDART API 성공 응답으로 만들어 저장하지 않는다.
+
+```bash
+PYTHONPATH=src python scripts/run_kr_live.py runs/korean-air-003490
+```
+
+이 예제의 등록 자체가 분석 완주를 뜻하지 않는다. 해당 실행의 감사와 불변
+보고서 묶음 검증이 통과해야 최종 결과로 전달한다.
+
 **실행자가 LLM 세션이라면**: `.claude/skills/kr-live-run`이 이 절차의 요약을
 자동 로드한다. 공통 실행·확률·완료 계약은 `AGENTS.md`와 루트 `SKILL.md`이며, 이 문서는 KR 준비 절차를 제공한다.
 

@@ -1,0 +1,47 @@
+{
+  "schema_version": "staff-response/v1",
+  "role": "red_team_officer",
+  "prompt_sha256": "af22f532b4f56e5f1e01eb4c2678a0fc655b52f88abf5d58160fd3f4dea11243",
+  "response": {
+    "counter_thesis": "가장 강한 반대 가설은 높은 여객·화물 운임이 연료비 급등의 전가에 불과하고 통합 이후에도 조달·리스·기재투자 부담이 정상화된 영업이익을 앞질러, 항공우주 수주와 외부 엔진정비의 성장까지 연결 주주 현금으로 이어지지 못한다는 것이다. 실현 연결 영업이익 DART_HTML_2f6195eb49ee067e37d5와 큰 부채 DART_HTML_80e16db9ec94f69e80f1은 이 위험을 검토할 출발점이며, 미래 FCFF·호텔 NAV·NCI 조정은 모두 명시된 분석가 판단이다. 수정된 말기 재투자 및 부채 배분에는 새로 확인된 산술 모순이 없으므로, 아래 불확실성을 범위·민감도와 함께 공개하는 조건에서 분석을 계속할 수 있다. 이는 회복의 보장이나 확률의 객관적 검증이 아니다.",
+    "issues": [
+      {
+        "id": "R1",
+        "description": "항공의 회복을 가장 크게 뒤집을 위험은 운임 상승이 지속적인 수익성 개선이 아니라 연료비 전가이며, 이후 운임이 연료비보다 빨리 하락하는 경우다. UW:KR:DART:00113526:passenger_yield, UW:KR:DART:00113526:cargo_yield, UW:KR:DART:00113526:fuel_cost는 관측 단서이나 장기 스프레드를 보장하지 않는다. UW:KR:DART:00113526:airline_fcff_year_1과 UW:KR:DART:00113526:airline_fcff_year_2는 이미 음수인 추정 현금흐름이다. 마진·투자·환율 조합의 하방 범위와 회복 지연 민감도를 유지하면 분석은 진행 가능하다.",
+        "blocking": false,
+        "requested_evidence": []
+      },
+      {
+        "id": "R2",
+        "description": "항공기 투자·리스의 현금조달 시점이 EBITDA 회복보다 빠르면 자금소요가 추정을 넘을 수 있다. UW:KR:DART:00113526:fleet_capex는 장기 약정 규모이며 당해연도 현금 CAPEX와 동일하지 않고, UW:KR:DART:00113526:lease_liabilities와 UW:KR:DART:00113526:airline_ev_adjustment의 큰 청구권은 차환 부담을 뜻한다. REFINANCING 경고는 제공된 원장에 차환 스크린이 매칭되지 않았다는 의미로, 차환 불가능의 입증은 아니다. 현 모델의 ROU포함 감가·신규ROU투자·한 차례 부채차감 구조에서 원금 중복차감은 확인되지 않았다. 미래 유동성 지원을 확정이라고 말하지 않고 조달·stub 추정 오차를 별도 민감도로 공개한다.",
+        "blocking": false,
+        "requested_evidence": []
+      },
+      {
+        "id": "R3",
+        "description": "수주잔고의 존재와 이익이 나는 현금 전환은 다르다. UW:KR:DART:00113526:backlog, UW:KR:DART:00113526:backlog_conversion, UW:KR:DART:00113526:revenue_recognition는 규모와 실현 인식의 단서지만 UW:KR:DART:00113526:cancellation_rate와 UW:KR:DART:00113526:contract_liabilities가 명시하듯 취소율과 부문 선수금은 실측되지 않았다. UW:KR:DART:00113526:aerospace_fcff_year_5 및 상승 시나리오는 검수 지연·원가 상승·추가 재고를 과소평가할 수 있다. 취소율을 0으로 채우지 않고 전환 지연·마진·운전자금 범위를 유지하면 비공개 조건만으로 평가를 중단할 필요는 없다.",
+        "blocking": false,
+        "requested_evidence": []
+      },
+      {
+        "id": "R4",
+        "description": "엔진 정비 외부 매출 확대는 내부 정비능력 증가보다 어려울 수 있으며 성숙한 비교기업의 adjusted EBIT마진을 신규 공장에 적용하면 초기 가동률·인건비·인증 부담을 과소평가할 수 있다. UW:KR:DART:00113526:activity_mix, UW:KR:DART:00113526:customer_concentration, UW:KR:DART:00113526:service_revenue는 기타부문의 혼합성과 내부거래를 드러낸다. UW:KR:DART:00113526:other_fcff_year_1와 UW:KR:DART:00113526:other_fcff_year_5의 전환은 공식 보장치가 아니다. 현재 내부 절감과 외부 매출을 구분하고 초기 손실 및 가동 할인 범위를 둔 접근을 유지하며, 향후 외부 고객 계약과 실현 정비건수로 갱신한다.",
+        "blocking": false,
+        "requested_evidence": []
+      },
+      {
+        "id": "R5",
+        "description": "호텔 UW:KR:DART:00113526:asset_value를 출발점으로 한 UW:KR:DART:00113526:hotel_gross_asset_value는 실현가치 감정평가가 아니다. 공실·매각비용·비금융채무가 일괄 할인보다 크면 NAV가 낮아진다. UW:KR:DART:00113526:hotel_liabilities의 0은 부채 부존재가 아니라 연결 금융부채를 한 번 차감한 배분이며 현재 모델 노트는 비금융영업채무도 NAV 할인에 포함한다고 명시한다. UW:KR:DART:00113526:parent_noncontrolling_interest_adjustment도 잔여 청구권의 공정가치 관측이 아닌 대용치다. 호텔 950~1550bn 가정과 NCI 오차를 드러내고 감정평가나 확정 회수액으로 표현하지 않는 한 평가를 진행할 수 있다.",
+        "blocking": false,
+        "requested_evidence": []
+      },
+      {
+        "id": "R6",
+        "description": "기존 말기 재투자 불일치는 수정된 모델에서 해소됐음을 확인했다. 세 시나리오·세 부문 모두 Y5 FCFF=NOPAT*(1-g/ROIC)이며 UW:KR:DART:00113526:airline_fcff_year_5, UW:KR:DART:00113526:airline_terminal_growth, UW:KR:DART:00113526:airline_terminal_roic 등 최신 선언과 일치한다. 다만 Y5의 명시 매출성장률과 장기 g가 다른 이행기간 근사이므로 자본투자 정상화가 더 늦어지는 경우를 검토해야 한다. UW:KR:DART:00113526:diluted_shares의 합병 신주를 포함하면서 아시아나 가치를 다시 가산하지 않는 구조는 일관되나 계획 변경은 별도 위험이다. 기존의 산술 오류를 재차 blocking으로 취급하지 않고 장기 성장·ROIC·투자 회복시점 민감도로 다룬다.",
+        "blocking": false,
+        "requested_evidence": []
+      }
+    ],
+    "requested_evidence": []
+  }
+}
