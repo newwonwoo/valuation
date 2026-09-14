@@ -332,10 +332,17 @@ def _summary_card(data: dict[str, Any], filename: str) -> ReportVisual:
             f"목표가 대비 {margin:.0%} 안전마진을 적용했습니다."
         )
     elif equity_target is not None:
-        entry_text = (
-            f"주주 유한책임 반영 확률가중 목표가는 "
-            f"{_price_text(equity_target, valuation.reporting_unit)}입니다."
-        )
+        if any(item.value_per_share < 0 for item in valuation.scenarios):
+            entry_text = (
+                f"주주 유한책임 반영 확률가중 목표가는 "
+                f"{_price_text(equity_target, valuation.reporting_unit)}입니다. "
+                "다만 별도 매수 규칙이 등록되지 않아 특정 매수가는 제시하지 않습니다."
+            )
+        else:
+            entry_text = (
+                f"확률가중 기대값은 {_price_text(equity_target, valuation.reporting_unit)}입니다. "
+                "다만 별도 매수 규칙이 등록되지 않아 특정 매수가는 제시하지 않습니다."
+            )
     else:
         entry_text = (
             "실제 해결 이력 기반 확률 보정이 완료되지 않았습니다. "

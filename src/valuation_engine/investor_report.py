@@ -179,7 +179,12 @@ def probability_weighted_equity_value(
         for item in tuple(getattr(bound_scenarios, "scenarios", ()))
     }
     scenario_values = _scenario_map(valuation)
-    required = ("Down", "Base", "Bull")
+    center_id = (
+        "Base"
+        if "Base" in scenario_values and "Base" in probability_map
+        else "Core"
+    )
+    required = ("Down", center_id, "Bull")
     if valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC:
         return None
     if valuation.expected_value_per_share is None:

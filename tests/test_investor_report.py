@@ -20,6 +20,7 @@ from run_kr_live import (  # noqa: E402
 )
 from valuation_engine.investor_report import (  # noqa: E402
     load_investor_report_profile,
+    probability_weighted_equity_value,
     render_investor_report,
 )
 from valuation_engine.valuation_execution import (  # noqa: E402
@@ -258,6 +259,45 @@ def test_negative_residual_report_publishes_floored_target_and_entry_price(
     assert f"- 구체 매수가: {entry:,.0f}원 이하" in report
     assert "Σ[보정확률 × max(0원" in report
     assert "유한책임 반영 전 확률가중 잔여가치: -20원" in report
+
+
+def test_probability_weighted_equity_value_accepts_core_scenario_alias(
+    koreazinc_result,
+):
+    original = koreazinc_result.data["generic_valuation_result"]
+    valuation = replace(
+        original,
+        scenarios=tuple(
+            replace(item, scenario_id="Core")
+            if item.scenario_id == "Base"
+            else item
+            for item in original.scenarios
+        ),
+    )
+    original_bound = koreazinc_result.data["bound_scenario_set"]
+    bound = replace(
+        original_bound,
+        scenarios=tuple(
+            replace(item, scenario_id="Core")
+            if item.scenario_id == "Base"
+            else item
+            for item in original_bound.scenarios
+        ),
+    )
+    expected = sum(
+        item.probability
+        * max(
+            Decimal("0"),
+            next(
+                scenario.value_per_share
+                for scenario in valuation.scenarios
+                if scenario.scenario_id == item.scenario_id
+            ),
+        )
+        for item in bound.scenarios
+    )
+
+    assert probability_weighted_equity_value(valuation, bound) == expected
 
 
 def test_partial_business_residual_is_not_given_equity_floor(koreazinc_result):
