@@ -1,13 +1,15 @@
-# 대한항공 연속분포 APV·재무곤경 가치평가 설계
+# 항공사 범용 연속분포 APV·재무곤경 가치평가 설계
 
 Status: implementation-ready design; runtime not yet promoted  
-Target: 대한항공 003490 / PR #184  
+Reusable route: `airline_transport/traffic_yield_apv_distributional`
+
+First production proof: 대한항공 003490 / PR #184
 Base revision: `e9ed9f66967620e6e9ab28cfe49515ef37db5583`  
 Supersedes as decision methodology: `korean_air_combined_margin_v1` nearest-anchor weighting and report-level limited-liability flooring
 
 ## 1. 결정
 
-대한항공의 최종 투자판단은 더 이상 다음 식에서 만들지 않는다.
+동일 유형 항공사의 최종 투자판단은 더 이상 다음 식에서 만들지 않는다.
 
 ```text
 Down / Base / Bull 점가치
@@ -27,7 +29,7 @@ flowchart TD
     F --> G["P50 적정가·수익률 기반 매수가"]
 ```
 
-기존 3개 시나리오 DCF는 회귀 비교와 투자자 설명을 위해 남기되 새 실행의 확률 또는 목표가를 만들지 않는다. 기존 `continuous_financial_path_probability/v1`도 다른 실행의 호환성을 위해 삭제하지 않는다. 대한항공만 새 method/version으로 명시적으로 전환한다.
+기존 3개 시나리오 DCF는 회귀 비교와 투자자 설명을 위해 남기되 새 실행의 확률 또는 목표가를 만들지 않는다. 기존 `continuous_financial_path_probability/v1`도 다른 실행의 호환성을 위해 삭제하지 않는다. 새 method/version은 회사명이 아니라 항공운송 경제구조로 exact route하며, 대한항공은 첫 `LIVE_PRIMARY` 검증 회사로 명시적으로 전환한다.
 
 ## 2. 현재 결과의 폐기 사유
 
@@ -57,8 +59,8 @@ scenario(path) = argmin distance(path, scenario_anchor)
 
 ### 이번 변경 범위
 
-1. 대한항공 자기 이력의 빈도·경제범위를 맞춘 동적 확률경로
-2. 여객·화물·항공우주·호텔·기타의 경로별 SOTP
+1. 대상 항공사 자기 이력의 빈도·경제범위를 맞춘 동적 확률경로
+2. 여객·화물과 회사가 실제 보유한 비항공 사업의 경로별 SOTP
 3. 고정 WACC 대신 금융효과를 분리하는 APV 주 평가경로
 4. 현금·차입금·리스 만기와 차환·증자·구조조정의 연도별 분기
 5. 경로별 구주주 가치분포와 P50/P20~P80/P10
@@ -69,9 +71,33 @@ scenario(path) = argmin distance(path, scenario_anchor)
 
 - 기존 OCI·고려아연·셀트리온 확률 산출물의 소급 재작성
 - 현재가 또는 증권사 목표가를 확률·할인율·매수가 입력으로 사용
-- 항공사 비교기업의 영업실적을 대한항공 사건확률 표본으로 사용
-- Merton 단일만기 모형을 대한항공의 주 평가모형으로 사용
+- 다른 항공사의 영업실적을 대상 항공사의 사건확률 표본으로 사용
+- Merton 단일만기 모형을 다중 만기 항공사의 주 평가모형으로 사용
 - 기존 성공 산출물을 삭제하거나 같은 이름으로 덮어쓰기
+
+### 3.1 범용 적용 경계
+
+이 설계의 범용성은 모든 업종을 뜻하지 않는다. 다음 경제구조를 가진 항공사군에 같은 코드와 같은 감사계약을 적용한다.
+
+- 여객 또는 화물 운송량과 단위 운임이 매출의 주된 동인이다.
+- 항공유·환율·비연료 단위원가가 영업현금흐름에 중요하다.
+- 항공기 보유·리스·정비·기재투자와 다중 만기 차입이 재무구조에 중요하다.
+- 운항량, 운임, 원가, 기단 및 금융청구권을 원문 공시로 같은 경제범위에 대사할 수 있다.
+
+지원 프로필은 `NETWORK_FULL_SERVICE`, `LOW_COST_PASSENGER`, `CARGO_AIRLINE`이다. 여객·화물·비항공 사업은 프로필에 따라 필수 또는 선택 모듈이 되며, 존재하지 않는 사업을 0원 사업으로 임의 생성하지 않는다. 공항운영사, 항공기 제조사·리스사, 여행 플랫폼, 종합물류사의 비항공 사업은 이 route에 억지로 넣지 않고 별도 segment evaluator로 분리한다.
+
+범용 레이어와 회사 레이어의 경계는 다음과 같다.
+
+| 범용 항공사 코어 | 회사별 어댑터·입력 |
+|---|---|
+| traffic × yield 매출식, 연료·환율·단위원가 전달식 | 회사 공시의 ASK/RPK/ATK/RTK 명칭·단위·연결범위 매핑 |
+| 동적 driver 분포, OOS 보정, 경로 생성 | 대상 회사 자기 분기이력과 structural break |
+| 기단·CAPEX·리스 roll-forward | 기종별 보유/리스 대수, 인도계획, 리스·차입 만기표 |
+| APV, 세금효과, 차환·증자·waterfall | 회사별 신용한도, 담보, 자산매각·자본조달 가능 범위 |
+| P50·가치구간·곤경/희석 위험·entry policy 계산 | 주식수, 비지배지분, 우선주·전환증권, 투자정책 선택 |
+| 동일 감사·보고서·시장격리 계약 | 회사명, 통화, 회계기준, 원문 URL 및 기준일 |
+
+`src/valuation_engine`의 범용 코드에는 대한항공 이름·종목코드·고정 운항수치·기존 목표가를 둘 수 없다. 새 항공사는 `AirlineCompanyProfile`, metric mapping, driver panel, financing schedule 및 SOTP segment declaration만 추가한다. 공통 코드를 수정해야 두 번째 항공사를 실행할 수 있다면 범용화 실패다.
 
 ## 4. 가치평가 방법
 
@@ -115,7 +141,7 @@ Operating_APV[k]
 
 ### 4.3 리스 처리
 
-대한항공 실행은 리스를 금융청구권으로 취급한다. 다음 네 요소가 반드시 함께 움직여야 한다.
+항공사 범용 실행은 리스를 금융청구권으로 취급한다. 다음 네 요소가 반드시 함께 움직여야 한다.
 
 1. 영업성과는 lease-adjusted EBIT/EBITDAR로 대사한다.
 2. 기존 리스 원금·이자·만기를 financing schedule에 넣는다.
@@ -138,11 +164,11 @@ opening lease liability
 
 ### 5.1 입력자료 계약
 
-`TargetDriverPanel`은 다음을 강제한다.
+`TargetDriverPanel`은 모든 대상 항공사에 다음을 강제한다.
 
 - 분기 단위, 최소 32개 비교가능 관측치
 - 최소 12개 rolling-origin holdout
-- 연결/별도, 대한항공 단독/통합 pro-forma 경제범위의 명시적 구분
+- 연결/별도, 인수·합병 전후 및 pro-forma 경제범위의 명시적 구분
 - 최신 조건값도 분기 또는 계절조정된 동등 빈도
 - 각 관측치의 `period_end`, `published_at`, `first_seen_at`, 원문 URL, 내용 hash
 - 합병, 회계정책 변경, 사업범위 변경의 structural-break 선언
@@ -173,7 +199,7 @@ z[t] = seasonal[q] + A z[t-1] + B x[t] + epsilon[t]
 epsilon[t] ~ multivariate Student-t(df, covariance)
 ```
 
-- `z`: 대한항공의 변환된 load-bearing driver
+- `z`: 대상 항공사의 변환된 load-bearing driver
 - `x`: 유가·환율·공통 수요 등 원문이 있는 외생변수
 - `A`: 시간적 지속성; 표본이 작을수록 대각·0 방향으로 shrinkage
 - `covariance`: 같은 기간 driver의 상관구조
@@ -302,6 +328,27 @@ entry_price
 
 ```python
 @dataclass(frozen=True)
+class AirlineCompanyProfile:
+    target_id: str
+    operating_profile: str
+    reporting_currency: str
+    accounting_basis: str
+    passenger_module: bool
+    cargo_module: bool
+    non_airline_segment_ids: tuple[str, ...]
+    metric_mapping_version: str
+
+@dataclass(frozen=True)
+class AirlineMetricMapping:
+    target_id: str
+    capacity_metric_ids: tuple[str, ...]
+    traffic_metric_ids: tuple[str, ...]
+    yield_metric_ids: tuple[str, ...]
+    cost_metric_ids: tuple[str, ...]
+    fleet_metric_ids: tuple[str, ...]
+    canonical_unit_map: tuple[tuple[str, str], ...]
+
+@dataclass(frozen=True)
 class TargetDriverPanel:
     target_id: str
     frequency: str
@@ -349,7 +396,7 @@ class EntryPricePolicy:
     sensitivity_returns: tuple[Decimal, ...]
 ```
 
-위 객체는 현재가·증권사 목표가·기존 20,813원 또는 15,600원 필드를 갖지 않는다.
+범용 객체는 회사명·종목코드별 조건문, 현재가, 증권사 목표가 또는 과거 실행의 목표가·매수가 필드를 갖지 않는다. `target_id`는 데이터 결합용 식별자일 뿐 계산공식을 선택하지 않는다.
 
 ## 9. 구현 경계와 파일 계획
 
@@ -361,13 +408,15 @@ class EntryPricePolicy:
 | Unit Contract | `config/unit_contract_registry.yaml` | Scenario Engine 출력에 driver paths, DETERMINISTIC_VALUATION에 distributional APV, Audit에 distress/entry 검증 추가 |
 | Method registry | `config/valuation_method_capability_registry.yaml` | `airline_transport/traffic_yield_apv_distributional` exact route 추가 |
 | 동적 분포 | `src/valuation_engine/dynamic_driver_distribution.py` | 동일빈도 검증, 재귀상태 추정·모의, OOS proper-score 진단 |
-| 리스·재무곤경 | `src/valuation_engine/airline_financing_paths.py` | 리스 대사, 유동성, 차환·증자·waterfall |
+| 항공 영업경로 | `src/valuation_engine/airline_operating_paths.py` | 프로필별 여객·화물 traffic/yield, 연료·환율·단위원가, 기단·재투자 |
+| 리스·재무곤경 | `src/valuation_engine/airline_financing_paths.py` | 회사 독립 리스 대사, 유동성, 차환·증자·waterfall |
 | 경로별 가치 | `src/valuation_engine/distributional_apv.py` | segment APV/SOTP와 구주주가치분포 |
 | 매수가 | `src/valuation_engine/entry_price.py` | 요구수익률·quantile 기반 pure function |
 | Registry 연결 | `src/valuation_engine/evaluator_registry.py`, `generic_valuation_plan.py`, `valuation_execution.py` | 새 method/version exact binding; legacy fallback 금지 |
 | Audit | `src/valuation_engine/generic_audit.py`, `audit_adapter.py` | anchor 미사용, 0-floor 금지, lease/waterfall/분포 안정성 검사 |
 | Reporting | `investor_report.py`, `generic_reporting.py`, `visual_reporting.py` | P50·범위·위험·매수가 표시, 기존 문구 삭제 |
-| 대한항공 입력 | `runs/korean-air-003490/**`, `research/korean-air-20260913/**` | 분기 panel, debt/lease schedule, method binding, 재생성 입력 |
+| 회사 입력 어댑터 | `runs/<airline-id>/**`, `research/<airline-id>/**` | profile, metric mapping, 분기 panel, debt/lease schedule, segment binding |
+| 대한항공 최초 입력 | `runs/korean-air-003490/**`, `research/korean-air-20260913/**` | 공통 계약을 사용한 첫 production proof와 재생성 입력 |
 | 최종 산출물 | 새 불변 report directory | 기존 manifest를 `supersedes`, 동일 실행의 보고서·SVG·감사 묶음 |
 
 `evaluator_registry.py`는 보호영역이므로 구현 시작 전에 PR #184의 active claim에 해당 파일을 추가한다. 현재 작업자의 미추적 risk 조사파일은 이번 설계·구현의 write set에서 제외한다.
@@ -384,6 +433,7 @@ class EntryPricePolicy:
 | C4 | APV·리스·차환·희석 결합 | DETERMINISTIC_VALUATION | lease roll-forward와 claim waterfall 대사 |
 | C5 | 구체 매수가를 수익률에서 역산 | INTRINSIC_FREEZE | 시장가격을 바꿔도 매수가 불변, quantile 수식 golden test |
 | C6 | 투자자 보고서와 산출물 재생성 | FINAL_REPORT | 새 숫자·범위·위험이 동일 immutable run과 일치 |
+| C7 | 같은 유형 항공사에 재사용 | DOCTRINE_CONSTITUTION | 두 번째 항공사는 회사 입력만 추가하고 공통 계산·감사 코드를 수정하지 않음 |
 
 ### 순차 작업
 
@@ -404,7 +454,7 @@ T1과 T2만 write set이 겹치지 않아 함께 진행할 수 있다. 모델 �
 
 | Task | 조항 | 주요 read set | write set | 완료 검증기 |
 |---|---|---|---|---|
-| T1 계약·스키마 | C1~C5 | 정본 방법론, Unit Contract, method registry | 두 `SKILL.md`, 정본 문서, `unit_contract_registry.yaml`, `valuation_method_capability_registry.yaml`, PR #184 claim | skill byte identity, registry validators, revision-plan validator |
+| T1 계약·스키마 | C1~C5,C7 | 정본 방법론, Unit Contract, method registry | 두 `SKILL.md`, 정본 문서, `unit_contract_registry.yaml`, `valuation_method_capability_registry.yaml`, PR #184 claim | skill byte identity, registry validators, revision-plan validator |
 | T2 분기자료·만기표 | C3,C4 | DART/IR 원문, 기존 run declarations | 새 driver panel·debt/lease schedule·provenance declaration | frequency/perimeter/source-link/lease-schedule validators |
 | T3 동적 분포 | C1,C3 | T1 schema, T2 panel | `dynamic_driver_distribution.py`, 전용 tests | OOS score, coverage, recursive persistence, correlation tests |
 | T4 APV·재무곤경 | C2,C4 | T1 schema, T2 financing inputs, T3 draws | `airline_financing_paths.py`, `distributional_apv.py`, registry binding, tests | APV, lease, liquidity, dilution, waterfall tests |
@@ -425,6 +475,9 @@ T1과 T2만 write set이 겹치지 않아 함께 진행할 수 있다. 모델 �
 - `test_scenario_labels_and_anchors_do_not_change_equity_distribution`
 - `test_distribution_requires_positive_oos_skill_and_coverage`
 - `test_peer_company_outcomes_cannot_enter_target_driver_panel`
+- `test_second_airline_uses_profile_and_mapping_without_common_code_change`
+- `test_unsupported_air_transport_business_fails_closed_or_routes_by_segment`
+- `test_optional_passenger_or_cargo_module_is_not_fabricated_as_zero_value`
 
 ### APV·리스·재무곤경
 
@@ -449,6 +502,7 @@ T1과 T2만 write set이 겹치지 않아 함께 진행할 수 있다. 모델 �
 - 기존 OCI·셀트리온·고려아연 golden fixture 불변
 - 대한항공 기존 3개 시나리오 DCF는 legacy cross-check로 재현
 - 새 대한항공 실행의 probability/value/report/두 SVG가 동일 distribution hash 참조
+- 서로 다른 통화·공시 명칭을 가진 두 번째 항공사 frozen fixture가 공통 계산 코드 수정 없이 동일 route·감사를 통과
 - 모든 활성 Evidence가 원문 HTTP(S) 링크를 보고서에 제공
 - registry, portfolio integrity, PM project status sync, verified-report, LIVE_PRIMARY와 전체 pytest 통과
 
@@ -466,6 +520,7 @@ T1과 T2만 write set이 겹치지 않아 함께 진행할 수 있다. 모델 �
 8. Audit 이후에만 Street와 현재가가 로드됨
 9. 새 불변 manifest가 기존 보고서를 `supersedes`로 연결함
 10. 필수 CI 전체가 최종 head에서 통과함
+11. 두 번째 항공사 검증에서 회사별 입력 파일 외 공통 코드 변경이 없음
 
 하나라도 실패하면 새 숫자를 배포하지 않는다. 이 경우 실패는 구체적인 데이터·산식·검증항목으로 개발 산출물에 남기며, 기존 20,813원·15,600원을 대신 표시하지 않는다.
 
