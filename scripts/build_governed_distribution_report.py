@@ -47,17 +47,25 @@ def _decimal_rows(value):
     return value
 
 
-def _source_bundle(run_dir: Path, spec: dict) -> tuple[Path, dict, dict, dict]:
-    bundle = (run_dir / spec["source_valuation_bundle"]).resolve()
-    manifest = _json(bundle / "report_bundle_manifest.json")
-    run_manifest = _json(bundle / "manifest.json")
-    audit = _json(bundle / "audit.json")
-    valuation = _json(bundle / "valuation.json")
-    if run_manifest.get("status") != "COMPLETED" or run_manifest.get("audit_passed") is not True:
+def _source_valuation_snapshot(run_dir: Path, spec: dict) -> tuple[dict, dict]:
+    snapshot = _json((run_dir / spec["source_valuation_snapshot"]).resolve())
+    if snapshot.get("source_run_status") != "COMPLETED" or snapshot.get("source_audit_passed") is not True:
         raise ValueError("source valuation run is not completed and audited")
-    if manifest.get("valuation_hash") != valuation.get("valuation_hash"):
-        raise ValueError("source valuation hash disagrees with its bundle manifest")
-    return bundle, manifest, audit, valuation
+    if not snapshot.get("source_valuation_hash") or not snapshot.get("source_audit_hash"):
+        raise ValueError("source valuation snapshot is missing immutable receipts")
+    valuation = {
+        "valuation_hash": snapshot["source_valuation_hash"],
+        "equity_aggregation": {
+            "scenario_values": [
+                {
+                    "scenario_id": row["scenario_id"],
+                    "equity_value": {"amount": row["equity_value_KRW"]},
+                }
+                for row in snapshot["scenario_values"]
+            ]
+        },
+    }
+    return snapshot, valuation
 
 
 def _scenario_equity(valuation: dict) -> dict[str, Decimal]:
@@ -111,7 +119,7 @@ def _svg(title: str, lines: list[str], *, distribution_hash: str) -> str:
 def build(spec_path: Path, output_root: Path) -> Path:
     run_dir = spec_path.parent.parent
     spec = _json(spec_path)
-    source_bundle, source_manifest, source_audit, valuation = _source_bundle(run_dir, spec)
+    source_snapshot, valuation = _source_valuation_snapshot(run_dir, spec)
     financing_path = (run_dir / spec["source_financing_spec"]).resolve()
     risk_path = (run_dir / spec["source_risk_pack"]).resolve()
     financing = _json(financing_path)
@@ -120,7 +128,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
     claims = Decimal(spec["gross_claim_face_value_KRW"])
     shares = Decimal(spec["diluted_shares"])
     source_bridge_hash = sha256(
-        (source_manifest["valuation_hash"] + _sha(financing_path) + _sha(risk_path)).encode("utf-8")
+        (source_snapshot["source_valuation_hash"] + _sha(financing_path) + _sha(risk_path)).encode("utf-8")
     ).hexdigest()
     branches = tuple(
         StructuralEquityBranch(
@@ -132,7 +140,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
             risk_free_rate=Decimal(spec["risk_free_rate"]),
             claim_horizon_years=Decimal(spec["claim_horizon_years"]),
             evidence_path_ids=(
-                f"valuation:{source_manifest['valuation_hash']}:{row['source_scenario']}",
+                f"valuation:{source_snapshot['source_valuation_hash']}:{row['source_scenario']}",
                 f"financing:{_sha(financing_path)}",
             ),
             is_central=bool(row["is_central"]),
@@ -222,7 +230,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
     )
     audit_checks = {
         "source_run_completed_and_audited": True,
-        "source_valuation_hash_bound": source_manifest["valuation_hash"] == valuation["valuation_hash"],
+        "source_valuation_hash_bound": source_snapshot["source_valuation_hash"] == valuation["valuation_hash"],
         "financing_claims_reconciled_to_declared_schedule": disclosed_gross_claims
         == Decimal(claim_bridge["disclosed_debt_including_leases_KRW"]),
         "gross_structural_claim_reconstructed_once": reconstructed_gross_claims == claims,
@@ -244,7 +252,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "schema_version": "governed-distribution-audit/v1",
         "passed": True,
         "checks": audit_checks,
-        "source_audit_hash": source_manifest["audit_hash"],
+        "source_audit_hash": source_snapshot["source_audit_hash"],
         "source_audit_passed": True,
         "distribution_hash": result.distribution_hash,
         "intrinsic_freeze_hash": intrinsic_freeze_hash,
@@ -371,8 +379,8 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "audit_passed": True,
         "distribution_hash": result.distribution_hash,
         "intrinsic_freeze_hash": intrinsic_freeze_hash,
-        "source_valuation_hash": source_manifest["valuation_hash"],
-        "source_audit_hash": source_manifest["audit_hash"],
+        "source_valuation_hash": source_snapshot["source_valuation_hash"],
+        "source_audit_hash": source_snapshot["source_audit_hash"],
         "supersedes_artifact_id": spec["supersedes_artifact_id"],
         "spec_sha256": _sha(spec_path),
         "files": receipts,

@@ -5,7 +5,7 @@
   "ticker": "003490",
   "as_of": "2026-09-13",
   "reporting_currency": "KRW",
-  "source_valuation_bundle": "out/bundles/003490_20260913_TP20813_47FF05D6D4DC",
+  "source_valuation_snapshot": "declarations/governed_source_valuation_snapshot.json",
   "source_financing_spec": "declarations/financing_path_spec.json",
   "source_risk_pack": "declarations/risk_pack.yaml",
   "source_market_observation": "../../research/korean-air-20260913/market/naver_price.json",

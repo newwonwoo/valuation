@@ -1,6 +1,6 @@
 {
   "schema_version": "governed-distribution-report-bundle/v1",
-  "artifact_id": "003490-20260913-DIST-00C763B0C92C",
+  "artifact_id": "003490-20260913-DIST-8B3A2C1C58D8",
   "company": "대한항공",
   "ticker": "003490",
   "as_of": "2026-09-13",
@@ -11,7 +11,7 @@
   "source_valuation_hash": "fa91fc4535385b9f2deb0c9e3160321c1d3829768429677445ce5a6bb358e8bb",
   "source_audit_hash": "40b78a4babb0a5c63d8f5ab794600516c6ffe338ae2321150184b7062a4b9d3c",
   "supersedes_artifact_id": "003490-20260913-TP20813-47FF05D6D4DC",
-  "spec_sha256": "6fecbbbf2b6c5625b6dc5113b95227a59173fbfec4ca674a62434b2d362bed1d",
+  "spec_sha256": "d1b4ad9f4f024727f89d83f2ff9d5846f5ed020ca6e9cc3643119ed0ecf64e99",
   "files": [
     {
       "filename": "assumptions_risk_sources.svg",
