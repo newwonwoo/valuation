@@ -37,6 +37,10 @@ def _money(value: Decimal) -> str:
     return f"{value.quantize(Decimal('1'), rounding=ROUND_HALF_UP):,.0f}원"
 
 
+def _pct(value: Decimal) -> str:
+    return f"{value.quantize(Decimal('0.1'), rounding=ROUND_HALF_UP):,.1f}%"
+
+
 def _decimal_rows(value):
     if isinstance(value, Decimal):
         return str(value)
@@ -92,6 +96,79 @@ def _mean_sensitivity(branch_values, sets):
             }
         )
     return rows
+
+
+def _broker_rows(snapshot: dict, *, spec: dict, market_price: Decimal, result) -> tuple[list[dict], dict]:
+    if snapshot.get("schema_version") != "post-freeze-broker-comparison/v1":
+        raise ValueError("unsupported broker comparison snapshot")
+    if snapshot.get("company") != spec["company"] or snapshot.get("ticker") != spec["ticker"]:
+        raise ValueError("broker comparison identity does not match the valuation target")
+    if snapshot.get("as_of") != spec["as_of"]:
+        raise ValueError("broker comparison cutoff does not match the valuation cutoff")
+    raw_rows = snapshot.get("verified_reports") or []
+    if len(raw_rows) < 2:
+        raise ValueError("broker comparison requires at least two verified reports")
+    rows = []
+    institutions = set()
+    for raw in raw_rows:
+        institution = raw.get("institution", "").strip()
+        if not institution or institution in institutions:
+            raise ValueError("broker comparison institutions must be unique")
+        institutions.add(institution)
+        if raw.get("report_date", "") > spec["as_of"]:
+            raise ValueError("broker report date is after the intrinsic cutoff")
+        if raw.get("target_price_currency") != spec["reporting_currency"]:
+            raise ValueError("broker target currency does not match the report currency")
+        source_url = raw.get("url", "")
+        if not source_url.startswith(("http://", "https://")):
+            raise ValueError("broker report requires a directly clickable HTTP(S) source")
+        target = Decimal(str(raw.get("target_price_krw", "0")))
+        if target <= 0:
+            raise ValueError("broker target price must be positive")
+        rows.append(
+            {
+                "institution": institution,
+                "analyst": raw.get("analyst", "미공개"),
+                "report_date": raw["report_date"],
+                "title": raw.get("title", ""),
+                "rating": raw.get("rating", "미공개"),
+                "target_price": str(target),
+                "target_price_currency": raw["target_price_currency"],
+                "target_upside_vs_market_pct": str((target / market_price - Decimal("1")) * Decimal("100")),
+                "premium_vs_p50_pct": str((target / result.p50 - Decimal("1")) * Decimal("100")),
+                "premium_vs_probability_weighted_mean_pct": str(
+                    (target / result.mean - Decimal("1")) * Decimal("100")
+                ),
+                "valuation_method": raw.get("valuation_method", "NOT_DISCLOSED"),
+                "base_year": raw.get("base_year", "NOT_DISCLOSED"),
+                "target_multiple": raw.get("target_multiple", "NOT_DISCLOSED"),
+                "disclosed_estimates": raw.get("disclosed_estimates", []),
+                "valuation_basis_note": raw.get("valuation_basis_note", ""),
+                "load_bearing_assumption": raw.get("load_bearing_assumption", ""),
+                "source_url": source_url,
+                "access_quality": raw.get("access_quality", ""),
+            }
+        )
+    targets = sorted(Decimal(row["target_price"]) for row in rows)
+    midpoint = len(targets) // 2
+    median = targets[midpoint] if len(targets) % 2 else (targets[midpoint - 1] + targets[midpoint]) / Decimal("2")
+    sample = {
+        "report_count": len(rows),
+        "latest_report_date": max(row["report_date"] for row in rows),
+        "min_target_price": str(targets[0]),
+        "median_target_price": str(median),
+        "mean_target_price": str(sum(targets, Decimal("0")) / Decimal(len(targets))),
+        "max_target_price": str(targets[-1]),
+        "median_premium_vs_market_pct": str((median / market_price - Decimal("1")) * Decimal("100")),
+        "median_premium_vs_p50_pct": str((median / result.p50 - Decimal("1")) * Decimal("100")),
+        "median_premium_vs_probability_weighted_mean_pct": str(
+            (median / result.mean - Decimal("1")) * Decimal("100")
+        ),
+        "probability_weighted_mean_discount_to_median_pct": str(
+            (Decimal("1") - result.mean / median) * Decimal("100")
+        ),
+    }
+    return rows, sample
 
 
 def _svg(title: str, lines: list[str], *, distribution_hash: str) -> str:
@@ -157,17 +234,35 @@ def build(spec_path: Path, output_root: Path) -> Path:
         sensitivity_returns=tuple(Decimal(value) for value in policy["sensitivity_returns"]),
         source_bridge_hash=source_bridge_hash,
     )
-    # Intrinsic freeze occurs here. Market data is intentionally read only below.
+    # Intrinsic freeze occurs here. Broker targets and market data are
+    # intentionally inaccessible until after this point.
     intrinsic_freeze_hash = sha256(
         (result.distribution_hash + str(result.entry_price) + policy["policy_version"]).encode("utf-8")
     ).hexdigest()
 
+    broker_path = (run_dir / spec["source_broker_comparison"]).resolve()
+    broker_snapshot = _json(broker_path)
     market_path = (run_dir / spec["source_market_observation"]).resolve()
     market_rows = _json(market_path)
     market = market_rows[0]
     market_price = Decimal(str(market["closePrice"]).replace(",", ""))
     if market["localTradedAt"] > spec["as_of"]:
         raise ValueError("post-freeze market observation is after the intrinsic cutoff")
+    broker_rows, broker_sample = _broker_rows(
+        broker_snapshot,
+        spec=spec,
+        market_price=market_price,
+        result=result,
+    )
+    post_freeze_comparison_hash = sha256(
+        (
+            intrinsic_freeze_hash
+            + _sha(broker_path)
+            + _sha(market_path)
+            + market["localTradedAt"]
+            + str(market_price)
+        ).encode("utf-8")
+    ).hexdigest()
 
     values = {name: value for name, value, _ in result.branch_values_per_share}
     sensitivity = _mean_sensitivity(
@@ -216,6 +311,23 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "intrinsic_freeze_hash": intrinsic_freeze_hash,
         "market_price_used": False,
     }
+    broker_payload = {
+        "schema_version": "post-freeze-broker-comparison-result/v1",
+        "target_id": spec["target_id"],
+        "as_of": spec["as_of"],
+        "intrinsic_freeze_hash": intrinsic_freeze_hash,
+        "post_freeze_comparison_hash": post_freeze_comparison_hash,
+        "intrinsic_distribution_unchanged": True,
+        "market": {
+            "date": market["localTradedAt"],
+            "price": str(market_price),
+            "currency": spec["reporting_currency"],
+        },
+        "sample_policy": broker_snapshot["sample_policy"],
+        "coverage_limit": broker_snapshot["coverage_limit"],
+        "sample": broker_sample,
+        "reports": broker_rows,
+    }
     claim_bridge = spec["claim_bridge"]
     disclosed_gross_claims = Decimal(
         str(financing["claim_balance_reconciliation_KRW_million"]["total_debt_including_leases"])
@@ -244,6 +356,18 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "entry_is_pre_market_and_hash_bound": True,
         "realized_success_meets_policy_minimum": result.realized_success_probability
         >= result.target_success_probability,
+        "broker_loaded_only_after_intrinsic_freeze": True,
+        "broker_report_dates_not_after_cutoff": all(
+            row["report_date"] <= spec["as_of"] for row in broker_rows
+        ),
+        "broker_targets_excluded_from_intrinsic_inputs": True,
+        "broker_sources_are_clickable_http": all(
+            row["source_url"].startswith(("http://", "https://")) for row in broker_rows
+        ),
+        "broker_sample_uses_unique_institutions": len(
+            {row["institution"] for row in broker_rows}
+        )
+        == len(broker_rows),
         "market_loaded_only_after_intrinsic_freeze": True,
     }
     if not all(audit_checks.values()):
@@ -256,7 +380,24 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "source_audit_passed": True,
         "distribution_hash": result.distribution_hash,
         "intrinsic_freeze_hash": intrinsic_freeze_hash,
+        "post_freeze_comparison_hash": post_freeze_comparison_hash,
     }
+
+    broker_table = []
+    for row in broker_rows:
+        basis = row["target_multiple"]
+        if basis == "NOT_DISCLOSED":
+            basis = "산식·배수 비공개"
+        broker_table.append(
+            f"| {row['institution']} ({row['report_date']}) | "
+            f"{_money(Decimal(row['target_price']))} · {row['rating']} | "
+            f"{_pct(Decimal(row['target_upside_vs_market_pct']))} | {basis} | "
+            f"{row['load_bearing_assumption']} |"
+        )
+    broker_source_lines = "\n".join(
+        f"- [{row['institution']} {row['report_date']} — {row['title']}]({row['source_url']})"
+        for row in broker_rows
+    )
 
     report = f"""# 대한항공 최종 투자자 보고서 — 구조형 분포 APV 보완
 
@@ -267,6 +408,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
 | 중앙 적정가(P50) | **{_money(result.p50)}** |
 | 확률가중 평균가치 | **{_money(result.mean)}** |
 | 구체 매수가(3년, 연 12%, 하위 25% 기준) | **{_money(result.entry_price)}** |
+| 검증 증권사 표본 | **{_money(Decimal(broker_sample['min_target_price']))}~{_money(Decimal(broker_sample['max_target_price']))}** · 중앙값 {_money(Decimal(broker_sample['median_target_price']))} |
 
 ## 무엇을 고쳤는가
 
@@ -282,7 +424,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
 
 하방을 0원으로 잘라 평균하지 않았다. 감사된 기업가치에 적격 유동자산을 되더하고, 리스 포함 공시부채·기준일까지의 자금소요·기타 선순위청구권을 총청구액으로 한 번만 반영했다. 자산변동성 22%와 5년 청구기간을 사용해 **만기가 있는 잔여청구권**으로 평가했다. 그 결과 하방 상태도 {_money(values['Down'])}이며, 법적 유한책임은 미래 만기 지급액에서만 작동한다.
 
-가중 평균은 {_money(result.mean)}, 중앙값은 {_money(result.p50)}이다. prior 민감도에서 가중 평균은 {_money(min(Decimal(row['probability_weighted_mean']) for row in sensitivity))}~{_money(max(Decimal(row['probability_weighted_mean']) for row in sensitivity))}이다. P10~P90은 {_money(result.p10)}~{_money(result.p90)}이다. 현재가 {_money(market_price)}은 이 내재가치와 매수가 계산을 끝내고 동결한 뒤에만 비교했다.
+가중 평균은 {_money(result.mean)}, 중앙값은 {_money(result.p50)}이다. prior 민감도에서 가중 평균은 {_money(min(Decimal(row['probability_weighted_mean']) for row in sensitivity))}~{_money(max(Decimal(row['probability_weighted_mean']) for row in sensitivity))}이다. P10~P90은 {_money(result.p10)}~{_money(result.p90)}이다. 현재가 {_money(market_price)}({market['localTradedAt']})은 이 내재가치와 매수가 계산을 끝내고 동결한 뒤에만 비교했다.
 
 ## 매수가
 
@@ -301,7 +443,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
 
 현재가 {_money(market_price)}은 P50 {_money(result.p50)}과 가중 평균 {_money(result.mean)}을 모두 웃돈다. 통합 시너지와 항공우주·MRO 전환이 실행 성공 경로에 가깝게 확인되지 않는 한 신규매수 근거가 약하다. 실적 확인 포인트는 연결 항공부문 마진, 투자 후 잉여현금흐름, 리스 포함 순차입금, 아시아나 손실 축소다.
 
-## 방법과 한계
+## 핵심 가정과 위험
 
 - 공통 적용계약은 용량×가동률×단가, 높은 고정비·재투자, 장기자산·리스 및 금융청구권 구조를 기준으로 선택한다. 항공 업종명은 회사 지표를 공통 입력에 연결하는 역할만 한다.
 - 확률은 감사된 조건부 가치에 결속한 사건 사전확률이다. 현재 그룹·전신 회사의 OOS 보정 또는 segment posterior로 표시하지 않는다.
@@ -309,12 +451,32 @@ def build(spec_path: Path, output_root: Path) -> Path:
 - 구조형 자산에는 적격 유동자산을 되더하고, 총청구액에는 공시부채·기준일까지의 자금소요·비지배/기타 청구권을 한 번씩만 합산했다. 세부 은행차입 만기와 담보순위 공백은 남는다.
 - 기존 보고서는 감사 이력으로 보존하며 이 보고서가 의사결정 방법론을 대체한다.
 
+## 증권사·시장 비교
+
+기준일 이전에 내용과 목표가를 확인할 수 있었던 증권사별 최신 공개자료 표본 3건을 비교했다. 표본 중앙값은 {_money(Decimal(broker_sample['median_target_price']))}, 범위는 {_money(Decimal(broker_sample['min_target_price']))}~{_money(Decimal(broker_sample['max_target_price']))}이다. 이는 전체 시장 컨센서스가 아니라 **공개 원문 검증 표본**이다.
+
+| 증권사·보고일 | 목표가·의견 | 현재가 대비 | 공개된 평가기준 | 목표가를 지탱하는 핵심 가정 |
+|---|---:|---:|---|---|
+""" + "\n".join(broker_table) + f"""
+
+표본 중앙값 {_money(Decimal(broker_sample['median_target_price']))}은 현재가보다 {_pct(Decimal(broker_sample['median_premium_vs_market_pct']))}, 우리 P50보다 {_pct(Decimal(broker_sample['median_premium_vs_p50_pct']))}, 확률가중 평균보다 {_pct(Decimal(broker_sample['median_premium_vs_probability_weighted_mean_pct']))} 높다. 반대로 우리 확률가중 평균은 표본 중앙값보다 {_pct(Decimal(broker_sample['probability_weighted_mean_discount_to_median_pct']))} 낮다.
+
+### 왜 차이가 나는가
+
+- **영업경로:** 미래에셋은 3Q26 연결 영업이익 4,887억원과 원화 강세, LS는 FY2027 연결 영업이익 2.663조원·영업이익률 9.1%, 하나는 통합 LCC 효과의 2028년 본격화를 전제로 한다. 세 보고서 모두 여객·화물 단가와 통합 시너지를 회복축으로 본다.
+- **평가정책:** 미래에셋은 과거 PBR 밴드 상단을 웃도는 1.1배를 적용한다. 우리 값은 목표 배수를 주가에 적용하지 않고, 상태별 사업자산에서 총금융청구권을 반영한 구주주 잔여가치를 확률분포로 계산한다.
+- **재무·자본구조:** 우리 모형은 리스 포함 공시부채, 기준일까지의 자금소요와 기타 선순위청구권을 총 25.697조원으로 명시하고 적격 유동자산을 별도 되더한다. 공개자료에서 하나·LS의 목표가 산식, 기준연도, 순차입금·CAPEX 처리가 모두 공개되지 않아 이 부분의 가격 차이는 정량 분해하지 않았다.
+- **상방의 위치:** 우리 실행 성공 값 {_money(values['Upside'])}은 증권사 목표가 상단 {_money(Decimal(broker_sample['max_target_price']))}보다 높다. 따라서 차이는 상방을 막아서라기보다, 상방 실현확률과 통합 전후 현금흐름·금융청구권을 언제 인식하느냐에서 발생한다.
+- **남는 오차:** 증권사별 비공개 세부 산식 때문에 영업·금융·배수 효과를 합계 100%로 억지 배분하지 않았다. LS 자료는 증권사 작성본 전체를 확인했지만 공개 제3자 미러라는 출처 제약도 남긴다.
+
 ## 원문
 
 - [대한항공 재무정보·분기 IR 아카이브](https://www.koreanair.com/contents/footer/about-us/investor-relations/financial-information)
 - [대한항공 2026 반기보고서](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803)
 - [2026년 7월 24일 합병 투자설명서](https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260724000006)
 - [Merton, corporate debt structural model](https://dspace.mit.edu/handle/1721.1/1875)
+- [네이버증권 대한항공 가격 이력](https://m.stock.naver.com/api/stock/003490/price)
+{broker_source_lines}
 """
     forbidden = (
         "가장 가까운 시나리오",
@@ -326,7 +488,12 @@ def build(spec_path: Path, output_root: Path) -> Path:
         raise ValueError("report contains a retired valuation phrase")
 
     artifact_basis = sha256(
-        (result.distribution_hash + intrinsic_freeze_hash + _sha(spec_path)).encode("utf-8")
+        (
+            result.distribution_hash
+            + intrinsic_freeze_hash
+            + post_freeze_comparison_hash
+            + _sha(spec_path)
+        ).encode("utf-8")
     ).hexdigest()
     artifact_id = f"{spec['ticker']}-{spec['as_of'].replace('-', '')}-DIST-{artifact_basis[:12].upper()}"
     bundle = output_root / artifact_id
@@ -334,6 +501,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
     files = {
         "equity_value_distribution.json": json.dumps(distribution_payload, ensure_ascii=False, indent=2) + "\n",
         "entry_price.json": json.dumps(entry_payload, ensure_ascii=False, indent=2) + "\n",
+        "broker_comparison.json": json.dumps(broker_payload, ensure_ascii=False, indent=2) + "\n",
         "audit.json": json.dumps(audit_payload, ensure_ascii=False, indent=2) + "\n",
         "final_report.md": report,
         "valuation_summary.svg": _svg(
@@ -353,7 +521,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
                 "자산변동성 22% · 총청구액 25.696557조원 · 5년",
                 "보고서 단계 0원 하한 없음 · 현재가는 내재가치 동결 후 비교",
                 "주요 위험: 통합손실 · 리스/차입 차환 · 투자 후 현금흐름",
-                "원문: 대한항공 IR · DART 반기보고서 · 합병 투자설명서",
+                f"증권사 공개 3건 {_money(Decimal(broker_sample['min_target_price']))}~{_money(Decimal(broker_sample['max_target_price']))}",
             ],
             distribution_hash=result.distribution_hash,
         ),
@@ -376,6 +544,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "audit_passed": True,
         "distribution_hash": result.distribution_hash,
         "intrinsic_freeze_hash": intrinsic_freeze_hash,
+        "post_freeze_comparison_hash": post_freeze_comparison_hash,
         "source_valuation_hash": source_snapshot["source_valuation_hash"],
         "source_audit_hash": source_snapshot["source_audit_hash"],
         "supersedes_artifact_id": spec["supersedes_artifact_id"],
@@ -396,6 +565,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
             "report_filename": "final_report.md",
             "distribution_hash": result.distribution_hash,
             "intrinsic_freeze_hash": intrinsic_freeze_hash,
+            "post_freeze_comparison_hash": post_freeze_comparison_hash,
             "audit_passed": True,
             "supersedes_artifact_id": spec["supersedes_artifact_id"],
         }

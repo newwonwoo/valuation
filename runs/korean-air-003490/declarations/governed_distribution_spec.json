@@ -8,8 +8,9 @@
   "source_valuation_snapshot": "declarations/governed_source_valuation_snapshot.json",
   "source_financing_spec": "declarations/financing_path_spec.json",
   "source_risk_pack": "declarations/risk_pack.yaml",
+  "source_broker_comparison": "../../research/korean-air-20260913/street/public_broker_comparison.json",
   "source_market_observation": "../../research/korean-air-20260913/market/naver_price.json",
-  "supersedes_artifact_id": "003490-20260913-TP20813-47FF05D6D4DC",
+  "supersedes_artifact_id": "003490-20260913-DIST-8B3A2C1C58D8",
   "scenario_ids": {
     "down": "Down",
     "central": "Base",

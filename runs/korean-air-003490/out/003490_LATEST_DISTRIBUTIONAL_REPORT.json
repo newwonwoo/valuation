@@ -1,10 +1,11 @@
 {
   "schema_version": "governed-distribution-latest/v1",
-  "artifact_id": "003490-20260913-DIST-8B3A2C1C58D8",
-  "bundle_directory": "distributional_bundles/003490-20260913-DIST-8B3A2C1C58D8",
+  "artifact_id": "003490-20260913-DIST-4664627231DA",
+  "bundle_directory": "distributional_bundles/003490-20260913-DIST-4664627231DA",
   "report_filename": "final_report.md",
   "distribution_hash": "349b06908b6e5cb7e1b33887971dd018dd1833508ccbdc3b17779e8fc6fa0fc4",
   "intrinsic_freeze_hash": "768f0d1eb65f06246d04e200cd20faac5f0eb2dcbef8cbfdce8220a192acb937",
+  "post_freeze_comparison_hash": "5be102c78550f8fb97a6863ce4e0672bdec3f18ba57c6d661fa5c0e36b5917fa",
   "audit_passed": true,
-  "supersedes_artifact_id": "003490-20260913-TP20813-47FF05D6D4DC"
+  "supersedes_artifact_id": "003490-20260913-DIST-8B3A2C1C58D8"
 }
