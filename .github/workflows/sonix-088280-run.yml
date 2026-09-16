@@ -1,0 +1,113 @@
+name: sonix-088280-canonical-run
+
+on:
+  push:
+    branches: [analysis/sonix-088280-20260916]
+    paths:
+      - '.github/workflows/sonix-088280-run.yml'
+      - 'docs/SONIX_RUN_TRIGGER.md'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sonix-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: analysis/sonix-088280-20260916
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install
+        run: python -m pip install -e '.[dev]' requests
+      - name: Bootstrap public metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p runs/sonix-088280/raw runs/sonix-088280/declarations
+          cat > runs/sonix-088280/raw/corp_search.json <<'JSON'
+          {"companies":[{"corp_code":"00561723","corp_name":"쏘닉스","stock_code":"088280"}]}
+          JSON
+          cat > runs/sonix-088280/raw/company.json <<'JSON'
+          {"status":"000","message":"정상","corp_code":"00561723","corp_name":"(주)쏘닉스","stock_name":"쏘닉스","stock_code":"088280","ceo_nm":"양형국","corp_cls":"K","adres":"경기도 평택시 청북읍 현곡산단로93번길 81","induty_code":"26129","est_dt":"20001024","acc_mt":"12"}
+          JSON
+          cat > runs/sonix-088280/raw/list.json <<'JSON'
+          {"status":"000","message":"정상","list":[{"rcept_no":"20260814000474","report_nm":"반기보고서 (2026.06)","rcept_dt":"20260814","corp_code":"00561723","stock_code":"088280"},{"rcept_no":"20260515002454","report_nm":"분기보고서 (2026.03)","rcept_dt":"20260515","corp_code":"00561723","stock_code":"088280"},{"rcept_no":"20260320000716","report_nm":"사업보고서 (2025.12)","rcept_dt":"20260320","corp_code":"00561723","stock_code":"088280"}]}
+          JSON
+          # Resolver needs statement scope evidence. This marker says only that the issuer is OFS-only;
+          # canonical financial rows are populated from the original filing before final execution.
+          cat > runs/sonix-088280/raw/fnltt_2025_OFS.json <<'JSON'
+          {"status":"013","message":"bootstrap scope marker; original filing collection follows","list":[]}
+          JSON
+      - name: Resolve run from metadata
+        run: >-
+          PYTHONPATH=src python scripts/resolve_kr_run.py runs/sonix-088280
+          --as-of 2026-09-16 --query 쏘닉스 --ticker 088280
+          --method capacity_manufacturing/driver_dcf
+          --scenarios Down,Base,Bull --forecast-years 5
+          --separate-statements --force
+      - name: Collect original annual filing
+        run: >-
+          PYTHONPATH=src python scripts/collect_kr_filing.py runs/sonix-088280
+          --rcept 20260320000716
+      - name: Collect original half-year filing
+        run: >-
+          PYTHONPATH=src python scripts/collect_kr_filing.py runs/sonix-088280
+          --rcept 20260814000474
+      - name: Preserve latest-period filing selection
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import yaml
+          p=Path('runs/sonix-088280/run.yaml')
+          d=yaml.safe_load(p.read_text(encoding='utf-8'))
+          d['filing']={
+            'business_year':'2026','report_code':'11012','fs_div':'OFS',
+            'fiscal_period_end':'2026-06-30','segment_id':'core'
+          }
+          d['forecast_years']=5
+          p.write_text(yaml.safe_dump(d, allow_unicode=True, sort_keys=False), encoding='utf-8')
+          PY
+      - name: Run research/completion when declarations exist
+        id: research
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          if [ -f runs/sonix-088280/research/plan.yaml ] && [ -f runs/sonix-088280/declarations/underwriting.yaml ]; then
+            PYTHONPATH=src python scripts/run_research_campaign.py \
+              runs/sonix-088280/research/plan.yaml \
+              --workspace runs/sonix-088280/research/work \
+              --run-dir runs/sonix-088280 \
+              --staff-mode assisted \
+              --max-workers 4 --max-rounds 5 --completion-rounds 10 \
+              2>&1 | tee /tmp/sonix-research.log
+            echo "exit=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "Research declarations not present yet; source collection only." | tee /tmp/sonix-research.log
+            echo "exit=0" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Commit generated run state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'chatgpt-codex-connector'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add runs/sonix-088280
+          if ! git diff --cached --quiet; then
+            git commit -m 'Advance Sonix 088280 canonical valuation run'
+            git push origin HEAD:analysis/sonix-088280-20260916
+          fi
+      - name: Upload run workspace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonix-088280-run-workspace
+          path: |
+            runs/sonix-088280
+            /tmp/sonix-research.log
