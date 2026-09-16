@@ -142,3 +142,13 @@ claims:
       Replace the unweighted Korea Zinc scenario envelope with probabilities
       fitted on the issuer's own filed operating-margin history and conditioned
       on the achieved 2026 first-half result; regenerate the investor report.
+  - claim_id: sonix-088280-live-run
+    owner: codex
+    pull_request: 186
+    status: active
+    paths:
+      - "runs/sonix-088280/**"
+    note: >-
+      Build the new Sonix 088280 KR live run through primary-source collection,
+      resolver, research campaign, canonical audit/freeze, and verified investor
+      report bundle. No copied run values or partial-valuation substitution.
