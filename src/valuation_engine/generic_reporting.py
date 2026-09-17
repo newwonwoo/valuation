@@ -21,6 +21,10 @@ from .control_plane import (
     StageStatus,
     authorize_post_freeze,
 )
+from .investor_report import (
+    entry_price_with_margin,
+    probability_weighted_equity_value,
+)
 from .orchestrator import (
     ControlledRunResult,
     OrchestratorContext,
@@ -549,6 +553,9 @@ def _market_interpretation(
 def _investment_opinion(
     valuation: GenericValuationResult,
     market: MarketComparisonBundle | None,
+    *,
+    decision_value: Decimal | None = None,
+    entry_price: Decimal | None = None,
 ) -> tuple[str, str]:
     """Derive direction only after intrinsic probability weighting is complete.
 
@@ -563,7 +570,11 @@ def _investment_opinion(
             "판단 유보",
             "전체 기업가치가 아니라 평가 완료 사업부 기준이므로 현재가와 직접 비교하지 않습니다.",
         )
-    expected = valuation.expected_value_per_share
+    expected = (
+        decision_value
+        if decision_value is not None
+        else valuation.expected_value_per_share
+    )
     if expected is None:
         return (
             "판단 유보",
@@ -572,6 +583,12 @@ def _investment_opinion(
     if market is None or not valuation.scenarios:
         return "판단 유보", "확률가중 기대값과 비교할 검증된 현재가가 없습니다."
     current = Decimal(str(market.observation.price))
+    if entry_price is not None:
+        if current <= entry_price:
+            return "매수 검토", "현재가가 선언된 안전마진을 반영한 구체 매수가 이하입니다."
+        if current <= expected:
+            return "관찰", "현재가는 확률가중 목표가보다 낮지만 선언된 안전마진 매수가에는 이르지 않았습니다."
+        return "비중축소", "현재가가 주주 유한책임을 반영한 확률가중 목표가보다 높습니다."
     if current < expected:
         return "매수 검토", "현재가가 보정된 확률가중 기대값보다 낮습니다."
     if current > expected:
@@ -631,6 +648,15 @@ def render_generic_report(
     calibration_applied = bool(
         getattr(scenario_set, "numeric_weighting_allowed", False)
     )
+    probability_target = probability_weighted_equity_value(
+        valuation, scenario_set
+    )
+    entry_margin = data.get("investor_entry_margin_of_safety")
+    entry_price = (
+        entry_price_with_margin(probability_target, entry_margin)
+        if probability_target is not None and isinstance(entry_margin, Decimal)
+        else None
+    )
     market = data.get("market_comparison")
     market_bundle = market if isinstance(market, MarketComparisonBundle) else None
     market_observation = data.get("market_observation")
@@ -651,12 +677,21 @@ def render_generic_report(
         thesis = thesis[:279].rstrip() + "…"
     if thesis[-1:] not in {".", "!", "?", "…"}:
         thesis += "."
-    entry_posture = (
-        "실제 해결 이력 기반 확률 보정과 별도 진입 규칙이 모두 갖춰지기 전까지 "
-        "구체적인 매수가는 제시하지 않습니다."
-        if not calibration_applied
-        else "확률가중 값은 참고할 수 있으나 별도 진입 규칙이 없어 구체적인 매수가는 제시하지 않습니다."
-    )
+    if entry_price is not None and probability_target is not None:
+        entry_posture = (
+            f"주주 유한책임을 반영한 확률가중 목표가 "
+            f"{_fmt_money(probability_target, valuation.reporting_unit)}"
+            f"{currency_label_ko(valuation.reporting_unit)}에 {entry_margin:.0%} 안전마진을 적용한 "
+            f"{_fmt_money(entry_price, valuation.reporting_unit)}"
+            f"{currency_label_ko(valuation.reporting_unit)} 이하에서만 신규 매수를 검토합니다."
+        )
+    elif not calibration_applied:
+        entry_posture = (
+            "실제 해결 이력 기반 확률 보정과 별도 진입 규칙이 모두 갖춰지기 전까지 "
+            "구체적인 매수가는 제시하지 않습니다."
+        )
+    else:
+        entry_posture = "확률가중 값은 참고할 수 있으나 별도 진입 규칙이 없어 구체적인 매수가는 제시하지 않습니다."
     values = tuple(item.value_per_share for item in valuation.scenarios)
     value_range = (
         f"주당 {_fmt_money(min(values), valuation.reporting_unit)}~"
@@ -707,7 +742,18 @@ def render_generic_report(
     )
     probability_assessment = data.get("scenario_probability_assessment")
     probability_summary = "미산출"
-    if isinstance(probability_assessment, ScenarioProbabilityAssessment):
+    calibrated_probabilities = {
+        str(getattr(item, "scenario_id", "")): getattr(item, "probability", None)
+        for item in tuple(getattr(scenario_set, "scenarios", ()))
+    }
+    if entry_price is not None and calibrated_probabilities and all(
+        isinstance(value, Decimal) for value in calibrated_probabilities.values()
+    ):
+        probability_summary = " · ".join(
+            f"{scenario_label_ko(scenario_id)} {_probability_percent(probability)}"
+            for scenario_id, probability in calibrated_probabilities.items()
+        ) + " (보정 완료)"
+    elif isinstance(probability_assessment, ScenarioProbabilityAssessment):
         probability_summary = " · ".join(
             f"{scenario_label_ko(item.scenario_id)} {_probability_percent(item.displayed_probability)}"
             for item in probability_assessment.rows
@@ -717,6 +763,8 @@ def render_generic_report(
     investment_opinion, opinion_reason = _investment_opinion(
         valuation,
         market_bundle,
+        decision_value=(probability_target if entry_price is not None else None),
+        entry_price=entry_price,
     )
     lines = [
         f"# {company} 투자보고서",
@@ -729,6 +777,14 @@ def render_generic_report(
         f"| **현재가** | {current_price} |",
         f"| **{reference_label}** | {reference_value} |",
         f"| **{range_label}** | {value_range} |",
+        *(
+            (
+                f"| **확률가중 목표가** | {_fmt_money(probability_target, valuation.reporting_unit)}{currency_label_ko(valuation.reporting_unit)} |",
+                f"| **구체 매수가** | {_fmt_money(entry_price, valuation.reporting_unit)}{currency_label_ko(valuation.reporting_unit)} 이하 (목표가 대비 {entry_margin:.0%} 안전마진) |",
+            )
+            if probability_target is not None and entry_price is not None
+            else ()
+        ),
         f"| **시나리오 가능성** | {probability_summary} |",
         f"| **증권사 참고값** | {street_reference} |",
         "",
@@ -741,9 +797,13 @@ def render_generic_report(
         f"- **가치동인:** {thesis}",
         f"- **현재가 대비:** {_market_interpretation(market_bundle, observation=observation, partial=partial, currency=market_currency)}",
         (
-            "- **남은 제약:** 실제 해결 이력 기반 확률 보정이 없어 시나리오 기대값과 구체 매수가를 사용하지 않습니다."
-            if not calibration_applied
-            else "- **남은 제약:** 확률가중 값과 별개로 검증된 진입 규칙이 없어 구체 매수가를 사용하지 않습니다."
+            "- **매수 규칙:** " + entry_posture
+            if entry_price is not None
+            else (
+                "- **남은 제약:** 실제 해결 이력 기반 확률 보정이 없어 시나리오 기대값과 구체 매수가를 사용하지 않습니다."
+                if not calibration_applied
+                else "- **남은 제약:** 확률가중 값과 별개로 검증된 진입 규칙이 없어 구체 매수가를 사용하지 않습니다."
+            )
         ),
         "",
         "### 판단 변경 조건",
@@ -768,6 +828,13 @@ def render_generic_report(
             f"- **{scenario_label_ko(item.scenario_id)} 시나리오:** {label} 주당 "
             f"{_fmt_money(item.value_per_share, valuation.reporting_unit)}"
             f"{currency_label_ko(valuation.reporting_unit)}"
+        )
+    if not partial and any(item.value_per_share < 0 for item in valuation.scenarios):
+        lines.append(
+            "- **음수 시나리오 해석:** 위 음수 값은 사업가치에서 부채 등을 차감한 "
+            "주당 자본 부족액입니다. 주식의 음수 거래가격을 뜻하지 않으며, "
+            "시장·증권사 가격 비교에는 유한책임에 따른 0원 하한을 적용합니다. "
+            "동결된 원래 계산값은 감사 기록에 보존합니다."
         )
     if isinstance(probability_assessment, ScenarioProbabilityAssessment):
         lines.extend(
@@ -800,6 +867,19 @@ def render_generic_report(
         lines.append(
             f"- **부분 확률가중 소계:** 주당 {_fmt_money(valuation.expected_value_per_share, valuation.reporting_unit)}"
             f"{currency_label_ko(valuation.reporting_unit)} — 전체 기업 공정가치로 사용하지 않습니다."
+        )
+    elif entry_price is not None and probability_target is not None and any(
+        item.value_per_share < 0 for item in valuation.scenarios
+    ):
+        lines.extend(
+            (
+                f"- **유한책임 반영 전 확률가중 잔여가치:** 주당 {_fmt_money(valuation.expected_value_per_share, valuation.reporting_unit)}"
+                f"{currency_label_ko(valuation.reporting_unit)}",
+                f"- **주주 유한책임 반영 확률가중 목표가:** 주당 {_fmt_money(probability_target, valuation.reporting_unit)}"
+                f"{currency_label_ko(valuation.reporting_unit)}",
+                f"- **구체 매수가:** 주당 {_fmt_money(entry_price, valuation.reporting_unit)}"
+                f"{currency_label_ko(valuation.reporting_unit)} 이하 (목표가 대비 {entry_margin:.0%} 안전마진)",
+            )
         )
     else:
         lines.append(

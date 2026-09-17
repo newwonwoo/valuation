@@ -1,7 +1,28 @@
-version: 1.0
+version: 1.1
 purpose: Control-Plane-only requirements that complement, but do not duplicate, archetype_module_registry economics.
 rule: Scanner IDs are deployment requirements. If an implementation is unavailable, Control Plane records NOT_IMPLEMENTED and invokes the capability-gap process rather than silently skipping it.
 requirements:
+  service_operations:
+    required_kpis: [service_revenue, operating_income, depreciation_amortization, maintenance_capex, working_capital, customer_concentration, activity_mix]
+    mandatory_scanners: [SERVICE_ACTIVITY_MIX, SERVICE_CASH_CONVERSION]
+    kill_conditions:
+      - unidentified activities materially invalidate the declared service proxy
+      - contract loss or labor cost growth breaks the normalized margin
+      - maintenance investment and working capital invalidate cash conversion
+  airline_transport:
+    required_kpis: [passenger_capacity, passenger_traffic, passenger_yield, cargo_traffic, cargo_yield, fuel_cost, nonfuel_operating_cost, fleet_capex, lease_liabilities]
+    mandatory_scanners: [AIRLINE_TRAFFIC_YIELD, AIRLINE_FUEL_COST, AIRLINE_FLEET_FUNDING]
+    kill_conditions:
+      - load factors and yields fail to cover the modeled route cost base
+      - aircraft delivery or lease funding exceeds evidenced liquidity
+      - merger eliminations or minority interests invalidate attributable cashflows
+  capacity_yield_levered:
+    required_kpis: [service_capacity, realized_volume, utilization_or_load, realized_unit_yield, variable_input_cost, nonvariable_operating_cost, committed_asset_capex, lease_liabilities, debt_maturities, refinancing_capacity, minimum_operating_liquidity]
+    mandatory_scanners: [TRAFFIC_DEMAND, UTILIZATION, CAPEX_EXECUTION, LEASE_DEBT_MATURITY, REFINANCING]
+    kill_conditions:
+      - capacity, realized volume and unit yield cannot be reconciled on one period, unit and economic perimeter
+      - sustaining asset or lease commitments exceed evidenced operating cash flow and financing capacity
+      - refinancing, dilution or distress outcomes cannot be reconciled through the dated financial-claim waterfall
   contracted_backlog:
     required_kpis: [orders, backlog, book_to_bill, backlog_conversion, cancellation_rate, contract_liabilities, lead_time]
     mandatory_scanners: [BACKLOG_QUALITY, CANCELLATION_TERMS, CUSTOMER_ADVANCE_FUNDING]

@@ -1,0 +1,73 @@
+[
+  {
+    "broker": "미래에셋증권",
+    "analyst": "류제현",
+    "published_date": "2026-09-08",
+    "target_price": 37000,
+    "target_price_currency": "KRW",
+    "valuation_method": "PBR",
+    "base_year": "Forward book value; exact reference date not disclosed",
+    "target_multiple": "PBR 1.1x",
+    "estimates": [
+      {
+        "metric": "consolidated_operating_profit",
+        "period": "3Q26E",
+        "value": 488.7,
+        "unit": "KRW billion"
+      },
+      {
+        "metric": "consolidated_operating_margin",
+        "period": "3Q26E",
+        "value": 6.7,
+        "unit": "percent"
+      }
+    ],
+    "source_ref": "https://securities.miraeasset.com/bbs/download/2147190.pdf?attachmentId=2147190",
+    "rating": "매수 유지",
+    "access_quality": "Public broker-hosted PDF link and official report page body verified",
+    "argument_summary": "원화 강세와 여객·화물 회복, 통합 후 ROE 개선을 근거로 과거 PBR 밴드 상단보다 높은 1.1배를 적용했다."
+  },
+  {
+    "broker": "하나증권",
+    "analyst": "안도현",
+    "published_date": "2026-08-18",
+    "target_price": 41000,
+    "target_price_currency": "KRW",
+    "valuation_method": "NOT_DISCLOSED",
+    "base_year": "NOT_DISCLOSED",
+    "target_multiple": "NOT_DISCLOSED",
+    "estimates": [],
+    "source_ref": "https://file.hanaw.com/download/research/FileServer/WEB/industry/industry/2026/08/14/transport_260814.pdf",
+    "rating": "BUY 유지",
+    "access_quality": "Public broker-hosted PDF verified",
+    "argument_summary": "통합 LCC 효과는 2028년부터 본격화할 것으로 보고 운임·탑승률·공급 증가를 핵심 확인 지표로 제시했다."
+  },
+  {
+    "broker": "LS증권",
+    "analyst": "이재혁",
+    "published_date": "2026-07-15",
+    "target_price": 33000,
+    "target_price_currency": "KRW",
+    "valuation_method": "NOT_DISCLOSED",
+    "base_year": "NOT_DISCLOSED",
+    "target_multiple": "NOT_DISCLOSED",
+    "estimates": [
+      {
+        "metric": "consolidated_operating_profit",
+        "period": "FY2027E",
+        "value": 2663,
+        "unit": "KRW billion"
+      },
+      {
+        "metric": "consolidated_operating_margin",
+        "period": "FY2027E",
+        "value": 9.1,
+        "unit": "percent"
+      }
+    ],
+    "source_ref": "https://file.alphasquare.co.kr/media/pdfs/company-report/260715_KAL_2Q26_Review.pdf",
+    "rating": "Buy 유지",
+    "access_quality": "Broker-authored PDF verified at a public AlphaSquare mirror; original LS host was not retrieved",
+    "argument_summary": "화물 호조·연료비 안정·통합 시너지를 근거로 FY2027 연결 영업이익 2.663조원과 영업이익률 9.1%를 전망했다."
+  }
+]

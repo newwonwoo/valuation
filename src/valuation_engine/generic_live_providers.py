@@ -23,6 +23,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from datetime import date
+from decimal import Decimal
 import json
 from pathlib import Path
 
@@ -193,6 +194,7 @@ class GenericKRRuntimeSpec:
     require_broker_research: bool = False
     #: Prepared, committed metric-to-receipt declarations for model-free replay.
     table_cell_receipts_path: str | Path | None = None
+    public_filing_facts_path: str | Path | None = None
     #: Extra evidence metrics this run requires beyond the method's assumption
     #: keys — the door multi-scenario runs use for scenario-qualified inputs
     #: (down_normalized_ebitda, bull_normalized_multiple, …): declaring them
@@ -210,9 +212,16 @@ class GenericKRRuntimeSpec:
     calibration_snapshot_loader: object | None = None
     calibration_cohort_key: str | None = None
     external_probability_source: str | None = None
+    #: Exact snapshot hash required to reproduce a historical v3.2
+    #: nearest-anchor weighting. Omit for every new investment analysis.
+    legacy_continuous_probability_replay_receipt: str | None = None
     market_config_path: str | Path | None = None
     street_export_path: str | Path | None = None
     market_currency: str | None = None
+    #: Report-only price discipline. It is carried to SAVE_STATE so the visual
+    #: summary can show the same concrete entry price as the public report; no
+    #: intrinsic-value or probability stage reads it.
+    investor_entry_margin_of_safety: Decimal | None = None
 
     def validate(self) -> None:
         if not self.as_of or not self.scenario_ids or not self.method_choices:
@@ -226,9 +235,21 @@ class GenericKRRuntimeSpec:
                 "a calibration snapshot loader requires calibration_cohort_key "
                 "and external_probability_source"
             )
+        if self.legacy_continuous_probability_replay_receipt is not None and (
+            self.calibration_snapshot_loader is None
+        ):
+            raise GenericValuationPlanError(
+                "a legacy probability replay receipt requires a calibration snapshot"
+            )
         if self.market_config_path is not None and not self.market_currency:
             raise GenericValuationPlanError(
                 "market_currency is required with a market config"
+            )
+        if self.investor_entry_margin_of_safety is not None and not (
+            Decimal("0") < self.investor_entry_margin_of_safety < Decimal("1")
+        ):
+            raise GenericValuationPlanError(
+                "investor entry margin of safety must be between zero and one"
             )
         if self.require_broker_research and self.declared_broker_research_path is None:
             raise GenericValuationPlanError(
@@ -570,16 +591,26 @@ def build_generic_kr_runtime_factory(
                 )
             )
         )
-    # Extras route to the segment whose namespace prefixes them (multi-segment
-    # scenario variants like steel_down_fcff_year_1); anything unprefixed —
-    # every single-segment extra — binds to the filing segment as before.
+    # Match the compiler's complete economic key first. Scenario qualifiers
+    # precede that complete key: down_aerospace_fcff_year_1. Legacy segment-
+    # prefixed research metrics retain their existing routing as a fallback.
+    from .assumption_compiler import _metric_matches_key
+
     for extra in spec.extra_required_evidence:
-        owner = next(
-            (
-                segment_id
-                for segment_id in keys_by_segment
-                if multi_segment and extra.startswith(f"{segment_id}_")
-            ),
+        canonical_owners = tuple(
+            segment_id for segment_id, segment_keys in keys_by_segment.items()
+            if multi_segment and any(
+                key.startswith(f"{segment_id}_") and _metric_matches_key(extra, key)
+                for key in segment_keys
+            )
+        )
+        if len(canonical_owners) > 1:
+            raise GenericValuationPlanError(
+                f"extra evidence metric {extra!r} matches multiple segment keys"
+            )
+        owner = canonical_owners[0] if canonical_owners else next(
+            (segment_id for segment_id in keys_by_segment
+             if multi_segment and extra.startswith(f"{segment_id}_")),
             spec.filing.segment_id,
         )
         additional_required[owner] = tuple(
@@ -596,14 +627,42 @@ def build_generic_kr_runtime_factory(
                 )
             )
         )
+    core_collector_override = None
+    if spec.public_filing_facts_path is not None:
+        from .public_filing_facts import public_filing_fact_provider
+
+        core_collector_override = public_filing_fact_provider(
+            spec.public_filing_facts_path, filing=spec.filing, run_as_of=spec.as_of
+        )
     return KRLiveRuntimeFactory(
+        core_collector_override=core_collector_override,
         network=network,
         filing=spec.filing,
         extensions=extensions,
         additional_required_evidence=additional_required,
         market_currency=spec.market_currency,
         require_broker_research=spec.require_broker_research,
-        initial_data={"data_cutoff": spec.as_of},
+        initial_data={
+            "data_cutoff": spec.as_of,
+            **(
+                {
+                    "legacy_continuous_probability_replay_receipt": (
+                        spec.legacy_continuous_probability_replay_receipt
+                    )
+                }
+                if spec.legacy_continuous_probability_replay_receipt is not None
+                else {}
+            ),
+            **(
+                {
+                    "investor_entry_margin_of_safety": (
+                        spec.investor_entry_margin_of_safety
+                    )
+                }
+                if spec.investor_entry_margin_of_safety is not None
+                else {}
+            ),
+        },
         scenario_binding_spec=ScenarioBindingSpec(
             scenario_ids=spec.scenario_ids,
             required_keys=keys,

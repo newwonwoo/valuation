@@ -1,0 +1,897 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>14. 유형자산 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='3000'>
+<COLGROUP>
+<COL width='1500'></COL>
+<COL width='1500'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='2991' height='23' colspan='2'>유형자산(사용권자산 포함)의 변동 내용에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='1491' height='23'>당반기</TD>
+  <TD width='1491' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='3000'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>　</TH>
+  <TH width='2631' height='23' colspan='22'>사용권자산을 포함하는 유형자산</TH>
+  <TH width='111' height='113' rowspan='4'>사용권자산을 포함하는 유형자산 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1311' height='23' colspan='11'>유형자산</TH>
+  <TH width='1311' height='23' colspan='11'>사용권자산</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1191' height='23' colspan='10'>유형자산의 분류</TH>
+  <TH width='111' height='53' rowspan='2'>유형자산의 분류 &nbsp;합계</TH>
+  <TH width='1191' height='23' colspan='10'>유형자산의 분류</TH>
+  <TH width='111' height='53' rowspan='2'>유형자산의 분류 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>토지</TH>
+  <TH width='111' height='23'>건물</TH>
+  <TH width='111' height='23'>구축물</TH>
+  <TH width='111' height='23'>기계장치</TH>
+  <TH width='111' height='23'>항공기 및 엔진</TH>
+  <TH width='111' height='23'>항공기재</TH>
+  <TH width='111' height='23'>기타유형자산</TH>
+  <TH width='111' height='23'>건설중인자산</TH>
+  <TH width='111' height='23'>항공기</TH>
+  <TH width='111' height='23'>기타</TH>
+  <TH width='111' height='23'>토지</TH>
+  <TH width='111' height='23'>건물</TH>
+  <TH width='111' height='23'>구축물</TH>
+  <TH width='111' height='23'>기계장치</TH>
+  <TH width='111' height='23'>항공기 및 엔진</TH>
+  <TH width='111' height='23'>항공기재</TH>
+  <TH width='111' height='23'>기타유형자산</TH>
+  <TH width='111' height='23'>건설중인자산</TH>
+  <TH width='111' height='23'>항공기</TH>
+  <TH width='111' height='23'>기타</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>기초</TD>
+  <TD width='111' height='23' align='RIGHT'>3,239,371</TD>
+  <TD width='111' height='23' align='RIGHT'>1,404,491</TD>
+  <TD width='111' height='23' align='RIGHT'>73,218</TD>
+  <TD width='111' height='23' align='RIGHT'>151,781</TD>
+  <TD width='111' height='23' align='RIGHT'>6,948,342</TD>
+  <TD width='111' height='23' align='RIGHT'>2,534,917</TD>
+  <TD width='111' height='23' align='RIGHT'>402,349</TD>
+  <TD width='111' height='23' align='RIGHT'>3,646,630</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>18,401,099</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>13,929,330</TD>
+  <TD width='111' height='23' align='RIGHT'>613,212</TD>
+  <TD width='111' height='23' align='RIGHT'>14,542,542</TD>
+  <TD width='111' height='23' align='RIGHT'>32,943,641</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>취득/대체</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>1,013</TD>
+  <TD width='111' height='23' align='RIGHT'>1,275</TD>
+  <TD width='111' height='23' align='RIGHT'>23,194</TD>
+  <TD width='111' height='23' align='RIGHT'>1,525,480</TD>
+  <TD width='111' height='23' align='RIGHT'>467,194</TD>
+  <TD width='111' height='23' align='RIGHT'>127,368</TD>
+  <TD width='111' height='23' align='RIGHT'>716,603</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>2,862,127</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>657,071</TD>
+  <TD width='111' height='23' align='RIGHT'>327,286</TD>
+  <TD width='111' height='23' align='RIGHT'>984,357</TD>
+  <TD width='111' height='23' align='RIGHT'>3,846,484</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='168' rowspan='2'>취득/대체</TD>
+  <TD width='111' height='46'>건설중인 자산에 인식된 지출액</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>2,505,848</TD>
+</TR>
+<TR height='122'>
+  <TD width='111' height='115'>건설중인자산에서 대체함에 따른 증가(감소), 유형자산(사용권자산 포함)</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>(1,789,245)</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>처분</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>(2)</TD>
+  <TD width='111' height='23' align='RIGHT'>(35,434)</TD>
+  <TD width='111' height='23' align='RIGHT'>(106,305)</TD>
+  <TD width='111' height='23' align='RIGHT'>(1,958)</TD>
+  <TD width='111' height='23' align='RIGHT'>(3,213)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(146,912)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(166,041)</TD>
+  <TD width='111' height='23' align='RIGHT'>(218,238)</TD>
+  <TD width='111' height='23' align='RIGHT'>(384,279)</TD>
+  <TD width='111' height='23' align='RIGHT'>(531,191)</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>감가상각비</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>(30,312)</TD>
+  <TD width='111' height='23' align='RIGHT'>(2,420)</TD>
+  <TD width='111' height='23' align='RIGHT'>(9,658)</TD>
+  <TD width='111' height='23' align='RIGHT'>(476,252)</TD>
+  <TD width='111' height='23' align='RIGHT'>(136,435)</TD>
+  <TD width='111' height='23' align='RIGHT'>(46,874)</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(701,951)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(672,343)</TD>
+  <TD width='111' height='23' align='RIGHT'>(73,465)</TD>
+  <TD width='111' height='23' align='RIGHT'>(745,808)</TD>
+  <TD width='111' height='23' align='RIGHT'>(1,447,759)</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>기타증감</TD>
+  <TD width='111' height='23' align='RIGHT'>23,309</TD>
+  <TD width='111' height='23' align='RIGHT'>55,175</TD>
+  <TD width='111' height='23' align='RIGHT'>246</TD>
+  <TD width='111' height='23' align='RIGHT'>259</TD>
+  <TD width='111' height='23' align='RIGHT'>(199,126)</TD>
+  <TD width='111' height='23' align='RIGHT'>10,842</TD>
+  <TD width='111' height='23' align='RIGHT'>(59,908)</TD>
+  <TD width='111' height='23' align='RIGHT'>39,152</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(130,051)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(141,456)</TD>
+  <TD width='111' height='23' align='RIGHT'>(8,683)</TD>
+  <TD width='111' height='23' align='RIGHT'>(150,139)</TD>
+  <TD width='111' height='23' align='RIGHT'>(280,190)</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>기말</TD>
+  <TD width='111' height='23' align='RIGHT'>3,262,680</TD>
+  <TD width='111' height='23' align='RIGHT'>1,430,367</TD>
+  <TD width='111' height='23' align='RIGHT'>72,319</TD>
+  <TD width='111' height='23' align='RIGHT'>165,574</TD>
+  <TD width='111' height='23' align='RIGHT'>7,763,010</TD>
+  <TD width='111' height='23' align='RIGHT'>2,770,213</TD>
+  <TD width='111' height='23' align='RIGHT'>420,977</TD>
+  <TD width='111' height='23' align='RIGHT'>4,399,172</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>20,284,312</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>13,606,561</TD>
+  <TD width='111' height='23' align='RIGHT'>640,112</TD>
+  <TD width='111' height='23' align='RIGHT'>14,246,673</TD>
+  <TD width='111' height='23' align='RIGHT'>34,530,985</TD>
+</TR>
+<TR height='191'>
+  <TD width='231' height='184' colspan='2'>취득/대체에 대한 기술</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>당반기 중 건설중인자산 취득관련 지출액은 2,505,848백만원이며, 취득이 완료되어 대체된 금액은 1,789,245백만원입니다.</TD>
+</TR>
+<TR height='214'>
+  <TD width='231' height='207' colspan='2'>기타증감에 대한 기술</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>　</TD>
+  <TD width='111' height='207'>기타증감은 주로 차입원가 자본화에 따른 대체, 토지의 재평가, 리스채권의 대체 및 환율변동에 의한 증감액 등으로 구성되어 있습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>항공기재에 대한 기술</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+  <TD width='111' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='3000'>
+<COLGROUP>
+<COL width='3000'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='2991' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='3000'>
+<COLGROUP>
+<COL width='1500'></COL>
+<COL width='1500'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='1491' height='23'>전반기</TD>
+  <TD width='1491' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='3000'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>　</TH>
+  <TH width='2631' height='23' colspan='22'>사용권자산을 포함하는 유형자산</TH>
+  <TH width='111' height='113' rowspan='4'>사용권자산을 포함하는 유형자산 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1311' height='23' colspan='11'>유형자산</TH>
+  <TH width='1311' height='23' colspan='11'>사용권자산</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>　</TH>
+  <TH width='1191' height='23' colspan='10'>유형자산의 분류</TH>
+  <TH width='111' height='53' rowspan='2'>유형자산의 분류 &nbsp;합계</TH>
+  <TH width='1191' height='23' colspan='10'>유형자산의 분류</TH>
+  <TH width='111' height='53' rowspan='2'>유형자산의 분류 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>토지</TH>
+  <TH width='111' height='23'>건물</TH>
+  <TH width='111' height='23'>구축물</TH>
+  <TH width='111' height='23'>기계장치</TH>
+  <TH width='111' height='23'>항공기 및 엔진</TH>
+  <TH width='111' height='23'>항공기재</TH>
+  <TH width='111' height='23'>기타유형자산</TH>
+  <TH width='111' height='23'>건설중인자산</TH>
+  <TH width='111' height='23'>항공기</TH>
+  <TH width='111' height='23'>기타</TH>
+  <TH width='111' height='23'>토지</TH>
+  <TH width='111' height='23'>건물</TH>
+  <TH width='111' height='23'>구축물</TH>
+  <TH width='111' height='23'>기계장치</TH>
+  <TH width='111' height='23'>항공기 및 엔진</TH>
+  <TH width='111' height='23'>항공기재</TH>
+  <TH width='111' height='23'>기타유형자산</TH>
+  <TH width='111' height='23'>건설중인자산</TH>
+  <TH width='111' height='23'>항공기</TH>
+  <TH width='111' height='23'>기타</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>기초</TD>
+  <TD width='111' height='23' align='RIGHT'>2,961,451</TD>
+  <TD width='111' height='23' align='RIGHT'>1,416,413</TD>
+  <TD width='111' height='23' align='RIGHT'>74,003</TD>
+  <TD width='111' height='23' align='RIGHT'>144,397</TD>
+  <TD width='111' height='23' align='RIGHT'>6,030,134</TD>
+  <TD width='111' height='23' align='RIGHT'>2,048,791</TD>
+  <TD width='111' height='23' align='RIGHT'>371,876</TD>
+  <TD width='111' height='23' align='RIGHT'>2,494,158</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>15,541,223</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>12,463,164</TD>
+  <TD width='111' height='23' align='RIGHT'>370,104</TD>
+  <TD width='111' height='23' align='RIGHT'>12,833,268</TD>
+  <TD width='111' height='23' align='RIGHT'>28,374,491</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>취득/대체</TD>
+  <TD width='111' height='23' align='RIGHT'>28,020</TD>
+  <TD width='111' height='23' align='RIGHT'>31,325</TD>
+  <TD width='111' height='23' align='RIGHT'>2,755</TD>
+  <TD width='111' height='23' align='RIGHT'>15,194</TD>
+  <TD width='111' height='23' align='RIGHT'>1,058,988</TD>
+  <TD width='111' height='23' align='RIGHT'>381,077</TD>
+  <TD width='111' height='23' align='RIGHT'>86,326</TD>
+  <TD width='111' height='23' align='RIGHT'>618,322</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>2,222,007</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>1,351,374</TD>
+  <TD width='111' height='23' align='RIGHT'>114,541</TD>
+  <TD width='111' height='23' align='RIGHT'>1,465,915</TD>
+  <TD width='111' height='23' align='RIGHT'>3,687,922</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='168' rowspan='2'>취득/대체</TD>
+  <TD width='111' height='46'>건설중인 자산에 인식된 지출액</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>1,626,019</TD>
+</TR>
+<TR height='122'>
+  <TD width='111' height='115'>건설중인자산에서 대체함에 따른 증가(감소), 유형자산(사용권자산 포함)</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>　</TD>
+  <TD width='111' height='115' align='RIGHT'>(1,007,697)</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>처분</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>(3,058)</TD>
+  <TD width='111' height='23' align='RIGHT'>(44)</TD>
+  <TD width='111' height='23' align='RIGHT'>(244)</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>(54,134)</TD>
+  <TD width='111' height='23' align='RIGHT'>(7,162)</TD>
+  <TD width='111' height='23' align='RIGHT'>(782)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(65,424)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(25,672)</TD>
+  <TD width='111' height='23' align='RIGHT'>(123,049)</TD>
+  <TD width='111' height='23' align='RIGHT'>(148,721)</TD>
+  <TD width='111' height='23' align='RIGHT'>(214,145)</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>감가상각비</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>(30,694)</TD>
+  <TD width='111' height='23' align='RIGHT'>(2,372)</TD>
+  <TD width='111' height='23' align='RIGHT'>(8,392)</TD>
+  <TD width='111' height='23' align='RIGHT'>(381,945)</TD>
+  <TD width='111' height='23' align='RIGHT'>(138,413)</TD>
+  <TD width='111' height='23' align='RIGHT'>(48,943)</TD>
+  <TD width='111' height='23' align='RIGHT'>0</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(610,759)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(664,721)</TD>
+  <TD width='111' height='23' align='RIGHT'>(56,561)</TD>
+  <TD width='111' height='23' align='RIGHT'>(721,282)</TD>
+  <TD width='111' height='23' align='RIGHT'>(1,332,041)</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>기타증감</TD>
+  <TD width='111' height='23' align='RIGHT'>(29,927)</TD>
+  <TD width='111' height='23' align='RIGHT'>(65,428)</TD>
+  <TD width='111' height='23' align='RIGHT'>(65)</TD>
+  <TD width='111' height='23' align='RIGHT'>(416)</TD>
+  <TD width='111' height='23' align='RIGHT'>(211,516)</TD>
+  <TD width='111' height='23' align='RIGHT'>(2,916)</TD>
+  <TD width='111' height='23' align='RIGHT'>(82,226)</TD>
+  <TD width='111' height='23' align='RIGHT'>(34,975)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(427,469)</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>(165,489)</TD>
+  <TD width='111' height='23' align='RIGHT'>33,815</TD>
+  <TD width='111' height='23' align='RIGHT'>(131,674)</TD>
+  <TD width='111' height='23' align='RIGHT'>(559,143)</TD>
+</TR>
+<TR height='30'>
+  <TD width='231' height='23' colspan='2'>기말</TD>
+  <TD width='111' height='23' align='RIGHT'>2,959,544</TD>
+  <TD width='111' height='23' align='RIGHT'>1,348,558</TD>
+  <TD width='111' height='23' align='RIGHT'>74,277</TD>
+  <TD width='111' height='23' align='RIGHT'>150,539</TD>
+  <TD width='111' height='23' align='RIGHT'>6,495,661</TD>
+  <TD width='111' height='23' align='RIGHT'>2,234,405</TD>
+  <TD width='111' height='23' align='RIGHT'>319,871</TD>
+  <TD width='111' height='23' align='RIGHT'>3,076,723</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>16,659,578</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>12,958,656</TD>
+  <TD width='111' height='23' align='RIGHT'>338,850</TD>
+  <TD width='111' height='23' align='RIGHT'>13,297,506</TD>
+  <TD width='111' height='23' align='RIGHT'>29,957,084</TD>
+</TR>
+<TR height='191'>
+  <TD width='231' height='184' colspan='2'>취득/대체에 대한 기술</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>전반기 중 건설중인자산 취득관련 지출액은 1,626,019백만원이며, 취득이 완료되어 대체된 금액은 1,007,697백만원입니다.</TD>
+</TR>
+<TR height='191'>
+  <TD width='231' height='184' colspan='2'>기타증감에 대한 기술</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>　</TD>
+  <TD width='111' height='184'>기타증감은 주로 차입원가 자본화에 따른 대체, 리스채권의 대체 및 환율변동에 의한 증감액 등으로 구성되어 있습니다.</TD>
+</TR>
+<TR height='168'>
+  <TD width='231' height='161' colspan='2'>항공기재에 대한 기술</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>　</TD>
+  <TD width='111' height='161'>항공기재 중 정비용품에 대해 연결실체의 차입금과 관련하여 금융기관 등에 담보로 제공되어 있습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='3000'>
+<COLGROUP>
+<COL width='3000'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='2991' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>유형자산과 관련된 차입원가에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>　</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='441' height='23' colspan='3'>자산의 분류</TH>
+</TR>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='441' height='23' colspan='3'>유형자산</TH>
+</TR>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='291' height='23' colspan='2'>범위</TH>
+  <TH width='141' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='141' height='23'>　</TH>
+  <TH width='141' height='23'>하위범위</TH>
+  <TH width='141' height='23'>상위범위</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='76'>
+  <TD width='141' height='69'>차입원가를 자본화하여 건설중인자산으로 계상한 금액</TD>
+  <TD width='141' height='69' align='RIGHT'>　</TD>
+  <TD width='141' height='69' align='RIGHT'>　</TD>
+  <TD width='141' height='69' align='RIGHT'>46,192</TD>
+</TR>
+<TR height='76'>
+  <TD width='141' height='69'>자본화가능차입원가를 산정하기 위하여 사용된 자본화이자율</TD>
+  <TD width='141' height='69' align='RIGHT'>0.0396</TD>
+  <TD width='141' height='69' align='RIGHT'>0.0429</TD>
+  <TD width='141' height='69' align='RIGHT'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

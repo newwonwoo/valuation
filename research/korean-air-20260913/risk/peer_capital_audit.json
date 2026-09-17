@@ -1,0 +1,38 @@
+{
+  "UPS": {
+    "debt_m": 28673,
+    "shares": 850781582,
+    "observed_close": 100.27999877929688,
+    "equity_m": 85316.37600440826,
+    "debt_weight": 0.25154098570459005,
+    "statement_date": "2026-06-30",
+    "capital_source": "https://www.sec.gov/Archives/edgar/data/1090727/000162828026053249/ups-20260630.htm"
+  },
+  "UAL": {
+    "debt_m": 33668,
+    "shares": 324583772,
+    "observed_close": 109.81999969482422,
+    "equity_m": 35645.789741984896,
+    "debt_weight": 0.4857330716633223,
+    "statement_date": "2026-06-30",
+    "capital_source": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000100517.json"
+  },
+  "DAL": {
+    "debt_m": 21733,
+    "shares": 657623030,
+    "observed_close": 79.91000366210938,
+    "equity_m": 52550.658735587465,
+    "debt_weight": 0.29256771098686146,
+    "statement_date": "2026-06-30",
+    "capital_source": "https://ir.delta.com/news/news-details/2026/Delta-Air-Lines-Announces-June-Quarter-2026-Financial-Results/default.aspx"
+  },
+  "LHA.DE": {
+    "debt_m": 14840,
+    "shares": 1202079790,
+    "observed_close": 7.7220001220703125,
+    "equity_m": 9282.460285118255,
+    "debt_weight": 0.6151942971237956,
+    "statement_date": "2026-06-30",
+    "capital_source": "https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/financial-reports/interims-reports/LH-QR-2026-2-e.pdf"
+  }
+}

@@ -567,7 +567,9 @@ def build_live_primary_adapters(
             registry_loader=providers.evaluator_registry_loader,
             plan_loader=_valuation_plan_loader(config, capability_registry),
         ),
-        dcf_consistency_fingerprint_adapter(providers.dcf_fingerprint_loader),
+        dcf_consistency_fingerprint_adapter(
+            providers.dcf_fingerprint_loader, per_loader=providers.per_loader
+        ),
         capacity_valuation_binding_adapter(),
     )
 

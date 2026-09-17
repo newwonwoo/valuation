@@ -1,0 +1,1834 @@
+{
+  "schema_version": "staff-response/v1",
+  "role": "bridge_analyst",
+  "prompt_sha256": "674e399c9a4b95c965603498f9f207477f65f1d4b5a2b3e1d454d5621eb9ba75",
+  "response": {
+    "rationale": "공시와 명시적 추정으로 조립한 3개 조건부 경로를 가정별로 연결합니다. 실제 원장에 기록된 각 시나리오 수치를 단위 변환 없이 전달하며 할인율이나 확률을 임의 생성하지 않습니다. 4개 법정부문을 모두 포함하고 연결 채무·NCI·희석은 한 번씩 적용합니다. 초기 음수 FCFF도 양수로 바꾸지 않습니다.",
+    "drafts": [
+      {
+        "assumption_key": "airline_fcff_year_1",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_airline_fcff_year_1"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -2219.881376,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_1"
+      },
+      {
+        "assumption_key": "airline_fcff_year_2",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_airline_fcff_year_2"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -1703.644565,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_2"
+      },
+      {
+        "assumption_key": "airline_fcff_year_3",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_airline_fcff_year_3"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -861.305421,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_3"
+      },
+      {
+        "assumption_key": "airline_fcff_year_4",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_airline_fcff_year_4"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 163.112074,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_4"
+      },
+      {
+        "assumption_key": "airline_fcff_year_5",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_airline_fcff_year_5"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 906.480358,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_5"
+      },
+      {
+        "assumption_key": "airline_terminal_growth",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_airline_terminal_growth"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.015,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:terminal_growth"
+      },
+      {
+        "assumption_key": "airline_terminal_roic",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_airline_terminal_roic"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.065,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:terminal_roic"
+      },
+      {
+        "assumption_key": "airline_ownership",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:ownership"
+      },
+      {
+        "assumption_key": "airline_ev_adjustment",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_ev_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": -20016.8,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림). 리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정, 예금달러환산은 반올림 근사입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:ev_adjustment"
+      },
+      {
+        "assumption_key": "diluted_shares",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:diluted_shares"
+        ],
+        "affected_variable": "share_count",
+        "direction": "unchanged",
+        "value": 389669121,
+        "unit": "shares",
+        "canonical_unit": "shares",
+        "transform_id": "identity_observation",
+        "rationale": "반기말 유통보통368220609+합병신주20337721+유통우선1110791=389669121. 우선주를 보통주와 같은 경제적 청구권으로 간주한 배분근사; 자기주식55주는 이미 제외. 7월24일 투자설명서로 계획신주수를 검증했습니다. 매수청구에 따라 최종 수량 변동 가능성이 있습니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:diluted_shares"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_1",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_aerospace_fcff_year_1"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 7.393695,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_1"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_2",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_aerospace_fcff_year_2"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 12.338818,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_2"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_3",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_aerospace_fcff_year_3"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 21.608434,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_3"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_4",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_aerospace_fcff_year_4"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 27.019264,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_4"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_5",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_aerospace_fcff_year_5"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 50.073373,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_5"
+      },
+      {
+        "assumption_key": "aerospace_terminal_growth",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_aerospace_terminal_growth"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.015,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:terminal_growth"
+      },
+      {
+        "assumption_key": "aerospace_terminal_roic",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_aerospace_terminal_roic"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.065,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:terminal_roic"
+      },
+      {
+        "assumption_key": "aerospace_ownership",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:ownership"
+      },
+      {
+        "assumption_key": "aerospace_ev_adjustment",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_ev_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": 0,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림). 리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정, 예금달러환산은 반올림 근사입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:ev_adjustment"
+      },
+      {
+        "assumption_key": "hotel_gross_asset_value",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:HOTEL",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_hotel_gross_asset_value"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 950,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down 호텔 총자산1738.126bn을 출발점으로 현금·관계회사 항목 및 손실사업의 실현가치 불확실성을 할인한 영업자산 NAV 추정. model.json에 정의한950~1550bn 범위. 금융부채는 연결브리지에서 한 번 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:hotel:gross_asset_value"
+      },
+      {
+        "assumption_key": "hotel_liabilities",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:HOTEL",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:hotel_liabilities"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": 0,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "호텔에 배분된 금융부채는 연결 airline EV브리지에서 이미 전액 차감합니다. 호텔영업자산만 NAV로 가산하므로 이 값은 부채 부존재 주장이 아닌 중복차감 방지입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:hotel:liabilities"
+      },
+      {
+        "assumption_key": "hotel_ownership",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:HOTEL",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:hotel_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:hotel:ownership"
+      },
+      {
+        "assumption_key": "other_fcff_year_1",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_other_fcff_year_1"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -69.336437,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_1"
+      },
+      {
+        "assumption_key": "other_fcff_year_2",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_other_fcff_year_2"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -29.500972,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_2"
+      },
+      {
+        "assumption_key": "other_fcff_year_3",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_other_fcff_year_3"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 10.503005,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_3"
+      },
+      {
+        "assumption_key": "other_fcff_year_4",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_other_fcff_year_4"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 11.118503,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_4"
+      },
+      {
+        "assumption_key": "other_fcff_year_5",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_other_fcff_year_5"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 12.605406,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Down forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_5"
+      },
+      {
+        "assumption_key": "other_terminal_growth",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_other_terminal_growth"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.015,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:terminal_growth"
+      },
+      {
+        "assumption_key": "other_terminal_roic",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:down_other_terminal_roic"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.065,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:terminal_roic"
+      },
+      {
+        "assumption_key": "other_ownership",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:ownership"
+      },
+      {
+        "assumption_key": "other_ev_adjustment",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_ev_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": 0,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림). 리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정, 예금달러환산은 반올림 근사입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:ev_adjustment"
+      },
+      {
+        "assumption_key": "parent_noncontrolling_interest_adjustment",
+        "scenario_id": "Down",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:parent_noncontrolling_interest_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": -350,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "합병후 잔여 NCI+영구채 청구권 통합 추정350bn. 반기 NCI252.744bn에서 아시아나 음수NCI-79.203bn을 제거한331.947bn을 참고. 장부가=공정가치를 단정하지 않으며 할인율과 별개로 가치오차가 있습니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:parent_noncontrolling_interest_adjustment"
+      },
+      {
+        "assumption_key": "airline_fcff_year_1",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_fcff_year_1"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -1935.748145,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_1"
+      },
+      {
+        "assumption_key": "airline_fcff_year_2",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_fcff_year_2"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -1166.406882,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_2"
+      },
+      {
+        "assumption_key": "airline_fcff_year_3",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_fcff_year_3"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -176.168829,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_3"
+      },
+      {
+        "assumption_key": "airline_fcff_year_4",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_fcff_year_4"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 838.315441,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_4"
+      },
+      {
+        "assumption_key": "airline_fcff_year_5",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_fcff_year_5"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1426.062165,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_5"
+      },
+      {
+        "assumption_key": "airline_terminal_growth",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_terminal_growth"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.02,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:terminal_growth"
+      },
+      {
+        "assumption_key": "airline_terminal_roic",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_terminal_roic"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.08,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:terminal_roic"
+      },
+      {
+        "assumption_key": "airline_ownership",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:ownership"
+      },
+      {
+        "assumption_key": "airline_ev_adjustment",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_ev_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": -20016.8,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림). 리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정, 예금달러환산은 반올림 근사입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:ev_adjustment"
+      },
+      {
+        "assumption_key": "diluted_shares",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:diluted_shares"
+        ],
+        "affected_variable": "share_count",
+        "direction": "unchanged",
+        "value": 389669121,
+        "unit": "shares",
+        "canonical_unit": "shares",
+        "transform_id": "identity_observation",
+        "rationale": "반기말 유통보통368220609+합병신주20337721+유통우선1110791=389669121. 우선주를 보통주와 같은 경제적 청구권으로 간주한 배분근사; 자기주식55주는 이미 제외. 7월24일 투자설명서로 계획신주수를 검증했습니다. 매수청구에 따라 최종 수량 변동 가능성이 있습니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:diluted_shares"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_1",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_fcff_year_1"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 11.972723,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_1"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_2",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_fcff_year_2"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 22.046343,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_2"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_3",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_fcff_year_3"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 38.045179,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_3"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_4",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_fcff_year_4"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 52.365491,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_4"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_5",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_fcff_year_5"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 84.669456,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_5"
+      },
+      {
+        "assumption_key": "aerospace_terminal_growth",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_terminal_growth"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.02,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:terminal_growth"
+      },
+      {
+        "assumption_key": "aerospace_terminal_roic",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_terminal_roic"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.08,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:terminal_roic"
+      },
+      {
+        "assumption_key": "aerospace_ownership",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:ownership"
+      },
+      {
+        "assumption_key": "aerospace_ev_adjustment",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_ev_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": 0,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림). 리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정, 예금달러환산은 반올림 근사입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:ev_adjustment"
+      },
+      {
+        "assumption_key": "hotel_gross_asset_value",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:HOTEL",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:hotel_gross_asset_value"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1250,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base 호텔 총자산1738.126bn을 출발점으로 현금·관계회사 항목 및 손실사업의 실현가치 불확실성을 할인한 영업자산 NAV 추정. model.json에 정의한950~1550bn 범위. 금융부채는 연결브리지에서 한 번 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:hotel:gross_asset_value"
+      },
+      {
+        "assumption_key": "hotel_liabilities",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:HOTEL",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:hotel_liabilities"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": 0,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "호텔에 배분된 금융부채는 연결 airline EV브리지에서 이미 전액 차감합니다. 호텔영업자산만 NAV로 가산하므로 이 값은 부채 부존재 주장이 아닌 중복차감 방지입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:hotel:liabilities"
+      },
+      {
+        "assumption_key": "hotel_ownership",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:HOTEL",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:hotel_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:hotel:ownership"
+      },
+      {
+        "assumption_key": "other_fcff_year_1",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_fcff_year_1"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -65.495625,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_1"
+      },
+      {
+        "assumption_key": "other_fcff_year_2",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_fcff_year_2"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -24.923722,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_2"
+      },
+      {
+        "assumption_key": "other_fcff_year_3",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_fcff_year_3"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 16.449561,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_3"
+      },
+      {
+        "assumption_key": "other_fcff_year_4",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_fcff_year_4"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 19.364024,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_4"
+      },
+      {
+        "assumption_key": "other_fcff_year_5",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_fcff_year_5"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 22.844138,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Base forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_5"
+      },
+      {
+        "assumption_key": "other_terminal_growth",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_terminal_growth"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.02,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:terminal_growth"
+      },
+      {
+        "assumption_key": "other_terminal_roic",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_terminal_roic"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.08,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:terminal_roic"
+      },
+      {
+        "assumption_key": "other_ownership",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:ownership"
+      },
+      {
+        "assumption_key": "other_ev_adjustment",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_ev_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": 0,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림). 리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정, 예금달러환산은 반올림 근사입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:ev_adjustment"
+      },
+      {
+        "assumption_key": "parent_noncontrolling_interest_adjustment",
+        "scenario_id": "Base",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:parent_noncontrolling_interest_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": -350,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "합병후 잔여 NCI+영구채 청구권 통합 추정350bn. 반기 NCI252.744bn에서 아시아나 음수NCI-79.203bn을 제거한331.947bn을 참고. 장부가=공정가치를 단정하지 않으며 할인율과 별개로 가치오차가 있습니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:parent_noncontrolling_interest_adjustment"
+      },
+      {
+        "assumption_key": "airline_fcff_year_1",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_airline_fcff_year_1"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -1902.554261,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_1"
+      },
+      {
+        "assumption_key": "airline_fcff_year_2",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_airline_fcff_year_2"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -912.751448,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_2"
+      },
+      {
+        "assumption_key": "airline_fcff_year_3",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_airline_fcff_year_3"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 149.558464,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_3"
+      },
+      {
+        "assumption_key": "airline_fcff_year_4",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_airline_fcff_year_4"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1325.408445,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_4"
+      },
+      {
+        "assumption_key": "airline_fcff_year_5",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_airline_fcff_year_5"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1933.231447,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:fcff_year_5"
+      },
+      {
+        "assumption_key": "airline_terminal_growth",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_airline_terminal_growth"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.025,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:terminal_growth"
+      },
+      {
+        "assumption_key": "airline_terminal_roic",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_airline_terminal_roic"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:terminal_roic"
+      },
+      {
+        "assumption_key": "airline_ownership",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:ownership"
+      },
+      {
+        "assumption_key": "airline_ev_adjustment",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:airline_ev_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": -20016.8,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림). 리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정, 예금달러환산은 반올림 근사입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:ev_adjustment"
+      },
+      {
+        "assumption_key": "diluted_shares",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:diluted_shares"
+        ],
+        "affected_variable": "share_count",
+        "direction": "unchanged",
+        "value": 389669121,
+        "unit": "shares",
+        "canonical_unit": "shares",
+        "transform_id": "identity_observation",
+        "rationale": "반기말 유통보통368220609+합병신주20337721+유통우선1110791=389669121. 우선주를 보통주와 같은 경제적 청구권으로 간주한 배분근사; 자기주식55주는 이미 제외. 7월24일 투자설명서로 계획신주수를 검증했습니다. 매수청구에 따라 최종 수량 변동 가능성이 있습니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:diluted_shares"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_1",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_aerospace_fcff_year_1"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 6.942215,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_1"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_2",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_aerospace_fcff_year_2"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 24.171186,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_2"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_3",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_aerospace_fcff_year_3"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 49.532182,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_3"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_4",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_aerospace_fcff_year_4"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 76.002763,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_4"
+      },
+      {
+        "assumption_key": "aerospace_fcff_year_5",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_aerospace_fcff_year_5"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 122.450921,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:fcff_year_5"
+      },
+      {
+        "assumption_key": "aerospace_terminal_growth",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_aerospace_terminal_growth"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.025,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:terminal_growth"
+      },
+      {
+        "assumption_key": "aerospace_terminal_roic",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_aerospace_terminal_roic"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:terminal_roic"
+      },
+      {
+        "assumption_key": "aerospace_ownership",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:ownership"
+      },
+      {
+        "assumption_key": "aerospace_ev_adjustment",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AEROSPACE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:aerospace_ev_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": 0,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림). 리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정, 예금달러환산은 반올림 근사입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:aerospace:ev_adjustment"
+      },
+      {
+        "assumption_key": "hotel_gross_asset_value",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:HOTEL",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_hotel_gross_asset_value"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1550,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull 호텔 총자산1738.126bn을 출발점으로 현금·관계회사 항목 및 손실사업의 실현가치 불확실성을 할인한 영업자산 NAV 추정. model.json에 정의한950~1550bn 범위. 금융부채는 연결브리지에서 한 번 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:hotel:gross_asset_value"
+      },
+      {
+        "assumption_key": "hotel_liabilities",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:HOTEL",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:hotel_liabilities"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": 0,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "호텔에 배분된 금융부채는 연결 airline EV브리지에서 이미 전액 차감합니다. 호텔영업자산만 NAV로 가산하므로 이 값은 부채 부존재 주장이 아닌 중복차감 방지입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:hotel:liabilities"
+      },
+      {
+        "assumption_key": "hotel_ownership",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:HOTEL",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:hotel_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:hotel:ownership"
+      },
+      {
+        "assumption_key": "other_fcff_year_1",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_other_fcff_year_1"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -62.532254,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_1"
+      },
+      {
+        "assumption_key": "other_fcff_year_2",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_other_fcff_year_2"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": -20.969289,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_2"
+      },
+      {
+        "assumption_key": "other_fcff_year_3",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_other_fcff_year_3"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 22.564878,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_3"
+      },
+      {
+        "assumption_key": "other_fcff_year_4",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_other_fcff_year_4"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 27.061998,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_4"
+      },
+      {
+        "assumption_key": "other_fcff_year_5",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_other_fcff_year_5"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 32.355185,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "Bull forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로 재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:fcff_year_5"
+      },
+      {
+        "assumption_key": "other_terminal_growth",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_other_terminal_growth"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.025,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:terminal_growth"
+      },
+      {
+        "assumption_key": "other_terminal_roic",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:bull_other_terminal_roic"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 0.1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시 확정치가 아닙니다.",
+        "confidence": 0.5,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:terminal_roic"
+      },
+      {
+        "assumption_key": "other_ownership",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_ownership"
+        ],
+        "affected_variable": "segment_value",
+        "direction": "unchanged",
+        "value": 1,
+        "unit": "ratio",
+        "canonical_unit": "ratio",
+        "transform_id": "identity_observation",
+        "rationale": "IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:ownership"
+      },
+      {
+        "assumption_key": "other_ev_adjustment",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:SERVICE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:other_ev_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": 0,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림). 리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정, 예금달러환산은 반올림 근사입니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:other:ev_adjustment"
+      },
+      {
+        "assumption_key": "parent_noncontrolling_interest_adjustment",
+        "scenario_id": "Bull",
+        "hypothesis_id": "H:KAL:AIRLINE",
+        "evidence_ids": [
+          "UW:KR:DART:00113526:parent_noncontrolling_interest_adjustment"
+        ],
+        "affected_variable": "net_debt",
+        "direction": "unchanged",
+        "value": -350,
+        "unit": "KRW_billion",
+        "canonical_unit": "KRW_billion",
+        "transform_id": "identity_observation",
+        "rationale": "합병후 잔여 NCI+영구채 청구권 통합 추정350bn. 반기 NCI252.744bn에서 아시아나 음수NCI-79.203bn을 제거한331.947bn을 참고. 장부가=공정가치를 단정하지 않으며 할인율과 별개로 가치오차가 있습니다.",
+        "confidence": 0.7,
+        "kill_condition": "연결 실적·투자·부채 또는 합병 조건이 해당 판단의 경제적 근거와 달라지면 재추정",
+        "verification_event": "다음 연결 공시, 신규 설비 가동 및 합병 신주 확정",
+        "economic_path_id": "path:airline:parent_noncontrolling_interest_adjustment"
+      }
+    ]
+  }
+}

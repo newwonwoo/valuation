@@ -95,6 +95,8 @@ class CollectorCapability:
     supported_metrics: tuple[str, ...]
     jurisdictions: tuple[str, ...]
     implementation_ref: str
+    # Empty preserves legacy collectors that genuinely serve every segment.
+    supported_segments: tuple[str, ...] = ()
 
     def validate(self) -> None:
         if not all(
@@ -110,17 +112,19 @@ class CollectorCapability:
                 "collector capability requires identity, source, metric, "
                 "jurisdiction and implementation"
             )
+        if any(not item for item in self.supported_segments) or len(self.supported_segments) != len(set(self.supported_segments)):
+            raise ValueError("collector supported_segments must be nonblank and unique")
         if len(self.supported_metrics) != len(set(self.supported_metrics)):
             raise ValueError(
                 f"collector capability {self.collector_id} has duplicate metrics"
             )
 
-    def supports(self, *, metric: str, jurisdiction: str) -> bool:
+    def supports(self, *, metric: str, jurisdiction: str, segment_id: str | None = None) -> bool:
         jurisdiction_key = normalize_jurisdiction(jurisdiction)
         supported = {
             normalize_jurisdiction(value) for value in self.jurisdictions
         }
-        return metric in self.supported_metrics and (
+        return (not self.supported_segments or segment_id in self.supported_segments) and metric in self.supported_metrics and (
             "GLOBAL" in supported or jurisdiction_key in supported
         )
 
@@ -633,6 +637,7 @@ def compile_company_collection_plan(
                 and capability.supports(
                     metric=metric,
                     jurisdiction=company.jurisdiction,
+                    segment_id=segment.segment_id,
                 )
             )
         )

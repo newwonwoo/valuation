@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "member_text_limit": 12000,
+  "files": [
+    {
+      "path": "filing_20260814002803/20260814002803_10.xml",
+      "bytes": 4177,
+      "sha256": "07339f59fb3d80351f5304a0f47e9fc11fc0f92f6a0ebf706c04bb3842141ae4",
+      "characters": 2133,
+      "truncated_for_reader": false
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_11.xml",
+      "bytes": 38124,
+      "sha256": "6097cf3255b42c947d8de5fcc4d371e92189478e65089fcc7d0e6c7d6247addf",
+      "characters": 36286,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_111.xml",
+      "bytes": 5809,
+      "sha256": "734774c2a8966bd373203ff1cb834b98210bb218df78804e1604a7273cd20358",
+      "characters": 5393,
+      "truncated_for_reader": false
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_114.xml",
+      "bytes": 15131,
+      "sha256": "4642499453f39e3da39859fea43e0971de2545c6c9f282005937360617649d44",
+      "characters": 11931,
+      "truncated_for_reader": false
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_12.xml",
+      "bytes": 111125,
+      "sha256": "bdedf579706847bab95cb6f35af3e29cdcbb61cc07dc9ad5743b02989086c1dd",
+      "characters": 100853,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_126.xml",
+      "bytes": 44579,
+      "sha256": "c01e34c5a5d6c0aa79a14c65ad45ffd34543f44ecdeb42114e64e924ed30ba06",
+      "characters": 36947,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_13.xml",
+      "bytes": 65008,
+      "sha256": "43d51c5fc6cb05d43ef963204b79920cc437ab96fe9f249aec046ed99ba39195",
+      "characters": 45565,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_147.xml",
+      "bytes": 45413,
+      "sha256": "2681d654384ef070c88a97c61075832d4b00b0e30af7afec95aa10dc08d9b605",
+      "characters": 43521,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_28.xml",
+      "bytes": 41323,
+      "sha256": "705c95fbc4bc4d3cdfe84a8830b708c2ebb7aab6b4989402ad39ee7b5c031181",
+      "characters": 38517,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_44.xml",
+      "bytes": 125389,
+      "sha256": "6cc8a8ca90f36335b64b2c9fbd44b3006566e1757032310f0bb3230d4542dfed",
+      "characters": 114459,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_7.xml",
+      "bytes": 37460,
+      "sha256": "b12c0a64151d2e08b3c42705bc2acffd9e50dcbf7097c03ed335a54a2a64c7b8",
+      "characters": 34570,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814002803/20260814002803_91.xml",
+      "bytes": 93446,
+      "sha256": "2ea5549736fc0cd592fe284548e27a8e9c1a2e49186149534261a946bbb89338",
+      "characters": 86914,
+      "truncated_for_reader": true
+    },
+    {
+      "path": "filing_20260814002803/toc.txt",
+      "bytes": 10061,
+      "sha256": "aac99541a3c9c0d820ba3e0f3446eeef1d89458b92a7a96e7150c2bdfb5c678f"
+    }
+  ]
+}

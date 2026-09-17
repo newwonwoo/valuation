@@ -1,0 +1,26 @@
+{
+  "status": "COMPLETED",
+  "as_of": "2026-09-13",
+  "stages_completed": 33,
+  "scope": "FULL_COMPANY",
+  "assisted_to_replay_completed": true,
+  "canonical_replay_completed": true,
+  "valuation_hash": "d9d0a70bbcc285f198eb58af40cab95e58d40251daadb1556e394cd92cd689ac",
+  "audit_hash": "16e13bed5d67a7430cec7b8990d0bf86abb767ccba526ddca6e6084a16fe00fe",
+  "pre_market_model_and_underwriting_hashes_unchanged": true,
+  "bundle_file_hashes_verified": true,
+  "full_regression": {
+    "passed": 1943,
+    "failed": 11,
+    "explanation": "3 compare_runs tests require committed runtime; passed after commit. 8 existing test_prism_tunnel_launcher tests fail on this overlay filesystem persistent-state ACL environment; no safety gate weakened."
+  },
+  "post_commit_targeted_regression": {
+    "passed": 55,
+    "failed": 0
+  },
+  "remaining_audit_warnings": [
+    "Forecast valuation inputs are entirely analyst underwriting, grounded in separate primary evidence.",
+    "High value sensitivity; automatic sensitivity reconstruction does not cover every scenario/segment."
+  ],
+  "report": "reports/korean-air-20260913/003490_20260913_투자보고서.md"
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<rect width="1200" height="630" fill="#0b1220"/>
+<rect x="48" y="48" width="1104" height="534" rx="24" fill="#111c31" stroke="#2f80ed" stroke-width="2"/>
+<text x="88" y="112" fill="#8fc5ff" font-size="34" font-family="sans-serif" font-weight="700">대한항공 가치평가·투자 결론</text>
+<text x="88" y="174" fill="#f3f6fb" font-size="25" font-family="sans-serif">P50 22,286원 · 확률가중 평균 24,430원</text>
+<text x="88" y="227" fill="#f3f6fb" font-size="25" font-family="sans-serif">구체 매수가 15,863원 (3년·연 12%·최소 75% 성공 기준)</text>
+<text x="88" y="280" fill="#f3f6fb" font-size="25" font-family="sans-serif">현재가 28,950원 · 신규매수 보류</text>
+<text x="88" y="333" fill="#f3f6fb" font-size="25" font-family="sans-serif">하방 3,741원 · 중앙 22,286원 · 상방 51,550원</text>
+<text x="88" y="552" fill="#7f91ac" font-size="16" font-family="monospace">distribution 349b06908b6e5cb7e1b33887</text>
+</svg>

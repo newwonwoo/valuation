@@ -1,0 +1,83 @@
+{
+  "schema": "compact-evidence-bundle/v1",
+  "deletion_performed": false,
+  "git_stage_exclude": [
+    {
+      "file": "DAL_facts.json",
+      "bytes": 3369064,
+      "sha256": "9cee00021ec9032b910b0a1f69f66eb1a73bab9ca8427f8aae9030be3a0225b0",
+      "source_url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000027904.json",
+      "reason": "replaced by exact selected SEC records or source snippets; full source remains local"
+    },
+    {
+      "file": "UAL_facts.json",
+      "bytes": 3570715,
+      "sha256": "6621f43f61efe96e02f2aada43fbed7ea989332e4fad2c6c453f9abe139e6d32",
+      "source_url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000100517.json",
+      "reason": "replaced by exact selected SEC records or source snippets; full source remains local"
+    },
+    {
+      "file": "UPS_facts.json",
+      "bytes": 4010678,
+      "sha256": "19a5c39708df843df0ecefb17c8a53b8920ee8e43f64d0572b5dac0c167da90d",
+      "source_url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001090727.json",
+      "reason": "replaced by exact selected SEC records or source snippets; full source remains local"
+    },
+    {
+      "file": "FDX_facts.json",
+      "bytes": 3514381,
+      "sha256": "58923c65a8c280db392ba069685c0fca42538dcece88cc22b8a6492f838923c2",
+      "source_url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0001048911.json",
+      "reason": "unused FedEx candidate, omitted from peer set"
+    },
+    {
+      "file": "UPS_10q.html",
+      "bytes": 2170652,
+      "sha256": "c2777f461c8359906248b04ec5e8b690a307c8976288ac517effd735658275a8",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1090727/000162828026053249/ups-20260630.htm",
+      "reason": "replaced by exact selected SEC records or source snippets; full source remains local"
+    },
+    {
+      "file": "lufthansa_q2.pdf",
+      "bytes": 2433996,
+      "sha256": "40607c6f77f697cad65217baf162256292ad483c3336a0d8acf20f1718a4d7ed",
+      "source_url": "https://investor-relations.lufthansagroup.com/fileadmin/downloads/en/financial-reports/interims-reports/LH-QR-2026-2-e.pdf",
+      "reason": "replaced by exact selected SEC records or source snippets; full source remains local"
+    },
+    {
+      "file": "fdx_q4.pdf",
+      "bytes": 4160385,
+      "sha256": "567393f6cfd73a9e8e752eeeb5c522042ad3fd788a8452beb7a448476a0935fc",
+      "source_url": "https://s21.q4cdn.com/665674268/files/doc_financials/2026/q4/FedEx-Q4-FY26-Stat-Book.pdf",
+      "reason": "unused FedEx candidate, omitted from peer set"
+    },
+    {
+      "file": "fdx_q4.txt",
+      "bytes": 67951,
+      "sha256": "340861032710e2297e725f94abf6dc0cf06ff0e08997e4f0fc559e0225604098",
+      "source_url": "https://s21.q4cdn.com/665674268/files/doc_financials/2026/q4/FedEx-Q4-FY26-Stat-Book.pdf",
+      "reason": "unused FedEx candidate, omitted from peer set"
+    },
+    {
+      "file": "lufthansa_reports.html",
+      "bytes": 246103,
+      "sha256": "69d8c1f190ef127f63b8a7ce36e1221194d2927bfe0717a48e224ca71bba27dd",
+      "source_url": "https://investor-relations.lufthansagroup.com/en/financial-reports.html",
+      "reason": "discovery-only report landing page"
+    },
+    {
+      "file": "delta_q2_release.html",
+      "bytes": 388889,
+      "sha256": "d0b7ee1b2eaf9d59843fbd04358968e5aa14d8ad668295ab85c495ca9fbf09ec",
+      "source_url": "https://ir.delta.com/news/news-details/2026/Delta-Air-Lines-Announces-June-Quarter-2026-Financial-Results/default.aspx",
+      "reason": "replaced by exact selected SEC records or source snippets; full source remains local"
+    }
+  ],
+  "preserve_all_yahoo_and_weekly_price_files": true,
+  "subset_files": [
+    "sec_facts_subset.json",
+    "capital_source_snippets.json"
+  ],
+  "reproduction_outputs_hash_file": "compact_bundle_output_hashes.json",
+  "source_note": "SEC record objects selected without changing keys or values; HTML/text excerpts are exact character slices with their own UTF-8 SHA256 and full-source SHA256. PDF-derived snippets additionally cite full PDF SHA256. Full-source hashes bind provenance but cannot reconstruct excluded full documents."
+}

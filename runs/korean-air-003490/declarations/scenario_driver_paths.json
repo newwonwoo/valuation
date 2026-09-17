@@ -1,0 +1,8 @@
+{
+  "paths": {
+    "Down": {"operating_margin": [0.026274896466721778, 0.03494535000300281, 0.044237609351885795, 0.052242325435630024, 0.05866393045037585]},
+    "Base": {"operating_margin": [0.04419475983622464, 0.05888360766081242, 0.07322036251688722, 0.08303148687817452, 0.0867129695123477]},
+    "Bull": {"operating_margin": [0.061221117251882076, 0.08141929868473914, 0.09552321422127255, 0.10483240560399819, 0.10735692869966373]}
+  },
+  "rationale": "Each path is airline EBIT divided by airline revenue in the filed-figure valuation model. EBIT includes the scenario's declared operating margin, merger synergy and integration cost, so it is comparable with the realized combined reported operating margin used for training."
+}

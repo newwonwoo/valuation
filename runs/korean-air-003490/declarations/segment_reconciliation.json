@@ -1,0 +1,25 @@
+{
+  "schema_version": "filed-segment-reconciliation/v1",
+  "target_id": "KR:DART:00113526",
+  "as_of": "2026-09-13",
+  "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803",
+  "document_id": "DART_20260814002803",
+  "member_path": "20260814002803_28.xml",
+  "member_sha256": "705c95fbc4bc4d3cdfe84a8830b708c2ebb7aab6b4989402ad39ee7b5c031181",
+  "reporting_unit": "백만원",
+  "period": "2026-01-01/2026-06-30",
+  "segments_basis": "before consolidation adjustments",
+  "filed_total_revenue": "14497813",
+  "filed_total_operating_income": "383216",
+  "consolidated_revenue": "13888118",
+  "consolidated_operating_income": "310273",
+  "revenue_elimination": "-609695",
+  "operating_income_elimination": "-72943",
+  "source_offsets": {
+    "revenue_elimination": 3348,
+    "operating_income_elimination": 4020,
+    "consolidated_revenue": 3407,
+    "consolidated_operating_income": 4078
+  },
+  "note": "연결조정 전 부문합계를 연결수치로 오인하지 않는다. 차이는 실제 공시 조정열과 일치한다. 표시단위 반올림에 따른 원 단위 공시값과의 차이는 별도 유지한다."
+}

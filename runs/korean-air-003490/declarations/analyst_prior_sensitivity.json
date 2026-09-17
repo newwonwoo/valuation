@@ -1,0 +1,179 @@
+{
+  "schema_version": "versioned-analyst-prior-sensitivity/v1",
+  "prior_version": "korean-air-segment-hybrid-20260913-v1",
+  "target_id": "KR:DART:00113526",
+  "as_of": "2026-09-13",
+  "status": "ANALYST_PRIOR_NOT_TARGET_HISTORY_CALIBRATION",
+  "purpose": "Permit a signed expected-value interval across a governed ambiguity set while same-perimeter segment panels are materialized and tested. A concrete expected-return entry ceiling is permitted only after the future old-shareholder payoffs and financing waterfall are independently authorized. These wide priors must be replaced segment by segment when an OOS-qualified posterior is available.",
+  "interpretation_rules": [
+    "A triangular mode is an explicit analyst center, not an empirical most-likely frequency.",
+    "Do not relabel prior-predictive path weights as calibrated target-company probabilities.",
+    "Publish the prior version, endpoints, probability-vector expected-value range, sensitivity contribution and replacement status. Do not publish one prior-weighted P50 or a success-probability entry price.",
+    "Do not use current share price, broker target price or prior valuation output to set a bound or mode."
+  ],
+  "korean_air_standalone_current_anchor": {
+    "period": "2026Q2",
+    "perimeter": "KOREAN_AIR_STANDALONE",
+    "passenger_ask_million_seat_km": 23296,
+    "passenger_rpk_million_passenger_km": 20293,
+    "passenger_load_factor": 0.871,
+    "passenger_yield_KRW_per_passenger_km": 140,
+    "cargo_actk_million_tonne_km": 3076,
+    "cargo_ctk_million_tonne_km": 2193,
+    "cargo_load_factor": 0.713,
+    "cargo_yield_KRW_per_tonne_km": 703,
+    "fuel_cost_KRW_million": 1999100,
+    "nonfuel_operating_cost_KRW_million": 2759000,
+    "source_ref": "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/ir-report/2026_2Q_IR_Report_ko.pdf",
+    "use": "forecast origin and arithmetic reconciliation; not a probability sample"
+  },
+  "bounded_priors": [
+    {
+      "parameter_id": "korean_air.passenger_normalized_load_factor",
+      "distribution": "triangular",
+      "minimum": 0.82,
+      "mode": 0.86,
+      "maximum": 0.89,
+      "unit": "ratio",
+      "economic_path_id": "path:passenger_transport:utilization",
+      "basis": "Analyst downside/base/upside envelope around the observed 2026Q2 standalone load factor of 0.871."
+    },
+    {
+      "parameter_id": "korean_air.cargo_annual_volume_growth",
+      "distribution": "triangular",
+      "minimum": -0.03,
+      "mode": 0.03,
+      "maximum": 0.08,
+      "unit": "ratio",
+      "economic_path_id": "path:cargo_transport:utilized_volume_growth",
+      "basis": "Analyst envelope spanning contraction to high-single-digit growth; mode is the midpoint of the documented base range."
+    },
+    {
+      "parameter_id": "korean_air.passenger_normalized_yield_multiplier_vs_2026Q2",
+      "distribution": "triangular",
+      "minimum": 0.90,
+      "mode": 0.955,
+      "maximum": 1.02,
+      "unit": "multiplier",
+      "economic_path_id": "path:passenger_transport:unit_yield",
+      "basis": "Analyst normalization envelope; fuel and FX paths must move jointly so the same shock is not charged twice."
+    },
+    {
+      "parameter_id": "korean_air.cargo_normalized_yield_multiplier_vs_2026Q2",
+      "distribution": "triangular",
+      "minimum": 0.70,
+      "mode": 0.84,
+      "maximum": 1.00,
+      "unit": "multiplier",
+      "economic_path_id": "path:cargo_transport:unit_yield",
+      "basis": "Analyst normalization envelope around the unusually elevated 2026Q2 cargo yield."
+    },
+    {
+      "parameter_id": "asiana.standalone_operating_margin_recovery",
+      "distribution": "triangular",
+      "minimum": -0.12,
+      "mode": 0.00,
+      "maximum": 0.08,
+      "unit": "ratio",
+      "economic_path_id": "path:asiana_air_transport:operating_margin",
+      "basis": "Wide analyst sensitivity anchored by 2026H1 pre-elimination operating loss and capped at a mature but non-exceptional airline margin; it is not an empirical Asiana posterior."
+    },
+    {
+      "parameter_id": "asiana.margin_recovery_horizon",
+      "distribution": "triangular",
+      "minimum": 2,
+      "mode": 3,
+      "maximum": 5,
+      "unit": "years",
+      "economic_path_id": "path:asiana_air_transport:recovery_timing",
+      "basis": "Analyst timing sensitivity for post-merger operating repair."
+    },
+    {
+      "parameter_id": "integration.annual_total_synergy_realization",
+      "distribution": "triangular",
+      "minimum": 0,
+      "mode": 150000000000,
+      "maximum": 300000000000,
+      "unit": "KRW_per_year",
+      "economic_path_id": "path:integration:total_synergy",
+      "basis": "Zero-to-company-plan sensitivity. The KRW300bn company plan includes financing benefit, so each draw must be split before operating APV."
+    },
+    {
+      "parameter_id": "integration.operating_share_of_total_synergy",
+      "distribution": "triangular",
+      "minimum": 0.40,
+      "mode": 0.67,
+      "maximum": 0.90,
+      "unit": "ratio",
+      "economic_path_id": "path:integration:operating_synergy_split",
+      "basis": "Explicit analyst split sensitivity; unavailable company disclosure prevents calibration. The residual may enter financing effects only once."
+    },
+    {
+      "parameter_id": "integration.one_time_cost_multiple_of_realized_annual_synergy",
+      "distribution": "triangular",
+      "minimum": 0.5,
+      "mode": 1.0,
+      "maximum": 2.0,
+      "unit": "multiple",
+      "economic_path_id": "path:integration:one_time_cost",
+      "basis": "Broad analyst sensitivity for systems, service, fleet and workforce integration costs; no company amount is disclosed."
+    },
+    {
+      "parameter_id": "integration.full_run_rate_horizon",
+      "distribution": "triangular",
+      "minimum": 2,
+      "mode": 3,
+      "maximum": 5,
+      "unit": "years_after_legal_merger",
+      "economic_path_id": "path:integration:realization_timing",
+      "basis": "Analyst timing sensitivity, separate from the legally planned merger date."
+    },
+    {
+      "parameter_id": "aerospace.normalized_ebit_margin",
+      "distribution": "triangular",
+      "minimum": 0.03,
+      "mode": 0.07,
+      "maximum": 0.11,
+      "unit": "ratio",
+      "economic_path_id": "path:aerospace:operating_margin",
+      "basis": "Analyst envelope around disclosed backlog conversion and external MRO reference economics; not an airline traffic posterior."
+    }
+  ],
+  "event_conditionals": {
+    "legal_merger_base_case": {
+      "treatment": "CONDITIONAL_DETERMINISTIC_EVENT_WITH_DELAY_AND_CANCELLATION_SENSITIVITIES",
+      "planned_effective_date": "2026-12-16",
+      "planned_new_common_shares": 20337721,
+      "old_common_shareholder_retention_if_closed": 0.9476585124297811,
+      "probability": null,
+      "rule": "Do not invent a calibrated close probability. Run announced-close, delay and cancellation cases and show each contribution."
+    }
+  },
+  "distress_sensitivity_priors": {
+    "minimum_operating_cash_days_of_cash_operating_cost": [15, 30, 45],
+    "aggregate_distress_asset_proceeds_ratio": {
+      "distribution": "triangular",
+      "minimum": 0.30,
+      "mode": 0.50,
+      "maximum": 0.70,
+      "basis": "Analyst sensitivity applied to path-date unlevered asset value, not an asserted airline recovery statistic."
+    },
+    "distress_transaction_cost_ratio_of_proceeds": {
+      "distribution": "triangular",
+      "minimum": 0.05,
+      "mode": 0.15,
+      "maximum": 0.30,
+      "basis": "Analyst sensitivity until claim-level collateral and sale evidence is available."
+    },
+    "old_shareholder_recovery_rule": "Residual after evidenced senior claims and distress costs; never set ex ante to zero and never floor a present-date DCF scenario."
+  },
+  "source_refs": [
+    "research/korean-air-20260913/drivers/operating_drivers.md",
+    "research/korean-air-20260913/primary/primary_facts.json",
+    "https://www.koreanair.com/contents/footer/about-us/investor-relations/financial-information",
+    "https://www.koreanair.com/content/dam/koreanair/footer/about-us/inverstor-relations/financial-information/audit-report/shareholder_meeting_ko.pdf",
+    "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260626000005&dcmNo=11448313&eleId=3&offset=7532&length=37052&dtd=dart4.xsd",
+    "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803"
+  ],
+  "replacement_policy": "When a segment posterior passes the panel and OOS contract, replace only that segment's operating priors. Keep data-short integration and distress terms as separately labeled analyst priors until direct evidence supports them."
+}

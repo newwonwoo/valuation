@@ -1,0 +1,14 @@
+{
+  "schema_version": "staff-response/v1",
+  "role": "filing_locator_analyst",
+  "prompt_sha256": "7a9242308773193328de12de2b162b643594b85972af75e848772b1499537740",
+  "response": {
+    "locators": [],
+    "not_found": [
+      "orders",
+      "backlog",
+      "contract_liabilities",
+      "lead_time"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": "governed-source-valuation-snapshot/v1",
+  "target_id": "KR:DART:00113526",
+  "as_of": "2026-09-13",
+  "source_artifact_id": "003490-20260913-TP20813-47FF05D6D4DC",
+  "source_run_id": "LIVE-KOREAN-AIR-1",
+  "source_run_status": "COMPLETED",
+  "source_audit_passed": true,
+  "source_finished_at": "2026-09-14T08:56:52+09:00",
+  "source_valuation_hash": "fa91fc4535385b9f2deb0c9e3160321c1d3829768429677445ce5a6bb358e8bb",
+  "source_audit_hash": "40b78a4babb0a5c63d8f5ab794600516c6ffe338ae2321150184b7062a4b9d3c",
+  "scenario_values": [
+    {
+      "scenario_id": "Down",
+      "equity_value_KRW": "-10427888040180.82613509228863"
+    },
+    {
+      "scenario_id": "Base",
+      "equity_value_KRW": "1430775942933.958616719558021"
+    },
+    {
+      "scenario_id": "Bull",
+      "equity_value_KRW": "14290196632197.97378026427186"
+    }
+  ],
+  "purpose": "Minimal immutable input needed to replay the governed distribution without relying on ignored local run outputs. It preserves the source receipts and signed equity scenarios; it does not replace the archived source bundle."
+}

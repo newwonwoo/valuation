@@ -13,9 +13,9 @@ from .records import CalibrationStatus
 
 # A frozen distribution that may bind itself into the scenario set as an
 # external probability source, rather than authorising an Evidence-carried
-# probability assumption path. Canonical v3.2 policy permits only continuous
-# financial paths here. Binary-event snapshots remain diagnostics/tail-risk
-# artifacts and are deliberately kept out of this registry.
+# probability assumption path. Historical v3.2 nearest-anchor snapshots remain
+# here only for exact, receipt-bound replay. Binary-event snapshots remain
+# diagnostics/tail-risk artifacts and are deliberately kept out of this registry.
 # Each external route publishes its snapshot under its own context key, so a run
 # carries exactly the artifact its route produced and no run's context grows a
 # key because another route exists.
@@ -104,6 +104,19 @@ def probability_calibration_load_adapter(
         for contract, key in DIAGNOSTIC_PROBABILITY_SNAPSHOT_KEYS:
             if isinstance(snapshot, contract):
                 outputs[key] = snapshot
+        if isinstance(snapshot, ContinuousProbabilityCalibrationSnapshot):
+            receipt = str(
+                context.data.get("legacy_continuous_probability_replay_receipt")
+                or ""
+            )
+            if receipt != snapshot.legacy_replay_receipt:
+                return StageExecutionResult(
+                    StageStatus.WARNING,
+                    "nearest-anchor continuous probability is legacy replay only; "
+                    "without an exact frozen snapshot receipt it remains diagnostic "
+                    "and cannot authorize scenario weighting",
+                    outputs,
+                )
         if isinstance(snapshot, DIAGNOSTIC_PROBABILITY_SNAPSHOT_CONTRACTS):
             return StageExecutionResult(
                 StageStatus.WARNING,
@@ -126,7 +139,8 @@ def probability_calibration_load_adapter(
             outputs["probability_calibration_certificate"] = certificate
             return StageExecutionResult(
                 StageStatus.PASS,
-                "calibration promotion gate passed; certificate is available for LIVE_PRIMARY probability weighting",
+                "receipt-bound legacy calibration replay passed; certificate is "
+                "available only to reproduce the frozen scenario weighting",
                 outputs,
             )
 

@@ -1,0 +1,264 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>17. 무형자산 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='360'></COL>
+<COL width='360'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23' colspan='2'>무형자산 및 영업권의 변동내역에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='351' height='23'>당반기</TD>
+  <TD width='351' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='720'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>무형자산 및 영업권의 분류</TH>
+  <TH width='111' height='106' rowspan='3'>무형자산 및 영업권의 분류 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='76' rowspan='2'>영업권</TH>
+  <TH width='351' height='23' colspan='3'>영업권 이외의 무형자산</TH>
+</TR>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>시설이용권</TH>
+  <TH width='111' height='46'>컴퓨터소프트웨어</TH>
+  <TH width='111' height='46'>기타무형자산</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='111' height='46'>기초 무형자산 및 영업권</TD>
+  <TD width='111' height='46' align='RIGHT'>1,839,690</TD>
+  <TD width='111' height='46' align='RIGHT'>16,783</TD>
+  <TD width='111' height='46' align='RIGHT'>183,814</TD>
+  <TD width='111' height='46' align='RIGHT'>946,028</TD>
+  <TD width='111' height='46' align='RIGHT'>2,986,315</TD>
+</TR>
+<TR height='99'>
+  <TD width='111' height='92'>사업결합을 통한 취득 이외의 증가, 영업권 이외의 무형자산</TD>
+  <TD width='111' height='92' align='RIGHT'>0</TD>
+  <TD width='111' height='92' align='RIGHT'>0</TD>
+  <TD width='111' height='92' align='RIGHT'>1,686</TD>
+  <TD width='111' height='92' align='RIGHT'>2,138</TD>
+  <TD width='111' height='92' align='RIGHT'>3,824</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>처분, 무형자산 및 영업권</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>0</TD>
+  <TD width='111' height='46' align='RIGHT'>(187)</TD>
+  <TD width='111' height='46' align='RIGHT'>(3,143)</TD>
+  <TD width='111' height='46' align='RIGHT'>(3,330)</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>기타 상각비, 영업권 이외의 무형자산</TD>
+  <TD width='111' height='69' align='RIGHT'>0</TD>
+  <TD width='111' height='69' align='RIGHT'>(2,074)</TD>
+  <TD width='111' height='69' align='RIGHT'>(17,750)</TD>
+  <TD width='111' height='69' align='RIGHT'>(38,942)</TD>
+  <TD width='111' height='69' align='RIGHT'>(58,766)</TD>
+</TR>
+<TR height='99'>
+  <TD width='111' height='92'>기타 변동을 통한 증가(감소), 무형자산 및 영업권</TD>
+  <TD width='111' height='92' align='RIGHT'>0</TD>
+  <TD width='111' height='92' align='RIGHT'>0</TD>
+  <TD width='111' height='92' align='RIGHT'>744</TD>
+  <TD width='111' height='92' align='RIGHT'>670</TD>
+  <TD width='111' height='92' align='RIGHT'>1,414</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>기말 무형자산 및 영업권</TD>
+  <TD width='111' height='46' align='RIGHT'>1,839,690</TD>
+  <TD width='111' height='46' align='RIGHT'>14,709</TD>
+  <TD width='111' height='46' align='RIGHT'>168,307</TD>
+  <TD width='111' height='46' align='RIGHT'>906,751</TD>
+  <TD width='111' height='46' align='RIGHT'>2,929,457</TD>
+</TR>
+<TR height='122'>
+  <TD width='111' height='115'>기타증감에 대한 기술</TD>
+  <TD width='111' height='115'>　</TD>
+  <TD width='111' height='115'>　</TD>
+  <TD width='111' height='115'>　</TD>
+  <TD width='111' height='115'>　</TD>
+  <TD width='111' height='115'>기타증감은 해외소재 자산의 환율변동효과로 인하여 발생하였습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='360'></COL>
+<COL width='360'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='351' height='23'>전반기</TD>
+  <TD width='351' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='720'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>무형자산 및 영업권의 분류</TH>
+  <TH width='111' height='106' rowspan='3'>무형자산 및 영업권의 분류 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='76' rowspan='2'>영업권</TH>
+  <TH width='351' height='23' colspan='3'>영업권 이외의 무형자산</TH>
+</TR>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>시설이용권</TH>
+  <TH width='111' height='46'>컴퓨터소프트웨어</TH>
+  <TH width='111' height='46'>기타무형자산</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='111' height='46'>기초 무형자산 및 영업권</TD>
+  <TD width='111' height='46' align='RIGHT'>1,839,690</TD>
+  <TD width='111' height='46' align='RIGHT'>20,930</TD>
+  <TD width='111' height='46' align='RIGHT'>192,723</TD>
+  <TD width='111' height='46' align='RIGHT'>1,024,064</TD>
+  <TD width='111' height='46' align='RIGHT'>3,077,407</TD>
+</TR>
+<TR height='99'>
+  <TD width='111' height='92'>사업결합을 통한 취득 이외의 증가, 영업권 이외의 무형자산</TD>
+  <TD width='111' height='92' align='RIGHT'>0</TD>
+  <TD width='111' height='92' align='RIGHT'>0</TD>
+  <TD width='111' height='92' align='RIGHT'>2,213</TD>
+  <TD width='111' height='92' align='RIGHT'>675</TD>
+  <TD width='111' height='92' align='RIGHT'>2,888</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>처분, 무형자산 및 영업권</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>기타 상각비, 영업권 이외의 무형자산</TD>
+  <TD width='111' height='69' align='RIGHT'>0</TD>
+  <TD width='111' height='69' align='RIGHT'>(2,074)</TD>
+  <TD width='111' height='69' align='RIGHT'>(16,471)</TD>
+  <TD width='111' height='69' align='RIGHT'>(38,886)</TD>
+  <TD width='111' height='69' align='RIGHT'>(57,431)</TD>
+</TR>
+<TR height='99'>
+  <TD width='111' height='92'>기타 변동을 통한 증가(감소), 무형자산 및 영업권</TD>
+  <TD width='111' height='92' align='RIGHT'>0</TD>
+  <TD width='111' height='92' align='RIGHT'>0</TD>
+  <TD width='111' height='92' align='RIGHT'>4,109</TD>
+  <TD width='111' height='92' align='RIGHT'>286</TD>
+  <TD width='111' height='92' align='RIGHT'>4,395</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>기말 무형자산 및 영업권</TD>
+  <TD width='111' height='46' align='RIGHT'>1,839,690</TD>
+  <TD width='111' height='46' align='RIGHT'>18,856</TD>
+  <TD width='111' height='46' align='RIGHT'>182,574</TD>
+  <TD width='111' height='46' align='RIGHT'>986,139</TD>
+  <TD width='111' height='46' align='RIGHT'>3,027,259</TD>
+</TR>
+<TR height='145'>
+  <TD width='111' height='138'>기타증감에 대한 기술</TD>
+  <TD width='111' height='138'>　</TD>
+  <TD width='111' height='138'>　</TD>
+  <TD width='111' height='138'>　</TD>
+  <TD width='111' height='138'>　</TD>
+  <TD width='111' height='138'>기타증감은 건설중인자산의 대체 및 해외소재 자산의 환율변동효과로 인하여 발생하였습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='720'>
+<COLGROUP>
+<COL width='720'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='711' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

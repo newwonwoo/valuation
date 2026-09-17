@@ -1,0 +1,29 @@
+{
+  "schema_version": "governed-distribution-audit/v1",
+  "passed": true,
+  "checks": {
+    "source_run_completed_and_audited": true,
+    "source_valuation_hash_bound": true,
+    "financing_claims_reconciled_to_declared_schedule": true,
+    "gross_structural_claim_reconstructed_once": true,
+    "legacy_net_claim_bridge_reproduced": true,
+    "probabilities_sum_to_one": true,
+    "central_branch_is_unique_mode": true,
+    "nearest_anchor_probability_absent": true,
+    "down_branch_structural_value_positive": true,
+    "report_time_point_dcf_floor_absent": true,
+    "entry_is_pre_market_and_hash_bound": true,
+    "realized_success_meets_policy_minimum": true,
+    "broker_loaded_only_after_intrinsic_freeze": true,
+    "broker_report_dates_not_after_cutoff": true,
+    "broker_targets_excluded_from_intrinsic_inputs": true,
+    "broker_sources_are_clickable_http": true,
+    "broker_sample_uses_unique_institutions": true,
+    "market_loaded_only_after_intrinsic_freeze": true
+  },
+  "source_audit_hash": "40b78a4babb0a5c63d8f5ab794600516c6ffe338ae2321150184b7062a4b9d3c",
+  "source_audit_passed": true,
+  "distribution_hash": "349b06908b6e5cb7e1b33887971dd018dd1833508ccbdc3b17779e8fc6fa0fc4",
+  "intrinsic_freeze_hash": "768f0d1eb65f06246d04e200cd20faac5f0eb2dcbef8cbfdce8220a192acb937",
+  "post_freeze_comparison_hash": "5be102c78550f8fb97a6863ce4e0672bdec3f18ba57c6d661fa5c0e36b5917fa"
+}

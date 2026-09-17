@@ -1,0 +1,23 @@
+{
+  "kind": "normalized_public_dart_metadata",
+  "not_api_response": true,
+  "checked_at": "2026-09-13",
+  "sources": [
+    {
+      "path": "filings-search.html",
+      "url": "https://dart.fss.or.kr/dsab007/detailSearch.ax",
+      "sha256": "8e0f3d73dbbb9d3c1c74449147f100cfcb4493eb907ae96f0306324965b0d841"
+    },
+    {
+      "path": "company-popup.html",
+      "url": "https://dart.fss.or.kr/dsae001/selectPopup.ax?selectKey=00113526",
+      "sha256": "f3f977aa835671c0e95c516140f667eafdabd9dfad8bb8bed29199a6b890376c"
+    },
+    {
+      "path": "halfyear-main.html",
+      "url": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803",
+      "sha256": "e5fcb654c198c87fc85c4a36f04a50b5ef97da51ab54714d2c817f3c1a0505be"
+    }
+  ],
+  "industry_code_basis": "DART 항공 여객 운송업 -> KSIC 51100; official mapping registry"
+}

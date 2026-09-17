@@ -1,0 +1,159 @@
+[
+  {
+    "schema_version": "staff-response/v1",
+    "role": "intelligence_officer",
+    "prompt_sha256": "13aeac0568ac275abd89842f7482d59ddc832f0bd7fe8259f58e1f3a9803f973",
+    "response": {
+      "rationale": "연결 실제 손익을 출발점으로 항공 통합·항공우주 수주·엔진 외부서비스·호텔 자산을 구분합니다. 수익 개선은 가설이며 대규모 투자와 초기 비용이 먼저 발생하는 현금흐름을 함께 반영합니다. 이미 연결된 아시아나 매출이나 리스원금을 중복 반영하지 않습니다.",
+      "hypotheses": [
+        {
+          "id": "H:KAL:AIRLINE",
+          "statement": "통합 비용을 거친 항공사업 수익성 회복이 장기 현금창출을 높이지만 초기 투자로 주주 몫은 제한된다.",
+          "causal_chain": [
+            "노선·조달·정비 통합과 유가 대응",
+            "연결 영업마진과 투자 후 FCFF",
+            "항공운송 EV에서 순부채와 희석 차감"
+          ],
+          "supporting_evidence_ids": [
+            "UW:KR:DART:00113526:airline_fcff_year_1",
+            "UW:KR:DART:00113526:airline_fcff_year_5",
+            "UW:KR:DART:00113526:airline_ev_adjustment",
+            "UW:KR:DART:00113526:diluted_shares"
+          ],
+          "contradicting_evidence_ids": [
+            "DART_HTML_2f6195eb49ee067e37d5",
+            "UW:KR:DART:00113526:fleet_capex",
+            "UW:KR:DART:00113526:lease_liabilities"
+          ],
+          "kill_conditions": [
+            "연결 영업마진 회복이 2개 반기 연속 기준경로에 못 미침",
+            "항공기 투자·순부채가 기준 범위를 지속 초과"
+          ],
+          "next_checks": [
+            "다음 연결 실적 및 신규리스 취득",
+            "합병후 초기 비용과 신주 확정"
+          ]
+        },
+        {
+          "id": "H:KAL:AEROSPACE",
+          "statement": "항공우주 수주잔고의 양산 전환은 매출을 확대하지만 자금 소요와 취소조건이 가치 실현 속도를 제약한다.",
+          "causal_chain": [
+            "기존 수주잔고와 납품",
+            "매출전환·마진·운전자본",
+            "항공우주 FCFF의 현재가치"
+          ],
+          "supporting_evidence_ids": [
+            "UW:KR:DART:00113526:backlog",
+            "UW:KR:DART:00113526:backlog_conversion",
+            "UW:KR:DART:00113526:aerospace_fcff_year_5"
+          ],
+          "contradicting_evidence_ids": [
+            "UW:KR:DART:00113526:cancellation_terms",
+            "UW:KR:DART:00113526:contract_liabilities"
+          ],
+          "kill_conditions": [
+            "수주취소 또는 양산 지연으로 매출전환이 하방경로에 미달"
+          ],
+          "next_checks": [
+            "수주잔고 증감과 실제 납품",
+            "계약별 선수금과 원가율"
+          ]
+        },
+        {
+          "id": "H:KAL:SERVICE",
+          "statement": "엔진 정비의 외부 고객 확보가 기타 서비스 현금흐름을 늘릴 수 있으나 초기 설비투자와 가동 부담을 먼저 감수해야 한다.",
+          "causal_chain": [
+            "항공기 운항·정비 수요와 기존 엔진서비스 역량",
+            "외부 서비스매출 및 초기 마진·투자",
+            "기타 FCFF 증가; 내부절감과 외부매출의 중복 배제"
+          ],
+          "supporting_evidence_ids": [
+            "UW:KR:DART:00113526:activity_mix",
+            "UW:KR:DART:00113526:other_fcff_year_1",
+            "UW:KR:DART:00113526:other_fcff_year_5",
+            "UW:KR:DART:00113526:service_revenue"
+          ],
+          "contradicting_evidence_ids": [
+            "UW:KR:DART:00113526:customer_concentration",
+            "UW:KR:DART:00113526:working_capital"
+          ],
+          "kill_conditions": [
+            "외부 고객 확보가 늦어져 신규 정비 매출이 하방경로 미달",
+            "내부거래가 외부 성장으로 재분류됨"
+          ],
+          "next_checks": [
+            "신규 외부 계약과 가동률",
+            "실제 마진의 비교기업 대비 할인 필요성"
+          ]
+        },
+        {
+          "id": "H:KAL:HOTEL",
+          "statement": "호텔은 수익성만으로 제거할 수 없는 영업자산을 갖지만 장부 총자산이 실현가치를 보장하지 않는다.",
+          "causal_chain": [
+            "호텔·건물 운영자산",
+            "비금융 채무·중복자산·실현가치 할인",
+            "호텔 NAV 및 연결단일부채브리지"
+          ],
+          "supporting_evidence_ids": [
+            "UW:KR:DART:00113526:asset_value",
+            "UW:KR:DART:00113526:hotel_gross_asset_value"
+          ],
+          "contradicting_evidence_ids": [
+            "UW:KR:DART:00113526:noi",
+            "UW:KR:DART:00113526:debt"
+          ],
+          "kill_conditions": [
+            "자산 손상이나 비금융 채무가 NAV 할인폭을 초과"
+          ],
+          "next_checks": [
+            "호텔 단독자산·채무 구분",
+            "실제 영업현금과 자산매각 평가"
+          ]
+        }
+      ],
+      "requested_evidence": [],
+      "scanner_reinforcements": [],
+      "context_strength_linkage": {
+        "linkages": [
+          {
+            "id": "L:KAL:ENGINE",
+            "external_change": "항공기 운항과 장기 기단 투자에 따른 정비 수요",
+            "emergent_need": "엔진 가동을 유지할 외부 정비 처리능력",
+            "company_strength": "기존 항공기 엔진수리·정비 사업과 운영 경험",
+            "linkage_thesis": "자체 항공 운영에서 축적한 정비역량을 외부 서비스매출로 전환할 가능성을 초기 비용과 함께 평가한다.",
+            "market_blind_spot": "별도 공시가 작은 기타부문에 들어간 엔진서비스의 초기 투자와 장기 수익을 같은 값으로 보지 않는다. 시장가격 대비 미반영 여부를 단정하지 않는다.",
+            "value_capture_path": "기타부문의 외부 정비 매출과 마진에서 설비투자·운전자본을 차감한 FCFF",
+            "causal_chain": [
+              "항공기 운항과 기단 투자에 따른 정비 수요",
+              "외부 엔진 정비 처리능력 수요",
+              "기존 항공기엔진수리 사업 경험",
+              "외부 서비스 매출에서 초기 투자·원가 차감",
+              "기타부문 외부 계약과 실제 FCFF 개선"
+            ],
+            "supporting_evidence_ids": [
+              "UW:KR:DART:00113526:activity_mix",
+              "UW:KR:DART:00113526:fleet_capex",
+              "UW:KR:DART:00113526:other_fcff_year_1",
+              "UW:KR:DART:00113526:other_fcff_year_5"
+            ],
+            "hypothesis_ids": [
+              "H:KAL:SERVICE"
+            ],
+            "recognition_triggers": [
+              "외부 정비 계약 체결",
+              "실제 신규시설 가동과 손익"
+            ],
+            "kill_conditions": [
+              "외부 매출 없이 내부거래만 증가"
+            ],
+            "next_checks": [
+              "기타부문 외부매출과 유지투자",
+              "정비 고객·제품 구성"
+            ],
+            "confidence": 0.5
+          }
+        ]
+      }
+    }
+  }
+]

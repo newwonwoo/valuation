@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>DART시스템</title>
+<style>
+/* default */
+html {height:100%;}
+div, p, ul, li, table, th, td, textarea, input,  form, h1, h2, h3, h4, h5, h6, dt, dl, dd, em, address, cite,
+ul, ol, dl, dd, dt, li {list-style-type:none;margin:0;padding:0px;color:#333;box-sizing:border-box;}
+body {width:100%;height:100%;margin:0px;padding:0px;font-family:"맑은 고딕", "Malgun Gothic", sans-serif;font-size:13px;color:#333;line-height:1.15;font-weight:normal;overflow-Y:scroll;}
+button {padding:0;margin:0;background-color:transparent;color:#fff;border:none;/* outline:none !important;*/ }
+caption{display:none;overflow:hidden;width:0;height:0;font-size:0;text-indent:-9999em;}
+abbr, img, fieldset {border:0 none;/* tab focus */}
+
+/* link */
+a {text-decoration:none;color:#333;}
+a:link {text-decoration:none;color:#333;}
+table td span a {text-decoration:none;color:#333;}
+table td a:visited {text-decoration:none;color:#cd0093;}
+.tbWideList th a.second:visited{text-decoration:none;color:#cd0093;}
+a:hover, a:focus, a:active {text-decoration:none;color:#397fe7;}
+a:focus, img:focus {/* outline:none */}
+
+body {background: var(--bgColor);}
+
+.errorWrap {margin:0 auto;margin-top:5%;width:650px;position:relative;}
+.errorWrap .top {margin-bottom:20px;display:block;}
+.errorWrap .top .logo {margin-top:24px;width:120px;height:32px;background:url(https://dart.fss.or.kr/images/header_logo.png) no-repeat;background-size:100%;display:block;cursor:pointer;font-size:0;}
+.errorWrap .contWrap {width:100%;padding:20px 50px 30px 50px;background:#fff;position:relative;border:5px solid #ccc;display:block;clear:both;}
+.errorWrap .contWrap .imgError {margin:0 auto;margin-bottom:0;width:260px;height:190px;padding:0;background:url(https://dart.fss.or.kr/images/icon_error.png) no-repeat center top;background-size:100%;display:block;}
+.errorWrap .contWrap .infoWrap {padding:20px 30px 30px 30px;line-height:180%;border:1px solid #e1e1e1;border-radius:5px;}
+.errorWrap .contWrap .alert {padding:0;font-size:20px;color:#0000ff;font-weight:900;line-height:170%;padding-bottom:20px;text-align:center;}
+.errorWrap .contWrap .info {margin-top:0;color:#555;line-height:170%;padding-bottom:10px;}
+.errorWrap .contWrap .info.mB10 {margin-bottom:10px;}
+.errorWrap .contWrap .info .app {margin-left:20px;color:#3261cd;font-size:13px;line-height:200%;letter-spacing:-1px;}
+.errorWrap .contWrap .btnLG {margin:auto;margin-top:20px;width:170px;height:24px;padding:6px 0 0 0;background:#aaa;border:1px solid rgba(0,0,0,0.15);border-radius:2px;display:block;color:#fff;font-size:14px;font-weight:700;text-align:center;cursor:pointer;}
+.errorWrap .footerWrap {padding:20px 0 20px 0;color:#777;line-height:170%;font-size:12px;text-align:center;}
+
+@media (max-width:760px) {
+.errorWrap {margin-top:0%;width:100%;padding:0 20px 0 20px;}
+.errorWrap .top .logo {width:104px;}
+.errorWrap .contWrap {padding:10px 20px 20px 20px;}
+.errorWrap .contWrap .imgError {width:180px;height:130px;}
+.errorWrap .contWrap .infoWrap {padding:20px 0 20px 0;border:0px solid #e1e1e1;font-size:12px;}
+.errorWrap .contWrap .alert {font-size:15px;}
+.errorWrap .contWrap .btnLG {margin-top:0;height:28px;font-size:13px;}
+.errorWrap .footerWrap {padding:20px 0 0 0;font-size:11px;}
+}
+</style>
+</head>
+
+<body>
+	<!-- cont -->
+	<div class="cont">
+		<!-- error -->
+		<div class="errorWrap">
+			<!-- header -->
+			<div class="top">
+				<a href="https://dart.fss.or.kr"><h1 class="logo" title="홈으로 가기">홈으로 가기</h1></a>
+			</div>
+
+			<!-- contWrap -->
+			<div class="contWrap"> 
+				<div class="imgError"></div>
+				<div class="infoWrap">
+					<p class="alert">서비스 이용에 불편을 드려 죄송합니다.</p>
+					<p class="info">요청하신 인터넷주소(URL)을 찾을 수 없습니다.</p>
+					<p class="info mB10">찾으시는 URL이 변경되었거나, 삭제되었을 수 있습니다. URL이 잘못 입력되었는지 다시 한번 확인해 보시기 바랍니다.</p>
+					<p class="info">URL이 정확하다면 잠시후에 다시 연결을 시도해 보시기 바라며 계속 같은 현상이 발생한다면, 금융감독원(dart@fss.or.kr)으로 연락을 주시기 바랍니다.</p>
+				</div>
+					<a class="btnLG" target="_top" href="https://dart.fss.or.kr">DART 메인화면 바로가기</a>
+			</div>
+
+			<!-- footerWrap -->
+			<div class="footerWrap">Copyright ⓒ Financial supervisory service. All rights reserved.</div> 
+		</div>
+		<!-- //error -->
+	</div>
+	<!-- //cont -->
+</body>
+</html>

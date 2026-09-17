@@ -1,0 +1,106 @@
+{
+  "schema_version": "post-freeze-broker-comparison/v1",
+  "company": "대한항공",
+  "ticker": "003490",
+  "as_of": "2026-09-13",
+  "purpose": "Post-freeze comparison only; no intrinsic model or probability changes",
+  "authorization": "The audited intrinsic distribution and entry price are hash-frozen before this file is opened by the report builder.",
+  "sample_policy": "Latest publicly accessible, content-verified report found per included broker on or before the cutoff. This is a three-report comparison sample, not the full sell-side consensus.",
+  "storage": "Derived facts and short paraphrases only; no paid or licensed broker report body is stored.",
+  "verified_reports": [
+    {
+      "institution": "미래에셋증권",
+      "analyst": "류제현",
+      "report_date": "2026-09-08",
+      "title": "통합을 앞두고 나타난 원화 강세",
+      "rating": "매수 유지",
+      "target_price_krw": 37000,
+      "previous_target_price_krw": 33000,
+      "target_price_currency": "KRW",
+      "url": "https://securities.miraeasset.com/bbs/download/2147190.pdf?attachmentId=2147190",
+      "access_quality": "Public broker-hosted PDF link and official report page body verified",
+      "valuation_method": "PBR",
+      "base_year": "Forward book value; exact reference date not disclosed in the public page body",
+      "target_multiple": "PBR 1.1x",
+      "disclosed_estimates": [
+        {
+          "metric": "consolidated_revenue",
+          "period": "3Q26E",
+          "value": 7259.5,
+          "unit": "KRW billion"
+        },
+        {
+          "metric": "consolidated_operating_profit",
+          "period": "3Q26E",
+          "value": 488.7,
+          "unit": "KRW billion"
+        },
+        {
+          "metric": "consolidated_operating_margin",
+          "period": "3Q26E",
+          "value": 6.7,
+          "unit": "percent"
+        }
+      ],
+      "argument_paraphrase": "3분기 여객·화물 동반 개선, 원화 강세에 따른 연료·리스·이자 부담 완화, 12월 통합 기대를 반영했다.",
+      "valuation_basis_note": "목표 PBR 1.1배는 과거 0.7~1.0배 밴드 상단을 소폭 웃돈다. 통합 후 ROE 개선과 화물 수익성으로 프리미엄을 정당화한다.",
+      "load_bearing_assumption": "3Q26 연결 영업이익 4,887억원과 영업이익률 6.7%, 국제선 RPK +8.3% YoY 및 Yield +9.1% YoY"
+    },
+    {
+      "institution": "하나증권",
+      "analyst": "안도현",
+      "report_date": "2026-08-18",
+      "title": "통합 진에어, 메가 LCC 탄생의 의미",
+      "rating": "BUY 유지",
+      "target_price_krw": 41000,
+      "target_price_currency": "KRW",
+      "url": "https://file.hanaw.com/download/research/FileServer/WEB/industry/industry/2026/08/14/transport_260814.pdf",
+      "access_quality": "Public broker-hosted PDF verified",
+      "valuation_method": "NOT_DISCLOSED",
+      "base_year": "NOT_DISCLOSED",
+      "target_multiple": "NOT_DISCLOSED",
+      "disclosed_estimates": [],
+      "argument_paraphrase": "통합 LCC의 기재 운영 효율·연결성·단위매출 개선 가능성을 보되 비용 절감과 합병 효과는 장기로 평가했다.",
+      "valuation_basis_note": "산업 보고서의 Top Pick 표에 대한항공 목표가 41,000원이 제시되지만 목표 산식·배수·기준연도는 공개 본문에 없다.",
+      "load_bearing_assumption": "통합 LCC 합병 효과는 2028년부터 본격화; 비용보다 운임·탑승률·공급 증가를 우선 확인"
+    },
+    {
+      "institution": "LS증권",
+      "analyst": "이재혁",
+      "report_date": "2026-07-15",
+      "title": "2Q26 Review: 어디서나 당당하게 걷기",
+      "rating": "Buy 유지",
+      "target_price_krw": 33000,
+      "target_price_currency": "KRW",
+      "url": "https://file.alphasquare.co.kr/media/pdfs/company-report/260715_KAL_2Q26_Review.pdf",
+      "access_quality": "Broker-authored PDF verified at a public AlphaSquare mirror; original LS host was not retrieved",
+      "valuation_method": "NOT_DISCLOSED",
+      "base_year": "NOT_DISCLOSED",
+      "target_multiple": "NOT_DISCLOSED",
+      "disclosed_estimates": [
+        {
+          "metric": "consolidated_revenue",
+          "period": "FY2027E",
+          "value": 29128,
+          "unit": "KRW billion"
+        },
+        {
+          "metric": "consolidated_operating_profit",
+          "period": "FY2027E",
+          "value": 2663,
+          "unit": "KRW billion"
+        },
+        {
+          "metric": "consolidated_operating_margin",
+          "period": "FY2027E",
+          "value": 9.1,
+          "unit": "percent"
+        }
+      ],
+      "argument_paraphrase": "AI 투자·전자상거래 화물과 방한·장거리 여객 수요, 연료비 안정 및 12월 통합 시너지를 회복 동력으로 봤다.",
+      "valuation_basis_note": "목표가 33,000원을 유지했으나 이 보고서 공개 본문에는 선택한 목표 배수·산식·기준연도가 제시되지 않는다.",
+      "load_bearing_assumption": "FY2027 연결 영업이익 2.663조원과 영업이익률 9.1%; 2027년 조정 항공유 105달러/배럴 및 원/달러 1,483원"
+    }
+  ],
+  "coverage_limit": "Three verified public reports only. It does not establish that no other or newer broker research existed before the cutoff. The LS document is an author-identifiable full-report mirror rather than a broker-hosted copy."
+}

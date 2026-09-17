@@ -1,0 +1,21 @@
+{
+  "role": "filing_locator_analyst",
+  "prompt_sha256": "7a9242308773193328de12de2b162b643594b85972af75e848772b1499537740",
+  "meaning": "not_found refers only to a verifiable scalar locator under this task contract; it is not a no-disclosure claim or a source-search-not-performed result.",
+  "source_review": {
+    "backlog": "실제 _13.xml 기말 수주잔고47,176억원을 확인했다. 다만 단위·당기값·anchor를 모두 포함한 연속인용문은 비교열 기초 문구도 포함하여 기존 period guard에 걸린다. 다른 표의 단위를 빌리지 않았다. 이미 source-backed underwriting의 aerospace backlog4,717,600백만원으로 수치를 보존한다.",
+    "orders": "대한항공 항공우주 신규수주 총액이 별도 분리되지 않는다. 다른 종속사 IT·지상조업 수주총액을 항공우주 금액으로 옮기지 않는다.",
+    "contract_liabilities": "본 요청에 포함된 원문에서 항공우주 단독 고객선수금 잔액을 식별할 수 없다. 연결 예약선수금 등 전체금액을 항공우주에 귀속하지 않는다.",
+    "lead_time": "항공우주 전체 실현 평균제작기간이 별도 분리되지 않는다. 이미 underwriting에 잔고/연환산매출5.10년 커버리지로 명시적계산하여 실제납기와구분했다."
+  },
+  "next_action": "Use existing evidence-backed underwriting; do not stop the valuation or claim the disclosed backlog is absent.",
+  "backlog_source_receipt": {
+    "member_path": "20260814002803_13.xml",
+    "member_sha256": "43d51c5fc6cb05d43ef963204b79920cc437ab96fe9f249aec046ed99ba39195",
+    "table_index": 4,
+    "row_index": 6,
+    "column_index": 4,
+    "source_quote": "마. 수주상황 (1) ㈜대한항공 (단위:억원) 품 목 기초 (2025.12.31) 기말 (2026.06.30) 비고 수량 금액 수량 금액 항공기체 - 20,813 - 20,650 - 군용기MROU - 15,391 - 18,187 - 무인기 - 8,243 - 8,162 - 신사업 - 189 - 177 - 합 계 - 44,636 - 47,176 - ※ 수주잔고는 당사가 수행중인 사업의 총 수주금액과 총 납품금액의 차로 산출하였습니다.",
+    "source_url": "https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=13&offset=297309&length=54959&dtd=dart4.xsd"
+  }
+}

@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>6. 사용이 제한되어 있거나 담보로 제공된 금융자산 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>사용이 제한된 금융자산</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>　</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>금융자산의 종류</TH>
+  <TH width='111' height='106' rowspan='3'>금융자산의 종류 &nbsp;합계</TH>
+</TR>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='231' height='46' colspan='2'>상각후원가로 측정하는 금융자산, 분류</TH>
+  <TH width='111' height='76' rowspan='2'>공정가치로 측정하는 금융자산</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>단기금융상품</TH>
+  <TH width='111' height='23'>장기금융상품</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='122'>
+  <TD width='111' height='115'>사용이 제한되어 있거나 부채나 우발부채에 대한 담보로 제공된 금융자산</TD>
+  <TD width='111' height='115' align='RIGHT'>89,781</TD>
+  <TD width='111' height='115' align='RIGHT'>3,986</TD>
+  <TD width='111' height='115' align='RIGHT'>85,921</TD>
+  <TD width='111' height='115' align='RIGHT'>179,688</TD>
+</TR>
+<TR height='145'>
+  <TD width='111' height='138'>사용이 제한되어 있거나 부채나 우발부채에 대한 담보로 제공된 금융자산 [USD, 천]</TD>
+  <TD width='111' height='138' align='RIGHT'>1,614</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>　</TD>
+  <TD width='111' height='138' align='RIGHT'>1,614</TD>
+</TR>
+<TR height='191'>
+  <TD width='111' height='184'>사용이 제한된 금융자산에 대한 설명</TD>
+  <TD width='111' height='184'>자산유동화차입금 관련 지급목적 신탁계좌 예치, 신용장 개설 목적 담보 제공 및 지체상금 지급보증 등</TD>
+  <TD width='111' height='184'>인천공항터미널 임차보증, 인천공항 GSE 임차보증, 직원 재해보상금 지급목적 담보, 운송계약 담보 및 당좌개설보증금 등</TD>
+  <TD width='111' height='184'>지급보증 관련 담보, 보증부 해외사채 발행 담보 및 방위산업공제조합 출자금 담보 등</TD>
+  <TD width='111' height='184'>　</TD>
+</TR>
+<TR height='76'>
+  <TD width='111' height='69'>사용이 제한된 외화금융자산에 대한 설명</TD>
+  <TD width='111' height='69'>미주지역 L/C 개설 보증 등</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+  <TD width='111' height='69'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>자산유동화차입금 분류에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>　</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>자산유동화차입금</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>상환보증 목적으로 분류된 단기금융상품</TD>
+  <TD width='291' height='23' align='RIGHT'>1,661</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

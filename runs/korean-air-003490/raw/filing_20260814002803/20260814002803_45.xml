@@ -1,0 +1,1011 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='table-group-xbrl'><A name='toc1'>21. 리스부채 (연결)</A></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='4800'>
+<COLGROUP>
+<COL width='2400'></COL>
+<COL width='2400'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='4791' height='23' colspan='2'>리스부채에 대한 양적 정보 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='2391' height='23'>당반기말</TD>
+  <TD width='2391' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='4800'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='4671' height='23' colspan='39'>차입금 명칭</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>운용리스</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 이자율</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0241</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0903</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>0.0051</TD>
+  <TD width='111' height='23' align='RIGHT'>0.1117</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>차입금, 기준이자율</TD>
+  <TD width='111' height='46'>3M EURIBOR</TD>
+  <TD width='111' height='46'>3M EURIBOR</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>3M SOFR</TD>
+  <TD width='111' height='46'>3M SOFR</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>3M TIBOR</TD>
+  <TD width='111' height='46'>3M TIBOR</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>3M TORF</TD>
+  <TD width='111' height='46'>3M TORF</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>6M EURIBOR</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>6M SOFR</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>3M SARON</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>3M SORA</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>3M CORRA</TD>
+  <TD width='111' height='46'>CD</TD>
+  <TD width='111' height='46'>CD</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>4 YEAR SOFR</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>차입금, 기준이자율 조정</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0031</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0225</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0045</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0225</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0065</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0195</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0029</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0076</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0105</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0168</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0123</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0110</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0121</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0042</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0110</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>0.0430</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>리스부채</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>1,097,416</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>568,564</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>933,836</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>108,606</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>26,373</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>127,544</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>119,465</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>154,242</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>165,412</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>1,025,422</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>8,087</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>1,283,023</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>8,054,415</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='4800'>
+<COLGROUP>
+<COL width='4800'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='4791' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='4800'>
+<COLGROUP>
+<COL width='2400'></COL>
+<COL width='2400'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='2391' height='23'>전기말</TD>
+  <TD width='2391' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='4800'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='4671' height='23' colspan='39'>차입금 명칭</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>금융리스</TH>
+  <TH width='351' height='23' colspan='3'>운용리스</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+  <TH width='231' height='23' colspan='2'>범위</TH>
+  <TH width='111' height='53' rowspan='2'>범위 &nbsp;합계</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+  <TH width='111' height='23'>하위범위</TH>
+  <TH width='111' height='23'>상위범위</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>차입금, 이자율</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>차입금, 기준이자율</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+  <TD width='111' height='46'>　</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>차입금, 기준이자율 조정</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>리스부채</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>1,191,922</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>624,701</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>959,555</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>129,679</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>37,768</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>135,838</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>120,140</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>153,015</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>168,470</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>510,245</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>8,364</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>1,138,448</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>7,859,414</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='4800'>
+<COLGROUP>
+<COL width='4800'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='4791' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>리스부채의 유동 및 비유동 구분</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>당반기말</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>리스부채 합계</TD>
+  <TD width='291' height='23' align='RIGHT'>13,672,405</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>비유동 리스부채의 유동성대체부분</TD>
+  <TD width='291' height='23' align='RIGHT'>(2,271,812)</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>비유동 리스부채</TD>
+  <TD width='291' height='23' align='RIGHT'>11,400,593</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>전기말</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>리스부채 합계</TD>
+  <TD width='291' height='23' align='RIGHT'>13,037,559</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>비유동 리스부채의 유동성대체부분</TD>
+  <TD width='291' height='23' align='RIGHT'>(2,190,549)</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>비유동 리스부채</TD>
+  <TD width='291' height='23' align='RIGHT'>10,847,010</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>리스부채와 관련된 지급보증에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>　</TD>
+  <TD width='291' height='23' align='RIGHT'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>지급보증의 구분</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='231' height='23' colspan='2'>제공받은 지급보증</TH>
+  <TH width='231' height='23' colspan='2'>제공한 지급보증</TH>
+</TR>
+<TR height='30'>
+  <TH width='111' height='23'>　</TH>
+  <TH width='471' height='23' colspan='4'>거래상대방</TH>
+</TR>
+<TR height='76'>
+  <TH width='111' height='69'>　</TH>
+  <TH width='111' height='69'>미국수출입은행 등</TH>
+  <TH width='111' height='69'>PC2018 Limited의 채권자(중국공상은행)</TH>
+  <TH width='111' height='69'>미국수출입은행 등</TH>
+  <TH width='111' height='69'>PC2018 Limited의 채권자(중국공상은행)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='99'>
+  <TD width='111' height='92'>기업의(으로의) 보증금액 (비 PF), USD [USD, 백만]</TD>
+  <TD width='111' height='92' align='RIGHT'>1,229</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>　</TD>
+  <TD width='111' height='92' align='RIGHT'>49</TD>
+</TR>
+<TR height='237'>
+  <TD width='111' height='230'>지급보증에 대한 비고(설명)</TD>
+  <TD width='111' height='230'>연결실체는 당반기말 현재 상기 리스부채와 관련하여 미국수출입은행 등으로부터 지급보증(지급보증금액: USD 1,229백만)을 제공받고 있습니다.</TD>
+  <TD width='111' height='230'>　</TD>
+  <TD width='111' height='230'>　</TD>
+  <TD width='111' height='230'>연결실체는 당반기말 현재 상기 리스부채 중 PC2018 Limited의 채권자(중국공상은행)에게 지급보증(지급보증 금액 : USD 49백만)을 제공하고 있습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>리스부채 관련 비용 및 리스 현금유출에 대한 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>　</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='291' height='23'>　</TH>
+  <TH width='291' height='23'>공시금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='291' height='23'>리스부채에 대한 이자비용</TD>
+  <TD width='291' height='23' align='RIGHT'>269,245</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>리스 현금유출</TD>
+  <TD width='291' height='23' align='RIGHT'>1,411,511</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>부채로 인식되지 않은 리스료</TD>
+  <TD width='291' height='23' align='RIGHT'>45,184</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>리스부채 현재가치 평가에 대한 기술</TD>
+</TR>
+<TR height='53'>
+  <TD width='591' height='46'>당반기말 현재 리스부채의 기간별 최소리스료를 내재이자율 또는 증분차입이자율로 할인하여 현재가치를 평가하였습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'>　</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='300'></COL>
+<COL width='300'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' colspan='2'>리스부채의 만기분석 공시</TD>
+</TR>
+<TR height='30'>
+  <TD width='291' height='23'>　</TD>
+  <TD width='291' height='23' align='RIGHT'>(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='600'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+<COL width='120'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='111' height='46'>　</TH>
+  <TH width='111' height='46'>1년 이내</TH>
+  <TH width='111' height='46'>1년 초과 5년 이내</TH>
+  <TH width='111' height='46'>5년 초과</TH>
+  <TH width='111' height='46'>만기 &nbsp;합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='23'>총 리스부채</TD>
+  <TD width='111' height='23' align='RIGHT'>2,400,466</TD>
+  <TD width='111' height='23' align='RIGHT'>6,888,909</TD>
+  <TD width='111' height='23' align='RIGHT'>6,801,263</TD>
+  <TD width='111' height='23' align='RIGHT'>16,090,638</TD>
+</TR>
+<TR height='53'>
+  <TD width='111' height='46'>현재가치할인차금, 리스부채</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>　</TD>
+  <TD width='111' height='46' align='RIGHT'>(2,418,233)</TD>
+</TR>
+<TR height='30'>
+  <TD width='111' height='23'>리스부채</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>　</TD>
+  <TD width='111' height='23' align='RIGHT'>13,672,405</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23'><BR/></TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+</BODY>
+</HTML>

@@ -457,6 +457,7 @@ def filing_kpi_collector_provider(
                 | _available_table_metrics(transport, table_cell_receipts)
             )),
             jurisdictions=("KR",),
+            supported_segments=(segment_id,),
             implementation_ref=(
                 "valuation_engine.kr_filing_kpi_collector."
                 "request_scoped_filing_kpi_collector"

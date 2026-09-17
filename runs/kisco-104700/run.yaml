@@ -21,6 +21,7 @@ extra_required_evidence:
   - bull_normalized_ebitda
   - bull_normalized_multiple
 calibration:
+  legacy_replay_snapshot_hash: e1b301b2bcfa926499e5a7185e66ec112ace013df96f39daf5424ddce6e454a8
   cohort_key: kr.steel.long|5y_path|continuous_v1
   external_probability_source: continuous_financial_path_monte_carlo
   forecast_class: kr.steel.long.continuous_financial_path

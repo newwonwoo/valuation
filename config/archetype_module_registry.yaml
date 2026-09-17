@@ -1,7 +1,55 @@
-version: 1.0
+version: 1.1
 principle: Common Core always runs first. Archetype modules add operating economics;
   they may narrow but never bypass evidence, risk, audit, or blind-value gates.
 modules:
+  service_operations:
+    # An evidenced service business, never an automatic unidentified-segment fallback.
+    required_evidence: [service_revenue, operating_income, depreciation_amortization, maintenance_capex, working_capital, customer_concentration, activity_mix]
+    normalization: [service_and_resale_revenue_gross_net_basis, related_party_sales_and_eliminations, labor_and_subcontractor_costs, capitalized_development_and_maintenance_costs, heterogeneous_activity_mix_and_proxy_limits]
+    beta_peer_features: [customer_concentration, contract_duration, labor_intensity, activity_mix]
+    per_peer_features: [normalized_margin, cash_conversion, reinvestment, customer_retention]
+    scenario_variables: [service_revenue, operating_margin, labor_cost, maintenance_capex, working_capital]
+    funding_scan: working_capital_and_contract_payment_terms
+    terminal_policy: Service margins and growth require sustainable staffing, maintenance investment and working capital; heterogeneous proxies require bounded activity-mix assumptions.
+    double_count_traps: [intersegment_profit_plus_same_customer_margin, capitalized_development_omitted_from_reinvestment, service_cashflow_plus_same_asset_value]
+    forbidden_methods: [unidentified_business_generic_dcf_fallback, pure_SaaS_multiple_for_labor_services, consolidated_revenue_without_eliminations]
+    allowed_valuation_methods: [normalized_service_dcf]
+  airline_transport:
+    # Traffic and yield are separate passenger/cargo measures; never plant output.
+    required_evidence: [passenger_capacity, passenger_traffic, passenger_yield, cargo_traffic, cargo_yield, fuel_cost, nonfuel_operating_cost, fleet_capex, lease_liabilities]
+    normalization:
+      - passenger_ASK_RPK_and_cargo_ATK_RTK_period_and_distance_consistency
+      - passenger_and_cargo_revenue_cost_allocation
+      - IFRS16_lease_cashflows_and_debt_consistent_treatment
+      - fuel_hedging_and_FX_realized_versus_unrealized
+      - merger_perimeter_eliminations_and_noncontrolling_interests
+      - maintenance_and_growth_aircraft_capex_with_delivery_timing
+    beta_peer_features: [route_mix, passenger_cargo_mix, operating_leverage, fleet_ownership, fuel_and_FX_exposure]
+    per_peer_features: [normalized_margin, fleet_age, lease_treatment, cash_conversion]
+    scenario_variables: [passenger_capacity, passenger_load_factor, passenger_yield, cargo_traffic, cargo_yield, fuel_cost, nonfuel_operating_cost, fleet_capex]
+    funding_scan: aircraft_delivery_funding_lease_maturities_and_refinancing_liquidity
+    terminal_policy: Traffic and yield growth must converge with fleet replacement, lease cashflows and sustainable reinvestment; no perpetual growth from unreplaced aircraft.
+    double_count_traps: [lease_principal_in_FCFF_and_lease_debt_deduction, merger_synergy_in_margin_and_separate_asset, aircraft_orders_without_delivery_capex, consolidated_subsidiary_cashflows_plus_same_equity_stake]
+    forbidden_methods: [unadjusted_peer_EBITDAR_multiple, perpetual_growth_without_fleet_replacement, generic_plant_spread_proxy]
+    allowed_valuation_methods: [traffic_yield_dcf]
+  capacity_yield_levered:
+    # Reusable capacity×yield economics with fixed operating commitments and
+    # nonlinear debt/lease claims. Sector adapters map their own metric names.
+    required_evidence: [service_capacity, realized_volume, utilization_or_load, realized_unit_yield, variable_input_cost, nonvariable_operating_cost, committed_asset_capex, lease_liabilities, debt_maturities, minimum_operating_liquidity]
+    normalization:
+      - capacity_volume_yield_period_unit_and_perimeter_consistency
+      - fixed_variable_and_pass_through_cost_separation
+      - owned_and_leased_asset_reinvestment_consistency
+      - lease_cashflows_and_financial_claims_single_counting
+      - debt_maturity_refinancing_and_minimum_liquidity_reconciliation
+    beta_peer_features: [demand_cyclicality, utilization_sensitivity, yield_volatility, fixed_cost_intensity, asset_ownership, lease_and_debt_refinancing_exposure]
+    per_peer_features: [normalized_utilization, normalized_yield, cash_conversion, sustaining_reinvestment, leverage_and_dilution_risk]
+    scenario_variables: [service_capacity, realized_volume, utilization_or_load, realized_unit_yield, variable_input_cost, nonvariable_operating_cost, committed_asset_capex, lease_additions, refinancing_capacity]
+    funding_scan: asset_commitment_lease_maturities_debt_refinancing_and_minimum_liquidity
+    terminal_policy: Capacity, utilization and unit yield must converge with sustaining asset replacement, lease renewals and evidenced financing capacity; distress and dilution are explicit path events.
+    double_count_traps: [lease_cashflow_plus_lease_claim, distress_spread_plus_explicit_distress_cost, asset_sale_proceeds_plus_retained_asset_value, capacity_growth_without_committed_reinvestment]
+    forbidden_methods: [nearest_scenario_anchor_probability, report_time_equity_zero_floor, unlimited_refinancing, current_price_implied_distribution]
+    allowed_valuation_methods: [driver_distributional_apv]
   contracted_backlog:
     required_evidence:
     - orders

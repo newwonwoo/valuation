@@ -410,3 +410,52 @@ def test_street_report_after_historical_run_cutoff_is_rejected(tmp_path):
 
     with pytest.raises(GenericValuationPlanError, match="after run cutoff"):
         factory.extensions.street_loader()
+
+
+def test_scenario_qualified_segment_extras_route_and_compile_without_relaxing_identity():
+    from valuation_engine.assumption_compiler import AssumptionSpec, CompilationStatus, compile_assumptions
+    from valuation_engine.ledger import EvidenceLedger
+    from valuation_engine.records import (EvidenceRecord, EvidenceSourceLayer, HypothesisRecord,
+                                         BridgeRecord, AffectedVariable, Direction)
+    segments = ('airline', 'aerospace')
+    scenarios = ('down', 'bull')
+    metrics = tuple(f'{scenario}_{segment}_fcff_year_1' for segment in segments for scenario in scenarios)
+    original = probe_runtime_spec()
+    spec = replace(original, filing=replace(original.filing, segment_id='airline'),
+        scenario_ids=scenarios, method_choices=tuple(
+            SegmentMethodChoice(segment, 'contracted_backlog', 'normalized_dcf') for segment in segments),
+        extra_required_evidence=(*metrics, 'aerospace_down_legacy_metric', 'unknown_aerospace_fcff_year_1'))
+    factory = build_generic_kr_runtime_factory(network=probe_network(), transport=ScriptedTransport({}), spec=spec)
+    records, hypotheses, bridges, assumptions = [], [], [], []
+    for i, metric in enumerate(metrics):
+        scenario, segment, _ = metric.split('_', 2)
+        assert metric in factory.additional_required_evidence[segment]
+        assert metric not in factory.additional_required_evidence[next(s for s in segments if s != segment)]
+        value = 100 + i
+        records.append(EvidenceRecord(id=f'E{i}', target='T', metric=metric, value=value,
+            unit='KRW_million', source_layer=EvidenceSourceLayer.ANALYST_UNDERWRITING,
+            effective_date='2026-06-30', observed_date='2026-07-01', source_name='source',
+            source_ref='https://example.com/filing', source_grade='B', confidence=0.7, segment=segment))
+        hypotheses.append(HypothesisRecord(id=f'H{i}', statement='Explicit segment cashflow scenario',
+            causal_chain=('evidence', 'segment operating cashflow', 'value'),
+            supporting_evidence_ids=(f'E{i}',), kill_conditions=('cashflow assumption fails',)))
+        bridges.append(BridgeRecord(id=f'B{i}', evidence_ids=(f'E{i}',), hypothesis_id=f'H{i}',
+            affected_variable=AffectedVariable.SEGMENT_VALUE, direction=Direction.UP,
+            old_value=0, new_value=value, unit='KRW_million', rationale='Same segment cashflow mapped to its complete assumption key',
+            confidence=0.7, kill_condition='cashflow assumption fails', verification_event='next filing',
+            economic_path_id=f'path-{segment}-{scenario}'))
+        assumptions.append(AssumptionSpec(f'{segment}_fcff_year_1', scenario, f'B{i}',
+                                          'KRW_million', 'identity_observation'))
+    result = compile_assumptions(target_id='T', ledger=EvidenceLedger(tuple(records)),
+        hypotheses=tuple(hypotheses), bridges=tuple(bridges), specs=tuple(assumptions), bridge_input_map={})
+    assert result.status is CompilationStatus.COMPILED
+    for i, metric in enumerate(metrics):
+        scenario, segment, _ = metric.split('_', 2)
+        assert result.assumption_set.get(f'{segment}_fcff_year_1', scenario).measure.amount == 100 + i
+    # Preserve legacy segment-prefix routing and unknown-qualifier fallback;
+    # neither rule authorizes a pass-through economic-key mismatch.
+    assert 'aerospace_down_legacy_metric' in factory.additional_required_evidence['aerospace']
+    assert 'unknown_aerospace_fcff_year_1' in factory.additional_required_evidence['airline']
+    from valuation_engine.assumption_compiler import _metric_matches_key
+    assert not _metric_matches_key('aerospace_down_fcff_year_1', 'aerospace_fcff_year_1')
+    assert not _metric_matches_key('unknown_aerospace_fcff_year_1', 'aerospace_fcff_year_1')

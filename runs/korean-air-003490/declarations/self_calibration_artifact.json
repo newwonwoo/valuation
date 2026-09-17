@@ -1,0 +1,175 @@
+{
+ "artifact_sha256": "8a6b7a0a12470a0ceb0046cbbbd866fb1600c7c9701224e2e6e8e6dad3db281d",
+ "current_conditioning": {
+  "first_seen_at": "2026-08-14T09:00:00+09:00",
+  "operating_margin": 0.0252831226624916,
+  "source_hash": "734774c2a8966bd373203ff1cb834b98210bb218df78804e1604a7273cd20358"
+ },
+ "dependence": {
+  "correlation_matrix": [
+   [
+    1.0
+   ]
+  ],
+  "student_t_df": 6,
+  "version": "target_own_residual_correlation_v1"
+ },
+ "drivers": {
+  "operating_margin": {
+   "diagnostic": {
+    "company_count": 1,
+    "likelihood_weight": 0.414227475086047,
+    "quarter_count": 6,
+    "regime_similarity": 1.0,
+    "resolved_cases": 5,
+    "skill_windows": [
+     0.0714575005972827,
+     0.239646812363349,
+     0.931578112297509
+    ],
+    "uncertainty_inflation": 3.60476520434379,
+    "walk_forward_steps": 3
+   },
+   "fit": {
+    "ar1_intercept": 0.0618564144026954,
+    "ar1_slope": 0.424389611283311,
+    "own_transitions": 5,
+    "residual_std": 0.0570060252468638
+   },
+   "path": {
+    "lower_bound": -0.235807432540561,
+    "mean": [
+     0.0725863090014585,
+     0.0926612898643147,
+     0.101180903189222,
+     0.104796538576464,
+     0.106330976672997
+    ],
+    "mean_uncertainty": [
+     0.0254938695158113,
+     0.0254938695158113,
+     0.0254938695158113,
+     0.0254938695158113,
+     0.0254938695158113
+    ],
+    "scale": [
+     0.205493336247838,
+     0.223232977573552,
+     0.226280254913481,
+     0.226824738888828,
+     0.226922665175435
+    ],
+    "upper_bound": 0.38997350144731
+   },
+   "posterior": {
+    "mean": 0.0919893300321588,
+    "mean_strength": 5.0,
+    "scale": 0.00891504527638358,
+    "shape": 3.5
+   }
+  }
+ },
+ "oos_split_order": [
+  "TRAIN",
+  "VALIDATION",
+  "HOLDOUT",
+  "FINAL_OOS"
+ ],
+ "oos_window_policy": "target_own_walk_forward_fixed_origin_v1",
+ "oos_windows": [
+  {
+   "evaluation_earliest_publication_at": "2022-03-31T00:00:00Z",
+   "evaluation_latest_publication_at": "2022-03-31T00:00:00Z",
+   "period_ends": [
+    "2019-12-31",
+    "2020-12-31",
+    "2021-12-31"
+   ],
+   "row_count": 3,
+   "split": "TRAIN"
+  },
+  {
+   "evaluation_earliest_publication_at": "2023-03-31T00:00:00Z",
+   "evaluation_latest_publication_at": "2023-03-31T00:00:00Z",
+   "period_ends": [
+    "2022-12-31"
+   ],
+   "row_count": 1,
+   "split": "VALIDATION",
+   "training_latest_publication_at": "2022-03-31T00:00:00Z"
+  },
+  {
+   "evaluation_earliest_publication_at": "2025-03-10T00:00:00Z",
+   "evaluation_latest_publication_at": "2025-03-10T00:00:00Z",
+   "period_ends": [
+    "2023-12-31"
+   ],
+   "row_count": 1,
+   "split": "HOLDOUT",
+   "training_latest_publication_at": "2022-03-31T00:00:00Z"
+  },
+  {
+   "evaluation_earliest_publication_at": "2025-03-12T00:00:00Z",
+   "evaluation_latest_publication_at": "2025-03-12T00:00:00Z",
+   "period_ends": [
+    "2024-12-31"
+   ],
+   "row_count": 1,
+   "split": "FINAL_OOS",
+   "training_latest_publication_at": "2022-03-31T00:00:00Z"
+  }
+ ],
+ "probability_source": "target_realized_dispersion_monte_carlo",
+ "provenance_hash": "feb89948a5c78258503b8770cc403e19f5815d71e71254386a526f410e01f8bb",
+ "scenario_anchor_policy": "operator_declared_scenario_driver_paths_v1",
+ "scenarios": {
+  "Base": {
+   "driver_paths": {
+    "operating_margin": [
+     0.0441947598362246,
+     0.0588836076608124,
+     0.0732203625168872,
+     0.0830314868781745,
+     0.0867129695123477
+    ]
+   },
+   "driver_weights": {
+    "operating_margin": 1.0
+   }
+  },
+  "Bull": {
+   "driver_paths": {
+    "operating_margin": [
+     0.0612211172518821,
+     0.0814192986847391,
+     0.0955232142212726,
+     0.104832405603998,
+     0.107356928699664
+    ]
+   },
+   "driver_weights": {
+    "operating_margin": 1.0
+   }
+  },
+  "Down": {
+   "driver_paths": {
+    "operating_margin": [
+     0.0262748964667218,
+     0.0349453500030028,
+     0.0442376093518858,
+     0.05224232543563,
+     0.0586639304503759
+    ]
+   },
+   "driver_weights": {
+    "operating_margin": 1.0
+   }
+  }
+ },
+ "self_calibrated": true,
+ "series_basis": "2019-2024 K-IFRS consolidated revenue and operating income for Korean Air and Asiana Airlines are added year by year to reconstruct the same two-airline economic perimeter before legal merger. The series ends before Korean Air's 2024-12-31 acquisition accounting; no post-acquisition reported year is mixed into training, and peer-company outcomes are excluded.",
+ "source_company_count": 1,
+ "source_row_count": 6,
+ "target_ticker": "003490",
+ "version": "1.0"
+}

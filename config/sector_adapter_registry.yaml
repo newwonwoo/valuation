@@ -2,6 +2,18 @@ version: 1.0
 rule: Defaults are hypotheses for routing, never substitutes for segment evidence.
   Multi-label archetypes are allowed.
 adapters:
+  software.it_services:
+    default_archetypes: [service_operations]
+    key_evidence: [service_revenue, operating_income, depreciation_amortization, maintenance_capex, working_capital, customer_concentration, activity_mix]
+    special_risks: [customer_concentration, labor_cost_inflation, related_party_dependency]
+  real_assets.property_hospitality:
+    default_archetypes: [asset_yield_nav]
+    key_evidence: [asset_value, noi_or_ffo, occupancy, rent, cap_rate, debt, maturities]
+    special_risks: [hotel_operating_lease_mix, refinancing, maintenance_capex]
+  transport_industrial.airline:
+    default_archetypes: [airline_transport, capacity_yield_levered]
+    key_evidence: [passenger_capacity, passenger_traffic, passenger_yield, cargo_traffic, cargo_yield, fuel_cost, nonfuel_operating_cost, fleet_capex, lease_liabilities]
+    special_risks: [fuel_and_FX_exposure, aircraft_delivery_funding, traffic_disruption, merger_integration]
   semiconductor.memory:
     default_archetypes:
     - capacity_manufacturing
@@ -339,6 +351,7 @@ adapters:
     - slots
   transport_industrial.shipping:
     default_archetypes:
+    - capacity_yield_levered
     - asset_yield_nav
     - commodity_price_taker
     key_evidence:

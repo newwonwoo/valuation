@@ -1,0 +1,921 @@
+target_id: KR:DART:00113526
+as_of: '2026-09-13'
+source_ref: https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+declarations:
+  down_airline_fcff_year_1:
+    value: -2219.881376
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Down forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_aerospace_fcff_year_1:
+    value: 7.393695
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Down forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_other_fcff_year_1:
+    value: -69.336437
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Down forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_airline_fcff_year_2:
+    value: -1703.644565
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Down forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_aerospace_fcff_year_2:
+    value: 12.338818
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Down forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_other_fcff_year_2:
+    value: -29.500972
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Down forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_airline_fcff_year_3:
+    value: -861.305421
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Down forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_aerospace_fcff_year_3:
+    value: 21.608434
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Down forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_other_fcff_year_3:
+    value: 10.503005
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Down forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_airline_fcff_year_4:
+    value: 163.112074
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Down forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_aerospace_fcff_year_4:
+    value: 27.019264
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Down forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_other_fcff_year_4:
+    value: 11.118503
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Down forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_airline_fcff_year_5:
+    value: 906.480358
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Down forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_aerospace_fcff_year_5:
+    value: 50.073373
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Down forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_other_fcff_year_5:
+    value: 12.605406
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Down forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  down_airline_terminal_growth:
+    value: 0.015
+    unit: ratio
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  down_airline_terminal_roic:
+    value: 0.065
+    unit: ratio
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  down_aerospace_terminal_growth:
+    value: 0.015
+    unit: ratio
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  down_aerospace_terminal_roic:
+    value: 0.065
+    unit: ratio
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  down_other_terminal_growth:
+    value: 0.015
+    unit: ratio
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  down_other_terminal_roic:
+    value: 0.065
+    unit: ratio
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Down 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  down_hotel_gross_asset_value:
+    value: 950
+    unit: KRW_billion
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Down 호텔 총자산1738.126bn을 출발점으로 현금·관계회사 항목 및 손실사업의 실현가치 불확실성을 할인한 영업자산
+      NAV 추정. model.json에 정의한950~1550bn 범위. 금융부채는 연결브리지에서 한 번 차감합니다.
+  airline_fcff_year_1:
+    value: -1935.748145
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Base forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  aerospace_fcff_year_1:
+    value: 11.972723
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Base forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  other_fcff_year_1:
+    value: -65.495625
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Base forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  airline_fcff_year_2:
+    value: -1166.406882
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Base forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  aerospace_fcff_year_2:
+    value: 22.046343
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Base forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  other_fcff_year_2:
+    value: -24.923722
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Base forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  airline_fcff_year_3:
+    value: -176.168829
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Base forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  aerospace_fcff_year_3:
+    value: 38.045179
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Base forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  other_fcff_year_3:
+    value: 16.449561
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Base forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  airline_fcff_year_4:
+    value: 838.315441
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Base forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  aerospace_fcff_year_4:
+    value: 52.365491
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Base forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  other_fcff_year_4:
+    value: 19.364024
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Base forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  airline_fcff_year_5:
+    value: 1426.062165
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Base forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  aerospace_fcff_year_5:
+    value: 84.669456
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Base forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  other_fcff_year_5:
+    value: 22.844138
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Base forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  airline_terminal_growth:
+    value: 0.02
+    unit: ratio
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  airline_terminal_roic:
+    value: 0.08
+    unit: ratio
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  aerospace_terminal_growth:
+    value: 0.02
+    unit: ratio
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  aerospace_terminal_roic:
+    value: 0.08
+    unit: ratio
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  other_terminal_growth:
+    value: 0.02
+    unit: ratio
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  other_terminal_roic:
+    value: 0.08
+    unit: ratio
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Base 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  hotel_gross_asset_value:
+    value: 1250
+    unit: KRW_billion
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Base 호텔 총자산1738.126bn을 출발점으로 현금·관계회사 항목 및 손실사업의 실현가치 불확실성을 할인한 영업자산
+      NAV 추정. model.json에 정의한950~1550bn 범위. 금융부채는 연결브리지에서 한 번 차감합니다.
+  bull_airline_fcff_year_1:
+    value: -1902.554261
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Bull forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_aerospace_fcff_year_1:
+    value: 6.942215
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Bull forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_other_fcff_year_1:
+    value: -62.532254
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Bull forward period1: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_airline_fcff_year_2:
+    value: -912.751448
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Bull forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_aerospace_fcff_year_2:
+    value: 24.171186
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Bull forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_other_fcff_year_2:
+    value: -20.969289
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Bull forward period2: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_airline_fcff_year_3:
+    value: 149.558464
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Bull forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_aerospace_fcff_year_3:
+    value: 49.532182
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Bull forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_other_fcff_year_3:
+    value: 22.564878
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Bull forward period3: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_airline_fcff_year_4:
+    value: 1325.408445
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Bull forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_aerospace_fcff_year_4:
+    value: 76.002763
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Bull forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_other_fcff_year_4:
+    value: 27.061998
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Bull forward period4: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_airline_fcff_year_5:
+    value: 1933.231447
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Bull forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_aerospace_fcff_year_5:
+    value: 122.450921
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 'Bull forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_other_fcff_year_5:
+    value: 32.355185
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://www.lufthansa-technik.com/en/financials
+    rationale: 'Bull forward period5: model.json의 실제 매출기준과 명시적 성장·이익률·세율·감가상각·현금투자·신규리스·운전자본으로
+      재계산한 FCFF. 추정값이며 공식 가이던스가 아닙니다. 원문확인 후 사업추론을 별도 기록했습니다.'
+  bull_airline_terminal_growth:
+    value: 0.025
+    unit: ratio
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  bull_airline_terminal_roic:
+    value: 0.1
+    unit: ratio
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  bull_aerospace_terminal_growth:
+    value: 0.025
+    unit: ratio
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  bull_aerospace_terminal_roic:
+    value: 0.1
+    unit: ratio
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  bull_other_terminal_growth:
+    value: 0.025
+    unit: ratio
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  bull_other_terminal_roic:
+    value: 0.1
+    unit: ratio
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Bull 장기 성장/투하자본수익률 판단입니다. 명목성장을 유한하게 제한하고 말기 FCFF에 투자소요를 포함합니다; 공시
+      확정치가 아닙니다.
+  bull_hotel_gross_asset_value:
+    value: 1550
+    unit: KRW_billion
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: Bull 호텔 총자산1738.126bn을 출발점으로 현금·관계회사 항목 및 손실사업의 실현가치 불확실성을 할인한 영업자산
+      NAV 추정. model.json에 정의한950~1550bn 범위. 금융부채는 연결브리지에서 한 번 차감합니다.
+  airline_ownership:
+    value: 1
+    unit: ratio
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.
+  airline_ev_adjustment:
+    value: -20016.8
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림).
+      리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정,
+      예금달러환산은 반올림 근사입니다.
+  aerospace_ownership:
+    value: 1
+    unit: ratio
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.
+  aerospace_ev_adjustment:
+    value: 0
+    unit: KRW_billion
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림).
+      리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정,
+      예금달러환산은 반올림 근사입니다.
+  hotel_ownership:
+    value: 1
+    unit: ratio
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.
+  other_ownership:
+    value: 1
+    unit: ratio
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: IFRS8 영업부문100%를 합산하고 연결 비지배지분은 모회사 조정으로 한 번만 차감합니다.
+  other_ev_adjustment:
+    value: 0
+    unit: KRW_billion
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 연결순차입금19224.687bn+사용제한예금92.1bn+6월말~9월13일 순자금소요700bn=20016.787bn(반올림).
+      리스포함; 전 부문 현금·부채는 airline에 한 번 배분하고 다른 부문은 중복차감하지 않습니다. 700bn은 미공시 stub 추정,
+      예금달러환산은 반올림 근사입니다.
+  hotel_liabilities:
+    value: 0
+    unit: KRW_billion
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 호텔에 배분된 금융부채는 연결 airline EV브리지에서 이미 전액 차감합니다. 호텔영업자산만 NAV로 가산하므로 이
+      값은 부채 부존재 주장이 아닌 중복차감 방지입니다.
+  parent_noncontrolling_interest_adjustment:
+    value: -350
+    unit: KRW_billion
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 합병후 잔여 NCI+영구채 청구권 통합 추정350bn. 반기 NCI252.744bn에서 아시아나 음수NCI-79.203bn을
+      제거한331.947bn을 참고. 장부가=공정가치를 단정하지 않으며 할인율과 별개로 가치오차가 있습니다.
+  diluted_shares:
+    value: 389669121
+    unit: shares
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    - https://dart.fss.or.kr/report/viewer.do?rcpNo=20260724000006&dcmNo=11493004&eleId=1&offset=620&length=3475&dtd=dart4.xsd
+    rationale: 반기말 유통보통368220609+합병신주20337721+유통우선1110791=389669121. 우선주를 보통주와 같은
+      경제적 청구권으로 간주한 배분근사; 자기주식55주는 이미 제외. 7월24일 투자설명서로 계획신주수를 검증했습니다. 매수청구에 따라 최종
+      수량 변동 가능성이 있습니다.
+  passenger_capacity:
+    value: 23296
+    unit: million_seat_km
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 회사2026년2분기 공식IR 별도실적의 여객 ASK23,296백만 좌석km. 아시아나·진에어 등을 포함한 연결 항공운송
+      전체 수치가 아니다. 방향·운임·원가 검토용이며 연결 매출 계산에 별도 범위 수치를 직접 곱하거나 합산하지 않는다.
+  passenger_traffic:
+    value: 20293
+    unit: million_passenger_km
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 회사2026년2분기 공식IR 별도실적의 여객 RPK20,293백만 여객km. 아시아나·진에어 등을 포함한 연결 항공운송
+      전체 수치가 아니다. 방향·운임·원가 검토용이며 연결 매출 계산에 별도 범위 수치를 직접 곱하거나 합산하지 않는다.
+  passenger_yield:
+    value: 140
+    unit: KRW_per_passenger_km
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 회사2026년2분기 공식IR 별도실적의 여객 yield140원/여객km. 아시아나·진에어 등을 포함한 연결 항공운송 전체
+      수치가 아니다. 방향·운임·원가 검토용이며 연결 매출 계산에 별도 범위 수치를 직접 곱하거나 합산하지 않는다.
+  cargo_traffic:
+    value: 2193
+    unit: million_ton_km
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 회사2026년2분기 공식IR 별도실적의 화물 CTK2,193백만 톤km. 아시아나·진에어 등을 포함한 연결 항공운송 전체
+      수치가 아니다. 방향·운임·원가 검토용이며 연결 매출 계산에 별도 범위 수치를 직접 곱하거나 합산하지 않는다.
+  cargo_yield:
+    value: 703
+    unit: KRW_per_ton_km
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 회사2026년2분기 공식IR 별도실적의 화물 yield703원/톤km. 아시아나·진에어 등을 포함한 연결 항공운송 전체
+      수치가 아니다. 방향·운임·원가 검토용이며 연결 매출 계산에 별도 범위 수치를 직접 곱하거나 합산하지 않는다.
+  fuel_cost:
+    value: 1999100
+    unit: KRW_million
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 회사2026년2분기 공식IR 별도실적의 연료비19,991억원. 아시아나·진에어 등을 포함한 연결 항공운송 전체 수치가 아니다.
+      방향·운임·원가 검토용이며 연결 매출 계산에 별도 범위 수치를 직접 곱하거나 합산하지 않는다.
+  nonfuel_operating_cost:
+    value: 2759000
+    unit: KRW_million
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 회사2026년2분기 공식IR 별도실적의 비연료비27,590억원. 아시아나·진에어 등을 포함한 연결 항공운송 전체 수치가
+      아니다. 방향·운임·원가 검토용이며 연결 매출 계산에 별도 범위 수치를 직접 곱하거나 합산하지 않는다.
+  fleet_capex:
+    value: 123468300
+    unit: KRW_million
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 반기보고서 생산설비 투자표 신규 항공기 구매의 향후 투자금액1,234,683억원. 2039년12월까지 장기계획의 잔여총액이며
+      연간 또는2027년 지급액이 아니다. 실제 연차 FCFF는 메인모형 투자스케줄을 사용한다. 계약가·환율변동·인도지연을 별도 점검한다.
+  lease_liabilities:
+    value: '13672405.235269'
+    unit: KRW_million
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 반기 연결 재무상태표 유동리스부채2,271,812,087,892원+비유동리스부채11,400,593,147,377원. 연결
+      전체 리스부채라는 범위를 보존하며 항공운송 순부채와 추가 중복 차감하지 않는다. 리스원금의 FCFF 포함여부와 같은 회계기준으로 사용한다.
+  backlog:
+    value: 4717600
+    unit: KRW_million
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/report/viewer.do?rcpNo=20260814002803&dcmNo=11534684&eleId=13&offset=297309&length=54959&dtd=dart4.xsd
+    rationale: 반기보고서 수주상황 대한항공 항공기체20,650·군용기MROU18,187·무인기8,162·신사업177억원, 합계47,176억원.
+      기말 총계약잔액이며 매년 반복되는 매출도, 전액 미국 정부 예산 확보액도 아니다. 실제원문멤버20260814002803_13.xml 표4(0기준)
+      기말총계 열4, 행6의47,176이며 비교기간 기초표시 때문에 연속인용locator는검증불가하지만 공시자체가없는것은아니다.
+  orders:
+    value: 신규수주 총액은 별도 공시하지 않음; 기초잔고44,636억원에서 기말47,176억원으로2,540억원 증가
+    unit: text
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 순증액에는 매출인식·환율재평가·계약변동이 혼재한다. 순증액을 신규수주 총액으로 위장하지 않으며 수주잔고와 실현매출로 이행가능성을
+      검토한다. 회사는6월말 환율1,541.50원 적용을 명시했다.
+  revenue_recognition:
+    value: H12026 실현 부문매출462,301백만원; 납품·공정진행·검수와 계약별 인식기준에 따른다
+    unit: text
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 부문주석 실현매출과 수주잔고를 분리한다. MUAV출고는 최종검수·인도완료와 다르므로 출고행사를 전액 매출로 인식하지 않는다.
+      별도 공시하지 않은 계약별 인식률은 분석자 변환가정으로 관리한다.
+  cancellation_terms:
+    value: 장기계약은 향후 시장상황에 따라 수주잔고가 변동될 수 있음; 방산 세부조건 비공개
+    unit: text
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 수주상황 공시의 명시된 주의문구다. 취소불가 확정매출 또는 정부 완전보증으로 해석하지 않는다. 계약 상세 부족은 기간연장·전환율
+      시나리오에 반영하며 취소조항 없음으로 처리하지 않는다.
+  contract_liabilities:
+    value: 항공우주 단독 고객선수금 잔액 미분리; 연결 선수금·초과청구공사는 별도 존재
+    unit: text
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 반기 현금흐름표에서 선수금과 초과청구공사 증감이 별도 제시되나 항공운송 예약선수금과 방산선수금 구분이 없다. 연결 전체
+      선수금을 항공우주 자금조달로 배분하지 않고 추가 WACC인하를 적용하지 않는다.
+  lead_time:
+    value: 5.1
+    unit: years
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: '분석자 계산: 수주잔고4,717,600백만원을 상반기 매출462,301백만원의 단순연환산924,602백만원으로 나눈 잔고커버리지
+      약5.10년. 개별계약 납기는 아니며 매출곡선·취소·환율에 따라 변한다. 실측 제조리드타임과 구별해 스캔에 사용한다.'
+  book_to_bill:
+    value: 신규수주총액 미분리로 정확한 book-to-bill 미산출; 기말/기초 잔고비율1.0569는 별개 지표
+    unit: text
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 매출인식 및 환율평가로 잔고가 변하므로 단순 잔고증가를 신규수주라고 부를 수 없다. 잔고는5.69% 증가했지만 이를 신규수주/매출
+      비율로 치환하지 않는다. 미래매출은 공개잔고와 보수적 전환 경로로 별도 추정한다.
+  backlog_conversion:
+    value: '0.1035713325566807061564656331'
+    unit: ratio
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: '분석자계산: H1실현매출462,301백만원/기초잔고4,463,600백만원=약10.36%. 정확한 동일계약 코호트 소진율이
+      아니라 매출대비잔고 규모의 반기 대용치다. 신규수주 당기인식·환율효과를 분리하지 못하므로 그대로 연간소진확률로 사용하지 않는다.'
+  cancellation_rate:
+    value: 실현 취소율은 미공개; 0% 취소 또는 무조건 전액전환을 가정하지 않음
+    unit: text
+    segment: aerospace
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 공시의 장기계약 변동가능성에 따라 모델 하방에서 지연·전환 저하를 검토한다. 숫자로 관측되지 않은 취소율을 사실로 만들지
+      않고 시나리오 가정과 실적증거를 구분한다.
+  asset_value:
+    value: 1738126
+    unit: KRW_million
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: H12026 호텔부문 공시 자산총계1,738,126백만원. 시장감정가나 순자산가치가 아닌 연결조정 전 장부자산이다. 메인
+      NAV평가에서 부동산가치 할인·운영손실·관련채무 처리를 별도로 하고 장부자산 전체를 지분가치로 오인하지 않는다.
+  noi_or_ffo:
+    value: 15038
+    unit: KRW_million
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 분석자계산 H1호텔 EBIT -8,115+감가상각23,153=15,038백만원. 감가상각 전 부문 영업손익 대용치로, 엄밀한
+      부동산 NOI/REIT FFO가 아니다. 부문별 재산세·유지보수·호텔운영 조정이 분리되지 않아 이를 그대로 cap rate로 자본화하지
+      않는다.
+  noi:
+    value: 15038
+    unit: KRW_million
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 분석자계산 H1호텔 EBIT -8,115+감가상각23,153=15,038백만원. 감가상각 전 부문 영업손익 대용치로, 엄밀한
+      부동산 NOI/REIT FFO가 아니다. 부문별 재산세·유지보수·호텔운영 조정이 분리되지 않아 이를 그대로 cap rate로 자본화하지
+      않는다.
+  occupancy:
+    value: 호텔별 객실 점유율 미분리; NAV 자산가치 접근에서 미확인 객실수·점유율을 곱해 매출을 만들지 않음
+    unit: text
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 공시 부문정보와 연결 차입금 범위 검토. 호텔별 객실 점유율 미분리; NAV 자산가치 접근에서 미확인 객실수·점유율을 곱해
+      매출을 만들지 않음。 구조상 비적용 또는 미분리 항목을0으로 넣어 안전성을 과장하지 않으며 부문 운영손실과 가치할인은 메인 시나리오에 남긴다.
+  rent:
+    value: 호텔숙박서비스와 미국 건물임대가 혼합되어 객실매출을 순임대료로 해석하지 않음
+    unit: text
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 공시 부문정보와 연결 차입금 범위 검토. 호텔숙박서비스와 미국 건물임대가 혼합되어 객실매출을 순임대료로 해석하지 않음。
+      구조상 비적용 또는 미분리 항목을0으로 넣어 안전성을 과장하지 않으며 부문 운영손실과 가치할인은 메인 시나리오에 남긴다.
+  cap_rate:
+    value: 현재 모형은 장부자산을 출발점으로 할인·채무를 조정하는 NAV; 검증되지 않은 순임대 NOI 자본화율 미사용
+    unit: text
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 공시 부문정보와 연결 차입금 범위 검토. 현재 모형은 장부자산을 출발점으로 할인·채무를 조정하는 NAV; 검증되지 않은
+      순임대 NOI 자본화율 미사용。 구조상 비적용 또는 미분리 항목을0으로 넣어 안전성을 과장하지 않으며 부문 운영손실과 가치할인은 메인 시나리오에
+      남긴다.
+  ffo:
+    value: REIT FFO 공시 없음; 호텔부문은 REIT가 아니므로 부문 EBIT를 FFO로 재명명하지 않음
+    unit: text
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 공시 부문정보와 연결 차입금 범위 검토. REIT FFO 공시 없음; 호텔부문은 REIT가 아니므로 부문 EBIT를 FFO로
+      재명명하지 않음。 구조상 비적용 또는 미분리 항목을0으로 넣어 안전성을 과장하지 않으며 부문 운영손실과 가치할인은 메인 시나리오에 남긴다.
+  affo:
+    value: REIT AFFO 공시 없음; 유지투자 차감한 호텔 운영현금과 자산 NAV를 이중 합산하지 않음
+    unit: text
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 공시 부문정보와 연결 차입금 범위 검토. REIT AFFO 공시 없음; 유지투자 차감한 호텔 운영현금과 자산 NAV를 이중
+      합산하지 않음。 구조상 비적용 또는 미분리 항목을0으로 넣어 안전성을 과장하지 않으며 부문 운영손실과 가치할인은 메인 시나리오에 남긴다.
+  debt:
+    value: 호텔독립부채 미분리; 연결 재무상태표와 차입금주석의 총채무를 메인 EV-지분가치 연결에서 한 번 처리
+    unit: text
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 공시 부문정보와 연결 차입금 범위 검토. 호텔독립부채 미분리; 연결 재무상태표와 차입금주석의 총채무를 메인 EV-지분가치
+      연결에서 한 번 처리。 구조상 비적용 또는 미분리 항목을0으로 넣어 안전성을 과장하지 않으며 부문 운영손실과 가치할인은 메인 시나리오에
+      남긴다.
+  maturities:
+    value: 독립 호텔 만기표 미분리; 그룹 차입금주석의 계약별 만기와 차환위험을 별도 검토
+    unit: text
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 공시 부문정보와 연결 차입금 범위 검토. 독립 호텔 만기표 미분리; 그룹 차입금주석의 계약별 만기와 차환위험을 별도 검토。
+      구조상 비적용 또는 미분리 항목을0으로 넣어 안전성을 과장하지 않으며 부문 운영손실과 가치할인은 메인 시나리오에 남긴다.
+  debt_maturities:
+    value: 호텔에 그룹 전체 만기를 귀속시키지 않음; 연결 차입금 일정은 메인 자금조달 검토에 보존
+    unit: text
+    segment: hotel
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 공시 부문정보와 연결 차입금 범위 검토. 호텔에 그룹 전체 만기를 귀속시키지 않음; 연결 차입금 일정은 메인 자금조달 검토에
+      보존。 구조상 비적용 또는 미분리 항목을0으로 넣어 안전성을 과장하지 않으며 부문 운영손실과 가치할인은 메인 시나리오에 남긴다.
+  service_revenue:
+    value: 141526
+    unit: KRW_million
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: H12026 기타부문 외부매출141,526백만원. 부문 총매출192,909에서 내부거래51,383을 뺀 수치로 연결 외부수익
+      범위다. 다른 영업이익·감가상각은 연결조정 전 부문값이라는 회계범위를 함께 보존한다.
+  operating_income:
+    value: 7437
+    unit: KRW_million
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: H12026 기타부문 영업이익7,437백만원. 연결조정 전 보고부문 실적이며 합계 연결조정 -72,943을 이 부문에 전액
+      배분하지 않는다. 비교기업 마진을 덮어쓰기보다 실제 부문 이익력을 정상화의 출발점으로 쓴다.
+  depreciation_amortization:
+    value: 2895
+    unit: KRW_million
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: H12026 기타부문 유무형자산상각비2,895백만원. 비용 부호를 양의 가산항목으로 제시한 관측값이며 감가상각 가산 이후
+      유지보수·개발투자 누락을 방지한다.
+  maintenance_capex:
+    value: 5790
+    unit: KRW_million
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: '분석자 연간 스캔가정: 반기 감가상각2,895의2배5,790백만원을 유지투자 참고값으로 둔다. 확정 투자공시가 아니며
+      엔진수리의 설비집약성과 소프트웨어 유지개발 때문에 실제투자가 더 클 수 있다. 메인 FCFF에 이미 반영된 재투자에 중복 추가하지 않는다.'
+  working_capital:
+    value: 매출채권·재고·매입채무를 기타부문만 따로 공시하지 않음; 고객결제·엔진부품재고·수주계약 변화가 운전자금에 영향
+    unit: text
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: IT서비스·엔진수리·전자상거래의 현금주기가 달라 연결 운전자본을 균등배분할 수 없다. 메인 현금전환 시나리오에서 운전자금
+      부담을 반영하고 미분리 잔액을0으로 확정하지 않는다.
+  customer_concentration:
+    value: 내부거래 비중 약26.64%; 연결 전체는 매출10% 이상 단일 외부고객 없음. 기타부문별 고객집중도는 별도 미공개
+    unit: text
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 분석자계산51,383/192,909=26.64% 내부매출로 계열항공사 수요 의존 단서를 확인한다. 연결 전체의 단일고객10%
+      미만 공시를 기타부문 고객분산의 증거로 오용하지 않는다.
+  activity_mix:
+    value: IT서비스, 항공기엔진수리, 전자상거래 등; 활동별 매출가중치는 미분리
+    unit: text
+    segment: other
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 실제 IFRS8 부문표 용역기술. 순수 SaaS 고마진을 전체에 적용하지 않고 혼합 서비스 현금전환 대리모형으로 평가한다.
+      엔진 MRO가 기타부문에도 포함되므로 항공우주 성장에 같은 현금흐름을 중복 추가하지 않는다.
