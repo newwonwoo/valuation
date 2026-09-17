@@ -29,6 +29,26 @@ class SegmentMethodIntent:
     requested_version: str | None
     candidate_bindings: tuple[str, ...]
     rationale: str
+    delegated_to_primary_aggregator: bool = False
+
+    @property
+    def ready(self) -> bool:
+        if self.status is not ValuationPlanStatus.READY:
+            return False
+        if self.delegated_to_primary_aggregator:
+            return self.selected_archetype is None and self.selected_method is None
+        return self.selected_archetype is not None and self.selected_method is not None
+
+
+@dataclass(frozen=True)
+class PrimaryAggregatorIntent:
+    status: ValuationPlanStatus
+    selected_archetype: str | None
+    selected_method: str | None
+    execution_family: str | None
+    covered_segment_ids: tuple[str, ...]
+    candidate_bindings: tuple[str, ...]
+    rationale: str
 
     @property
     def ready(self) -> bool:
@@ -36,7 +56,15 @@ class SegmentMethodIntent:
             self.status is ValuationPlanStatus.READY
             and self.selected_archetype is not None
             and self.selected_method is not None
+            and self.execution_family is not None
+            and bool(self.covered_segment_ids)
         )
+
+    @property
+    def binding(self) -> str | None:
+        if not self.ready:
+            return None
+        return f"{self.selected_archetype}/{self.selected_method}"
 
 
 @dataclass(frozen=True)
@@ -48,11 +76,14 @@ class ValuationMethodIntent:
     requires_wacc: bool
     module_plan_hash: str
     capability_registry_hash: str
+    primary_aggregator: PrimaryAggregatorIntent | None = None
 
     @property
     def ready(self) -> bool:
         return self.status is ValuationPlanStatus.READY and all(
             item.ready for item in self.segments
+        ) and (
+            self.primary_aggregator is None or self.primary_aggregator.ready
         )
 
     def method_choices(self) -> tuple[SegmentMethodChoice, ...]:
@@ -68,7 +99,72 @@ class ValuationMethodIntent:
                 version=item.requested_version,
             )
             for item in self.segments
+            if not item.delegated_to_primary_aggregator
         )
+
+
+def _primary_aggregator_candidates(
+    plan: ModuleRequirementPlan,
+    registry: MethodCapabilityRegistry,
+) -> tuple[tuple[MethodCapability, tuple[str, ...]], ...]:
+    """Return company-level aggregators that produce a primary intrinsic value.
+
+    SOTP remains the internal combiner for segment evaluators and therefore has
+    output_kind=aggregation.  A company-level primary aggregator has a concrete
+    intrinsic output such as equity_value_distribution.
+    """
+
+    coverage: dict[tuple[str, str], list[str]] = {}
+    capabilities: dict[tuple[str, str], MethodCapability] = {}
+    for segment in plan.segments:
+        for item in _capabilities_for_segment(segment, registry):
+            if (
+                item.kind is MethodKind.AGGREGATOR
+                and item.runtime_status is not MethodRuntimeStatus.NOT_IMPLEMENTED
+                and item.output_kind != "aggregation"
+            ):
+                capabilities[item.identity] = item
+                coverage.setdefault(item.identity, []).append(segment.segment_id)
+    return tuple(
+        (capabilities[identity], tuple(dict.fromkeys(coverage[identity])))
+        for identity in sorted(capabilities)
+    )
+
+
+def _resolve_primary_aggregator(
+    plan: ModuleRequirementPlan,
+    registry: MethodCapabilityRegistry,
+) -> PrimaryAggregatorIntent | None:
+    candidates = _primary_aggregator_candidates(plan, registry)
+    if not candidates:
+        return None
+    names = tuple(f"{item.archetype}/{item.method}" for item, _ in candidates)
+    if len(candidates) > 1:
+        return PrimaryAggregatorIntent(
+            status=ValuationPlanStatus.METHOD_CHOICE_REQUIRED,
+            selected_archetype=None,
+            selected_method=None,
+            execution_family=None,
+            covered_segment_ids=(),
+            candidate_bindings=names,
+            rationale=(
+                "multiple company-level primary aggregators remain; an exact "
+                "economic aggregator must be selected before risk stages"
+            ),
+        )
+    selected, covered = candidates[0]
+    return PrimaryAggregatorIntent(
+        status=ValuationPlanStatus.READY,
+        selected_archetype=selected.archetype,
+        selected_method=selected.method,
+        execution_family=selected.execution_family,
+        covered_segment_ids=covered,
+        candidate_bindings=names,
+        rationale=(
+            "one implemented company-level primary aggregator is implied by "
+            "the evidence-backed Industry DNA"
+        ),
+    )
 
 
 def resolve_valuation_method_intent(
@@ -77,16 +173,33 @@ def resolve_valuation_method_intent(
     capability_registry: MethodCapabilityRegistry,
     method_choices: tuple[SegmentMethodChoice, ...] = (),
 ) -> ValuationMethodIntent:
-    """Resolve economic method identity before Beta/WACC.
+    """Resolve segment evaluators and any company-level primary aggregator.
 
-    Exact evaluator version and assumption readiness remain deterministic stage-19
-    responsibilities, but both stages carry the same Module Plan and capability identities.
+    Segment evaluators remain exact ModelKey-bound calculations. A primary
+    aggregator is a separate company-level economic route. Segments that have
+    no segment evaluator are valid only when the selected primary aggregator
+    explicitly covers them; this prevents aggregator-only archetypes from being
+    misclassified as capability gaps while preserving fail-closed behavior for
+    genuinely unsupported segments.
     """
+
     plan.validate()
     module_hash = valuation_module_plan_hash(plan)
     capability_hash = valuation_capability_registry_hash(capability_registry)
     expected_segments = tuple(segment.segment_id for segment in plan.segments)
     choices = _choice_map(method_choices, expected_segments)
+    primary_aggregator = _resolve_primary_aggregator(plan, capability_registry)
+    aggregator_covered = set(
+        primary_aggregator.covered_segment_ids
+        if primary_aggregator is not None and primary_aggregator.ready
+        else ()
+    )
+    aggregator_binding = (
+        primary_aggregator.binding
+        if primary_aggregator is not None and primary_aggregator.ready
+        else None
+    )
+
     resolutions: list[SegmentMethodIntent] = []
     warranted_per_segments: list[str] = []
     selected_capabilities: list[MethodCapability] = []
@@ -119,36 +232,57 @@ def resolve_valuation_method_intent(
                 if item.archetype == explicit.archetype
                 and item.method == explicit.method
             )
-            if len(matched) != 1:
+            if len(matched) == 1:
+                selected = matched[0]
+                selected_capabilities.append(selected)
                 resolutions.append(
                     SegmentMethodIntent(
                         segment_id=segment.segment_id,
-                        status=ValuationPlanStatus.CAPABILITY_GAP,
+                        status=ValuationPlanStatus.READY,
+                        selected_archetype=selected.archetype,
+                        selected_method=selected.method,
+                        requested_version=explicit.version,
+                        candidate_bindings=_candidate_names(primary),
+                        rationale=(
+                            "explicit segment evaluator validated against Industry DNA "
+                            "and capability role"
+                        ),
+                    )
+                )
+                continue
+            if (
+                segment.segment_id in aggregator_covered
+                and aggregator_binding
+                == f"{explicit.archetype}/{explicit.method}"
+            ):
+                resolutions.append(
+                    SegmentMethodIntent(
+                        segment_id=segment.segment_id,
+                        status=ValuationPlanStatus.READY,
                         selected_archetype=None,
                         selected_method=None,
                         requested_version=explicit.version,
                         candidate_bindings=_candidate_names(primary),
                         rationale=(
-                            f"requested economic method {explicit.archetype}/"
-                            f"{explicit.method} is not an implemented allowed "
-                            "segment evaluator"
+                            "explicit company-level aggregator covers this segment; "
+                            "segment valuation is delegated to the primary aggregator"
                         ),
+                        delegated_to_primary_aggregator=True,
                     )
                 )
                 continue
-            selected = matched[0]
-            selected_capabilities.append(selected)
             resolutions.append(
                 SegmentMethodIntent(
                     segment_id=segment.segment_id,
-                    status=ValuationPlanStatus.READY,
-                    selected_archetype=selected.archetype,
-                    selected_method=selected.method,
+                    status=ValuationPlanStatus.CAPABILITY_GAP,
+                    selected_archetype=None,
+                    selected_method=None,
                     requested_version=explicit.version,
                     candidate_bindings=_candidate_names(primary),
                     rationale=(
-                        "explicit economic method intent validated against "
-                        "Industry DNA and capability role"
+                        f"requested economic method {explicit.archetype}/"
+                        f"{explicit.method} is neither an implemented segment evaluator "
+                        "nor the selected company-level primary aggregator"
                     ),
                 )
             )
@@ -181,9 +315,25 @@ def resolve_valuation_method_intent(
                     requested_version=None,
                     candidate_bindings=_candidate_names(primary),
                     rationale=(
-                        "multiple implemented economic methods remain; choose "
-                        "the primary method before Beta/WACC"
+                        "multiple implemented segment evaluators remain; choose "
+                        "the reference/segment method before Beta/WACC"
                     ),
+                )
+            )
+        elif segment.segment_id in aggregator_covered:
+            resolutions.append(
+                SegmentMethodIntent(
+                    segment_id=segment.segment_id,
+                    status=ValuationPlanStatus.READY,
+                    selected_archetype=None,
+                    selected_method=None,
+                    requested_version=None,
+                    candidate_bindings=(),
+                    rationale=(
+                        "no segment evaluator is required because the selected "
+                        "company-level primary aggregator explicitly covers this segment"
+                    ),
+                    delegated_to_primary_aggregator=True,
                 )
             )
         else:
@@ -196,15 +346,23 @@ def resolve_valuation_method_intent(
                     requested_version=None,
                     candidate_bindings=(),
                     rationale=(
-                        "selected Industry DNA has no implemented "
-                        "segment-evaluator method capability"
+                        "selected Industry DNA has neither an implemented segment "
+                        "evaluator nor a covering primary aggregator"
                     ),
                 )
             )
 
-    overall = _overall_status(tuple(resolutions))
+    overall = _overall_status(tuple(resolutions), primary_aggregator)
+    aggregator_capabilities = tuple(
+        capability_registry.get(
+            str(primary_aggregator.selected_archetype),
+            str(primary_aggregator.selected_method),
+        )
+        for _ in (0,)
+        if primary_aggregator is not None and primary_aggregator.ready
+    )
     risk_caps = (
-        (*selected_capabilities, *cross_method_capabilities)
+        (*selected_capabilities, *cross_method_capabilities, *aggregator_capabilities)
         if overall is ValuationPlanStatus.READY
         else ()
     )
@@ -216,6 +374,7 @@ def resolve_valuation_method_intent(
         requires_wacc=any(item.requires_wacc for item in risk_caps),
         module_plan_hash=module_hash,
         capability_registry_hash=capability_hash,
+        primary_aggregator=primary_aggregator,
     )
 
 
@@ -243,6 +402,7 @@ def valuation_method_intent_adapter(
             if (
                 not method_choices
                 and intent.status is ValuationPlanStatus.METHOD_CHOICE_REQUIRED
+                and intent.primary_aggregator is None
             ):
                 from .auto_method_routing import (
                     AUTO_METHOD_ROUTING_FLAG,
@@ -296,6 +456,15 @@ def valuation_method_intent_adapter(
                 intent.capability_registry_hash
             ),
         }
+        if intent.primary_aggregator is not None:
+            common_outputs["primary_aggregator_intent"] = intent.primary_aggregator
+            if intent.primary_aggregator.binding is not None:
+                common_outputs["primary_aggregator_binding"] = (
+                    intent.primary_aggregator.binding
+                )
+                common_outputs["primary_aggregator_covered_segments"] = (
+                    intent.primary_aggregator.covered_segment_ids
+                )
         if not intent.ready:
             status = (
                 StageStatus.NOT_IMPLEMENTED
@@ -315,8 +484,13 @@ def valuation_method_intent_adapter(
             "evidence-feasibility filtering inside the canonical method-intent stage; "
             "exact evaluator construction remains downstream"
             if auto_resolved
-            else "economic valuation-method intent resolved before Beta/WACC; "
-            "exact evaluator construction remains downstream"
+            else (
+                "company-level primary aggregator and any segment reference methods "
+                "resolved before Beta/WACC"
+                if intent.primary_aggregator is not None
+                else "economic valuation-method intent resolved before Beta/WACC; "
+                "exact evaluator construction remains downstream"
+            )
         )
         return StageExecutionResult(
             StageStatus.PASS,
@@ -379,7 +553,10 @@ def _candidate_names(
 
 def _overall_status(
     resolutions: tuple[SegmentMethodIntent, ...],
+    primary_aggregator: PrimaryAggregatorIntent | None,
 ) -> ValuationPlanStatus:
+    if primary_aggregator is not None and not primary_aggregator.ready:
+        return primary_aggregator.status
     if any(
         item.status is ValuationPlanStatus.CAPABILITY_GAP
         for item in resolutions
@@ -396,3 +573,12 @@ def _overall_status(
     ):
         return ValuationPlanStatus.CAPABILITY_GAP
     return ValuationPlanStatus.READY
+
+
+__all__ = [
+    "PrimaryAggregatorIntent",
+    "SegmentMethodIntent",
+    "ValuationMethodIntent",
+    "resolve_valuation_method_intent",
+    "valuation_method_intent_adapter",
+]
