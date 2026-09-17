@@ -73,3 +73,24 @@ def test_atomic_publisher_rejects_stale_head_before_writing(tmp_path):
         )
     assert _run(repo, "rev-parse", "execution") == first.commit_sha
     assert not (repo / "b.txt").exists()
+
+
+def test_atomic_publisher_does_not_overwrite_an_immutable_artifact(tmp_path):
+    repo, head = _repo(tmp_path)
+    source = tmp_path / "report.md"
+    source.write_text("verified\n", encoding="utf-8")
+    first = atomic_publish_files(
+        repo,
+        {"canonical-runs/000001/report.md": source},
+        branch="execution",
+        expected_head=head,
+        commit_message="first",
+    )
+    with pytest.raises(AtomicPublicationError, match="already exists"):
+        atomic_publish_files(
+            repo,
+            {"canonical-runs/000001/report.md": source},
+            branch="execution",
+            expected_head=first.commit_sha,
+            commit_message="overwrite",
+        )

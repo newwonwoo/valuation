@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
-from typing import Mapping
+from typing import Iterable, Mapping
 
 from .canonical_completion import CompletionProof, validate_completion_bundle
 
@@ -81,6 +81,15 @@ def _destination(value: str) -> str:
     return path.as_posix()
 
 
+def _tree_contains(repo_root: Path, commit: str, path: str) -> bool:
+    completed = subprocess.run(
+        ["git", "-C", str(repo_root), "cat-file", "-e", f"{commit}:{path}"],
+        capture_output=True,
+        text=True,
+    )
+    return completed.returncode == 0
+
+
 def atomic_publish_files(
     repo_root: str | Path,
     files: Mapping[str, str | Path],
@@ -88,6 +97,7 @@ def atomic_publish_files(
     branch: str,
     expected_head: str,
     commit_message: str,
+    replace_paths: Iterable[str] = (),
     remote: str = "origin",
     push: bool = False,
 ) -> PublicationResult:
@@ -123,6 +133,23 @@ def atomic_publish_files(
         if target in normalized:
             raise AtomicPublicationError(f"duplicate publication destination: {target}")
         normalized[target] = path
+    replace = {_destination(path) for path in replace_paths}
+    unknown_replacements = sorted(replace - normalized.keys())
+    if unknown_replacements:
+        raise AtomicPublicationError(
+            "replace_paths contains destinations not in publication: "
+            + ", ".join(unknown_replacements)
+        )
+    collisions = sorted(
+        path
+        for path in normalized
+        if path not in replace and _tree_contains(root, expected, path)
+    )
+    if collisions:
+        raise AtomicPublicationError(
+            "immutable publication destination already exists: "
+            + ", ".join(collisions)
+        )
 
     env = os.environ.copy()
     descriptor, index_name = tempfile.mkstemp(prefix="valuation-canonical-index-")
@@ -226,6 +253,7 @@ def publish_verified_bundle(
         branch=branch,
         expected_head=expected_head,
         commit_message=commit_message,
+        replace_paths=(latest_destination,) if latest_destination else (),
         remote=remote,
         push=push,
     )
