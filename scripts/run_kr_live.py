@@ -74,6 +74,7 @@ from valuation_engine.calibration_cohort_registry import (  # noqa: E402
 from valuation_engine.canonical_completion import (  # noqa: E402
     BUNDLE_MANIFEST_NAME,
     BUNDLE_MANIFEST_SCHEMA,
+    CANONICAL_ENTRYPOINT_ID,
     CompletionProofError,
     LATEST_MANIFEST_SCHEMA,
     validate_completion_bundle,
@@ -709,9 +710,16 @@ def publish_report_bundle(
     execution_attestation_hash = str(
         attestation_payload.get("attestation_hash") or ""
     )
-    if not freeze_token_hash or not execution_attestation_hash:
+    canonical_entrypoint_id = str(
+        result.data.get("canonical_entrypoint_id") or ""
+    )
+    if (
+        not freeze_token_hash
+        or not execution_attestation_hash
+        or canonical_entrypoint_id != CANONICAL_ENTRYPOINT_ID
+    ):
         raise RunbookError(
-            "completed run lacks freeze-token or execution-attestation hash"
+            "completed run lacks canonical entrypoint, freeze-token, or execution-attestation proof"
         )
 
     reference = _reference_value_per_share(result)
@@ -729,6 +737,7 @@ def publish_report_bundle(
             _file_sha256(source / "manifest.json"),
             freeze_token_hash,
             execution_attestation_hash,
+            canonical_entrypoint_id,
         )
     )
     short_hash = sha256(seed.encode("utf-8")).hexdigest()[:12].upper()
@@ -775,6 +784,7 @@ def publish_report_bundle(
         "run_input_sha256": run_input_sha256,
         "freeze_token_hash": freeze_token_hash,
         "execution_attestation_hash": execution_attestation_hash,
+        "canonical_entrypoint_id": canonical_entrypoint_id,
         "bundle_tree_sha256": _canonical_receipt_tree_hash(receipts),
         "report_filename": versioned_report_name,
         "report_sha256": _file_sha256(versioned_report_path),
@@ -806,6 +816,7 @@ def publish_report_bundle(
         "freeze_token_hash": freeze_token_hash,
         "execution_attestation_hash": execution_attestation_hash,
         "bundle_tree_sha256": bundle_manifest["bundle_tree_sha256"],
+        "canonical_entrypoint_id": canonical_entrypoint_id,
     }
     output_root.mkdir(parents=True, exist_ok=True)
     previous_latest = (

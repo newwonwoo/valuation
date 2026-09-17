@@ -19,6 +19,7 @@ from .runtime_authority import ExecutionAttestation, make_stage_receipt
 
 
 PRODUCTION_STAGE_COUNT = 33
+CANONICAL_ENTRYPOINT_ID = "prism_strict_live_primary/v1"
 PASSING_STAGE_STATUSES = frozenset(
     {"pass", "warning", "skipped_not_applicable", "recovered"}
 )
@@ -304,6 +305,7 @@ def _validate_latest(
         "run_id": bundle_manifest.get("run_id"),
         "ticker": bundle_manifest.get("ticker"),
         "as_of": bundle_manifest.get("as_of"),
+        "canonical_entrypoint_id": bundle_manifest.get("canonical_entrypoint_id"),
         "valuation_hash": bundle_manifest.get("valuation_hash"),
         "audit_hash": bundle_manifest.get("audit_hash"),
         "execution_attestation_hash": bundle_manifest.get("execution_attestation_hash"),
@@ -400,6 +402,8 @@ def validate_completion_bundle(
         raise CompletionProofError("bundle manifest has no artifact_id")
     valuation_hash = _hex_digest(bundle_manifest.get("valuation_hash"), "valuation hash")
     audit_hash = _hex_digest(bundle_manifest.get("audit_hash"), "audit hash")
+    if bundle_manifest.get("canonical_entrypoint_id") != CANONICAL_ENTRYPOINT_ID:
+        raise CompletionProofError("bundle manifest is not from the canonical entrypoint")
     if valuation_hash != token_valuation_hash or audit_hash != token_audit_hash:
         raise CompletionProofError("bundle manifest does not match freeze lineage")
     if bundle_manifest.get("freeze_token_hash") != freeze_hash:

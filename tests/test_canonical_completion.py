@@ -10,6 +10,7 @@ import pytest
 from valuation_engine.canonical_completion import (
     BUNDLE_MANIFEST_NAME,
     BUNDLE_MANIFEST_SCHEMA,
+    CANONICAL_ENTRYPOINT_ID,
     CompletionProofError,
     LATEST_MANIFEST_SCHEMA,
     expected_stage_sequence,
@@ -127,6 +128,7 @@ def _write_bundle(tmp_path: Path, stages=("A", "B")) -> tuple[Path, Path]:
         "audit_hash": audit_hash,
         "freeze_token_hash": freeze_hash,
         "execution_attestation_hash": attestation.attestation_hash,
+        "canonical_entrypoint_id": CANONICAL_ENTRYPOINT_ID,
         "bundle_tree_sha256": tree_hash,
         "report_sha256": _sha(bundle / "000001_투자보고서.md"),
         "report_filename": "000001_투자보고서.md",
@@ -149,6 +151,7 @@ def _write_bundle(tmp_path: Path, stages=("A", "B")) -> tuple[Path, Path]:
         "audit_hash": audit_hash,
         "execution_attestation_hash": attestation.attestation_hash,
         "bundle_tree_sha256": tree_hash,
+        "canonical_entrypoint_id": CANONICAL_ENTRYPOINT_ID,
     }
     latest_path = out / "000001_LATEST_REPORT.json"
     latest_path.write_text(json.dumps(latest), encoding="utf-8")
