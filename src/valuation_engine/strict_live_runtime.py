@@ -46,6 +46,30 @@ from .unit_contracts import UnitContractRegistry, load_unit_contract_registry
 CANONICAL_ENTRYPOINT_ID = "prism_strict_live_primary/v1"
 _DISTRIBUTIONAL_SPEC_KEY = "distributional_apv_execution_spec"
 _BOUND_DISTRIBUTIONAL_SPEC_KEY = "bound_distributional_apv_execution_spec"
+_DISTRIBUTIONAL_BLOCKED_RESULT_KEYS = frozenset(
+    {
+        "bound_distributional_apv_execution_spec",
+        "distributional_primary_result",
+        "intrinsic_valuation_envelope",
+        "distribution_hash",
+        "distribution_route_authorization",
+        "distribution_route_authorization_hash",
+        "entry_policy_version",
+        "entry_calculation_hash",
+        "equity_value_distribution",
+        "ambiguity_expected_value_range",
+        "ambiguity_set_hash",
+        "payoff_model_set_hash",
+        "payoff_ambiguity_result",
+        "governed_entry_price",
+        "distress_probability",
+        "dilution_probability",
+        "old_shareholder_retention",
+        "distribution_authorization",
+        "entry_price_authorization",
+        "payoff_ambiguity_audit_hash",
+    }
+)
 
 
 def _distributional_gate_dispatch(
@@ -158,6 +182,11 @@ def _distributional_audit_dispatch(
     return run
 
 
+def _scrub_blocked_live_data(data: dict[str, object]) -> dict[str, object]:
+    blocked_keys = _BLOCKED_RESULT_INTRINSIC_KEYS | _DISTRIBUTIONAL_BLOCKED_RESULT_KEYS
+    return {key: value for key, value in data.items() if key not in blocked_keys}
+
+
 def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
     """Canonical LIVE_PRIMARY entrypoint.
 
@@ -245,7 +274,7 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
         registry=unit_contract_registry,
     )
 
-    # Street/market data remain post-freeze.  The loaders are shared, while the
+    # Street/market data remain post-freeze. The loaders are shared, while the
     # comparison math and persistence are route-specific and cannot depend on a
     # fabricated GenericValuationResult.
     adapters["STREET_GAP_ANALYZER"] = distributional_or_generic_adapter(
@@ -280,11 +309,7 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
             run_id=base.run_id,
             execution_mode=base.execution_mode,
             stage_traces=base.stage_traces,
-            data={
-                key: value
-                for key, value in base.data.items()
-                if key not in _BLOCKED_RESULT_INTRINSIC_KEYS
-            },
+            data=_scrub_blocked_live_data(base.data),
             blocked_reasons=base.blocked_reasons,
             freeze_token=None,
             major_gate_summaries=base.major_gate_summaries,
