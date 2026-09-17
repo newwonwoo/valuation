@@ -178,12 +178,19 @@ def atomic_publish_files(
             )
         tree = _git(root, ["write-tree"], env=env)
         commit_env = dict(env)
-        commit_env.setdefault("GIT_AUTHOR_NAME", "canonical-publisher")
-        commit_env.setdefault(
-            "GIT_AUTHOR_EMAIL", "canonical-publisher@users.noreply.github.com"
+        commit_env["GIT_AUTHOR_NAME"] = (
+            commit_env.get("GIT_AUTHOR_NAME") or "canonical-publisher"
         )
-        commit_env.setdefault("GIT_COMMITTER_NAME", commit_env["GIT_AUTHOR_NAME"])
-        commit_env.setdefault("GIT_COMMITTER_EMAIL", commit_env["GIT_AUTHOR_EMAIL"])
+        commit_env["GIT_AUTHOR_EMAIL"] = (
+            commit_env.get("GIT_AUTHOR_EMAIL")
+            or "canonical-publisher@users.noreply.github.com"
+        )
+        commit_env["GIT_COMMITTER_NAME"] = (
+            commit_env.get("GIT_COMMITTER_NAME") or commit_env["GIT_AUTHOR_NAME"]
+        )
+        commit_env["GIT_COMMITTER_EMAIL"] = (
+            commit_env.get("GIT_COMMITTER_EMAIL") or commit_env["GIT_AUTHOR_EMAIL"]
+        )
         commit = _git(
             root,
             ["commit-tree", tree, "-p", expected, "-m", commit_message.strip()],
@@ -246,7 +253,12 @@ def publish_verified_bundle(
             raise AtomicPublicationError(
                 "latest_destination is required with latest_manifest_path"
             )
-        files[_destination(latest_destination)] = Path(latest_manifest_path).resolve()
+        latest_target = _destination(latest_destination)
+        if latest_target in files:
+            raise AtomicPublicationError(
+                "latest pointer destination collides with bundle content"
+            )
+        files[latest_target] = Path(latest_manifest_path).resolve()
     result = atomic_publish_files(
         repo_root,
         files,
