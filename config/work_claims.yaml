@@ -194,7 +194,7 @@ claims:
   - claim_id: distributional-apv-canonical-runtime
     owner: codex
     pull_request: 187
-    status: active
+    status: merged
     paths:
       - "config/valuation_method_capability_registry.yaml"
     note: >-
