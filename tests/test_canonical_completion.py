@@ -36,6 +36,7 @@ def _write_bundle(tmp_path: Path, stages=("A", "B")) -> tuple[Path, Path]:
     valuation_hash = "a" * 64
     audit_hash = "b" * 64
     freeze_hash = "c" * 64
+    run_input_hash = "d" * 64
     trace = [
         {
             "stage": stage,
@@ -126,6 +127,7 @@ def _write_bundle(tmp_path: Path, stages=("A", "B")) -> tuple[Path, Path]:
         "ticker": ticker,
         "valuation_hash": valuation_hash,
         "audit_hash": audit_hash,
+        "run_input_sha256": run_input_hash,
         "freeze_token_hash": freeze_hash,
         "execution_attestation_hash": attestation.attestation_hash,
         "canonical_entrypoint_id": CANONICAL_ENTRYPOINT_ID,
@@ -149,6 +151,7 @@ def _write_bundle(tmp_path: Path, stages=("A", "B")) -> tuple[Path, Path]:
         "report_sha256": bundle_manifest["report_sha256"],
         "valuation_hash": valuation_hash,
         "audit_hash": audit_hash,
+        "run_input_sha256": run_input_hash,
         "execution_attestation_hash": attestation.attestation_hash,
         "bundle_tree_sha256": tree_hash,
         "canonical_entrypoint_id": CANONICAL_ENTRYPOINT_ID,
@@ -169,6 +172,7 @@ def test_completion_proof_requires_the_full_trace_and_hash_lineage(tmp_path):
     assert proof.stage_count == 2
     assert proof.artifact_id == "000001-20260916-TEST"
     assert proof.bundle_tree_sha256
+    assert proof.run_input_sha256 == "d" * 64
 
 
 def test_production_validation_requires_all_33_registered_stages(tmp_path):

@@ -46,6 +46,7 @@ class CompletionProof:
     bundle_manifest_sha256: str
     bundle_tree_sha256: str
     report_sha256: str
+    run_input_sha256: str
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -235,6 +236,20 @@ def _validate_receipts(
     report_filename = _safe_member(
         bundle_manifest.get("report_filename"), "bundle report_filename"
     )
+    required = {
+        "manifest.json",
+        "control_plane_trace.json",
+        "audit.json",
+        "freeze_token.json",
+        "execution_attestation.json",
+        "final_report.md",
+        report_filename,
+    }
+    missing_required = sorted(required - seen)
+    if missing_required:
+        raise CompletionProofError(
+            "bundle receipts are missing required files: " + ", ".join(missing_required)
+        )
     report_path = bundle_dir / report_filename
     if not report_path.is_file() or report_path.is_symlink():
         raise CompletionProofError("bundle report_filename points to a missing file")
@@ -308,6 +323,7 @@ def _validate_latest(
         "canonical_entrypoint_id": bundle_manifest.get("canonical_entrypoint_id"),
         "valuation_hash": bundle_manifest.get("valuation_hash"),
         "audit_hash": bundle_manifest.get("audit_hash"),
+        "run_input_sha256": bundle_manifest.get("run_input_sha256"),
         "execution_attestation_hash": bundle_manifest.get("execution_attestation_hash"),
         "bundle_tree_sha256": bundle_manifest.get("bundle_tree_sha256"),
         "bundle_manifest": manifest_relative,
@@ -400,6 +416,11 @@ def validate_completion_bundle(
     artifact_id = str(bundle_manifest.get("artifact_id") or "")
     if not artifact_id:
         raise CompletionProofError("bundle manifest has no artifact_id")
+    if not str(bundle_manifest.get("as_of") or ""):
+        raise CompletionProofError("bundle manifest has no as_of")
+    run_input_hash = _hex_digest(
+        bundle_manifest.get("run_input_sha256"), "run input hash"
+    )
     valuation_hash = _hex_digest(bundle_manifest.get("valuation_hash"), "valuation hash")
     audit_hash = _hex_digest(bundle_manifest.get("audit_hash"), "audit hash")
     if bundle_manifest.get("canonical_entrypoint_id") != CANONICAL_ENTRYPOINT_ID:
@@ -440,4 +461,5 @@ def validate_completion_bundle(
         bundle_manifest_sha256=manifest_hash,
         bundle_tree_sha256=tree_hash,
         report_sha256=report_hash,
+        run_input_sha256=run_input_hash,
     )
