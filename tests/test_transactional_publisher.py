@@ -35,7 +35,7 @@ def test_atomic_publisher_creates_one_commit_without_touching_checkout(tmp_path)
     repo, head = _repo(tmp_path)
     source = tmp_path / "report.md"
     source.write_text("verified\n", encoding="utf-8")
-    before_index = _run(repo, "rev-parse", "--git-path", "index")
+    before_index = repo / _run(repo, "rev-parse", "--git-path", "index")
     result = atomic_publish_files(
         repo,
         {"canonical-runs/000001/report.md": source},
