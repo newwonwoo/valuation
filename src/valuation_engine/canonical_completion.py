@@ -333,7 +333,11 @@ def validate_completion_bundle(
     root = Path(bundle_dir).resolve()
     if not root.is_dir():
         raise CompletionProofError(f"bundle directory does not exist: {root}")
-    expected = tuple(expected_stages or expected_stage_sequence(stage_registry_path))
+    expected = (
+        tuple(expected_stages)
+        if expected_stages is not None
+        else expected_stage_sequence(stage_registry_path)
+    )
     if not expected:
         raise CompletionProofError("canonical stage registry is empty")
     if expected_stages is None and len(expected) != PRODUCTION_STAGE_COUNT:
