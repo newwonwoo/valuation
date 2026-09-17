@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='section-2'><A name='toc1'>3. 타법인출자 현황(상세)</A></P>
+<TABLE class='nb' width='610'>
+<COLGROUP>
+<COL width='610'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='601' height='23' valign='TOP'><A href="javascript:void(0);" class="ADX-003" name="IX. 계열회사 등에 관한 사항" onclick="top.goBookmark('NEF-003', 'ADX-003', 'IX. 계열회사 등에 관한 사항');" target="_self">☞ 본문 위치로 이동</A><BR/>
+</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='1080'>
+<COLGROUP>
+<COL width='80'></COL>
+<COL width='152'></COL>
+<COL width='213'></COL>
+<COL width='635'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='71' height='23' valign='BOTTOM'>(기준일 :&nbsp;</TD>
+  <TD width='143' height='23' align='CENTER' valign='BOTTOM'>2025.12.31</TD>
+  <TD width='204' height='23' valign='BOTTOM'>)</TD>
+  <TD width='626' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 백만원, 주, %)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='1079'>
+<COLGROUP>
+<COL width='108'></COL>
+<COL width='76'></COL>
+<COL width='104'></COL>
+<COL width='72'></COL>
+<COL width='74'></COL>
+<COL width='62'></COL>
+<COL width='63'></COL>
+<COL width='61'></COL>
+<COL width='50'></COL>
+<COL width='49'></COL>
+<COL width='59'></COL>
+<COL width='66'></COL>
+<COL width='57'></COL>
+<COL width='57'></COL>
+<COL width='62'></COL>
+<COL width='59'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='99' height='106' rowspan='3'>법인명</TH>
+  <TH width='67' height='106' rowspan='3'>상장<BR/>여부</TH>
+  <TH width='95' height='106' rowspan='3'>최초취득일자</TH>
+  <TH width='63' height='106' rowspan='3'>출자<BR/>목적</TH>
+  <TH width='65' height='106' rowspan='3'>최초취득금액</TH>
+  <TH width='177' height='46' colspan='3'>기초잔액</TH>
+  <TH width='149' height='46' colspan='3'>증가(감소)</TH>
+  <TH width='171' height='46' colspan='3'>기말잔액</TH>
+  <TH width='112' height='46' colspan='2'>최근사업연도<BR/>재무현황</TH>
+</TR>
+<TR height='30'>
+  <TH width='53' height='53' rowspan='2'>수량</TH>
+  <TH width='54' height='53' rowspan='2'>지분율</TH>
+  <TH width='52' height='53' rowspan='2'>장부<BR/>가액</TH>
+  <TH width='90' height='23' colspan='2'>취득(처분)</TH>
+  <TH width='50' height='53' rowspan='2'>평가<BR/>손익</TH>
+  <TH width='57' height='53' rowspan='2'>수량</TH>
+  <TH width='48' height='53' rowspan='2'>지분율</TH>
+  <TH width='48' height='53' rowspan='2'>장부<BR/>가액</TH>
+  <TH width='53' height='53' rowspan='2'>총자산</TH>
+  <TH width='50' height='53' rowspan='2'>당기<BR/>순손익</TH>
+</TR>
+<TR height='30'>
+  <TH width='41' height='23'>수량</TH>
+  <TH width='40' height='23'>금액</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='53'>
+  <TD width='99' height='46' align='CENTER'>(주)에스엔티<BR/>아이엔시</TD>
+  <TD width='67' height='46' align='CENTER'>비상장</TD>
+  <TD width='95' height='46' align='CENTER'>2017.06.20</TD>
+  <TD width='63' height='46' align='CENTER'>일반투자</TD>
+  <TD width='65' height='46' align='RIGHT'>61</TD>
+  <TD width='53' height='46' align='RIGHT'>12,291</TD>
+  <TD width='54' height='46' align='RIGHT'>50.0</TD>
+  <TD width='52' height='46' align='RIGHT'>265</TD>
+  <TD width='41' height='46' align='RIGHT'>-</TD>
+  <TD width='40' height='46' align='RIGHT'>-</TD>
+  <TD width='50' height='46' align='RIGHT'>-90</TD>
+  <TD width='57' height='46' align='RIGHT'>12,291</TD>
+  <TD width='48' height='46' align='RIGHT'>50.0</TD>
+  <TD width='48' height='46' align='RIGHT'>175</TD>
+  <TD width='53' height='46' align='RIGHT'>628</TD>
+  <TD width='50' height='46' align='RIGHT'>-178</TD>
+</TR>
+<TR height='30'>
+  <TD width='425' height='23' colspan='5' align='CENTER'>합 계</TD>
+  <TD width='53' height='23' align='RIGHT'>12,291</TD>
+  <TD width='54' height='23' align='RIGHT'>50.0</TD>
+  <TD width='52' height='23' align='RIGHT'>265</TD>
+  <TD width='41' height='23' align='RIGHT'>-</TD>
+  <TD width='40' height='23' align='RIGHT'>-</TD>
+  <TD width='50' height='23' align='RIGHT'>-90</TD>
+  <TD width='57' height='23' align='RIGHT'>12,291</TD>
+  <TD width='48' height='23' align='RIGHT'>50.0</TD>
+  <TD width='48' height='23' align='RIGHT'>175</TD>
+  <TD width='53' height='23' align='RIGHT'>628</TD>
+  <TD width='50' height='23' align='RIGHT'>-178</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='940'>
+<COLGROUP>
+<COL width='940'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='931' height='23'>주) 평가손익은 지분법이익 -89백만원에 부의지분법자본변동 -1백만원을 합산하여 산정하였습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

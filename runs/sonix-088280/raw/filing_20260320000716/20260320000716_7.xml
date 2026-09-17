@@ -1,0 +1,160 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='section-2'><A name='toc1'>4. 주식의 총수 등</A></P>
+<P><BR/></P>
+<P><SPAN style='font-weight:bold;'>가. 주식의 총수<BR/></SPAN><BR/>당사의 정관상 발행할 주식의 총수는 100,000,000주이며 2025년 12월 31일 현재 발행된 주식의 총수는 보통주 17,306,490주 입니다.<BR/><BR/>
+</P>
+<P>주식의 총수 현황</P>
+<TABLE class='nb' width='663'>
+<COLGROUP>
+<COL width='80'></COL>
+<COL width='152'></COL>
+<COL width='106'></COL>
+<COL width='325'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='71' height='23' valign='BOTTOM'>(기준일 :&nbsp;</TD>
+  <TD width='143' height='23' align='CENTER' valign='BOTTOM'>2025.12.31</TD>
+  <TD width='97' height='23' valign='BOTTOM'>)</TD>
+  <TD width='316' height='23' align='RIGHT' valign='BOTTOM'>(단위 : 주, %)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='665'>
+<COLGROUP>
+<COL width='34'></COL>
+<COL width='213'></COL>
+<COL width='105'></COL>
+<COL width='105'></COL>
+<COL width='104'></COL>
+<COL width='104'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='238' height='53' colspan='2' rowspan='2'>구 &nbsp;분</TH>
+  <TH width='305' height='23' colspan='3'>주식의 종류</TH>
+  <TH width='95' height='53' rowspan='2'>비고</TH>
+</TR>
+<TR height='30'>
+  <TD width='96' height='23' align='CENTER'>보통주식</TD>
+  <TD width='96' height='23' align='CENTER'>우선주식</TD>
+  <TH width='95' height='23'>합계</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅰ. 발행할 주식의 총수</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>100,000,000</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅱ. 현재까지 발행한 주식의 총수</TD>
+  <TD width='96' height='23' align='RIGHT'>18,088,740</TD>
+  <TD width='96' height='23' align='RIGHT'>2,193,700</TD>
+  <TD width='95' height='23' align='RIGHT'>20,282,440</TD>
+  <TD width='95' height='23' align='CENTER'>주1),주3)</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅲ. 현재까지 감소한 주식의 총수</TD>
+  <TD width='96' height='23' align='RIGHT'>782,250</TD>
+  <TD width='96' height='23' align='RIGHT'>2,193,700</TD>
+  <TD width='95' height='23' align='RIGHT'>2,975,950</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='25' height='113' rowspan='4'><BR/></TD>
+  <TD width='204' height='23'>&nbsp;1. 감자</TD>
+  <TD width='96' height='23' align='RIGHT'>782,250</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>782,250</TD>
+  <TD width='95' height='23' align='CENTER'>주2)</TD>
+</TR>
+<TR height='30'>
+  <TD width='204' height='23'>&nbsp;2. 이익소각</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='204' height='23'>&nbsp;3. 상환주식의 상환</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='204' height='23'>&nbsp;4. 기타</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='96' height='23' align='RIGHT'>2,193,700</TD>
+  <TD width='95' height='23' align='RIGHT'>2,193,700</TD>
+  <TD width='95' height='23' align='CENTER'>주1)</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅳ. 발행주식의 총수 (Ⅱ-Ⅲ)</TD>
+  <TD width='96' height='23' align='RIGHT'>17,306,490</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>17,306,490</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅴ. 자기주식수</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>&nbsp;Ⅵ. 유통주식수 (Ⅳ-Ⅴ)</TD>
+  <TD width='96' height='23' align='RIGHT'>17,306,490</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>17,306,490</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='238' height='23' colspan='2'>Ⅶ. 자기주식 보유비율</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='96' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='95' height='23' align='CENTER'>-</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='667'>
+<COLGROUP>
+<COL width='40'></COL>
+<COL width='627'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='53'>
+  <TD width='31' height='46' valign='TOP'>주1)</TD>
+  <TD width='618' height='46' valign='TOP'>우선주는 상환전환우선주와 전환우선주로 발행되었으며, 2022년 12월 12일 전량 보통주로 전환되어 2025년 12월 31일 현재 우선주는 존재하지 않습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='31' height='23' valign='TOP'>주2)</TD>
+  <TD width='618' height='23' valign='TOP'>2011년 2월 10일 및 2014년 12월 18일 2회에 걸쳐 감자를 진행하였습니다.</TD>
+</TR>
+<TR height='30'>
+  <TD width='31' height='23' valign='TOP'>주3)</TD>
+  <TD width='618' height='23' valign='TOP'>2023년 11월 7일 코스닥 시장 상장을 통하여 신주(3,708,000주)를 발행하였습니다.</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><SPAN style='font-weight:bold;'><BR/>나. 자기주식 취득 현황<BR/></SPAN><BR/>당사는 보고서 작성기준일 현재 해당사항 없습니다.<BR/><BR/><SPAN style='font-weight:bold;'>다. 종류주식 발행현황</SPAN><BR/><BR/>당사는 보고서 작성기준일 현재 해당사항 없습니다.
+</P>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>
