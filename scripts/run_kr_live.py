@@ -626,6 +626,12 @@ def _write_json_atomic(path: Path, payload: dict, *, token: str) -> None:
     os.replace(temporary, path)
 
 
+def _restore_bytes_atomic(path: Path, content: bytes, *, token: str) -> None:
+    temporary = path.parent / f".{path.name}.{token}.tmp"
+    temporary.write_bytes(content)
+    os.replace(temporary, path)
+
+
 def _canonical_receipt_tree_hash(receipts: list[dict[str, str]]) -> str:
     canonical = sorted(receipts, key=lambda item: item["filename"])
     encoded = json.dumps(
@@ -801,6 +807,9 @@ def publish_report_bundle(
         "bundle_tree_sha256": bundle_manifest["bundle_tree_sha256"],
     }
     output_root.mkdir(parents=True, exist_ok=True)
+    previous_latest = (
+        latest_path.read_bytes() if latest_path.is_file() else None
+    )
     _write_json_atomic(latest_path, latest, token=short_hash)
     try:
         completion = validate_completion_bundle(
@@ -810,7 +819,12 @@ def publish_report_bundle(
         )
     except CompletionProofError as exc:
         bundle_manifest_path.unlink(missing_ok=True)
-        latest_path.unlink(missing_ok=True)
+        if previous_latest is None:
+            latest_path.unlink(missing_ok=True)
+        else:
+            _restore_bytes_atomic(
+                latest_path, previous_latest, token=f"restore-{short_hash}"
+            )
         shutil.rmtree(bundle_dir, ignore_errors=True)
         raise RunbookError(f"canonical bundle validation failed: {exc}") from exc
 
