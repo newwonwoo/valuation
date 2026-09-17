@@ -1,0 +1,378 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='section-2'><A name='toc1'>1. 사업의 개요</A></P>
+<P><BR/></P>
+<P>당사는 현 대표이사가 2000년 10월에 설립하여 RF 부품인 SAW 필터를 설계, 생산, 판매하는 회사로 출발하였습니다.<BR/><BR/></P>
+<P>전방산업인 휴대폰산업이 스마트폰 출시이후 계속 성장하고 있으며, 2015년 이후에는 5G 스마트폰의 고성능화로 인해 반도체 칩과 필터가 집적화 되는 RF 프론트 엔드모듈용 필터의 파운드리 전문회사로 사업구조를 전환하였습니다. 2017년부터는 글로벌 통신반도체 수요 기업과 실리콘 웨이퍼 기반인 압전반도체 TF-SAW를 공동 개발 현재 RF 필터 파운드리를 주력 사업으로 진행중입니다.<BR/><BR/></P>
+<P>당사는 미국 및 중화권의 20여개 이상의 통신반도체 팹리스 거래선들을 확보하고 5G 스마트폰용 RF 필터 파운드리 제조 및 판매 사업을 확대 진행하고 있습니다. 파운드리 사업과 병행하여 브랜드 사업으로 산업용 무선통신기기의 RF 필터를 제조, 판매하는 사업은 주문형 제품 및 틈새시장이며, 소량 다품종사업으로서 &nbsp;사업확장을 진행중입니다. 당사는 현재 TF-SAW 파운드리 기술력을 바탕으로 차세대 필터 파운드리 사업을 중심으로 성장하고 있습니다. 또한, 포토닉스와 어드밴스드 패키징 사업 기반을 구축하면서 파운드리 사업영역의 확장을 진행하고 있습니다. <BR/><BR/></P>
+<P><SPAN style='font-weight:bold;'>가. 주요 기술 용어<BR/></SPAN><BR/>당사 사업과 관련한 주요 용어 설명을 기재하였습니다.<BR/><BR/>
+</P>
+<TABLE class='nb' width='890'>
+<COLGROUP>
+<COL width='890'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='881' height='23' align='CENTER'>[주요 용어 정의]</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='890'>
+<COLGROUP>
+<COL width='75'></COL>
+<COL width='236'></COL>
+<COL width='579'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='66' height='23'>
+<P>약어</P>
+</TH>
+  <TH width='227' height='23'>
+<P>풀이</P>
+</TH>
+  <TH width='570' height='23'>
+<P>설명</P>
+</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='66' height='23' align='CENTER'>
+<P>BAW</P>
+</TD>
+  <TD width='227' height='23' align='CENTER'>
+<P>Bulk Acoustic Wave</P>
+</TD>
+  <TD width='570' height='23'>
+<P>체적탄성파. 압전기판에 수직으로 진행되는 음파</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>CSP</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Chip Scale Package</P>
+</TD>
+  <TD width='570' height='46'>
+<P>반도체 부품의 실장면적을 가능한 한 칩 크기로 소형화하려는 기술. Chip 면적이 Package 면적의 80% 이상일 때 CSP라고 한다</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>DiFEM</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Diversity FEM(DiFEM)</P>
+</TD>
+  <TD width='570' height='46'>
+<P>2개 이상의 독립된 전파 경로를 통해 전송된 여러 개의 수신 신호 중에서 가장 양호한특성을 가진 신호를 이용하기 위해 구성한 RF 신호처리 모듈</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>Fabless</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Fabrication + less</P>
+</TD>
+  <TD width='570' height='46'>
+<P>SAW 필터 및 RFFE 모듈 제품을 직접 생산(fabrication)하지 않고 설계를 전문적으로 하는 회사를 의미</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>FBAR</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Film Bulk Acoustic<BR/>Wave</P>
+</TD>
+  <TD width='570' height='46'>
+<P>박막형 체적탄성파. MEMS 공정으로 압전 박막을 실리콘 웨이퍼에 형성한 구조이며 브로드컴사의 특허 구조임</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>FEM&nbsp;</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Front End Module&nbsp;</P>
+</TD>
+  <TD width='570' height='46'>
+<P>휴대단말기에서 안테나와 연결되며 송수신 신호를 분리하는 필터링 기능과 신호 증폭기능을 하나의 패키지에 집적한 제품</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>FEMiD</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Front End Module<BR/>including Duplexers&nbsp;</P>
+</TD>
+  <TD width='570' height='46'>
+<P>휴대단말기에서 수신/송신의 구별을 위한 듀플렉서와 스위치를 하나의 패키지에 집적한 모듈&nbsp;</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>IDT</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Interdigital Transducer</P>
+</TD>
+  <TD width='570' height='46'>
+<P>빗살무늬 또는 손가락 모양의 패턴, SAW를 발생시키기 위해 금속 재료를 이용하여 압전기판에 형성하는 패턴 구조물</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>IDM</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Integrated Device Manufactures</P>
+</TD>
+  <TD width='570' height='46'>
+<P>SAW 필터, RFFE 모듈 설계부터 완제품 생산 및 판매까지 모든 분야를 자체 운영하는 일괄제조공정 체제를 갖춘 업체</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>IHP-SAW</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Incredible High Performance SAW</P>
+</TD>
+  <TD width='570' height='46'>
+<P>일본의 무라타에서 등록한 표면탄성파 필터의 명칭, 기존 Normal SAW 필터 대비 온도특성, 주파수 선택성 개선</P>
+</TD>
+</TR>
+<TR height='30'>
+  <TD width='66' height='23' align='CENTER'>
+<P>LTE</P>
+</TD>
+  <TD width='227' height='23' align='CENTER'>
+<P>Long Term Evolution</P>
+</TD>
+  <TD width='570' height='23'>
+<P>4G 고속무선데이터 통신규격</P>
+</TD>
+</TR>
+<TR height='30'>
+  <TD width='66' height='23' align='CENTER'>
+<P>LFEM</P>
+</TD>
+  <TD width='227' height='23' align='CENTER'>
+<P>LNA Front End Module</P>
+</TD>
+  <TD width='570' height='23'>
+<P>RF 필터, 스위치, LNA(Low Noise Amplifier)를 결합시킨 RF 신호처리 모듈</P>
+</TD>
+</TR>
+<TR height='99'>
+  <TD width='66' height='92' align='CENTER'>ML-SAW</TD>
+  <TD width='227' height='92' align='CENTER'>Multi Layer<BR/>Surface Acoustic Wave</TD>
+  <TD width='570' height='92'>다층 박막을 이용한 SAW 필터로, TF-SAW (Thin Film Surface Acoustic Wave) 필터와 동일함. 시장조사기관 Yole Development 에서 기존 SAW 및 TC-SAW 와 구분하기 위해 사용함</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>MPW</TD>
+  <TD width='227' height='46' align='CENTER'>Multi-Project Wafer</TD>
+  <TD width='570' height='46'>단일 웨이퍼에 여러 종류의 프로젝트(칩 설계)를 배치함으로써 마스크를 공유하여 소자의 개발 및 제조 비용을 절감할 수 있는 방법</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>MTMD</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Multi Thickness Metal Deposition</P>
+</TD>
+  <TD width='570' height='46'>
+<P>당사(SAWNICS)의 기술명칭으로, 하나의 웨이퍼 위에 두께가 다른 금속을 각각 성막하기 위해 고안된 금속증착공정 기술</P>
+</TD>
+</TR>
+<TR height='30'>
+  <TD width='66' height='23' align='CENTER'>
+<P>PA</P>
+</TD>
+  <TD width='227' height='23' align='CENTER'>
+<P>Power Amplifier</P>
+</TD>
+  <TD width='570' height='23'>
+<P>통신단말기의 송신단에서 주로 사용하는 전력증폭기</P>
+</TD>
+</TR>
+<TR height='30'>
+  <TD width='66' height='23' align='CENTER'>
+<P>PAiD</P>
+</TD>
+  <TD width='227' height='23' align='CENTER'>
+<P>Power Amplifier in Duplexer</P>
+</TD>
+  <TD width='570' height='23'>
+<P>듀플렉서와 PA(전력증폭기)를 하나의 패키지에 집적한 모듈</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>PAMiD</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Power Amplifier Module<BR/>integrated Duplexer&nbsp;</P>
+</TD>
+  <TD width='570' height='46'>
+<P>PA(전력증폭기)와 FEMiD를 하나의 패키지에 집적한 모듈</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>PDK</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Process Development Kit</P>
+</TD>
+  <TD width='570' height='46'>
+<P>파운드리 업체에서 &nbsp;제조공정에 최적화된 설계를 할 수 있도록 고객들 (특히 설계자들)에게 전달하는 기본적인 데이터 파일들의 Set</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>POI-SAW</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Piezoelectric On Insulator SAW</P>
+</TD>
+  <TD width='570' height='46'>
+<P>Soitec의 Smart Cut 기술을 활용한 Thin-Film 압전 웨이퍼에 구현된 SAW 필터로 높은 Q값, 우수한 TCF 및 내전력성을 제공함.</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>QPX</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Quadplexer</P>
+</TD>
+  <TD width='570' height='46'>
+<P>각기 다른 주파수를 가진 4 개의 신호를 안테나로부터 송/수신할 수 있는 소자. 일반적으로 다른 대역의 듀플렉서 2개를 결합하여 구성</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>RFFE</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>RF Front End</P>
+</TD>
+  <TD width='570' height='46'>
+<P>무선 통신기기 간 송수신 기능을 담당하는 구성요소로 안테나와 RF 송수신기 사이에 개별장치 및 모듈로 구현됨</P>
+</TD>
+</TR>
+<TR height='30'>
+  <TD width='66' height='23' align='CENTER'>
+<P>SAW</P>
+</TD>
+  <TD width='227' height='23' align='CENTER'>
+<P>Surface Acoustic Wave</P>
+</TD>
+  <TD width='570' height='23'>
+<P>표면탄성파. 압전기판에 표면을 따라 전파되는 음파</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>SMT</TD>
+  <TD width='227' height='46' align='CENTER'>Surface Mount Technology</TD>
+  <TD width='570' height='46'>
+<P>표면실장기술, PCB 기판 위에 Solder Paste(납)를 인쇄하고 그 위에 칩 부품을 Reflow(리플로)를 이용해 장착해 PCB와 LEAD(납) 부품간의 접합을 하는 기술</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>TCF</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Temperature Coefficient of<BR/>Frequency</P>
+</TD>
+  <TD width='570' height='46'>
+<P>주파수 온도 계수. 온도 변화에 따른 주파수 변동 계수로 소자의 온도특성을 나타내는지, TCF는 작을수록 우수</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>TC-SAW</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Temperature Compensated SAW</P>
+</TD>
+  <TD width='570' height='46'>
+<P>온도보상 표면탄성파 필터. 온도에 의한 주파수 변화가 낮은 특성을 가지는 표면탄성파 필터</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>TFLN</TD>
+  <TD width='227' height='46' align='CENTER'>Thin-Film Lithium Niobate</TD>
+  <TD width='570' height='46'>실리콘 웨이퍼 위에 박막 형태의 리튬 니오베이트(LiNbO3)를 접합한 박막 강유전성 이종접합 웨이퍼</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>TFLT</TD>
+  <TD width='227' height='46' align='CENTER'>Thin-Film Lithium Tantalate</TD>
+  <TD width='570' height='46'>실리콘 웨이퍼 위에 박막 형태의 리튬 탄탈레이트(LiTaO3)를 접합한 박막 강유전성 이종접합 웨이퍼</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>TF-SAW</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Thin Film SAW</P>
+</TD>
+  <TD width='570' height='46'>
+<P>박막형 표면탄성파 필터. 표면탄성파를 생성하는 압전체를 박막형태로 실리콘, 사파이어 및 석영기판 등에 접합한 웨이퍼를 이용함.</P>
+</TD>
+</TR>
+<TR height='76'>
+  <TD width='66' height='69' align='CENTER'>
+<P>UBM</P>
+</TD>
+  <TD width='227' height='69' align='CENTER'>
+<P>Under Bump Metallurgy</P>
+</TD>
+  <TD width='570' height='69'>
+<P>반도체칩의 Al 또는 Cu 전극상에 직접 솔더 또는 Au 범프를 형성하기 어렵기 때문에 접착이 용이하고 칩으로의 확산을 방지하도록 전극과 범프간에 형성하는 다층 금속층으로서 접합층, 확산방지층, wettable 층의 세가지 층으로 구성됨.</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>WLP</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>Wafer Level Packaging</P>
+</TD>
+  <TD width='570' height='46'>
+<P>웨이퍼를 칩 단위로 잘라 칩을 패키지 공정하는 기존 패키지에서 한 단계 발전한 방식으로, 웨이퍼 상에서 패키징(Packaging)을 마무리해 완제품을 만드는 기술</P>
+</TD>
+</TR>
+<TR height='53'>
+  <TD width='66' height='46' align='CENTER'>
+<P>XBAR</P>
+</TD>
+  <TD width='227' height='46' align='CENTER'>
+<P>eXcite standing shear-wave<BR/>Bulk Acoustic Resonances</P>
+</TD>
+  <TD width='570' height='46'>
+<P>Resonant사가 등록한 Plate mode 기반의 BAW 기반 공진기 설계 기술, 무라타가 핵심기술을 인수함.</P>
+</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

@@ -1,0 +1,71 @@
+{
+  "status": "ARCHIVAL_UNBOUND",
+  "rcept_no": "20260814000474",
+  "members": {
+    "version": 1,
+    "member_text_limit": 12000,
+    "files": [
+      {
+        "path": "20260814000474_10.xml",
+        "bytes": 14480,
+        "sha256": "fc0c791c5a6baaf4ef880f6b27475da571d28ff51bd925ef3a24028968313423",
+        "characters": 11058,
+        "truncated_for_reader": false
+      },
+      {
+        "path": "20260814000474_11.xml",
+        "bytes": 11987,
+        "sha256": "ded2c80081862d7317ebefe5069373687f53794b0a7017f1f2679a4205cee979",
+        "characters": 8613,
+        "truncated_for_reader": false
+      },
+      {
+        "path": "20260814000474_12.xml",
+        "bytes": 21558,
+        "sha256": "4a9998aad89ce258f5448215135a2943d77c4734d0c593005b4662c0c70eb3fe",
+        "characters": 20292,
+        "truncated_for_reader": true
+      },
+      {
+        "path": "20260814000474_13.xml",
+        "bytes": 12867,
+        "sha256": "a62125114ba1424f16cba4d9e70ef796fed4f7ef4539a65d302c7fd509550ea1",
+        "characters": 10973,
+        "truncated_for_reader": false
+      },
+      {
+        "path": "20260814000474_27.xml",
+        "bytes": 11043,
+        "sha256": "af49642c3c4b84be472fcdee87d1a5b6f72a30137af2822acf380575bbc9a421",
+        "characters": 9497,
+        "truncated_for_reader": false
+      },
+      {
+        "path": "20260814000474_39.xml",
+        "bytes": 31061,
+        "sha256": "4b9aefd80186e7310a2addc65bf3310866c1e451e58f33b080fdfd82cfbea1a6",
+        "characters": 27873,
+        "truncated_for_reader": true
+      },
+      {
+        "path": "20260814000474_60.xml",
+        "bytes": 5222,
+        "sha256": "ade8f44610507485aa100ca45d6396c5d8c562cee4ad9c39585f000078e562b6",
+        "characters": 4882,
+        "truncated_for_reader": false
+      },
+      {
+        "path": "20260814000474_7.xml",
+        "bytes": 6855,
+        "sha256": "9da1dbdc6388dd3b7bb7c3e93a804e6b4c64ab0e5b6d70efea60ea0b9e942d65",
+        "characters": 6189,
+        "truncated_for_reader": false
+      },
+      {
+        "path": "toc.txt",
+        "bytes": 4003,
+        "sha256": "513f517ed1167e250b83d5a2a34ed292f08e309f210726c8194a53cc06074aea"
+      }
+    ]
+  }
+}

@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='section-2'><A name='toc1'>4. 매출 및 수주상황</A></P>
+<P><BR/></P>
+<P style='font-weight:bold;'>가. 매출 실적</P>
+<P style='color:#FF1418;'><BR/></P>
+<TABLE class='nb' width='600'>
+<COLGROUP>
+<COL width='600'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='591' height='23' align='RIGHT'>&nbsp;(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='601'>
+<COLGROUP>
+<COL width='72'></COL>
+<COL width='101'></COL>
+<COL width='83'></COL>
+<COL width='114'></COL>
+<COL width='116'></COL>
+<COL width='115'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='63' height='46'>
+<P>매출</P>
+<P>유형</P>
+</TH>
+  <TH width='175' height='46' colspan='2'>
+<P>품 &nbsp;목</P>
+</TH>
+  <TH width='105' height='46'>26기<BR/>(2025년)</TH>
+  <TH width='107' height='46'>25기<BR/>(2024년)</TH>
+  <TH width='106' height='46'>24기<BR/>(2023년)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='63' height='173' rowspan='6' align='CENTER'>
+<P>제품</P>
+<P>매출</P>
+</TD>
+  <TD width='92' height='83' rowspan='3' align='CENTER'>
+<P>파운드리</P>
+</TD>
+  <TD width='74' height='23' align='CENTER'>
+<P>수출</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT'>12,327</TD>
+  <TD width='107' height='23' align='RIGHT'>9,835</TD>
+  <TD width='106' height='23' align='RIGHT'>7,504</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>
+<P>내수</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT'>8</TD>
+  <TD width='107' height='23' align='RIGHT'>980</TD>
+  <TD width='106' height='23' align='RIGHT'>73</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>
+<P>소계</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT'>12,335</TD>
+  <TD width='107' height='23' align='RIGHT'>10,815</TD>
+  <TD width='106' height='23' align='RIGHT'>7,577</TD>
+</TR>
+<TR height='30'>
+  <TD width='92' height='83' rowspan='3' align='CENTER'>
+<P>필터제품</P>
+</TD>
+  <TD width='74' height='23' align='CENTER'>
+<P>수출</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT'>3,302</TD>
+  <TD width='107' height='23' align='RIGHT'>3,376</TD>
+  <TD width='106' height='23' align='RIGHT'>4,723</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>
+<P>내수</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT'>1,707</TD>
+  <TD width='107' height='23' align='RIGHT'>1,959</TD>
+  <TD width='106' height='23' align='RIGHT'>624</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>
+<P>소계</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT'>5,009</TD>
+  <TD width='107' height='23' align='RIGHT'>5,335</TD>
+  <TD width='106' height='23' align='RIGHT'>5,347</TD>
+</TR>
+<TR height='30'>
+  <TD width='63' height='83' rowspan='3' align='CENTER'>
+<P>기타</P>
+<P>매출</P>
+</TD>
+  <TD width='92' height='83' rowspan='3' align='CENTER'>파운드리 <BR/>용역서비스</TD>
+  <TD width='74' height='23' align='CENTER'>
+<P>수출</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT' valign='TOP'>856</TD>
+  <TD width='107' height='23' align='RIGHT' valign='TOP'>822</TD>
+  <TD width='106' height='23' align='RIGHT' valign='TOP'>787</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>
+<P>내수</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT' valign='TOP'>6</TD>
+  <TD width='107' height='23' align='RIGHT' valign='TOP'>6</TD>
+  <TD width='106' height='23' align='RIGHT' valign='TOP'>102</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>
+<P>소계</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT'>862</TD>
+  <TD width='107' height='23' align='RIGHT'>828</TD>
+  <TD width='106' height='23' align='RIGHT'>889</TD>
+</TR>
+<TR height='30'>
+  <TD width='164' height='83' colspan='2' rowspan='3' align='CENTER'>
+<P>합 계</P>
+</TD>
+  <TD width='74' height='23' align='CENTER'>
+<P>수출</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT' valign='TOP'>16,485</TD>
+  <TD width='107' height='23' align='RIGHT' valign='TOP'>14,033</TD>
+  <TD width='106' height='23' align='RIGHT' valign='TOP'>13,014</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>
+<P>내수</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT' valign='TOP'>1,721</TD>
+  <TD width='107' height='23' align='RIGHT' valign='TOP'>2,945</TD>
+  <TD width='106' height='23' align='RIGHT' valign='TOP'>799</TD>
+</TR>
+<TR height='30'>
+  <TD width='74' height='23' align='CENTER'>
+<P>합계</P>
+</TD>
+  <TD width='105' height='23' align='RIGHT'>18,206</TD>
+  <TD width='107' height='23' align='RIGHT'>16,978</TD>
+  <TD width='106' height='23' align='RIGHT'>13,813</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P style='font-weight:bold;'>나. 주요매출처<BR/><BR/></P>
+<P>주요 매출처 비중 및 매출 업체는 영업기밀에 해당되므로 기재하는 것이 부적합하다고 판단되어 생략하였으며 당사와 특수한 관계가 있는 거래처의 매출은「X. 대주주 등과의 거래내용 - 3. 대주주등과의 영업거래」를 참조하시기 바랍니다.</P>
+<P><BR/></P>
+<P><SPAN style='font-weight:bold;'>다. 판매조직 및 경로<BR/></SPAN><BR/>(1) 판매조직<BR/><BR/>
+</P>
+<DIV align='CENTER'>
+<TABLE class='nb'>
+<TR><TD>
+<IMG src="/report/download.do?dcmNo=11156580&amp;flNm=%5B%ED%8C%90%EB%A7%A4%EC%A1%B0%EC%A7%81%5D.jpg" width='442' height='256' alt="이미지: [판매조직]"onerror="this.removeAttribute('width');this.removeAttribute('height');this.src='/images/common/no_link.gif'"></TD></TR>
+<TR><TD>
+<P class='img-caption'>[판매조직]</P></TD></TR>
+</TABLE>
+</DIV>
+<TABLE border='1' width='594'>
+<COLGROUP>
+<COL width='129'></COL>
+<COL width='136'></COL>
+<COL width='329'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='256' height='23' colspan='2' align='CENTER' style='background-color:#D7D7D7;'>
+<P>조직</P>
+</TD>
+  <TD width='320' height='23' align='CENTER' style='background-color:#D7D7D7;'>
+<P>주요 업무</P>
+</TD>
+</TR>
+<TR height='35'>
+  <TD width='120' height='63' rowspan='2'>
+<P>&nbsp;마케팅총괄</P>
+</TD>
+  <TD width='127' height='28'>
+<P>&nbsp;CS팀</P>
+</TD>
+  <TD width='320' height='28'>&nbsp;Customer Support 거래선 기술지원</TD>
+</TR>
+<TR height='35'>
+  <TD width='127' height='28'>
+<P>&nbsp;마케팅팀</P>
+</TD>
+  <TD width='320' height='28'>
+<P>&nbsp;파운드리 및 필터제품 거래선 영업</P>
+</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><SPAN style='font-family:DartNBSP, "굴림", Gulim;'><BR/>(2)</SPAN>&nbsp;판매경로<BR/><BR/>최근 사업연도(2025년) 기준 당사 매출의 품목별 판매경로 및 비중은 아래와 같습니다.<BR/><BR/>
+</P>
+<TABLE class='nb' width='621'>
+<COLGROUP>
+<COL width='621'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='612' height='23' align='RIGHT'>&nbsp;(단위 : 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='621'>
+<COLGROUP>
+<COL width='84'></COL>
+<COL width='156'></COL>
+<COL width='59'></COL>
+<COL width='99'></COL>
+<COL width='141'></COL>
+<COL width='82'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='75' height='23' align='CENTER' style='background-color:#D7D7D7;'>
+<P>매출유형</P>
+</TD>
+  <TD width='147' height='23' align='CENTER' style='background-color:#D7D7D7;'>
+<P>품 목</P>
+</TD>
+  <TD width='50' height='23' align='CENTER' style='background-color:#D7D7D7;'>
+<P>구분</P>
+</TD>
+  <TD width='90' height='23' align='CENTER' style='background-color:#D7D7D7;'>
+<P>판매경로</P>
+</TD>
+  <TD width='132' height='23' align='CENTER' style='background-color:#D7D7D7;'>
+<P>판매경로별 매출액</P>
+</TD>
+  <TD width='73' height='23' align='CENTER' style='background-color:#D7D7D7;'>
+<P>비중</P>
+</TD>
+</TR>
+<TR height='30'>
+  <TD width='75' height='113' rowspan='4' align='CENTER'>
+<P>제품매출</P>
+</TD>
+  <TD width='147' height='53' rowspan='2' align='CENTER'>
+<P>파운드리</P>
+</TD>
+  <TD width='50' height='23' align='CENTER'>
+<P>수출</P>
+</TD>
+  <TD width='90' height='23' align='CENTER'>
+<P>직접 판매</P>
+</TD>
+  <TD width='132' height='23' align='RIGHT'>12,327</TD>
+  <TD width='73' height='23' align='RIGHT'>68%</TD>
+</TR>
+<TR height='30'>
+  <TD width='50' height='23' align='CENTER'>
+<P>내수</P>
+</TD>
+  <TD width='90' height='23' align='CENTER'>
+<P>직접 판매</P>
+</TD>
+  <TD width='132' height='23' align='RIGHT'>8</TD>
+  <TD width='73' height='23' align='RIGHT'>0%</TD>
+</TR>
+<TR height='30'>
+  <TD width='147' height='53' rowspan='2' align='CENTER'>
+<P>필터제품</P>
+</TD>
+  <TD width='50' height='23' align='CENTER'>
+<P>수출</P>
+</TD>
+  <TD width='90' height='23' align='CENTER'>
+<P>직접 판매</P>
+</TD>
+  <TD width='132' height='23' align='RIGHT'>3,302</TD>
+  <TD width='73' height='23' align='RIGHT'>18%</TD>
+</TR>
+<TR height='30'>
+  <TD width='50' height='23' align='CENTER'>
+<P>내수</P>
+</TD>
+  <TD width='90' height='23' align='CENTER'>
+<P>직접 판매</P>
+</TD>
+  <TD width='132' height='23' align='RIGHT'>1,707</TD>
+  <TD width='73' height='23' align='RIGHT'>10%</TD>
+</TR>
+<TR height='30'>
+  <TD width='75' height='53' rowspan='2' align='CENTER'>
+<P>기타매출</P>
+</TD>
+  <TD width='147' height='53' rowspan='2' align='CENTER'>
+<P>파운드리 용역서비스</P>
+</TD>
+  <TD width='50' height='23' align='CENTER'>
+<P>수출</P>
+</TD>
+  <TD width='90' height='23' align='CENTER'>
+<P>직접 판매</P>
+</TD>
+  <TD width='132' height='23' align='RIGHT'>856</TD>
+  <TD width='73' height='23' align='RIGHT'>4%</TD>
+</TR>
+<TR height='30'>
+  <TD width='50' height='23' align='CENTER'>
+<P>내수</P>
+</TD>
+  <TD width='90' height='23' align='CENTER'>
+<P>직접 판매</P>
+</TD>
+  <TD width='132' height='23' align='RIGHT'>6</TD>
+  <TD width='73' height='23' align='RIGHT'>0%</TD>
+</TR>
+<TR height='30'>
+  <TD width='389' height='23' colspan='4' align='CENTER'>합계</TD>
+  <TD width='132' height='23' align='RIGHT'>18,206</TD>
+  <TD width='73' height='23' align='RIGHT'>100%</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/><SPAN style='font-weight:bold;'>라. 판매전략<BR/></SPAN><BR/>
+</P>
+<P>당사는 수주를 확보하기 위한 전통적인 영업활동을 하기보다는 확보된 파운드리 기술과 생산능력을 바탕으로 계속적인 수주가 이루어지는 파운드리 전문기업입니다. 장기간 소요되는 엔지니어링 샘플 단계부터 당사의 파운드리 라인을 이용했다면 양산까지 이어질 수 밖에 없고, 다른 파운드리 라인으로 생산처를 변경할 수 없는 점을 활용하여 다수의 고정 거래선을 확보하는 판매전략을 전개하고 있습니다. 당사는 다음과 같이 거래선별 니즈(Needs)에 대응하고 있습니다.<BR/><BR/></P>
+<P>당사는 스마트폰 시장에 진입하고자 하는 세계 여러 팹리스 RF 필터 거래선들을 적극 발굴하고 있으며, 해당 업체들의 SAW 필터 디자인 능력과 동사의 파운드리 기술을 연결시켜 시너지 창출을 극대화하고 있습니다. 특히 중국 정부의 반도체 국산화 정책으로 다수의 중국 팹리스 필터 거래선들이 동사와의 협업을 제안하고 있어 이들이 오포(Oppo), 비보(Vivo), 샤오미(Xiaomi) 등과 같은 메이저 모바일폰에 디자인-인(design-in)이 될 수 있도록 파운드리 서비스를 제공하고 있습니다. 당사가 파운드리 전문업체로 전환한 후 팹리스 고객사 수를 계속 증가시키고 있으며, 모바일폰 외에 전장, 센서, 위성통신, 포토닉스 제품용 등으로도 거래선을 확대하고 있습니다.</P>
+<P><BR/></P>
+<P style='font-weight:bold;'>마. 수주현황</P>
+<P><BR/>당사는 고객사의 생산계획에 의한 주문생산 방식으로 고객사의 연중 수시 주문에 따른 구매오더를 접수하여 2개월 이내에 납품되는 주문이 대부분으로 단기간내에 매출로 인식되고 있습니다. 이러한 사유로 수주잔고는 연중 수시로 발생하며 고객사의 상황에 따른 높은 변동성에 따라 수주상황을 기재하기 어렵습니다. <BR/><BR/></P>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

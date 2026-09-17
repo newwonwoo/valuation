@@ -1,0 +1,523 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML style='border:0'>
+<HEAD>
+<TITLE></TITLE>
+<meta http-equiv="X-UA-Compatible" content="ie=edge" >
+<meta http-equiv="X-UA-TextLayoutMetrics" content="gdi" >
+<META http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link rel="stylesheet" type="text/css" href="/css/report_xml.css">
+</HEAD>
+<BODY bgcolor="#FFFFFF">
+<P><BR/></P>
+<P class='section-2'><A name='toc1'>3. 원재료 및 생산설비</A></P>
+<P><BR/></P>
+<P style='font-weight:bold;'>가. 원재료 매입현황<BR/><BR/></P>
+<TABLE class='nb' width='579'>
+<COLGROUP>
+<COL width='579'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='570' height='23' align='CENTER'>[최근 3개년 원재료 매입 현황]</TD>
+</TR>
+<TR height='30'>
+  <TD width='570' height='23' align='RIGHT'>(단위: 백만원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='577'>
+<COLGROUP>
+<COL width='78'></COL>
+<COL width='106'></COL>
+<COL width='48'></COL>
+<COL width='115'></COL>
+<COL width='115'></COL>
+<COL width='115'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='69' height='46'>매입유형</TH>
+  <TH width='97' height='46'>품목구분</TH>
+  <TH width='39' height='46'>구분</TH>
+  <TH width='106' height='46'>27기 반기<BR/>(2026년 반기)</TH>
+  <TH width='106' height='46'>26기<BR/>(2025년)</TH>
+  <TH width='106' height='46'>25기<BR/>(2024년)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='69' height='233' rowspan='8' align='CENTER'>원자재</TD>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>웨이퍼</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>953</TD>
+  <TD width='106' height='23' align='RIGHT'>2,100</TD>
+  <TD width='106' height='23' align='RIGHT'>486</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>605</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 262</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 1,015</TD>
+</TR>
+<TR height='30'>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>필터용 부품</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>361</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;605</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;333</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>1,344</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 2,025</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 1,472</TD>
+</TR>
+<TR height='30'>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>Package</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>132</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;56</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;31</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>19</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; -</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 19</TD>
+</TR>
+<TR height='30'>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>기타</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>-</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 6</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; -</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>22</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 64</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 22</TD>
+</TR>
+<TR height='30'>
+  <TD width='69' height='113' rowspan='4' align='CENTER'>부자재</TD>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>Chemical</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>218</TD>
+  <TD width='106' height='23' align='RIGHT'>383</TD>
+  <TD width='106' height='23' align='RIGHT'>151</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>27</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;41</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;26</TD>
+</TR>
+<TR height='30'>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>기타</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>83</TD>
+  <TD width='106' height='23' align='RIGHT'>249</TD>
+  <TD width='106' height='23' align='RIGHT'>129</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>2</TD>
+  <TD width='106' height='23' align='RIGHT'>10</TD>
+  <TD width='106' height='23' align='RIGHT'>11</TD>
+</TR>
+<TR height='30'>
+  <TD width='175' height='53' colspan='2' rowspan='2' align='CENTER'>외주가공</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>-</TD>
+  <TD width='106' height='23' align='RIGHT'>-</TD>
+  <TD width='106' height='23' align='RIGHT'>-</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>116</TD>
+  <TD width='106' height='23' align='RIGHT'>78</TD>
+  <TD width='106' height='23' align='RIGHT'>211</TD>
+</TR>
+<TR height='30'>
+  <TD width='175' height='53' colspan='2' rowspan='2' align='CENTER'>총합계</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>1,747</TD>
+  <TD width='106' height='23' align='RIGHT'>3,399</TD>
+  <TD width='106' height='23' align='RIGHT'>1,130</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>2,135</TD>
+  <TD width='106' height='23' align='RIGHT'>2,480</TD>
+  <TD width='106' height='23' align='RIGHT'>2,776</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='577'>
+<COLGROUP>
+<COL width='577'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='182'>
+  <TD width='568' height='175'>
+<P>주) 수입의 경우 각 연도 및 기간별 평균환율로 환산하여 표시하였으며 환율변동의 내역은 다음과 같습니다.</P>
+<TABLE border='1' width='565'>
+<COLGROUP>
+<COL width='139'></COL>
+<COL width='138'></COL>
+<COL width='138'></COL>
+<COL width='150'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='130' height='23' align='CENTER' style='background-color:#F2F2F2;'>구 분</TD>
+  <TD width='129' height='23' align='CENTER' style='background-color:#F2F2F2;'>2026년 반기</TD>
+  <TD width='129' height='23' align='CENTER' style='background-color:#F2F2F2;'>2025년</TD>
+  <TD width='141' height='23' align='CENTER' style='background-color:#F2F2F2;'>2024년</TD>
+</TR>
+<TR height='30'>
+  <TD width='130' height='23' align='CENTER'>원화/달러(\/$)</TD>
+  <TD width='129' height='23' align='CENTER'>1,483.85</TD>
+  <TD width='129' height='23' align='CENTER'>1,422.22</TD>
+  <TD width='141' height='23' align='CENTER'>1,363.98</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='564'>
+<COLGROUP>
+<COL width='564'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='555' height='23' align='RIGHT' style='font-size:10pt;'>&nbsp;(서울외국환중개, 매매기준율)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P>출처 : 당사 제시</P>
+</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P style='font-weight:bold;'>나. 원재료 가격변동 추이</P>
+<P style='color:#FF1418;'><BR/></P>
+<TABLE class='nb' width='576'>
+<COLGROUP>
+<COL width='576'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='567' height='23' align='CENTER'>[최근 원재료 가격 변동 추이]</TD>
+</TR>
+<TR height='30'>
+  <TD width='567' height='23' align='RIGHT'>(단위: 원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='577'>
+<COLGROUP>
+<COL width='78'></COL>
+<COL width='106'></COL>
+<COL width='48'></COL>
+<COL width='115'></COL>
+<COL width='115'></COL>
+<COL width='115'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='69' height='46'>매입유형</TH>
+  <TH width='97' height='46'>품목구분</TH>
+  <TH width='39' height='46'>구분</TH>
+  <TH width='106' height='46'>27기 반기<BR/>(2026년 반기)</TH>
+  <TH width='106' height='46'>26기<BR/>(2025년)</TH>
+  <TH width='106' height='46'>25기<BR/>(2024년)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='69' height='233' rowspan='8' align='CENTER'>원자재</TD>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>웨이퍼</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>27,816</TD>
+  <TD width='106' height='23' align='RIGHT'>28,929</TD>
+  <TD width='106' height='23' align='RIGHT'>27,931</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>189,778</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp;46,391</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; 36,789</TD>
+</TR>
+<TR height='30'>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>필터용 부품</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>370</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; 1,190</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; 2,494</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>222</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 116</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 50</TD>
+</TR>
+<TR height='30'>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>Package</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>75</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 22</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 11</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>127</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp;-</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp;6</TD>
+</TR>
+<TR height='30'>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>기타</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>-</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp;2,839,200</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp;-</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>3,697,720</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; 3,751,031</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; 3,712,107</TD>
+</TR>
+<TR height='30'>
+  <TD width='69' height='113' rowspan='4' align='CENTER'>부자재</TD>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>Chemical</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>1,274,503</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp;1,337,636</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp;1,315,165</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>1,122,060</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp;1,145,155</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp;1,085,092</TD>
+</TR>
+<TR height='30'>
+  <TD width='97' height='53' rowspan='2' align='CENTER'>기타</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>1,438</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 2,595</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 245</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>171</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 699,222</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 468</TD>
+</TR>
+<TR height='30'>
+  <TD width='175' height='53' colspan='2' rowspan='2' align='CENTER'>외주가공</TD>
+  <TD width='39' height='23' align='CENTER'>국내</TD>
+  <TD width='106' height='23' align='RIGHT'>-</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; -</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; -</TD>
+</TR>
+<TR height='30'>
+  <TD width='39' height='23' align='CENTER'>수입</TD>
+  <TD width='106' height='23' align='RIGHT'>160</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 60</TD>
+  <TD width='106' height='23' align='RIGHT'>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 1,138</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='579'>
+<COLGROUP>
+<COL width='579'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='570' height='23'>주1) 품목별 구매 총액을 구매 수량으로 나누어 평균 품목별 단가를 산정하였습니다.</TD>
+</TR>
+<TR height='182'>
+  <TD width='570' height='175'>
+<P>주2) 주요 가격변동원인은 주문수량의 변화에 따른 구매단가 변동 및 환율의 변동으로 환율변동의 내역은 다음과 같습니다.</P>
+<TABLE border='1' width='553'>
+<COLGROUP>
+<COL width='139'></COL>
+<COL width='138'></COL>
+<COL width='138'></COL>
+<COL width='138'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='130' height='23' align='CENTER' style='background-color:#F2F2F2;'>구 분</TD>
+  <TD width='129' height='23' align='CENTER' style='background-color:#F2F2F2;'>2026년 반기</TD>
+  <TD width='129' height='23' align='CENTER' style='background-color:#F2F2F2;'>2025년</TD>
+  <TD width='129' height='23' align='CENTER' style='background-color:#F2F2F2;'>2024년</TD>
+</TR>
+<TR height='30'>
+  <TD width='130' height='23' align='CENTER'>원화/달러(\/$)</TD>
+  <TD width='129' height='23' align='CENTER'>1,483.85</TD>
+  <TD width='129' height='23' align='CENTER'>1,422.22</TD>
+  <TD width='129' height='23' align='CENTER'>1,363.98</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE class='nb' width='569'>
+<COLGROUP>
+<COL width='569'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='560' height='23' align='RIGHT' style='font-size:10pt;'>&nbsp;(서울외국환중개, 매매기준율)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P>출처 : 당사 제시</P>
+</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P style='color:#FF1418;'><BR/></P>
+<P><SPAN style='font-weight:bold;'>다. 주요 매입처<BR/></SPAN><BR/>주요 원재료 등의 가격은 원재료 품목별로 가격이 상이하여 일률적인 가격 산출이 불가합니다. 또한, 주요 원재료 품목별 매입 비중 및 매입 업체는 영업기밀에 해당되므로 기재하는 것이 부적합하다고 판단되어 생략하였으며 당사와 특수한 관계가 있는 거래처의 매입은「X. 대주주 등과의 거래내용 - 3. 대주주 등과의 영업거래」를 참조하시기 바랍니다.
+</P>
+<P><BR/><SPAN style='font-weight:bold;'>라. 생산능력 및 생산실적</SPAN><BR/>
+</P>
+<P><BR/></P>
+<TABLE class='nb' width='631'>
+<COLGROUP>
+<COL width='631'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='622' height='23' align='RIGHT'>&nbsp;(단위 : 장)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='631'>
+<COLGROUP>
+<COL width='120'></COL>
+<COL width='101'></COL>
+<COL width='137'></COL>
+<COL width='137'></COL>
+<COL width='136'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='53'>
+  <TH width='111' height='46'>제품품목명</TH>
+  <TH width='92' height='46'>구분</TH>
+  <TH width='128' height='46'>27기 반기<BR/>(2026년 반기)</TH>
+  <TH width='128' height='46'>26기<BR/>(2025년)</TH>
+  <TH width='127' height='46'>25기<BR/>(2024년)</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='111' height='83' rowspan='3' align='CENTER'>파운드리(장)</TD>
+  <TD width='92' height='23' align='CENTER'>생산능력</TD>
+  <TD width='128' height='23' align='RIGHT'>60,000</TD>
+  <TD width='128' height='23' align='RIGHT'>120,000</TD>
+  <TD width='127' height='23' align='RIGHT'>90,000</TD>
+</TR>
+<TR height='30'>
+  <TD width='92' height='23' align='CENTER'>생산실적</TD>
+  <TD width='128' height='23' align='RIGHT'>33,119</TD>
+  <TD width='128' height='23' align='RIGHT'>69,427</TD>
+  <TD width='127' height='23' align='RIGHT'>41,963</TD>
+</TR>
+<TR height='30'>
+  <TD width='92' height='23' align='CENTER'>가동율</TD>
+  <TD width='128' height='23' align='CENTER'>55%</TD>
+  <TD width='128' height='23' align='CENTER'>58%</TD>
+  <TD width='127' height='23' align='CENTER'>47%</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/><SPAN style='font-weight:bold;'>마. 생산설비에 관한 사항</SPAN><BR/>
+</P>
+<P><BR/></P>
+<TABLE class='nb' width='629'>
+<COLGROUP>
+<COL width='333'></COL>
+<COL width='296'></COL>
+</COLGROUP>
+<TBODY>
+<TR height='30'>
+  <TD width='324' height='23'>&lt;당반기&gt;</TD>
+  <TD width='287' height='23' align='RIGHT'>(단위: 천원)</TD>
+</TR>
+</TBODY>
+</TABLE>
+<TABLE border='1' width='630'>
+<COLGROUP>
+<COL width='113'></COL>
+<COL width='104'></COL>
+<COL width='104'></COL>
+<COL width='103'></COL>
+<COL width='103'></COL>
+<COL width='103'></COL>
+</COLGROUP>
+<THEAD>
+<TR height='30'>
+  <TH width='104' height='23'>자산별</TH>
+  <TH width='95' height='23'>기초</TH>
+  <TH width='95' height='23'>증가/대체</TH>
+  <TH width='94' height='23'>감소</TH>
+  <TH width='94' height='23'>당기상각</TH>
+  <TH width='94' height='23'>당반기말</TH>
+</TR>
+</THEAD>
+<TBODY>
+<TR height='30'>
+  <TD width='104' height='23' align='CENTER'>건물</TD>
+  <TD width='95' height='23' align='RIGHT'>5,725,448</TD>
+  <TD width='95' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>(80,410)</TD>
+  <TD width='94' height='23' align='RIGHT'>5,645,038</TD>
+</TR>
+<TR height='30'>
+  <TD width='104' height='23' align='CENTER'>시설장치</TD>
+  <TD width='95' height='23' align='RIGHT'>2,303,343</TD>
+  <TD width='95' height='23' align='RIGHT'>41,200</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>(116,014)</TD>
+  <TD width='94' height='23' align='RIGHT'>2,228,529</TD>
+</TR>
+<TR height='30'>
+  <TD width='104' height='23' align='CENTER'>기계장치</TD>
+  <TD width='95' height='23' align='RIGHT'>18,566,205</TD>
+  <TD width='95' height='23' align='RIGHT'>2,760,102</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>(1,796,623)</TD>
+  <TD width='94' height='23' align='RIGHT'>19,529,684</TD>
+</TR>
+<TR height='30'>
+  <TD width='104' height='23' align='CENTER'>공구와기구</TD>
+  <TD width='95' height='23' align='RIGHT'>767,993</TD>
+  <TD width='95' height='23' align='RIGHT'>138,233</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>(142,119)</TD>
+  <TD width='94' height='23' align='RIGHT'>764,107</TD>
+</TR>
+<TR height='30'>
+  <TD width='104' height='23' align='CENTER'>비품</TD>
+  <TD width='95' height='23' align='RIGHT'>227,996</TD>
+  <TD width='95' height='23' align='RIGHT'>7,287</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>(45,829)</TD>
+  <TD width='94' height='23' align='RIGHT'>189,454</TD>
+</TR>
+<TR height='30'>
+  <TD width='104' height='23' align='CENTER'>합계</TD>
+  <TD width='95' height='23' align='RIGHT'>27,590,985</TD>
+  <TD width='95' height='23' align='RIGHT'>2,946,822</TD>
+  <TD width='94' height='23' align='RIGHT'>-</TD>
+  <TD width='94' height='23' align='RIGHT'>(2,180,995)</TD>
+  <TD width='94' height='23' align='RIGHT'>28,356,812</TD>
+</TR>
+</TBODY>
+</TABLE>
+<P><BR/></P>
+<P><BR/></P>
+</BODY>
+</HTML>

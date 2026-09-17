@@ -1,0 +1,17 @@
+company_query: 쏘닉스
+run_id: LIVE-088280-1
+as_of: '2026-09-16'
+jurisdiction: KR
+scenario_ids:
+- Down
+- Base
+- Bull
+method: capacity_manufacturing/driver_dcf
+market_currency: KRW
+filing:
+  business_year: '2026'
+  report_code: '11012'
+  fs_div: OFS
+  fiscal_period_end: '2026-06-30'
+  segment_id: core
+forecast_years: 5

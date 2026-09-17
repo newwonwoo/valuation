@@ -1,0 +1,107 @@
+{
+  "company_query": "쏘닉스",
+  "as_of": "2026-09-16",
+  "corp_code": "00561723",
+  "corp_name": "(주)쏘닉스",
+  "stock_code": "088280",
+  "ksic_code": "26129",
+  "fiscal_month": 12,
+  "scenario_ids": [
+    "Down",
+    "Base",
+    "Bull"
+  ],
+  "forecast_years": 5,
+  "adopted_annual": {
+    "rcept_no": "20260320000716",
+    "report_name": "사업보고서 (2025.12)",
+    "kind": "사업보고서",
+    "report_code": "11011",
+    "period_end": "2025-12-31",
+    "received_on": "2026-03-20",
+    "is_correction": false,
+    "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320000716"
+  },
+  "latest_periodic": {
+    "rcept_no": "20260814000474",
+    "report_name": "반기보고서 (2026.06)",
+    "kind": "반기보고서",
+    "report_code": "11012",
+    "period_end": "2026-06-30",
+    "received_on": "2026-08-14",
+    "is_correction": false,
+    "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814000474"
+  },
+  "superseded_rcept_nos": [],
+  "archetypes": [
+    "capacity_manufacturing"
+  ],
+  "method_candidates": [
+    "capacity_manufacturing/driver_dcf",
+    "capacity_manufacturing/warranted_per"
+  ],
+  "calibration_cohort": null,
+  "fs_div": "OFS",
+  "decisions": [
+    {
+      "field": "corp_code",
+      "value": "00561723",
+      "basis": "the one listed corp-code search hit, 쏘닉스, matched on ticker 088280",
+      "source_ref": "https://opendart.fss.or.kr/api/corpCode.xml"
+    },
+    {
+      "field": "fiscal_month",
+      "value": "12",
+      "basis": "company profile acc_mt; a non-December close makes business_year the year the fiscal year ends",
+      "source_ref": "https://opendart.fss.or.kr/api/company.json"
+    },
+    {
+      "field": "archetypes",
+      "value": "capacity_manufacturing",
+      "basis": "longest KSIC prefix match for 26129",
+      "source_ref": "/home/runner/work/valuation/valuation/config/kr_industry_classification_map.yaml"
+    },
+    {
+      "field": "method",
+      "value": "capacity_manufacturing/driver_dcf",
+      "basis": "operator's choice among the methods the route exposes",
+      "source_ref": "/home/runner/work/valuation/valuation/config/archetype_module_registry.yaml"
+    },
+    {
+      "field": "segments",
+      "value": "undetermined",
+      "basis": "no segment declaration is present; the IFRS 8 note in the filing decides whether this issuer is multi-segment, and the run stops at the decomposition screen if it is",
+      "source_ref": "declarations/segments.yaml"
+    },
+    {
+      "field": "filing",
+      "value": "사업보고서 (2025.12) (rcept 20260320000716)",
+      "basis": "newest annual report at the as-of date; no correction filed for this year",
+      "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260320000716"
+    },
+    {
+      "field": "sections_source",
+      "value": "반기보고서 (2026.06) (rcept 20260814000474)",
+      "basis": "newest periodic filing at the as-of date; the engine reads its original sections, which may be a half-year while the financial statements bind the annual",
+      "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814000474"
+    },
+    {
+      "field": "fs_div",
+      "value": "OFS",
+      "basis": "the consolidated financial-statement endpoint returned no data",
+      "source_ref": "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json"
+    },
+    {
+      "field": "calibration",
+      "value": "none registered",
+      "basis": "no production cohort matches this industry; the run may complete without an expected value and must say so",
+      "source_ref": "config/kr_calibration_cohort_registry.yaml"
+    }
+  ],
+  "gaps": [],
+  "input_sha256": {
+    "corp_search.json": "205c373247ca7a3df82a3a309a467bb351d24ad1fb57578d41be76db884c62f1",
+    "company.json": "902795379e9ca7776d82865a0bf8445f0feaaf4cd11e500943c0b9f568458d02",
+    "list.json": "f177925c71053d606a167c4905cb48f9be049914c151d949bf60c34d017775a8"
+  }
+}
