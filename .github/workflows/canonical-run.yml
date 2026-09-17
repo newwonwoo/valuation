@@ -1,0 +1,156 @@
+name: canonical-run
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: "Commit or ref containing the prepared run directory"
+        required: true
+        type: string
+      run_dir:
+        description: "Prepared run directory, relative to the source ref"
+        required: true
+        type: string
+      execution_branch:
+        description: "Dedicated branch that receives the one immutable publication commit"
+        required: true
+        type: string
+      expected_head:
+        description: "Full SHA the execution branch must still point to"
+        required: true
+        type: string
+      staff_mode:
+        description: "Canonical runs must use deterministic replay inputs"
+        required: true
+        default: replay
+        type: choice
+        options: [replay]
+      destination_root:
+        description: "Repository root for published canonical bundles"
+        required: true
+        default: canonical-runs
+        type: string
+  workflow_call:
+    inputs:
+      source_ref:
+        required: true
+        type: string
+      run_dir:
+        required: true
+        type: string
+      execution_branch:
+        required: true
+        type: string
+      expected_head:
+        required: true
+        type: string
+      staff_mode:
+        required: false
+        default: replay
+        type: string
+      destination_root:
+        required: false
+        default: canonical-runs
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: canonical-run-${{ inputs.execution_branch }}
+      cancel-in-progress: false
+    env:
+      SOURCE_REF: ${{ inputs.source_ref }}
+      RUN_DIR: ${{ inputs.run_dir }}
+      EXECUTION_BRANCH: ${{ inputs.execution_branch }}
+      EXPECTED_HEAD: ${{ inputs.expected_head }}
+      STAFF_MODE: ${{ inputs.staff_mode }}
+      DESTINATION_ROOT: ${{ inputs.destination_root }}
+    steps:
+      - name: Checkout prepared run
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref }}
+          fetch-depth: 0
+
+      - name: Install
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: python -m pip install -e ".[dev]"
+
+      - name: Prepare execution branch with compare-and-swap base
+        shell: bash
+        run: |
+          set -euo pipefail
+          git check-ref-format --branch "${EXECUTION_BRANCH}" >/dev/null
+          git rev-parse --verify "${EXPECTED_HEAD}^{commit}" >/dev/null
+          git checkout --detach "${SOURCE_REF}"
+          test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD}"
+          remote_sha="$(git ls-remote --heads origin "${EXECUTION_BRANCH}" | awk '{print $1}')"
+          if [ -n "${remote_sha}" ]; then
+            test "${remote_sha}" = "${EXPECTED_HEAD}"
+          else
+            git push origin "${EXPECTED_HEAD}:refs/heads/${EXECUTION_BRANCH}"
+          fi
+          git fetch --no-tags origin \
+            "refs/heads/${EXECUTION_BRANCH}:refs/heads/${EXECUTION_BRANCH}"
+
+      - name: Execute canonical LIVE_PRIMARY run
+        run: |
+          set -euo pipefail
+          test "${STAFF_MODE}" = replay
+          PYTHONPATH=src python scripts/run_kr_live.py "${RUN_DIR}" --staff-mode replay
+
+      - name: Resolve and validate immutable bundle
+        id: bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t latest_files < <(find "${RUN_DIR}/out" -maxdepth 1 -type f -name '*_LATEST_REPORT.json' -print | sort)
+          test "${#latest_files[@]}" -eq 1
+          latest="${latest_files[0]}"
+          bundle="$(python - "${latest}" <<'PY'
+          import json
+          from pathlib import Path
+          import sys
+          latest = Path(sys.argv[1]).resolve()
+          payload = json.loads(latest.read_text(encoding="utf-8"))
+          print((latest.parent / payload["bundle_directory"]).resolve())
+          PY
+          )"
+          PYTHONPATH=src python scripts/validate_canonical_bundle.py \
+            "${bundle}" --latest-manifest "${latest}"
+          read -r ticker artifact <<EOF
+          $(python - "${latest}" <<'PY'
+          import json
+          import sys
+          payload = json.load(open(sys.argv[1], encoding="utf-8"))
+          print(payload["ticker"], payload["artifact_id"])
+          PY
+          )
+          EOF
+          test -n "${ticker}" && test -n "${artifact}"
+          {
+            echo "latest=${latest}"
+            echo "bundle=${bundle}"
+            echo "ticker=${ticker}"
+            echo "artifact=${artifact}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Publish one immutable execution-branch commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          PYTHONPATH=src python scripts/publish_canonical_bundle.py \
+            "${{ steps.bundle.outputs.bundle }}" \
+            --latest-manifest "${{ steps.bundle.outputs.latest }}" \
+            --branch "${EXECUTION_BRANCH}" \
+            --expected-head "${EXPECTED_HEAD}" \
+            --destination-prefix "${DESTINATION_ROOT}/${{ steps.bundle.outputs.ticker }}/${{ steps.bundle.outputs.artifact }}" \
+            --latest-destination "${DESTINATION_ROOT}/${{ steps.bundle.outputs.ticker }}/LATEST_REPORT.json" \
+            --push

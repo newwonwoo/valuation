@@ -68,6 +68,10 @@ jobs:
         run: PYTHONPATH=src python scripts/render_project_status.py --check
       - name: Canonical runtime performance budget
         run: PYTHONPATH=src python scripts/check_runtime_performance_budget.py
+      - name: Canonical bundle contract
+        run: |
+          PYTHONPATH=src python scripts/validate_canonical_bundle.py --help >/dev/null
+          PYTHONPATH=src python scripts/publish_canonical_bundle.py --help >/dev/null
       - name: Tests
         run: pytest -q
       - name: OCI regression output

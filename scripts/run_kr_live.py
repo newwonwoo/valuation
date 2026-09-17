@@ -71,6 +71,13 @@ from valuation_engine.calibration_cohort_registry import (  # noqa: E402
     resolve_production_calibration_cohort,
     validate_declared_calibration,
 )
+from valuation_engine.canonical_completion import (  # noqa: E402
+    BUNDLE_MANIFEST_NAME,
+    BUNDLE_MANIFEST_SCHEMA,
+    CompletionProofError,
+    LATEST_MANIFEST_SCHEMA,
+    validate_completion_bundle,
+)
 from valuation_engine.cli_runtime import LiveAnalysisRequest  # noqa: E402
 from valuation_engine.control_plane import StageStatus  # noqa: E402
 from valuation_engine.declared_segments import load_declared_segments  # noqa: E402
@@ -619,6 +626,14 @@ def _write_json_atomic(path: Path, payload: dict, *, token: str) -> None:
     os.replace(temporary, path)
 
 
+def _canonical_receipt_tree_hash(receipts: list[dict[str, str]]) -> str:
+    canonical = sorted(receipts, key=lambda item: item["filename"])
+    encoded = json.dumps(
+        canonical, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+    ).encode("utf-8")
+    return sha256(encoded).hexdigest()
+
+
 def publish_report_bundle(
     run_dir: str | Path,
     result,
@@ -626,7 +641,12 @@ def publish_report_bundle(
     output_dir: str | Path | None = None,
     report_alias: str | Path | None = None,
 ) -> dict:
-    """Persist the complete immutable run bundle plus a hash-bound latest manifest."""
+    """Persist a v2 immutable bundle and prove it before exposing the report.
+
+    The bundle manifest, latest pointer and public report are all derived from
+    one completed LIVE_PRIMARY run.  The pointer is never written until the
+    manifest and every receipt pass the same 33-stage completion validator.
+    """
     run_dir = Path(run_dir).resolve()
     output_root = Path(output_dir or run_dir / "out").resolve()
     source_raw = result.data.get("saved_run_dir")
@@ -639,6 +659,7 @@ def publish_report_bundle(
         "control_plane_trace.json",
         "audit.json",
         "final_report.md",
+        "freeze_token.json",
         "execution_attestation.json",
         *visuals,
     )
@@ -646,6 +667,10 @@ def publish_report_bundle(
     if missing:
         raise RunbookError(
             "completed run bundle is incomplete: " + ", ".join(missing)
+        )
+    if (source / BUNDLE_MANIFEST_NAME).exists():
+        raise RunbookError(
+            "source run already carries a report bundle manifest; refusing to overwrite immutable evidence"
         )
 
     investor_profile_path = run_dir / "declarations" / "investor_report.yaml"
@@ -667,11 +692,27 @@ def publish_report_bundle(
     run_input_sha256 = _run_input_sha256(run_dir)
     if not all((valuation_hash, audit_hash, run_id, ticker, as_of)):
         raise RunbookError("completed run lacks report artifact identities")
+
+    token_payload = json.loads(
+        (source / "freeze_token.json").read_text(encoding="utf-8")
+    )
+    attestation_payload = json.loads(
+        (source / "execution_attestation.json").read_text(encoding="utf-8")
+    )
+    freeze_token_hash = str(token_payload.get("token_hash") or "")
+    execution_attestation_hash = str(
+        attestation_payload.get("attestation_hash") or ""
+    )
+    if not freeze_token_hash or not execution_attestation_hash:
+        raise RunbookError(
+            "completed run lacks freeze-token or execution-attestation hash"
+        )
+
     reference = _reference_value_per_share(result)
     reference_token = f"TP{reference.quantize(Decimal('1')):.0f}"
     seed = "|".join(
         (
-            "kr-live-report-bundle/v1",
+            BUNDLE_MANIFEST_SCHEMA,
             ticker,
             as_of,
             run_id,
@@ -680,6 +721,8 @@ def publish_report_bundle(
             run_input_sha256,
             sha256(report.encode("utf-8")).hexdigest(),
             _file_sha256(source / "manifest.json"),
+            freeze_token_hash,
+            execution_attestation_hash,
         )
     )
     short_hash = sha256(seed.encode("utf-8")).hexdigest()[:12].upper()
@@ -703,19 +746,18 @@ def publish_report_bundle(
         f"{_safe_artifact_token(ticker)}_"
         f"{_safe_artifact_token(as_of.replace('-', ''))}_투자보고서.md"
     )
-    (bundle_dir / versioned_report_name).write_text(
-        report, encoding="utf-8"
-    )
-    files = tuple(
+    versioned_report_path = bundle_dir / versioned_report_name
+    versioned_report_path.write_text(report, encoding="utf-8")
+    receipts = [
         {
             "filename": path.relative_to(bundle_dir).as_posix(),
             "sha256": _file_sha256(path),
         }
         for path in sorted(bundle_dir.rglob("*"))
-        if path.is_file()
-    )
+        if path.is_file() and path.name != BUNDLE_MANIFEST_NAME
+    ]
     bundle_manifest = {
-        "schema_version": "kr-live-report-bundle/v1",
+        "schema_version": BUNDLE_MANIFEST_SCHEMA,
         "artifact_id": artifact_id,
         "as_of": as_of,
         "run_id": run_id,
@@ -724,18 +766,24 @@ def publish_report_bundle(
         "valuation_hash": valuation_hash,
         "audit_hash": audit_hash,
         "run_input_sha256": run_input_sha256,
+        "freeze_token_hash": freeze_token_hash,
+        "execution_attestation_hash": execution_attestation_hash,
+        "bundle_tree_sha256": _canonical_receipt_tree_hash(receipts),
         "report_filename": versioned_report_name,
-        "files": files,
+        "report_sha256": _file_sha256(versioned_report_path),
+        "files": receipts,
     }
-    bundle_manifest_path = bundle_dir / "report_bundle_manifest.json"
+    bundle_manifest_path = bundle_dir / BUNDLE_MANIFEST_NAME
     _write_json_atomic(bundle_manifest_path, bundle_manifest, token=short_hash)
 
     latest_name = f"{_safe_artifact_token(ticker)}_LATEST_REPORT.json"
     latest_path = output_root / latest_name
     latest = {
-        "schema_version": "kr-live-latest-report/v1",
+        "schema_version": LATEST_MANIFEST_SCHEMA,
         "artifact_id": artifact_id,
         "as_of": as_of,
+        "run_id": run_id,
+        "ticker": ticker,
         "bundle_directory": bundle_relative.as_posix(),
         "bundle_manifest": (
             bundle_relative / bundle_manifest_path.name
@@ -744,13 +792,27 @@ def publish_report_bundle(
         "report_filename": (
             bundle_relative / versioned_report_name
         ).as_posix(),
-        "report_sha256": _file_sha256(bundle_dir / versioned_report_name),
+        "report_sha256": _file_sha256(versioned_report_path),
         "valuation_hash": valuation_hash,
         "audit_hash": audit_hash,
         "run_input_sha256": run_input_sha256,
+        "freeze_token_hash": freeze_token_hash,
+        "execution_attestation_hash": execution_attestation_hash,
+        "bundle_tree_sha256": bundle_manifest["bundle_tree_sha256"],
     }
     output_root.mkdir(parents=True, exist_ok=True)
     _write_json_atomic(latest_path, latest, token=short_hash)
+    try:
+        completion = validate_completion_bundle(
+            bundle_dir,
+            stage_registry_path=ROOT / "config" / "control_plane_stage_registry.yaml",
+            latest_manifest_path=latest_path,
+        )
+    except CompletionProofError as exc:
+        bundle_manifest_path.unlink(missing_ok=True)
+        latest_path.unlink(missing_ok=True)
+        shutil.rmtree(bundle_dir, ignore_errors=True)
+        raise RunbookError(f"canonical bundle validation failed: {exc}") from exc
 
     alias = Path(report_alias) if report_alias else output_root / "final_report.md"
     alias.parent.mkdir(parents=True, exist_ok=True)
@@ -760,7 +822,8 @@ def publish_report_bundle(
     return {
         **latest,
         "latest_manifest_path": str(latest_path),
-        "versioned_report_path": str(bundle_dir / versioned_report_name),
+        "versioned_report_path": str(versioned_report_path),
+        "completion": completion.to_dict(),
     }
 
 
@@ -783,13 +846,7 @@ def reuse_published_report_bundle(
     output_dir: str | Path | None = None,
     report_alias: str | Path | None = None,
 ) -> dict | None:
-    """Return a matching completed bundle only after verifying every bound hash.
-
-    A normal second invocation must not replay a fixed run ID into the immutable
-    StateStore. It reuses the already-published result, but only when the latest
-    pointer, bundle manifest, versioned report and every recorded bundle file
-    are byte-identical to their receipts.
-    """
+    """Reuse only a matching v2 bundle that passes the full completion proof."""
     run_dir = Path(run_dir).resolve()
     investor_profile_path = run_dir / "declarations" / "investor_report.yaml"
     if not investor_profile_path.is_file():
@@ -811,127 +868,53 @@ def reuse_published_report_bundle(
             raise RunbookError(
                 f"published latest-report manifest is unreadable: {latest_path}"
             ) from exc
-        if not isinstance(latest, dict) or latest.get("schema_version") != (
-            "kr-live-latest-report/v1"
+        if not isinstance(latest, dict):
+            raise RunbookError(f"published latest-report manifest is not an object: {latest_path}")
+        # Old v1 artifacts remain readable evidence, but can never be reused as
+        # a canonical result.  A new run will produce a v2 bundle instead.
+        if latest.get("schema_version") != LATEST_MANIFEST_SCHEMA:
+            continue
+        if (
+            latest.get("run_id") != expected_run_id
+            or latest.get("as_of") != expected_as_of
+            or latest.get("run_input_sha256") != expected_run_input_sha256
         ):
-            raise RunbookError(
-                f"published latest-report manifest has unsupported schema: {latest_path}"
-            )
+            continue
         bundle_manifest_path = _resolve_manifest_path(
             output_root, latest.get("bundle_manifest"), label="bundle manifest"
         )
-        if not bundle_manifest_path.is_file():
-            raise RunbookError(
-                f"published bundle manifest is missing: {bundle_manifest_path}"
-            )
-        if _file_sha256(bundle_manifest_path) != latest.get(
-            "bundle_manifest_sha256"
-        ):
-            raise RunbookError("published bundle manifest hash mismatch")
-        try:
-            bundle_manifest = json.loads(
-                bundle_manifest_path.read_text(encoding="utf-8")
-            )
-        except json.JSONDecodeError as exc:
-            raise RunbookError("published bundle manifest is invalid JSON") from exc
-        if (
-            bundle_manifest.get("run_id") != expected_run_id
-            or bundle_manifest.get("as_of") != expected_as_of
-            or bundle_manifest.get("run_input_sha256")
-            != expected_run_input_sha256
-        ):
-            continue
         bundle_dir = _resolve_manifest_path(
             output_root, latest.get("bundle_directory"), label="bundle directory"
         )
-        if bundle_manifest_path.parent != bundle_dir:
-            raise RunbookError("published bundle manifest is outside its bundle directory")
-        if bundle_manifest.get("schema_version") != "kr-live-report-bundle/v1":
-            raise RunbookError("published bundle manifest has unsupported schema")
-        for key in (
-            "artifact_id",
-            "as_of",
-            "valuation_hash",
-            "audit_hash",
-            "run_input_sha256",
-        ):
-            if latest.get(key) != bundle_manifest.get(key):
-                raise RunbookError(f"published latest manifest disagrees on {key}")
-        versioned_report_path = _resolve_manifest_path(
+        if not bundle_manifest_path.is_file() or not bundle_dir.is_dir():
+            raise RunbookError("published canonical bundle path is missing")
+        try:
+            completion = validate_completion_bundle(
+                bundle_dir,
+                stage_registry_path=ROOT / "config" / "control_plane_stage_registry.yaml",
+                latest_manifest_path=latest_path,
+            )
+        except CompletionProofError as exc:
+            raise RunbookError(f"published canonical bundle failed validation: {exc}") from exc
+        report_path = _resolve_manifest_path(
             output_root, latest.get("report_filename"), label="versioned report"
         )
-        if versioned_report_path.parent != bundle_dir:
-            raise RunbookError("published versioned report is outside its bundle directory")
-        if versioned_report_path.name != bundle_manifest.get("report_filename"):
-            raise RunbookError("published bundle disagrees on report filename")
-        if (
-            not versioned_report_path.is_file()
-            or _file_sha256(versioned_report_path) != latest.get("report_sha256")
-        ):
-            raise RunbookError("published versioned report hash mismatch")
-        files = bundle_manifest.get("files")
-        if not isinstance(files, list) or not files:
-            raise RunbookError("published bundle manifest carries no file receipts")
-        received_names = {
-            receipt.get("filename")
-            for receipt in files
-            if isinstance(receipt, dict)
-        }
-        required_names = {
-            "manifest.json",
-            "control_plane_trace.json",
-            "audit.json",
-            "final_report.md",
-            "execution_attestation.json",
-            str(bundle_manifest.get("report_filename") or ""),
-        }
-        missing_names = tuple(sorted(required_names - received_names))
-        if missing_names:
-            raise RunbookError(
-                "published bundle is missing required file receipts: "
-                + ", ".join(missing_names)
-            )
-        for receipt in files:
-            if not isinstance(receipt, dict):
-                raise RunbookError("published bundle file receipt is invalid")
-            path = _resolve_manifest_path(
-                bundle_dir, receipt.get("filename"), label="bundle file"
-            )
-            if not path.is_file() or _file_sha256(path) != receipt.get("sha256"):
-                raise RunbookError(
-                    f"published bundle file hash mismatch: {receipt.get('filename')}"
-                )
-        raw_report = bundle_dir / "final_report.md"
-        if not raw_report.is_file():
-            raise RunbookError("published bundle is missing final_report.md")
-        try:
-            run_manifest = json.loads(
-                (bundle_dir / "manifest.json").read_text(encoding="utf-8")
-            )
-        except json.JSONDecodeError as exc:
-            raise RunbookError("published run manifest is invalid JSON") from exc
-        if (
-            run_manifest.get("run_id") != expected_run_id
-            or run_manifest.get("ticker") != bundle_manifest.get("ticker")
-            or run_manifest.get("status") != "COMPLETED"
-            or run_manifest.get("audit_passed") is not True
-        ):
-            raise RunbookError("published run manifest identity/status mismatch")
-        report = versioned_report_path.read_text(encoding="utf-8")
+        if not report_path.is_file():
+            raise RunbookError("published canonical versioned report is missing")
         alias = Path(report_alias) if report_alias else output_root / "final_report.md"
         alias.parent.mkdir(parents=True, exist_ok=True)
         token = sha256(str(latest["artifact_id"]).encode("utf-8")).hexdigest()[:12]
         temporary_alias = alias.parent / f".{alias.name}.{token}.tmp"
-        temporary_alias.write_text(report, encoding="utf-8")
+        temporary_alias.write_text(report_path.read_text(encoding="utf-8"), encoding="utf-8")
         os.replace(temporary_alias, alias)
         return {
             **latest,
             "latest_manifest_path": str(latest_path),
-            "versioned_report_path": str(versioned_report_path),
+            "versioned_report_path": str(report_path),
+            "completion": completion.to_dict(),
             "reused": True,
         }
     return None
-
 
 def execute_run(run_dir: str | Path, *, state_root: str | None = None,
                 staff_mode: str | None = None, underwriting_path: str | Path | None = None):
