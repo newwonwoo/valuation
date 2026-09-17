@@ -640,6 +640,16 @@ def _freeze_from_context(
         calibration_snapshot_hash=str(
             context.data.get("probability_calibration_snapshot_hash") or ""
         ),
+        distribution_hash=str(context.data.get("distribution_hash") or ""),
+        ambiguity_set_hash=str(context.data.get("ambiguity_set_hash") or ""),
+        payoff_model_set_hash=str(context.data.get("payoff_model_set_hash") or ""),
+        route_authorization_hash=str(
+            context.data.get("distribution_route_authorization_hash") or ""
+        ),
+        entry_policy_version=str(context.data.get("entry_policy_version") or ""),
+        entry_calculation_hash=str(
+            context.data.get("entry_calculation_hash") or ""
+        ),
     )
 
 

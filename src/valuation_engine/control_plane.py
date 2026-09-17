@@ -140,6 +140,12 @@ class IntrinsicFreezeToken:
     token_hash: str
     calibration_dataset_hash: str = ""
     calibration_snapshot_hash: str = ""
+    distribution_hash: str = ""
+    ambiguity_set_hash: str = ""
+    payoff_model_set_hash: str = ""
+    route_authorization_hash: str = ""
+    entry_policy_version: str = ""
+    entry_calculation_hash: str = ""
 
 
 def validate_llm_authority(
@@ -209,6 +215,36 @@ def build_proposal_allowed(gap: CapabilityGap) -> bool:
     )
 
 
+def _distribution_freeze_lineage(
+    *,
+    distribution_hash: str,
+    ambiguity_set_hash: str,
+    payoff_model_set_hash: str,
+    route_authorization_hash: str,
+    entry_policy_version: str,
+    entry_calculation_hash: str,
+) -> tuple[str, ...]:
+    values = (
+        distribution_hash,
+        ambiguity_set_hash,
+        payoff_model_set_hash,
+        route_authorization_hash,
+        entry_policy_version,
+        entry_calculation_hash,
+    )
+    if not any(values):
+        return ()
+    if not distribution_hash or not route_authorization_hash or not entry_policy_version:
+        raise ValueError(
+            "distribution freeze requires distribution, route authorization and entry-policy lineage"
+        )
+    if bool(ambiguity_set_hash) != bool(payoff_model_set_hash):
+        raise ValueError(
+            "distribution freeze ambiguity/payoff-model hashes must be supplied together"
+        )
+    return values
+
+
 def issue_freeze_token(
     *,
     run_id: str,
@@ -223,6 +259,12 @@ def issue_freeze_token(
     source_snapshot_hash: str,
     calibration_dataset_hash: str = "",
     calibration_snapshot_hash: str = "",
+    distribution_hash: str = "",
+    ambiguity_set_hash: str = "",
+    payoff_model_set_hash: str = "",
+    route_authorization_hash: str = "",
+    entry_policy_version: str = "",
+    entry_calculation_hash: str = "",
 ) -> IntrinsicFreezeToken:
     if not audit_passed:
         raise ValueError("audit PASS is required before intrinsic freeze")
@@ -241,11 +283,32 @@ def issue_freeze_token(
     )
     if any(not value for value in fields):
         raise ValueError("freeze token requires all snapshot/value hashes")
-    lineage = (calibration_dataset_hash, calibration_snapshot_hash)
-    if bool(lineage[0]) != bool(lineage[1]):
+    calibration_lineage = (calibration_dataset_hash, calibration_snapshot_hash)
+    if bool(calibration_lineage[0]) != bool(calibration_lineage[1]):
         raise ValueError("calibration dataset and snapshot hashes must be supplied together")
-    digest = hashlib.sha256("|".join((*fields, *lineage)).encode("utf-8")).hexdigest()
-    return IntrinsicFreezeToken(*fields, digest, *lineage)
+    distribution_lineage = _distribution_freeze_lineage(
+        distribution_hash=distribution_hash,
+        ambiguity_set_hash=ambiguity_set_hash,
+        payoff_model_set_hash=payoff_model_set_hash,
+        route_authorization_hash=route_authorization_hash,
+        entry_policy_version=entry_policy_version,
+        entry_calculation_hash=entry_calculation_hash,
+    )
+    digest_fields = (*fields, *calibration_lineage)
+    if distribution_lineage:
+        digest_fields = (*digest_fields, "DISTRIBUTIONAL_LINEAGE_V1", *distribution_lineage)
+    digest = hashlib.sha256("|".join(digest_fields).encode("utf-8")).hexdigest()
+    return IntrinsicFreezeToken(
+        *fields,
+        digest,
+        *calibration_lineage,
+        distribution_hash,
+        ambiguity_set_hash,
+        payoff_model_set_hash,
+        route_authorization_hash,
+        entry_policy_version,
+        entry_calculation_hash,
+    )
 
 
 def authorize_post_freeze(token: IntrinsicFreezeToken, *, run_id: str) -> None:
@@ -262,6 +325,20 @@ def authorize_post_freeze(token: IntrinsicFreezeToken, *, run_id: str) -> None:
         token.calibration_dataset_hash,
         token.calibration_snapshot_hash,
     )
-    expected = hashlib.sha256("|".join(fields).encode("utf-8")).hexdigest()
+    try:
+        distribution_lineage = _distribution_freeze_lineage(
+            distribution_hash=token.distribution_hash,
+            ambiguity_set_hash=token.ambiguity_set_hash,
+            payoff_model_set_hash=token.payoff_model_set_hash,
+            route_authorization_hash=token.route_authorization_hash,
+            entry_policy_version=token.entry_policy_version,
+            entry_calculation_hash=token.entry_calculation_hash,
+        )
+    except ValueError as exc:
+        raise PermissionError(str(exc)) from exc
+    digest_fields = fields
+    if distribution_lineage:
+        digest_fields = (*fields, "DISTRIBUTIONAL_LINEAGE_V1", *distribution_lineage)
+    expected = hashlib.sha256("|".join(digest_fields).encode("utf-8")).hexdigest()
     if token.token_hash != expected:
         raise PermissionError("invalid intrinsic freeze token")

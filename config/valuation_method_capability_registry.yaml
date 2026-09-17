@@ -32,7 +32,7 @@ execution_families:
     kind: aggregator
     runtime_status: PARTIAL_RUNTIME
     requires_beta: true
-    requires_wacc: false
+    requires_wacc: true
     stage: DETERMINISTIC_VALUATION
     canonical_refs:
       - src/valuation_engine/dynamic_driver_distribution.py
