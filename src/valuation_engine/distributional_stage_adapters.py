@@ -11,8 +11,8 @@ from .distributional_runtime import (
     execute_distributional_apv,
 )
 from .dynamic_driver_distribution import (
-    DriverPathSimulation,
-    DynamicDriverPosterior,
+    TargetDriverPanel,
+    fit_dynamic_driver_posterior,
     simulate_driver_paths,
 )
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
@@ -57,36 +57,44 @@ def _validate_calibrated_driver_simulation(
 ) -> None:
     if spec.route is not DistributionIntegrationRoute.PATHWISE_VALUE_DISTRIBUTION:
         return
-    posterior = context.data.get("distributional_driver_posterior")
-    simulation = context.data.get("distributional_driver_simulation")
-    if not isinstance(posterior, DynamicDriverPosterior):
-        raise ValueError("pathwise distribution requires typed DynamicDriverPosterior")
-    if not isinstance(simulation, DriverPathSimulation):
-        raise ValueError("pathwise distribution requires typed DriverPathSimulation")
-    posterior.validate()
+    panel = context.data.get("distributional_driver_panel")
+    if not isinstance(panel, TargetDriverPanel):
+        raise ValueError(
+            "pathwise distribution requires target realized quarterly driver history"
+        )
+    if panel.target_id != spec.target_id:
+        raise ValueError("driver-history target does not match valuation target")
+    required_driver_ids = spec.metric_mapping.required_driver_ids()
+    posterior = fit_dynamic_driver_posterior(
+        panel,
+        driver_ids=required_driver_ids,
+    )
     if not posterior.calibration_diagnostics.valuation_distribution_authorized:
-        raise ValueError("pathwise distribution posterior is not OOS-authorized")
-    if not simulation.paths or not simulation.seed_set:
-        raise ValueError("pathwise driver simulation is empty")
-    if len(simulation.paths) % len(simulation.seed_set) != 0:
-        raise ValueError("driver simulation path count does not match its seed set")
-    draws_per_seed = len(simulation.paths) // len(simulation.seed_set)
-    replay = simulate_driver_paths(
+        raise ValueError("pathwise driver distribution failed rolling-origin OOS authorization")
+    if not spec.seed_set or len(spec.paths) % len(spec.seed_set) != 0:
+        raise ValueError("valuation path count must be an integer number of draws per seed")
+    first_map = spec.paths[0].driver_path.as_map()
+    horizon_lengths = {len(first_map[key]) for key in required_driver_ids}
+    if len(horizon_lengths) != 1:
+        raise ValueError("valuation driver paths do not share one horizon")
+    horizon = next(iter(horizon_lengths))
+    draws_per_seed = len(spec.paths) // len(spec.seed_set)
+    simulation = simulate_driver_paths(
         posterior,
-        horizon_periods=simulation.horizon_periods,
+        horizon_periods=horizon,
         draws_per_seed=draws_per_seed,
-        seed_set=simulation.seed_set,
+        seed_set=spec.seed_set,
         require_authorized=True,
     )
-    if replay != simulation:
-        raise ValueError("driver simulation does not replay from the authorized posterior")
     supplied_paths = tuple(item.driver_path for item in spec.paths)
     if supplied_paths != simulation.paths:
-        raise ValueError("valuation paths do not match the authorized driver simulation")
-    if spec.seed_set != simulation.seed_set:
-        raise ValueError("valuation seed set does not match the authorized simulation")
+        raise ValueError(
+            "valuation paths do not replay from the target-history calibrated driver model"
+        )
     if spec.driver_distribution_authorization_hash != simulation.simulation_hash:
-        raise ValueError("driver distribution authorization hash is not the simulation receipt")
+        raise ValueError(
+            "driver distribution authorization hash is not the replayed simulation receipt"
+        )
     if not spec.driver_distribution_authorized:
         raise ValueError("authorized simulation cannot be consumed with distribution authority disabled")
 
@@ -249,7 +257,7 @@ def canonical_primary_valuation_dispatch_adapter(
             )
         return StageExecutionResult(
             StageStatus.PASS,
-            "company-level distributional APV completed for every planned segment with same-run risk rates and authorized path receipts bound",
+            "company-level distributional APV completed for every planned segment with same-run risk rates and target-history calibrated path receipts bound",
             outputs,
         )
 
