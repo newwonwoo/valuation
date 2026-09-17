@@ -103,7 +103,7 @@ jobs:
           set -euo pipefail
           git config user.name 'chatgpt-codex-connector'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add runs/sonix-088280
+          git add -f runs/sonix-088280
           if ! git diff --cached --quiet; then
             git commit -m 'Advance Sonix 088280 canonical valuation run'
             git push origin HEAD:analysis/sonix-088280-20260916
