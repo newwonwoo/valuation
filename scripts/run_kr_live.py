@@ -760,7 +760,8 @@ def publish_report_bundle(
             "sha256": _file_sha256(path),
         }
         for path in sorted(bundle_dir.rglob("*"))
-        if path.is_file() and path.name != BUNDLE_MANIFEST_NAME
+        if path.is_file()
+        and path.relative_to(bundle_dir).as_posix() != BUNDLE_MANIFEST_NAME
     ]
     bundle_manifest = {
         "schema_version": BUNDLE_MANIFEST_SCHEMA,

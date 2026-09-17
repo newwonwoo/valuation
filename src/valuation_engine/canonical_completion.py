@@ -208,9 +208,12 @@ def _validate_receipts(
         normalized.append({"filename": filename, "sha256": digest})
 
     actual_files = {
-        path.relative_to(bundle_dir).as_posix()
+        relative
         for path in bundle_dir.rglob("*")
-        if path.is_file() and not path.is_symlink() and path.name != BUNDLE_MANIFEST_NAME
+        if path.is_file()
+        and not path.is_symlink()
+        for relative in (path.relative_to(bundle_dir).as_posix(),)
+        if relative != BUNDLE_MANIFEST_NAME
     }
     if actual_files != seen:
         missing = sorted(actual_files - seen)
