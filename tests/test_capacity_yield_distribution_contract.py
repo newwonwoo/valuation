@@ -54,7 +54,7 @@ def test_distributional_apv_has_one_exact_company_independent_binding():
     assert capability.runtime_status is MethodRuntimeStatus.PARTIAL_RUNTIME
     assert capability.stage == "DETERMINISTIC_VALUATION"
     assert capability.requires_beta
-    assert not capability.requires_wacc
+    assert capability.requires_wacc
     assert legacy.execution_family == "explicit_fcff_dcf"
     assert legacy.kind is MethodKind.SEGMENT_EVALUATOR
     assert legacy.identity != capability.identity
