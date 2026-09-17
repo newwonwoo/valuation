@@ -1118,18 +1118,20 @@ def main() -> int:
         print("Validated execution only; publication withheld. Materialize canonical underwriting and replay staff files, then rerun in replay mode to publish.")
         return 0
     report = result.data.get("final_report")
-    if isinstance(report, str):
-        published = publish_report_bundle(
-            run_dir,
-            result,
-            output_dir=output_root,
-            report_alias=args.report_out,
-        )
-        print(f"  report: {published['versioned_report_path']}")
-        print(f"  manifest: {published['latest_manifest_path']}")
-        for line in report.splitlines():
-            if "내재가치" in line or "기대값" in line or "상승여력" in line:
-                print("  " + line.strip("- *"))
+    if not isinstance(report, str) or not report.strip():
+        print("canonical completion: BLOCKED — final report is missing")
+        return 1
+    published = publish_report_bundle(
+        run_dir,
+        result,
+        output_dir=output_root,
+        report_alias=args.report_out,
+    )
+    print(f"  report: {published['versioned_report_path']}")
+    print(f"  manifest: {published['latest_manifest_path']}")
+    for line in report.splitlines():
+        if "내재가치" in line or "기대값" in line or "상승여력" in line:
+            print("  " + line.strip("- *"))
     return 0
 
 
