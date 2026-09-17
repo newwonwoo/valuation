@@ -5,7 +5,12 @@ on:
     branches: [analysis/sonix-088280-20260916]
     paths:
       - '.github/workflows/sonix-088280-run.yml'
-      - 'docs/SONIX_RUN_TRIGGER.md'
+      - 'docs/SONIX_088280_RUN.md'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/sonix-088280-run.yml'
+      - 'docs/SONIX_088280_RUN.md'
   workflow_dispatch:
 
 permissions:
