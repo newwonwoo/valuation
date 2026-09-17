@@ -6,11 +6,6 @@ on:
     paths:
       - '.github/workflows/sonix-088280-run.yml'
       - 'docs/SONIX_088280_RUN.md'
-  pull_request:
-    branches: [main]
-    paths:
-      - '.github/workflows/sonix-088280-run.yml'
-      - 'docs/SONIX_088280_RUN.md'
   workflow_dispatch:
 
 permissions:
@@ -94,8 +89,12 @@ jobs:
               2>&1 | tee /tmp/sonix-research.log
             echo "exit=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
           else
-            echo "Research declarations not present yet; source collection only." | tee /tmp/sonix-research.log
-            echo "exit=0" >> "$GITHUB_OUTPUT"
+            set +e
+            PYTHONPATH=src python scripts/run_kr_live.py runs/sonix-088280 \
+              2>&1 | tee /tmp/sonix-research.log
+            code=${PIPESTATUS[0]}
+            set -e
+            echo "exit=${code}" >> "$GITHUB_OUTPUT"
           fi
       - name: Commit generated run state
         shell: bash
