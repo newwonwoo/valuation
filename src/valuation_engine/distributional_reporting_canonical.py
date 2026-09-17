@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, is_dataclass
 from decimal import Decimal
 from enum import Enum
+from html import escape
 from pathlib import Path
 from typing import Any
 
@@ -14,7 +15,11 @@ from .distributional_reporting import (
 )
 from .distributional_runtime import DistributionalPrimaryValuationResult
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
-from .probability_forecasting import ProbabilityForecastDraft, ProbabilityForecastHistoryStore, ScenarioProbabilityAssessment
+from .probability_forecasting import (
+    ProbabilityForecastDraft,
+    ProbabilityForecastHistoryStore,
+    ScenarioProbabilityAssessment,
+)
 from .records import AuditReport, MarketObservation, RunManifest, RunStatus, iso_now
 from .research_learning import ResearchLearningStore
 from .source_reporting import build_source_link_index, render_source_link_section
@@ -22,6 +27,8 @@ from .state import StateStore
 
 
 ZERO = Decimal("0")
+_SUMMARY_VISUAL = "distributional_summary.svg"
+_ASSUMPTIONS_VISUAL = "distributional_assumptions.svg"
 
 
 def _intrinsic_range(
@@ -40,6 +47,65 @@ def _intrinsic_range(
             valuation.ambiguity_intrinsic_range.maximum_expected_value,
         )
     raise ValueError("distributional valuation has no intrinsic range")
+
+
+def _svg_card(title: str, lines: tuple[str, ...]) -> str:
+    rows = []
+    y = 160
+    for line in lines[:7]:
+        rows.append(
+            f'<text x="72" y="{y}" font-family="sans-serif" font-size="30">{escape(line)}</text>'
+        )
+        y += 58
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">'
+        '<rect width="1200" height="630" fill="white"/>'
+        f'<text x="72" y="88" font-family="sans-serif" font-size="44" font-weight="700">{escape(title)}</text>'
+        + "".join(rows)
+        + "</svg>"
+    )
+
+
+def _distributional_visuals(
+    data: dict[str, Any],
+    valuation: DistributionalPrimaryValuationResult,
+) -> tuple[tuple[str, str], tuple[str, str]]:
+    company = str(data.get("company") or data.get("target_id") or "Target")
+    _, low, high = _intrinsic_range(valuation)
+    entry = (
+        f"진입가격 {_fmt(valuation.entry_price)} {valuation.reporting_unit} 이하"
+        if valuation.route_authorization.entry_price_authorized
+        and valuation.entry_price is not None
+        else "진입가격 보류"
+    )
+    if valuation.pathwise_distribution is not None:
+        dist = valuation.pathwise_distribution
+        summary_lines = (
+            f"내재가치 범위 {_fmt(low)}~{_fmt(high)} {valuation.reporting_unit}",
+            f"P50 {_fmt(dist.quantile(Decimal('0.50')))} · 평균 {_fmt(dist.mean)}",
+            f"곤경 {_pct(dist.distress_probability)} · 추가희석 {_pct(dist.dilution_probability)}",
+            entry,
+        )
+    else:
+        summary_lines = (
+            f"내재가치 범위 {_fmt(low)}~{_fmt(high)} {valuation.reporting_unit}",
+            "복수 사전확률 × 완결 지급모델의 기대가치 범위",
+            "단일 목표가·보정 성공확률 미산출",
+            entry,
+        )
+    beta = data.get("live_beta_result")
+    wacc = data.get("live_wacc_result")
+    assumptions_lines = (
+        "영업 드라이버 → 자금조달 → 구주주 지급을 하나의 경로로 계산",
+        f"자산 베타 {getattr(beta, 'target_asset_beta', '미산출')}",
+        f"WACC {getattr(getattr(wacc, 'wacc_result', None), 'wacc', '미산출')}",
+        "부채·리스·증자·자산매각 중복계상 차단",
+        "현재가·증권사 자료는 내재가치 동결 뒤에만 비교",
+    )
+    return (
+        (_SUMMARY_VISUAL, _svg_card(f"{company} 가치평가 요약", summary_lines)),
+        (_ASSUMPTIONS_VISUAL, _svg_card(f"{company} 가정·위험", assumptions_lines)),
+    )
 
 
 def render_canonical_distributional_report(
@@ -81,9 +147,7 @@ def render_canonical_distributional_report(
     else:
         reference = (low + high) / Decimal("2")
         probability_summary = "보정 성공확률 없음 · 복수 사전확률 집합만 사용"
-        judgment = (
-            "보정된 성공확률이 없어 단일 목표가 대신 확률·지급모델 모호성 범위를 사용합니다."
-        )
+        judgment = "보정된 성공확률이 없어 단일 목표가 대신 확률·지급모델 모호성 범위를 사용합니다."
 
     entry_text = "보류"
     if valuation.route_authorization.entry_price_authorized and valuation.entry_price is not None:
@@ -96,12 +160,10 @@ def render_canonical_distributional_report(
             f"범위 {_fmt(street.min_target_price)}~{_fmt(street.max_target_price)}"
         )
 
-    thesis = str(data.get("current_thesis") or "").strip()
-    if not thesis:
-        thesis = (
-            "공시 근거와 동일 실행의 자금조달·희석·곤경 경로를 함께 반영해 "
-            "구주주 기준 내재가치를 계산했습니다."
-        )
+    thesis = str(data.get("current_thesis") or "").strip() or (
+        "공시 근거와 동일 실행의 자금조달·희석·곤경 경로를 함께 반영해 "
+        "구주주 기준 내재가치를 계산했습니다."
+    )
 
     lines = [
         f"# {company} 투자보고서",
@@ -125,7 +187,7 @@ def render_canonical_distributional_report(
         "### 투자포인트",
         "",
         "- 영업 드라이버와 자금조달을 한 경로에서 연결해 부채·리스·증자·자산매각을 중복 계산하지 않습니다.",
-        "- 주주가 실제로 받는 시점별 현금흐름을 기준으로 진입가격을 계산하며, 누적금액을 한 시점에 할인하지 않습니다.",
+        "- 주주가 실제로 받는 시점별 현금흐름을 기준으로 진입가격을 계산합니다.",
         "- 현재가와 증권사 목표가는 내재가치 동결 뒤에만 읽습니다.",
         "",
         "### 판단 변경 조건",
@@ -136,8 +198,7 @@ def render_canonical_distributional_report(
         "",
         "## 가치평가",
         "",
-        "- 주평가법: `capacity_yield_levered/driver_distributional_apv`",
-        f"- 분포 라우트: `{valuation.route.value}`",
+        "- 주평가법: capacity_yield_levered / driver_distributional_apv",
         f"- 내재가치 범위: {_fmt(low)}~{_fmt(high)} {currency}",
     ]
 
@@ -153,7 +214,10 @@ def render_canonical_distributional_report(
                 f"- 추가 희석경로 비중: {_pct(distribution.dilution_probability)}",
             )
         )
-        if valuation.route_authorization.success_probability_claim_authorized and valuation.pathwise_entry is not None:
+        if (
+            valuation.route_authorization.success_probability_claim_authorized
+            and valuation.pathwise_entry is not None
+        ):
             lines.append(
                 f"- 검증된 진입가격: {_fmt(valuation.pathwise_entry.entry_price)} {currency} 이하 · "
                 f"경로상 성공비율 {_pct(valuation.pathwise_entry.realized_success_probability)}"
@@ -182,34 +246,14 @@ def render_canonical_distributional_report(
                 "",
                 "### 시나리오 발생 가능성 — 미보정 분석가 사전확률",
                 "",
-                "이 표는 기존 시나리오 참고용이며 분포형 APV의 기대가치·진입가격 가중치로 사용하지 않습니다.",
+                "이 표는 참고용이며 분포형 APV의 기대가치·진입가격 가중치로 사용하지 않습니다.",
                 "",
                 "| 시나리오 | 표시 확률 | 근거 |",
                 "| --- | ---: | --- |",
             )
         )
         for row in probability_assessment.rows:
-            lines.append(
-                f"| {row.scenario_id} | {_pct(row.displayed_probability)} | {row.rationale} |"
-            )
-
-    forecast_drafts = data.get("probability_forecast_drafts", ())
-    if isinstance(forecast_drafts, tuple) and forecast_drafts and all(
-        isinstance(item, ProbabilityForecastDraft) for item in forecast_drafts
-    ):
-        lines.extend(
-            (
-                "",
-                "### 사전에 기록한 사건 예측 — 보정 이력 적립용",
-                "",
-                "| 사건 | 미보정 확률 | 해소기한 |",
-                "| --- | ---: | --- |",
-            )
-        )
-        for draft in forecast_drafts:
-            lines.append(
-                f"| {draft.event_definition} | {draft.displayed_band} | {draft.evaluation_deadline.isoformat()} |"
-            )
+            lines.append(f"| {row.scenario_id} | {_pct(row.displayed_probability)} | {row.rationale} |")
 
     beta = data.get("live_beta_result")
     wacc = data.get("live_wacc_result")
@@ -220,11 +264,8 @@ def render_canonical_distributional_report(
             "",
             f"- 자산·영업 위험 베타: {getattr(beta, 'target_asset_beta', '미산출')}",
             f"- 가중평균자본비용: {getattr(getattr(wacc, 'wacc_result', None), 'wacc', '해당 없음')}",
-            f"- 분포 해시: `{valuation.distribution_hash}`",
-            f"- 라우트 승인 해시: `{valuation.route_authorization.authorization_hash}`",
-            f"- 동결 가치 해시: `{valuation.envelope.envelope_hash}`",
             "- 비영업자산 매각은 매각대금과 제거 자산가치를 별도 대조해 잔존가치 이중계상을 막습니다.",
-            "- limited liability는 보고서 숫자에 사후 0원 하한을 씌우는 방식이 아니라 명시적 주주 지급·곤경 회수경로에서만 적용합니다.",
+            "- limited liability는 보고서 숫자에 사후 0원 하한을 씌우지 않고 명시적 주주 지급·곤경 회수경로에서만 적용합니다.",
             "",
             "## 인공지능 인사이트 — 환경 변화 × 기업 강점",
             "",
@@ -251,10 +292,17 @@ def render_canonical_distributional_report(
     else:
         lines.append("- 증권사 비교: 미확보 또는 비적용")
 
-    source_links = build_source_link_index(
-        data,
-        require_all_http=require_verifiable_sources,
+    lines.extend(
+        (
+            "",
+            "## 최종 요약 이미지",
+            f"![{company} 가치평가 요약]({_SUMMARY_VISUAL})",
+            "",
+            f"![{company} 가치평가 가정·위험]({_ASSUMPTIONS_VISUAL})",
+        )
     )
+
+    source_links = build_source_link_index(data, require_all_http=require_verifiable_sources)
     lines.extend(("", *render_source_link_section(source_links)))
 
     blocking = tuple(item for item in audit.findings if item.blocking)
@@ -266,7 +314,7 @@ def render_canonical_distributional_report(
             "",
             f"- 차단 감사 {passed}/{len(blocking)} 통과",
             "- 현재가·증권사 입력은 같은 실행의 intrinsic freeze 이후에만 접근했습니다.",
-            "- 분포 계산은 AUDIT_GATE에서 동일 typed spec으로 전량 replay됩니다.",
+            "- 내부 해시·receipt는 투자자 본문이 아니라 불변 감사 산출물에만 보존합니다.",
         )
     )
     return "\n".join(lines) + "\n"
@@ -303,9 +351,6 @@ def canonical_distributional_save_state_adapter(*, state_root: str | Path) -> St
                 blocking=True,
             )
 
-        learning_ref = None
-        probability_ref = None
-        run_dir: Path | None = None
         try:
             ticker = context.data.get("ticker")
             company = context.data.get("company")
@@ -325,8 +370,21 @@ def canonical_distributional_save_state_adapter(*, state_root: str | Path) -> St
             if token is None or getattr(token, "run_id", None) != context.run_id:
                 raise ValueError("same-run IntrinsicFreezeToken is required")
             authorize_post_freeze(token, run_id=context.run_id)
-            if getattr(token, "valuation_hash", None) != valuation.envelope.envelope_hash:
-                raise ValueError("freeze token is not bound to the distributional envelope")
+            lineage = valuation.envelope.distribution_lineage
+            if lineage is None:
+                raise ValueError("distributional valuation lineage is missing")
+            if (
+                getattr(token, "valuation_hash", None) != valuation.envelope.envelope_hash
+                or getattr(token, "distribution_hash", None) != lineage.distribution_hash
+                or getattr(token, "route_authorization_hash", None)
+                != lineage.route_authorization_hash
+                or getattr(token, "entry_policy_version", None) != lineage.entry_policy_version
+                or getattr(token, "entry_calculation_hash", None)
+                != lineage.entry_calculation_hash
+                or getattr(token, "ambiguity_set_hash", None) != lineage.ambiguity_set_hash
+                or getattr(token, "payoff_model_set_hash", None) != lineage.payoff_model_set_hash
+            ):
+                raise ValueError("freeze token is not fully bound to distributional lineage")
             if not isinstance(batch, AblationBatchResult):
                 raise ValueError("Decision Impact batch is required")
             if not isinstance(drafts, tuple) or not all(
@@ -338,6 +396,7 @@ def canonical_distributional_save_state_adapter(*, state_root: str | Path) -> St
                 dict(context.data),
                 require_verifiable_sources=(context.execution_mode is ExecutionMode.LIVE_PRIMARY),
             )
+            visuals = _distributional_visuals(dict(context.data), valuation)
             prior = context.data.get("company_state", {})
             parent_run = prior.get("last_completed_run") if isinstance(prior, dict) else None
             now = iso_now()
@@ -354,17 +413,16 @@ def canonical_distributional_save_state_adapter(*, state_root: str | Path) -> St
                 blocked_reasons=(),
             )
             impact_summary = _impact_summary(batch)
-            learning_ref = learning_store.save_batch(
-                ticker=ticker,
-                run_id=context.run_id,
-                batch=batch,
-            )
-            if drafts:
-                probability_ref = probability_store.save_forecast_run(
+            learning_ref = learning_store.save_batch(ticker=ticker, run_id=context.run_id, batch=batch)
+            probability_ref = (
+                probability_store.save_forecast_run(
                     ticker=ticker,
                     run_id=context.run_id,
                     drafts=drafts,
                 )
+                if drafts
+                else None
+            )
             artifacts = {
                 "control_plane_trace.json": _jsonable(tuple(context.stage_traces)),
                 "compiled_assumptions.json": _jsonable(context.data.get("compiled_assumption_set")),
@@ -377,10 +435,10 @@ def canonical_distributional_save_state_adapter(*, state_root: str | Path) -> St
                 "market_compare.json": _jsonable(context.data.get("market_comparison")),
                 "freeze_token.json": _jsonable(token),
                 "final_report.md": report,
+                **{filename: svg for filename, svg in visuals},
             }
             run_dir = store.save_run(manifest, artifacts)
             kind, low, high = _intrinsic_range(valuation)
-            lineage = valuation.envelope.distribution_lineage
             current_state = {
                 "schema_version": "0.6.14-distributional",
                 "ticker": ticker,
@@ -402,16 +460,17 @@ def canonical_distributional_save_state_adapter(*, state_root: str | Path) -> St
                 "entry_price": str(valuation.entry_price) if valuation.entry_price is not None else None,
                 "entry_price_authorized": valuation.route_authorization.entry_price_authorized,
                 "success_probability_claim_authorized": valuation.route_authorization.success_probability_claim_authorized,
-                "entry_policy_version": lineage.entry_policy_version if lineage is not None else None,
-                "ambiguity_set_hash": lineage.ambiguity_set_hash if lineage is not None else None,
-                "payoff_model_set_hash": lineage.payoff_model_set_hash if lineage is not None else None,
-                "entry_calculation_hash": lineage.entry_calculation_hash if lineage is not None else None,
+                "entry_policy_version": lineage.entry_policy_version,
+                "ambiguity_set_hash": lineage.ambiguity_set_hash,
+                "payoff_model_set_hash": lineage.payoff_model_set_hash,
+                "entry_calculation_hash": lineage.entry_calculation_hash,
                 "decision_impact_hash": context.data.get("decision_impact_hash"),
                 "research_learning_record_hash": learning_ref.content_hash,
                 "probability_forecast_record_hash": (
                     probability_ref.content_hash if probability_ref is not None else None
                 ),
                 "freeze_token_hash": token.token_hash,
+                "report_visuals": [filename for filename, _ in visuals],
             }
             store.promote_current(manifest, current_state)
         except Exception as exc:
@@ -425,7 +484,7 @@ def canonical_distributional_save_state_adapter(*, state_root: str | Path) -> St
             "saved_run_dir": str(run_dir),
             "saved_current_state": current_state,
             "saved_report_markdown": report,
-            "saved_report_visuals": (),
+            "saved_report_visuals": tuple(filename for filename, _ in visuals),
             "module_impact_summary": impact_summary,
             "research_learning_record_path": learning_ref.path,
             "research_learning_record_hash": learning_ref.content_hash,
@@ -442,7 +501,7 @@ def canonical_distributional_save_state_adapter(*, state_root: str | Path) -> St
             )
         return StageExecutionResult(
             StageStatus.PASS,
-            "immutable distributional valuation, audit, learning history, post-freeze comparisons and investor report persisted",
+            "immutable distributional valuation, audit, two report visuals, learning history and investor report persisted",
             outputs,
         )
 
