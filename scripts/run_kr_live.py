@@ -697,6 +697,8 @@ def publish_report_bundle(
     config = _load_run(run_dir)
     as_of = str(config.get("as_of") or "")
     run_input_sha256 = _run_input_sha256(run_dir)
+    stage_registry_path = ROOT / "config" / "control_plane_stage_registry.yaml"
+    stage_registry_sha256 = _file_sha256(stage_registry_path)
     if not all((valuation_hash, audit_hash, run_id, ticker, as_of)):
         raise RunbookError("completed run lacks report artifact identities")
 
@@ -738,6 +740,7 @@ def publish_report_bundle(
             freeze_token_hash,
             execution_attestation_hash,
             canonical_entrypoint_id,
+            stage_registry_sha256,
         )
     )
     short_hash = sha256(seed.encode("utf-8")).hexdigest()[:12].upper()
@@ -785,6 +788,7 @@ def publish_report_bundle(
         "freeze_token_hash": freeze_token_hash,
         "execution_attestation_hash": execution_attestation_hash,
         "canonical_entrypoint_id": canonical_entrypoint_id,
+        "stage_registry_sha256": stage_registry_sha256,
         "bundle_tree_sha256": _canonical_receipt_tree_hash(receipts),
         "report_filename": versioned_report_name,
         "report_sha256": _file_sha256(versioned_report_path),
@@ -817,6 +821,7 @@ def publish_report_bundle(
         "execution_attestation_hash": execution_attestation_hash,
         "bundle_tree_sha256": bundle_manifest["bundle_tree_sha256"],
         "canonical_entrypoint_id": canonical_entrypoint_id,
+        "stage_registry_sha256": stage_registry_sha256,
     }
     output_root.mkdir(parents=True, exist_ok=True)
     previous_latest = (

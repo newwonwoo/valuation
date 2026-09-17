@@ -47,6 +47,7 @@ class CompletionProof:
     bundle_tree_sha256: str
     report_sha256: str
     run_input_sha256: str
+    stage_registry_sha256: str
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -324,6 +325,7 @@ def _validate_latest(
         "valuation_hash": bundle_manifest.get("valuation_hash"),
         "audit_hash": bundle_manifest.get("audit_hash"),
         "run_input_sha256": bundle_manifest.get("run_input_sha256"),
+        "stage_registry_sha256": bundle_manifest.get("stage_registry_sha256"),
         "execution_attestation_hash": bundle_manifest.get("execution_attestation_hash"),
         "bundle_tree_sha256": bundle_manifest.get("bundle_tree_sha256"),
         "bundle_manifest": manifest_relative,
@@ -421,6 +423,11 @@ def validate_completion_bundle(
     run_input_hash = _hex_digest(
         bundle_manifest.get("run_input_sha256"), "run input hash"
     )
+    stage_registry_hash = _hex_digest(
+        bundle_manifest.get("stage_registry_sha256"), "stage registry hash"
+    )
+    if expected_stages is None and stage_registry_hash != sha256_file(stage_registry_path):
+        raise CompletionProofError("bundle stage registry hash does not match the current registry")
     valuation_hash = _hex_digest(bundle_manifest.get("valuation_hash"), "valuation hash")
     audit_hash = _hex_digest(bundle_manifest.get("audit_hash"), "audit hash")
     if bundle_manifest.get("canonical_entrypoint_id") != CANONICAL_ENTRYPOINT_ID:
@@ -462,4 +469,5 @@ def validate_completion_bundle(
         bundle_tree_sha256=tree_hash,
         report_sha256=report_hash,
         run_input_sha256=run_input_hash,
+        stage_registry_sha256=stage_registry_hash,
     )
