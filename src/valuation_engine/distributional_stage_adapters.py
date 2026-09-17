@@ -1,39 +1,154 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from decimal import Decimal
 
 from .control_plane import StageStatus
+from .distribution_route_policy import DistributionIntegrationRoute
 from .distributional_runtime import (
     DistributionalAPVExecutionSpec,
     DistributionalPrimaryValuationResult,
     execute_distributional_apv,
 )
+from .dynamic_driver_distribution import (
+    DriverPathSimulation,
+    DynamicDriverPosterior,
+    simulate_driver_paths,
+)
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
+from .risk_adapters import LiveBetaStageResult, LiveWACCStageResult
 from .valuation_method_intent import PrimaryAggregatorIntent, ValuationMethodIntent
 
 
 _DISTRIBUTIONAL_BINDING = "capacity_yield_levered/driver_distributional_apv"
 
 
+def _decimal_rate(value: object, label: str) -> Decimal:
+    result = Decimal(str(value))
+    if not result.is_finite() or not Decimal("0") <= result < Decimal("1"):
+        raise ValueError(f"{label} must be a finite rate in [0,1)")
+    return result
+
+
+def _validate_full_company_scope(
+    spec: DistributionalAPVExecutionSpec,
+    intent: ValuationMethodIntent,
+) -> None:
+    expected = {item.segment_id for item in intent.segments}
+    if not expected:
+        raise ValueError("distributional primary route has no planned company segments")
+    for path in spec.paths:
+        actual = {
+            path.core_segment_id,
+            *(item.segment_id for item in path.supplemental_segments),
+        }
+        if actual != expected:
+            missing = sorted(expected - actual)
+            extra = sorted(actual - expected)
+            raise ValueError(
+                "distributional primary route must value every planned company segment "
+                f"in every path; missing={missing}, extra={extra}"
+            )
+
+
+def _validate_calibrated_driver_simulation(
+    spec: DistributionalAPVExecutionSpec,
+    context: OrchestratorContext,
+) -> None:
+    if spec.route is not DistributionIntegrationRoute.PATHWISE_VALUE_DISTRIBUTION:
+        return
+    posterior = context.data.get("distributional_driver_posterior")
+    simulation = context.data.get("distributional_driver_simulation")
+    if not isinstance(posterior, DynamicDriverPosterior):
+        raise ValueError("pathwise distribution requires typed DynamicDriverPosterior")
+    if not isinstance(simulation, DriverPathSimulation):
+        raise ValueError("pathwise distribution requires typed DriverPathSimulation")
+    posterior.validate()
+    if not posterior.calibration_diagnostics.valuation_distribution_authorized:
+        raise ValueError("pathwise distribution posterior is not OOS-authorized")
+    if not simulation.paths or not simulation.seed_set:
+        raise ValueError("pathwise driver simulation is empty")
+    if len(simulation.paths) % len(simulation.seed_set) != 0:
+        raise ValueError("driver simulation path count does not match its seed set")
+    draws_per_seed = len(simulation.paths) // len(simulation.seed_set)
+    replay = simulate_driver_paths(
+        posterior,
+        horizon_periods=simulation.horizon_periods,
+        draws_per_seed=draws_per_seed,
+        seed_set=simulation.seed_set,
+        require_authorized=True,
+    )
+    if replay != simulation:
+        raise ValueError("driver simulation does not replay from the authorized posterior")
+    supplied_paths = tuple(item.driver_path for item in spec.paths)
+    if supplied_paths != simulation.paths:
+        raise ValueError("valuation paths do not match the authorized driver simulation")
+    if spec.seed_set != simulation.seed_set:
+        raise ValueError("valuation seed set does not match the authorized simulation")
+    if spec.driver_distribution_authorization_hash != simulation.simulation_hash:
+        raise ValueError("driver distribution authorization hash is not the simulation receipt")
+    if not spec.driver_distribution_authorized:
+        raise ValueError("authorized simulation cannot be consumed with distribution authority disabled")
+
+
 def bind_same_run_risk_receipts(
     spec: DistributionalAPVExecutionSpec,
     context: OrchestratorContext,
 ) -> DistributionalAPVExecutionSpec:
-    """Bind risk-stage receipts that do not exist when initial run inputs are created."""
+    """Bind same-run risk receipts and use their rates in APV arithmetic."""
 
     receipts = list(spec.route_evidence_path_ids)
-    if bool(context.data.get("risk_chain_requires_beta", False)):
+    paths = spec.paths
+    requires_beta = bool(context.data.get("risk_chain_requires_beta", False))
+    requires_wacc = bool(context.data.get("risk_chain_requires_wacc", False))
+
+    if requires_beta:
+        beta_result = context.data.get("live_beta_result")
         beta_hash = context.data.get("beta_snapshot_hash")
-        if not isinstance(beta_hash, str) or not beta_hash:
-            raise ValueError("distributional primary route requires same-run Beta receipt")
+        if (
+            not isinstance(beta_result, LiveBetaStageResult)
+            or not isinstance(beta_hash, str)
+            or beta_hash != beta_result.snapshot_hash
+        ):
+            raise ValueError("distributional primary route requires same-run Beta result/receipt")
         receipts.append(f"beta:{beta_hash}")
-    if bool(context.data.get("risk_chain_requires_wacc", False)):
+
+    if requires_beta or requires_wacc:
+        wacc_result = context.data.get("live_wacc_result")
         wacc_hash = context.data.get("wacc_snapshot_hash")
-        if not isinstance(wacc_hash, str) or not wacc_hash:
-            raise ValueError("distributional primary route requires same-run WACC receipt")
+        if (
+            not isinstance(wacc_result, LiveWACCStageResult)
+            or not isinstance(wacc_hash, str)
+            or wacc_hash != wacc_result.snapshot_hash
+        ):
+            raise ValueError(
+                "distributional APV risk chain requires same-run WACC result so discount rates are not caller-supplied"
+            )
+        if requires_beta and wacc_result.beta_result.snapshot_hash != context.data.get("beta_snapshot_hash"):
+            raise ValueError("distributional Beta/WACC snapshots are not one same-run risk chain")
         receipts.append(f"wacc:{wacc_hash}")
+        asset_rate = _decimal_rate(wacc_result.wacc_result.wacc, "APV asset discount rate")
+        shield_rate = _decimal_rate(
+            wacc_result.wacc_result.after_tax_cost_of_debt,
+            "APV tax-shield discount rate",
+        )
+        equity_rate = _decimal_rate(
+            wacc_result.wacc_result.cost_of_equity,
+            "APV equity required return",
+        )
+        paths = tuple(
+            replace(
+                item,
+                asset_required_return=asset_rate,
+                tax_shield_discount_rate=shield_rate,
+                equity_required_return=equity_rate,
+            )
+            for item in spec.paths
+        )
+
     return replace(
         spec,
+        paths=paths,
         route_evidence_path_ids=tuple(dict.fromkeys(receipts)),
     )
 
@@ -75,6 +190,8 @@ def canonical_primary_valuation_dispatch_adapter(
 
         try:
             bound_spec = bind_same_run_risk_receipts(initial_distributional_spec, context)
+            _validate_full_company_scope(bound_spec, intent)
+            _validate_calibrated_driver_simulation(bound_spec, context)
             result = execute_distributional_apv(bound_spec)
             if not isinstance(result, DistributionalPrimaryValuationResult):
                 raise TypeError("distributional executor returned an invalid result")
@@ -132,7 +249,7 @@ def canonical_primary_valuation_dispatch_adapter(
             )
         return StageExecutionResult(
             StageStatus.PASS,
-            "company-level distributional APV completed inside the canonical valuation stage with same-run risk receipts bound",
+            "company-level distributional APV completed for every planned segment with same-run risk rates and authorized path receipts bound",
             outputs,
         )
 
