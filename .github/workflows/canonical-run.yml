@@ -88,6 +88,10 @@ jobs:
         run: |
           set -euo pipefail
           git check-ref-format --branch "${EXECUTION_BRANCH}" >/dev/null
+          [[ "${EXPECTED_HEAD}" =~ ^[0-9a-fA-F]{40}$ ]]
+          case "${RUN_DIR}" in
+            /*|../*|*/../*) echo "run_dir must stay inside the checkout" >&2; exit 1 ;;
+          esac
           git rev-parse --verify "${EXPECTED_HEAD}^{commit}" >/dev/null
           git checkout --detach "${SOURCE_REF}"
           test "$(git rev-parse HEAD)" = "${EXPECTED_HEAD}"
@@ -103,6 +107,7 @@ jobs:
       - name: Execute canonical LIVE_PRIMARY run
         run: |
           set -euo pipefail
+          test -d "${RUN_DIR}"
           test "${STAFF_MODE}" = replay
           PYTHONPATH=src python scripts/run_kr_live.py "${RUN_DIR}" --staff-mode replay
 
