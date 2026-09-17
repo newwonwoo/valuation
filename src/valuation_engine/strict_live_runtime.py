@@ -12,10 +12,14 @@ from .broker_runtime import broker_aware_rocket_insight_adapter
 from .control_plane import ExecutionMode, StageStatus
 from .distributional_audit import distributional_audit_adapter
 from .distributional_decision_impact import distributional_decision_impact_adapter
-from .distributional_runtime import (
-    DistributionalAPVExecutionSpec,
-    primary_valuation_dispatch_adapter,
+from .distributional_reporting import (
+    distributional_market_compare_adapter,
+    distributional_or_generic_adapter,
+    distributional_save_state_adapter,
+    distributional_street_gap_adapter,
 )
+from .distributional_runtime import DistributionalAPVExecutionSpec
+from .distributional_stage_adapters import canonical_primary_valuation_dispatch_adapter
 from .generic_reporting import finalize_live_primary_run_artifacts
 from .live_runtime import (
     LivePrimaryRuntimeConfig,
@@ -40,16 +44,7 @@ from .unit_contracts import UnitContractRegistry, load_unit_contract_registry
 
 CANONICAL_ENTRYPOINT_ID = "prism_strict_live_primary/v1"
 _DISTRIBUTIONAL_SPEC_KEY = "distributional_apv_execution_spec"
-
-
-def _distributional_spec_loader(context: OrchestratorContext) -> DistributionalAPVExecutionSpec:
-    value = context.data.get(_DISTRIBUTIONAL_SPEC_KEY)
-    if not isinstance(value, DistributionalAPVExecutionSpec):
-        raise TypeError(
-            "canonical distributional primary route requires a typed "
-            "DistributionalAPVExecutionSpec in initial_data"
-        )
-    return value
+_BOUND_DISTRIBUTIONAL_SPEC_KEY = "bound_distributional_apv_execution_spec"
 
 
 def _distributional_gate_dispatch(
@@ -122,8 +117,18 @@ def _distributional_audit_dispatch(
                 + ", ".join(sorted(overlap)),
                 blocking=True,
             )
+        bound_spec = context.data.get(_BOUND_DISTRIBUTIONAL_SPEC_KEY)
+        if not isinstance(bound_spec, DistributionalAPVExecutionSpec):
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "same-run risk-bound DistributionalAPVExecutionSpec is missing before audit",
+                blocking=True,
+            )
         data = dict(context.data)
         data.update(impact_result.outputs)
+        # The audit replays exactly the spec that was bound inside the valuation
+        # stage, not the pre-run input spec that lacked same-run risk receipts.
+        data[_DISTRIBUTIONAL_SPEC_KEY] = bound_spec
         audit_context = OrchestratorContext(
             context.run_id,
             context.execution_mode,
@@ -217,11 +222,9 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
     # Preserve the existing deterministic/SOTP implementation as the fallback.
     # A selected company-level primary aggregator takes over only at the exact
     # valuation stage, after the normal method-intent and risk gates have run.
-    adapters["DETERMINISTIC_VALUATION"] = primary_valuation_dispatch_adapter(
+    adapters["DETERMINISTIC_VALUATION"] = canonical_primary_valuation_dispatch_adapter(
         deterministic_adapter=adapters["DETERMINISTIC_VALUATION"],
-        distributional_loader=(
-            _distributional_spec_loader if distributional_spec is not None else None
-        ),
+        initial_distributional_spec=distributional_spec,
     )
     adapters["DCF_PER_ASSUMPTION_CONSISTENCY_GATE"] = (
         _distributional_gate_dispatch(
@@ -239,6 +242,24 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
     adapters["AUDIT_GATE"] = _distributional_audit_dispatch(
         adapters["AUDIT_GATE"],
         registry=unit_contract_registry,
+    )
+
+    # Street/market data remain post-freeze.  The loaders are shared, while the
+    # comparison math and persistence are route-specific and cannot depend on a
+    # fabricated GenericValuationResult.
+    adapters["STREET_GAP_ANALYZER"] = distributional_or_generic_adapter(
+        generic_adapter=adapters["STREET_GAP_ANALYZER"],
+        distributional_adapter=distributional_street_gap_adapter(),
+    )
+    adapters["MARKET_COMPARE"] = distributional_or_generic_adapter(
+        generic_adapter=adapters["MARKET_COMPARE"],
+        distributional_adapter=distributional_market_compare_adapter(),
+    )
+    adapters["SAVE_STATE"] = distributional_or_generic_adapter(
+        generic_adapter=adapters["SAVE_STATE"],
+        distributional_adapter=distributional_save_state_adapter(
+            state_root=strict_config.state_root
+        ),
     )
 
     authority_result = run_authority_controlled_workflow(
