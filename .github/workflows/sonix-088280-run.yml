@@ -95,7 +95,7 @@ jobs:
             echo "exit=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
           else
             set +e
-            PYTHONPATH=src python scripts/run_kr_live.py runs/sonix-088280 \
+            PYTHONPATH=src python scripts/run_kr_live.py runs/sonix-088280 --staff-mode assisted \
               2>&1 | tee /tmp/sonix-research.log
             code=${PIPESTATUS[0]}
             set -e
