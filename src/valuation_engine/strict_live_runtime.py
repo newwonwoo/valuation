@@ -11,6 +11,7 @@ from .authority_orchestrator import (
 from .broker_runtime import broker_aware_rocket_insight_adapter
 from .control_plane import ExecutionMode, StageStatus
 from .distributional_audit import distributional_audit_adapter
+from .distributional_decision_impact import distributional_decision_impact_adapter
 from .distributional_runtime import (
     DistributionalAPVExecutionSpec,
     primary_valuation_dispatch_adapter,
@@ -34,7 +35,7 @@ from .recovery_authority import (
     proposal_only_recovery_adapter,
 )
 from .rocket_context_engine import strict_rocket_insight_dispatch_adapter
-from .unit_contracts import load_unit_contract_registry
+from .unit_contracts import UnitContractRegistry, load_unit_contract_registry
 
 
 CANONICAL_ENTRYPOINT_ID = "prism_strict_live_primary/v1"
@@ -98,13 +99,55 @@ def _distributional_cross_method_dispatch(
     return run
 
 
-def _distributional_audit_dispatch(generic_adapter: StageAdapter) -> StageAdapter:
+def _distributional_audit_dispatch(
+    generic_adapter: StageAdapter,
+    *,
+    registry: UnitContractRegistry,
+) -> StageAdapter:
+    impact = distributional_decision_impact_adapter(registry=registry)
     distributional = distributional_audit_adapter()
 
     def run(context: OrchestratorContext) -> StageExecutionResult:
-        if context.data.get("distributional_primary_result") is not None:
-            return distributional(context)
-        return generic_adapter(context)
+        if context.data.get("distributional_primary_result") is None:
+            return generic_adapter(context)
+
+        impact_result = impact(context)
+        if impact_result.blocking:
+            return impact_result
+        overlap = set(context.data).intersection(impact_result.outputs)
+        if overlap:
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "distributional decision impact attempted to overwrite context keys: "
+                + ", ".join(sorted(overlap)),
+                blocking=True,
+            )
+        data = dict(context.data)
+        data.update(impact_result.outputs)
+        audit_context = OrchestratorContext(
+            context.run_id,
+            context.execution_mode,
+            data,
+            list(context.stage_traces),
+            context.freeze_token,
+        )
+        audit_result = distributional(audit_context)
+        duplicate_outputs = set(impact_result.outputs).intersection(audit_result.outputs)
+        if duplicate_outputs:
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                "distributional audit duplicated decision-impact outputs: "
+                + ", ".join(sorted(duplicate_outputs)),
+                blocking=True,
+            )
+        outputs = dict(impact_result.outputs)
+        outputs.update(audit_result.outputs)
+        return StageExecutionResult(
+            audit_result.status,
+            impact_result.rationale + " | " + audit_result.rationale,
+            outputs,
+            audit_result.blocking,
+        )
 
     return run
 
@@ -193,7 +236,10 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
     adapters["CROSS_METHOD_DOUBLE_COUNT_AUDIT"] = _distributional_cross_method_dispatch(
         adapters["CROSS_METHOD_DOUBLE_COUNT_AUDIT"]
     )
-    adapters["AUDIT_GATE"] = _distributional_audit_dispatch(adapters["AUDIT_GATE"])
+    adapters["AUDIT_GATE"] = _distributional_audit_dispatch(
+        adapters["AUDIT_GATE"],
+        registry=unit_contract_registry,
+    )
 
     authority_result = run_authority_controlled_workflow(
         run_id=strict_config.run_id,
