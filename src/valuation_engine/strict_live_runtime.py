@@ -12,6 +12,7 @@ from .broker_runtime import broker_aware_rocket_insight_adapter
 from .control_plane import ExecutionMode, StageStatus
 from .distributional_audit import distributional_audit_adapter
 from .distributional_decision_impact import distributional_decision_impact_adapter
+from .distributional_finalize import finalize_distributional_live_primary_run_artifacts
 from .distributional_reporting import (
     distributional_market_compare_adapter,
     distributional_or_generic_adapter,
@@ -296,11 +297,17 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
         )
 
     authority_result.validate_canonical()
-    finalized = finalize_live_primary_run_artifacts(
-        base,
-        state_root=strict_config.state_root,
-        stage_registry_path=strict_config.stage_registry_path,
-    )
+    if base.data.get("distributional_primary_result") is not None:
+        finalized = finalize_distributional_live_primary_run_artifacts(
+            base,
+            state_root=strict_config.state_root,
+        )
+    else:
+        finalized = finalize_live_primary_run_artifacts(
+            base,
+            state_root=strict_config.state_root,
+            stage_registry_path=strict_config.stage_registry_path,
+        )
     data = dict(finalized.data)
     attestation = authority_result.execution_attestation
     if attestation is None:
