@@ -15,9 +15,9 @@ from .distributional_decision_impact import distributional_decision_impact_adapt
 from .distributional_reporting import (
     distributional_market_compare_adapter,
     distributional_or_generic_adapter,
-    distributional_save_state_adapter,
     distributional_street_gap_adapter,
 )
+from .distributional_reporting_canonical import canonical_distributional_save_state_adapter
 from .distributional_runtime import DistributionalAPVExecutionSpec
 from .distributional_stage_adapters import canonical_primary_valuation_dispatch_adapter
 from .generic_reporting import finalize_live_primary_run_artifacts
@@ -257,7 +257,7 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
     )
     adapters["SAVE_STATE"] = distributional_or_generic_adapter(
         generic_adapter=adapters["SAVE_STATE"],
-        distributional_adapter=distributional_save_state_adapter(
+        distributional_adapter=canonical_distributional_save_state_adapter(
             state_root=strict_config.state_root
         ),
     )
