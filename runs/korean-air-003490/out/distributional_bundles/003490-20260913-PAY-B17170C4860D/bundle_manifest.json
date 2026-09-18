@@ -1,0 +1,51 @@
+{
+  "schema_version": "dated-payoff-ambiguity-report-bundle/v2",
+  "artifact_id": "003490-20260913-PAY-B17170C4860D",
+  "company": "대한항공",
+  "ticker": "003490",
+  "as_of": "2026-09-13",
+  "status": "AUDITED_FINAL",
+  "audit_passed": true,
+  "intrinsic_freeze_hash": "804cfc2240c0c5eab54fdd1845f937fd7d48e0534c16142477b3ac4a64a95bf1",
+  "post_freeze_comparison_hash": "0f83509993028e3d98e9d8c3b3d979ccfe36e1a51e013246526014ad190339dd",
+  "supersedes_artifact_id": "003490-20260913-DIST-4664627231DA",
+  "probability_ambiguity_set_hash": "69485cd9e355797e4bf11bf6507a5a1bc12588a5cc8c77d453d30b4cd752b183",
+  "payoff_model_set_hash": "c083bedf623955d6d1f6d4e6588059058623eb5c86a0c17ff1647dd483c686e2",
+  "payoff_ambiguity_audit_hash": "2c5894397686a4b77f9e75fda297ea7788a671c94c3a108483c0af6ca3db2aa1",
+  "source_bundle_manifest_sha256": "170bff8d4b395e894f827c97bcce35d9cdab821a0878edd10f91c21fd5b2021e",
+  "report_builder_sha256": "fa496f3be2580d8e602d82ebc7b677ab54c3e48027c22aedd1824fa6d9c09c0d",
+  "files": [
+    {
+      "filename": "assumptions_risk_sources.svg",
+      "sha256": "480b187f41d8d2f03ed874a4856a6a133c6750d451b27340d2d96575dc1281f7"
+    },
+    {
+      "filename": "audit.json",
+      "sha256": "da49ae46269b13a9e89802f369a745fd2a79a2751e4c7d4352596680c3146f0c"
+    },
+    {
+      "filename": "broker_comparison.json",
+      "sha256": "cbef31b21e906bcc8a76d59792bfb4609c786991f25c92dcba4cfa372ab06215"
+    },
+    {
+      "filename": "entry_price.json",
+      "sha256": "5f21b18604bf3796453c0a3b3c84e68239f9dbdcdf5c226170f7925dc54719e3"
+    },
+    {
+      "filename": "equity_value_distribution.json",
+      "sha256": "f68775cd50ff2ed81b94919fe29ee2c95b1ef08ee15350322a8bdca6147ba0fc"
+    },
+    {
+      "filename": "final_report.md",
+      "sha256": "7405b6a7059abfef63a144205e12bbf0a7e10147b2f27a72e329931fadb627d4"
+    },
+    {
+      "filename": "payoff_model_cases.json",
+      "sha256": "fa6656c3b812d850a74dcb4e978dac3ee4766fc042d1da6e352d4b6d12e69083"
+    },
+    {
+      "filename": "valuation_summary.svg",
+      "sha256": "b1548ffdf53e1880bdde45cc692b52cbcdabf04c39877360665f33086e044d62"
+    }
+  ]
+}

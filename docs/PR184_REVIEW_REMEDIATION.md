@@ -55,3 +55,22 @@ filesystem; the same eight fail on unmodified `e4bf3de6`. The filesystem securit
 gate was not relaxed. The three clean-HEAD checks pass after committing (3 passed, 23 deselected).
 OCI regression completes with all blocking audit findings passed. Unit Contract
 and work-claim registry validators pass.
+
+## Dated-payoff follow-up
+
+The later `dated-payoff-ambiguity-report/v2` route does not promote the retired
+standalone structural diagnostic. It replaces that calculation with explicit
+five-year operating cash-flow, debt, lease, refinancing, asset-sale, dilution
+and distress-waterfall paths. Three complete financing cases are crossed with
+all three declared probability vectors; legal shareholder cash flows are
+discounted at their actual payment dates. The route policy authorizes only an
+expected-value interval and a robust entry ceiling. It continues to forbid a
+single target price and a calibrated success-probability claim.
+
+The source-artifact correction above remains binding. Before the new route can
+run, it verifies the independently pinned `kr-live-report-bundle/v1` manifest,
+every archived file receipt, the completed source run and blocking audit, the
+freeze token, target/cutoff/units, and exact signed scenario values. The pinned
+manifest is also included in the intrinsic source hash and the new audit and
+bundle receipts. Market prices and broker targets remain unavailable until the
+dated-payoff result, route authorization and replay audit have been hash-frozen.

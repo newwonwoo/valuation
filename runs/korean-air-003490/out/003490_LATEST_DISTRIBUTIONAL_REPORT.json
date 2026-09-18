@@ -1,11 +1,13 @@
 {
-  "schema_version": "governed-distribution-latest/v1",
-  "artifact_id": "003490-20260913-DIST-4664627231DA",
-  "bundle_directory": "distributional_bundles/003490-20260913-DIST-4664627231DA",
+  "schema_version": "governed-distribution-latest/v2",
+  "artifact_id": "003490-20260913-PAY-B17170C4860D",
+  "bundle_directory": "distributional_bundles/003490-20260913-PAY-B17170C4860D",
   "report_filename": "final_report.md",
-  "distribution_hash": "349b06908b6e5cb7e1b33887971dd018dd1833508ccbdc3b17779e8fc6fa0fc4",
-  "intrinsic_freeze_hash": "768f0d1eb65f06246d04e200cd20faac5f0eb2dcbef8cbfdce8220a192acb937",
-  "post_freeze_comparison_hash": "5be102c78550f8fb97a6863ce4e0672bdec3f18ba57c6d661fa5c0e36b5917fa",
+  "intrinsic_freeze_hash": "804cfc2240c0c5eab54fdd1845f937fd7d48e0534c16142477b3ac4a64a95bf1",
+  "post_freeze_comparison_hash": "0f83509993028e3d98e9d8c3b3d979ccfe36e1a51e013246526014ad190339dd",
+  "probability_ambiguity_set_hash": "69485cd9e355797e4bf11bf6507a5a1bc12588a5cc8c77d453d30b4cd752b183",
+  "payoff_model_set_hash": "c083bedf623955d6d1f6d4e6588059058623eb5c86a0c17ff1647dd483c686e2",
+  "entry_policy_version": "ambiguity_robust_expected_return_entry/v2",
   "audit_passed": true,
-  "supersedes_artifact_id": "003490-20260913-DIST-8B3A2C1C58D8"
+  "supersedes_artifact_id": "003490-20260913-DIST-4664627231DA"
 }

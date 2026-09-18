@@ -1,0 +1,30 @@
+{
+  "schema_version": "dated-shareholder-payoff-ambiguity/v2",
+  "target_id": "KR:DART:00113526",
+  "as_of": "2026-09-13",
+  "authorization_status": "GOVERNED_EVENT_PRIOR_AMBIGUITY_SET",
+  "point_target_authorized": false,
+  "success_probability_claim_authorized": false,
+  "fair_value_discount_rate": "0.09577089965527585",
+  "fair_value_interval_per_share": {
+    "minimum": "8008.572564434684220883155450",
+    "maximum": "16443.99522764120572850314014"
+  },
+  "binding_minimum": {
+    "probability_vector_id": "downside_heavier",
+    "payoff_model_case_id": "front_loaded_thin_buffer"
+  },
+  "binding_maximum": {
+    "probability_vector_id": "execution_success",
+    "payoff_model_case_id": "level_standard_buffer"
+  },
+  "legacy_signed_value_cross_check": {
+    "minimum": "1142.150768093133620112913164",
+    "maximum": "7357.091858922905761460014388",
+    "role": "CROSS_CHECK_ONLY_NO_FLOOR_NO_ENTRY_AUTHORITY"
+  },
+  "probability_ambiguity_set_hash": "69485cd9e355797e4bf11bf6507a5a1bc12588a5cc8c77d453d30b4cd752b183",
+  "payoff_model_set_hash": "c083bedf623955d6d1f6d4e6588059058623eb5c86a0c17ff1647dd483c686e2",
+  "source_payoff_hash": "5df23578c6741ae02fa2f24ea1d791f3f9c3b7b63990bd2765a23e54994777d1",
+  "intrinsic_freeze_hash": "804cfc2240c0c5eab54fdd1845f937fd7d48e0534c16142477b3ac4a64a95bf1"
+}

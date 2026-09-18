@@ -65,6 +65,13 @@ def _return_rate(value: Decimal, label: str) -> Decimal:
     return value
 
 
+def _decimal_close(left: Decimal, right: Decimal) -> bool:
+    """Allow only arithmetic-order rounding at the active Decimal precision."""
+
+    scale = max(abs(left), abs(right), ONE)
+    return abs(left - right) <= scale * Decimal("1e-24")
+
+
 @dataclass(frozen=True)
 class RobustEntryPolicy:
     policy_version: str
@@ -331,7 +338,10 @@ def dated_payoff_from_apv_result(
         payoff_calculation_hash=result.path_calculation_hash,
     )
     payoff.validate(len(result.distributions_to_old_holders))
-    if payoff.present_value(result.equity_required_return) != result.value_per_initial_share:
+    if not _decimal_close(
+        payoff.present_value(result.equity_required_return),
+        result.value_per_initial_share,
+    ):
         raise PayoffModelAmbiguityError(
             "dated shareholder payoff does not reconcile to the APV path value"
         )

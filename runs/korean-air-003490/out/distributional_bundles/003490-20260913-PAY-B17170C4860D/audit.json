@@ -1,0 +1,53 @@
+{
+  "schema_version": "dated-payoff-ambiguity-audit/v2",
+  "passed": true,
+  "checks": {
+    "source_bundle_manifest_and_artifacts_replay": true,
+    "dated_payoff_ambiguity_replays": true,
+    "route_authorizes_interval_and_robust_entry": true,
+    "single_point_target_forbidden": true,
+    "success_probability_claim_forbidden": true,
+    "primary_cashflow_hash_replays": true,
+    "all_probability_model_combinations_evaluated": true,
+    "broker_loaded_only_after_intrinsic_freeze": true,
+    "broker_reports_not_after_cutoff": true,
+    "broker_targets_excluded_from_intrinsic_inputs": true,
+    "market_loaded_only_after_intrinsic_freeze": true,
+    "legacy_negative_value_preserved": true,
+    "investor_report_hides_internal_identifiers": true
+  },
+  "engine_findings": [
+    {
+      "check": "payoff_ambiguity_calculation_replay",
+      "passed": true,
+      "blocking": true,
+      "detail": "two-layer dated payoff calculation replays exactly"
+    },
+    {
+      "check": "payoff_ambiguity_route_replay",
+      "passed": true,
+      "blocking": true,
+      "detail": "distribution route authorization replays exactly"
+    },
+    {
+      "check": "payoff_ambiguity_route_scope",
+      "passed": true,
+      "blocking": true,
+      "detail": "prior-ambiguity route authorizes an interval and robust entry"
+    },
+    {
+      "check": "payoff_receipt_binding",
+      "passed": true,
+      "blocking": true,
+      "detail": "route request is bound to the dated payoff receipt, horizon and model count"
+    },
+    {
+      "check": "uncalibrated_claim_limits",
+      "passed": true,
+      "blocking": true,
+      "detail": "uncalibrated ambiguity cannot authorize a point target or success probability"
+    }
+  ],
+  "intrinsic_freeze_hash": "804cfc2240c0c5eab54fdd1845f937fd7d48e0534c16142477b3ac4a64a95bf1",
+  "post_freeze_comparison_hash": "0f83509993028e3d98e9d8c3b3d979ccfe36e1a51e013246526014ad190339dd"
+}

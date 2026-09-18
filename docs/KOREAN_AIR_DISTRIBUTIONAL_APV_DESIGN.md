@@ -479,10 +479,11 @@ class EntryPricePolicy:
 | 경로별 가치 | `src/valuation_engine/distributional_apv.py` | segment APV/SOTP와 구주주가치분포 |
 | 경로 승인 | `src/valuation_engine/distribution_route_policy.py` | pathwise·ambiguity·legacy replay를 구분하고 허용 산출물 고정 |
 | 확률집합 | `src/valuation_engine/probability_ambiguity.py` | 출처 결합 확률벡터 검증, 부호 보존 기대가치 구간 |
-| 매수가 | `src/valuation_engine/entry_price.py` | 보정분포 quantile 또는 ambiguity-set 최악 기대지급액 기반 pure function |
+| 지급액 모형집합 | `src/valuation_engine/payoff_model_ambiguity.py` | 실제 지급시점별 구주주 현금흐름, 완결 자금조달 case×확률벡터 전 조합, 강건 매수상한 |
+| 매수가 | `src/valuation_engine/entry_price.py` | 보정분포 quantile 또는 레거시 호환 진입가 pure function; 신규 ambiguity 경로는 지급액 모형집합 사용 |
 | Registry 연결 | `src/valuation_engine/evaluator_registry.py`, `generic_valuation_plan.py`, `valuation_execution.py` | 새 method/version exact binding; legacy fallback 금지 |
 | Audit | `src/valuation_engine/generic_audit.py`, `audit_adapter.py` | anchor 미사용, 0-floor 금지, lease/waterfall/분포 안정성 검사 |
-| Reporting | `investor_report.py`, `generic_reporting.py`, `visual_reporting.py` | P50·범위·위험·매수가 표시, 기존 문구 삭제 |
+| Reporting | `scripts/build_governed_distribution_report.py` 및 공통 보고 계층 | 확률집합 가치범위·지급시점별 강건 매수상한·위험 표시, 단일 목표가/성공확률 문구 차단 |
 | 회사 입력 어댑터 | `runs/<company-id>/**`, `research/<company-id>/**` | structural eligibility, profile, canonical metric mapping, 분기 panel, debt/lease schedule, segment binding |
 | 대한항공 최초 입력 | `runs/korean-air-003490/**`, `research/korean-air-20260913/**` | 공통 계약을 사용한 첫 production proof와 재생성 입력 |
 | 최종 산출물 | 새 불변 report directory | 기존 manifest를 `supersedes`, 동일 실행의 보고서·SVG·감사 묶음 |
