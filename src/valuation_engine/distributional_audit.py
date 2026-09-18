@@ -350,7 +350,7 @@ def distributional_audit_adapter() -> StageAdapter:
         execution_spec = context.data.get("distributional_apv_execution_spec")
         valuation = context.data.get("distributional_primary_result")
         coverage = context.data.get("pre_audit_doctrine_coverage")
-        expected = context.data.get("expected_module_ids")
+        expected = context.data.get("pre_audit_expected_unit_ids")
         beta_result = context.data.get("live_beta_result")
         wacc_result = context.data.get("live_wacc_result")
         decision_impact = context.data.get("decision_impact_batch")
@@ -370,7 +370,11 @@ def distributional_audit_adapter() -> StageAdapter:
         if not isinstance(coverage, tuple) or not all(isinstance(item, DoctrineCoverageEntry) for item in coverage):
             return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "pre-audit doctrine coverage missing", blocking=True)
         if not isinstance(expected, tuple) or not all(isinstance(item, str) and item for item in expected):
-            return StageExecutionResult(StageStatus.RECOVERY_REQUIRED, "expected module IDs missing", blocking=True)
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                "pre-audit expected Unit Contract IDs missing",
+                blocking=True,
+            )
         if decision_impact is not None and not isinstance(decision_impact, AblationBatchResult):
             return StageExecutionResult(StageStatus.BLOCKED, "decision_impact_batch has invalid type", blocking=True)
 

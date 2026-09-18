@@ -1,7 +1,7 @@
 {
   "schema_version": "post-freeze-broker-comparison-result/v2",
-  "intrinsic_freeze_hash": "804cfc2240c0c5eab54fdd1845f937fd7d48e0534c16142477b3ac4a64a95bf1",
-  "post_freeze_comparison_hash": "0f83509993028e3d98e9d8c3b3d979ccfe36e1a51e013246526014ad190339dd",
+  "intrinsic_freeze_hash": "6f62f38b733ec0b288400fdacd5e5935018e6fce47d8c1b0a4668cd3e8e329c0",
+  "post_freeze_comparison_hash": "6664963cf7098df10ceb6aab591c2fc198422a6e3bbba12e38769a817ac2320d",
   "intrinsic_distribution_unchanged": true,
   "market": {
     "date": "2026-09-11",

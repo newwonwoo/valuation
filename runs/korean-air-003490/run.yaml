@@ -27,6 +27,7 @@ calibration:
   horizon: 5y_path
   method_version: probability_engine_v3.2_self_v1
   mapping_version: korean_air_combined_margin_v1
+  legacy_replay_snapshot_hash: f83ff1e76fc37d0d1bc414daba1259fd48f714c507173d7b69709a7d8f69ea03
   driver_ids: [operating_margin]
   scenario_ids: [Down, Base, Bull]
   path_length: 5
@@ -52,6 +53,15 @@ filing:
   segment_id: airline
 public_filing_facts_path: public_filing_facts.json
 extra_required_evidence:
+- service_capacity
+- realized_volume
+- utilization_or_load
+- realized_unit_yield
+- variable_input_cost
+- nonvariable_operating_cost
+- committed_asset_capex
+- debt_maturities
+- minimum_operating_liquidity
 - revenue
 - operating_income
 - net_income

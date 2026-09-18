@@ -1,11 +1,24 @@
 # 용량·가동률·단가형 고정비 사업의 범용 연속분포 APV·재무곤경 가치평가 설계
 
-Status: reusable engine policy implemented; company data/runtime not yet promoted
+Status: canonical 33-stage LIVE_PRIMARY integration implemented and replay-audited
 Reusable route: `capacity_yield_levered/driver_distributional_apv`
 
-First production proof: 대한항공 003490 / PR #184
+First production proof: 대한항공 003490 / PR #184, canonical completion in PR #189
 Base revision: `e9ed9f66967620e6e9ab28cfe49515ef37db5583`  
 Supersedes as decision methodology: `korean_air_combined_margin_v1` nearest-anchor weighting and report-level limited-liability flooring
+
+The production artifact is no longer certified by the standalone report
+builder. The builder now verifies the pinned source bundle, constructs typed
+distributional inputs, and submits them to `prism_strict_live_primary/v1`.
+The canonical run binds same-run Beta/WACC receipts, values all four planned
+segments, replays the full calculation at `AUDIT_GATE`, issues the intrinsic
+freeze token, and persists the execution attestation before any current-price
+or Street comparison can enter the report bundle.
+
+For multi-segment issuers, supplemental segments remain separate APV cash-flow
+paths, while their operating cash flow, mandatory capex and taxable income are
+also aggregated into the one consolidated financing stack. This prevents both
+omitting a segment from the distress test and counting its FCFF twice.
 
 ## 1. 결정
 

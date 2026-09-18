@@ -7,8 +7,8 @@
   "success_probability_claim_authorized": false,
   "fair_value_discount_rate": "0.09577089965527585",
   "fair_value_interval_per_share": {
-    "minimum": "8008.572564434684220883155450",
-    "maximum": "16443.99522764120572850314014"
+    "minimum": "8008.572564434685739720516212",
+    "maximum": "16443.99522764120724530483007"
   },
   "binding_minimum": {
     "probability_vector_id": "downside_heavier",
@@ -23,8 +23,10 @@
     "maximum": "7357.091858922905761460014388",
     "role": "CROSS_CHECK_ONLY_NO_FLOOR_NO_ENTRY_AUTHORITY"
   },
+  "distribution_hash": "0df70e50d844a6790a43e0e5ba4e5fbb34b719a57af9c03e28b52aed8fc81dae",
+  "valuation_hash": "80c71dc39e50995f41e7e019e21daa5cd7380d755689c24aba93f09a3df75dd2",
   "probability_ambiguity_set_hash": "69485cd9e355797e4bf11bf6507a5a1bc12588a5cc8c77d453d30b4cd752b183",
-  "payoff_model_set_hash": "c083bedf623955d6d1f6d4e6588059058623eb5c86a0c17ff1647dd483c686e2",
-  "source_payoff_hash": "5df23578c6741ae02fa2f24ea1d791f3f9c3b7b63990bd2765a23e54994777d1",
-  "intrinsic_freeze_hash": "804cfc2240c0c5eab54fdd1845f937fd7d48e0534c16142477b3ac4a64a95bf1"
+  "payoff_model_set_hash": "86cc8eacd072f8b43a3088411a60855cb6d04fe8f9dc2c532fef7f1a3e364a96",
+  "source_payoff_hash": "e6e283354c6de0ead4dc3ccf351590c6070a5bd58de735af6b9633cb04388ada",
+  "intrinsic_freeze_hash": "6f62f38b733ec0b288400fdacd5e5935018e6fce47d8c1b0a4668cd3e8e329c0"
 }

@@ -256,6 +256,14 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
         deterministic_adapter=adapters["DETERMINISTIC_VALUATION"],
         initial_distributional_spec=distributional_spec,
     )
+    adapters["HIERARCHICAL_WARRANTED_PER"] = _distributional_gate_dispatch(
+        deterministic_adapter=adapters["HIERARCHICAL_WARRANTED_PER"],
+        distributional_status=StageStatus.SKIPPED_NOT_APPLICABLE,
+        rationale=(
+            "company-level distributional APV is primary; a segment PER reference "
+            "cannot block or modify the sealed shareholder-payoff valuation"
+        ),
+    )
     adapters["DCF_PER_ASSUMPTION_CONSISTENCY_GATE"] = (
         _distributional_gate_dispatch(
             deterministic_adapter=adapters["DCF_PER_ASSUMPTION_CONSISTENCY_GATE"],

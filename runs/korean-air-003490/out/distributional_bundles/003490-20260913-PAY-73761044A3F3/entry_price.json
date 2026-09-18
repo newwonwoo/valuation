@@ -1,6 +1,6 @@
 {
   "schema_version": "ambiguity-robust-dated-entry/v2",
-  "entry_price": "7178.997716743939906528115880",
+  "entry_price": "7178.997716743941268035407884",
   "horizon_years": 5,
   "required_annual_return": "0.12",
   "interpretation": "Minimum expected present value across every declared probability-vector and complete financing-model pair. It is not a quantile, target price or success-probability claim.",
@@ -11,22 +11,22 @@
   "sensitivities": [
     {
       "required_annual_return": "0.10",
-      "robust_entry_price": "7855.801528593719926154081880",
+      "robust_entry_price": "7855.801528593721416018194910",
       "binding_probability_vector_id": "downside_heavier",
       "binding_payoff_model_case_id": "front_loaded_thin_buffer"
     },
     {
       "required_annual_return": "0.12",
-      "robust_entry_price": "7178.997716743939906528115880",
+      "robust_entry_price": "7178.997716743941268035407884",
       "binding_probability_vector_id": "downside_heavier",
       "binding_payoff_model_case_id": "front_loaded_thin_buffer"
     },
     {
       "required_annual_return": "0.15",
-      "robust_entry_price": "6290.203947087579081858333732",
+      "robust_entry_price": "6290.203947087580274804602842",
       "binding_probability_vector_id": "downside_heavier",
       "binding_payoff_model_case_id": "front_loaded_thin_buffer"
     }
   ],
-  "intrinsic_freeze_hash": "804cfc2240c0c5eab54fdd1845f937fd7d48e0534c16142477b3ac4a64a95bf1"
+  "intrinsic_freeze_hash": "6f62f38b733ec0b288400fdacd5e5935018e6fce47d8c1b0a4668cd3e8e329c0"
 }

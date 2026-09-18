@@ -202,3 +202,27 @@ claims:
       capacity_yield_levered/driver_distributional_apv route, bind same-run
       Beta/WACC and target-history probability receipts, and carry the audited
       distribution lineage through freeze and investor reporting.
+
+  - claim_id: korean-air-dated-payoff-completion
+    owner: codex
+    pull_request: 189
+    status: active
+    paths:
+      - "runs/korean-air-003490/**"
+      - "docs/KOREAN_AIR_DISTRIBUTIONAL_APV_DESIGN.md"
+      - "docs/PR184_REVIEW_REMEDIATION.md"
+      - "scripts/build_governed_distribution_report.py"
+      - "scripts/run_kr_live.py"
+      - "src/valuation_engine/distributional_audit.py"
+      - "src/valuation_engine/distributional_runtime.py"
+      - "src/valuation_engine/distributional_reporting_canonical.py"
+      - "src/valuation_engine/payoff_model_ambiguity.py"
+      - "src/valuation_engine/strict_live_runtime.py"
+      - "tests/test_canonical_distributional_runtime.py"
+      - "tests/test_governed_distribution_report.py"
+      - "tests/test_payoff_model_ambiguity.py"
+    note: >-
+      Follow-up to merged #184 and #187. Bind the Korean Air dated-payoff
+      ambiguity valuation to the canonical distributional LIVE_PRIMARY
+      runtime, retain complete source-bundle replay, and publish only the
+      interval and robust entry claims authorized for uncalibrated priors.

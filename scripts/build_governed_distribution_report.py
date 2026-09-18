@@ -19,9 +19,17 @@ import html
 import json
 from pathlib import Path
 import sys
+import tempfile
 
 import yaml
 
+from scripts.run_kr_live import execute_run
+from valuation_engine.capacity_yield_operating_paths import (
+    CapacityYieldMetricMapping,
+    CapacityYieldModuleMapping,
+    CapacityYieldProfile,
+    OperatingPolicy,
+)
 from valuation_engine.distribution_route_policy import (
     DistributionIntegrationRoute,
     DistributionRouteStatus,
@@ -35,6 +43,12 @@ from valuation_engine.distributional_apv import (
     TaxShieldSchedule,
     evaluate_apv_path,
 )
+from valuation_engine.distributional_runtime import (
+    DistributionPathExecutionInput,
+    DistributionalAPVExecutionSpec,
+    SupplementalOperatingPeriodInput,
+)
+from valuation_engine.dynamic_driver_distribution import DriverPath
 from valuation_engine.levered_financing_paths import (
     AssetSalePolicy,
     DebtPeriod,
@@ -68,6 +82,10 @@ MILLION_TO_BILLION = Decimal("0.001")
 
 def D(value: object) -> Decimal:
     return Decimal(str(value))
+
+
+def _decimal_close(left: Decimal, right: Decimal) -> bool:
+    return abs(left - right) <= Decimal("0.00000001")
 
 
 def _json(path: Path):
@@ -416,6 +434,324 @@ def _operating_rows(scenario: dict, tax_rate: Decimal) -> tuple[dict, ...]:
     return tuple(rows)
 
 
+def _canonical_operating_contract(
+    *, target_id: str
+) -> tuple[CapacityYieldProfile, CapacityYieldMetricMapping]:
+    """Return the exact bridge from the signed segment forecast into runtime drivers.
+
+    The source model already carries a complete airline revenue/EBIT/DA/
+    reinvestment path.  A one-unit service-capacity bridge preserves those
+    signed amounts exactly while the canonical operating engine, rather than
+    this source adapter, calculates airline OCF and FCFF.
+    """
+
+    version = "korean-air-signed-airline-bridge/v1"
+    profile = CapacityYieldProfile(
+        target_id=target_id,
+        economic_archetype="capacity_yield_levered",
+        reporting_currency="KRW",
+        accounting_basis="K-IFRS lease-adjusted; amounts in KRW billion",
+        active_module_ids=("airline",),
+        non_capacity_segment_ids=("aerospace", "hotel", "other"),
+        metric_mapping_version=version,
+    )
+    mapping = CapacityYieldMetricMapping(
+        version=version,
+        modules=(
+            CapacityYieldModuleMapping(
+                module_id="airline",
+                capacity_driver_id="airline_service_capacity_bridge",
+                unit_yield_driver_id="airline_revenue_per_bridge_unit",
+                utilization_driver_id=None,
+                economic_path_id="airline_signed_forecast",
+            ),
+        ),
+        variable_cost_rules=(),
+        fixed_cost_driver_ids=("airline_cash_operating_cost",),
+        depreciation_driver_id="airline_depreciation",
+        owned_capex_driver_id="airline_cash_capex",
+        lease_additions_driver_id="airline_rou_additions",
+        change_in_working_capital_driver_id="airline_change_in_working_capital",
+    )
+    return profile, mapping
+
+
+def _canonical_driver_path(*, branch_id: str, scenario: dict, seed: int) -> DriverPath:
+    rows = scenario["paths"]
+    return DriverPath(
+        path_id=f"KAL:{branch_id}:SIGNED-FORECAST",
+        seed=seed,
+        values=(
+            (
+                "airline_service_capacity_bridge",
+                tuple(ONE for _ in rows),
+            ),
+            (
+                "airline_revenue_per_bridge_unit",
+                tuple(D(row["airline"]["revenue"]) for row in rows),
+            ),
+            (
+                "airline_cash_operating_cost",
+                tuple(
+                    D(row["airline"]["revenue"])
+                    - D(row["airline"]["ebit"])
+                    - D(row["airline"]["depreciation"])
+                    for row in rows
+                ),
+            ),
+            (
+                "airline_depreciation",
+                tuple(D(row["airline"]["depreciation"]) for row in rows),
+            ),
+            (
+                "airline_cash_capex",
+                tuple(D(row["airline"]["cash_capex"]) for row in rows),
+            ),
+            (
+                "airline_rou_additions",
+                tuple(D(row["airline"]["rou_additions"]) for row in rows),
+            ),
+            (
+                "airline_change_in_working_capital",
+                tuple(D(row["airline"]["delta_nwc"]) for row in rows),
+            ),
+        ),
+    )
+
+
+def _build_distribution_path_input(
+    *,
+    branch_id: str,
+    source_scenario: str,
+    path_seed: int,
+    model: dict,
+    financing: dict,
+    case: dict,
+    public_facts: dict,
+    opening_liquidity: Decimal,
+    other_senior_claim: Decimal,
+    shares_billion: Decimal,
+    wacc: Decimal,
+    cost_of_equity: Decimal,
+) -> DistributionPathExecutionInput:
+    scenario = model["scenarios"][source_scenario]
+    tax_rate = D(model["tax_rate"])
+    horizon = len(model["periods"])
+    as_of = date.fromisoformat(model["as_of"])
+    boundaries = tuple(
+        date(as_of.year + index, as_of.month, as_of.day)
+        for index in range(1, horizon + 1)
+    )
+    completion = financing["analyst_prior_schedule_completion"]
+    marginal_debt_rate = D(
+        completion["bounded_future_funding_capacity"]["marginal_debt_cost_rate"]
+    )
+    operating_rows = _operating_rows(scenario, tax_rate)
+    debt_schedules = _scheduled_debt(
+        financing=financing,
+        case=case,
+        boundaries=boundaries,
+        marginal_debt_rate=marginal_debt_rate,
+        other_senior_claim=other_senior_claim,
+    )
+    lease_schedule = _lease_schedule(
+        financing=financing,
+        case=case,
+        scenario=scenario,
+        marginal_debt_rate=marginal_debt_rate,
+    )
+    principal_due = tuple(
+        sum((schedule.periods[index].principal_due for schedule in debt_schedules), ZERO)
+        for index in range(horizon)
+    )
+    net_capacity = tuple(
+        principal_due[index]
+        + operating_rows[index]["cash_capex"]
+        * D(
+            completion["bounded_future_funding_capacity"][
+                "incremental_cash_capex_financing_fraction"
+            ]
+        )
+        for index in range(horizon)
+    )
+    transaction_cost = D(case["refinancing_transaction_cost_rate"])
+    gross_capacity = tuple(value / (ONE - transaction_cost) for value in net_capacity)
+    minimum_cash = (
+        operating_rows[0]["cash_operating_cost"]
+        * D(case["minimum_operating_cash_days"])
+        / D("365")
+    )
+    total_assets = D(
+        next(
+            row["value"]
+            for row in public_facts["observations"]
+            if row["metric"] == "total_assets"
+        )
+    ) / D("1000000000")
+    recoverable_noncash_assets = total_assets - opening_liquidity
+    if recoverable_noncash_assets <= ZERO:
+        raise ValueError("recoverable non-cash asset base is not positive")
+    distress_proceeds = recoverable_noncash_assets * D(
+        case["distress_asset_proceeds_ratio"]
+    )
+    financing_spec = FinancingPathSpec(
+        opening_cash=opening_liquidity,
+        minimum_operating_cash=minimum_cash,
+        debt_schedules=debt_schedules,
+        lease_schedules=(lease_schedule,),
+        refinancing_facilities=(
+            RefinancingFacility(
+                facility_id=f"BOUNDED_FUTURE_FUNDING:{case['model_case_id']}",
+                seniority=1,
+                gross_capacity_by_period=gross_capacity,
+                transaction_cost_rate=transaction_cost,
+                cash_interest_rate=marginal_debt_rate,
+            ),
+        ),
+        asset_sale_policy=AssetSalePolicy((ZERO,) * horizon, ZERO),
+        equity_raise_policy=EquityRaisePolicy((ZERO,) * horizon, ZERO, (ZERO,) * horizon),
+        recovery_waterfall=RecoveryWaterfallPolicy(
+            fixed_distress_cost=ZERO,
+            distress_cost_rate=D(case["distress_cost_ratio_of_proceeds"]),
+            old_shareholder_retention=ONE,
+        ),
+    )
+
+    supplemental_segments = tuple(
+        SegmentCashFlowPath(
+            segment_id=segment_id,
+            economic_path_id=f"{branch_id}:{segment_id}",
+            unlevered_fcff=tuple(D(row[segment_id]["fcff"]) for row in scenario["paths"]),
+            asset_required_return=wacc,
+            terminal_growth=D(scenario["inputs"]["g"]),
+        )
+        for segment_id in ("aerospace", "other")
+    ) + (
+        SegmentCashFlowPath(
+            segment_id="hotel",
+            economic_path_id=f"{branch_id}:hotel-nav",
+            unlevered_fcff=(ZERO,) * horizon,
+            asset_required_return=wacc,
+            terminal_growth=D(scenario["inputs"]["g"]),
+        ),
+    )
+    supplemental_operating = tuple(
+        SupplementalOperatingPeriodInput(
+            period=index,
+            operating_cash_flow=sum(
+                (
+                    D(row[segment_id]["ebit"]) * (ONE - tax_rate)
+                    + D(row[segment_id]["depreciation"])
+                    - D(row[segment_id]["delta_nwc"])
+                    for segment_id in ("aerospace", "other")
+                ),
+                ZERO,
+            ),
+            mandatory_capex=sum(
+                (D(row[segment_id]["capex"]) for segment_id in ("aerospace", "other")),
+                ZERO,
+            ),
+            taxable_income_before_interest=sum(
+                (D(row[segment_id]["ebit"]) for segment_id in ("aerospace", "other")),
+                ZERO,
+            ),
+        )
+        for index, row in enumerate(scenario["paths"], start=1)
+    )
+    hotel_value = D(scenario["inputs"]["hotel_value"])
+    return DistributionPathExecutionInput(
+        model_case_id=case["model_case_id"],
+        outcome_id=branch_id,
+        driver_path=_canonical_driver_path(
+            branch_id=branch_id,
+            scenario=scenario,
+            seed=path_seed,
+        ),
+        financing_spec=financing_spec,
+        distress_asset_proceeds_by_period=(distress_proceeds,) * horizon,
+        core_segment_id="airline",
+        core_economic_path_id=f"{branch_id}:airline",
+        asset_required_return=wacc,
+        terminal_growth=D(scenario["inputs"]["g"]),
+        tax_shield_discount_rate=marginal_debt_rate,
+        equity_required_return=cost_of_equity,
+        non_operating_assets_present=hotel_value,
+        non_operating_assets_at_horizon=hotel_value,
+        distributions_to_old_holders=(ZERO,) * horizon,
+        initial_shares=shares_billion,
+        supplemental_segments=supplemental_segments,
+        supplemental_operating_periods=supplemental_operating,
+    )
+
+
+def _build_canonical_spec(
+    *,
+    report_spec: dict,
+    model: dict,
+    financing: dict,
+    public_facts: dict,
+    opening_liquidity: Decimal,
+    other_senior_claim: Decimal,
+    shares_billion: Decimal,
+    wacc: Decimal,
+    cost_of_equity: Decimal,
+    source_hashes: tuple[str, ...],
+) -> DistributionalAPVExecutionSpec:
+    profile, mapping = _canonical_operating_contract(target_id=report_spec["target_id"])
+    case_specs = tuple(
+        financing["analyst_prior_schedule_completion"]["complete_payoff_model_cases"]
+    )
+    paths: list[DistributionPathExecutionInput] = []
+    path_seed = 1
+    for case in case_specs:
+        for branch in report_spec["branches"]:
+            paths.append(
+                _build_distribution_path_input(
+                    branch_id=branch["branch_id"],
+                    source_scenario=branch["source_scenario"],
+                    path_seed=path_seed,
+                    model=model,
+                    financing=financing,
+                    case=case,
+                    public_facts=public_facts,
+                    opening_liquidity=opening_liquidity,
+                    other_senior_claim=other_senior_claim,
+                    shares_billion=shares_billion,
+                    wacc=wacc,
+                    cost_of_equity=cost_of_equity,
+                )
+            )
+            path_seed += 1
+    entry_policy = RobustEntryPolicy(
+        report_spec["entry_policy"]["policy_version"],
+        int(report_spec["entry_policy"]["horizon_years"]),
+        D(report_spec["entry_policy"]["required_annual_return"]),
+        tuple(D(value) for value in report_spec["entry_policy"]["sensitivity_returns"]),
+    )
+    return DistributionalAPVExecutionSpec(
+        target_id=report_spec["target_id"],
+        profile=profile,
+        metric_mapping=mapping,
+        operating_policy=OperatingPolicy(D(model["tax_rate"])),
+        paths=tuple(paths),
+        route=DistributionIntegrationRoute.PRIOR_AMBIGUITY_VALUE_RANGE,
+        route_evidence_path_ids=tuple(
+            dict.fromkeys(
+                (
+                    report_spec["source_model"],
+                    report_spec["source_financing_spec"],
+                    report_spec["source_primary_cashflow"],
+                    report_spec["source_public_filing_facts"],
+                    *(item for vector in _probability_vectors(report_spec) for item in vector.evidence_path_ids),
+                )
+            )
+        ),
+        entry_policy=entry_policy,
+        probability_vectors=_probability_vectors(report_spec),
+        reference_value_hashes=source_hashes,
+    )
+
+
 def _build_apv_result(
     *,
     branch_id: str,
@@ -657,6 +993,55 @@ def build(spec_path: Path, output_root: Path) -> Path:
     case_specs = tuple(
         financing["analyst_prior_schedule_completion"]["complete_payoff_model_cases"]
     )
+    canonical_spec = _build_canonical_spec(
+        report_spec=spec,
+        model=model,
+        financing=financing,
+        public_facts=public_facts,
+        opening_liquidity=opening_liquidity,
+        other_senior_claim=other_senior_claim,
+        shares_billion=shares_billion,
+        wacc=wacc,
+        cost_of_equity=cost_of_equity,
+        source_hashes=tuple(_sha(path) for path in intrinsic_paths.values()),
+    )
+    canonical_run_dir = intrinsic_paths["source_model"].parent.parent
+    if not (canonical_run_dir / "run.yaml").is_file():
+        raise ValueError("canonical prepared-run directory cannot be resolved from source_model")
+    with tempfile.TemporaryDirectory(prefix="korean-air-canonical-apv-") as state_root:
+        reached, stop_stage, stop_reason, canonical_run = execute_run(
+            canonical_run_dir,
+            state_root=state_root,
+            staff_mode="replay",
+            distributional_spec=canonical_spec,
+        )
+    if stop_stage is not None or len(reached) != 33 or canonical_run.blocked_reasons:
+        raise ValueError(
+            "canonical LIVE_PRIMARY distributional run did not complete: "
+            f"{stop_stage or 'unknown'} {stop_reason}"
+        )
+    canonical_valuation = canonical_run.data.get("distributional_primary_result")
+    canonical_audit = canonical_run.data.get("audit_report")
+    canonical_freeze = canonical_run.freeze_token
+    canonical_attestation = canonical_run.data.get("execution_attestation")
+    canonical_report = canonical_run.data.get("final_report")
+    if (
+        canonical_valuation is None
+        or canonical_valuation.ambiguity_intrinsic_range is None
+        or canonical_valuation.robust_entry is None
+        or canonical_audit is None
+        or not canonical_audit.passed
+        or canonical_freeze is None
+        or canonical_attestation is None
+        or not isinstance(canonical_report, str)
+        or not canonical_report
+        or canonical_run.data.get("canonical_entrypoint_id")
+        != "prism_strict_live_primary/v1"
+    ):
+        raise ValueError("canonical distributional receipts are incomplete")
+    canonical_intrinsic = canonical_valuation.ambiguity_intrinsic_range
+    canonical_entry = canonical_valuation.robust_entry
+
     model_cases = []
     path_results: dict[str, dict[str, object]] = {}
     for case in case_specs:
@@ -733,6 +1118,31 @@ def build(spec_path: Path, output_root: Path) -> Path:
         future_payoffs_authorized=future_payoffs_authorized,
         source_payoff_hash=source_payoff_hash,
     )
+    if not all(
+        (
+            _decimal_close(
+                fair_result.minimum_expected_present_value,
+                canonical_intrinsic.minimum_expected_value,
+            ),
+            _decimal_close(
+                fair_result.maximum_expected_present_value,
+                canonical_intrinsic.maximum_expected_value,
+            ),
+            _decimal_close(
+                entry_result.robust_entry_price,
+                canonical_entry.robust_entry_price,
+            ),
+        )
+    ):
+        raise ValueError(
+            "source-adapter diagnostic does not reconcile to canonical LIVE_PRIMARY output: "
+            f"diagnostic fair={fair_result.minimum_expected_present_value}/"
+            f"{fair_result.maximum_expected_present_value}, canonical fair="
+            f"{canonical_intrinsic.minimum_expected_value}/"
+            f"{canonical_intrinsic.maximum_expected_value}, diagnostic entry="
+            f"{entry_result.robust_entry_price}, canonical entry="
+            f"{canonical_entry.robust_entry_price}"
+        )
     route_request = DistributionRouteRequest(
         route=DistributionIntegrationRoute.PRIOR_AMBIGUITY_VALUE_RANGE,
         economic_archetypes=("capacity_yield_levered",),
@@ -760,12 +1170,16 @@ def build(spec_path: Path, output_root: Path) -> Path:
     legacy_range = _legacy_signed_range(spec, snapshot, vectors)
     intrinsic_freeze_hash = _hash_payload(
         {
-            "entry_calculation_hash": entry_result.calculation_hash,
-            "fair_calculation_hash": fair_result.calculation_hash,
-            "legacy_signed_cross_check_hash": legacy_range.calculation_hash,
-            "route_authorization_hash": route_authorization.authorization_hash,
-            "payoff_audit_hash": ambiguity_audit.audit_hash,
-            "source_payoff_hash": source_payoff_hash,
+            "contract": "canonical-distributional-intrinsic-lineage/v1",
+            "valuation_hash": canonical_run.data["valuation_hash"],
+            "audit_hash": canonical_run.data["audit_hash"],
+            "distribution_hash": canonical_run.data["distribution_hash"],
+            "route_authorization_hash": canonical_run.data[
+                "distribution_route_authorization_hash"
+            ],
+            "ambiguity_set_hash": canonical_entry.probability_ambiguity_set_hash,
+            "payoff_model_set_hash": canonical_entry.payoff_model_set_hash,
+            "entry_calculation_hash": canonical_run.data["entry_calculation_hash"],
         }
     )
 
@@ -850,7 +1264,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
         f"- [{row['institution']} {row['report_date']} — {row['title']}]({row['url']})"
         for row in broker_rows
     )
-    report = f"""# 대한항공 최종 투자자 보고서 — 지급시점별 강건 가치평가
+    analysis_report = f"""# 대한항공 지급시점별 강건 가치평가 — 상세 분석
 
 | 항목 | 결과 |
 |---|---:|
@@ -925,7 +1339,15 @@ def build(spec_path: Path, output_root: Path) -> Path:
             intrinsic_paths["source_bundle_manifest"]
         )
         == spec["source_bundle_manifest_sha256"],
-        "dated_payoff_ambiguity_replays": ambiguity_audit.passed,
+        "canonical_live_primary_completed": len(reached) == 33
+        and canonical_run.data.get("canonical_entrypoint_id")
+        == "prism_strict_live_primary/v1",
+        "canonical_distributional_audit_passed": canonical_audit.passed,
+        "canonical_freeze_token_present": bool(canonical_freeze.token_hash),
+        "canonical_execution_attestation_present": bool(
+            canonical_attestation.attestation_hash
+        ),
+        "dated_payoff_diagnostic_replays": ambiguity_audit.passed,
         "route_authorizes_interval_and_robust_entry": route_authorization.status is DistributionRouteStatus.AUTHORIZED
         and route_authorization.expected_value_interval_authorized
         and route_authorization.entry_price_authorized,
@@ -938,12 +1360,25 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "broker_reports_not_after_cutoff": all(row["report_date"] <= spec["as_of"] for row in broker_rows),
         "broker_targets_excluded_from_intrinsic_inputs": True,
         "market_loaded_only_after_intrinsic_freeze": bool(intrinsic_freeze_hash),
+        "canonical_and_diagnostic_values_reconcile": _decimal_close(
+            fair_result.minimum_expected_present_value,
+            canonical_intrinsic.minimum_expected_value,
+        )
+        and _decimal_close(
+            fair_result.maximum_expected_present_value,
+            canonical_intrinsic.maximum_expected_value,
+        )
+        and _decimal_close(
+            entry_result.robust_entry_price,
+            canonical_entry.robust_entry_price,
+        ),
         "legacy_negative_value_preserved": legacy_range.minimum_expected_value is not None
         and any(
             D(row["equity_value_KRW"]) < ZERO for row in snapshot["scenario_values"]
         ),
         "investor_report_hides_internal_identifiers": not any(
-            token in report for token in ("calculation_hash", "artifact_id", "route_id", "DIST-")
+            token in canonical_report
+            for token in ("calculation_hash", "artifact_id", "route_id", "DIST-")
         ),
     }
     if not all(audit_checks.values()):
@@ -977,38 +1412,40 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "success_probability_claim_authorized": False,
         "fair_value_discount_rate": str(cost_of_equity),
         "fair_value_interval_per_share": {
-            "minimum": str(fair_result.minimum_expected_present_value),
-            "maximum": str(fair_result.maximum_expected_present_value),
+            "minimum": str(canonical_intrinsic.minimum_expected_value),
+            "maximum": str(canonical_intrinsic.maximum_expected_value),
         },
         "binding_minimum": {
-            "probability_vector_id": fair_result.binding_probability_vector_id,
-            "payoff_model_case_id": fair_result.binding_payoff_model_case_id,
+            "probability_vector_id": canonical_intrinsic.binding_minimum_probability_vector_id,
+            "payoff_model_case_id": canonical_intrinsic.binding_minimum_model_case_id,
         },
         "binding_maximum": {
-            "probability_vector_id": fair_result.maximum_probability_vector_id,
-            "payoff_model_case_id": fair_result.maximum_payoff_model_case_id,
+            "probability_vector_id": canonical_intrinsic.binding_maximum_probability_vector_id,
+            "payoff_model_case_id": canonical_intrinsic.binding_maximum_model_case_id,
         },
         "legacy_signed_value_cross_check": {
             "minimum": str(legacy_range.minimum_expected_value),
             "maximum": str(legacy_range.maximum_expected_value),
             "role": spec["legacy_signed_value_role"],
         },
-        "probability_ambiguity_set_hash": entry_result.probability_ambiguity_set_hash,
-        "payoff_model_set_hash": entry_result.payoff_model_set_hash,
-        "source_payoff_hash": source_payoff_hash,
+        "distribution_hash": canonical_valuation.distribution_hash,
+        "valuation_hash": canonical_valuation.envelope.envelope_hash,
+        "probability_ambiguity_set_hash": canonical_entry.probability_ambiguity_set_hash,
+        "payoff_model_set_hash": canonical_entry.payoff_model_set_hash,
+        "source_payoff_hash": canonical_entry.source_payoff_hash,
         "intrinsic_freeze_hash": intrinsic_freeze_hash,
     }
     entry_payload = {
         "schema_version": "ambiguity-robust-dated-entry/v2",
-        "entry_price": str(entry_result.robust_entry_price),
+        "entry_price": str(canonical_entry.robust_entry_price),
         "horizon_years": entry_policy.horizon_years,
         "required_annual_return": str(entry_policy.required_annual_return),
         "interpretation": spec["entry_policy"]["interpretation"],
-        "binding_probability_vector_id": entry_result.binding_probability_vector_id,
-        "binding_payoff_model_case_id": entry_result.binding_payoff_model_case_id,
+        "binding_probability_vector_id": canonical_entry.binding_probability_vector_id,
+        "binding_payoff_model_case_id": canonical_entry.binding_payoff_model_case_id,
         "point_target_authorized": False,
         "success_probability_claim_authorized": False,
-        "sensitivities": [asdict(row) for row in entry_result.sensitivities],
+        "sensitivities": [asdict(row) for row in canonical_entry.sensitivities],
         "intrinsic_freeze_hash": intrinsic_freeze_hash,
     }
     broker_payload = {
@@ -1035,13 +1472,17 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "schema_version": "dated-payoff-ambiguity-audit/v2",
         "passed": True,
         "checks": audit_checks,
-        "engine_findings": [asdict(row) for row in ambiguity_audit.findings],
+        "canonical_findings": [asdict(row) for row in canonical_audit.findings],
+        "diagnostic_engine_findings": [asdict(row) for row in ambiguity_audit.findings],
+        "canonical_audit_hash": canonical_run.data["audit_hash"],
         "intrinsic_freeze_hash": intrinsic_freeze_hash,
         "post_freeze_comparison_hash": post_freeze_comparison_hash,
     }
     artifact_basis = _hash_payload(
         {
             "intrinsic_freeze_hash": intrinsic_freeze_hash,
+            "canonical_freeze_token_hash": canonical_freeze.token_hash,
+            "execution_attestation_hash": canonical_attestation.attestation_hash,
             "post_freeze_comparison_hash": post_freeze_comparison_hash,
             "spec_sha256": _sha(spec_path),
             "report_builder_sha256": _sha(Path(__file__).resolve()),
@@ -1056,8 +1497,32 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "payoff_model_cases.json": json.dumps({"rows": payoff_rows}, ensure_ascii=False, indent=2) + "\n",
         "broker_comparison.json": json.dumps(broker_payload, ensure_ascii=False, indent=2) + "\n",
         "audit.json": json.dumps(audit_payload, ensure_ascii=False, indent=2, default=str) + "\n",
-        "final_report.md": report,
-        "valuation_summary.svg": _svg(
+        "canonical_valuation.json": json.dumps(
+            asdict(canonical_valuation), ensure_ascii=False, indent=2, default=str
+        )
+        + "\n",
+        "canonical_audit.json": json.dumps(
+            asdict(canonical_audit), ensure_ascii=False, indent=2, default=str
+        )
+        + "\n",
+        "freeze_token.json": json.dumps(
+            asdict(canonical_freeze), ensure_ascii=False, indent=2, default=str
+        )
+        + "\n",
+        "execution_attestation.json": json.dumps(
+            asdict(canonical_attestation), ensure_ascii=False, indent=2, default=str
+        )
+        + "\n",
+        "canonical_stage_trace.json": json.dumps(
+            {"stages": [asdict(row) for row in canonical_run.stage_traces]},
+            ensure_ascii=False,
+            indent=2,
+            default=str,
+        )
+        + "\n",
+        "final_report.md": canonical_report,
+        "dated_payoff_analysis.md": analysis_report,
+        "distributional_summary.svg": _svg(
             "대한항공 가치평가·투자 결론",
             [
                 f"강건 공정가치 {_money(fair_result.minimum_expected_present_value)}~{_money(fair_result.maximum_expected_present_value)}",
@@ -1066,7 +1531,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
                 "단일 목표가·성공확률 미제시",
             ],
         ),
-        "assumptions_risk_sources.svg": _svg(
+        "distributional_assumptions.svg": _svg(
             "가정·위험·출처",
             [
                 "세 확률벡터 × 세 완결 자금조달 모형",
@@ -1087,12 +1552,24 @@ def build(spec_path: Path, output_root: Path) -> Path:
         "as_of": spec["as_of"],
         "status": "AUDITED_FINAL",
         "audit_passed": True,
+        "canonical_entrypoint_id": canonical_run.data["canonical_entrypoint_id"],
+        "valuation_hash": canonical_run.data["valuation_hash"],
+        "audit_hash": canonical_run.data["audit_hash"],
+        "freeze_token_hash": canonical_freeze.token_hash,
+        "execution_attestation_hash": canonical_attestation.attestation_hash,
+        "distribution_hash": canonical_run.data["distribution_hash"],
+        "route_authorization_hash": canonical_run.data[
+            "distribution_route_authorization_hash"
+        ],
+        "entry_calculation_hash": canonical_run.data["entry_calculation_hash"],
         "intrinsic_freeze_hash": intrinsic_freeze_hash,
         "post_freeze_comparison_hash": post_freeze_comparison_hash,
         "supersedes_artifact_id": spec["supersedes_artifact_id"],
-        "probability_ambiguity_set_hash": entry_result.probability_ambiguity_set_hash,
-        "payoff_model_set_hash": entry_result.payoff_model_set_hash,
-        "payoff_ambiguity_audit_hash": ambiguity_audit.audit_hash,
+        "probability_ambiguity_set_hash": canonical_entry.probability_ambiguity_set_hash,
+        "payoff_model_set_hash": canonical_entry.payoff_model_set_hash,
+        "payoff_ambiguity_audit_hash": canonical_run.data[
+            "payoff_ambiguity_audit_hash"
+        ],
         "source_bundle_manifest_sha256": spec["source_bundle_manifest_sha256"],
         "report_builder_sha256": _sha(Path(__file__).resolve()),
         "files": [
@@ -1111,9 +1588,13 @@ def build(spec_path: Path, output_root: Path) -> Path:
             "bundle_directory": str(bundle.resolve().relative_to(run_output)),
             "report_filename": "final_report.md",
             "intrinsic_freeze_hash": intrinsic_freeze_hash,
+            "valuation_hash": canonical_run.data["valuation_hash"],
+            "audit_hash": canonical_run.data["audit_hash"],
+            "freeze_token_hash": canonical_freeze.token_hash,
+            "execution_attestation_hash": canonical_attestation.attestation_hash,
             "post_freeze_comparison_hash": post_freeze_comparison_hash,
-            "probability_ambiguity_set_hash": entry_result.probability_ambiguity_set_hash,
-            "payoff_model_set_hash": entry_result.payoff_model_set_hash,
+            "probability_ambiguity_set_hash": canonical_entry.probability_ambiguity_set_hash,
+            "payoff_model_set_hash": canonical_entry.payoff_model_set_hash,
             "entry_policy_version": entry_policy.policy_version,
             "audit_passed": True,
             "supersedes_artifact_id": spec["supersedes_artifact_id"],

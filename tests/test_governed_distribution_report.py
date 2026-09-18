@@ -104,9 +104,21 @@ def test_korean_air_dated_payoff_route_builds_audited_bundle(tmp_path):
     broker = json.loads((bundle / "broker_comparison.json").read_text(encoding="utf-8"))
     audit = json.loads((bundle / "audit.json").read_text(encoding="utf-8"))
     report = (bundle / "final_report.md").read_text(encoding="utf-8")
+    analysis = (bundle / "dated_payoff_analysis.md").read_text(encoding="utf-8")
 
     assert manifest["status"] == "AUDITED_FINAL"
     assert manifest["audit_passed"] is True
+    assert manifest["canonical_entrypoint_id"] == "prism_strict_live_primary/v1"
+    for receipt in (
+        "valuation_hash",
+        "audit_hash",
+        "freeze_token_hash",
+        "execution_attestation_hash",
+        "distribution_hash",
+        "route_authorization_hash",
+        "entry_calculation_hash",
+    ):
+        assert manifest[receipt]
     assert manifest["supersedes_artifact_id"] == "003490-20260913-DIST-4664627231DA"
     minimum = Decimal(distribution["fair_value_interval_per_share"]["minimum"])
     maximum = Decimal(distribution["fair_value_interval_per_share"]["maximum"])
@@ -118,27 +130,41 @@ def test_korean_air_dated_payoff_route_builds_audited_bundle(tmp_path):
     assert len(payoff_cases["rows"]) == 9
     assert any(row["distressed"] for row in payoff_cases["rows"])
     assert all(row["dated_cash_flows_per_share"] for row in payoff_cases["rows"])
-    assert "강건 공정가치 구간" in report
-    assert "강건 매수상한" in report
-    assert "단일 목표가/성공확률 미제시" in report
+    assert "가치평가 범위" in report
+    assert "신규매수 보류" in report
+    assert "보수적 진입 상한" in report
+    assert "단일 확률가중 목표가: 미산출" in report
+    assert "보정 성공확률: 미산출" in report
     assert "## 핵심 가정과 위험" in report
     assert "## 증권사·시장 비교" in report
-    assert "미래에셋증권" in report
     assert "하나증권" in report
     assert "LS증권" in report
-    assert "현재 장부부채를 5년 만기 행사가격처럼" in report
-    assert report.index("## 핵심 가정과 위험") < report.index("## 증권사·시장 비교") < report.index("## 원문")
+    assert "미래에셋증권" in analysis
+    assert "현재 장부부채를 5년 만기 행사가격처럼" in analysis
+    assert report.index("## 핵심 가정과 위험") < report.index("## 증권사·시장 비교") < report.index("## 정보 출처")
     assert "확률가중 평균가치" not in report
-    assert "수익 달성확률 75%" in report
+    assert "수익 달성확률 75%" in analysis
     assert broker["sample"]["report_count"] == 3
     assert Decimal(broker["sample"]["median_target_price"]) == Decimal("37000")
     assert broker["intrinsic_distribution_unchanged"] is True
-    assert audit["checks"]["dated_payoff_ambiguity_replays"] is True
+    assert audit["checks"]["canonical_live_primary_completed"] is True
+    assert audit["checks"]["canonical_distributional_audit_passed"] is True
+    assert audit["checks"]["canonical_freeze_token_present"] is True
+    assert audit["checks"]["canonical_execution_attestation_present"] is True
+    assert audit["checks"]["dated_payoff_diagnostic_replays"] is True
     assert audit["checks"]["source_bundle_manifest_and_artifacts_replay"] is True
     assert audit["checks"]["broker_loaded_only_after_intrinsic_freeze"] is True
     assert audit["checks"]["single_point_target_forbidden"] is True
-    assert (bundle / "valuation_summary.svg").is_file()
-    assert (bundle / "assumptions_risk_sources.svg").is_file()
+    for artifact in (
+        "canonical_valuation.json",
+        "canonical_audit.json",
+        "freeze_token.json",
+        "execution_attestation.json",
+        "canonical_stage_trace.json",
+        "distributional_summary.svg",
+        "distributional_assumptions.svg",
+    ):
+        assert (bundle / artifact).is_file()
 
 
 def test_broker_targets_change_comparison_but_not_frozen_intrinsic_value(tmp_path):
@@ -166,6 +192,9 @@ def test_broker_targets_change_comparison_but_not_frozen_intrinsic_value(tmp_pat
 
     assert after_distribution["intrinsic_freeze_hash"] == before_distribution["intrinsic_freeze_hash"]
     assert after_manifest["intrinsic_freeze_hash"] == before_manifest["intrinsic_freeze_hash"]
+    assert after_manifest["valuation_hash"] == before_manifest["valuation_hash"]
+    assert after_manifest["audit_hash"] == before_manifest["audit_hash"]
+    assert after_manifest["distribution_hash"] == before_manifest["distribution_hash"]
     assert after_manifest["post_freeze_comparison_hash"] != before_manifest["post_freeze_comparison_hash"]
     assert after_manifest["artifact_id"] != before_manifest["artifact_id"]
 
