@@ -146,7 +146,7 @@ claims:
   - claim_id: korean-air-analysis-runtime
     owner: codex
     pull_request: 184
-    status: active
+    status: merged
     paths:
       - "runs/korean-air-003490/**"
       - "config/kr_industry_classification_map.yaml"
@@ -190,3 +190,15 @@ claims:
     note: >-
       Korean Air 003490 official-filing valuation; airline traffic/yield/lease
       economics and public-source financial collection with canonical audits.
+
+  - claim_id: distributional-apv-canonical-runtime
+    owner: codex
+    pull_request: 187
+    status: merged
+    paths:
+      - "config/valuation_method_capability_registry.yaml"
+    note: >-
+      Sequential follow-on to merged #184. Canonicalize the reusable
+      capacity_yield_levered/driver_distributional_apv route, bind same-run
+      Beta/WACC and target-history probability receipts, and carry the audited
+      distribution lineage through freeze and investor reporting.
