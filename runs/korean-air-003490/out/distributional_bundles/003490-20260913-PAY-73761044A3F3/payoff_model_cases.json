@@ -1,0 +1,259 @@
+{
+  "rows": [
+    {
+      "payoff_model_case_id": "front_loaded_thin_buffer",
+      "branch_id": "Down",
+      "distressed": true,
+      "distress_period": 2,
+      "realized_periods": 2,
+      "dated_cash_flows_per_share": [
+        {
+          "period": 1,
+          "amount": "0E+9"
+        },
+        {
+          "period": 2,
+          "amount": "0.00"
+        }
+      ],
+      "present_value_at_cost_of_equity": "0",
+      "path_calculation_hash": "92a26e1bf0471508f041721725616d397799a015beacacf2440270bdd35d1b11"
+    },
+    {
+      "payoff_model_case_id": "front_loaded_thin_buffer",
+      "branch_id": "Central",
+      "distressed": true,
+      "distress_period": 2,
+      "realized_periods": 2,
+      "dated_cash_flows_per_share": [
+        {
+          "period": 1,
+          "amount": "0E+9"
+        },
+        {
+          "period": 2,
+          "amount": "0.00"
+        }
+      ],
+      "present_value_at_cost_of_equity": "0",
+      "path_calculation_hash": "88ab330bf65969e4fc6d57cc3a3cca793fa133bff1757f3bd81b731b36f02ff2"
+    },
+    {
+      "payoff_model_case_id": "front_loaded_thin_buffer",
+      "branch_id": "Upside",
+      "distressed": false,
+      "distress_period": null,
+      "realized_periods": 5,
+      "dated_cash_flows_per_share": [
+        {
+          "period": 1,
+          "amount": "0E+9"
+        },
+        {
+          "period": 2,
+          "amount": "0E+9"
+        },
+        {
+          "period": 3,
+          "amount": "0E+9"
+        },
+        {
+          "period": 4,
+          "amount": "0E+9"
+        },
+        {
+          "period": 5,
+          "amount": "63259.23459907735939135205204"
+        }
+      ],
+      "present_value_at_cost_of_equity": "40042.86282217342110441577725",
+      "path_calculation_hash": "99d11206172ad9883d12441c0680dbb6a2aea462f396b9a0f59d65105e68f183"
+    },
+    {
+      "payoff_model_case_id": "level_standard_buffer",
+      "branch_id": "Down",
+      "distressed": false,
+      "distress_period": null,
+      "realized_periods": 5,
+      "dated_cash_flows_per_share": [
+        {
+          "period": 1,
+          "amount": "0E+9"
+        },
+        {
+          "period": 2,
+          "amount": "0E+9"
+        },
+        {
+          "period": 3,
+          "amount": "0E+9"
+        },
+        {
+          "period": 4,
+          "amount": "0E+9"
+        },
+        {
+          "period": 5,
+          "amount": "0E+9"
+        }
+      ],
+      "present_value_at_cost_of_equity": "0",
+      "path_calculation_hash": "3d750020bed4d753e304154a0822f426ff237d715104db94332ba1b0779907dc"
+    },
+    {
+      "payoff_model_case_id": "level_standard_buffer",
+      "branch_id": "Central",
+      "distressed": false,
+      "distress_period": null,
+      "realized_periods": 5,
+      "dated_cash_flows_per_share": [
+        {
+          "period": 1,
+          "amount": "0E+9"
+        },
+        {
+          "period": 2,
+          "amount": "0E+9"
+        },
+        {
+          "period": 3,
+          "amount": "0E+9"
+        },
+        {
+          "period": 4,
+          "amount": "0E+9"
+        },
+        {
+          "period": 5,
+          "amount": "17010.39309618224228524709545"
+        }
+      ],
+      "present_value_at_cost_of_equity": "10767.51626254431299514813032",
+      "path_calculation_hash": "5669b0e717cf36bf26c08b8745a85fecf1de4714f24f5c6ed43b9cb2807c42d9"
+    },
+    {
+      "payoff_model_case_id": "level_standard_buffer",
+      "branch_id": "Upside",
+      "distressed": false,
+      "distress_period": null,
+      "realized_periods": 5,
+      "dated_cash_flows_per_share": [
+        {
+          "period": 1,
+          "amount": "0E+9"
+        },
+        {
+          "period": 2,
+          "amount": "0E+9"
+        },
+        {
+          "period": 3,
+          "amount": "0E+9"
+        },
+        {
+          "period": 4,
+          "amount": "0E+9"
+        },
+        {
+          "period": 5,
+          "amount": "63087.16260124600080712336642"
+        }
+      ],
+      "present_value_at_cost_of_equity": "39933.94188045847172565704781",
+      "path_calculation_hash": "b064b7ac0d876441f77ea38a02f7b07b6dce21a347e281be74cddbe628a20559"
+    },
+    {
+      "payoff_model_case_id": "back_loaded_protected_buffer",
+      "branch_id": "Down",
+      "distressed": false,
+      "distress_period": null,
+      "realized_periods": 5,
+      "dated_cash_flows_per_share": [
+        {
+          "period": 1,
+          "amount": "0E+9"
+        },
+        {
+          "period": 2,
+          "amount": "0E+9"
+        },
+        {
+          "period": 3,
+          "amount": "0E+9"
+        },
+        {
+          "period": 4,
+          "amount": "0E+9"
+        },
+        {
+          "period": 5,
+          "amount": "0E+9"
+        }
+      ],
+      "present_value_at_cost_of_equity": "0",
+      "path_calculation_hash": "723d2fec0467ec1b205e06a2d25b9581e61131ff7512153ca743bb276587582d"
+    },
+    {
+      "payoff_model_case_id": "back_loaded_protected_buffer",
+      "branch_id": "Central",
+      "distressed": false,
+      "distress_period": null,
+      "realized_periods": 5,
+      "dated_cash_flows_per_share": [
+        {
+          "period": 1,
+          "amount": "0E+9"
+        },
+        {
+          "period": 2,
+          "amount": "0E+9"
+        },
+        {
+          "period": 3,
+          "amount": "0E+9"
+        },
+        {
+          "period": 4,
+          "amount": "0E+9"
+        },
+        {
+          "period": 5,
+          "amount": "16825.10150131900334903694427"
+        }
+      ],
+      "present_value_at_cost_of_equity": "10650.22736453228068474547008",
+      "path_calculation_hash": "3d23ec58f3646666b46fb363e3a11bcf43d99902a8ea9e8cd9be69b248198e42"
+    },
+    {
+      "payoff_model_case_id": "back_loaded_protected_buffer",
+      "branch_id": "Upside",
+      "distressed": false,
+      "distress_period": null,
+      "realized_periods": 5,
+      "dated_cash_flows_per_share": [
+        {
+          "period": 1,
+          "amount": "0E+9"
+        },
+        {
+          "period": 2,
+          "amount": "0E+9"
+        },
+        {
+          "period": 3,
+          "amount": "0E+9"
+        },
+        {
+          "period": 4,
+          "amount": "0E+9"
+        },
+        {
+          "period": 5,
+          "amount": "62868.77722793474008879676927"
+        }
+      ],
+      "present_value_at_cost_of_equity": "39795.70474241381557546012029",
+      "path_calculation_hash": "880f11aeb9e69b0081fb854e84a53bb9800bc8d074963b9f5ffe22f033e6752a"
+    }
+  ]
+}

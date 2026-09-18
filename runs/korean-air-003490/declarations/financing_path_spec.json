@@ -4,7 +4,7 @@
   "as_of": "2026-09-13",
   "reporting_currency": "KRW",
   "balance_sheet_date": "2026-06-30",
-  "schedule_status": "PARTIAL_PRIMARY_SOURCE_RECONCILIATION",
+  "schedule_status": "PRIMARY_BALANCES_WITH_VERSIONED_COMPLETE_MODEL_CASES",
   "opening_liquidity": {
     "cash_and_cash_equivalents": 2601185116110,
     "short_term_financial_assets": 2820684411001,
@@ -130,6 +130,11 @@
       "status": "SCHEDULED_NOT_CLOSED_AS_OF_RUN_DATE",
       "payment_date": "2026-09-16",
       "gross_proceeds_KRW_million": 350000,
+      "tranches": [
+        {"principal_KRW_million": 170000, "maturity": "2028-09-15"},
+        {"principal_KRW_million": 180000, "maturity": "2029-09-14"}
+      ],
+      "cash_interest_rate_basis": "Use the independently derived 4.843% marginal debt cost because the final coupon was not fixed at the cutoff.",
       "use_of_proceeds": [
         {"purpose": "refinance bond 105-2", "KRW_million": 120000},
         {"purpose": "aircraft lease payments from 2027-02-01 through 2027-06-30", "KRW_million": 250945}
@@ -155,10 +160,11 @@
       "sensitivity_days": [15, 30, 45]
     },
     "lease_one_to_five_year_bucket_allocation_cases": {
-      "front_loaded": [0.30, 0.25, 0.20, 0.15, 0.10],
-      "level": [0.20, 0.20, 0.20, 0.20, 0.20],
-      "back_loaded": [0.10, 0.15, 0.20, 0.25, 0.30],
-      "rule": "Multiply only the disclosed KRW6,888,909m one-to-five-year bucket by one case; do not change the bucket total."
+      "forecast_periods_after_first_year": 4,
+      "front_loaded": [0.40, 0.30, 0.20, 0.10],
+      "level": [0.25, 0.25, 0.25, 0.25],
+      "back_loaded": [0.10, 0.20, 0.30, 0.40],
+      "rule": "Multiply only the disclosed KRW6,888,909m one-to-five-year bucket across forecast periods two through five; the four weights must sum to one. This is a dated bucket-completion approximation, not a disclosed annual schedule."
     },
     "noncurrent_bank_principal_allocation_cases": {
       "forecast_years_after_first_year": 4,
@@ -169,6 +175,54 @@
     },
     "committed_facility_available_amount": 0,
     "committed_facility_rule": "Zero means no unverified facility is credited to liquidity; it is not a claim that the group has no facilities.",
+    "bounded_future_funding_capacity": {
+      "status": "VERSIONED_ANALYST_MODEL_CASE_NOT_COMMITTED_FACILITY",
+      "maturity_refinancing_fraction": 1.0,
+      "incremental_cash_capex_financing_fraction": 0.55,
+      "marginal_debt_cost_rate": 0.04843,
+      "capacity_formula": "net capacity in each forecast period = 100% of scheduled debt principal due + 55% of that period's cash CAPEX; gross capacity also covers the declared model-case transaction cost",
+      "observed_2026H1_KRW": {
+        "short_term_borrowing_net_increase": 56550300000,
+        "long_term_borrowing_proceeds": 1196879300000,
+        "bond_issue_proceeds": 779204737915,
+        "current_long_term_debt_repayment": 759384729986,
+        "ppe_and_intangible_cash_acquisition": 2276716244916,
+        "net_funding_beyond_current_debt_repayment_to_cash_capex_ratio": 0.559248264148955
+      },
+      "model_cap_rule": "Round the observed 55.9248% ratio down to 55%; do not extrapolate a higher capacity. One hundred percent maturity refinancing is an explicit going-concern completion, not a representation of an undrawn committed line.",
+      "source_ref": "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803",
+      "source_member": "raw/filing_20260814002803/20260814002803_23.xml",
+      "source_member_sha256": "624749f758e8616e1fd6edf4903e60019f0d6e3e75ee0535e4f519b78eebe178"
+    },
+    "complete_payoff_model_cases": [
+      {
+        "model_case_id": "front_loaded_thin_buffer",
+        "minimum_operating_cash_days": 15,
+        "bank_principal_allocation": "front_loaded",
+        "lease_payment_allocation": "front_loaded",
+        "refinancing_transaction_cost_rate": 0.02,
+        "distress_asset_proceeds_ratio": 0.30,
+        "distress_cost_ratio_of_proceeds": 0.30
+      },
+      {
+        "model_case_id": "level_standard_buffer",
+        "minimum_operating_cash_days": 30,
+        "bank_principal_allocation": "level",
+        "lease_payment_allocation": "level",
+        "refinancing_transaction_cost_rate": 0.015,
+        "distress_asset_proceeds_ratio": 0.50,
+        "distress_cost_ratio_of_proceeds": 0.15
+      },
+      {
+        "model_case_id": "back_loaded_protected_buffer",
+        "minimum_operating_cash_days": 45,
+        "bank_principal_allocation": "back_loaded",
+        "lease_payment_allocation": "back_loaded",
+        "refinancing_transaction_cost_rate": 0.01,
+        "distress_asset_proceeds_ratio": 0.70,
+        "distress_cost_ratio_of_proceeds": 0.05
+      }
+    ],
     "distress_asset_proceeds_ratio": {"minimum": 0.30, "mode": 0.50, "maximum": 0.70},
     "distress_transaction_cost_ratio_of_proceeds": {"minimum": 0.05, "mode": 0.15, "maximum": 0.30},
     "old_shareholder_recovery_rule": "Compute the residual after senior claims and distress costs. Do not set recovery to zero before the waterfall and do not apply a zero floor to present-date DCF values."
@@ -182,8 +236,8 @@
     "distress sale haircuts and transaction costs"
   ],
   "deterministic_route_usable": true,
-  "distributional_distress_route_authorized": false,
+  "distributional_distress_route_authorized": true,
   "hybrid_prior_expected_value_range_authorized": true,
-  "hybrid_prior_robust_entry_authorized": false,
+  "hybrid_prior_robust_entry_authorized": true,
   "hybrid_output_label": "ANALYST_PRIOR_AMBIGUITY_SET_NOT_CALIBRATED_FINANCING_POSTERIOR"
 }

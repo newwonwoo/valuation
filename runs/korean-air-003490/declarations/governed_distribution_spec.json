@@ -1,98 +1,99 @@
 {
-  "schema_version": "governed-structural-distribution/v1",
+  "schema_version": "dated-payoff-ambiguity-report/v2",
   "target_id": "KR:DART:00113526",
   "company": "대한항공",
   "ticker": "003490",
   "as_of": "2026-09-13",
   "reporting_currency": "KRW",
-  "source_valuation_snapshot": "declarations/governed_source_valuation_snapshot.json",
+  "calculation_unit": "KRW_billion",
+  "share_denominator_unit": "billion_shares",
+  "method_route": "capacity_yield_levered/driver_distributional_apv",
+  "source_model": "declarations/model.json",
   "source_financing_spec": "declarations/financing_path_spec.json",
   "source_risk_pack": "declarations/risk_pack.yaml",
+  "source_risk_result": "../../research/korean-air-20260913/risk/runtime_risk_result.json",
+  "source_valuation_snapshot": "declarations/governed_source_valuation_snapshot.json",
+  "source_bundle_manifest": "out/bundles/003490_20260913_TP20813_47FF05D6D4DC/report_bundle_manifest.json",
+  "source_bundle_manifest_sha256": "170bff8d4b395e894f827c97bcce35d9cdab821a0878edd10f91c21fd5b2021e",
+  "source_primary_cashflow": "raw/filing_20260814002803/20260814002803_23.xml",
+  "source_public_filing_facts": "public_filing_facts.json",
   "source_broker_comparison": "../../research/korean-air-20260913/street/public_broker_comparison.json",
   "source_market_observation": "../../research/korean-air-20260913/market/naver_price.json",
-  "supersedes_artifact_id": "003490-20260913-DIST-8B3A2C1C58D8",
-  "scenario_ids": {
-    "down": "Down",
-    "central": "Base",
-    "upside": "Bull"
-  },
-  "gross_claim_face_value_KRW": "25696557000000",
-  "gross_claim_basis": "Disclosed debt including leases KRW 24.646557tn plus KRW 0.7000tn run-date funding bridge and KRW 0.3500tn parent noncontrolling/other senior claim, each included once.",
-  "claim_bridge": {
-    "disclosed_debt_including_leases_KRW": "24646557000000",
-    "run_date_funding_bridge_KRW": "700000000000",
-    "parent_noncontrolling_and_other_claim_KRW": "350000000000",
-    "eligible_liquid_assets_KRW": "5329757000000",
-    "legacy_net_claim_proxy_KRW": "20366800000000",
-    "note": "The structural model adds eligible liquid assets back to enterprise assets and uses gross claims as the strike. The difference reproduces the audited legacy net-claim bridge exactly; it does not use net debt itself as debt face value."
-  },
-  "annual_asset_volatility": "0.22",
-  "asset_volatility_basis": "Rounded annualized log-width implied by the audited Down/Upside business-value envelope over five years; no current share price is used.",
-  "risk_free_rate": "0.04571",
-  "claim_horizon_years": "5",
-  "probability_basis": "GOVERNED_EVENT_PRIOR",
-  "structural_model_qualification": {
-    "claim_basis": "CURRENT_CARRYING_AMOUNT",
-    "asset_basis": "DCF_DERIVED",
-    "volatility_basis": "SCENARIO_ENVELOPE_PROXY",
-    "maturity_basis": "MULTI_MATURITY_AGGREGATE_PROXY",
-    "evidence_path_ids": [
-      "declarations/governed_source_valuation_snapshot.json",
-      "declarations/financing_path_spec.json"
-    ],
-    "permitted_role": "DIAGNOSTIC_CROSS_CHECK_ONLY"
+  "supersedes_artifact_id": "003490-20260913-DIST-4664627231DA",
+  "opening_liquidity_as_of_KRW_billion": "5234.559",
+  "parent_noncontrolling_and_other_senior_claim_KRW_billion": "350",
+  "opening_liquidity_bridge": {
+    "eligible_liquid_assets_at_2026_06_30_KRW_billion": "5329.757",
+    "bond_104_matured_before_as_of_KRW_billion": "95.198",
+    "rule": "The matured bond is removed from both opening liquidity and the live bond schedule. No unverified run-date funding plug is used."
   },
   "diluted_shares": "389669121",
+  "diluted_shares_billion": "0.389669121",
+  "planned_merger_share_treatment": "Post-merger common shares and outstanding preferred shares are included in the denominator at inception; no second dilution event is applied.",
   "branches": [
     {
       "branch_id": "Down",
       "source_scenario": "Down",
-      "probability": "0.20",
-      "is_central": false,
-      "rationale": "Integration and margin recovery materially miss plan; refinancing remains available only at restrictive terms."
+      "rationale": "Integration and operating-margin recovery remain weak while investment and financing needs stay high."
     },
     {
       "branch_id": "Central",
       "source_scenario": "Base",
-      "probability": "0.60",
-      "is_central": true,
-      "rationale": "Gradual operating recovery and integration execution broadly track the source-bound base underwriting."
+      "rationale": "Operating repair, integration savings and aerospace conversion broadly follow the base underwriting."
     },
     {
       "branch_id": "Upside",
       "source_scenario": "Bull",
-      "probability": "0.20",
-      "is_central": false,
-      "rationale": "Integration savings, aerospace/MRO conversion and cash generation reach the audited upside path."
+      "rationale": "Passenger, cargo, integration and aerospace execution reach the upside underwriting."
     }
   ],
   "probability_authorization": {
     "status": "GOVERNED_EVENT_PRIOR_AMBIGUITY_SET",
-    "not_claimed": "CALIBRATED_CURRENT_GROUP_HISTORY",
-    "basis": "Current merged-group history is short and predecessor panels are not yet OOS-qualified. The audited signed scenario values are retained as the value bridge and the integration outcome is represented by a set of three versioned analyst probability vectors. The vectors do not come from nearest-anchor classification, and none is claimed as a calibrated segment posterior.",
-    "permitted_outputs": [
-      "SIGNED_EXPECTED_VALUE_INTERVAL_ACROSS_ALL_VECTORS",
-      "WORST_PRIOR_EXPECTED_RETURN_ENTRY_ONLY_AFTER_PATHWISE_PAYOFF_AUTHORIZATION"
+    "not_claimed": [
+      "CALIBRATED_TARGET_COMPANY_PROBABILITY",
+      "SUCCESS_PROBABILITY",
+      "SINGLE_PROBABILITY_WEIGHTED_TARGET"
     ],
-    "forbidden_outputs": [
-      "SINGLE_PROBABILITY_WEIGHTED_TARGET",
-      "CALIBRATED_SUCCESS_PROBABILITY",
-      "ACTIONABLE_DISCRETE_Q25_WHEN_SUPPORTING_BRANCH_CHANGES"
-    ],
+    "basis": "The current merged-group history is too short for a calibrated group posterior. Three source-bound analyst probability vectors are evaluated as a convex ambiguity set; current price and broker targets are excluded.",
     "sensitivity_sets": [
-      {"label": "downside_heavier", "probabilities": ["0.30", "0.50", "0.20"], "evidence_path_ids": ["declarations/analyst_prior_sensitivity.json", "declarations/governed_source_valuation_snapshot.json"]},
-      {"label": "governed_base", "probabilities": ["0.20", "0.60", "0.20"], "evidence_path_ids": ["declarations/analyst_prior_sensitivity.json", "declarations/governed_source_valuation_snapshot.json"]},
-      {"label": "execution_success", "probabilities": ["0.15", "0.60", "0.25"], "evidence_path_ids": ["declarations/analyst_prior_sensitivity.json", "declarations/governed_source_valuation_snapshot.json"]}
+      {
+        "label": "downside_heavier",
+        "probabilities": ["0.30", "0.50", "0.20"],
+        "evidence_path_ids": [
+          "declarations/analyst_prior_sensitivity.json",
+          "declarations/governed_source_valuation_snapshot.json"
+        ]
+      },
+      {
+        "label": "governed_base",
+        "probabilities": ["0.20", "0.60", "0.20"],
+        "evidence_path_ids": [
+          "declarations/analyst_prior_sensitivity.json",
+          "declarations/governed_source_valuation_snapshot.json"
+        ]
+      },
+      {
+        "label": "execution_success",
+        "probabilities": ["0.15", "0.60", "0.25"],
+        "evidence_path_ids": [
+          "declarations/analyst_prior_sensitivity.json",
+          "declarations/governed_source_valuation_snapshot.json"
+        ]
+      }
     ]
   },
+  "fair_value_policy": {
+    "policy_version": "dated_payoff_fair_value_interval/v1",
+    "horizon_years": 5,
+    "discount_rate_source": "research/korean-air-20260913/risk/runtime_risk_result.json#cost_of_equity",
+    "sensitivity_returns": ["0.08", "0.10", "0.12"]
+  },
   "entry_policy": {
-    "policy_version": "ambiguity_robust_expected_return_entry/v1",
-    "horizon_years": 3,
+    "policy_version": "ambiguity_robust_expected_return_entry/v2",
+    "horizon_years": 5,
     "required_annual_return": "0.12",
-    "success_quantile": "0.25",
-    "quantile_role": "DIAGNOSTIC_ONLY",
-    "probability_success_claim_authorized": false,
-    "robust_entry_authorization": "WITHHELD_UNTIL_PATHWISE_FUTURE_PAYOFFS_AND_WATERFALL",
-    "sensitivity_returns": ["0.10", "0.12", "0.15"]
-  }
+    "sensitivity_returns": ["0.10", "0.12", "0.15"],
+    "interpretation": "Minimum expected present value across every declared probability-vector and complete financing-model pair. It is not a quantile, target price or success-probability claim."
+  },
+  "legacy_signed_value_role": "CROSS_CHECK_ONLY_NO_FLOOR_NO_ENTRY_AUTHORITY"
 }

@@ -149,6 +149,22 @@ def render_canonical_distributional_report(
         probability_summary = "보정 성공확률 없음 · 복수 사전확률 집합만 사용"
         judgment = "보정된 성공확률이 없어 단일 목표가 대신 확률·지급모델 모호성 범위를 사용합니다."
 
+    if (
+        isinstance(market, DistributionalMarketComparison)
+        and valuation.route_authorization.entry_price_authorized
+        and valuation.entry_price is not None
+    ):
+        if market.price > valuation.entry_price:
+            judgment = (
+                "신규매수 보류 — 현재가가 보수적 진입 상한을 웃돕니다. "
+                + judgment
+            )
+        else:
+            judgment = (
+                "매수 검토 — 현재가가 검증된 진입 상한 이내입니다. "
+                + judgment
+            )
+
     entry_text = "보류"
     if valuation.route_authorization.entry_price_authorized and valuation.entry_price is not None:
         entry_text = f"{_fmt(valuation.entry_price)} {currency} 이하"

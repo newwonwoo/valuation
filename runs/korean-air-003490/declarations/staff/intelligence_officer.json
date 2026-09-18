@@ -2,7 +2,7 @@
   {
     "schema_version": "staff-response/v1",
     "role": "intelligence_officer",
-    "prompt_sha256": "13aeac0568ac275abd89842f7482d59ddc832f0bd7fe8259f58e1f3a9803f973",
+    "prompt_sha256": "ce9e17938809e8b3b0440cd0904496648a1eb53db192e2f1dda20e75175d779f",
     "response": {
       "rationale": "연결 실제 손익을 출발점으로 항공 통합·항공우주 수주·엔진 외부서비스·호텔 자산을 구분합니다. 수익 개선은 가설이며 대규모 투자와 초기 비용이 먼저 발생하는 현금흐름을 함께 반영합니다. 이미 연결된 아시아나 매출이나 리스원금을 중복 반영하지 않습니다.",
       "hypotheses": [

@@ -70,6 +70,41 @@ class DistributionalRuntimeError(ValueError):
 
 
 @dataclass(frozen=True)
+class SupplementalOperatingPeriodInput:
+    """Non-core segment cash flows that share the company financing stack.
+
+    Supplemental segment FCFF is valued separately in APV, but its operating
+    cash flow, mandatory capex and taxable income must also participate in the
+    consolidated liquidity and tax-shield paths.  Keeping these inputs typed
+    prevents either omitting a segment from distress or counting its FCFF
+    twice in enterprise value.
+    """
+
+    period: int
+    operating_cash_flow: Decimal
+    mandatory_capex: Decimal
+    taxable_income_before_interest: Decimal
+
+    def validate(self, *, expected_period: int) -> None:
+        if self.period != expected_period:
+            raise DistributionalRuntimeError(
+                "supplemental operating periods must be complete and sequential"
+            )
+        for value, label in (
+            (self.operating_cash_flow, "supplemental operating cash flow"),
+            (self.mandatory_capex, "supplemental mandatory capex"),
+            (
+                self.taxable_income_before_interest,
+                "supplemental taxable income before interest",
+            ),
+        ):
+            if not isinstance(value, Decimal) or not value.is_finite():
+                raise DistributionalRuntimeError(f"{label} must be a finite Decimal")
+        if self.mandatory_capex < ZERO:
+            raise DistributionalRuntimeError("supplemental mandatory capex cannot be negative")
+
+
+@dataclass(frozen=True)
 class DistributionPathExecutionInput:
     """One economic path under one complete financing-model case.
 
@@ -93,6 +128,7 @@ class DistributionPathExecutionInput:
     distributions_to_old_holders: tuple[Decimal, ...]
     initial_shares: Decimal
     supplemental_segments: tuple[SegmentCashFlowPath, ...] = ()
+    supplemental_operating_periods: tuple[SupplementalOperatingPeriodInput, ...] = ()
     asset_disposals: tuple[NonOperatingAssetDisposal, ...] = ()
 
     def validate(self, *, profile: CapacityYieldProfile, mapping: CapacityYieldMetricMapping) -> None:
@@ -138,6 +174,21 @@ class DistributionPathExecutionInput:
             raise DistributionalRuntimeError("distribution economic paths overlap")
         for item in self.supplemental_segments:
             item.validate(horizon)
+        if bool(self.supplemental_segments) != bool(
+            self.supplemental_operating_periods
+        ):
+            raise DistributionalRuntimeError(
+                "supplemental APV segments and consolidated operating inputs must be supplied together"
+            )
+        if self.supplemental_operating_periods:
+            if len(self.supplemental_operating_periods) != horizon:
+                raise DistributionalRuntimeError(
+                    "supplemental operating inputs must cover the full path horizon"
+                )
+            for expected_period, item in enumerate(
+                self.supplemental_operating_periods, start=1
+            ):
+                item.validate(expected_period=expected_period)
         self.financing_spec.validate(horizon)
         profile.validate()
         mapping.validate(profile)
@@ -287,16 +338,24 @@ def execute_distributional_apv(spec: DistributionalAPVExecutionSpec) -> Distribu
             driver_path=path_input.driver_path,
             policy=spec.operating_policy,
         )
+        supplemental_periods = path_input.supplemental_operating_periods or tuple(
+            SupplementalOperatingPeriodInput(period.period, ZERO, ZERO, ZERO)
+            for period in operating.periods
+        )
         financing_inputs = tuple(
             FinancingPeriodInput(
                 period=period.period,
-                operating_cash_flow=period.operating_cash_flow,
-                mandatory_capex=period.mandatory_capex,
+                operating_cash_flow=period.operating_cash_flow
+                + supplemental.operating_cash_flow,
+                mandatory_capex=period.mandatory_capex + supplemental.mandatory_capex,
                 distress_asset_proceeds=path_input.distress_asset_proceeds_by_period[period.period - 1],
-                taxable_income_before_interest=period.taxable_income_before_financing,
+                taxable_income_before_interest=period.taxable_income_before_financing
+                + supplemental.taxable_income_before_interest,
                 tax_rate=spec.operating_policy.tax_rate,
             )
-            for period in operating.periods
+            for period, supplemental in zip(
+                operating.periods, supplemental_periods, strict=True
+            )
         )
         financing = evaluate_financing_path(
             inputs=financing_inputs,
@@ -319,7 +378,11 @@ def execute_distributional_apv(spec: DistributionalAPVExecutionSpec) -> Distribu
                 segments=(core_segment, *path_input.supplemental_segments),
                 tax_shield_schedule=TaxShieldSchedule(
                     taxable_income_before_interest=tuple(
-                        period.taxable_income_before_financing for period in operating.periods
+                        period.taxable_income_before_financing
+                        + supplemental.taxable_income_before_interest
+                        for period, supplemental in zip(
+                            operating.periods, supplemental_periods, strict=True
+                        )
                     ),
                     deductible_interest=deductible_interest,
                     tax_rate=spec.operating_policy.tax_rate,
@@ -794,6 +857,7 @@ __all__ = [
     "DistributionalAPVInputLoader",
     "DistributionalPrimaryValuationResult",
     "DistributionalRuntimeError",
+    "SupplementalOperatingPeriodInput",
     "distributional_apv_valuation_adapter",
     "execute_distributional_apv",
     "primary_valuation_dispatch_adapter",

@@ -44,6 +44,7 @@ stage list, the frozen values and the report must all reproduce.
 from __future__ import annotations
 
 import argparse
+from dataclasses import replace
 from decimal import Decimal
 from hashlib import sha256
 import importlib.util
@@ -74,6 +75,9 @@ from valuation_engine.calibration_cohort_registry import (  # noqa: E402
 from valuation_engine.cli_runtime import LiveAnalysisRequest  # noqa: E402
 from valuation_engine.control_plane import StageStatus  # noqa: E402
 from valuation_engine.declared_segments import load_declared_segments  # noqa: E402
+from valuation_engine.distributional_runtime import (  # noqa: E402
+    DistributionalAPVExecutionSpec,
+)
 from valuation_engine.generic_kr_industry import (  # noqa: E402
     fetch_opendart_company_profile,
     opendart_filing_snapshot_loader,
@@ -933,8 +937,14 @@ def reuse_published_report_bundle(
     return None
 
 
-def execute_run(run_dir: str | Path, *, state_root: str | None = None,
-                staff_mode: str | None = None, underwriting_path: str | Path | None = None):
+def execute_run(
+    run_dir: str | Path,
+    *,
+    state_root: str | None = None,
+    staff_mode: str | None = None,
+    underwriting_path: str | Path | None = None,
+    distributional_spec: DistributionalAPVExecutionSpec | None = None,
+):
     """Run one prepared directory; returns (reached, stop_stage, stop_reason, result)."""
     run_dir = Path(run_dir).resolve()
     config = _load_run(run_dir)
@@ -1056,7 +1066,16 @@ def execute_run(run_dir: str | Path, *, state_root: str | None = None,
             run_id=str(config.get("run_id", f"RUNBOOK-{run_dir.name}")),
             jurisdiction=str(config.get("jurisdiction", "KR")),
         )
-        return run_prism(factory(request)).result
+        runtime_config = factory(request)
+        if distributional_spec is not None:
+            runtime_config = replace(
+                runtime_config,
+                initial_data={
+                    **runtime_config.initial_data,
+                    "distributional_apv_execution_spec": distributional_spec,
+                },
+            )
+        return run_prism(runtime_config).result
 
     if state_root is not None:
         result = run(state_root)
