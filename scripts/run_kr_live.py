@@ -77,6 +77,7 @@ from valuation_engine.control_plane import StageStatus  # noqa: E402
 from valuation_engine.declared_segments import load_declared_segments  # noqa: E402
 from valuation_engine.distributional_runtime import (  # noqa: E402
     DistributionalAPVExecutionSpec,
+    DistributionalPrimaryValuationResult,
 )
 from valuation_engine.generic_kr_industry import (  # noqa: E402
     fetch_opendart_company_profile,
@@ -93,6 +94,7 @@ from valuation_engine.kr_opendart_provider import (  # noqa: E402
 from valuation_engine.investor_report import (  # noqa: E402
     load_investor_report_profile,
     probability_weighted_equity_value,
+    render_distributional_investor_report,
     render_investor_report,
 )
 from valuation_engine.live_primary_adapters import (  # noqa: E402
@@ -592,6 +594,17 @@ def _run_input_sha256(run_dir: str | Path) -> str:
 
 def _reference_value_per_share(result) -> Decimal:
     valuation = result.data.get("generic_valuation_result")
+    distributional = result.data.get("distributional_primary_result")
+    if isinstance(distributional, DistributionalPrimaryValuationResult):
+        if distributional.pathwise_distribution is not None:
+            return distributional.pathwise_distribution.quantile(Decimal("0.50"))
+        if distributional.ambiguity_intrinsic_range is not None:
+            value_range = distributional.ambiguity_intrinsic_range
+            return (
+                value_range.minimum_expected_value
+                + value_range.maximum_expected_value
+            ) / Decimal("2")
+        raise RunbookError("completed distributional run carries no intrinsic value range")
     scenarios = tuple(getattr(valuation, "scenarios", ()))
     if not scenarios:
         raise RunbookError("completed run carries no intrinsic scenario values")
@@ -658,9 +671,14 @@ def publish_report_bundle(
             "public report publication requires declarations/investor_report.yaml; "
             "refusing to expose the developer-facing audit report"
         )
-    report = render_investor_report(
-        result.data,
-        load_investor_report_profile(investor_profile_path),
+    investor_profile = load_investor_report_profile(investor_profile_path)
+    report = (
+        render_distributional_investor_report(result.data, investor_profile)
+        if isinstance(
+            result.data.get("distributional_primary_result"),
+            DistributionalPrimaryValuationResult,
+        )
+        else render_investor_report(result.data, investor_profile)
     )
     valuation_hash = str(result.data.get("valuation_hash") or "")
     audit_hash = str(result.data.get("audit_hash") or "")
@@ -1073,6 +1091,15 @@ def execute_run(
                 initial_data={
                     **runtime_config.initial_data,
                     "distributional_apv_execution_spec": distributional_spec,
+                    "investor_report_profile": investor_profile,
+                },
+            )
+        elif investor_profile is not None:
+            runtime_config = replace(
+                runtime_config,
+                initial_data={
+                    **runtime_config.initial_data,
+                    "investor_report_profile": investor_profile,
                 },
             )
         return run_prism(runtime_config).result

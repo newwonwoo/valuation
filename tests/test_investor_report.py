@@ -54,18 +54,22 @@ def test_koreazinc_investor_report_is_clean_and_decision_ready(koreazinc_result)
     )
     assert headings == (
         "## 1. 투자판단 요약",
-        "## 2. 핵심 투자포인트",
-        "## 3. 가치평가",
+        "## 2. 투자논리",
+        "## 3. 가치평가와 민감도",
         "## 4. 사업부별 평가",
-        "## 5. 리스크와 확인 필요 사항",
-        "## 6. 판단 변경 조건",
-        "## 7. 참고자료",
+        "## 5. 위험과 판단 변경 조건",
+        "## 6. 증권사·시장 비교",
+        "## 7. 원문 자료",
     )
     for expected in (
         "- 투자의견: 비중축소",
         "- 현재가: 1,222,000원 (2026-09-04)",
         "- 평가 기준가: 688,109원",
-        "| 주당가치 | 304,347원 | 688,109원 | 1,129,698원 |",
+        "| Down | 304,347원 |",
+        "| Base | 688,109원 |",
+        "| Bull | 1,129,698원 |",
+        "### 사업 민감도와 다음 확인지표",
+        "### 계산된 가치 민감도",
         "확률가중 기대값은 948,269원입니다. 적용 확률은 하방 5.3%, 기준 31.2%, 상방 63.5%입니다.",
         "이전 평가 완료 사업부 소계 680,874원 → 수정 688,109원, 주당 7,235원 증가",
         "| 기타부문 | 평가 | 공시 유형자산 1,476억원을 집계 NAV로 반영 |",
@@ -194,6 +198,17 @@ def test_every_committed_run_declares_a_valid_public_report_profile(run_name):
     load_investor_report_profile(path)
 
 
+def test_public_report_profile_fails_closed_when_logic_chain_is_missing(tmp_path):
+    payload = PROFILE_PATH.read_text(encoding="utf-8").replace(
+        "scenario_conditions:", "missing_scenario_conditions:"
+    )
+    path = tmp_path / "investor_report.yaml"
+    path.write_text(payload, encoding="utf-8")
+
+    with pytest.raises(ValueError, match="unknown fields"):
+        load_investor_report_profile(path)
+
+
 def test_negative_residual_is_disclosed_but_share_price_is_floored(koreazinc_result):
     original = koreazinc_result.data["generic_valuation_result"]
     values = {"Down": Decimal("-100"), "Base": Decimal("100"), "Bull": Decimal("1400000")}
@@ -204,7 +219,9 @@ def test_negative_residual_is_disclosed_but_share_price_is_floored(koreazinc_res
         {**koreazinc_result.data, "generic_valuation_result": valuation},
         load_investor_report_profile(PROFILE_PATH),
     )
-    assert "| 주당가치 | 0원 | 100원 | 1,400,000원 |" in report
+    assert "| Down | 0원 |" in report
+    assert "| Base | 100원 |" in report
+    assert "| Bull | 1,400,000원 |" in report
     assert "| 부채 차감 후 주당 잔여가치 | -100원 | 100원 | 1,400,000원 |" in report
     assert "주주의 추가 납입 의무나 음수 주식가격을 뜻하지 않으며" in report
     assert "유한책임 반영 전 확률가중 잔여가치: -20원" in report
@@ -309,5 +326,7 @@ def test_partial_business_residual_is_not_given_equity_floor(koreazinc_result):
         {**koreazinc_result.data, "generic_valuation_result": valuation},
         load_investor_report_profile(PROFILE_PATH),
     )
-    assert "| 주당가치 | -100원 | -100원 | -100원 |" in report
+    assert "| Down | -100원 |" in report
+    assert "| Base | -100원 |" in report
+    assert "| Bull | -100원 |" in report
     assert "주식가치의 하한은 0원" not in report

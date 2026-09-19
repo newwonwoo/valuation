@@ -102,6 +102,30 @@ reporting_contract:
     direct_http_links_required: true
     claim_source_mapping_required: true
     non_http_source_refs_forbidden_in_live_reports: true
+  public_investor_report_policy:
+    profile_schema: investor_report/v2
+    shared_by_routes: [generic_valuation, distributional_valuation]
+    required_logic_fields:
+      - conclusion
+      - investment_points.evidence
+      - investment_points.valuation_link
+      - investment_points.falsifier
+      - method_rationale
+      - scenario_conditions
+      - sensitivity_watch
+      - risks
+      - conditions
+      - sources
+    section_order:
+      - 투자판단 요약
+      - 투자논리
+      - 가치평가와 민감도
+      - 위험과 판단 변경 조건
+      - 증권사·시장 비교
+      - 원문 자료
+    calculated_and_declared_sensitivity_separated: true
+    missing_profile_blocks_publication: true
+    developer_content_forbidden: true
   artifact_freshness_policy:
     immutable_versioned_report_required: true
     latest_manifest_required: true

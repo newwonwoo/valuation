@@ -1025,6 +1025,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
     canonical_freeze = canonical_run.freeze_token
     canonical_attestation = canonical_run.data.get("execution_attestation")
     canonical_report = canonical_run.data.get("final_report")
+    investor_report_profile = canonical_run.data.get("investor_report_profile")
     if (
         canonical_valuation is None
         or canonical_valuation.ambiguity_intrinsic_range is None
@@ -1035,6 +1036,7 @@ def build(spec_path: Path, output_root: Path) -> Path:
         or canonical_attestation is None
         or not isinstance(canonical_report, str)
         or not canonical_report
+        or investor_report_profile is None
         or canonical_run.data.get("canonical_entrypoint_id")
         != "prism_strict_live_primary/v1"
     ):
@@ -1515,6 +1517,13 @@ def build(spec_path: Path, output_root: Path) -> Path:
         + "\n",
         "canonical_stage_trace.json": json.dumps(
             {"stages": [asdict(row) for row in canonical_run.stage_traces]},
+            ensure_ascii=False,
+            indent=2,
+            default=str,
+        )
+        + "\n",
+        "investor_report_profile.json": json.dumps(
+            asdict(investor_report_profile),
             ensure_ascii=False,
             indent=2,
             default=str,

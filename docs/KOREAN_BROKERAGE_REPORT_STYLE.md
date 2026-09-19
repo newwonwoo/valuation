@@ -14,6 +14,7 @@ PRISM의 최종보고서를 실행 로그가 아니라 투자자가 첫 화면�
 | 삼성증권 | 파마리서치 기업분석, 2025-05-14 | 첫 페이지 핵심 문장 → 투자의견·목표가·현재가 → 전망치 변화·가치평가 | [원문 PDF](https://www.samsungpop.com/common.do?cmd=down&contentType=application/pdf&fileName=2010/2025051321480185K_02_07.pdf&inlineYn=Y&saveKey=research.pdf) |
 | 삼성증권 | LX인터내셔널 기업분석, 2026-04-30 | 판단 요약 → 사업부 실적 → 목표가 산식 → 재무제표·공시 | [원문 PDF](https://www.samsungpop.com/common.do?cmd=down&contentType=application/pdf&fileName=2010/2026042309574941K_02_05.pdf&inlineYn=Y&saveKey=research.pdf) |
 | KB증권 | 현대모비스 기업분석 요약, 2021-03-25 | 투자의견·목표가 → 투자포인트·위험포인트 → 산식·실적·시장 비교 | [원문 PDF](https://rdata.kbsec.com/pdf_data/20210325065220300K.pdf) |
+| CFA Institute Research Challenge | 2026 우승 보고서, Lightspeed Commerce | 첫 장 판단·목표가·하방 → 세 개 투자논리 → 영업지표·전망·가치 연결 → 역산·민감도·반증 위험 | [원문 PDF](https://www.cfainstitute.org/sites/default/files/docs/insights/events/research-challenge/rc-2026-winning-written-report-university-of-waterloo.pdf) |
 
 ## 공통 구조
 
@@ -23,10 +24,12 @@ PRISM의 최종보고서를 실행 로그가 아니라 투자자가 첫 화면�
 4. `투자포인트`는 세 개 이내로 제한하고 사실, 가치평가 해석, 남은 제약을 연결한다.
 5. `판단 변경 조건`은 상방 확인, 하방 훼손, 행동 가능 조건을 분리한다.
 6. 가치평가 산식과 핵심 가정은 바로 뒤에서 검증할 수 있게 하되 첫 화면의 판단을 반복하지 않는다.
-7. 원문 출처는 직접 링크로 제공하고, 인공지능 인사이트와 결정론적 계산을 분리한다.
+7. 원문 출처는 직접 링크로 제공한다. 계산값과 분석가 해석은 구분하되, 인공지능의 역할 설명은 투자자 본문에 넣지 않는다.
 8. 33단계 상태·해시·기술 식별자는 접힌 감사 부록에만 둔다.
 9. 발행 스크립트와 지속적 통합 검사는 HTML 본문, Markdown 부속자료, SVG 2장이 같은 실행 결과에서 생성됐는지 함께 확인한다.
 10. 화면과 인쇄물의 섹션 제목·표 머리글에는 `Freeze`, `PASS`, 단계 ID 같은 내부 용어를 노출하지 않는다.
+11. 투자포인트는 관찰 사실, 향후 가정, 가치 영향, 반증 조건을 한 흐름으로 연결한다.
+12. 가치범위에는 각 구간이 성립하는 사업 조건을 붙이고, 실제 계산한 민감도와 방향만 선언한 사업 민감도를 구분한다.
 
 ## PRISM 적용 경계
 

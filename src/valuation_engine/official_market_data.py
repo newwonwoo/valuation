@@ -502,6 +502,9 @@ def load_authorized_street_export(path: str | Path):
                 base_year=str(row.get("base_year") or ""),
                 estimates=estimates,
                 source_ref=str(row.get("source_ref") or ""),
+                access_quality=str(row.get("access_quality") or "").strip(),
+                argument_summary=str(row.get("argument_summary") or "").strip(),
+                valuation_basis_note=str(row.get("valuation_basis_note") or "").strip(),
             )
         )
     return tuple(reports)

@@ -1,16 +1,48 @@
+schema_version: investor_report/v2
+conclusion: 현재가는 기준 NAV보다 낮지만, 보유 부동산 가치와 임대현금흐름이 함께 유지되는지를 확인해야 할인 폭을 투자기회로 판단할 수 있습니다.
 investment_points:
   - title: 보유자산 NAV가 가치평가의 핵심
     content: 시나리오별 총자산가치 변화가 주당가치 범위를 결정합니다.
     evidence: 하방 8,016억원·기준 16,032억원·상방 17,929억원의 유형자산 NAV 가정
+    valuation_link: 총자산가치 변화가 지배주주 귀속 지분을 거쳐 주당 NAV에 직접 반영됩니다.
+    falsifier: 감정가·거래가·임대현금흐름이 하방 NAV에도 미달하는 경우입니다.
   - title: 지배주주 귀속률을 명시적으로 반영
     content: 총자산가치에 지배주주 귀속률 77.8200%를 적용해 주당가치를 계산했습니다.
     evidence: 2026 사업보고서의 지분 및 자산 자료
+    valuation_link: 같은 자산가치에서도 귀속률 하락 또는 희석은 주당가치를 낮춥니다.
+    falsifier: 지분구조 변화로 귀속률이 낮아지거나 주식 수가 의미 있게 늘어나는 경우입니다.
   - title: 현재가는 확률가중 기대값보다 낮음
     content: 보정된 시나리오 확률을 적용한 기대값과 현재가를 비교할 수 있습니다.
     evidence: 현재가 5,510원과 확률가중 기대값 9,504원
+    valuation_link: 현재가와 확률가중 가치의 차이는 자산가치와 확률 보정이 유지되는 동안 잠재 안전여력을 제공합니다.
+    falsifier: 금리 상승과 자산가치 하락으로 확률가중 가치가 현재가 수준까지 낮아지는 경우입니다.
 valuation_method: 시나리오별 유형자산 순자산가치법
+method_rationale: 이익보다 보유 부동산과 임대자산의 가치가 주주가치를 좌우하므로, 검증 가능한 자산가치에서 귀속률과 주식 수를 반영하는 NAV 방식이 적합합니다.
 major_assumptions: 유형자산 NAV는 하방 8,016억원·기준 16,032억원·상방 17,929억원이며, 지배주주 귀속률 77.8200%와 희석주식수 124.940백만주를 적용했습니다.
 valuation_exclusions: 별도로 검증되지 않은 개발이익과 자산 재평가 차익은 추가하지 않았습니다.
+scenario_conditions:
+  - scenario_id: Down
+    condition: 금리 상승과 자산가치 조정으로 유형자산 NAV가 크게 낮아지는 경우입니다.
+    valuation_effect: 낮은 자산가치가 귀속 지분을 거쳐 가치범위 하단이 됩니다.
+  - scenario_id: Base
+    condition: 보유 부동산 가치와 임대현금흐름이 현재 수준을 대체로 유지하는 경우입니다.
+    valuation_effect: 기준 NAV와 귀속률이 기준 주당가치를 지지합니다.
+  - scenario_id: Bull
+    condition: 임대료와 점유율 개선 또는 자산가치 상승이 확인되는 경우입니다.
+    valuation_effect: 높은 NAV가 가치범위 상단을 만듭니다.
+sensitivity_watch:
+  - driver: 보유 부동산 NAV
+    downside: 거래가격·감정가 하락은 주당가치를 직접 낮춥니다.
+    upside: 임대수익 개선과 자산가치 상승은 주당가치를 높입니다.
+    monitor: 감정평가, 자산 매매와 임대현금흐름
+  - driver: 금리와 요구수익률
+    downside: 금리 상승은 부동산 가치와 조달비용에 불리합니다.
+    upside: 금리 안정과 차입비용 하락은 자산가치 유지에 유리합니다.
+    monitor: 차입금리, 만기구조와 시장 자본환원율
+  - driver: 귀속률과 주식 수
+    downside: 귀속률 하락 또는 희석은 주당가치를 낮춥니다.
+    upside: 지분구조 안정과 자사주 정책은 주당가치 보전에 유리합니다.
+    monitor: 지분 변동, 증자와 전환증권 공시
 segment_notes:
   - segment_id: 부동산 임대
     content: 시나리오별 유형자산 NAV 적용

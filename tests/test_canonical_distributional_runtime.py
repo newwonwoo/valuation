@@ -23,6 +23,7 @@ from valuation_engine.control_plane import (
 from valuation_engine.distribution_route_policy import DistributionIntegrationRoute
 from valuation_engine.distributional_apv import SegmentCashFlowPath
 from valuation_engine.distributional_reporting_canonical import render_canonical_distributional_report
+from valuation_engine.investor_report import load_investor_report_profile
 from valuation_engine.distributional_runtime import (
     DistributionPathExecutionInput,
     DistributionalAPVExecutionSpec,
@@ -409,22 +410,25 @@ def test_distributional_report_keeps_uncalibrated_prior_out_of_success_probabili
             "distributional_primary_result": result,
             "audit_report": audit,
             "current_thesis": "수요와 단가가 현금흐름으로 이어지는지를 확인한다.",
+            "investor_report_profile": load_investor_report_profile(
+                ROOT / "runs" / "korean-air-003490" / "declarations" / "investor_report.yaml"
+            ),
         },
         require_verifiable_sources=False,
     )
     for section in (
-        "## 투자 요약",
-        "## 가치평가",
-        "## 핵심 가정과 위험",
-        "## 인공지능 인사이트 — 환경 변화 × 기업 강점",
-        "## 증권사·시장 비교",
-        "## 정보 출처 — 원문 바로 확인",
+        "## 1. 투자판단 요약",
+        "## 2. 투자논리",
+        "## 3. 가치평가와 민감도",
+        "## 5. 위험과 판단 변경 조건",
+        "## 6. 증권사·시장 비교",
+        "## 7. 원문 자료",
     ):
         assert section in report
-    assert "단일 확률가중 목표가: 미산출" in report
-    assert "보정 성공확률: 미산출" in report
-    assert "**투자판단**" in report
-    assert "**현재가**" in report
-    assert "**기준 내재가치**" in report
-    assert "**가치평가 범위**" in report
-    assert "**시나리오 가능성**" in report
+    assert "보정된 성공확률은 산출하지 않았습니다" in report
+    assert "- 투자의견:" in report
+    assert "- 현재가:" in report
+    assert "- 기준 내재가치:" in report
+    assert "- 가치평가 범위:" in report
+    assert "인공지능 인사이트" not in report
+    assert "driver_distributional_apv" not in report

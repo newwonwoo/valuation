@@ -218,9 +218,20 @@ claims:
       - "src/valuation_engine/distributional_reporting_canonical.py"
       - "src/valuation_engine/payoff_model_ambiguity.py"
       - "src/valuation_engine/strict_live_runtime.py"
+      - "src/valuation_engine/investor_report.py"
+      - "src/valuation_engine/street.py"
+      - "src/valuation_engine/official_market_data.py"
+      - "config/control_plane_stage_registry.yaml"
+      - "docs/GENERIC_INVESTOR_REPORT_DESIGN.md"
+      - "docs/KOREAN_BROKERAGE_REPORT_STYLE.md"
       - "tests/test_canonical_distributional_runtime.py"
+      - "tests/test_investor_report.py"
       - "tests/test_governed_distribution_report.py"
       - "tests/test_payoff_model_ambiguity.py"
+      - "runs/daehansteel-084010/declarations/investor_report.yaml"
+      - "runs/kisco-104700/declarations/investor_report.yaml"
+      - "runs/koreazinc-010130/declarations/investor_report.yaml"
+      - "runs/shinhanalpha-293940/declarations/investor_report.yaml"
     note: >-
       Follow-up to merged #184 and #187. Bind the Korean Air dated-payoff
       ambiguity valuation to the canonical distributional LIVE_PRIMARY

@@ -1,0 +1,817 @@
+{
+  "target_id": "KR:DART:00113526",
+  "route": "PRIOR_AMBIGUITY_VALUE_RANGE",
+  "reporting_unit": "KRW",
+  "path_results": [
+    {
+      "path_id": "front_loaded_thin_buffer:Down:KAL:Down:SIGNED-FORECAST",
+      "segments": [
+        {
+          "segment_id": "airline",
+          "economic_path_id": "Down:airline",
+          "forecast_fcff_present_value": "-3491.675589344954856352221879",
+          "terminal_value_present_value": "11648.36409148759365943306907",
+          "unlevered_value": "8156.688502142638803080847191",
+          "terminal_value_at_horizon": "16417.24266401912268471648309"
+        },
+        {
+          "segment_id": "aerospace",
+          "economic_path_id": "Down:aerospace",
+          "forecast_fcff_present_value": "91.30762749156858542493060433",
+          "terminal_value_present_value": "643.4478981923491942475046790",
+          "unlevered_value": "734.7555256839177796724352833",
+          "terminal_value_at_horizon": "906.8775841233000794235109021"
+        },
+        {
+          "segment_id": "other",
+          "economic_path_id": "Down:other",
+          "forecast_fcff_present_value": "-64.51280880781883950249200868",
+          "terminal_value_present_value": "161.9807362988077746862472235",
+          "unlevered_value": "97.46792749098893518375521482",
+          "terminal_value_at_horizon": "228.2961825220906194967422565"
+        },
+        {
+          "segment_id": "hotel",
+          "economic_path_id": "Down:hotel-nav",
+          "forecast_fcff_present_value": "0",
+          "terminal_value_present_value": "0E+41",
+          "unlevered_value": "0",
+          "terminal_value_at_horizon": "0E+14"
+        }
+      ],
+      "usable_tax_shields": [
+        "194.9853791028000264",
+        "260.526383026536"
+      ],
+      "tax_shield_present_value": "431.1760040702874904870967333",
+      "explicit_financing_cost_present_value": "159.5060199486757071314480918",
+      "operating_apv": "10210.58193943915730129268633",
+      "distressed": true,
+      "dilution_occurred": false,
+      "old_shareholder_retention": "1",
+      "terminal_old_equity_payoff": null,
+      "distress_old_shareholder_recovery": "0E-11",
+      "old_shareholder_present_value": "0",
+      "value_per_initial_share": "0E+9",
+      "initial_shares": "0.389669121",
+      "distributions_to_old_holders": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "realized_periods": 2,
+      "equity_required_return": "0.09577089965527585",
+      "path_calculation_hash": "f103dec9dcbc8917187660c0b42093f9b046e7281effe24952ef7d8bf682b539"
+    },
+    {
+      "path_id": "front_loaded_thin_buffer:Central:KAL:Central:SIGNED-FORECAST",
+      "segments": [
+        {
+          "segment_id": "airline",
+          "economic_path_id": "Central:airline",
+          "forecast_fcff_present_value": "-1318.657224777046484657499026",
+          "terminal_value_present_value": "20219.20290842960476702343185",
+          "unlevered_value": "18900.54568365255828236593282",
+          "terminal_value_at_horizon": "28497.01108358281622561642238"
+        },
+        {
+          "segment_id": "aerospace",
+          "economic_path_id": "Central:aerospace",
+          "forecast_fcff_present_value": "161.2313416957447954218148308",
+          "terminal_value_present_value": "1200.472845538668587405646721",
+          "unlevered_value": "1361.704187234413382827461552",
+          "terminal_value_at_horizon": "1691.950377064229763928369197"
+        },
+        {
+          "segment_id": "other",
+          "economic_path_id": "Central:other",
+          "forecast_fcff_present_value": "-38.56603147378379963680815182",
+          "terminal_value_present_value": "323.8920955619523440587765759",
+          "unlevered_value": "285.3260640881685444219684241",
+          "terminal_value_at_horizon": "456.4945848219244934758490836"
+        },
+        {
+          "segment_id": "hotel",
+          "economic_path_id": "Central:hotel-nav",
+          "forecast_fcff_present_value": "0",
+          "terminal_value_present_value": "0E+42",
+          "unlevered_value": "0",
+          "terminal_value_at_horizon": "0E+15"
+        }
+      ],
+      "usable_tax_shields": [
+        "307.00748335752",
+        "285.3553420663887104631176159"
+      ],
+      "tax_shield_present_value": "562.4918279473691672149573002",
+      "explicit_financing_cost_present_value": "152.1554644857945035752225564",
+      "operating_apv": "22207.91229843671487325509753",
+      "distressed": true,
+      "dilution_occurred": false,
+      "old_shareholder_retention": "1",
+      "terminal_old_equity_payoff": null,
+      "distress_old_shareholder_recovery": "0E-11",
+      "old_shareholder_present_value": "0",
+      "value_per_initial_share": "0E+9",
+      "initial_shares": "0.389669121",
+      "distributions_to_old_holders": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "realized_periods": 2,
+      "equity_required_return": "0.09577089965527585",
+      "path_calculation_hash": "54d741b37a1f393cebac827aea39366a8f4daf4042f3a48b5264bff8e1098f30"
+    },
+    {
+      "path_id": "front_loaded_thin_buffer:Upside:KAL:Upside:SIGNED-FORECAST",
+      "segments": [
+        {
+          "segment_id": "airline",
+          "economic_path_id": "Upside:airline",
+          "forecast_fcff_present_value": "-71.428040682988745470352718",
+          "terminal_value_present_value": "30535.52257457753143828747053",
+          "unlevered_value": "30464.09453389454269281711781",
+          "terminal_value_at_horizon": "43036.86595320458627263281000"
+        },
+        {
+          "segment_id": "aerospace",
+          "economic_path_id": "Upside:aerospace",
+          "forecast_fcff_present_value": "212.5055642095580512985285164",
+          "terminal_value_present_value": "1934.120645982982488824263268",
+          "unlevered_value": "2146.626210192540540122791784",
+          "terminal_value_at_horizon": "2725.956000104468837147966664"
+        },
+        {
+          "segment_id": "other",
+          "economic_path_id": "Upside:other",
+          "forecast_fcff_present_value": "-14.77647329736815053971162087",
+          "terminal_value_present_value": "511.0523533495827026884042054",
+          "unlevered_value": "496.2758800522145521486925845",
+          "terminal_value_at_horizon": "720.2788677501462670635383719"
+        },
+        {
+          "segment_id": "hotel",
+          "economic_path_id": "Upside:hotel-nav",
+          "forecast_fcff_present_value": "0",
+          "terminal_value_present_value": "0E+41",
+          "unlevered_value": "0",
+          "terminal_value_at_horizon": "0E+14"
+        }
+      ],
+      "usable_tax_shields": [
+        "307.00748335752",
+        "285.0218323986912307199790540",
+        "313.4134211657060803885476734",
+        "326.2387611779274181580651266",
+        "320.2090830610464833720012517"
+      ],
+      "tax_shield_present_value": "1396.695259333307648699896762",
+      "explicit_financing_cost_present_value": "198.4499616860000915472144277",
+      "operating_apv": "35855.24192178660534224128450",
+      "distressed": false,
+      "dilution_occurred": false,
+      "old_shareholder_retention": "1",
+      "terminal_old_equity_payoff": "24650.17034135526671996967856",
+      "distress_old_shareholder_recovery": null,
+      "old_shareholder_present_value": "15603.46715823989927054064169",
+      "value_per_initial_share": "40042.86282217342869860258106",
+      "initial_shares": "0.389669121",
+      "distributions_to_old_holders": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "realized_periods": 5,
+      "equity_required_return": "0.09577089965527585",
+      "path_calculation_hash": "1882378e81073ad3c4180c86af677c8d6afee5928842ae8df98d72ca6203c8ed"
+    },
+    {
+      "path_id": "level_standard_buffer:Down:KAL:Down:SIGNED-FORECAST",
+      "segments": [
+        {
+          "segment_id": "airline",
+          "economic_path_id": "Down:airline",
+          "forecast_fcff_present_value": "-3491.675589344954856352221879",
+          "terminal_value_present_value": "11648.36409148759365943306907",
+          "unlevered_value": "8156.688502142638803080847191",
+          "terminal_value_at_horizon": "16417.24266401912268471648309"
+        },
+        {
+          "segment_id": "aerospace",
+          "economic_path_id": "Down:aerospace",
+          "forecast_fcff_present_value": "91.30762749156858542493060433",
+          "terminal_value_present_value": "643.4478981923491942475046790",
+          "unlevered_value": "734.7555256839177796724352833",
+          "terminal_value_at_horizon": "906.8775841233000794235109021"
+        },
+        {
+          "segment_id": "other",
+          "economic_path_id": "Down:other",
+          "forecast_fcff_present_value": "-64.51280880781883950249200868",
+          "terminal_value_present_value": "161.9807362988077746862472235",
+          "unlevered_value": "97.46792749098893518375521482",
+          "terminal_value_at_horizon": "228.2961825220906194967422565"
+        },
+        {
+          "segment_id": "hotel",
+          "economic_path_id": "Down:hotel-nav",
+          "forecast_fcff_present_value": "0",
+          "terminal_value_present_value": "0E+41",
+          "unlevered_value": "0",
+          "terminal_value_at_horizon": "0E+14"
+        }
+      ],
+      "usable_tax_shields": [
+        "194.9853791028000264",
+        "260.526383026536",
+        "332.93197742998776528",
+        "369.0612423666323158074038943",
+        "380.6171775225068249679161836"
+      ],
+      "tax_shield_present_value": "1371.190606603626121499985092",
+      "explicit_financing_cost_present_value": "205.3704477576701311563650244",
+      "operating_apv": "11104.73211416350150828065776",
+      "distressed": false,
+      "dilution_occurred": false,
+      "old_shareholder_retention": "1",
+      "terminal_old_equity_payoff": "0",
+      "distress_old_shareholder_recovery": null,
+      "old_shareholder_present_value": "0",
+      "value_per_initial_share": "0E+9",
+      "initial_shares": "0.389669121",
+      "distributions_to_old_holders": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "realized_periods": 5,
+      "equity_required_return": "0.09577089965527585",
+      "path_calculation_hash": "a1a29092f559edd8181ce150005080e4d5ecde3d4b3a91798846cdb04c559af6"
+    },
+    {
+      "path_id": "level_standard_buffer:Central:KAL:Central:SIGNED-FORECAST",
+      "segments": [
+        {
+          "segment_id": "airline",
+          "economic_path_id": "Central:airline",
+          "forecast_fcff_present_value": "-1318.657224777046484657499026",
+          "terminal_value_present_value": "20219.20290842960476702343185",
+          "unlevered_value": "18900.54568365255828236593282",
+          "terminal_value_at_horizon": "28497.01108358281622561642238"
+        },
+        {
+          "segment_id": "aerospace",
+          "economic_path_id": "Central:aerospace",
+          "forecast_fcff_present_value": "161.2313416957447954218148308",
+          "terminal_value_present_value": "1200.472845538668587405646721",
+          "unlevered_value": "1361.704187234413382827461552",
+          "terminal_value_at_horizon": "1691.950377064229763928369197"
+        },
+        {
+          "segment_id": "other",
+          "economic_path_id": "Central:other",
+          "forecast_fcff_present_value": "-38.56603147378379963680815182",
+          "terminal_value_present_value": "323.8920955619523440587765759",
+          "unlevered_value": "285.3260640881685444219684241",
+          "terminal_value_at_horizon": "456.4945848219244934758490836"
+        },
+        {
+          "segment_id": "hotel",
+          "economic_path_id": "Central:hotel-nav",
+          "forecast_fcff_present_value": "0",
+          "terminal_value_present_value": "0E+42",
+          "unlevered_value": "0",
+          "terminal_value_at_horizon": "0E+15"
+        }
+      ],
+      "usable_tax_shields": [
+        "307.00748335752",
+        "297.1652404742292671949484748",
+        "328.7610337816204420605693156",
+        "346.3110425385244255573957709",
+        "347.8331612627435151965914764"
+      ],
+      "tax_shield_present_value": "1462.468783752961390097753040",
+      "explicit_financing_cost_present_value": "167.2829886218203655970865752",
+      "operating_apv": "23092.76173010628123411602925",
+      "distressed": false,
+      "dilution_occurred": false,
+      "old_shareholder_retention": "1",
+      "terminal_old_equity_payoff": "6628.42492565380241543431786",
+      "distress_old_shareholder_recovery": null,
+      "old_shareholder_present_value": "4195.768597378847420444511053",
+      "value_per_initial_share": "10767.51626254431235890644528",
+      "initial_shares": "0.389669121",
+      "distributions_to_old_holders": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "realized_periods": 5,
+      "equity_required_return": "0.09577089965527585",
+      "path_calculation_hash": "02fdcdd74416aa7b4be9a9b30cf2f2c377438e06898243677e5d67e731da8ec1"
+    },
+    {
+      "path_id": "level_standard_buffer:Upside:KAL:Upside:SIGNED-FORECAST",
+      "segments": [
+        {
+          "segment_id": "airline",
+          "economic_path_id": "Upside:airline",
+          "forecast_fcff_present_value": "-71.428040682988745470352718",
+          "terminal_value_present_value": "30535.52257457753143828747053",
+          "unlevered_value": "30464.09453389454269281711781",
+          "terminal_value_at_horizon": "43036.86595320458627263281000"
+        },
+        {
+          "segment_id": "aerospace",
+          "economic_path_id": "Upside:aerospace",
+          "forecast_fcff_present_value": "212.5055642095580512985285164",
+          "terminal_value_present_value": "1934.120645982982488824263268",
+          "unlevered_value": "2146.626210192540540122791784",
+          "terminal_value_at_horizon": "2725.956000104468837147966664"
+        },
+        {
+          "segment_id": "other",
+          "economic_path_id": "Upside:other",
+          "forecast_fcff_present_value": "-14.77647329736815053971162087",
+          "terminal_value_present_value": "511.0523533495827026884042054",
+          "unlevered_value": "496.2758800522145521486925845",
+          "terminal_value_at_horizon": "720.2788677501462670635383719"
+        },
+        {
+          "segment_id": "hotel",
+          "economic_path_id": "Upside:hotel-nav",
+          "forecast_fcff_present_value": "0",
+          "terminal_value_present_value": "0E+41",
+          "unlevered_value": "0",
+          "terminal_value_at_horizon": "0E+14"
+        }
+      ],
+      "usable_tax_shields": [
+        "307.00748335752",
+        "296.9218644329551377520757656",
+        "325.1272294322229460724888394",
+        "338.0688094954729505601072293",
+        "332.5419238293860115456076169"
+      ],
+      "tax_shield_present_value": "1438.970934674297490714740596",
+      "explicit_financing_cost_present_value": "143.3155132280097625215972488",
+      "operating_apv": "35952.65204558558551328174552",
+      "distressed": false,
+      "dilution_occurred": false,
+      "old_shareholder_retention": "1",
+      "terminal_old_equity_payoff": "24583.11919721160731421748217",
+      "distress_old_shareholder_recovery": null,
+      "old_shareholder_present_value": "15561.02403062334271356023151",
+      "value_per_initial_share": "39933.94188045847931984385160",
+      "initial_shares": "0.389669121",
+      "distributions_to_old_holders": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "realized_periods": 5,
+      "equity_required_return": "0.09577089965527585",
+      "path_calculation_hash": "1f58520dbd36f4bb5412ffa73696babd41529b59d5c78ab93f705fa198091a92"
+    },
+    {
+      "path_id": "back_loaded_protected_buffer:Down:KAL:Down:SIGNED-FORECAST",
+      "segments": [
+        {
+          "segment_id": "airline",
+          "economic_path_id": "Down:airline",
+          "forecast_fcff_present_value": "-3491.675589344954856352221879",
+          "terminal_value_present_value": "11648.36409148759365943306907",
+          "unlevered_value": "8156.688502142638803080847191",
+          "terminal_value_at_horizon": "16417.24266401912268471648309"
+        },
+        {
+          "segment_id": "aerospace",
+          "economic_path_id": "Down:aerospace",
+          "forecast_fcff_present_value": "91.30762749156858542493060433",
+          "terminal_value_present_value": "643.4478981923491942475046790",
+          "unlevered_value": "734.7555256839177796724352833",
+          "terminal_value_at_horizon": "906.8775841233000794235109021"
+        },
+        {
+          "segment_id": "other",
+          "economic_path_id": "Down:other",
+          "forecast_fcff_present_value": "-64.51280880781883950249200868",
+          "terminal_value_present_value": "161.9807362988077746862472235",
+          "unlevered_value": "97.46792749098893518375521482",
+          "terminal_value_at_horizon": "228.2961825220906194967422565"
+        },
+        {
+          "segment_id": "hotel",
+          "economic_path_id": "Down:hotel-nav",
+          "forecast_fcff_present_value": "0",
+          "terminal_value_present_value": "0E+41",
+          "unlevered_value": "0",
+          "terminal_value_at_horizon": "0E+14"
+        }
+      ],
+      "usable_tax_shields": [
+        "194.9853791028000264",
+        "260.526383026536",
+        "332.93197742998776528",
+        "380.9819032588569258694215424",
+        "392.8869247785630922795569132"
+      ],
+      "tax_shield_present_value": "1391.851633586393316531448387",
+      "explicit_financing_cost_present_value": "141.3183890954137786411997938",
+      "operating_apv": "11189.44519980852505582728629",
+      "distressed": false,
+      "dilution_occurred": false,
+      "old_shareholder_retention": "1",
+      "terminal_old_equity_payoff": "0",
+      "distress_old_shareholder_recovery": null,
+      "old_shareholder_present_value": "0",
+      "value_per_initial_share": "0E+9",
+      "initial_shares": "0.389669121",
+      "distributions_to_old_holders": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "realized_periods": 5,
+      "equity_required_return": "0.09577089965527585",
+      "path_calculation_hash": "b26f14e66a306c71fccb0abf9e7de05a8610a384920b308e6ab67e178b190d9a"
+    },
+    {
+      "path_id": "back_loaded_protected_buffer:Central:KAL:Central:SIGNED-FORECAST",
+      "segments": [
+        {
+          "segment_id": "airline",
+          "economic_path_id": "Central:airline",
+          "forecast_fcff_present_value": "-1318.657224777046484657499026",
+          "terminal_value_present_value": "20219.20290842960476702343185",
+          "unlevered_value": "18900.54568365255828236593282",
+          "terminal_value_at_horizon": "28497.01108358281622561642238"
+        },
+        {
+          "segment_id": "aerospace",
+          "economic_path_id": "Central:aerospace",
+          "forecast_fcff_present_value": "161.2313416957447954218148308",
+          "terminal_value_present_value": "1200.472845538668587405646721",
+          "unlevered_value": "1361.704187234413382827461552",
+          "terminal_value_at_horizon": "1691.950377064229763928369197"
+        },
+        {
+          "segment_id": "other",
+          "economic_path_id": "Central:other",
+          "forecast_fcff_present_value": "-38.56603147378379963680815182",
+          "terminal_value_present_value": "323.8920955619523440587765759",
+          "unlevered_value": "285.3260640881685444219684241",
+          "terminal_value_at_horizon": "456.4945848219244934758490836"
+        },
+        {
+          "segment_id": "hotel",
+          "economic_path_id": "Central:hotel-nav",
+          "forecast_fcff_present_value": "0",
+          "terminal_value_present_value": "0E+42",
+          "unlevered_value": "0",
+          "terminal_value_at_horizon": "0E+15"
+        }
+      ],
+      "usable_tax_shields": [
+        "307.00748335752",
+        "308.8558469789603233537305370",
+        "340.4313836829500432029722666",
+        "358.1353491314932779554424693",
+        "360.0571534730248716025120886"
+      ],
+      "tax_shield_present_value": "1504.413723643915608532711134",
+      "explicit_financing_cost_present_value": "115.9261357473732097927746015",
+      "operating_apv": "23186.06352287168260835529932",
+      "distressed": false,
+      "dilution_occurred": false,
+      "old_shareholder_retention": "1",
+      "terminal_old_equity_payoff": "6556.22251275475598394833318",
+      "distress_old_shareholder_recovery": null,
+      "old_shareholder_present_value": "4150.064735587440142626307282",
+      "value_per_initial_share": "10650.22736453228004850378504",
+      "initial_shares": "0.389669121",
+      "distributions_to_old_holders": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "realized_periods": 5,
+      "equity_required_return": "0.09577089965527585",
+      "path_calculation_hash": "1616fe9b9c3babd6cb20e5bcb6cd4732d58062bb75d3c57056cc2ff5fd55d8cb"
+    },
+    {
+      "path_id": "back_loaded_protected_buffer:Upside:KAL:Upside:SIGNED-FORECAST",
+      "segments": [
+        {
+          "segment_id": "airline",
+          "economic_path_id": "Upside:airline",
+          "forecast_fcff_present_value": "-71.428040682988745470352718",
+          "terminal_value_present_value": "30535.52257457753143828747053",
+          "unlevered_value": "30464.09453389454269281711781",
+          "terminal_value_at_horizon": "43036.86595320458627263281000"
+        },
+        {
+          "segment_id": "aerospace",
+          "economic_path_id": "Upside:aerospace",
+          "forecast_fcff_present_value": "212.5055642095580512985285164",
+          "terminal_value_present_value": "1934.120645982982488824263268",
+          "unlevered_value": "2146.626210192540540122791784",
+          "terminal_value_at_horizon": "2725.956000104468837147966664"
+        },
+        {
+          "segment_id": "other",
+          "economic_path_id": "Upside:other",
+          "forecast_fcff_present_value": "-14.77647329736815053971162087",
+          "terminal_value_present_value": "511.0523533495827026884042054",
+          "unlevered_value": "496.2758800522145521486925845",
+          "terminal_value_at_horizon": "720.2788677501462670635383719"
+        },
+        {
+          "segment_id": "hotel",
+          "economic_path_id": "Upside:hotel-nav",
+          "forecast_fcff_present_value": "0",
+          "terminal_value_present_value": "0E+41",
+          "unlevered_value": "0",
+          "terminal_value_at_horizon": "0E+14"
+        }
+      ],
+      "usable_tax_shields": [
+        "307.00748335752",
+        "308.7016941234386012787977629",
+        "336.9105233640363735748563986",
+        "350.0401791422265051727218404",
+        "344.9609809367201090371812512"
+      ],
+      "tax_shield_present_value": "1481.392307976953523929330944",
+      "explicit_financing_cost_present_value": "100.0998804032923028069768244",
+      "operating_apv": "36038.28905171295900621095629",
+      "distressed": false,
+      "dilution_occurred": false,
+      "old_shareholder_retention": "1",
+      "terminal_old_equity_payoff": "24498.02116075415149070532847",
+      "distress_old_shareholder_recovery": null,
+      "old_shareholder_present_value": "15507.15728655192589276575079",
+      "value_per_initial_share": "39795.70474241382316964692409",
+      "initial_shares": "0.389669121",
+      "distributions_to_old_holders": [
+        "0",
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      "realized_periods": 5,
+      "equity_required_return": "0.09577089965527585",
+      "path_calculation_hash": "b1ba87ddd2b9be222c1de09a1a46cc1dadd6ad26c06be9355cb2d87cd8da24af"
+    }
+  ],
+  "pathwise_distribution": null,
+  "ambiguity_intrinsic_range": {
+    "minimum_expected_value": "8008.572564434685739720516212",
+    "maximum_expected_value": "16443.99522764120724530483007",
+    "binding_minimum_probability_vector_id": "downside_heavier",
+    "binding_minimum_model_case_id": "front_loaded_thin_buffer",
+    "binding_maximum_probability_vector_id": "execution_success",
+    "binding_maximum_model_case_id": "level_standard_buffer",
+    "combinations": [
+      {
+        "probability_vector_id": "downside_heavier",
+        "payoff_model_case_id": "back_loaded_protected_buffer",
+        "expected_intrinsic_value": "13284.25463074890465818127734"
+      },
+      {
+        "probability_vector_id": "execution_success",
+        "payoff_model_case_id": "back_loaded_protected_buffer",
+        "expected_intrinsic_value": "16339.06260432282382151400205"
+      },
+      {
+        "probability_vector_id": "governed_base",
+        "payoff_model_case_id": "back_loaded_protected_buffer",
+        "expected_intrinsic_value": "14349.27736720213266303165584"
+      },
+      {
+        "probability_vector_id": "downside_heavier",
+        "payoff_model_case_id": "front_loaded_thin_buffer",
+        "expected_intrinsic_value": "8008.572564434685739720516212"
+      },
+      {
+        "probability_vector_id": "execution_success",
+        "payoff_model_case_id": "front_loaded_thin_buffer",
+        "expected_intrinsic_value": "10010.71570554335717465064526"
+      },
+      {
+        "probability_vector_id": "governed_base",
+        "payoff_model_case_id": "front_loaded_thin_buffer",
+        "expected_intrinsic_value": "8008.572564434685739720516212"
+      },
+      {
+        "probability_vector_id": "downside_heavier",
+        "payoff_model_case_id": "level_standard_buffer",
+        "expected_intrinsic_value": "13370.54650736385204342199296"
+      },
+      {
+        "probability_vector_id": "execution_success",
+        "payoff_model_case_id": "level_standard_buffer",
+        "expected_intrinsic_value": "16443.99522764120724530483007"
+      },
+      {
+        "probability_vector_id": "governed_base",
+        "payoff_model_case_id": "level_standard_buffer",
+        "expected_intrinsic_value": "14447.29813361828327931263749"
+      }
+    ],
+    "calculation_hash": "d3cf747059db2faa91916a34802bda7e17240c1bc5c2c0adc8891bba8581ba02"
+  },
+  "pathwise_entry": null,
+  "robust_entry": {
+    "status": "AVAILABLE",
+    "minimum_expected_present_value": "7178.997716743941268035407884",
+    "maximum_expected_present_value": "14740.62989922069612042994727",
+    "robust_entry_price": "7178.997716743941268035407884",
+    "binding_probability_vector_id": "downside_heavier",
+    "binding_payoff_model_case_id": "front_loaded_thin_buffer",
+    "maximum_probability_vector_id": "execution_success",
+    "maximum_payoff_model_case_id": "level_standard_buffer",
+    "combination_results": [
+      {
+        "probability_vector_id": "downside_heavier",
+        "payoff_model_case_id": "back_loaded_protected_buffer",
+        "expected_undiscounted_payoff": "20986.30619624645158915538572",
+        "expected_present_value": "11908.19373808388372638781249"
+      },
+      {
+        "probability_vector_id": "downside_heavier",
+        "payoff_model_case_id": "front_loaded_thin_buffer",
+        "expected_undiscounted_payoff": "12651.84691981547427771146309",
+        "expected_present_value": "7178.997716743941268035407884"
+      },
+      {
+        "probability_vector_id": "downside_heavier",
+        "payoff_model_case_id": "level_standard_buffer",
+        "expected_undiscounted_payoff": "21122.62906834032320092578073",
+        "expected_present_value": "11985.54699675863809298213887"
+      },
+      {
+        "probability_vector_id": "execution_success",
+        "payoff_model_case_id": "back_loaded_protected_buffer",
+        "expected_undiscounted_payoff": "25812.25520777508942784648318",
+        "expected_present_value": "14646.56681155386146849464883"
+      },
+      {
+        "probability_vector_id": "execution_success",
+        "payoff_model_case_id": "front_loaded_thin_buffer",
+        "expected_undiscounted_payoff": "15814.80864976934284713932886",
+        "expected_present_value": "8973.747145929926585044259855"
+      },
+      {
+        "probability_vector_id": "execution_success",
+        "payoff_model_case_id": "level_standard_buffer",
+        "expected_undiscounted_payoff": "25978.02650802084796915422317",
+        "expected_present_value": "14740.62989922069612042994727"
+      },
+      {
+        "probability_vector_id": "governed_base",
+        "payoff_model_case_id": "back_loaded_protected_buffer",
+        "expected_undiscounted_payoff": "22668.81634637835182354638155",
+        "expected_present_value": "12862.89518228785648434827962"
+      },
+      {
+        "probability_vector_id": "governed_base",
+        "payoff_model_case_id": "front_loaded_thin_buffer",
+        "expected_undiscounted_payoff": "12651.84691981547427771146309",
+        "expected_present_value": "7178.997716743941268035407884"
+      },
+      {
+        "probability_vector_id": "governed_base",
+        "payoff_model_case_id": "level_standard_buffer",
+        "expected_undiscounted_payoff": "22823.66837795854732893779168",
+        "expected_present_value": "12950.76238366904407617304417"
+      }
+    ],
+    "sensitivities": [
+      {
+        "required_annual_return": "0.10",
+        "robust_entry_price": "7855.801528593721416018194910",
+        "binding_probability_vector_id": "downside_heavier",
+        "binding_payoff_model_case_id": "front_loaded_thin_buffer"
+      },
+      {
+        "required_annual_return": "0.12",
+        "robust_entry_price": "7178.997716743941268035407884",
+        "binding_probability_vector_id": "downside_heavier",
+        "binding_payoff_model_case_id": "front_loaded_thin_buffer"
+      },
+      {
+        "required_annual_return": "0.15",
+        "robust_entry_price": "6290.203947087580274804602842",
+        "binding_probability_vector_id": "downside_heavier",
+        "binding_payoff_model_case_id": "front_loaded_thin_buffer"
+      }
+    ],
+    "probability_success_claim_authorized": false,
+    "point_target_authorized": false,
+    "probability_ambiguity_set_hash": "69485cd9e355797e4bf11bf6507a5a1bc12588a5cc8c77d453d30b4cd752b183",
+    "payoff_model_set_hash": "86cc8eacd072f8b43a3088411a60855cb6d04fe8f9dc2c532fef7f1a3e364a96",
+    "source_payoff_hash": "e6e283354c6de0ead4dc3ccf351590c6070a5bd58de735af6b9633cb04388ada",
+    "calculation_hash": "209ebee72448e18d68bbc46c466f69b3dbb76802fb9bce299717099126f8f322",
+    "authorization_receipt": "14b0253147ecd76b0fa95c78114e2b24e3ce143c21b5e24f004f2dd52a83d420",
+    "withheld_reason": null
+  },
+  "route_request": {
+    "route": "PRIOR_AMBIGUITY_VALUE_RANGE",
+    "economic_archetypes": [
+      "capacity_yield_levered"
+    ],
+    "scenario_assignment_method": "CONTINUOUS_PATHS_REMAIN_UNASSIGNED",
+    "evidence_path_ids": [
+      "declarations/model.json",
+      "declarations/financing_path_spec.json",
+      "raw/filing_20260814002803/20260814002803_23.xml",
+      "public_filing_facts.json",
+      "declarations/analyst_prior_sensitivity.json",
+      "declarations/governed_source_valuation_snapshot.json",
+      "beta:ee1c50837f8cacf1f23715776359d66dc333b3751b0f63f3b698973876f3350d",
+      "wacc:6d17dbe58a182ed91e2fafd044e5ae870c30a46785793b2f1a5827762c22d068"
+    ],
+    "calibrated_driver_distribution": false,
+    "financing_waterfall_authorized": false,
+    "signed_values_authorized": true,
+    "ambiguity_set_validated": true,
+    "ambiguity_vector_count": 3,
+    "future_shareholder_payoffs_authorized": true,
+    "future_payoff_authorization_receipt": "14b0253147ecd76b0fa95c78114e2b24e3ce143c21b5e24f004f2dd52a83d420",
+    "payoff_horizon_years": 5,
+    "payoff_model_case_count": 3,
+    "frozen_legacy_replay_receipt": null
+  },
+  "route_authorization": {
+    "route": "PRIOR_AMBIGUITY_VALUE_RANGE",
+    "status": "AUTHORIZED",
+    "pathwise_value_distribution_authorized": false,
+    "expected_value_interval_authorized": true,
+    "point_target_authorized": false,
+    "entry_price_authorized": true,
+    "success_probability_claim_authorized": false,
+    "diagnostic_only": false,
+    "blocking_reasons": [],
+    "authorization_hash": "efc5a6216fca178ca7adffe718fc52d9b3bae0fcae8a5e8117ff41e90fe5dc01"
+  },
+  "distribution_hash": "0df70e50d844a6790a43e0e5ba4e5fbb34b719a57af9c03e28b52aed8fc81dae",
+  "execution_input_hash": "e790d683a5608aaaef9ba62029a173484bbb33a144ce861e173388d08ff8a41b",
+  "envelope": {
+    "kind": "DISTRIBUTIONAL_APV",
+    "reporting_unit": "KRW",
+    "source_value_hash": "0df70e50d844a6790a43e0e5ba4e5fbb34b719a57af9c03e28b52aed8fc81dae",
+    "economic_path_ids": [
+      "Down:airline",
+      "Down:aerospace",
+      "Down:other",
+      "Down:hotel-nav",
+      "Central:airline",
+      "Central:aerospace",
+      "Central:other",
+      "Central:hotel-nav",
+      "Upside:airline",
+      "Upside:aerospace",
+      "Upside:other",
+      "Upside:hotel-nav"
+    ],
+    "envelope_hash": "80c71dc39e50995f41e7e019e21daa5cd7380d755689c24aba93f09a3df75dd2",
+    "distribution_lineage": {
+      "distribution_hash": "0df70e50d844a6790a43e0e5ba4e5fbb34b719a57af9c03e28b52aed8fc81dae",
+      "route_authorization_hash": "efc5a6216fca178ca7adffe718fc52d9b3bae0fcae8a5e8117ff41e90fe5dc01",
+      "entry_policy_version": "ambiguity_robust_expected_return_entry/v2",
+      "ambiguity_set_hash": "69485cd9e355797e4bf11bf6507a5a1bc12588a5cc8c77d453d30b4cd752b183",
+      "payoff_model_set_hash": "86cc8eacd072f8b43a3088411a60855cb6d04fe8f9dc2c532fef7f1a3e364a96",
+      "entry_calculation_hash": "209ebee72448e18d68bbc46c466f69b3dbb76802fb9bce299717099126f8f322"
+    },
+    "reference_value_hashes": [
+      "82af805e515bde3f72e84628494b289e57e9e8abf4065550d8d39f2390277a67",
+      "95afd3194f6ec213078f52c92bc17870993c69f41d7f37fd353149f59ced0408",
+      "63db5ee64645a866289cd211d7d0036b7b4a719333c7735b02f3e2c7d615d2a2",
+      "f21e43a7a88966fbb6541c7b2a6a29eaad3dd7b97455d8194dc58d6ec16aa99d",
+      "39ed16f7483f78010d5d34a4fd5e19f18c3b4d2a5043ec54396237a5abd58fbc",
+      "170bff8d4b395e894f827c97bcce35d9cdab821a0878edd10f91c21fd5b2021e",
+      "624749f758e8616e1fd6edf4903e60019f0d6e3e75ee0535e4f519b78eebe178",
+      "45aaf65ff2eb3607c72e7d635a6e5e38d16aba17049c590cdedaf7e35e03796e"
+    ]
+  }
+}

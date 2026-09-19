@@ -135,13 +135,23 @@ def test_korean_air_dated_payoff_route_builds_audited_bundle(tmp_path):
     assert "보수적 진입 상한" in report
     assert "단일 확률가중 목표가: 미산출" in report
     assert "보정 성공확률: 미산출" in report
-    assert "## 핵심 가정과 위험" in report
-    assert "## 증권사·시장 비교" in report
+    assert "## 3. 가치평가와 민감도" in report
+    assert "## 5. 위험과 판단 변경 조건" in report
+    assert "## 6. 증권사·시장 비교" in report
     assert "하나증권" in report
     assert "LS증권" in report
+    for forbidden in (
+        "driver_distributional_apv",
+        "capacity_yield_levered",
+        "consolidated_operating_profit",
+        "인공지능 인사이트",
+        "valuation_hash",
+        "근거 ID",
+    ):
+        assert forbidden not in report
     assert "미래에셋증권" in analysis
     assert "현재 장부부채를 5년 만기 행사가격처럼" in analysis
-    assert report.index("## 핵심 가정과 위험") < report.index("## 증권사·시장 비교") < report.index("## 정보 출처")
+    assert report.index("## 3. 가치평가와 민감도") < report.index("## 6. 증권사·시장 비교") < report.index("## 7. 원문 자료")
     assert "확률가중 평균가치" not in report
     assert "수익 달성확률 75%" in analysis
     assert broker["sample"]["report_count"] == 3
@@ -161,6 +171,7 @@ def test_korean_air_dated_payoff_route_builds_audited_bundle(tmp_path):
         "freeze_token.json",
         "execution_attestation.json",
         "canonical_stage_trace.json",
+        "investor_report_profile.json",
         "distributional_summary.svg",
         "distributional_assumptions.svg",
     ):

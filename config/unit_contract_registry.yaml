@@ -461,11 +461,11 @@ units:
     unit_type: reporter
     implementation_status: implemented_generic_reporter
     stages: [FINAL_REPORT]
-    purpose: Present frozen intrinsic results, assumptions, uncertainty, Street/market comparison, unresolved gaps, and impact/efficiency notes without mixing layers.
-    inputs: [frozen_intrinsic_value, frozen_ambiguity_expected_value_range, entry_price_authorization, valuation_components, doctrine_coverage, street_gap, market_comparison, impact_assessments]
+    purpose: Present one investor-facing logic chain from observed evidence through operating assumptions, value impact, falsifiers, measured sensitivity, and post-freeze Street/market comparison.
+    inputs: [investor_report_profile_v2, frozen_intrinsic_value, frozen_ambiguity_expected_value_range, entry_price_authorization, valuation_components, valuation_sensitivity, business_sensitivity_watch, street_reports_with_argument_summary, street_gap, market_comparison]
     outputs: [final_report]
     consumers: [USER]
     effect_types: [reporting_effect]
     final_outputs: [user_decision_support]
-    canonical_refs: [src/valuation_engine/generic_reporting.py, docs/POST_FREEZE_RUNTIME.md, SKILL.md]
+    canonical_refs: [src/valuation_engine/investor_report.py, src/valuation_engine/generic_reporting.py, src/valuation_engine/distributional_reporting_canonical.py, docs/GENERIC_INVESTOR_REPORT_DESIGN.md, docs/POST_FREEZE_RUNTIME.md, SKILL.md]
     forbidden_effects: [temporary_number_as_final, unvalued_option_as_zero, hidden_blocker, governed_prior_entry_as_calibrated_success_probability]

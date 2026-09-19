@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
-from typing import Mapping
+from typing import Any, Mapping
 
 import yaml
 
@@ -19,6 +19,14 @@ from .post_freeze import MarketComparisonBundle
 from .records import MarketObservation
 from .ledger import EvidenceLedger
 from .source_reporting import canonical_verification_url
+from .street import StreetResearchReport
+from .distributional_runtime import DistributionalPrimaryValuationResult
+from .valuation_sensitivity import (
+    DISCOUNT_RATE,
+    FCFF_LEVEL,
+    TERMINAL_GROWTH,
+    ValuationSensitivityReport,
+)
 from .valuation_execution import GenericValuationResult, IntrinsicValuationScope
 
 
@@ -45,10 +53,15 @@ _FORBIDDEN_PUBLIC_TOKENS = (
 
 @dataclass(frozen=True)
 class InvestorReportProfile:
-    investment_points: tuple[tuple[str, str, str], ...]
+    schema_version: str
+    conclusion: str
+    investment_points: tuple[tuple[str, str, str, str, str], ...]
     valuation_method: str
+    method_rationale: str
     major_assumptions: str
     valuation_exclusions: str
+    scenario_conditions: tuple[tuple[str, str, str], ...]
+    sensitivity_watch: tuple[tuple[str, str, str, str], ...]
     segment_notes: tuple[tuple[str, str, str], ...]
     risks: tuple[str, ...]
     upside_condition: str
@@ -61,12 +74,23 @@ class InvestorReportProfile:
     entry_rule_rationale: str = ""
 
     def validate(self) -> None:
+        if self.schema_version != "investor_report/v2":
+            raise ValueError("investor report requires schema_version=investor_report/v2")
+        if len(self.conclusion) < 20:
+            raise ValueError("investor report requires a decision-useful conclusion")
         if not 1 <= len(self.investment_points) <= 3:
             raise ValueError("investor report requires one to three investment points")
         if not 3 <= len(self.risks) <= 5:
             raise ValueError("investor report requires three to five risks")
-        if not all((self.valuation_method, self.major_assumptions)):
-            raise ValueError("investor report requires method and assumptions")
+        if not self.segment_notes:
+            raise ValueError("investor report requires at least one business-unit note")
+        if not all((self.valuation_method, self.method_rationale, self.major_assumptions)):
+            raise ValueError("investor report requires method, rationale and assumptions")
+        scenario_ids = tuple(item[0] for item in self.scenario_conditions)
+        if set(scenario_ids) != {"Down", "Base", "Bull"} or len(scenario_ids) != 3:
+            raise ValueError("investor report requires unique Down/Base/Bull scenario conditions")
+        if not 1 <= len(self.sensitivity_watch) <= 5:
+            raise ValueError("investor report requires one to five business sensitivity rows")
         if not all((self.upside_condition, self.downside_condition, self.actionable_condition)):
             raise ValueError("investor report requires all decision-change conditions")
         if not self.sources:
@@ -112,6 +136,30 @@ def load_investor_report_profile(path: str | Path) -> InvestorReportProfile:
     payload = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
     if not isinstance(payload, Mapping):
         raise ValueError("investor report profile must be a mapping")
+    allowed_fields = {
+        "schema_version",
+        "conclusion",
+        "investment_points",
+        "valuation_method",
+        "method_rationale",
+        "major_assumptions",
+        "valuation_exclusions",
+        "scenario_conditions",
+        "sensitivity_watch",
+        "segment_notes",
+        "risks",
+        "conditions",
+        "sources",
+        "prior_reference_per_share",
+        "prior_scope_label",
+        "entry_rule",
+    }
+    unknown_fields = set(payload) - allowed_fields
+    if unknown_fields:
+        raise ValueError(
+            "investor report profile carries unknown fields: "
+            + ", ".join(sorted(unknown_fields))
+        )
     conditions = payload.get("conditions") or {}
     if not isinstance(conditions, Mapping):
         raise ValueError("investor report conditions must be a mapping")
@@ -121,14 +169,27 @@ def load_investor_report_profile(path: str | Path) -> InvestorReportProfile:
         raise ValueError("investor report entry_rule must be a mapping")
     entry_margin = entry_rule.get("margin_of_safety")
     profile = InvestorReportProfile(
+        schema_version=str(payload.get("schema_version") or "").strip(),
+        conclusion=str(payload.get("conclusion") or "").strip(),
         investment_points=_rows(
             payload.get("investment_points"),
             label="investment_points",
-            keys=("title", "content", "evidence"),
+            keys=("title", "content", "evidence", "valuation_link", "falsifier"),
         ),
         valuation_method=str(payload.get("valuation_method") or "").strip(),
+        method_rationale=str(payload.get("method_rationale") or "").strip(),
         major_assumptions=str(payload.get("major_assumptions") or "").strip(),
         valuation_exclusions=str(payload.get("valuation_exclusions") or "").strip(),
+        scenario_conditions=_rows(
+            payload.get("scenario_conditions"),
+            label="scenario_conditions",
+            keys=("scenario_id", "condition", "valuation_effect"),
+        ),
+        sensitivity_watch=_rows(
+            payload.get("sensitivity_watch"),
+            label="sensitivity_watch",
+            keys=("driver", "downside", "upside", "monitor"),
+        ),
         segment_notes=_rows(
             payload.get("segment_notes"),
             label="segment_notes",
@@ -161,6 +222,332 @@ def _money(value: Decimal | float) -> str:
 
 def _scenario_map(valuation: GenericValuationResult) -> dict[str, Decimal]:
     return {item.scenario_id: item.value_per_share for item in valuation.scenarios}
+
+
+def _scenario_profile_map(
+    profile: InvestorReportProfile,
+) -> dict[str, tuple[str, str]]:
+    return {
+        scenario_id: (condition, valuation_effect)
+        for scenario_id, condition, valuation_effect in profile.scenario_conditions
+    }
+
+
+def _sensitivity_delta_ko(variable: str, low: Decimal, high: Decimal) -> str:
+    delta = (high - low) / Decimal("2")
+    if variable in {DISCOUNT_RATE, TERMINAL_GROWTH}:
+        return f"±{delta * 100:.1f}%p"
+    if variable == FCFF_LEVEL:
+        return f"±{delta * 100:.0f}%"
+    return f"±{delta}"
+
+
+def _generic_sensitivity_lines(data: Mapping[str, object]) -> list[str]:
+    sensitivity = data.get("valuation_sensitivity_report")
+    if not isinstance(sensitivity, ValuationSensitivityReport):
+        return ["- 계산 민감도: 현재 평가법에서는 독립 재현 가능한 수치 민감도가 없습니다."]
+    rows: list[tuple[str, str, object]] = []
+    for scenario in sensitivity.scenarios:
+        if not scenario.measured:
+            continue
+        rows.extend((scenario.scenario_id, "", item) for item in scenario.variables)
+        rows.extend(
+            (scenario.scenario_id, segment.asset_id, item)
+            for segment in scenario.segments
+            for item in segment.variables
+        )
+    if not rows:
+        return ["- 계산 민감도: " + sensitivity.summary_ko + "."]
+    lines = [
+        "| 시나리오 | 대상 | 변수 변화 | 주당가치 영향 |",
+        "|---|---|---:|---:|",
+    ]
+    for scenario_id, asset_id, item in rows:
+        location = asset_id or "전체"
+        lines.append(
+            f"| {scenario_id} | {location} | {item.label} "
+            f"{_sensitivity_delta_ko(item.variable, item.low_input, item.high_input)} | "
+            f"{item.low_value_pct * 100:+.1f}% / {item.high_value_pct * 100:+.1f}% |"
+        )
+    return lines
+
+
+def _street_comparison_lines(data: Mapping[str, object]) -> list[str]:
+    reports = data.get("street_reports")
+    if not isinstance(reports, tuple) or not reports or not all(
+        isinstance(item, StreetResearchReport) for item in reports
+    ):
+        return ["- 비교 가능한 증권사 자료를 확보하지 못했습니다."]
+    lines = []
+    for report in reports:
+        estimates = ", ".join(
+            _street_estimate_ko(item)
+            for item in report.estimates
+        ) or "구조화된 실적 추정치 미확보"
+        lines.append(
+            f"- **{report.broker}** — 목표가 {_money(report.target_price)}, "
+            f"{estimates}. {report.argument_summary or '공개 자료에서 투자논리 요약을 확보하지 못했습니다.'}"
+        )
+        if report.valuation_basis_note:
+            lines.append(f"  - 평가식 확인: {report.valuation_basis_note}")
+    return lines
+
+
+def _street_estimate_ko(item: object) -> str:
+    metric = str(getattr(item, "metric", ""))
+    period = str(getattr(item, "period", ""))
+    value = Decimal(str(getattr(item, "value", "0")))
+    unit = str(getattr(item, "unit", ""))
+    label = {
+        "consolidated_revenue": "연결 매출",
+        "consolidated_operating_profit": "연결 영업이익",
+        "consolidated_operating_margin": "연결 영업이익률",
+        "EPS": "주당순이익",
+    }.get(metric, "공개 추정치")
+    if unit == "KRW billion":
+        amount = (
+            f"{value / Decimal('1000'):.2f}조원"
+            if abs(value) >= Decimal("1000")
+            else f"{value * Decimal('10'):,.0f}억원"
+        )
+    elif unit == "percent":
+        amount = f"{value:.1f}%"
+    elif unit == "KRW/share":
+        amount = f"{value:,.0f}원"
+    else:
+        amount = f"{value:,.2f}".rstrip("0").rstrip(".")
+    return f"{period} {label} {amount}"
+
+
+def _validate_public_report(report: str) -> str:
+    lowered = report.casefold()
+    leaked = tuple(token for token in _FORBIDDEN_PUBLIC_TOKENS if token in lowered)
+    if leaked:
+        raise ValueError(
+            "investor report contains developer-facing content: " + ", ".join(leaked)
+        )
+    return report
+
+
+def _supplemental_source_lines(
+    data: Mapping[str, object],
+    *,
+    linked: set[str],
+) -> list[str]:
+    """Add newly accepted research URLs without exposing evidence identities."""
+    ledger = data.get("evidence_ledger")
+    if not isinstance(ledger, EvidenceLedger):
+        return []
+    lines = []
+    for record in ledger.active():
+        if not (
+            getattr(record, "research_receipt", None)
+            or getattr(record, "business_cashflow_receipt", None)
+        ):
+            continue
+        for source in getattr(record, "source_refs", ()):
+            url = canonical_verification_url(source)
+            if url is None:
+                raise ValueError("research report requires public source links")
+            if url in linked:
+                continue
+            lines.append(f"- 추가 추정 근거: [원문 바로 보기]({url})")
+            linked.add(url)
+    return lines
+
+
+def _distributional_range(
+    valuation: DistributionalPrimaryValuationResult,
+) -> tuple[str, Decimal, Decimal, Decimal]:
+    if valuation.pathwise_distribution is not None:
+        distribution = valuation.pathwise_distribution
+        return (
+            "경로 분포 P20~P80",
+            distribution.quantile(Decimal("0.20")),
+            distribution.quantile(Decimal("0.80")),
+            distribution.quantile(Decimal("0.50")),
+        )
+    if valuation.ambiguity_intrinsic_range is not None:
+        low = valuation.ambiguity_intrinsic_range.minimum_expected_value
+        high = valuation.ambiguity_intrinsic_range.maximum_expected_value
+        return "허용 가정 조합 범위", low, high, (low + high) / Decimal("2")
+    raise ValueError("distributional valuation has no investor-facing value range")
+
+
+def _distributional_sensitivity_lines(
+    valuation: DistributionalPrimaryValuationResult,
+) -> list[str]:
+    sensitivities: tuple[object, ...] = ()
+    if valuation.pathwise_entry is not None:
+        sensitivities = valuation.pathwise_entry.sensitivities
+    elif valuation.robust_entry is not None:
+        sensitivities = valuation.robust_entry.sensitivities
+    rows = []
+    for item in sensitivities:
+        rate = getattr(item, "required_annual_return", None)
+        price = getattr(item, "entry_price", None)
+        if price is None:
+            price = getattr(item, "robust_entry_price", None)
+        if isinstance(rate, Decimal) and isinstance(price, Decimal):
+            rows.append((rate, price))
+    if not rows:
+        return ["- 계산 민감도: 승인된 진입가격 민감도가 없습니다."]
+    lines = [
+        "| 요구수익률 | 진입가격 상한 |",
+        "|---:|---:|",
+    ]
+    lines.extend(f"| {rate:.1%} | {_money(price)} |" for rate, price in rows)
+    return lines
+
+
+def render_distributional_investor_report(
+    data: Mapping[str, object],
+    profile: InvestorReportProfile,
+) -> str:
+    """Render the same public-report contract from a distributional valuation."""
+    profile.validate()
+    company = str(data.get("company") or data.get("target_id") or "").strip()
+    valuation = data.get("distributional_primary_result")
+    if not company or not isinstance(valuation, DistributionalPrimaryValuationResult):
+        raise ValueError("completed distributional company valuation is required")
+
+    range_label, low, high, reference = _distributional_range(valuation)
+    market = data.get("market_comparison")
+    observation = data.get("market_observation")
+    market_price = getattr(market, "price", None)
+    market_as_of = getattr(market, "as_of", None)
+    if market_price is None and isinstance(observation, MarketObservation):
+        market_price = Decimal(str(observation.price))
+        market_as_of = observation.as_of
+    current_price = (
+        f"{_money(Decimal(str(market_price)))} ({market_as_of})"
+        if market_price is not None and market_as_of
+        else "미확보"
+    )
+    entry = (
+        valuation.entry_price
+        if valuation.route_authorization.entry_price_authorized
+        else None
+    )
+    if entry is None or market_price is None:
+        opinion = "가치범위 확인"
+        opinion_reason = "검증된 진입가격 또는 현재가가 없어 범위와 사업 조건을 우선 확인합니다."
+    elif Decimal(str(market_price)) <= entry:
+        opinion = "매수 검토"
+        opinion_reason = "현재가가 검증된 진입가격 상한 이내입니다."
+    else:
+        opinion = "신규매수 보류"
+        opinion_reason = "현재가가 검증된 진입가격 상한을 웃돕니다."
+
+    probability_note = "보정된 성공확률은 산출하지 않았습니다."
+    if valuation.pathwise_distribution is not None:
+        distribution = valuation.pathwise_distribution
+        probability_note = (
+            f"모형 경로 중 곤경 경로는 {distribution.distress_probability:.1%}, "
+            f"추가 희석 경로는 {distribution.dilution_probability:.1%}입니다."
+        )
+
+    scenario_profile = _scenario_profile_map(profile)
+    values = {"Down": low, "Base": reference, "Bull": high}
+    lines = [
+        f"# {company} 투자보고서",
+        "",
+        "## 1. 투자판단 요약",
+        f"- 투자의견: {opinion}",
+        f"- 현재가: {current_price}",
+        f"- 기준 내재가치: {_money(reference)}",
+        f"- 가치평가 범위: {_money(low)}~{_money(high)} ({range_label})",
+        *(
+            (
+                "- 단일 확률가중 목표가: 미산출 — 보정된 단일 확률 대신 허용 가정 조합의 범위를 사용합니다.",
+                "- 보정 성공확률: 미산출 — 사전확률을 실제 성공빈도로 해석하지 않습니다.",
+            )
+            if valuation.ambiguity_intrinsic_range is not None
+            else ()
+        ),
+        f"- 보수적 진입 상한: {_money(entry) + ' 이하' if entry is not None else '미산출'}",
+        f"- 핵심 결론: {profile.conclusion}",
+        f"- 판단 근거: {opinion_reason} {probability_note}",
+        "",
+        "## 2. 투자논리",
+    ]
+    for title, content, evidence, valuation_link, falsifier in profile.investment_points:
+        lines.extend(
+            (
+                "",
+                f"### {title}",
+                f"- 관찰과 가정: {content}",
+                f"- 근거: {evidence}",
+                f"- 가치 연결: {valuation_link}",
+                f"- 반증 조건: {falsifier}",
+            )
+        )
+    lines.extend(
+        (
+            "",
+            "## 3. 가치평가와 민감도",
+            "",
+            "| 시나리오 | 주당가치 | 성립 조건 | 가치 연결 |",
+            "|---|---:|---|---|",
+            *(
+                f"| {scenario_id} | {_money(values[scenario_id])} | "
+                f"{scenario_profile[scenario_id][0]} | {scenario_profile[scenario_id][1]} |"
+                for scenario_id in ("Down", "Base", "Bull")
+            ),
+            "",
+            f"- 평가방법: {profile.valuation_method}",
+            f"- 방법 선택 이유: {profile.method_rationale}",
+            f"- 주요 가정: {profile.major_assumptions}",
+            f"- 평가 제외 항목: {profile.valuation_exclusions}",
+            "",
+            "### 사업 민감도와 다음 확인지표",
+        )
+    )
+    for driver, downside, upside, monitor in profile.sensitivity_watch:
+        lines.append(
+            f"- **{driver}** — 하방: {downside} / 상방: {upside} / 확인: {monitor}"
+        )
+    lines.extend(("", "### 계산된 진입가격 민감도", ""))
+    lines.extend(_distributional_sensitivity_lines(valuation))
+
+    lines.extend(("", "## 4. 사업부별 평가", "", "| 사업부 | 핵심 내용 | 비고 |", "|---|---|---|"))
+    lines.extend(
+        f"| {segment_id} | {content} | {note} |"
+        for segment_id, content, note in profile.segment_notes
+    )
+    lines.extend(("", "## 5. 위험과 판단 변경 조건", "", "### 주요 위험"))
+    lines.extend(f"- {risk}" for risk in profile.risks)
+    lines.extend(
+        (
+            "",
+            "### 판단 변경 조건",
+            f"- 상방 조건: {profile.upside_condition}",
+            f"- 하방 조건: {profile.downside_condition}",
+            f"- 행동 가능 조건: {profile.actionable_condition}",
+            "",
+            "## 6. 증권사·시장 비교",
+        )
+    )
+    street = data.get("street_comparison")
+    if street is not None and hasattr(street, "mean_target_price"):
+        lines.append(
+            f"- 증권사 목표가 평균 {_money(getattr(street, 'mean_target_price'))}, "
+            f"범위 {_money(getattr(street, 'min_target_price'))}~{_money(getattr(street, 'max_target_price'))} "
+            f"({getattr(street, 'report_count')}건)."
+        )
+    lines.extend(_street_comparison_lines(data))
+    lines.extend(("", "## 7. 원문 자료"))
+    lines.extend(
+        f"- {source_type}: [{label}]({url})"
+        for source_type, label, url in profile.sources
+    )
+    lines.extend(
+        _supplemental_source_lines(
+            data,
+            linked={url for _, _, url in profile.sources},
+        )
+    )
+    return _validate_public_report("\n".join(lines).rstrip() + "\n")
 
 
 def probability_weighted_equity_value(
@@ -356,6 +743,7 @@ def render_investor_report(
             else:
                 opinion_reason += " 현재가는 기준 시나리오를 넘어서는 이익·현금흐름 회복을 요구합니다."
 
+    scenario_profile = _scenario_profile_map(profile)
     lines = [
         f"# {company} 투자보고서",
         "",
@@ -371,31 +759,40 @@ def render_investor_report(
             f"- 구체 매수가: {_money(declared_entry_price)} 이하 "
             f"(목표가 대비 {profile.entry_margin_of_safety:.0%} 안전마진)"
         )
-    lines.append(f"- 핵심 결론: {opinion_reason} {probability_note}")
+    lines.append(f"- 핵심 결론: {profile.conclusion}")
+    lines.append(f"- 판단 근거: {opinion_reason} {probability_note}")
     if partial:
         lines.append(
             "- 평가 범위: 전체 기업가치가 아니라 평가 완료 사업부 기준이며, "
             "미평가 사업부는 0원으로 처리하지 않았습니다."
         )
-    lines.extend(("", "## 2. 핵심 투자포인트"))
-    for title, content, evidence in profile.investment_points:
+    lines.extend(("", "## 2. 투자논리"))
+    for title, content, evidence, valuation_link, falsifier in profile.investment_points:
         lines.extend(
             (
-                f"- 제목: {title}",
-                f"  내용: {content}",
-                f"  근거: {evidence}",
+                f"### {title}",
+                "",
+                f"- 관찰과 가정: {content}",
+                f"- 근거: {evidence}",
+                f"- 가치 연결: {valuation_link}",
+                f"- 반증 조건: {falsifier}",
+                "",
             )
         )
     lines.extend(
         (
+            "## 3. 가치평가와 민감도",
             "",
-            "## 3. 가치평가",
-            "",
-            "| 구분 | 하방 | 기준 | 상방 |",
-            "|---|---:|---:|---:|",
-            f"| 주당가치 | {_money(scenarios['Down'])} | {_money(scenarios['Base'])} | {_money(scenarios['Bull'])} |",
+            "| 시나리오 | 주당가치 | 성립 조건 | 가치 연결 |",
+            "|---|---:|---|---|",
+            *(
+                f"| {scenario_id} | {_money(scenarios[scenario_id])} | "
+                f"{scenario_profile[scenario_id][0]} | {scenario_profile[scenario_id][1]} |"
+                for scenario_id in ("Down", "Base", "Bull")
+            ),
             "",
             f"- 평가방법: {profile.valuation_method}",
+            f"- 방법 선택 이유: {profile.method_rationale}",
             f"- 주요 가정: {profile.major_assumptions}",
             f"- 평가 제외 항목: {profile.valuation_exclusions or '없음'}",
         )
@@ -434,6 +831,14 @@ def render_investor_report(
             f"수정 {_money(scenarios['Base'])}, 주당 {_money(delta)} 증가."
         )
 
+    lines.extend(("", "### 사업 민감도와 다음 확인지표", ""))
+    for driver, downside, upside, monitor in profile.sensitivity_watch:
+        lines.append(
+            f"- **{driver}** — 하방: {downside} / 상방: {upside} / 확인: {monitor}"
+        )
+    lines.extend(("", "### 계산된 가치 민감도", ""))
+    lines.extend(_generic_sensitivity_lines(data))
+
     unvalued = {item.segment_id: item for item in valuation.unvalued_segments}
     lines.extend(
         (
@@ -457,51 +862,39 @@ def render_investor_report(
             "확보되면 추가 평가할 수 있습니다."
         )
 
-    lines.extend(("", "## 5. 리스크와 확인 필요 사항"))
+    lines.extend(("", "## 5. 위험과 판단 변경 조건", "", "### 주요 위험"))
     lines.extend(f"- {risk}" for risk in profile.risks)
     lines.extend(
         (
             "",
-            "## 6. 판단 변경 조건",
+            "### 판단 변경 조건",
             f"- 상방 조건: {profile.upside_condition}",
             f"- 하방 조건: {profile.downside_condition}",
             f"- 행동 가능 조건: {profile.actionable_condition}",
             "",
-            "## 7. 참고자료",
+            "## 6. 증권사·시장 비교",
         )
     )
+    lines.extend(_street_comparison_lines(data))
+    lines.extend(("", "## 7. 원문 자료"))
     lines.extend(
         f"- {source_type}: [{label}]({url})"
         for source_type, label, url in profile.sources
     )
-    # A revised operating assumption may introduce sources absent from the
-    # prior editorial profile. Bind those links to the actual accepted ledger.
-    linked = {url for _, _, url in profile.sources}
-    ledger = data.get("evidence_ledger")
-    if isinstance(ledger, EvidenceLedger):
-        for record in ledger.active():
-            if not (getattr(record, "research_receipt", None) or getattr(record, "business_cashflow_receipt", None)):
-                continue
-            for source in getattr(record, "source_refs", ()):
-                url = canonical_verification_url(source)
-                if url is None:
-                    raise ValueError("research report requires public source links")
-                if url not in linked:
-                    lines.append(f"- 추정 근거: [비교자료·계산 원문]({url})")
-                    linked.add(url)
-    report = "\n".join(lines).rstrip() + "\n"
-    lowered = report.casefold()
-    leaked = tuple(token for token in _FORBIDDEN_PUBLIC_TOKENS if token in lowered)
-    if leaked:
-        raise ValueError(
-            "investor report contains developer-facing content: " + ", ".join(leaked)
+    lines.extend(
+        _supplemental_source_lines(
+            data,
+            linked={url for _, _, url in profile.sources},
         )
-    return report
+    )
+    report = "\n".join(lines).rstrip() + "\n"
+    return _validate_public_report(report)
 
 
 __all__ = [
     "InvestorReportProfile",
     "load_investor_report_profile",
     "probability_weighted_equity_value",
+    "render_distributional_investor_report",
     "render_investor_report",
 ]

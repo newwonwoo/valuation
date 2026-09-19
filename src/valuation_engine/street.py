@@ -60,6 +60,9 @@ class StreetResearchReport:
     aggregate_median_target_price: float | None = None
     aggregate_min_target_price: float | None = None
     aggregate_max_target_price: float | None = None
+    access_quality: str = ""
+    argument_summary: str = ""
+    valuation_basis_note: str = ""
 
     def __post_init__(self) -> None:
         if not self.broker or not self.published_date or not self.source_ref:
