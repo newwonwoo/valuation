@@ -23,7 +23,12 @@ import tempfile
 
 import yaml
 
-from scripts.run_kr_live import execute_run
+try:
+    from scripts.run_kr_live import execute_run
+except ModuleNotFoundError as exc:
+    if exc.name != "scripts":
+        raise
+    from run_kr_live import execute_run
 from valuation_engine.capacity_yield_operating_paths import (
     CapacityYieldMetricMapping,
     CapacityYieldModuleMapping,

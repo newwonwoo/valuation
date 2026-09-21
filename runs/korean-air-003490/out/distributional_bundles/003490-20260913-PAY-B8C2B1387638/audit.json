@@ -1,0 +1,163 @@
+{
+  "schema_version": "dated-payoff-ambiguity-audit/v2",
+  "passed": true,
+  "checks": {
+    "source_bundle_manifest_and_artifacts_replay": true,
+    "canonical_live_primary_completed": true,
+    "canonical_distributional_audit_passed": true,
+    "canonical_freeze_token_present": true,
+    "canonical_execution_attestation_present": true,
+    "dated_payoff_diagnostic_replays": true,
+    "route_authorizes_interval_and_robust_entry": true,
+    "single_point_target_forbidden": true,
+    "success_probability_claim_forbidden": true,
+    "primary_cashflow_hash_replays": true,
+    "all_probability_model_combinations_evaluated": true,
+    "broker_loaded_only_after_intrinsic_freeze": true,
+    "broker_reports_not_after_cutoff": true,
+    "broker_targets_excluded_from_intrinsic_inputs": true,
+    "market_loaded_only_after_intrinsic_freeze": true,
+    "canonical_and_diagnostic_values_reconcile": true,
+    "legacy_negative_value_preserved": true,
+    "investor_report_hides_internal_identifiers": true
+  },
+  "canonical_findings": [
+    {
+      "check": "run_identity_binding",
+      "passed": true,
+      "blocking": true,
+      "detail": "distributional audit is bound to a non-empty run_id"
+    },
+    {
+      "check": "pre_freeze_market_isolation",
+      "passed": true,
+      "blocking": true,
+      "detail": "no target Street/current-price key exists before freeze"
+    },
+    {
+      "check": "ledger_snapshot_integrity",
+      "passed": true,
+      "blocking": true,
+      "detail": "EvidenceLedger content replays to the frozen ledger hash"
+    },
+    {
+      "check": "evidence_assumption_hash_binding",
+      "passed": true,
+      "blocking": true,
+      "detail": "compiled evidence hashes replay against the frozen ledger"
+    },
+    {
+      "check": "compiled_traceability",
+      "passed": true,
+      "blocking": true,
+      "detail": "every compiled assumption preserves Evidence→Hypothesis→Bridge→Transform→EconomicPath trace"
+    },
+    {
+      "check": "assumption_hash_integrity",
+      "passed": true,
+      "blocking": true,
+      "detail": "CompiledAssumptionSet hash replays from immutable contents"
+    },
+    {
+      "check": "scenario_hash_integrity",
+      "passed": true,
+      "blocking": true,
+      "detail": "BoundScenarioSet hash replays even when the primary value route remains continuous/unassigned"
+    },
+    {
+      "check": "target_identity_consistency",
+      "passed": true,
+      "blocking": true,
+      "detail": "compiled, scenario, distribution spec and primary valuation target IDs match"
+    },
+    {
+      "check": "distributional_calculation_replay",
+      "passed": true,
+      "blocking": true,
+      "detail": "operating, financing, APV, payoff, probability/ambiguity and route arithmetic replay exactly"
+    },
+    {
+      "check": "distribution_lineage_binding",
+      "passed": true,
+      "blocking": true,
+      "detail": "distribution, route authorization and envelope hashes are one immutable lineage"
+    },
+    {
+      "check": "distribution_route_authorization",
+      "passed": true,
+      "blocking": true,
+      "detail": "primary intrinsic output is authorized by economic route policy rather than a scenario-anchor replay"
+    },
+    {
+      "check": "distribution_output_contract",
+      "passed": true,
+      "blocking": true,
+      "detail": "calibrated pathwise output or governed-prior ambiguity output obeys its allowed claim set"
+    },
+    {
+      "check": "beta_to_distribution_consumption",
+      "passed": true,
+      "blocking": true,
+      "detail": "Beta snapshot is explicitly consumed by the distributional route evidence"
+    },
+    {
+      "check": "wacc_to_distribution_consumption",
+      "passed": true,
+      "blocking": true,
+      "detail": "WACC snapshot is explicitly consumed by the distributional route evidence"
+    },
+    {
+      "check": "doctrine_coverage",
+      "passed": true,
+      "blocking": true,
+      "detail": "pre-audit doctrine coverage complete"
+    },
+    {
+      "check": "decision_impact_trace",
+      "passed": true,
+      "blocking": false,
+      "detail": "decision-impact measurement completed"
+    },
+    {
+      "check": "immutable_hash_chain",
+      "passed": true,
+      "blocking": true,
+      "detail": "Evidence→Assumption→Scenario→Distributional calculation→Envelope lineage replays as one chain"
+    }
+  ],
+  "diagnostic_engine_findings": [
+    {
+      "check": "payoff_ambiguity_calculation_replay",
+      "passed": true,
+      "blocking": true,
+      "detail": "two-layer dated payoff calculation replays exactly"
+    },
+    {
+      "check": "payoff_ambiguity_route_replay",
+      "passed": true,
+      "blocking": true,
+      "detail": "distribution route authorization replays exactly"
+    },
+    {
+      "check": "payoff_ambiguity_route_scope",
+      "passed": true,
+      "blocking": true,
+      "detail": "prior-ambiguity route authorizes an interval and robust entry"
+    },
+    {
+      "check": "payoff_receipt_binding",
+      "passed": true,
+      "blocking": true,
+      "detail": "route request is bound to the dated payoff receipt, horizon and model count"
+    },
+    {
+      "check": "uncalibrated_claim_limits",
+      "passed": true,
+      "blocking": true,
+      "detail": "uncalibrated ambiguity cannot authorize a point target or success probability"
+    }
+  ],
+  "canonical_audit_hash": "0f4945be15da17b1c6ce583f8d9897924443dda67a29d81f8909ec89964f4f7c",
+  "intrinsic_freeze_hash": "6f62f38b733ec0b288400fdacd5e5935018e6fce47d8c1b0a4668cd3e8e329c0",
+  "post_freeze_comparison_hash": "6664963cf7098df10ceb6aab591c2fc198422a6e3bbba12e38769a817ac2320d"
+}

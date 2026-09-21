@@ -1,0 +1,106 @@
+{
+  "findings": [
+    {
+      "check": "run_identity_binding",
+      "passed": true,
+      "blocking": true,
+      "detail": "distributional audit is bound to a non-empty run_id"
+    },
+    {
+      "check": "pre_freeze_market_isolation",
+      "passed": true,
+      "blocking": true,
+      "detail": "no target Street/current-price key exists before freeze"
+    },
+    {
+      "check": "ledger_snapshot_integrity",
+      "passed": true,
+      "blocking": true,
+      "detail": "EvidenceLedger content replays to the frozen ledger hash"
+    },
+    {
+      "check": "evidence_assumption_hash_binding",
+      "passed": true,
+      "blocking": true,
+      "detail": "compiled evidence hashes replay against the frozen ledger"
+    },
+    {
+      "check": "compiled_traceability",
+      "passed": true,
+      "blocking": true,
+      "detail": "every compiled assumption preserves Evidence→Hypothesis→Bridge→Transform→EconomicPath trace"
+    },
+    {
+      "check": "assumption_hash_integrity",
+      "passed": true,
+      "blocking": true,
+      "detail": "CompiledAssumptionSet hash replays from immutable contents"
+    },
+    {
+      "check": "scenario_hash_integrity",
+      "passed": true,
+      "blocking": true,
+      "detail": "BoundScenarioSet hash replays even when the primary value route remains continuous/unassigned"
+    },
+    {
+      "check": "target_identity_consistency",
+      "passed": true,
+      "blocking": true,
+      "detail": "compiled, scenario, distribution spec and primary valuation target IDs match"
+    },
+    {
+      "check": "distributional_calculation_replay",
+      "passed": true,
+      "blocking": true,
+      "detail": "operating, financing, APV, payoff, probability/ambiguity and route arithmetic replay exactly"
+    },
+    {
+      "check": "distribution_lineage_binding",
+      "passed": true,
+      "blocking": true,
+      "detail": "distribution, route authorization and envelope hashes are one immutable lineage"
+    },
+    {
+      "check": "distribution_route_authorization",
+      "passed": true,
+      "blocking": true,
+      "detail": "primary intrinsic output is authorized by economic route policy rather than a scenario-anchor replay"
+    },
+    {
+      "check": "distribution_output_contract",
+      "passed": true,
+      "blocking": true,
+      "detail": "calibrated pathwise output or governed-prior ambiguity output obeys its allowed claim set"
+    },
+    {
+      "check": "beta_to_distribution_consumption",
+      "passed": true,
+      "blocking": true,
+      "detail": "Beta snapshot is explicitly consumed by the distributional route evidence"
+    },
+    {
+      "check": "wacc_to_distribution_consumption",
+      "passed": true,
+      "blocking": true,
+      "detail": "WACC snapshot is explicitly consumed by the distributional route evidence"
+    },
+    {
+      "check": "doctrine_coverage",
+      "passed": true,
+      "blocking": true,
+      "detail": "pre-audit doctrine coverage complete"
+    },
+    {
+      "check": "decision_impact_trace",
+      "passed": true,
+      "blocking": false,
+      "detail": "decision-impact measurement completed"
+    },
+    {
+      "check": "immutable_hash_chain",
+      "passed": true,
+      "blocking": true,
+      "detail": "Evidence→Assumption→Scenario→Distributional calculation→Envelope lineage replays as one chain"
+    }
+  ]
+}

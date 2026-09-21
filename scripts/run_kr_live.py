@@ -57,7 +57,7 @@ import shutil
 import sys
 import tempfile
 from urllib.parse import parse_qs, urlparse
-from zipfile import ZipFile
+from zipfile import ZIP_STORED, ZipFile, ZipInfo
 
 import yaml
 
@@ -148,6 +148,15 @@ def _build_network(run_dir: Path) -> OpenDartNetwork:
     if not companies:
         raise RunbookError("raw/corp_search.json carries no companies")
 
+    def write_member(archive: ZipFile, name: str, contents: str) -> None:
+        # ZipInfo otherwise embeds the wall-clock time.  The DART archive hash
+        # is part of the intrinsic freeze token, so replay archives must be
+        # byte-identical for identical source members.
+        member = ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
+        member.compress_type = ZIP_STORED
+        member.external_attr = 0o600 << 16
+        archive.writestr(member, contents.encode("utf-8"))
+
     def corp_archive() -> bytes:
         rows = "".join(
             "<list>"
@@ -159,7 +168,7 @@ def _build_network(run_dir: Path) -> OpenDartNetwork:
         )
         buffer = BytesIO()
         with ZipFile(buffer, "w") as archive:
-            archive.writestr("CORPCODE.xml", f"<result>{rows}</result>")
+            write_member(archive, "CORPCODE.xml", f"<result>{rows}</result>")
         return buffer.getvalue()
 
     def filing_archive(rcept_no: str) -> bytes:
@@ -173,7 +182,11 @@ def _build_network(run_dir: Path) -> OpenDartNetwork:
         buffer = BytesIO()
         with ZipFile(buffer, "w") as archive:
             for member in members:
-                archive.writestr(member.name, member.read_text(encoding="utf-8"))
+                write_member(
+                    archive,
+                    member.name,
+                    member.read_text(encoding="utf-8"),
+                )
         return buffer.getvalue()
 
     def fetch_text(url: str) -> str:
@@ -1123,6 +1136,76 @@ def execute_run(
     return tuple(reached), stop_stage, stop_reason, result
 
 
+def run_declared_primary_report(
+    run_dir: str | Path,
+    *,
+    report_alias: str | Path | None = None,
+) -> dict[str, str] | None:
+    """Execute a prepared run's explicitly declared non-default report route.
+
+    The generic KR runner remains the default.  A prepared run may instead
+    declare a registered report adapter in ``run.yaml``.  The adapter still
+    has to enter through ``execute_run`` and satisfy the canonical audit,
+    freeze and immutable-bundle checks; this dispatcher only connects the
+    official CLI to that declared route.
+    """
+
+    run_dir = Path(run_dir).resolve()
+    config = _load_run(run_dir)
+    declared = config.get("primary_report")
+    if declared is None:
+        return None
+    if not isinstance(declared, dict):
+        raise RunbookError("primary_report must be a mapping")
+    adapter = str(declared.get("adapter") or "")
+    spec_value = declared.get("spec")
+    if not adapter or not spec_value:
+        raise RunbookError("primary_report requires adapter and spec")
+    spec_path = _resolve(run_dir, str(spec_value))
+    if not spec_path.is_file():
+        raise RunbookError(f"declared primary-report spec is missing: {spec_path}")
+
+    if adapter != "dated_payoff_ambiguity/v2":
+        raise RunbookError(f"unsupported primary-report adapter: {adapter}")
+    # Delayed import avoids coupling the default generic route to the optional
+    # source adapter.  The adapter itself calls execute_run with typed
+    # DistributionalAPVExecutionSpec inputs.
+    try:
+        from scripts.build_governed_distribution_report import build
+    except ModuleNotFoundError as exc:
+        if exc.name != "scripts":
+            raise
+        from build_governed_distribution_report import build
+
+    output_root = run_dir / "out" / "distributional_bundles"
+    bundle = build(spec_path, output_root)
+    manifest_path = bundle / "bundle_manifest.json"
+    report_path = bundle / "final_report.md"
+    if not manifest_path.is_file() or not report_path.is_file():
+        raise RunbookError("declared primary-report bundle is incomplete")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if (
+        manifest.get("status") != "AUDITED_FINAL"
+        or manifest.get("audit_passed") is not True
+        or manifest.get("canonical_entrypoint_id")
+        != "prism_strict_live_primary/v1"
+    ):
+        raise RunbookError("declared primary-report bundle is not canonical and audited")
+
+    alias = Path(report_alias) if report_alias else run_dir / "out" / "final_report.md"
+    alias.parent.mkdir(parents=True, exist_ok=True)
+    temporary_alias = alias.parent / f".{alias.name}.{manifest['artifact_id']}.tmp"
+    temporary_alias.write_text(report_path.read_text(encoding="utf-8"), encoding="utf-8")
+    os.replace(temporary_alias, alias)
+    return {
+        "artifact_id": str(manifest["artifact_id"]),
+        "bundle_directory": str(bundle),
+        "manifest_path": str(manifest_path),
+        "report_path": str(report_path),
+        "report_alias": str(alias),
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run_dir", help="prepared run directory (see runbook)")
@@ -1136,6 +1219,26 @@ def main() -> int:
     args = parser.parse_args()
     run_dir = Path(args.run_dir)
     output_root = run_dir / "out"
+    try:
+        declared = _load_run(run_dir).get("primary_report")
+        if declared is not None:
+            if args.staff_mode != "replay" or args.underwriting_path:
+                raise RunbookError(
+                    "declared primary-report routes require canonical replay inputs"
+                )
+            published = run_declared_primary_report(
+                run_dir,
+                report_alias=args.report_out,
+            )
+            if published is None:
+                raise RunbookError("declared primary-report route was not executed")
+            print("\n  stages: 33/33 — COMPLETED")
+            print(f"  report: {published['report_path']}")
+            print(f"  manifest: {published['manifest_path']}")
+            return 0
+    except (RunbookError, ValueError, json.JSONDecodeError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
     publishable = (args.staff_mode == "replay" and (not args.underwriting_path or
                    Path(args.underwriting_path).resolve() == (run_dir / "declarations" / "underwriting.yaml").resolve()))
     reused = reuse_published_report_bundle(

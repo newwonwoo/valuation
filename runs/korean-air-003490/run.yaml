@@ -2,6 +2,9 @@ company_query: 대한항공
 run_id: LIVE-KOREAN-AIR-1
 as_of: '2026-09-13'
 jurisdiction: KR
+primary_report:
+  adapter: dated_payoff_ambiguity/v2
+  spec: declarations/governed_distribution_spec.json
 scenario_ids:
 - Down
 - Base
