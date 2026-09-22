@@ -2,7 +2,7 @@
   {
     "schema_version": "staff-response/v1",
     "role": "bridge_analyst",
-    "prompt_sha256": "674e399c9a4b95c965603498f9f207477f65f1d4b5a2b3e1d454d5621eb9ba75",
+    "prompt_sha256": "8a44a161b3cf175793d26838544c0c261fd19401039f2a297e385cfc24771257",
     "response": {
       "rationale": "공시와 명시적 추정으로 조립한 3개 조건부 경로를 가정별로 연결합니다. 실제 원장에 기록된 각 시나리오 수치를 단위 변환 없이 전달하며 할인율이나 확률을 임의 생성하지 않습니다. 4개 법정부문을 모두 포함하고 연결 채무·NCI·희석은 한 번씩 적용합니다. 초기 음수 FCFF도 양수로 바꾸지 않습니다.",
       "drafts": [

@@ -15,12 +15,15 @@ import json
 from decimal import Decimal
 from hashlib import sha256
 import importlib
+from io import BytesIO
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 
 import pytest
 import yaml
+from zipfile import ZipFile
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -357,3 +360,74 @@ def test_missing_staff_proposal_is_a_typed_transport_failure(tmp_path, monkeypat
     transport = run_kr_live._StaffTransport(tmp_path)
     with pytest.raises(TransportError, match="no staff proposal file"):
         transport.complete(role="filing_table_reader", prompt="read")
+
+
+def test_main_dispatches_a_declared_primary_report_without_generic_reuse(
+    tmp_path, monkeypatch
+):
+    run_dir = tmp_path / "declared-run"
+    run_dir.mkdir()
+    (run_dir / "run.yaml").write_text(
+        "company_query: test\n"
+        "primary_report:\n"
+        "  adapter: dated_payoff_ambiguity/v2\n"
+        "  spec: declarations/spec.json\n",
+        encoding="utf-8",
+    )
+    called = []
+
+    def declared_runner(selected, *, report_alias=None):
+        called.append((Path(selected), report_alias))
+        return {
+            "artifact_id": "TEST",
+            "bundle_directory": str(run_dir / "out" / "bundle"),
+            "manifest_path": str(run_dir / "out" / "bundle" / "bundle_manifest.json"),
+            "report_path": str(run_dir / "out" / "bundle" / "final_report.md"),
+            "report_alias": str(report_alias),
+        }
+
+    monkeypatch.setattr(run_kr_live, "run_declared_primary_report", declared_runner)
+    monkeypatch.setattr(
+        run_kr_live,
+        "reuse_published_report_bundle",
+        lambda *args, **kwargs: pytest.fail("generic report reuse must not run"),
+    )
+    report_out = tmp_path / "report.md"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["run_kr_live.py", str(run_dir), "--report-out", str(report_out)],
+    )
+
+    assert run_kr_live.main() == 0
+    assert called == [(run_dir, str(report_out))]
+
+
+def test_declared_primary_report_builder_imports_in_direct_script_mode():
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import sys; sys.path.insert(0, 'scripts'); "
+            "import build_governed_distribution_report; "
+            "assert callable(build_governed_distribution_report.execute_run)",
+        ],
+        cwd=ROOT,
+        env={"PYTHONPATH": str(ROOT / "src")},
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+
+def test_replay_filing_archive_is_byte_stable_and_has_no_wall_clock_metadata():
+    network = run_kr_live._build_network(ROOT / "runs" / "korean-air-003490")
+    url = "https://opendart.test/document.xml?rcept_no=20260814002803"
+    first = network.fetch_bytes(url)
+    second = network.fetch_bytes(url)
+
+    assert first == second
+    with ZipFile(BytesIO(first)) as archive:
+        assert archive.infolist()
+        assert all(row.date_time == (1980, 1, 1, 0, 0, 0) for row in archive.infolist())

@@ -21,10 +21,14 @@ from valuation_engine.control_plane import (
     issue_freeze_token,
 )
 from valuation_engine.distribution_route_policy import DistributionIntegrationRoute
+from valuation_engine.distributional_apv import SegmentCashFlowPath
 from valuation_engine.distributional_reporting_canonical import render_canonical_distributional_report
+from valuation_engine.investor_report import load_investor_report_profile
 from valuation_engine.distributional_runtime import (
     DistributionPathExecutionInput,
     DistributionalAPVExecutionSpec,
+    DistributionalRuntimeError,
+    SupplementalOperatingPeriodInput,
     execute_distributional_apv,
 )
 from valuation_engine.dynamic_driver_distribution import DriverPath
@@ -308,6 +312,67 @@ def test_uncalibrated_prior_uses_ambiguity_range_and_never_claims_success_probab
     assert result.envelope.distribution_lineage.payoff_model_set_hash
 
 
+def test_supplemental_segments_participate_in_consolidated_financing_liquidity():
+    base = _ambiguity_spec()
+    supplemental_segment = SegmentCashFlowPath(
+        segment_id="supplemental",
+        economic_path_id="ECON-SUPPLEMENTAL",
+        unlevered_fcff=(D("0"), D("0")),
+        asset_required_return=D("0.10"),
+        terminal_growth=D("0.02"),
+    )
+    supplemental_periods = (
+        SupplementalOperatingPeriodInput(1, D("-500"), D("0"), D("0")),
+        SupplementalOperatingPeriodInput(2, D("-500"), D("0"), D("0")),
+    )
+    stressed = replace(
+        base,
+        paths=tuple(
+            replace(
+                path,
+                supplemental_segments=(supplemental_segment,),
+                supplemental_operating_periods=supplemental_periods,
+            )
+            for path in base.paths
+        ),
+    )
+
+    baseline_result = execute_distributional_apv(base)
+    stressed_result = execute_distributional_apv(stressed)
+
+    assert not any(path.distressed for path in baseline_result.path_results)
+    assert all(path.distressed for path in stressed_result.path_results)
+    assert all(
+        tuple(segment.segment_id for segment in path.segments)
+        == ("network", "supplemental")
+        for path in stressed_result.path_results
+    )
+
+
+def test_supplemental_operating_inputs_must_cover_the_complete_horizon():
+    base = _ambiguity_spec()
+    invalid_path = replace(
+        base.paths[0],
+        supplemental_segments=(
+            SegmentCashFlowPath(
+                segment_id="supplemental",
+                economic_path_id="ECON-SUPPLEMENTAL",
+                unlevered_fcff=(D("1"), D("1")),
+                asset_required_return=D("0.10"),
+                terminal_growth=D("0.02"),
+            ),
+        ),
+        supplemental_operating_periods=(
+            SupplementalOperatingPeriodInput(1, D("1"), D("0"), D("1")),
+        ),
+    )
+    with pytest.raises(
+        DistributionalRuntimeError,
+        match="cover the full path horizon",
+    ):
+        replace(base, paths=(invalid_path, *base.paths[1:])).validate()
+
+
 def test_distribution_lineage_is_cryptographically_bound_into_freeze_token():
     result = execute_distributional_apv(_ambiguity_spec())
     lineage = result.envelope.distribution_lineage
@@ -345,22 +410,25 @@ def test_distributional_report_keeps_uncalibrated_prior_out_of_success_probabili
             "distributional_primary_result": result,
             "audit_report": audit,
             "current_thesis": "수요와 단가가 현금흐름으로 이어지는지를 확인한다.",
+            "investor_report_profile": load_investor_report_profile(
+                ROOT / "runs" / "korean-air-003490" / "declarations" / "investor_report.yaml"
+            ),
         },
         require_verifiable_sources=False,
     )
     for section in (
-        "## 투자 요약",
-        "## 가치평가",
-        "## 핵심 가정과 위험",
-        "## 인공지능 인사이트 — 환경 변화 × 기업 강점",
-        "## 증권사·시장 비교",
-        "## 정보 출처 — 원문 바로 확인",
+        "## 1. 투자판단 요약",
+        "## 2. 투자논리",
+        "## 3. 가치평가와 민감도",
+        "## 5. 위험과 판단 변경 조건",
+        "## 6. 증권사·시장 비교",
+        "## 7. 원문 자료",
     ):
         assert section in report
-    assert "단일 확률가중 목표가: 미산출" in report
-    assert "보정 성공확률: 미산출" in report
-    assert "**투자판단**" in report
-    assert "**현재가**" in report
-    assert "**기준 내재가치**" in report
-    assert "**가치평가 범위**" in report
-    assert "**시나리오 가능성**" in report
+    assert "보정된 성공확률은 산출하지 않았습니다" in report
+    assert "- 투자의견:" in report
+    assert "- 현재가:" in report
+    assert "- 기준 내재가치:" in report
+    assert "- 가치평가 범위:" in report
+    assert "인공지능 인사이트" not in report
+    assert "driver_distributional_apv" not in report

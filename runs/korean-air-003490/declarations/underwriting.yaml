@@ -698,6 +698,69 @@ declarations:
     - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
     rationale: 반기 연결 재무상태표 유동리스부채2,271,812,087,892원+비유동리스부채11,400,593,147,377원. 연결
       전체 리스부채라는 범위를 보존하며 항공운송 순부채와 추가 중복 차감하지 않는다. 리스원금의 FCFF 포함여부와 같은 회계기준으로 사용한다.
+  service_capacity:
+    value: 23296
+    unit: million_seat_km
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 회사 2026년 2분기 별도 여객 ASK를 원형의 서비스 공급능력 증거명으로 연결한다. 연결 항공운송 전체 공급능력이나 미래 경로로 확대하지 않는다.
+  realized_volume:
+    value: 20293
+    unit: million_passenger_km
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 같은 기간·범위의 별도 여객 RPK를 실현 운송량 증거명으로 연결한다. 연결 매출 산식에는 직접 대입하지 않는다.
+  utilization_or_load:
+    value: 0.87109375
+    unit: ratio
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 동일 원문의 RPK 20,293를 ASK 23,296으로 나눈 별도 여객 탑승률이다. 분자·분모 범위를 보존하며 연결 가동률로 재명명하지 않는다.
+  realized_unit_yield:
+    value: 140
+    unit: KRW_per_passenger_km
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 회사 2026년 2분기 별도 여객 yield를 원형의 실현 단가 증거명으로 연결한다. 연결 항공운송 단가나 미래 단가로 확대하지 않는다.
+  variable_input_cost:
+    value: 1999100
+    unit: KRW_million
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 같은 별도 실적의 항공유 비용을 변동 투입원가 증거명으로 연결한다. 연결 원가 또는 전체 변동비라고 주장하지 않는다.
+  nonvariable_operating_cost:
+    value: 2759000
+    unit: KRW_million
+    segment: airline
+    source_refs:
+    - https://kr.img.news.koreanair.com/wp-content/uploads/2026/07/2026%EB%85%84-2%EB%B6%84%EA%B8%B0-%EC%9E%A0%EC%A0%95%EC%8B%A4%EC%A0%81-IR-%EC%9E%90%EB%A3%8C-1.pdf
+    rationale: 같은 별도 실적의 비연료비를 비변동 운영원가 증거명으로 연결한다. 연결 고정비로 확대하지 않는다.
+  committed_asset_capex:
+    value: 123468300
+    unit: KRW_million
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 반기보고서 생산설비 투자표의 장기 항공기 구매 잔여금액이다. 연간 지출액이 아니며 연도별 모형 CAPEX와 구분한다.
+  minimum_operating_liquidity:
+    value: 45
+    unit: cash_operating_cost_days
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 회사 공시 현금과 모형 현금운영비를 연결하는 중앙 사전가정이다. 완결 자금조달 case는 30일·45일·60일을 모두 평가하며 회사 목표치라고 주장하지 않는다.
+  debt_maturities:
+    value: 공시 계약별 회사채·차입금 만기와 리스 1년/1~5년 지급구간을 완결 스케줄 case로 배분
+    unit: text
+    segment: airline
+    source_refs:
+    - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
+    rationale: 회사채는 계약 만기를 그대로 사용하고, 공시가 구간 합계만 제공한 은행차입·리스는 세 개의 명시적 배분 case로 평가한다. 무제한 차환을 가정하지 않는다.
   backlog:
     value: 4717600
     unit: KRW_million
@@ -855,7 +918,7 @@ declarations:
     - https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260814002803
     rationale: 공시 부문정보와 연결 차입금 범위 검토. 독립 호텔 만기표 미분리; 그룹 차입금주석의 계약별 만기와 차환위험을 별도 검토。
       구조상 비적용 또는 미분리 항목을0으로 넣어 안전성을 과장하지 않으며 부문 운영손실과 가치할인은 메인 시나리오에 남긴다.
-  debt_maturities:
+  hotel_debt_maturities:
     value: 호텔에 그룹 전체 만기를 귀속시키지 않음; 연결 차입금 일정은 메인 자금조달 검토에 보존
     unit: text
     segment: hotel

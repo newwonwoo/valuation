@@ -1,16 +1,48 @@
+schema_version: investor_report/v2
+conclusion: 현재가는 하방 가치보다 낮지만, 제강 현금흐름 회복이 실제 실적에서 확인돼야 할인된 가격이 투자기회로 바뀝니다.
 investment_points:
   - title: 제강부문 현금흐름 회복이 핵심 가치동인
     content: 제강부문의 5개년 FCFF 경로가 하방·기준·상방 가치 차이의 대부분을 결정합니다.
     evidence: 2025 사업보고서와 2026 반기보고서의 제강부문 실적 및 현금흐름 가정
+    valuation_link: 제강 FCFF 회복 속도가 DCF 가치범위와 확률가중 가치의 대부분을 결정합니다.
+    falsifier: 출하·스프레드 부진으로 제강 FCFF가 하방 경로에도 미달하는 경우입니다.
   - title: 운송과 기타부문을 분리 평가
     content: 운송부문은 독립 FCFF, 기타부문은 유형자산 NAV로 평가해 제강부문과 합산했습니다.
     evidence: 기타부문 유형자산 NAV 457억원과 운송부문 5개년 FCFF 가정
+    valuation_link: 운송 현금흐름과 기타 자산가치는 제강 업황 하락 때 가치 하단을 일부 지지합니다.
+    falsifier: 운송 적자가 지속되거나 기타 유형자산의 손상·낮은 처분가치가 확인되는 경우입니다.
   - title: 현재가는 하방 시나리오보다 낮음
     content: 확률가중 기대값과 별개로 현재가가 전체 가치범위 아래에 있습니다.
     evidence: 2026년 8월 28일 현재가 8,420원과 하방 주당가치 10,284원
+    valuation_link: 현재가와 하방 가치의 차이는 안전여력을 제공하지만 사업가정이 유지될 때만 유효합니다.
+    falsifier: 순부채 증가나 제강 현금흐름 훼손으로 하방 가치 자체가 현재가 아래로 내려가는 경우입니다.
 valuation_method: 제강·운송부문 FCFF DCF와 기타부문 유형자산 NAV를 합산한 SOTP
+method_rationale: 사업부별 현금창출력과 자산 성격이 달라 제강·운송은 현금흐름, 기타는 확인 가능한 순자산으로 나누어 평가하는 방식이 적합합니다.
 major_assumptions: 가중평균자본비용 4.207%, 제강부문 귀속률 86.0300%, 기타부문 유형자산 NAV 457억원, 기업가치에서 지분가치로의 조정 1,190억원과 희석주식수 34.372백만주를 적용했습니다.
 valuation_exclusions: 공시로 분리되지 않은 추가 사업 옵션가치는 반영하지 않았습니다.
+scenario_conditions:
+  - scenario_id: Down
+    condition: 제강 스프레드와 가동률 회복이 지연되고 운송 현금흐름도 부진한 경우입니다.
+    valuation_effect: 제강 DCF가 축소돼 가치범위 하단에 가까워집니다.
+  - scenario_id: Base
+    condition: 제강 FCFF가 정상화 경로를 따르고 운송·기타 가치가 유지되는 경우입니다.
+    valuation_effect: 사업부별 가치 합계가 기준 주당가치를 지지합니다.
+  - scenario_id: Bull
+    condition: 출하와 스프레드가 함께 개선돼 제강 현금흐름이 상방 경로에 도달하는 경우입니다.
+    valuation_effect: 제강 DCF 확대가 가치범위 상단을 만듭니다.
+sensitivity_watch:
+  - driver: 제강 FCFF
+    downside: 출하·스프레드 부진이 이어지면 DCF 가치가 낮아집니다.
+    upside: 가동률과 스프레드가 함께 회복되면 가치가 높아집니다.
+    monitor: 분기 제강 매출·영업이익과 영업현금흐름
+  - driver: 할인율
+    downside: 요구수익률 상승은 제강·운송 현재가치를 낮춥니다.
+    upside: 재무위험 완화로 요구수익률이 낮아지면 현재가치가 높아집니다.
+    monitor: 차입비용, 순부채와 업종 위험지표
+  - driver: 기타부문 자산가치
+    downside: 손상 또는 낮은 처분가치가 확인되면 NAV가 줄어듭니다.
+    upside: 장부가 이상 회수가 확인되면 하단 방어력이 커집니다.
+    monitor: 유형자산 손상·매각 공시
 segment_notes:
   - segment_id: 제강
     content: 시나리오별 5개년 FCFF와 영구가치 적용

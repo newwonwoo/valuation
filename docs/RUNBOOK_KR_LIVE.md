@@ -34,6 +34,13 @@ OpenDART 재무 API 대신 공개 공시 뷰어를 사용한 관측치는
 PYTHONPATH=src python scripts/run_kr_live.py runs/korean-air-003490
 ```
 
+대한항공처럼 기본 SOTP 뒤에 등록된 분포형 주 평가경로가 있는 실행은
+`run.yaml`의 `primary_report.adapter/spec` 선언을 공식 명령이 읽는다. 이 경우
+명령은 별도 수동 빌더 호출이나 중간단계 재개 없이, 선언된 typed 입력을
+동일한 strict LIVE_PRIMARY 오케스트레이터에 연결하고 감사·동결·불변 보고서
+묶음과 최신 투자자용 별칭까지 한 번에 만든다. 등록되지 않은 adapter나 사양
+누락은 일반 경로로 조용히 후퇴하지 않고 실패한다.
+
 이 예제의 등록 자체가 분석 완주를 뜻하지 않는다. 해당 실행의 감사와 불변
 보고서 묶음 검증이 통과해야 최종 결과로 전달한다.
 

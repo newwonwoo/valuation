@@ -1,0 +1,18 @@
+{
+  "run_id": "LIVE-KOREAN-AIR-1",
+  "ledger_snapshot_hash": "a0954e2d83844e49501d79c79f6b9077c8a43f361f08b218aed2774d442b36fb",
+  "assumption_set_hash": "4e505acfd5c2f583d4841dfe320f92c2a8c08550f0be3067ef933306cba9453b",
+  "valuation_hash": "80c71dc39e50995f41e7e019e21daa5cd7380d755689c24aba93f09a3df75dd2",
+  "audit_hash": "0f4945be15da17b1c6ce583f8d9897924443dda67a29d81f8909ec89964f4f7c",
+  "industry_snapshot_hash": "fc63bbfce2d821b178f1cffb86fdacbb8d6a97d183b3ee01f634d587e079b5d9",
+  "source_snapshot_hash": "52c53c547d7b9450877093979ceb0b99f49e849e73ec4fc674f55457829b05a4",
+  "token_hash": "d4c87c4b80fc76020f5692bd91b6ec71658d7b676b5cc3436b5f223c4095c518",
+  "calibration_dataset_hash": "no_cohort_dataset_self_calibrated",
+  "calibration_snapshot_hash": "f83ff1e76fc37d0d1bc414daba1259fd48f714c507173d7b69709a7d8f69ea03",
+  "distribution_hash": "0df70e50d844a6790a43e0e5ba4e5fbb34b719a57af9c03e28b52aed8fc81dae",
+  "ambiguity_set_hash": "69485cd9e355797e4bf11bf6507a5a1bc12588a5cc8c77d453d30b4cd752b183",
+  "payoff_model_set_hash": "86cc8eacd072f8b43a3088411a60855cb6d04fe8f9dc2c532fef7f1a3e364a96",
+  "route_authorization_hash": "efc5a6216fca178ca7adffe718fc52d9b3bae0fcae8a5e8117ff41e90fe5dc01",
+  "entry_policy_version": "ambiguity_robust_expected_return_entry/v2",
+  "entry_calculation_hash": "209ebee72448e18d68bbc46c466f69b3dbb76802fb9bce299717099126f8f322"
+}

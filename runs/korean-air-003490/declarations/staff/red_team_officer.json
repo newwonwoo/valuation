@@ -2,7 +2,7 @@
   {
     "schema_version": "staff-response/v1",
     "role": "red_team_officer",
-    "prompt_sha256": "af22f532b4f56e5f1e01eb4c2678a0fc655b52f88abf5d58160fd3f4dea11243",
+    "prompt_sha256": "ce80b5d1901b3b89167e3aa4ebe5d693637690b49c59fb10a9320f3f3fc743c6",
     "response": {
       "counter_thesis": "가장 강한 반대 가설은 높은 여객·화물 운임이 연료비 급등의 전가에 불과하고 통합 이후에도 조달·리스·기재투자 부담이 정상화된 영업이익을 앞질러, 항공우주 수주와 외부 엔진정비의 성장까지 연결 주주 현금으로 이어지지 못한다는 것이다. 실현 연결 영업이익 DART_HTML_2f6195eb49ee067e37d5와 큰 부채 DART_HTML_80e16db9ec94f69e80f1은 이 위험을 검토할 출발점이며, 미래 FCFF·호텔 NAV·NCI 조정은 모두 명시된 분석가 판단이다. 수정된 말기 재투자 및 부채 배분에는 새로 확인된 산술 모순이 없으므로, 아래 불확실성을 범위·민감도와 함께 공개하는 조건에서 분석을 계속할 수 있다. 이는 회복의 보장이나 확률의 객관적 검증이 아니다.",
       "issues": [

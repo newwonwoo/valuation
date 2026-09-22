@@ -240,6 +240,9 @@ def test_authorized_street_export_builds_runtime_reports(tmp_path):
                         "valuation_method": "DCF",
                         "base_year": "2027E",
                         "source_ref": "licensed://vendor/report-1",
+                        "access_quality": "licensed full report",
+                        "argument_summary": "판매량과 마진 회복이 이익 개선을 이끈다는 논리",
+                        "valuation_basis_note": "2027년 이익과 DCF를 함께 사용",
                         "estimates": [
                             {
                                 "metric": "EPS",
@@ -260,3 +263,5 @@ def test_authorized_street_export_builds_runtime_reports(tmp_path):
     assert len(reports) == 1
     assert reports[0].target_price == 50000
     assert reports[0].estimates[0].metric == "EPS"
+    assert reports[0].argument_summary == "판매량과 마진 회복이 이익 개선을 이끈다는 논리"
+    assert reports[0].valuation_basis_note == "2027년 이익과 DCF를 함께 사용"

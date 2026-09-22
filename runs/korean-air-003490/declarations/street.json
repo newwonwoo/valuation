@@ -3,26 +3,53 @@
   "authorization_note": "User requested valuation and allowed brokerage reports as research sources. Public factual report metadata only; no licensed full report bodies redistributed. Loaded after intrinsic freeze.",
   "reports": [
     {
+      "broker": "미래에셋증권",
+      "analyst": "류제현",
+      "published_date": "2026-09-08",
+      "target_price": 37000,
+      "target_price_currency": "KRW",
+      "valuation_method": "PBR 1.1x",
+      "base_year": "Forward book value; exact reference date not disclosed",
+      "estimates": [
+        {
+          "metric": "consolidated_revenue",
+          "period": "3Q26E",
+          "value": 7259.5,
+          "unit": "KRW billion"
+        },
+        {
+          "metric": "consolidated_operating_profit",
+          "period": "3Q26E",
+          "value": 488.7,
+          "unit": "KRW billion"
+        },
+        {
+          "metric": "consolidated_operating_margin",
+          "period": "3Q26E",
+          "value": 6.7,
+          "unit": "percent"
+        }
+      ],
+      "source_ref": "https://securities.miraeasset.com/bbs/download/2147190.pdf?attachmentId=2147190",
+      "rating": "매수 유지",
+      "access_quality": "Public broker-hosted PDF link and official report page body verified",
+      "argument_summary": "3분기 여객·화물 동반 개선, 원화 강세에 따른 연료·리스·이자 부담 완화, 12월 통합 기대를 반영했습니다.",
+      "valuation_basis_note": "목표 PBR 1.1배는 과거 0.7~1.0배 밴드 상단을 소폭 웃돌며, 통합 후 ROE 개선과 화물 수익성으로 프리미엄을 정당화합니다."
+    },
+    {
       "broker": "하나증권",
       "analyst": "안도현",
-      "published_date": "2026-07-14",
+      "published_date": "2026-08-18",
       "target_price": 41000,
       "target_price_currency": "KRW",
       "valuation_method": "NOT_DISCLOSED",
       "base_year": "NOT_DISCLOSED",
-      "estimates": [
-        {
-          "metric": "consolidated_operating_profit",
-          "period": "FY2027E",
-          "value": 2351.0,
-          "unit": "KRW billion"
-        }
-      ],
-      "source_ref": "https://file.hanaw.com/download/research/FileServer/WEB/industry/enterprise/2026/07/13/koreanair_260713.pdf",
+      "estimates": [],
+      "source_ref": "https://file.hanaw.com/download/research/FileServer/WEB/industry/industry/2026/08/14/transport_260814.pdf",
       "rating": "BUY 유지",
       "access_quality": "Public broker-hosted PDF read; first page verified",
-      "argument_summary": "운임 인상에도 여객·화물 수요가 유지되어 비용 급등을 흡수했다는 해석. 이후 연료비 완화와 프리미엄 수요 지속을 전망에 반영.",
-      "valuation_basis_note": "PDF p1 attributes target increase to upward revisions to 2026 and 2027 forecasts, but does not disclose a target multiple/formula or a unique target-price base year. Current-price PER/PBR tables are not target valuation formulas."
+      "argument_summary": "통합 LCC의 기재 운영 효율·연결성·단위매출 개선 가능성을 보되 비용 절감과 합병 효과는 장기로 평가했습니다.",
+      "valuation_basis_note": "산업 보고서의 Top Pick 표에 대한항공 목표가 41,000원이 제시되지만 목표 산식·배수·기준연도는 공개 본문에 없습니다."
     },
     {
       "broker": "LS증권",
@@ -43,8 +70,8 @@
       "source_ref": "https://file.alphasquare.co.kr/media/pdfs/company-report/260715_KAL_2Q26_Review.pdf",
       "rating": "Buy 유지",
       "access_quality": "Broker-authored PDF read at public third-party AlphaSquare mirror; original broker host not independently retrieved",
-      "argument_summary": "AI 투자 및 전자상거래 관련 화물, 방한·장거리 여객 수요를 이익 방어의 원인으로 해석. 연료비 안정과 연말 합병에 기대를 두되 유가 재상승과 아시아나 등 계열사 부진을 부담으로 인정.",
-      "valuation_basis_note": "PDF p1 maintains prior target; p13 includes 12-month-forward PBR band charts but does not identify a chosen target multiple or target BPS year. A chart band is not proof of the target valuation formula."
+      "argument_summary": "AI 투자·전자상거래 화물과 방한·장거리 여객 수요, 연료비 안정 및 12월 통합 시너지를 회복 동력으로 봤습니다.",
+      "valuation_basis_note": "목표가 33,000원을 유지했으나 공개 본문에는 선택한 목표 배수·산식·기준연도가 제시되지 않습니다."
     }
   ]
 }

@@ -1,0 +1,87 @@
+{
+  "schema_version": "dated-payoff-ambiguity-report-bundle/v2",
+  "artifact_id": "003490-20260913-PAY-3A6B68872693",
+  "company": "대한항공",
+  "ticker": "003490",
+  "as_of": "2026-09-13",
+  "status": "AUDITED_FINAL",
+  "audit_passed": true,
+  "canonical_entrypoint_id": "prism_strict_live_primary/v1",
+  "valuation_hash": "80c71dc39e50995f41e7e019e21daa5cd7380d755689c24aba93f09a3df75dd2",
+  "audit_hash": "0f4945be15da17b1c6ce583f8d9897924443dda67a29d81f8909ec89964f4f7c",
+  "freeze_token_hash": "960ae058956004fdddbbeea6d4b582d681504d42ec97ff74705b6d44c7340f6a",
+  "execution_attestation_hash": "4f9bb1f63e4d7f9501c23cb34f75675235134d6ea5f3c214a30e569f4cd8d850",
+  "distribution_hash": "0df70e50d844a6790a43e0e5ba4e5fbb34b719a57af9c03e28b52aed8fc81dae",
+  "route_authorization_hash": "efc5a6216fca178ca7adffe718fc52d9b3bae0fcae8a5e8117ff41e90fe5dc01",
+  "entry_calculation_hash": "209ebee72448e18d68bbc46c466f69b3dbb76802fb9bce299717099126f8f322",
+  "intrinsic_freeze_hash": "6f62f38b733ec0b288400fdacd5e5935018e6fce47d8c1b0a4668cd3e8e329c0",
+  "post_freeze_comparison_hash": "6664963cf7098df10ceb6aab591c2fc198422a6e3bbba12e38769a817ac2320d",
+  "supersedes_artifact_id": "003490-20260913-DIST-4664627231DA",
+  "probability_ambiguity_set_hash": "69485cd9e355797e4bf11bf6507a5a1bc12588a5cc8c77d453d30b4cd752b183",
+  "payoff_model_set_hash": "86cc8eacd072f8b43a3088411a60855cb6d04fe8f9dc2c532fef7f1a3e364a96",
+  "payoff_ambiguity_audit_hash": "7af4c00bba3593d275562bd007ba08342b50441c163e8af6758cd3614ba203bf",
+  "source_bundle_manifest_sha256": "170bff8d4b395e894f827c97bcce35d9cdab821a0878edd10f91c21fd5b2021e",
+  "report_builder_sha256": "78a28827b2ccebb68dd6a602cbab0da03df43b846bbe9e4d9216e68684599e64",
+  "files": [
+    {
+      "filename": "audit.json",
+      "sha256": "77de563aaf8143a623dab47ba5dd35fcb6c7bb735d927fbf18a04e7911072542"
+    },
+    {
+      "filename": "broker_comparison.json",
+      "sha256": "ba31e8933507f0b338b6d84027420138c24dcf0ee52353c36ba3cf0c5a7332cd"
+    },
+    {
+      "filename": "canonical_audit.json",
+      "sha256": "2ae8e1d8f7fc83fabdacc7e96e114584117fd50ba2f095a220d238874cf6e174"
+    },
+    {
+      "filename": "canonical_stage_trace.json",
+      "sha256": "a5272d3f39b0263099c1bec91a06df94e2c6c74b84db149909088cb3127e713b"
+    },
+    {
+      "filename": "canonical_valuation.json",
+      "sha256": "695a9c60d1e547fd3bd57b41adccf22f808794df0d8bbebb693c948cada749db"
+    },
+    {
+      "filename": "dated_payoff_analysis.md",
+      "sha256": "62d92e29ebc61986c1f2e2ed00aef9e077d8f7af1dd95f2d9de2e094db47a212"
+    },
+    {
+      "filename": "distributional_assumptions.svg",
+      "sha256": "480b187f41d8d2f03ed874a4856a6a133c6750d451b27340d2d96575dc1281f7"
+    },
+    {
+      "filename": "distributional_summary.svg",
+      "sha256": "b1548ffdf53e1880bdde45cc692b52cbcdabf04c39877360665f33086e044d62"
+    },
+    {
+      "filename": "entry_price.json",
+      "sha256": "a7608bd67c434f96ec12ccaedae34ba51346fda75c866534e78932a729a078fb"
+    },
+    {
+      "filename": "equity_value_distribution.json",
+      "sha256": "db4258079df520205d79bc4c52ac9cde78727d33602cea1ee1deb2fb1f3280d2"
+    },
+    {
+      "filename": "execution_attestation.json",
+      "sha256": "bfe2a04852983b050fee58b7f3622f4a0ad421bfd45346e1236532b9f2b216ff"
+    },
+    {
+      "filename": "final_report.md",
+      "sha256": "82d604393fd6adb3d116d4afe0c1e4b3fe1ec824bce75698d4752e022ba7fc26"
+    },
+    {
+      "filename": "freeze_token.json",
+      "sha256": "e052bfe458651fd3e3e69a0a0b352f52ea934295002c95249c94720476a28bd7"
+    },
+    {
+      "filename": "investor_report_profile.json",
+      "sha256": "e8cd9ae4031f10a52a3ccfc4e3523f657dc9223a7428715492d94c8875b0151c"
+    },
+    {
+      "filename": "payoff_model_cases.json",
+      "sha256": "fa6656c3b812d850a74dcb4e978dac3ee4766fc042d1da6e352d4b6d12e69083"
+    }
+  ]
+}

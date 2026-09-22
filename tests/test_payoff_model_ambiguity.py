@@ -148,6 +148,44 @@ def test_each_cash_flow_is_discounted_from_its_actual_period():
     assert result.maximum_expected_present_value == D("100") / D("1.12")
 
 
+def test_dated_payoff_reconciliation_allows_only_decimal_operation_order_rounding():
+    from valuation_engine.distributional_apv import PathAPVResult
+    from valuation_engine.payoff_model_ambiguity import dated_payoff_from_apv_result
+
+    terminal = D("8123.456789012345678901234567")
+    shares = D("0.389669121")
+    required_return = D("0.09577089965527585")
+    present_value = terminal / ((D("1") + required_return) ** 5)
+    result = PathAPVResult(
+        path_id="large-real-world-path",
+        segments=(),
+        usable_tax_shields=(),
+        tax_shield_present_value=D("0"),
+        explicit_financing_cost_present_value=D("0"),
+        operating_apv=D("0"),
+        distressed=False,
+        dilution_occurred=False,
+        old_shareholder_retention=D("1"),
+        terminal_old_equity_payoff=terminal,
+        distress_old_shareholder_recovery=None,
+        old_shareholder_present_value=present_value,
+        value_per_initial_share=present_value / shares,
+        initial_shares=shares,
+        distributions_to_old_holders=(D("0"),) * 5,
+        realized_periods=5,
+        equity_required_return=required_return,
+        path_calculation_hash="path:large-real-world",
+    )
+
+    payoff = dated_payoff_from_apv_result(branch_id="Central", result=result)
+    assert payoff.cash_flows[-1].amount_per_share == terminal / shares
+    with pytest.raises(PayoffModelAmbiguityError, match="does not reconcile"):
+        dated_payoff_from_apv_result(
+            branch_id="Central",
+            result=replace(result, value_per_initial_share=result.value_per_initial_share + D("1")),
+        )
+
+
 def test_unauthorized_payoff_models_expose_diagnostics_but_no_entry_or_receipt():
     result = calculate_robust_payoff_ambiguity_entry(
         payoff_model_cases=_cases(),

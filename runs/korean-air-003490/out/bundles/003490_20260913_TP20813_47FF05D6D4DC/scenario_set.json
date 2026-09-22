@@ -1,0 +1,1852 @@
+{
+  "calibration_dataset_hash": "no_cohort_dataset_self_calibrated",
+  "calibration_snapshot_hash": "f83ff1e76fc37d0d1bc414daba1259fd48f714c507173d7b69709a7d8f69ea03",
+  "calibration_status": "CALIBRATED",
+  "numeric_weighting_allowed": true,
+  "scenario_set_hash": "7f83d95a55bd2104d3d12d2ccf88d6ab5f772db5bbe5556ba2b89535b9b2c47e",
+  "scenarios": [
+    {
+      "assumptions": [
+        {
+          "bridge_id": "B:airline_fcff_year_1:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_1",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_airline_fcff_year_1"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "7536bd563506746e68c6ed2e257a7c4e694b3fd4a07e0b8b230f685a81ac5d5d",
+          "key": "airline_fcff_year_1",
+          "measure": {
+            "amount": "-2219.881376",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_2:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_2",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_airline_fcff_year_2"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "5606e6a38f9dfe595a31932e9bbc453a5aedd22d17beee7de1da2134c7fb1ed0",
+          "key": "airline_fcff_year_2",
+          "measure": {
+            "amount": "-1703.644565",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_3:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_3",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_airline_fcff_year_3"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "635ad6fdd64017031f343c7b1d389acf4ff2fe83fd19cde54a144b602dd50de7",
+          "key": "airline_fcff_year_3",
+          "measure": {
+            "amount": "-861.305421",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_4:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_4",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_airline_fcff_year_4"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "d6f2c7cceabbd508af138b09cd32aa048593b96568b9642d354eb75336b1d33e",
+          "key": "airline_fcff_year_4",
+          "measure": {
+            "amount": "163.112074",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_5:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_5",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_airline_fcff_year_5"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "b674eaad9e685b65dbde6a357f6547112ac2ed4de498fd2de5f940627ffb0e0a",
+          "key": "airline_fcff_year_5",
+          "measure": {
+            "amount": "906.480358",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_terminal_growth:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:terminal_growth",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_airline_terminal_growth"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "ce275b6f9a0ea821c8e24652e2b6107e5630199ed45c961ea1e07073d00cd0bd",
+          "key": "airline_terminal_growth",
+          "measure": {
+            "amount": "0.015",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_terminal_roic:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:terminal_roic",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_airline_terminal_roic"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "443b8cda0f5c48971406fc90d86e7720f3fc08fc9137f6695df4df785447e16f",
+          "key": "airline_terminal_roic",
+          "measure": {
+            "amount": "0.065",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_ownership:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_ownership"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "ca54d9c351be87aeb10192417d983eb99b7ee8418146f0c9018bb2860762344a",
+          "key": "airline_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_ev_adjustment:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:ev_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_ev_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "0a0e8c50e07ab41e17e0df0620d78ce2c6ef67a9d93e3d8831a131e5754a17a4",
+          "key": "airline_ev_adjustment",
+          "measure": {
+            "amount": "-20016.8",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:diluted_shares:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:diluted_shares",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:diluted_shares"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "6835fd1b813880d2d365a926120f39299ef61467bb0c9af852347d24e21a3934",
+          "key": "diluted_shares",
+          "measure": {
+            "amount": "389669121",
+            "as_of": "2026-09-13",
+            "unit": "shares"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_1:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_1",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_aerospace_fcff_year_1"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "690f257b92ec63bf0f067b6366bd43942ae34b30fb2013f820c86af4e9480659",
+          "key": "aerospace_fcff_year_1",
+          "measure": {
+            "amount": "7.393695",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_2:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_2",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_aerospace_fcff_year_2"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "f5e775c85967162a120497c14d5b3961c1f54a75a9e90e4a5d111591e4437483",
+          "key": "aerospace_fcff_year_2",
+          "measure": {
+            "amount": "12.338818",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_3:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_3",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_aerospace_fcff_year_3"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "57646bf19afc8b4dd679e368346c82f0f183edf0553f8b49e86cfa37a492b002",
+          "key": "aerospace_fcff_year_3",
+          "measure": {
+            "amount": "21.608434",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_4:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_4",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_aerospace_fcff_year_4"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "f799ecc7370241b8b371f83ae109aa68e2b01f54e4e6013c538bea3230f96e84",
+          "key": "aerospace_fcff_year_4",
+          "measure": {
+            "amount": "27.019264",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_5:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_5",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_aerospace_fcff_year_5"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "7e8945f0bfd26c0c696bd34087d38eeb71cba428bf54ef4b66ce75e617b9513d",
+          "key": "aerospace_fcff_year_5",
+          "measure": {
+            "amount": "50.073373",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_terminal_growth:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:terminal_growth",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_aerospace_terminal_growth"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "8db8cb12cdb07a63b4e387690ac6354fd74d983d73c957323718005f4060e811",
+          "key": "aerospace_terminal_growth",
+          "measure": {
+            "amount": "0.015",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_terminal_roic:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:terminal_roic",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_aerospace_terminal_roic"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "69e4cf07a2de5abcc05bd54754e0b1b063c0bc076db3fb3050d217bb679bca63",
+          "key": "aerospace_terminal_roic",
+          "measure": {
+            "amount": "0.065",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_ownership:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_ownership"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "53663af4af461a1744e3086ddadbe4b541c5863c0a2c1ecfdc31eafb5e38ac13",
+          "key": "aerospace_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_ev_adjustment:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:ev_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_ev_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "d3e747c3925503c4ccdc6027966a68567e24ae2b5e43de05a28ca6deec5678f7",
+          "key": "aerospace_ev_adjustment",
+          "measure": {
+            "amount": "0",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:hotel_gross_asset_value:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:hotel:gross_asset_value",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_hotel_gross_asset_value"
+          ],
+          "hypothesis_id": "H:KAL:HOTEL",
+          "input_evidence_hash": "6488f247857748037135ed551396a1bf9b0dde80314a78277d31da36e9e0a553",
+          "key": "hotel_gross_asset_value",
+          "measure": {
+            "amount": "950",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:hotel_liabilities:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:hotel:liabilities",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:hotel_liabilities"
+          ],
+          "hypothesis_id": "H:KAL:HOTEL",
+          "input_evidence_hash": "88f67586a4e7d998b5458282f1f140c10ed839c7168fcf9a320ce2eac210e966",
+          "key": "hotel_liabilities",
+          "measure": {
+            "amount": "0",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:hotel_ownership:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:hotel:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:hotel_ownership"
+          ],
+          "hypothesis_id": "H:KAL:HOTEL",
+          "input_evidence_hash": "a41a0bd3f7e8969ce05aca3ddde281863f1356c99b03c4105bb0e8680f8139a0",
+          "key": "hotel_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_1:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_1",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_other_fcff_year_1"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "250ea6afd90db4c34a8a4e337ab9934b435bbab64af6620fc29f904c45216280",
+          "key": "other_fcff_year_1",
+          "measure": {
+            "amount": "-69.336437",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_2:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_2",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_other_fcff_year_2"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "255fa159b8c50daf6aaf25f325ae86e3723117eb0dbd562cea1bfb2ee44a0cf3",
+          "key": "other_fcff_year_2",
+          "measure": {
+            "amount": "-29.500972",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_3:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_3",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_other_fcff_year_3"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "5d082fe166ed53f0a8e70d6b33ce18c0edd8c8c7468893b9781991f6095d6239",
+          "key": "other_fcff_year_3",
+          "measure": {
+            "amount": "10.503005",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_4:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_4",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_other_fcff_year_4"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "7c636b85be789f51fc897a973a8d7cfc7c085bbf6910ef074f32b31c58252445",
+          "key": "other_fcff_year_4",
+          "measure": {
+            "amount": "11.118503",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_5:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_5",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_other_fcff_year_5"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "b91a42894fb00581684117f99bde66f89147a76b80fe66be243be20ae8a2d3a8",
+          "key": "other_fcff_year_5",
+          "measure": {
+            "amount": "12.605406",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_terminal_growth:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:other:terminal_growth",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_other_terminal_growth"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "a4044dfb2636c5e5bf3fd4365deda721613fb26ad447be8029d05af834852b1d",
+          "key": "other_terminal_growth",
+          "measure": {
+            "amount": "0.015",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_terminal_roic:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:other:terminal_roic",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:down_other_terminal_roic"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "8b6d0fc14bdb8769a81f1bbb2886f3c8ef94d0a823e1efc7369ee393ef1e9e38",
+          "key": "other_terminal_roic",
+          "measure": {
+            "amount": "0.065",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_ownership:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:other:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_ownership"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "5bca5e52c3b34603e6b2ef7313a337630a8286d99cce26647c282cd3312e8445",
+          "key": "other_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_ev_adjustment:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:other:ev_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_ev_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "f87fe6797aa89e93dca6a4ff9ee39897ade514a0488b45838bdfe4d4de07c583",
+          "key": "other_ev_adjustment",
+          "measure": {
+            "amount": "0",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:parent_noncontrolling_interest_adjustment:Down",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:parent_noncontrolling_interest_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:parent_noncontrolling_interest_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "d185d3b504294222b326b1fbfd595d6c7b5693b187dec35b06e0839c93b74249",
+          "key": "parent_noncontrolling_interest_adjustment",
+          "measure": {
+            "amount": "-350",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Down",
+          "transform_id": "identity_observation"
+        }
+      ],
+      "probability": "0.3474166666666666326291666667",
+      "scenario_id": "Down"
+    },
+    {
+      "assumptions": [
+        {
+          "bridge_id": "B:airline_fcff_year_1:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_1",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_fcff_year_1"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "044a366586fc767becce6ed86077c4b60b04ad3395b8bf1bab1595323c372c5a",
+          "key": "airline_fcff_year_1",
+          "measure": {
+            "amount": "-1935.748145",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_2:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_2",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_fcff_year_2"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "7a6ca9c82989d4cbebbc25384dcc9e193521885d883ae3b9a0568f1af9df1b58",
+          "key": "airline_fcff_year_2",
+          "measure": {
+            "amount": "-1166.406882",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_3:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_3",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_fcff_year_3"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "12ef3ed8b67a3a0c2981023478c4dd2244a2a67bd6762f91d1bd626c93dcfb62",
+          "key": "airline_fcff_year_3",
+          "measure": {
+            "amount": "-176.168829",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_4:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_4",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_fcff_year_4"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "831709e8513e9a9853ccfd385321cdd5ad852ff449b0686b115360967abe141a",
+          "key": "airline_fcff_year_4",
+          "measure": {
+            "amount": "838.315441",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_5:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_5",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_fcff_year_5"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "77a003a5fc3931dc9460a49c10484412e815e75a11a377c37f046823570cb2c4",
+          "key": "airline_fcff_year_5",
+          "measure": {
+            "amount": "1426.062165",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_terminal_growth:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:terminal_growth",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_terminal_growth"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "c61c5471b2d3a656f756eb4efa32a4c4514f48284a8055b845d51917f3583cda",
+          "key": "airline_terminal_growth",
+          "measure": {
+            "amount": "0.02",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_terminal_roic:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:terminal_roic",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_terminal_roic"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "9af9f6e8ce135c6ae3df7dfc039299d7f8e5d6d3ccb237fbbf918dcc31020927",
+          "key": "airline_terminal_roic",
+          "measure": {
+            "amount": "0.08",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_ownership:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_ownership"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "ca54d9c351be87aeb10192417d983eb99b7ee8418146f0c9018bb2860762344a",
+          "key": "airline_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_ev_adjustment:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:ev_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_ev_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "0a0e8c50e07ab41e17e0df0620d78ce2c6ef67a9d93e3d8831a131e5754a17a4",
+          "key": "airline_ev_adjustment",
+          "measure": {
+            "amount": "-20016.8",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:diluted_shares:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:diluted_shares",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:diluted_shares"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "6835fd1b813880d2d365a926120f39299ef61467bb0c9af852347d24e21a3934",
+          "key": "diluted_shares",
+          "measure": {
+            "amount": "389669121",
+            "as_of": "2026-09-13",
+            "unit": "shares"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_1:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_1",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_fcff_year_1"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "c3926612d13acffdccb051045241803b2d24f3c05998b0e1ab8a47e8e0823f2a",
+          "key": "aerospace_fcff_year_1",
+          "measure": {
+            "amount": "11.972723",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_2:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_2",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_fcff_year_2"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "c537f57a16bd037b1df1f96bba9afa72ac57d962814f4fa0f72b87dbe0918e78",
+          "key": "aerospace_fcff_year_2",
+          "measure": {
+            "amount": "22.046343",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_3:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_3",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_fcff_year_3"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "d16cfe9a4561d86cdce79380fe4425c2f20619ec40ac7395fe44d68a3d848c85",
+          "key": "aerospace_fcff_year_3",
+          "measure": {
+            "amount": "38.045179",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_4:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_4",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_fcff_year_4"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "80a5acd8fb93b81e8b358dfba06c29d10c948029bca8507e85d7a0fe441cd5a9",
+          "key": "aerospace_fcff_year_4",
+          "measure": {
+            "amount": "52.365491",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_5:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_5",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_fcff_year_5"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "5097eea888d5223c55a86f3ed5d426847539c0f881f9f86ec629ce2da24fc7a9",
+          "key": "aerospace_fcff_year_5",
+          "measure": {
+            "amount": "84.669456",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_terminal_growth:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:terminal_growth",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_terminal_growth"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "dc209657a5516655f44bffcf5add118a63920b5b71ae5f09cd745fc9b328ded7",
+          "key": "aerospace_terminal_growth",
+          "measure": {
+            "amount": "0.02",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_terminal_roic:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:terminal_roic",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_terminal_roic"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "312bbfd222ddcdfe29bf575fb3d82900a7ab6f6b5a083569f5e57144d7e64799",
+          "key": "aerospace_terminal_roic",
+          "measure": {
+            "amount": "0.08",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_ownership:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_ownership"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "53663af4af461a1744e3086ddadbe4b541c5863c0a2c1ecfdc31eafb5e38ac13",
+          "key": "aerospace_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_ev_adjustment:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:ev_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_ev_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "d3e747c3925503c4ccdc6027966a68567e24ae2b5e43de05a28ca6deec5678f7",
+          "key": "aerospace_ev_adjustment",
+          "measure": {
+            "amount": "0",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:hotel_gross_asset_value:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:hotel:gross_asset_value",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:hotel_gross_asset_value"
+          ],
+          "hypothesis_id": "H:KAL:HOTEL",
+          "input_evidence_hash": "a9544ee42032fd1511202f52beddb00c5cc7e41b0bd4bf6541aaf69bd52a7d96",
+          "key": "hotel_gross_asset_value",
+          "measure": {
+            "amount": "1250",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:hotel_liabilities:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:hotel:liabilities",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:hotel_liabilities"
+          ],
+          "hypothesis_id": "H:KAL:HOTEL",
+          "input_evidence_hash": "88f67586a4e7d998b5458282f1f140c10ed839c7168fcf9a320ce2eac210e966",
+          "key": "hotel_liabilities",
+          "measure": {
+            "amount": "0",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:hotel_ownership:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:hotel:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:hotel_ownership"
+          ],
+          "hypothesis_id": "H:KAL:HOTEL",
+          "input_evidence_hash": "a41a0bd3f7e8969ce05aca3ddde281863f1356c99b03c4105bb0e8680f8139a0",
+          "key": "hotel_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_1:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_1",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_fcff_year_1"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "42045816957bf3785de58d147e658b53f780e8c2476b9fa874ee0e2cc760ac33",
+          "key": "other_fcff_year_1",
+          "measure": {
+            "amount": "-65.495625",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_2:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_2",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_fcff_year_2"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "12c130e5a4bac8fa3bfe3d872f5c0b6610c6879c76c9acc58df75479f025414c",
+          "key": "other_fcff_year_2",
+          "measure": {
+            "amount": "-24.923722",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_3:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_3",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_fcff_year_3"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "fcc46a2da5f1e2ab1562365c05672eeac6abab3ec0ea35f8218c8972568ece37",
+          "key": "other_fcff_year_3",
+          "measure": {
+            "amount": "16.449561",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_4:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_4",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_fcff_year_4"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "33669ef987bcf0fff5191c811cbd8374b5ce336a977b4c5e22ed43ad59f33cc2",
+          "key": "other_fcff_year_4",
+          "measure": {
+            "amount": "19.364024",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_5:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_5",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_fcff_year_5"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "ffd77d9265b66aeba716bf95378a02bb25deb4b162d8e4309ed49e4937463c20",
+          "key": "other_fcff_year_5",
+          "measure": {
+            "amount": "22.844138",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_terminal_growth:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:other:terminal_growth",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_terminal_growth"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "102f8ed16113a1332644c5d2e0afa7960eb4bb76c0fbd4fb77bb0cfe4341f5c6",
+          "key": "other_terminal_growth",
+          "measure": {
+            "amount": "0.02",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_terminal_roic:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:other:terminal_roic",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_terminal_roic"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "31ccf7fe7e44caaf809cbe5fbb3b9f5d69683d0b51b3094606fbc5659c720082",
+          "key": "other_terminal_roic",
+          "measure": {
+            "amount": "0.08",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_ownership:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:other:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_ownership"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "5bca5e52c3b34603e6b2ef7313a337630a8286d99cce26647c282cd3312e8445",
+          "key": "other_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_ev_adjustment:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:other:ev_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_ev_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "f87fe6797aa89e93dca6a4ff9ee39897ade514a0488b45838bdfe4d4de07c583",
+          "key": "other_ev_adjustment",
+          "measure": {
+            "amount": "0",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:parent_noncontrolling_interest_adjustment:Base",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:parent_noncontrolling_interest_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:parent_noncontrolling_interest_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "d185d3b504294222b326b1fbfd595d6c7b5693b187dec35b06e0839c93b74249",
+          "key": "parent_noncontrolling_interest_adjustment",
+          "measure": {
+            "amount": "-350",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Base",
+          "transform_id": "identity_observation"
+        }
+      ],
+      "probability": "0.09449999999999999527500000000",
+      "scenario_id": "Base"
+    },
+    {
+      "assumptions": [
+        {
+          "bridge_id": "B:airline_fcff_year_1:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_1",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_airline_fcff_year_1"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "447ca69446bdb7327c7fbb2329f3f5050c889dc9523e6180711dc606957a14d9",
+          "key": "airline_fcff_year_1",
+          "measure": {
+            "amount": "-1902.554261",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_2:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_2",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_airline_fcff_year_2"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "85c1677d1487a763b1d068c761acee9bf59a7cb855036185d17e97dd01587b51",
+          "key": "airline_fcff_year_2",
+          "measure": {
+            "amount": "-912.751448",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_3:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_3",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_airline_fcff_year_3"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "f50c62cdf6b1d9465ec2f312f3130c1179b038d34d94b57ea11ebbebb26b8fa0",
+          "key": "airline_fcff_year_3",
+          "measure": {
+            "amount": "149.558464",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_4:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_4",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_airline_fcff_year_4"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "0891cbe52cb3a04556b87fb9d5f88636dee718a6c49531bae7519dbacc86ef01",
+          "key": "airline_fcff_year_4",
+          "measure": {
+            "amount": "1325.408445",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_fcff_year_5:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:fcff_year_5",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_airline_fcff_year_5"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "f7805e443542c8f0a1616cc3bca52eb2cf399130df39335bdafaf00971ca45db",
+          "key": "airline_fcff_year_5",
+          "measure": {
+            "amount": "1933.231447",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_terminal_growth:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:terminal_growth",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_airline_terminal_growth"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "56803900cdf55dc1ee0fca5f3c4f949742fe40c15ce77920004acc745d7bcdad",
+          "key": "airline_terminal_growth",
+          "measure": {
+            "amount": "0.025",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_terminal_roic:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:terminal_roic",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_airline_terminal_roic"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "a71ec23e3470195f6260167e212e86f8b5908f6d09891e65741d0bf2c5dd03e6",
+          "key": "airline_terminal_roic",
+          "measure": {
+            "amount": "0.1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_ownership:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_ownership"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "ca54d9c351be87aeb10192417d983eb99b7ee8418146f0c9018bb2860762344a",
+          "key": "airline_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:airline_ev_adjustment:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:ev_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:airline_ev_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "0a0e8c50e07ab41e17e0df0620d78ce2c6ef67a9d93e3d8831a131e5754a17a4",
+          "key": "airline_ev_adjustment",
+          "measure": {
+            "amount": "-20016.8",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:diluted_shares:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:diluted_shares",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:diluted_shares"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "6835fd1b813880d2d365a926120f39299ef61467bb0c9af852347d24e21a3934",
+          "key": "diluted_shares",
+          "measure": {
+            "amount": "389669121",
+            "as_of": "2026-09-13",
+            "unit": "shares"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_1:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_1",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_aerospace_fcff_year_1"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "9e99205e5e29fc8c8064b5474f2025c0acc731c6487ad1b9c4084256a54c7a6f",
+          "key": "aerospace_fcff_year_1",
+          "measure": {
+            "amount": "6.942215",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_2:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_2",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_aerospace_fcff_year_2"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "e695c2da352734e30ec84975724a34abe26281e1714b17f4a2743d493cc778e6",
+          "key": "aerospace_fcff_year_2",
+          "measure": {
+            "amount": "24.171186",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_3:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_3",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_aerospace_fcff_year_3"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "14c89a3a45cdbdbcbf91dc4aef1b1a1ce85dd0c801e6cfda6468d5e7378cc424",
+          "key": "aerospace_fcff_year_3",
+          "measure": {
+            "amount": "49.532182",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_4:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_4",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_aerospace_fcff_year_4"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "4d4bba0526eb613d4749833b1eb90e39749b95515b95127b6b0deb2ec6d9aa4d",
+          "key": "aerospace_fcff_year_4",
+          "measure": {
+            "amount": "76.002763",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_fcff_year_5:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:fcff_year_5",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_aerospace_fcff_year_5"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "ba1a24c714ba20e3ece85eb4d912386057201b9285ff8543762b89269a98e9ec",
+          "key": "aerospace_fcff_year_5",
+          "measure": {
+            "amount": "122.450921",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_terminal_growth:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:terminal_growth",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_aerospace_terminal_growth"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "486bb623829c03b498d73178d6f245e77ce75be7a9e2399bdd3dedfbb8feff0e",
+          "key": "aerospace_terminal_growth",
+          "measure": {
+            "amount": "0.025",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_terminal_roic:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:terminal_roic",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_aerospace_terminal_roic"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "8f285eb37309ae40dbda138897053142c686492ccd6174343c69caad5a5649b2",
+          "key": "aerospace_terminal_roic",
+          "measure": {
+            "amount": "0.1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_ownership:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_ownership"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "53663af4af461a1744e3086ddadbe4b541c5863c0a2c1ecfdc31eafb5e38ac13",
+          "key": "aerospace_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:aerospace_ev_adjustment:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:aerospace:ev_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:aerospace_ev_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:AEROSPACE",
+          "input_evidence_hash": "d3e747c3925503c4ccdc6027966a68567e24ae2b5e43de05a28ca6deec5678f7",
+          "key": "aerospace_ev_adjustment",
+          "measure": {
+            "amount": "0",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:hotel_gross_asset_value:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:hotel:gross_asset_value",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_hotel_gross_asset_value"
+          ],
+          "hypothesis_id": "H:KAL:HOTEL",
+          "input_evidence_hash": "bf5603cf21af0febc28f97bc8143b340ed632e75525ff60d83ef551469d3a78b",
+          "key": "hotel_gross_asset_value",
+          "measure": {
+            "amount": "1550",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:hotel_liabilities:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:hotel:liabilities",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:hotel_liabilities"
+          ],
+          "hypothesis_id": "H:KAL:HOTEL",
+          "input_evidence_hash": "88f67586a4e7d998b5458282f1f140c10ed839c7168fcf9a320ce2eac210e966",
+          "key": "hotel_liabilities",
+          "measure": {
+            "amount": "0",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:hotel_ownership:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:hotel:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:hotel_ownership"
+          ],
+          "hypothesis_id": "H:KAL:HOTEL",
+          "input_evidence_hash": "a41a0bd3f7e8969ce05aca3ddde281863f1356c99b03c4105bb0e8680f8139a0",
+          "key": "hotel_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_1:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_1",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_other_fcff_year_1"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "64f620b24fc371764534bb8d9a93748cb45815ec3d51e052f2ca18ab4c4324d1",
+          "key": "other_fcff_year_1",
+          "measure": {
+            "amount": "-62.532254",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_2:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_2",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_other_fcff_year_2"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "3347d5883820957a347f66e15daa0aacecda2df60280395e87052ab669f70718",
+          "key": "other_fcff_year_2",
+          "measure": {
+            "amount": "-20.969289",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_3:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_3",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_other_fcff_year_3"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "3813d3d2ee6b7226d5307b2710b0023da74472e8049f4c258bf4fbe383c222d8",
+          "key": "other_fcff_year_3",
+          "measure": {
+            "amount": "22.564878",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_4:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_4",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_other_fcff_year_4"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "ed4f8d4ac85a38899d3662736bf775edb9cf9b66c42761c8d2fcfe0d1fa92d9a",
+          "key": "other_fcff_year_4",
+          "measure": {
+            "amount": "27.061998",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_fcff_year_5:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:other:fcff_year_5",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_other_fcff_year_5"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "c83752147337e597717cfecdbf8d8a6d1b8d8be0f3e5df8ac326926ee7149610",
+          "key": "other_fcff_year_5",
+          "measure": {
+            "amount": "32.355185",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_terminal_growth:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:other:terminal_growth",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_other_terminal_growth"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "1e9d2303dcab7325d24362e5bdc90b19f6033ef7e644cef0d826b22f3e5805da",
+          "key": "other_terminal_growth",
+          "measure": {
+            "amount": "0.025",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_terminal_roic:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:other:terminal_roic",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:bull_other_terminal_roic"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "4406e7b208e2e75b5b11593077f84bf47280f87ccb6cd2ac09f9ef83bfcb029f",
+          "key": "other_terminal_roic",
+          "measure": {
+            "amount": "0.1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_ownership:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:other:ownership",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_ownership"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "5bca5e52c3b34603e6b2ef7313a337630a8286d99cce26647c282cd3312e8445",
+          "key": "other_ownership",
+          "measure": {
+            "amount": "1",
+            "as_of": "2026-09-13",
+            "unit": "ratio"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:other_ev_adjustment:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:other:ev_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:other_ev_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:SERVICE",
+          "input_evidence_hash": "f87fe6797aa89e93dca6a4ff9ee39897ade514a0488b45838bdfe4d4de07c583",
+          "key": "other_ev_adjustment",
+          "measure": {
+            "amount": "0",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        },
+        {
+          "bridge_id": "B:parent_noncontrolling_interest_adjustment:Bull",
+          "calibration_status": null,
+          "economic_path_id": "path:airline:parent_noncontrolling_interest_adjustment",
+          "evidence_ids": [
+            "UW:KR:DART:00113526:parent_noncontrolling_interest_adjustment"
+          ],
+          "hypothesis_id": "H:KAL:AIRLINE",
+          "input_evidence_hash": "d185d3b504294222b326b1fbfd595d6c7b5693b187dec35b06e0839c93b74249",
+          "key": "parent_noncontrolling_interest_adjustment",
+          "measure": {
+            "amount": "-350",
+            "as_of": "2026-09-13",
+            "unit": "KRW_billion"
+          },
+          "range_provenance": null,
+          "scenario_id": "Bull",
+          "transform_id": "identity_observation"
+        }
+      ],
+      "probability": "0.5580833333333333720958333333",
+      "scenario_id": "Bull"
+    }
+  ],
+  "target_id": "KR:DART:00113526"
+}

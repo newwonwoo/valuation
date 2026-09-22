@@ -1,0 +1,440 @@
+{
+  "stages": [
+    {
+      "stage": "COMPANY_RESOLUTION",
+      "status": "pass",
+      "rationale": "company identity resolved from a declared live resolver contract",
+      "blocking": false,
+      "output_keys": [
+        "company",
+        "company_external_ids",
+        "company_resolution_source_refs",
+        "jurisdiction",
+        "resolved_company_identity",
+        "target_id",
+        "ticker"
+      ]
+    },
+    {
+      "stage": "LOAD_COMPANY_STATE",
+      "status": "pass",
+      "rationale": "no prior company state; first-run empty state is valid | loaded 0 immutable module-impact learning record(s)",
+      "blocking": false,
+      "output_keys": [
+        "company_state",
+        "module_impact_prior_history",
+        "prior_research_loadout_recommendations",
+        "research_learning_record_count"
+      ]
+    },
+    {
+      "stage": "LOAD_INDUSTRY_KNOWLEDGE_SNAPSHOT",
+      "status": "pass",
+      "rationale": "versioned Industry Knowledge snapshot loaded and hash-verified",
+      "blocking": false,
+      "output_keys": [
+        "industry_knowledge_snapshot",
+        "industry_snapshot_evidence_ids",
+        "industry_snapshot_hash",
+        "industry_snapshot_source_ids"
+      ]
+    },
+    {
+      "stage": "SOURCE_FRESHNESS_PRECHECK",
+      "status": "pass",
+      "rationale": "live source-watch precheck passed",
+      "blocking": false,
+      "output_keys": [
+        "source_freshness_assessment",
+        "source_freshness_snapshot_hash"
+      ]
+    },
+    {
+      "stage": "SEGMENT_DECOMPOSITION",
+      "status": "pass",
+      "rationale": "authoritative-lineage-backed segment decomposition completed",
+      "blocking": false,
+      "output_keys": [
+        "segment_descriptors",
+        "segment_evidence_lineage_hash",
+        "segment_ids"
+      ]
+    },
+    {
+      "stage": "INDUSTRY_DNA_ROUTE",
+      "status": "pass",
+      "rationale": "all decomposed segments routed to evidence-backed multi-label Industry DNA profiles",
+      "blocking": false,
+      "output_keys": [
+        "industry_dna_profiles"
+      ]
+    },
+    {
+      "stage": "MODULE_REQUIREMENT_PLAN",
+      "status": "pass",
+      "rationale": "compiled canonical Module Requirement Plan and non-destructive learned research loadout",
+      "blocking": false,
+      "output_keys": [
+        "active_optional_scanners",
+        "active_research_units",
+        "adaptive_research_loadout",
+        "conditional_research_units",
+        "expected_module_ids",
+        "kill_conditions",
+        "mandatory_research_units",
+        "mandatory_scanners",
+        "module_requirement_plan",
+        "optional_scanners",
+        "required_evidence",
+        "required_kpis",
+        "research_governance_review_units",
+        "sample_research_units",
+        "scenario_variables"
+      ]
+    },
+    {
+      "stage": "PRIMARY_EVIDENCE_COLLECTION",
+      "status": "pass",
+      "rationale": "primary evidence collected with complete required segment/metric coverage and planned source lineage",
+      "blocking": false,
+      "output_keys": [
+        "collection_missing_required_metrics",
+        "collection_missing_required_requirements",
+        "collection_no_source_required_metrics",
+        "collection_plan",
+        "collection_selected_collector_ids",
+        "evidence_collection_result",
+        "evidence_covered_metrics",
+        "evidence_ledger",
+        "evidence_missing_metrics",
+        "source_snapshot_hash"
+      ]
+    },
+    {
+      "stage": "EVIDENCE_LEDGER",
+      "status": "pass",
+      "rationale": "append-only EvidenceLedger validated and canonical runtime snapshot frozen",
+      "blocking": false,
+      "output_keys": [
+        "active_evidence_ids",
+        "ledger_runtime_snapshot",
+        "ledger_snapshot_hash"
+      ]
+    },
+    {
+      "stage": "ROCKET_INSIGHT_SCAN",
+      "status": "warning",
+      "rationale": "RocketTesla Context Engine locked scanner routing | live Rocket Insight scanner dispatch completed with warnings",
+      "blocking": false,
+      "output_keys": [
+        "rocket_context_plan",
+        "rocket_context_plan_hash",
+        "rocket_context_scanner_ids",
+        "rocket_insight_execution_mode",
+        "rocket_insight_warnings",
+        "scanner_findings",
+        "scanner_impact_traces",
+        "scanner_research_effort"
+      ]
+    },
+    {
+      "stage": "UPSTREAM_FUNDING_SCAN",
+      "status": "warning",
+      "rationale": "live upstream funding scan completed; result is evidence/hypothesis input only and does not directly change WACC",
+      "blocking": false,
+      "output_keys": [
+        "funded_demand_state",
+        "funding_credit_improvement_evidence_ids",
+        "funding_impact_trace",
+        "funding_ladder",
+        "funding_research_effort",
+        "funding_scan_result",
+        "funding_verification_requests"
+      ]
+    },
+    {
+      "stage": "RESEARCHER_A",
+      "status": "pass",
+      "rationale": "LLM Intelligence Officer produced typed hypotheses and an auditable environment-change/corporate-strength linkage decision without committing assumptions",
+      "blocking": false,
+      "output_keys": [
+        "context_strength_linkage_decision",
+        "context_strength_linkage_not_applicable_reason",
+        "context_strength_linkage_status",
+        "context_strength_linkages",
+        "hypotheses",
+        "intelligence_proposal",
+        "llm_requested_evidence",
+        "scanner_reinforcements"
+      ]
+    },
+    {
+      "stage": "BLIND_RED_TEAM_B",
+      "status": "pass",
+      "rationale": "Blind Red Team completed with no unresolved blocker",
+      "blocking": false,
+      "output_keys": [
+        "red_team_counter_thesis",
+        "red_team_proposal",
+        "red_team_requested_evidence"
+      ]
+    },
+    {
+      "stage": "RESEARCH_LOOP",
+      "status": "skipped_not_applicable",
+      "rationale": "Blind Red Team left no unresolved blocking issue",
+      "blocking": false,
+      "output_keys": [
+        "research_round_count"
+      ]
+    },
+    {
+      "stage": "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+      "status": "pass",
+      "rationale": "no capacity_manufacturing segment requires Capacity Commitment Gate | LLM Bridge proposals validated and converted to compiler requests; no assumptions committed",
+      "blocking": false,
+      "output_keys": [
+        "assumption_specs",
+        "bridge_input_map",
+        "bridge_proposal_bundle",
+        "bridges",
+        "capacity_commitment_assessment",
+        "capacity_commitment_assessment_hash",
+        "capacity_commitment_recovery_segments",
+        "core_capacity_inclusion_required_projects",
+        "core_capacity_inclusion_required_segments"
+      ]
+    },
+    {
+      "stage": "SCENARIO_BUILD",
+      "status": "pass",
+      "rationale": "no Core-inclusion capacity project requires bridge consumption | receipt-bound legacy calibration replay passed; certificate is available only to reproduce the frozen scenario weighting | Bridge proposals deterministically compiled and bound into generic scenarios | no Core-inclusion capacity project requires scenario binding",
+      "blocking": false,
+      "output_keys": [
+        "assumption_set_hash",
+        "bound_scenario_set",
+        "capacity_bridge_consumption_required",
+        "capacity_scenario_binding_hash",
+        "capacity_scenario_binding_result",
+        "compiled_assumption_set",
+        "continuous_probability_calibration_snapshot",
+        "probability_calibration_certificate",
+        "probability_calibration_dataset_hash",
+        "probability_calibration_snapshot",
+        "probability_calibration_snapshot_hash",
+        "probability_calibration_status",
+        "probability_weighting_allowed",
+        "scenario_binding_findings",
+        "scenario_set_hash"
+      ]
+    },
+    {
+      "stage": "VALUATION_METHOD_INTENT",
+      "status": "pass",
+      "rationale": "company-level primary aggregator and any segment reference methods resolved before Beta/WACC",
+      "blocking": false,
+      "output_keys": [
+        "planned_method_choices",
+        "primary_aggregator_binding",
+        "primary_aggregator_covered_segments",
+        "primary_aggregator_intent",
+        "risk_chain_requires_beta",
+        "risk_chain_requires_wacc",
+        "valuation_capability_registry_hash",
+        "valuation_method_choices_hash",
+        "valuation_method_intent",
+        "valuation_module_plan_hash",
+        "warranted_per_segments"
+      ]
+    },
+    {
+      "stage": "HIERARCHICAL_BETA_ESTIMATION",
+      "status": "pass",
+      "rationale": "live L1→L4 Economic-Twin Beta estimated and relevered with one target structure",
+      "blocking": false,
+      "output_keys": [
+        "beta_peer_ids",
+        "beta_snapshot_hash",
+        "beta_source_refs",
+        "live_beta_result",
+        "target_asset_beta",
+        "target_levered_beta"
+      ]
+    },
+    {
+      "stage": "WACC_VALIDATION",
+      "status": "pass",
+      "rationale": "currency-consistent WACC computed from live Beta and independent marginal financing inputs",
+      "blocking": false,
+      "output_keys": [
+        "after_tax_cost_of_debt",
+        "cost_of_equity",
+        "customer_advance_credit_supports_reduction_candidate",
+        "live_wacc_result",
+        "wacc",
+        "wacc_snapshot_hash",
+        "wacc_source_refs"
+      ]
+    },
+    {
+      "stage": "DETERMINISTIC_VALUATION",
+      "status": "pass",
+      "rationale": "company-level distributional APV completed for every planned segment with same-run risk rates and target-history calibrated path receipts bound",
+      "blocking": false,
+      "output_keys": [
+        "ambiguity_expected_value_range",
+        "ambiguity_set_hash",
+        "bound_distributional_apv_execution_spec",
+        "distribution_hash",
+        "distribution_route_authorization",
+        "distribution_route_authorization_hash",
+        "distributional_primary_result",
+        "entry_calculation_hash",
+        "entry_policy_version",
+        "full_company_intrinsic_available",
+        "governed_entry_price",
+        "intrinsic_valuation_envelope",
+        "payoff_ambiguity_result",
+        "payoff_model_set_hash",
+        "route_hash",
+        "selected_methods",
+        "unvalued_segments",
+        "valuation_hash",
+        "valuation_scope"
+      ]
+    },
+    {
+      "stage": "HIERARCHICAL_WARRANTED_PER",
+      "status": "skipped_not_applicable",
+      "rationale": "company-level distributional APV is primary; a segment PER reference cannot block or modify the sealed shareholder-payoff valuation",
+      "blocking": false,
+      "output_keys": []
+    },
+    {
+      "stage": "DCF_PER_ASSUMPTION_CONSISTENCY_GATE",
+      "status": "skipped_not_applicable",
+      "rationale": "company-level distributional APV is primary; DCF/PER kernel consistency is not an intrinsic authorization gate for this run",
+      "blocking": false,
+      "output_keys": []
+    },
+    {
+      "stage": "CROSS_METHOD_DOUBLE_COUNT_AUDIT",
+      "status": "pass",
+      "rationale": "distributional APV economic paths and model-case path identities are unique",
+      "blocking": false,
+      "output_keys": []
+    },
+    {
+      "stage": "PROBABILITY_DISTRIBUTION_ANALYSIS",
+      "status": "pass",
+      "rationale": "calibrated probability weighting is authorized by the bound scenario set",
+      "blocking": false,
+      "output_keys": [
+        "probability_distribution_status"
+      ]
+    },
+    {
+      "stage": "AUDIT_GATE",
+      "status": "pass",
+      "rationale": "distributional primary-value removal counterfactual measured; explicit NOT_MEASURABLE modules: INDUSTRY_DNA_ROUTER, KNOWLEDGE_PLACEMENT_GATE, PRIMARY_EVIDENCE_COLLECTION, INDUSTRY_KNOWLEDGE, BROKER_RESEARCH, SIGNAL_INTELLIGENCE, EVIDENCE_LEDGER, ROCKET_INSIGHT_SCAN, UPSTREAM_FUNDING_SCAN, LLM_STAFF, BLIND_RED_TEAM_B, EVIDENCE_TO_ASSUMPTION_BRIDGE, ASSUMPTION_COMPILER, SCENARIO_ENGINE, HIERARCHICAL_BETA_ENGINE, WACC_ENGINE, SOTP_AGGREGATOR | distributional intrinsic calculation, route authority and immutable lineage replayed successfully",
+      "blocking": false,
+      "output_keys": [
+        "audit_hash",
+        "audit_passed",
+        "audit_report",
+        "decision_impact_batch",
+        "decision_impact_completed",
+        "decision_impact_hash",
+        "distribution_authorization",
+        "entry_price_authorization",
+        "payoff_ambiguity_audit_hash"
+      ]
+    },
+    {
+      "stage": "INTRINSIC_VALUE_FREEZE",
+      "status": "pass",
+      "rationale": "audit, decision-impact record and generated doctrine coverage authorized intrinsic freeze",
+      "blocking": false,
+      "output_keys": [
+        "intrinsic_freeze_token",
+        "runtime_doctrine_coverage",
+        "runtime_expected_unit_ids"
+      ]
+    },
+    {
+      "stage": "STREET_REFERENCE_LOAD",
+      "status": "pass",
+      "rationale": "target-company Street references loaded after a valid same-run Freeze Token",
+      "blocking": false,
+      "output_keys": [
+        "street_reference_hash",
+        "street_reports"
+      ]
+    },
+    {
+      "stage": "STREET_GAP_ANALYZER",
+      "status": "pass",
+      "rationale": "Street targets compared post-freeze with the frozen distributional intrinsic range",
+      "blocking": false,
+      "output_keys": [
+        "street_comparison"
+      ]
+    },
+    {
+      "stage": "MARKET_PRICE_LOAD",
+      "status": "pass",
+      "rationale": "target-company market price loaded only after intrinsic freeze",
+      "blocking": false,
+      "output_keys": [
+        "market_currency",
+        "market_observation",
+        "market_reference_hash"
+      ]
+    },
+    {
+      "stage": "MARKET_COMPARE",
+      "status": "pass",
+      "rationale": "current price compared post-freeze with the frozen distributional intrinsic range; reverse DCF is not applied to this route",
+      "blocking": false,
+      "output_keys": [
+        "market_comparison",
+        "reverse_dcf_withheld_reason"
+      ]
+    },
+    {
+      "stage": "THESIS_DELTA",
+      "status": "pass",
+      "rationale": "현재 투자논지를 직전 불변 성공 상태와 비교했습니다",
+      "blocking": false,
+      "output_keys": [
+        "current_thesis",
+        "thesis_delta_result"
+      ]
+    },
+    {
+      "stage": "SAVE_STATE",
+      "status": "pass",
+      "rationale": "immutable distributional valuation, audit, two report visuals, learning history and investor report persisted",
+      "blocking": false,
+      "output_keys": [
+        "module_impact_summary",
+        "research_learning_record_hash",
+        "research_learning_record_path",
+        "research_learning_recorded_at",
+        "saved_current_state",
+        "saved_report_markdown",
+        "saved_report_visuals",
+        "saved_run_dir"
+      ]
+    },
+    {
+      "stage": "FINAL_REPORT",
+      "status": "pass",
+      "rationale": "동일한 불변 실행 데이터에서 한국어 최종보고서와 요약 이미지 2장을 생성했습니다",
+      "blocking": false,
+      "output_keys": [
+        "final_report"
+      ]
+    }
+  ]
+}

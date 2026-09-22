@@ -1,0 +1,13 @@
+{
+  "artifacts": {},
+  "audit_passed": true,
+  "blocked_reasons": [],
+  "company": "대한항공",
+  "finished_at": "2026-09-14T08:56:52+09:00",
+  "parent_run_id": null,
+  "round_count": 1,
+  "run_id": "LIVE-KOREAN-AIR-1",
+  "started_at": "2026-09-14T08:56:52+09:00",
+  "status": "COMPLETED",
+  "ticker": "003490"
+}

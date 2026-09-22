@@ -1,16 +1,48 @@
+schema_version: investor_report/v2
+conclusion: 현재가는 하방 가치보다 낮지만, 정상화 EBITDA와 가동률이 실적으로 확인될 때에만 낮은 가격이 지속 가능한 할인으로 판단됩니다.
 investment_points:
   - title: 정상화 EBITDA가 가치범위를 결정
     content: 핵심 EBITDA와 적용배수의 조합에 따라 하방·기준·상방 가치가 구분됩니다.
     evidence: 하방 350억원·기준 600억원·상방 850억원의 정상화 EBITDA 가정
+    valuation_link: EBITDA 변화가 적용배수와 결합돼 기업가치 범위의 대부분을 결정합니다.
+    falsifier: 업황 회복 뒤에도 EBITDA가 하방 가정인 350억원에 미달하는 경우입니다.
   - title: 기업가치에서 지분가치로의 조정이 주요 완충요인
     content: 시나리오별 기업가치에 3,920억원의 지분가치 조정을 반영했습니다.
     evidence: 2025 사업보고서와 2026 반기보고서의 재무상태 자료
+    valuation_link: 순현금성 조정은 영업가치가 흔들릴 때 지분가치의 완충 역할을 합니다.
+    falsifier: 현금 유출·차입 증가로 지분가치 조정액이 크게 축소되는 경우입니다.
   - title: 현재가는 하방 시나리오보다 낮음
     content: 확률가중 기대값과 별개로 현재가가 전체 가치범위 아래에 있습니다.
     evidence: 2026년 8월 28일 현재가 10,120원과 하방 주당가치 14,115원
+    valuation_link: 현재가와 하방 가치의 차이는 가정이 유지되는 동안 잠재 안전여력을 제공합니다.
+    falsifier: EBITDA 또는 지분가치 조정의 악화로 하방 가치가 현재가 밑으로 낮아지는 경우입니다.
 valuation_method: 정상화 EBITDA에 시나리오별 배수를 적용한 기업가치 배수법
+method_rationale: 철강 실적의 주기성이 커 단일 연도 이익보다 정상화 EBITDA를 사용하고, 업황별 배수 범위로 가치 불확실성을 직접 드러내는 방식이 적합합니다.
 major_assumptions: 정상화 EBITDA는 하방 350억원·기준 600억원·상방 850억원, 적용배수는 각각 3.5배·4.0배·4.5배입니다. 기업가치에서 지분가치로 3,920억원을 조정하고 희석주식수 36.450백만주를 적용했습니다.
 valuation_exclusions: 미공시 자산과 별도 사업 옵션가치는 추가하지 않았습니다.
+scenario_conditions:
+  - scenario_id: Down
+    condition: 낮은 가동률과 철강 스프레드 부진으로 정상화 EBITDA가 350억원 수준에 머무는 경우입니다.
+    valuation_effect: 낮은 이익과 3.5배 배수가 결합돼 가치범위 하단이 됩니다.
+  - scenario_id: Base
+    condition: 가동률과 스프레드가 중간 수준으로 회복돼 EBITDA 600억원이 가능한 경우입니다.
+    valuation_effect: 정상화 이익에 4.0배를 적용한 기준가치가 성립합니다.
+  - scenario_id: Bull
+    condition: 업황과 가동률이 함께 개선돼 EBITDA 850억원이 유지되는 경우입니다.
+    valuation_effect: 높은 이익과 4.5배 배수가 결합돼 가치범위 상단이 됩니다.
+sensitivity_watch:
+  - driver: 정상화 EBITDA
+    downside: 가동률·스프레드 부진은 정상화 이익과 기업가치를 낮춥니다.
+    upside: 출하와 스프레드 동반 개선은 정상화 이익과 기업가치를 높입니다.
+    monitor: 분기 생산·판매량, 매출과 EBITDA
+  - driver: 적용배수
+    downside: 업종 위험 확대와 성장 기대 하락은 같은 EBITDA의 가치를 낮춥니다.
+    upside: 이익 안정성과 현금회수 개선은 적용배수 유지에 유리합니다.
+    monitor: 동종사 거래배수와 회사의 이익 변동성
+  - driver: 지분가치 조정
+    downside: 현금유출과 차입 증가는 주주 몫을 줄입니다.
+    upside: 순현금 증가와 비영업자산 회수는 주주 몫을 늘립니다.
+    monitor: 순현금, 차입금과 비영업자산 변동
 segment_notes:
   - segment_id: 철강 제조
     content: 정상화 EBITDA와 시나리오별 배수 적용
