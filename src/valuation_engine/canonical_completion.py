@@ -195,13 +195,6 @@ _FREEZE_HASH_FIELDS = frozenset(
         "audit_hash",
         "industry_snapshot_hash",
         "source_snapshot_hash",
-        "calibration_dataset_hash",
-        "calibration_snapshot_hash",
-        "distribution_hash",
-        "ambiguity_set_hash",
-        "payoff_model_set_hash",
-        "route_authorization_hash",
-        "entry_calculation_hash",
     }
 )
 
