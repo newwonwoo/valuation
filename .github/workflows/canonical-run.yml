@@ -156,6 +156,6 @@ jobs:
             --latest-manifest "${{ steps.bundle.outputs.latest }}" \
             --branch "${EXECUTION_BRANCH}" \
             --expected-head "${EXPECTED_HEAD}" \
-            --destination-prefix "${DESTINATION_ROOT}/${{ steps.bundle.outputs.ticker }}/${{ steps.bundle.outputs.artifact }}" \
+            --destination-prefix "${DESTINATION_ROOT}/${{ steps.bundle.outputs.ticker }}" \
             --latest-destination "${DESTINATION_ROOT}/${{ steps.bundle.outputs.ticker }}/LATEST_REPORT.json" \
             --push
