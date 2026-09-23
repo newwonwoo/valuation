@@ -238,7 +238,13 @@ def _validate_freeze_token(value: Any, *, run_id: str) -> IntrinsicFreezeToken:
     return token
 
 
-def _expected_visual_filenames(ticker: str) -> frozenset[str]:
+def _expected_visual_filenames(
+    ticker: str,
+    *,
+    distributional: bool,
+) -> frozenset[str]:
+    if distributional:
+        return frozenset({"distributional_summary.svg", "distributional_assumptions.svg"})
     safe = re.sub(r"[^A-Za-z0-9._-]+", "_", ticker).strip("_.") or "REPORT"
     prefix = f"PRISM_{safe}"
     return frozenset(
@@ -302,7 +308,10 @@ def _validate_receipts(
     report_filename = _safe_member(
         bundle_manifest.get("report_filename"), "bundle report_filename"
     )
-    expected_visuals = _expected_visual_filenames(str(bundle_manifest.get("ticker") or ""))
+    expected_visuals = _expected_visual_filenames(
+        str(bundle_manifest.get("ticker") or ""),
+        distributional="distributional_valuation.json" in seen,
+    )
     actual_visuals = {
         filename for filename in seen if filename.casefold().endswith(".svg")
     }
