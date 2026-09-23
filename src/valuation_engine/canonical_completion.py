@@ -7,14 +7,16 @@ published bytes must still match those proofs.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, fields
 from hashlib import sha256
 import json
 from pathlib import Path
+import re
 from typing import Any, Iterable, Mapping
 
 import yaml
 
+from .control_plane import IntrinsicFreezeToken, authorize_post_freeze
 from .runtime_authority import ExecutionAttestation, make_stage_receipt
 
 
@@ -184,6 +186,76 @@ def _safe_member(value: Any, label: str) -> str:
     return path.as_posix()
 
 
+_FREEZE_TOKEN_FIELDS = tuple(field.name for field in fields(IntrinsicFreezeToken))
+_FREEZE_HASH_FIELDS = frozenset(
+    {
+        "ledger_snapshot_hash",
+        "assumption_set_hash",
+        "valuation_hash",
+        "audit_hash",
+        "industry_snapshot_hash",
+        "source_snapshot_hash",
+        "calibration_dataset_hash",
+        "calibration_snapshot_hash",
+        "distribution_hash",
+        "ambiguity_set_hash",
+        "payoff_model_set_hash",
+        "route_authorization_hash",
+        "entry_calculation_hash",
+    }
+)
+
+
+def _validate_freeze_token(value: Any, *, run_id: str) -> IntrinsicFreezeToken:
+    """Rebuild and cryptographically authorize the intrinsic freeze token."""
+    payload = _require_mapping(value, "freeze token")
+    missing = [name for name in _FREEZE_TOKEN_FIELDS if name not in payload]
+    if missing:
+        raise CompletionProofError(
+            "freeze token is missing required lineage fields: " + ", ".join(missing)
+        )
+    normalized: dict[str, str] = {}
+    for name in _FREEZE_TOKEN_FIELDS:
+        item = payload.get(name)
+        if not isinstance(item, str):
+            raise CompletionProofError(f"freeze token field {name} must be a string")
+        normalized[name] = item
+    if normalized["run_id"] != run_id:
+        raise CompletionProofError("freeze token run_id mismatch")
+    for name in _FREEZE_HASH_FIELDS | {"token_hash"}:
+        item = normalized[name]
+        if not item:
+            if name in {
+                "ledger_snapshot_hash",
+                "assumption_set_hash",
+                "valuation_hash",
+                "audit_hash",
+                "industry_snapshot_hash",
+                "source_snapshot_hash",
+                "token_hash",
+            }:
+                raise CompletionProofError(f"freeze token {name} is missing")
+            continue
+        normalized[name] = _hex_digest(item, f"freeze token {name}")
+    token = IntrinsicFreezeToken(**normalized)
+    try:
+        authorize_post_freeze(token, run_id=run_id)
+    except (PermissionError, ValueError, TypeError) as exc:
+        raise CompletionProofError(f"invalid intrinsic freeze token: {exc}") from exc
+    return token
+
+
+def _expected_visual_filenames(ticker: str) -> frozenset[str]:
+    safe = re.sub(r"[^A-Za-z0-9._-]+", "_", ticker).strip("_.") or "REPORT"
+    prefix = f"PRISM_{safe}"
+    return frozenset(
+        {
+            f"{prefix}_01_summary.svg",
+            f"{prefix}_02_assumptions.svg",
+        }
+    )
+
+
 def _validate_receipts(
     bundle_dir: Path,
     bundle_manifest: Mapping[str, Any],
@@ -237,6 +309,23 @@ def _validate_receipts(
     report_filename = _safe_member(
         bundle_manifest.get("report_filename"), "bundle report_filename"
     )
+    expected_visuals = _expected_visual_filenames(str(bundle_manifest.get("ticker") or ""))
+    actual_visuals = {
+        filename for filename in seen if filename.casefold().endswith(".svg")
+    }
+    if actual_visuals != expected_visuals:
+        missing_visuals = sorted(expected_visuals - actual_visuals)
+        unexpected_visuals = sorted(actual_visuals - expected_visuals)
+        detail = []
+        if missing_visuals:
+            detail.append("missing=" + ",".join(missing_visuals))
+        if unexpected_visuals:
+            detail.append("unexpected=" + ",".join(unexpected_visuals))
+        raise CompletionProofError(
+            "bundle receipts must contain exactly two route-appropriate SVG cards: "
+            + "; ".join(detail)
+        )
+
     required = {
         "manifest.json",
         "control_plane_trace.json",
@@ -384,14 +473,11 @@ def validate_completion_bundle(
     trace = _trace_entries(_load_json(root / "control_plane_trace.json", "control plane trace"))
     _validate_trace(trace, expected, run_id=run_id)
     _validate_audit(_load_json(root / "audit.json", "audit"))
-    token = _require_mapping(
-        _load_json(root / "freeze_token.json", "freeze token"), "freeze token"
-    )
-    freeze_hash = _hex_digest(token.get("token_hash"), "freeze token hash")
-    if token.get("run_id") != run_id:
-        raise CompletionProofError("freeze token run_id mismatch")
-    token_valuation_hash = _hex_digest(token.get("valuation_hash"), "freeze token valuation hash")
-    token_audit_hash = _hex_digest(token.get("audit_hash"), "freeze token audit hash")
+    token = _load_json(root / "freeze_token.json", "freeze token")
+    freeze_token = _validate_freeze_token(token, run_id=run_id)
+    freeze_hash = freeze_token.token_hash
+    token_valuation_hash = freeze_token.valuation_hash
+    token_audit_hash = freeze_token.audit_hash
     if run_manifest.get("valuation_hash"):
         run_valuation_hash = _hex_digest(
             run_manifest.get("valuation_hash"), "run manifest valuation hash"
