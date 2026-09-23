@@ -26,7 +26,7 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _write_bundle(tmp_path: Path, stages=("A", "B")) -> tuple[Path, Path]:
+def _write_bundle(tmp_path: Path, stages=("A", "B"), visual_count: int = 2) -> tuple[Path, Path]:
     out = tmp_path / "out"
     bundle = out / "bundles" / "bundle"
     bundle.mkdir(parents=True)
@@ -35,7 +35,25 @@ def _write_bundle(tmp_path: Path, stages=("A", "B")) -> tuple[Path, Path]:
     as_of = "2026-09-16"
     valuation_hash = "a" * 64
     audit_hash = "b" * 64
-    freeze_hash = "c" * 64
+    ledger_snapshot_hash = "1" * 64
+    assumption_set_hash = "2" * 64
+    industry_snapshot_hash = "3" * 64
+    source_snapshot_hash = "4" * 64
+    freeze_hash = hashlib.sha256(
+        "|".join(
+            (
+                run_id,
+                ledger_snapshot_hash,
+                assumption_set_hash,
+                valuation_hash,
+                audit_hash,
+                industry_snapshot_hash,
+                source_snapshot_hash,
+                "",
+                "",
+            )
+        ).encode()
+    ).hexdigest()
     run_input_hash = "d" * 64
     stage_registry_hash = "e" * 64
     trace = [
@@ -82,9 +100,21 @@ def _write_bundle(tmp_path: Path, stages=("A", "B")) -> tuple[Path, Path]:
         json.dumps(
             {
                 "run_id": run_id,
+                "ledger_snapshot_hash": ledger_snapshot_hash,
+                "assumption_set_hash": assumption_set_hash,
                 "valuation_hash": valuation_hash,
                 "audit_hash": audit_hash,
+                "industry_snapshot_hash": industry_snapshot_hash,
+                "source_snapshot_hash": source_snapshot_hash,
                 "token_hash": freeze_hash,
+                "calibration_dataset_hash": "",
+                "calibration_snapshot_hash": "",
+                "distribution_hash": "",
+                "ambiguity_set_hash": "",
+                "payoff_model_set_hash": "",
+                "route_authorization_hash": "",
+                "entry_policy_version": "",
+                "entry_calculation_hash": "",
             }
         ),
         encoding="utf-8",
@@ -109,6 +139,13 @@ def _write_bundle(tmp_path: Path, stages=("A", "B")) -> tuple[Path, Path]:
     )
     (bundle / "final_report.md").write_text("# audit\n", encoding="utf-8")
     (bundle / "000001_투자보고서.md").write_text("# investor\n", encoding="utf-8")
+
+    visual_names = (
+        "PRISM_000001_01_summary.svg",
+        "PRISM_000001_02_assumptions.svg",
+    )
+    for filename in visual_names[:visual_count]:
+        (bundle / filename).write_text("<svg/>\\n", encoding="utf-8")
 
     receipts = [
         {"filename": path.relative_to(bundle).as_posix(), "sha256": _sha(path)}
@@ -236,6 +273,34 @@ def test_legacy_bundle_schema_is_rejected(tmp_path):
     payload["schema_version"] = "kr-live-report-bundle/v1"
     path.write_text(json.dumps(payload))
     with pytest.raises(CompletionProofError, match="v2"):
+        validate_completion_bundle(
+            bundle, stage_registry_path=tmp_path / "unused.yaml", expected_stages=("A", "B")
+        )
+
+
+def test_forged_freeze_token_hash_is_rejected(tmp_path):
+    bundle, _ = _write_bundle(tmp_path)
+    path = bundle / "freeze_token.json"
+    payload = json.loads(path.read_text())
+    payload["token_hash"] = "f" * 64
+    path.write_text(json.dumps(payload))
+    with pytest.raises(CompletionProofError, match="invalid intrinsic freeze token"):
+        validate_completion_bundle(
+            bundle, stage_registry_path=tmp_path / "unused.yaml", expected_stages=("A", "B")
+        )
+
+
+def test_missing_report_visual_cards_are_rejected(tmp_path):
+    bundle, _ = _write_bundle(tmp_path, visual_count=0)
+    with pytest.raises(CompletionProofError, match="SVG cards"):
+        validate_completion_bundle(
+            bundle, stage_registry_path=tmp_path / "unused.yaml", expected_stages=("A", "B")
+        )
+
+
+def test_one_report_visual_card_is_rejected(tmp_path):
+    bundle, _ = _write_bundle(tmp_path, visual_count=1)
+    with pytest.raises(CompletionProofError, match="SVG cards"):
         validate_completion_bundle(
             bundle, stage_registry_path=tmp_path / "unused.yaml", expected_stages=("A", "B")
         )
