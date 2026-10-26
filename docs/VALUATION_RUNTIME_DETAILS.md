@@ -49,8 +49,8 @@ Read only the sections relevant to the routed method or changed behavior. These 
 ## Non-negotiable gates
 
 - Never use current price to select assumptions, probabilities, discount rates or multiples.
-- Never load broker target prices/forecasts before `INTRINSIC_VALUE_FREEZE`.
-- A Street-discovered claim cannot mutate the same frozen run. Verify it from primary/independently validated evidence and start a new run.
+- In the blind baseline, never load broker target prices/forecasts before `INTRINSIC_VALUE_FREEZE`. The intentional informed-revision policy in `VALUATION_AGENT_CONTRACTS.md` governs a separate, source-bound underwriting handoff.
+- A Street-discovered claim cannot mutate the same frozen run. Individually assess and verify its provenance, mechanism and limitations, then use a labelled informed new run; future forecasts do not require realized-future primary confirmation.
 - Never convert policy price directly into company ASP without an economic bridge.
 - Never promote company plans to realized evidence.
 - Never double count the same evidence/economic path across operating value, option/SOTP, funding, WACC or PER premium.
@@ -157,3 +157,5 @@ Only after intrinsic freeze, load recent broker references. Record broker/date/s
 
 Use 10k–100k simulations only when a calibrated stochastic implementation exists and preserve realistic correlations. Current price is never a distribution input. Otherwise report probabilities as `UNCALIBRATED`; do not fabricate Monte Carlo output.
 
+
+The broker-informed revision policy in `VALUATION_AGENT_CONTRACTS.md` scopes earlier pre-freeze issuer-forecast prohibitions to `BLIND_BASELINE`; it is an intentional policy extension, not a relabeling of forecasts as realized facts.

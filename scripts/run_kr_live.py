@@ -25,7 +25,8 @@ Directory convention (see the committed runs/kisco-104700 for a live example):
         underwriting.yaml       operator judgments (required)
         market.yaml             post-freeze market price (optional)
         street.json             authorized street export (optional; an empty
-                                reports list declares no coverage)
+                                reports list supplies no eligible numeric
+                                target-price references, not proof of no coverage)
         risk_pack.yaml          declared risk pack for beta/WACC methods
                                 (optional)
         staff/<role>.json       one proposal file per staff seat; a JSON array
@@ -94,8 +95,7 @@ from valuation_engine.kr_opendart_provider import (  # noqa: E402
 from valuation_engine.investor_report import (  # noqa: E402
     load_investor_report_profile,
     probability_weighted_equity_value,
-    render_distributional_investor_report,
-    render_investor_report,
+    render_investor_report_documents,
 )
 from valuation_engine.live_primary_adapters import (  # noqa: E402
     CompanyResolutionRequest,
@@ -139,6 +139,19 @@ def _load_run(run_dir: Path) -> dict:
 def _resolve(run_dir: Path, value: str) -> Path:
     path = Path(value)
     return path if path.is_absolute() else (run_dir / path).resolve()
+
+
+def _optional_classification_map_path(run_dir: Path, config: dict) -> Path | None:
+    """Resolve an explicit per-run map; absence preserves the runtime default."""
+    if "classification_map_path" not in config:
+        return None
+    value = config["classification_map_path"]
+    if not isinstance(value, str) or not value.strip():
+        raise RunbookError("classification_map_path must be a non-empty path")
+    path = _resolve(run_dir, value)
+    if not path.is_file():
+        raise RunbookError(f"classification map file is missing: {path}")
+    return path
 
 
 def _build_network(run_dir: Path) -> OpenDartNetwork:
@@ -685,14 +698,21 @@ def publish_report_bundle(
             "refusing to expose the developer-facing audit report"
         )
     investor_profile = load_investor_report_profile(investor_profile_path)
-    report = (
-        render_distributional_investor_report(result.data, investor_profile)
-        if isinstance(
-            result.data.get("distributional_primary_result"),
-            DistributionalPrimaryValuationResult,
-        )
-        else render_investor_report(result.data, investor_profile)
+    config = _load_run(run_dir)
+    detail_name = (
+        f"{_safe_artifact_token(str(result.data.get('ticker') or ''))}_"
+        f"{_safe_artifact_token(str(config.get('as_of') or '').replace('-', ''))}_상세자료.md"
     )
+    documents = render_investor_report_documents(
+        result.data, investor_profile, detail_filename=detail_name,
+    )
+    report = documents.main_report
+    detail_report = documents.detail_report
+    for target in re.findall(r"\]\(([^)]+)\)", detail_report):
+        if not target.startswith(("http://", "https://", "#")):
+            detail_target = (source / target).resolve()
+            if source not in detail_target.parents or not detail_target.is_file():
+                raise RunbookError(f"detail report artifact link is missing or unsafe: {target}")
     valuation_hash = str(result.data.get("valuation_hash") or "")
     audit_hash = str(result.data.get("audit_hash") or "")
     run_id = str(getattr(result, "run_id", "") or "")
@@ -714,6 +734,7 @@ def publish_report_bundle(
             audit_hash,
             run_input_sha256,
             sha256(report.encode("utf-8")).hexdigest(),
+            sha256(detail_report.encode("utf-8")).hexdigest(),
             _file_sha256(source / "manifest.json"),
         )
     )
@@ -741,6 +762,21 @@ def publish_report_bundle(
     (bundle_dir / versioned_report_name).write_text(
         report, encoding="utf-8"
     )
+    (bundle_dir / detail_name).write_text(detail_report, encoding="utf-8")
+    if investor_profile.decision_brief is None:
+        from valuation_engine.report_republication import build_report_brief_request
+        brief_request = build_report_brief_request(
+            detail_report, detail_filename=detail_name, run_id=run_id, valuation_hash=valuation_hash,
+        )
+        _write_json_atomic(bundle_dir / "report_brief_request.json", brief_request, token=short_hash)
+        staff_request_path = output_root / "staff_requests" / f"report_editor.{brief_request['source_report_sha256']}.json"
+        staff_request_path.parent.mkdir(parents=True, exist_ok=True)
+        _write_json_atomic(staff_request_path, brief_request, token=short_hash)
+        editorial_status = "HOST_BRIEF_REQUIRED_SAFE_FALLBACK"
+    else:
+        from dataclasses import asdict
+        _write_json_atomic(bundle_dir / "report_editorial_brief.json", asdict(investor_profile.decision_brief), token=short_hash)
+        editorial_status = "SOURCE_BOUND_BRIEF_APPLIED"
     files = tuple(
         {
             "filename": path.relative_to(bundle_dir).as_posix(),
@@ -760,6 +796,8 @@ def publish_report_bundle(
         "audit_hash": audit_hash,
         "run_input_sha256": run_input_sha256,
         "report_filename": versioned_report_name,
+        "detail_report_filename": detail_name,
+        "editorial_status": editorial_status,
         "files": files,
     }
     bundle_manifest_path = bundle_dir / "report_bundle_manifest.json"
@@ -780,6 +818,9 @@ def publish_report_bundle(
             bundle_relative / versioned_report_name
         ).as_posix(),
         "report_sha256": _file_sha256(bundle_dir / versioned_report_name),
+        "detail_report_filename": (bundle_relative / detail_name).as_posix(),
+        "detail_report_sha256": _file_sha256(bundle_dir / detail_name),
+        "editorial_status": editorial_status,
         "valuation_hash": valuation_hash,
         "audit_hash": audit_hash,
         "run_input_sha256": run_input_sha256,
@@ -796,6 +837,7 @@ def publish_report_bundle(
         **latest,
         "latest_manifest_path": str(latest_path),
         "versioned_report_path": str(bundle_dir / versioned_report_name),
+        "versioned_detail_report_path": str(bundle_dir / detail_name),
     }
 
 
@@ -826,15 +868,17 @@ def reuse_published_report_bundle(
     are byte-identical to their receipts.
     """
     run_dir = Path(run_dir).resolve()
+    output_root = Path(output_dir or run_dir / "out").resolve()
+    # A fresh prepared run has neither a report nor its presentation profile.
+    # Profile absence is an input-recovery concern, not a failed reuse attempt.
+    if not output_root.is_dir() or not any(output_root.glob("*_LATEST_REPORT.json")):
+        return None
     investor_profile_path = run_dir / "declarations" / "investor_report.yaml"
     if not investor_profile_path.is_file():
         raise RunbookError(
             "public report reuse requires declarations/investor_report.yaml; "
             "refusing to expose the developer-facing audit report"
         )
-    output_root = Path(output_dir or run_dir / "out").resolve()
-    if not output_root.is_dir():
-        return None
     config = _load_run(run_dir)
     expected_run_id = str(config.get("run_id", f"RUNBOOK-{run_dir.name}"))
     expected_as_of = str(config.get("as_of") or "")
@@ -904,6 +948,22 @@ def reuse_published_report_bundle(
             or _file_sha256(versioned_report_path) != latest.get("report_sha256")
         ):
             raise RunbookError("published versioned report hash mismatch")
+        detail_name = bundle_manifest.get("detail_report_filename")
+        if detail_name is not None:
+            detail_path = _resolve_manifest_path(
+                bundle_dir, detail_name, label="detail report"
+            )
+            latest_detail = _resolve_manifest_path(
+                output_root, latest.get("detail_report_filename"), label="detail report"
+            )
+            if (
+                detail_path.parent != bundle_dir or detail_path != latest_detail
+                or not detail_path.is_file()
+                or _file_sha256(detail_path) != latest.get("detail_report_sha256")
+            ):
+                raise RunbookError("published detail report hash/path mismatch")
+            if f"]({detail_name})" not in versioned_report_path.read_text(encoding="utf-8"):
+                raise RunbookError("published main report does not link its details")
         files = bundle_manifest.get("files")
         if not isinstance(files, list) or not files:
             raise RunbookError("published bundle manifest carries no file receipts")
@@ -920,6 +980,8 @@ def reuse_published_report_bundle(
             "execution_attestation.json",
             str(bundle_manifest.get("report_filename") or ""),
         }
+        if detail_name is not None:
+            required_names.add(str(detail_name))
         missing_names = tuple(sorted(required_names - received_names))
         if missing_names:
             raise RunbookError(
@@ -963,6 +1025,7 @@ def reuse_published_report_bundle(
             **latest,
             "latest_manifest_path": str(latest_path),
             "versioned_report_path": str(versioned_report_path),
+            **({"versioned_detail_report_path": str(detail_path)} if detail_name is not None else {}),
             "reused": True,
         }
     return None
@@ -975,10 +1038,17 @@ def execute_run(
     staff_mode: str | None = None,
     underwriting_path: str | Path | None = None,
     distributional_spec: DistributionalAPVExecutionSpec | None = None,
+    trusted_derived_case_registry: object | None = None,
 ):
     """Run one prepared directory; returns (reached, stop_stage, stop_reason, result)."""
     run_dir = Path(run_dir).resolve()
     config = _load_run(run_dir)
+    if "trusted_derived_case_registry" in config:
+        raise RunbookError(
+            "trusted case calculators require operator/API registration, not run.yaml "
+            "or an LLM/source-supplied callable/path"
+        )
+    classification_map_path = _optional_classification_map_path(run_dir, config)
     filing = config["filing"]
     network = _build_network(run_dir)
     _enforce_production_calibration(run_dir, config, network=network)
@@ -1015,12 +1085,14 @@ def execute_run(
         method_choices = (
             SegmentMethodChoice(
                 str(filing.get("segment_id", "core")),
-                *_parse_method(config["method"], "run.yaml method"),
+                *_parse_method(config.get("method", ""), "run.yaml method"),
             ),
         )
 
     calibration = config.get("calibration")
     spec_kwargs: dict = {}
+    if classification_map_path is not None:
+        spec_kwargs["classification_map_path"] = classification_map_path
     if calibration:
         spec_kwargs.update(
             calibration_snapshot_loader=_calibration_loader(run_dir, calibration)(
@@ -1054,12 +1126,14 @@ def execute_run(
         ),
         forecast_years=int(config.get("forecast_years", 5)),
         declared_underwriting_path=str(underwriting_path or run_dir / "declarations" / "underwriting.yaml"),
+        trusted_derived_case_registry=trusted_derived_case_registry,
         public_filing_facts_path=(
             str(_resolve(run_dir, config["public_filing_facts_path"]))
             if config.get("public_filing_facts_path") else None
         ),
         declared_risk_path=_optional_path(run_dir, "risk_pack.yaml"),
         declared_segments_path=_optional_path(run_dir, "segments.yaml"),
+        company_scope_receipt_path=str(run_dir / "declarations" / "company_scope_receipt.json"),
         declared_broker_research_path=_optional_path(
             run_dir, "broker_research.yaml"
         ),
@@ -1069,6 +1143,13 @@ def execute_run(
         parent_adjustments=parent_adjustments,
         market_config_path=market_path,
         street_export_path=_optional_path(run_dir, "street.json"),
+        broker_reference_path=_optional_path(run_dir, "broker_references.json"),
+        broker_own_metrics_path=_optional_path(run_dir, "broker_own_metrics.json"),
+        broker_review_context_path=_optional_path(run_dir, "broker_review_context.json"),
+        informed_revision_parent_freeze_path=(str(_resolve(run_dir, config["informed_revision_parent_freeze_path"])) if config.get("informed_revision_parent_freeze_path") else None),
+        informed_revision_root_freeze_path=(str(_resolve(run_dir, config["informed_revision_root_freeze_path"])) if config.get("informed_revision_root_freeze_path") else None),
+        informed_revision_journal_path=(str(_resolve(run_dir, config["informed_revision_journal_path"])) if config.get("informed_revision_journal_path") else None),
+        informed_revision_max_attempts=int(config.get("informed_revision_max_attempts", 10)),
         market_currency=(
             str(config.get("market_currency", "KRW")) if market_path else None
         ),
@@ -1123,11 +1204,38 @@ def execute_run(
         with tempfile.TemporaryDirectory(prefix="kr-live-run-") as root:
             result = run(root)
 
+    return _execution_outcome(result)
+
+
+def _execution_outcome(result):
+    """Do not mistake a *resolved* historical recovery trace for a final stop.
+
+    Only the canonical Red-Team -> research-loop handoff has this relationship.
+    An arbitrary nonblocking recovery warning is not an authorization to pass.
+    """
     reached: list[str] = []
     stop_stage = None
     stop_reason = ""
-    for trace in result.stage_traces:
-        if trace.status in _PASSING:
+    for index, trace in enumerate(result.stage_traces):
+        resolved_handoff = False
+        if (trace.stage == "BLIND_RED_TEAM_B" and
+                trace.status is StageStatus.RECOVERY_REQUIRED and not trace.blocking):
+            later = result.stage_traces[index + 1:]
+            recovery = next((item for item in later if item.stage == "RESEARCH_LOOP"), None)
+            original = result.data.get("red_team_proposal")
+            recovered = result.data.get("recovered_red_team_proposal")
+            original_ids = {item.id for item in getattr(original, "issues", ())
+                            if item.blocking and not item.resolved}
+            recovered_by_id = {item.id: item for item in getattr(recovered, "issues", ())}
+            receipt_ids = set(result.data.get("recovered_red_team_issue_ids", ()))
+            resolved_handoff = bool(
+                recovery is not None and recovery.status is StageStatus.RECOVERED
+                and not recovery.blocking and original_ids and original_ids == receipt_ids
+                and all(key in recovered_by_id and recovered_by_id[key].resolved
+                        for key in original_ids)
+                and not any(item.blocking and not item.resolved for item in recovered_by_id.values())
+            )
+        if trace.status in _PASSING or resolved_handoff:
             reached.append(trace.stage)
         else:
             stop_stage = trace.stage

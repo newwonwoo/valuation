@@ -187,6 +187,9 @@ class GenericKRRuntimeSpec:
     #: here. Required for any issuer whose filing discloses multiple
     #: reportable segments; forbidden for one that reports itself whole.
     declared_segments_path: str | Path | None = None
+    #: Accepted host scope interpretation, promoted between canonical runs.
+    #: Revalidated against the current issuer/filing/member hashes on every read.
+    company_scope_receipt_path: str | Path | None = None
     #: Prepared, metadata-only Broker Research discovery. Target-company
     #: forecasts/targets remain quarantined; company-specific observations may
     #: only request primary-source verification before Intrinsic Freeze.
@@ -217,13 +220,34 @@ class GenericKRRuntimeSpec:
     legacy_continuous_probability_replay_receipt: str | None = None
     market_config_path: str | Path | None = None
     street_export_path: str | Path | None = None
+    broker_reference_path: str | Path | None = None
+    broker_own_metrics_path: str | Path | None = None
+    broker_review_context_path: str | Path | None = None
+    informed_revision_parent_freeze_path: str | Path | None = None
+    informed_revision_root_freeze_path: str | Path | None = None
+    informed_revision_journal_path: str | Path | None = None
+    informed_revision_max_attempts: int = 10
     market_currency: str | None = None
     #: Report-only price discipline. It is carried to SAVE_STATE so the visual
     #: summary can show the same concrete entry price as the public report; no
     #: intrinsic-value or probability stage reads it.
     investor_entry_margin_of_safety: Decimal | None = None
+    #: Trusted operator/API registration only; never loaded from source text or
+    #: a serialized model/callable path. Derived rows require pure replay by a
+    #: registered, code/input-hash-bound case calculator before collection.
+    trusted_derived_case_registry: object | None = None
 
     def validate(self) -> None:
+        if self.trusted_derived_case_registry is not None:
+            from .derived_case import DerivedCaseRegistry
+            from .runtime_authority import DecisionDomain, forbid_llm_decision
+
+            forbid_llm_decision(DecisionDomain.ASSUMPTION_COMPILE)
+            if not isinstance(self.trusted_derived_case_registry, DerivedCaseRegistry):
+                raise GenericValuationPlanError(
+                    "trusted_derived_case_registry requires operator-supplied typed registration; "
+                    "serialized source/model instructions cannot grant execution authority"
+                )
         if not self.as_of or not self.scenario_ids or not self.method_choices:
             raise GenericValuationPlanError(
                 "generic runtime spec requires as_of, scenario_ids and method_choices"
@@ -408,6 +432,8 @@ def build_generic_kr_runtime_factory(
                     declared_underwriting_provider(
                         spec.declared_underwriting_path,
                         run_as_of=spec.as_of,
+                        **({"trusted_derived_case_registry": spec.trusted_derived_case_registry}
+                           if spec.trusted_derived_case_registry is not None else {}),
                     ),
                 )
                 if spec.declared_underwriting_path is not None
@@ -420,6 +446,8 @@ def build_generic_kr_runtime_factory(
             as_of=spec.as_of,
             api_key=network.api_key,
             declared_segments=declared_segments,
+            transport=transport,
+            company_scope_receipt_path=spec.company_scope_receipt_path,
         ),
         freshness_loader=filing_cadence_freshness_loader(
             as_of=spec.as_of,
@@ -554,6 +582,25 @@ def build_generic_kr_runtime_factory(
             extensions,
             calibration_loader=spec.calibration_snapshot_loader,
         )
+    if spec.broker_reference_path is not None:
+        from .broker_comparison import load_broker_reference_bundle
+        from .official_market_data import load_broker_own_metric_manifest, load_broker_review_context
+
+        def reference_loader():
+            # Source contents remain inaccessible until the same-run freeze.
+            return load_broker_reference_bundle(spec.broker_reference_path)
+
+        def own_metrics_loader(freeze_hash, valuation_hash, assumption_hash):
+            return load_broker_own_metric_manifest(spec.broker_own_metrics_path,
+                freeze_token_hash=freeze_hash, valuation_hash=valuation_hash,
+                assumption_set_hash=assumption_hash)
+
+        extensions = replace(extensions,
+            broker_reference_loader=reference_loader,
+            broker_own_metrics_loader=own_metrics_loader if spec.broker_own_metrics_path else None,
+            broker_review_context_loader=(lambda: load_broker_review_context(spec.broker_review_context_path)) if spec.broker_review_context_path else None,
+            broker_review_officer=lambda request: transport.complete(
+                role="broker_review_officer", prompt=request.prompt()))
     if spec.declared_risk_path is not None:
         declared_risk = load_declared_risk_pack(
             spec.declared_risk_path, run_as_of=spec.as_of
@@ -634,7 +681,35 @@ def build_generic_kr_runtime_factory(
         core_collector_override = public_filing_fact_provider(
             spec.public_filing_facts_path, filing=spec.filing, run_as_of=spec.as_of
         )
+    # The same typed factory used by CLI and full API owns actual run/parent
+    # lineage. Source-bound proposal files alone cannot authorize a new run.
+    lineage_validator = None
+    research_mode = "BLIND_BASELINE"
+    revision_receipt_hash = None
+    if spec.declared_underwriting_path is not None:
+        import yaml
+        underwriting_payload = yaml.safe_load(Path(spec.declared_underwriting_path).read_text())
+        research_mode = underwriting_payload.get("research_mode", "BLIND_BASELINE")
+        revision_receipt_hash = underwriting_payload.get("informed_revision", {}).get("review_receipt", {}).get("receipt_hash")
+        if research_mode != "BLIND_BASELINE" or "informed_revision" in underwriting_payload:
+            def lineage_validator(request):
+                from .broker_revision import validate_informed_run_lineage, authorize_revision_attempt
+                receipt = validate_informed_run_lineage(underwriting_payload,
+                    run_id=request.run_id, parent_freeze_path=spec.informed_revision_parent_freeze_path)
+                if receipt is None:
+                    raise ValueError("informed revision lineage is missing")
+                if spec.informed_revision_journal_path is None or spec.informed_revision_root_freeze_path is None:
+                    raise ValueError("informed revision requires its persistent root-lineage journal")
+                authorization = authorize_revision_attempt(receipt,
+                    journal_path=spec.informed_revision_journal_path,
+                    parent_freeze_path=spec.informed_revision_parent_freeze_path,
+                    root_freeze_path=spec.informed_revision_root_freeze_path,
+                    new_run_id=request.run_id, max_attempts=spec.informed_revision_max_attempts)
+                if not authorization["canonical_execution_required"]:
+                    raise ValueError("broker review requires host follow-up, not a canonical revaluation")
+                return authorization
     return KRLiveRuntimeFactory(
+        run_lineage_validator=lineage_validator,
         core_collector_override=core_collector_override,
         network=network,
         filing=spec.filing,
@@ -644,6 +719,8 @@ def build_generic_kr_runtime_factory(
         require_broker_research=spec.require_broker_research,
         initial_data={
             "data_cutoff": spec.as_of,
+            "research_mode": research_mode,
+            **({"informed_revision_receipt_hash": revision_receipt_hash} if revision_receipt_hash else {}),
             **(
                 {
                     "legacy_continuous_probability_replay_receipt": (

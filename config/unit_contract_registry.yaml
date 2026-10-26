@@ -410,12 +410,12 @@ units:
     implementation_status: implemented_generic_post_freeze
     stages: [STREET_REFERENCE_LOAD, STREET_GAP_ANALYZER]
     purpose: Compare frozen intrinsic assumptions/value with broker forecasts, targets, and valuation policies only after freeze.
-    inputs: [intrinsic_freeze_token, frozen_intrinsic_value, street_reports, gap_drivers]
-    outputs: [street_consensus, gap_analysis, explained_gap, unexplained_gap]
+    inputs: [intrinsic_freeze_token, frozen_intrinsic_value, street_reports, gap_drivers, broker_reference_bundle, broker_frozen_operating_metrics]
+    outputs: [street_consensus, gap_analysis, explained_gap, unexplained_gap, broker_comparison]
     consumers: [FINAL_REPORT, STATE_LEARNING]
     effect_types: [reporting_effect]
     final_outputs: [street_gap]
-    canonical_refs: [src/valuation_engine/post_freeze.py, src/valuation_engine/post_freeze_adapters.py, src/valuation_engine/street.py, src/valuation_engine/broker_research.py, docs/POST_FREEZE_RUNTIME.md]
+    canonical_refs: [src/valuation_engine/post_freeze.py, src/valuation_engine/post_freeze_adapters.py, src/valuation_engine/street.py, src/valuation_engine/broker_research.py, src/valuation_engine/broker_comparison.py, docs/POST_FREEZE_RUNTIME.md]
     forbidden_effects: [same_run_intrinsic_mutation]
 
   - unit_id: MARKET_COMPARE
@@ -424,11 +424,11 @@ units:
     stages: [MARKET_PRICE_LOAD, MARKET_COMPARE]
     purpose: Compare frozen intrinsic value/distribution with current market price and derive post-freeze expectations.
     inputs: [intrinsic_freeze_token, frozen_intrinsic_value, current_market_price]
-    outputs: [market_gap, expected_return, reverse_dcf_context]
+    outputs: [market_gap, expected_return, reverse_dcf_context, broker_review_request, broker_review_receipt, broker_revision_work_order]
     consumers: [FINAL_REPORT, STATE_LEARNING]
     effect_types: [reporting_effect]
     final_outputs: [market_comparison]
-    canonical_refs: [src/valuation_engine/post_freeze.py, src/valuation_engine/post_freeze_adapters.py, src/valuation_engine/engine.py, references/methods/reverse-dcf.md, docs/POST_FREEZE_RUNTIME.md]
+    canonical_refs: [src/valuation_engine/post_freeze.py, src/valuation_engine/post_freeze_adapters.py, src/valuation_engine/engine.py, src/valuation_engine/broker_judgment.py, src/valuation_engine/broker_revision.py, references/methods/reverse-dcf.md, docs/POST_FREEZE_RUNTIME.md]
     forbidden_effects: [price_to_assumption, price_to_scenario_weight]
 
   - unit_id: STATE_LEARNING

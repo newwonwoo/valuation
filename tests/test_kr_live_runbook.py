@@ -272,7 +272,13 @@ def test_the_committed_kisco_run_replays_to_the_attested_expected_value(
         encoding="utf-8"
     )
     assert latest["artifact_id"] not in public_report
-    assert "## 1. 투자판단 요약" in public_report
+    assert "## 1. 결론" in public_report
+    detail_path = Path(published["versioned_detail_report_path"])
+    assert "## 1. 투자판단 요약" in detail_path.read_text(encoding="utf-8")
+    assert f"]({detail_path.name})" in public_report
+    assert sha256(detail_path.read_bytes()).hexdigest() == latest["detail_report_sha256"]
+    assert any(row["filename"] == detail_path.name and row["sha256"] == latest["detail_report_sha256"]
+               for row in bundle_manifest["files"])
     assert "<details" not in public_report
     assert latest["report_filename"].endswith(".md")
     assert (bundle / "control_plane_trace.json").is_file()

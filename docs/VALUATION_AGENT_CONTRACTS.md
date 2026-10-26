@@ -6,7 +6,7 @@ These preserve mandatory runtime, revision and delivery requirements. Read the a
 1. LLM = evidence interpretation, causal reasoning, Economic-Twin rationale, hypothesis generation, confidence/probability rationale and missing-evidence requests.
 2. Deterministic code = units, valuation math, beta/PER partial pooling, WACC arithmetic, probability weighting, DCF–PER consistency, Street arithmetic, duplicate-path detection and audit tests.
 3. Market price is comparison-only; never solve intrinsic assumptions backwards from price.
-4. Street targets/forecasts are inaccessible until `INTRINSIC_VALUE_FREEZE`; a Street-discovered claim cannot mutate the same frozen run.
+4. In `BLIND_BASELINE`, Street targets/forecasts are inaccessible until `INTRINSIC_VALUE_FREEZE`; no comparison can mutate that frozen run. See the explicit informed-revision policy below.
 5. Evidence, Hypothesis, Bridge, Assumption and Model Output are separate object types.
 6. Segment decomposition → evidence-driven multi-label Industry DNA routing → Module Requirement Plan happens before valuation-method selection/data collection.
 7. Unverified futures are not automatic 0/100. A success probability or single probability-weighted target requires calibration. An `UNCALIBRATED` analyst prior may support only a source-bound ambiguity set: report its expected-value interval and, when every dated payoff is independently authorized, a robust expected-return entry ceiling across complete probability/pricing-model vertices. This is not the branch with the lowest individual probability and must never be described as a calibrated success probability.
@@ -27,7 +27,7 @@ These preserve mandatory runtime, revision and delivery requirements. Read the a
 ## Industry Knowledge / Signal Intelligence gates
 - Freeze Industry Knowledge and source-watch snapshots per run; do not let later publications silently mutate an in-flight valuation.
 - Use `KnowledgeLayer` placement contracts. Structural priors, broker research, alternative data and calibration references cannot bypass primary/company Evidence → Bridge requirements.
-- Broker/IB research before intrinsic freeze is discovery/corroboration only; target-company forecast/target price/rating/multiple/consensus are post-freeze Street objects.
+- In `BLIND_BASELINE`, broker/IB research before intrinsic freeze is discovery/corroboration only; issuer forecasts/targets remain post-freeze objects. An `INFORMED_REVISION` admits only the reviewed underwriting handoff described below, never the raw comparison state.
 - `NOT_OBSERVED` is not `NO_EVENT`; source failure, reporting lag and incomplete coverage cannot be converted into negative evidence.
 - Preserve event/effective/published/first-seen/revision timestamps to prevent look-ahead.
 - Financing-market references may support funding/WACC through an explicit Bridge; positioning signals never mutate intrinsic; target-equity market references are post-freeze only.
@@ -36,7 +36,7 @@ These preserve mandatory runtime, revision and delivery requirements. Read the a
 
 ## Workflow gates
 - Keep root and canonical Skill byte-identical.
-- Do not load Street/current price before Audit PASS and intrinsic freeze.
+- Do not load raw Street/current-price comparison state before Audit PASS and intrinsic freeze. Keep reviewed informed-revision underwriting distinct from that comparison state.
 - Reverse DCF/current-market implied expectations are post-freeze only and cannot mutate the same frozen run.
 - Do not emit intrinsic value from blocked runs; blocked runs cannot replace last-good state.
 - Red Team must not see market/Street targets, intrinsic value, position data or market loaders.
@@ -57,17 +57,52 @@ These preserve mandatory runtime, revision and delivery requirements. Read the a
 ## Reporting and delivery
 - The first-screen 투자판단 요약 is the investment report itself: 투자판단, post-freeze 현재가, 기준 내재가치, 가치평가 범위, one-sentence conclusion and conditions that strengthen/weaken/unlock action. Never substitute an internal gate summary.
 - Every public report must load `declarations/investor_report.yaml` with `schema_version: investor_report/v2`. Each investment point must bind observed evidence to a forward assumption, value impact and falsifier; each value range must carry business conditions; and the report must distinguish declared business-driver direction from sensitivity actually calculated by the frozen valuation.
-- Count the two SVG cards inside the main-body page target. Keep all material limitations; present unavailable calibration without inventing expected value or buy price.
+- Keep the two SVG cards as separate matching visual artifacts. Keep material limitations in the main and/or explicitly linked detail according to their decision relevance; present unavailable calibration without inventing expected value or buy price.
 - The Control Plane owns the canonical five-gate progress contract in `config/control_plane_stage_registry.yaml`; individual adapters and agents may not invent parallel progress groupings.
 - Emit one compact summary when each major gate completes or terminates blocked: status, decisive result, residual risk and next action. Do not stream all 33 stage traces as routine progress.
 - Keep all 33 stage identities/statuses in the compact audit appendix and the exact rationales/output keys in the immutable `control_plane_trace.json` artifact.
-- Editorial targets are 3–4 pages for the decision-facing body, 1–2 pages for the audit appendix and 6 pages maximum combined. Use body text of at least 13pt, primary headings of at least 22pt and section headings of at least 18pt; dense wide tables are forbidden. These are presentation targets, never grounds to omit a material blocker, uncertainty or integrity record.
-- Source provenance is never shortened away. Every active Evidence claim and every reported identity/Beta/WACC/PER/Street/market reference must map to a directly clickable HTTP(S) original-source link; non-HTTP, credential-bearing or missing source references block a `LIVE_PRIMARY` final report. Group repeated claims by source URL to stay compact.
+- The concise decision-facing main targets roughly one readable page; the two matching cards are separate visual views, not an excuse to enlarge the prose. Detailed research, calculations and audit records remain in linked artifacts rather than a forced combined page cap. For page-rendered views use body text of at least 13pt, primary headings of at least 22pt and section headings of at least 18pt; dense wide tables are forbidden. Presentation targets never authorize omitting material limitations or integrity records.
+- The default publication is a concise decision-facing main plus a visibly linked, hash-bound sibling detail document. The main prioritizes conclusion, conditional values, key assumptions/evidence, changed reasoning and remaining risks; repeated comparisons, calculation tables and provenance belong in detail. Aim for a readable one-page main rather than imposing a blind character cutoff. The two documents are one report package; shortening never authorizes missing material conditions.
+- Source provenance is never shortened away. Every active Evidence claim and every reported identity/Beta/WACC/PER/Street/market reference must map to a directly clickable HTTP(S) original-source link in the detail document (selected entry links also appear in the main); non-HTTP, credential-bearing or missing source references block a `LIVE_PRIMARY` final report. Group repeated claims by source URL to stay compact. Both actual files and their working relative link must be verified and included in the immutable manifest.
+- The host may supply a small `decision_brief` in `investor_report/v2`, bound to the exact full public report SHA: conclusion, key assumptions/evidence, change reason, risks and scope limits. It is semantic editorial work, not deterministic first-sentence extraction. The host must retain material rights/dilution, forecast/partial-scope uncertainty, exclusions and failure conditions. Financial values, quote timestamps and probability/entry status are still generated from frozen results, never editable brief fields. Binding validation is not a claim that semantic completeness or future outcomes have been proved.
+- If a brief is missing, publication emits `report_brief_request.json` and a `report_editor` file-handoff request, explicitly labelled `HOST_BRIEF_REQUIRED_SAFE_FALLBACK`. The host reads the full bound detail, supplies the brief and verifies the resulting main before claiming the requested concise report is complete; a safe long-field fallback is not silently called a one-page summary. Full detail remains unchanged and accessible.
+- Editorial-only reissue uses `scripts/republish_investor_report.py SOURCE_BUNDLE --source-manifest-sha256 HASH --output-dir NEW_OUTPUT --brief BRIEF_JSON`. It verifies the operator-pinned source, keeps valuation/assumptions/audit/freeze/attestation/cards byte-identical, and creates a new presentation bundle. Its receipt must say no financial recalculation or new financial audit/freeze occurred. Never modify an already delivered frozen report or rerun assumptions merely to shorten prose.
 - The user-facing final report is Korean by default. Technical IDs, status enums and original-source titles may remain unchanged, but headings, conclusions, explanations and gate summaries must not fall back to English.
-- The public decision-facing body uses 투자판단 요약 → 투자논리 → 가치평가와 민감도 → 위험과 판단 변경 조건 → 증권사·시장 비교 → 원문 자료. Raw stage IDs, enums, evidence IDs and hashes remain in immutable machine artifacts, not the public narrative.
+- The concise body uses 결론 → 가치와 핵심 가정 → 핵심 근거 → 위험과 해석 범위 → 비교와 출처. The full detail retains the original investment logic, method/sensitivity, business coverage, risk conditions, broker comparison and source sections. Raw stage IDs, enums, evidence IDs and hashes remain in the linked immutable audit artifacts, not the decision-facing narrative.
 - Keep LLM-authored linkage artifacts separate from deterministic assumptions, calculations, Audit and Freeze outputs. Do not add a model-role or `인공지능 인사이트` section to the public investor report; preserve the complete typed artifact in `context_strength_linkages.json` for audit.
 - A final report is incomplete without two deterministic Korean SVG cards generated from the same immutable run data: `회사 강점·투자 결론·가치평가` and `가치평가 가정·위험·출처`. If calibration or an entry rule is unavailable, the card must withhold a specific buy price rather than fabricate one.
 - Publish each downloadable report under an immutable filename containing its as-of date, reference intrinsic value and artifact hash. Keep a mutable latest alias only for repository automation; user delivery must use the versioned filename and its hash-bound latest manifest so an older same-named download cannot be mistaken for the current report.
 
 ## Methodology description
 The v0.4 finance-calibration system is **academically grounded engineering synthesis**. v0.5.2 adds repository-specific evidence-governed Industry Knowledge and Signal Intelligence operating contracts. Established finance/accounting components and repository-specific orchestration must be distinguished explicitly; see `docs/V04_ROCKETSLA_EXTENSION.md`.
+
+## Broker-informed revision policy (intentional 2026-10-26 revision)
+
+The default `BLIND_BASELINE` still excludes issuer Street forecasts/targets and current
+share price until audit and intrinsic freeze. Preserve that immutable baseline.
+After comparison, the host model individually judges missing mechanisms, basis
+mismatches, source dependence, conflicting estimates and possible market overvaluation.
+Claim type and NR status are context, not automatic economic acceptance/rejection.
+A large price gap is a research question, never an objective to fit.
+
+An explicitly labelled `INFORMED_REVISION` may use a source-bound, individually
+reasoned adoption, adjustment or rejection of a broker forecast or method assumption,
+including a numeric point/range proposal. Identical proposed numbers are not by
+themselves proof of unreasoned copying. Preserve the source's forecast status and
+uncertainty; primary-source corroboration strengthens a case but future realization
+is not a mandatory proof gate. The proposal enters the existing research campaign
+as `ANALYST_UNDERWRITING`, then Evidence → Hypothesis → Bridge → Compiler → full
+canonical calculation/audit/new freeze. It cannot commit final value, scenario
+probabilities, PASS or a freeze token, and may not alter the old frozen run. Market
+prices/targets remain comparison observations, not final-value operands. A method
+or operating candidate must identify its actual supported model input and mechanism.
+
+The orchestrator validates exact source/hash/claim and receipt bindings, availability
+and comparison cutoffs, period/perimeter/accounting basis, units, permissions,
+duplicates, authority and calculation consistency. Semantic judgment belongs to the
+host; unknown information remains explicit with a further research question. Maintain
+one baseline/review lineage, the existing retry budget, and evidence or reproducible
+interpretation novelty across renamed runs. The next run is informed, not newly blind.
+Report prior/new value and assumption delta, including an unchanged conclusion; send
+unresolved findings and the new result back to source-bound host review. No claim of
+closed-loop completion is justified by writing a work order alone.

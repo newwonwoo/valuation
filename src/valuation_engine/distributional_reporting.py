@@ -86,7 +86,7 @@ def distributional_street_gap_adapter() -> StageAdapter:
             if not reports:
                 return StageExecutionResult(
                     StageStatus.SKIPPED_NOT_APPLICABLE,
-                    "no sell-side coverage was declared for this target",
+                    "no eligible numeric target-price references in the supplied authorized export",
                 )
             if not all(isinstance(item, StreetResearchReport) for item in reports):
                 raise TypeError("Street reports contain an invalid object")
@@ -344,6 +344,13 @@ def distributional_save_state_adapter(*, state_root: str | Path) -> StageAdapter
                     "batch": _jsonable(context.data.get("decision_impact_batch")),
                 },
                 "street_compare.json": _jsonable(context.data.get("street_comparison")),
+                **({
+                    "broker_reference.json": _jsonable(context.data.get("broker_reference_bundle")),
+                    "broker_compare.json": _jsonable(context.data.get("broker_comparison")),
+                    "broker_review_request.json": _jsonable(context.data.get("broker_review_request")),
+                    "broker_review.json": _jsonable(context.data.get("broker_review_receipt")),
+                    "broker_revision_work_order.json": _jsonable(context.data.get("broker_revision_work_order")),
+                } if context.data.get("broker_reference_bundle") is not None else {}),
                 "market_compare.json": _jsonable(context.data.get("market_comparison")),
                 "freeze_token.json": _jsonable(token),
                 "final_report.md": report,

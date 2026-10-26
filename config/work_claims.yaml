@@ -206,7 +206,7 @@ claims:
   - claim_id: korean-air-dated-payoff-completion
     owner: codex
     pull_request: 189
-    status: active
+    status: merged
     paths:
       - "runs/korean-air-003490/**"
       - "docs/KOREAN_AIR_DISTRIBUTIONAL_APV_DESIGN.md"

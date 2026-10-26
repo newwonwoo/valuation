@@ -16,12 +16,14 @@ from valuation_engine.capacity_yield_operating_paths import (
 )
 from valuation_engine.control_plane import (
     DoctrineCoverageEntry,
+    ExecutionMode,
     StageStatus,
     authorize_post_freeze,
     issue_freeze_token,
 )
 from valuation_engine.distribution_route_policy import DistributionIntegrationRoute
 from valuation_engine.distributional_apv import SegmentCashFlowPath
+from valuation_engine.distributional_reporting import distributional_street_gap_adapter
 from valuation_engine.distributional_reporting_canonical import render_canonical_distributional_report
 from valuation_engine.investor_report import load_investor_report_profile
 from valuation_engine.distributional_runtime import (
@@ -43,9 +45,11 @@ from valuation_engine.levered_financing_paths import (
 )
 from valuation_engine.method_capabilities import load_default_method_capability_registry
 from valuation_engine.module_plan import build_module_requirement_plan
+from valuation_engine.orchestrator import OrchestratorContext
 from valuation_engine.payoff_model_ambiguity import RobustEntryPolicy
 from valuation_engine.probability_ambiguity import ProbabilityVector
 from valuation_engine.records import AuditFinding, AuditReport
+from valuation_engine.street import StreetResearchReport
 from valuation_engine.valuation_method_intent import resolve_valuation_method_intent
 
 
@@ -373,7 +377,7 @@ def test_supplemental_operating_inputs_must_cover_the_complete_horizon():
         replace(base, paths=(invalid_path, *base.paths[1:])).validate()
 
 
-def test_distribution_lineage_is_cryptographically_bound_into_freeze_token():
+def test_distribution_lineage_stays_frozen_with_empty_and_nonempty_street_references():
     result = execute_distributional_apv(_ambiguity_spec())
     lineage = result.envelope.distribution_lineage
     assert lineage is not None
@@ -399,6 +403,38 @@ def test_distribution_lineage_is_cryptographically_bound_into_freeze_token():
     authorize_post_freeze(token, run_id="RUN-DIST")
     with pytest.raises(PermissionError, match="invalid intrinsic freeze token"):
         authorize_post_freeze(replace(token, distribution_hash="TAMPER"), run_id="RUN-DIST")
+
+    context = OrchestratorContext(
+        run_id="RUN-DIST",
+        execution_mode=ExecutionMode.PRIMARY_SHADOW,
+        data={"distributional_primary_result": result, "street_reports": ()},
+        freeze_token=token,
+    )
+    adapter = distributional_street_gap_adapter()
+    empty = adapter(context)
+    assert empty.status is StageStatus.SKIPPED_NOT_APPLICABLE
+    assert empty.outputs == {}
+    assert not empty.blocking
+    assert "in the supplied authorized export" in empty.rationale
+    assert "no sell-side coverage" not in empty.rationale
+
+    context.data["street_reports"] = (
+        StreetResearchReport(
+            broker="Broker A", analyst="Analyst A", published_date="2026-08-24",
+            target_price=100.0, target_price_currency="KRW", valuation_method="DCF",
+            base_year="2027E", estimates=(), source_ref="https://example.com/report",
+        ),
+    )
+    nonempty = adapter(context)
+    assert nonempty.status is StageStatus.PASS
+    comparison = nonempty.outputs["street_comparison"]
+    assert comparison.report_count == 1
+    assert comparison.mean_target_price == D("100")
+    assert comparison.intrinsic_reference_low == result.ambiguity_intrinsic_range.minimum_expected_value
+    assert comparison.intrinsic_reference_high == result.ambiguity_intrinsic_range.maximum_expected_value
+    assert context.data["distributional_primary_result"] is result
+    assert context.freeze_token is token
+    authorize_post_freeze(token, run_id="RUN-DIST")
 
 
 def test_distributional_report_keeps_uncalibrated_prior_out_of_success_probability_claims():

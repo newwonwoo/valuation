@@ -238,6 +238,13 @@ def canonical_distributional_save_state_adapter(*, state_root: str | Path) -> St
                 "doctrine_coverage.json": _jsonable(context.data.get("doctrine_coverage", ())),
                 "module_impact.json": {"summary": impact_summary, "batch": _jsonable(batch)},
                 "street_compare.json": _jsonable(context.data.get("street_comparison")),
+                **({
+                    "broker_reference.json": _jsonable(context.data.get("broker_reference_bundle")),
+                    "broker_compare.json": _jsonable(context.data.get("broker_comparison")),
+                    "broker_review_request.json": _jsonable(context.data.get("broker_review_request")),
+                    "broker_review.json": _jsonable(context.data.get("broker_review_receipt")),
+                    "broker_revision_work_order.json": _jsonable(context.data.get("broker_revision_work_order")),
+                } if context.data.get("broker_reference_bundle") is not None else {}),
                 "market_compare.json": _jsonable(context.data.get("market_comparison")),
                 "freeze_token.json": _jsonable(token),
                 "investor_report_profile.json": _jsonable(profile),

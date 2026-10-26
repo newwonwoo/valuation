@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+<title id="title">산일전기 주식회사 투자 결론과 가치평가</title>
+<desc id="desc">회사 강점, 시나리오 가치, 현재가 및 매수 검토 기준을 요약한 한국어 카드</desc>
+<style>
+text { font-family: Pretendard, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+</style>
+<rect x="0" y="0" width="1200" height="1500" rx="0" fill="#F3F0E8"/>
+<rect x="0" y="0" width="1200" height="250" rx="0" fill="#102D3E"/>
+<text x="70" y="70" font-size="24" font-weight="700" fill="#FFCB77" text-anchor="start">PRISM 최종보고서 · 1/2</text>
+<text x="70" y="145" font-size="54" font-weight="800" fill="#FFFFFF" text-anchor="start">산일전기 주식회사</text>
+<text x="70" y="202" font-size="30" font-weight="500" fill="#D9E7EC" text-anchor="start">회사 강점 · 투자 결론 · 가치평가</text>
+<text x="70" y="295" font-size="24" font-weight="800" fill="#167C72" text-anchor="start">인공지능 연결 인사이트 · 가치평가 계산 비관여</text>
+<text x="70" y="345" font-size="24" font-weight="800" fill="#E26643" text-anchor="start">기업 강점</text>
+<text x="230" y="345" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">산일전기는 수출 고객 접근성, 고부가 특수변압기 제품 구성, 88.9%의 설비가동률, 공시된</text>
+<text x="230" y="380" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">수주잔고를 확보했습니다. 확정된 자본적지출이 있는 제2공장 부지와 별도로 계약이 체결된</text>
+<text x="230" y="415" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">초고압 생산용 부동산도 통제합니다.</text>
+<text x="70" y="470" font-size="24" font-weight="800" fill="#E26643" text-anchor="start">재평가 연결</text>
+<text x="230" y="470" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">전력기기 공급 병목은 산일전기의 기존 고객관계와 선투자 부지를 재평가하게 합니다. 이</text>
+<text x="230" y="505" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">자산들이 희소한 납품 슬롯을 수주잔고 전환과 잉여현금흐름으로 바꿀 수 있기 때문입니다.</text>
+<text x="70" y="560" font-size="24" font-weight="800" fill="#E26643" text-anchor="start">가치 포착</text>
+<text x="230" y="560" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">부지 통제와 확정 자본적지출 → 설비 구축·가동 정상화 → 유효 생산능력 → 수주잔고 전환</text>
+<text x="230" y="595" font-size="23" font-weight="400" fill="#344B5A" text-anchor="start">→ 매출·마진·잉여현금흐름</text>
+<text x="70" y="655" font-size="32" font-weight="800" fill="#102D3E" text-anchor="start">결정론적 가치평가 결과</text>
+<text x="1090" y="655" font-size="20" font-weight="400" fill="#607582" text-anchor="end">확률가중 전 개별 시나리오</text>
+<rect x="70" y="690" width="320" height="150" rx="20" fill="#FFFFFF"/>
+<text x="94" y="738" font-size="22" font-weight="700" fill="#607582" text-anchor="start">하방 (Down)</text>
+<text x="94" y="798" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">151,821원</text>
+<rect x="408" y="690" width="320" height="150" rx="20" fill="#FFFFFF"/>
+<text x="432" y="738" font-size="22" font-weight="700" fill="#607582" text-anchor="start">기준 (Core)</text>
+<text x="432" y="798" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">242,038원</text>
+<rect x="746" y="690" width="320" height="150" rx="20" fill="#FFFFFF"/>
+<text x="770" y="738" font-size="22" font-weight="700" fill="#607582" text-anchor="start">상방 (Bull)</text>
+<text x="770" y="798" font-size="34" font-weight="800" fill="#102D3E" text-anchor="start">287,875원</text>
+<rect x="70" y="890" width="1060" height="170" rx="24" fill="#DDEAE7"/>
+<text x="105" y="942" font-size="24" font-weight="800" fill="#167C72" text-anchor="start">현재가</text>
+<text x="105" y="1002" font-size="38" font-weight="800" fill="#102D3E" text-anchor="start">201,500원</text>
+<text x="1095" y="1002" font-size="21" font-weight="400" fill="#607582" text-anchor="end">기준일 2026-08-27</text>
+<text x="70" y="1110" font-size="30" font-weight="800" fill="#102D3E" text-anchor="start">매수 검토 기준</text>
+<rect x="70" y="1138" width="1060" height="145" rx="22" fill="#FFF4DE"/>
+<text x="105" y="1188" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">실제 해결 이력 기반 확률 보정이 완료되지 않았습니다. 따라서 특정 매수가는 만들지 않고 현재가는</text>
+<text x="105" y="1226" font-size="24" font-weight="600" fill="#6D4B1F" text-anchor="start">참고값으로만 표시합니다.</text>
+<rect x="0" y="1370" width="1200" height="130" rx="0" fill="#102D3E"/>
+<text x="70" y="1415" font-size="22" font-weight="700" fill="#D9E7EC" text-anchor="start">출처</text>
+<text x="140" y="1415" font-size="20" font-weight="400" fill="#D9E7EC" text-anchor="start">공시 사실과 분석가 가정의 근거 주소는 보고서 본문 ‘정보 출처’에서 확인할 수 있습니다.</text>
+<a href="https://alphasquare.co.kr/home/stock-summary?code=062040" target="_blank"><text x="70" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 1</text></a>
+<a href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260826000660" target="_blank"><text x="170" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 2</text></a>
+<a href="https://finance.naver.com/" target="_blank"><text x="270" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 3</text></a>
+<a href="https://github.com/newwonwoo/valuation/blob/main/config/sanil_live_snapshot.yaml" target="_blank"><text x="370" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 4</text></a>
+<a href="https://github.com/newwonwoo/valuation/blob/main/docs/SANIL_RISK_SOURCE_REGISTER.md" target="_blank"><text x="470" y="1457" font-size="20" font-weight="700" fill="#FFCB77" text-anchor="start">원문 5</text></a>
+</svg>

@@ -70,7 +70,51 @@ requests:
 
 산출값은 `kind=calculated`와 `calculation`에 입력·단위·출처 ID·연산을 넣는다. 현재 재현 연산은 sum, difference, scale(금액 등 × ratio)이다. 그보다 복잡한 판단은 `inferred`로 분리하거나 신사업 현금흐름 모형으로 계산한다. 임의 Python/eval은 허용하지 않는다. 답을 만들 수 없으면 `status=unresolved`와 이유를 반환한다.
 
-증권사 자료의 `broker_lead`/`broker_estimate`는 단서·보조 추정이다. primary/independent 검색 시도와 결과를 `search_attempts`로 남긴다. 증권사 추정은 `inferred` 및 `independent_reasoning`을 요구한다. 목표가·현재가·추천등급·목표배수는 금지하며, 대상 회사 실적 컨센서스를 정답으로 직접 복사하는 경로가 아니다. 원문 출처의 내용·독립성 검토는 호스트 책임이다. 여러 보고서가 같은 원자료를 재인용하면 source_family도 같아야 한다.
+## 증권사 근거: blind baseline과 informed revision
+
+2026-10-26 사용자 지시에 따른 명시적 정책 구분이다. 과거의 “대상기업 전망은 어떤 새 실행에서도 제외” 또는 “독립 원자료로 완전히 재구성해야만 채택”이라는 해석을 informed revision에 적용하지 않는다. **원래 blind baseline의 격리·동결은 유지하고, 후행 개별 판단을 거친 새 informed revision에서 전망을 가정으로 채택·조정할 수 있다.** NR은 추천 상태이며 자료의 품질이나 목표가 유무를 대신하지 않는다.
+
+- 기본 `research_mode: BLIND_BASELINE`: 현재가·목표가·등급·원목표배수와 대상기업 broker 전망을 계산 입력으로 반입하지 않는다. `broker_lead`/`broker_estimate`는 `claim_type` 및 `subject_scope: target|industry|peer`로 구분한다. 대상기업을 industry/peer로 이름만 바꾸지 않는다. industry/peer의 방법·메커니즘·추정은 기존 보조 경로로 유지한다.
+- 대상기업의 과거 사실·회사 계획을 브로커에서 발견했다면 원문 source ID에 연결한다. `subject_id`, `metric`, `period`, `perimeter`, `accounting_basis`, `unit`을 정확히 일치시키며 사실·계획의 `claim_value`와 `evidence_relation: supports`를 확인한다. 같은 metric의 다른 연도나 반대 증거는 확인 증거가 아니다. 사실은 primary, 회사 계획은 primary/company_plan 원문이 필요하다. 이것은 현재 사실·발표된 계획의 확인이지 미래 결과의 실현을 요구하는 규칙이 아니다. 이를 바탕으로 만든 조건부 범위는 `inferred`로 남는다.
+- 옛 `broker_estimate`에 분류가 없으면 버리거나 승인하지 않고 `WORK_REQUIRED`로 보존한다. 호환 필드 `authority: analyst_underwriting`는 **보완 후 가능한 계층**일 뿐 승인 표시가 아니다. 값·승인 응답은 없고 Compiler/merge/완료 캐시로 들어가지 않는다. 기존 무분류 `broker_lead`는 실제 비브로커 근거와 함께 발견 단서로만 유지할 수 있다.
+- 증권사 단서가 있으면 primary/independent 검색의 실제 시도와 결과를 `search_attempts`에 남긴다. 검색 실패는 부재 증거나 확실성 증명이 아니다. baseline 추정은 `independent_reasoning`, informed 추정은 `adoption_reasoning`(기존 필드도 호환)을 요구한다. 두 경우 모두 `inferred`이며 사실로 승격하지 않는다.
+
+### 새 informed revision의 실행 결합
+
+원평가 freeze → TP/NR/aggregate 자료 비교 → 호스트 LLM의 개별 근거·반례·의존성 판단 → 필요한 추가 조사 → 새 Evidence→Bridge→Compiler→계산·감사·freeze 순서다. LLM은 채택·조정·기각·보류를 제안한다. 결정론 검증은 출처·시점·기간·단위·회계범위·요청 해시와 계산 권한을 검사하며, “broker forecast이므로 경제적으로 틀림” 같은 일괄 판정을 하지 않는다. **타당한 개별 판단 후 같은 전망 숫자를 채택하는 것도 가능**하다. 독립 primary 전망이나 미래 실현의 확인을 보편적 필수조건으로 요구하지 않는다. 독립 검증이 필요한지와 증거의 충분성은 중요도·자료 내용에 따라 판단하고, 미확인·공동 원자료 의존성은 그대로 공개한다.
+
+계획에 다음 문맥을 명시한다. receipt는 `broker_judgment.validate_broker_judgment_response`에서 만든 전체 typed receipt이며, 아래 자리표시자를 그대로 실행 입력으로 쓰지 않는다.
+
+```yaml
+research_mode: INFORMED_REVISION
+informed_revision:
+  schema_version: broker-informed-revision/v1
+  baseline_run_id: 원래_동결_실행_ID
+  new_run_id: 별도의_새_실행_ID
+  review_receipt: # 실제 broker-review-receipt/v1 전체 객체
+    # 원 freeze, 비교, 요청·응답·자료 내용 및 개별 제안 해시에 결합
+```
+
+작업지시는 이 문맥을 자신의 해시에 포함한다. `PROPOSE_NEW_RUN_ASSUMPTION`의 candidate마다 기존 요청의 `metric`, `unit`과 `inference_basis: {period_start, period_end, frequency, scope, perimeter, accounting_basis, currency}`를 정확히 연결한다. 응답에는 다음을 추가한다.
+
+```yaml
+kind: inferred
+adoption_reasoning: 채택하거나 조정한 이유와 원전망 의존성·대안·불확실성의 검토 요약
+informed_assumption:
+  claim_id: 검토한_claim_ID
+  candidate_id: 개별_가정후보_ID
+  review_receipt_hash: 실제_receipt_해시
+  inference_basis: # 요청 및 candidate와 같은 전체 기간·회계범위 객체
+  derivation: 이 입력값 또는 범위를 선택한 검토 가능한 판단·산식 요약
+```
+
+점 후보는 그 후보값과 같아야 한다. 범위 후보는 low/high가 같아야 하며 범위 내 기준값은 호스트가 근거를 들어 선택한다. 엔진이 임의 중간값을 만들지 않는다. 후보를 바꿀 이유가 생기면 새 검토 receipt로 요청을 갱신한다. 요청·후보의 기간/범위와 원보고서의 기간/범위가 다르면 LLM의 명시적 정상화·판단을 후보와 receipt에 남긴다. 숫자를 서로 빼거나 비교할 수 있다고 자동 가정하지 않는다.
+
+증권사 source에는 `review_claim_id`를 넣고 검토한 원문 URL·content_sha256·원발행일을 정확히 맞춘다. 원발행일이 알려지지 않은 집계는 informed 경로에서 `published_at: null`, `publication_status: UNKNOWN`과 실제 `first_seen_at`을 보존한다. 관측일을 원보고서 날짜로 채우지 않는다. 자료가 미래 기준일에 발견되었으면 이전 freeze를 소급 개선하지 않는다. 합리적 불확실성 판단에 따라 참고·추가조사·가정 제안은 가능하지만 원문 불명을 허위 확인으로 바꾸지 않는다.
+
+원목표가·시장가격은 검토 계기이지 최종가치 답안이나 목표가 맞추기 입력이 아니다. 방법·배수의 경제적 논거는 개별 검토 후 지원 모델의 실제 가정 driver로 제안할 수 있으며, 원목표배수 필드의 이름만 바꾸어 심사 없이 반입하지 않는다. `PASS`, 최종가치, freeze token, 확정 확률 덮어쓰기는 연구 응답으로 허용하지 않는다. 새 run ID만으로 이미 노출된 분석이 blind가 되는 것도 아니다. 원자료의 내용·권리·독립성 검토는 호스트와 오케스트레이터 책임이며, receipt/hash 검증은 경제적 진실성 인증이 아니다.
+
+여러 보고서가 같은 원자료를 재인용하면 `source_family`도 같아야 한다. 브로커의 공시 인용과 해당 원공시가 같은 family인 것은 허용되지만 두 개의 독립 관측으로 세지 않는다. 새 revision·receipt가 바뀌면 캐시를 무효화하며, 오래된 ACCEPTED 기록도 현재 정책으로 재검증한다. 실제 반입과 가치변화는 후속 전체 canonical 실행으로 입증해야 하고, 연구 승인·작업지시만으로 재평가가 끝났다고 보고하지 않는다.
 
 ## 신사업 모형과 수치 반입
 
@@ -119,3 +163,47 @@ EBITDA는 감가상각 전 이익이며 현금흐름이 아니다. EBIT/EBITDA �
 추정값을 바꿨으면 투자자 문안의 수치·주장도 검토한다. `declarations/report_review.json`에 현재 `underwriting_sha256`, `profile_sha256`, 검토 이유 `rationale`를 기록한다. 이는 검토 대상 결합이며 내용 진실성을 자동 인증하지 않는다. 검토 요청이 두 해시를 제공한다. 개발 식별자는 투자자 보고서에 표시하지 않는다.
 
 완주 응답은 `COMPLETED`, 실제 `versioned_report_path`, `latest_manifest_path`를 반환한다. 사업부 미평가·보고서 누락·미해결 입력은 완주가 아니다. 보정확률이 없는 경우에도 조건별 가치와 가정으로 보고서를 작성하되 확률가중 기대값과 구체적 매수가를 만들지 않는다. 여기서 보고서 출판은 로컬 파일 생성이며 GitHub 반영과 별개다.
+
+### Informed revision runtime integrity
+
+`INFORMED_REVISION` does not turn original observations into forecasts. Original
+primary `observed`/`calculated` research keeps its normal provenance/arithmetic
+validation; individually adopted forecasts remain inferred underwriting. Candidate
+citations to frozen evidence or follow-up research require exact
+`context_evidence_bindings` (context ID, source ref, source-content hash and payload
+hash). An unknown source family remains `UNKNOWN`, never a new independent family.
+
+The final underwriting file must retain its outer revision mode/context, including
+for informed assumptions inside a derived `business_cashflow_receipt`. The typed
+runtime factory binds the actual run ID to the reviewed new-run ID and validates
+the parent freeze, persistent root-lineage journal and existing attempt budget.
+A new name or a bare numerical retune cannot reset that budget. `run.yaml` declares
+`informed_revision_parent_freeze_path`, `informed_revision_root_freeze_path`,
+`informed_revision_journal_path` and `informed_revision_max_attempts` (default 10,
+the existing completion budget). Root/journal paths are trusted orchestrator
+configuration, not fields the reviewing model may choose.
+
+Post-freeze `broker_review_context.json` may bind additional local research
+artifacts by exact UTF-8 bytes/hash. This provides evidence to host review, not
+new input authority. Preserve complete receipts privately; public reports contain
+short derived summaries and original-source links, not full broker report bodies.
+
+### Registered derived-case ingress
+
+When a verified existing business calculation cannot be represented honestly by
+`contracted_business`, do not invent capacity/backlog or label forecast outputs
+as observations. An operator may bind accepted informed driver receipts through
+`CaseCalculationModel` / `DerivedCaseRegistry` in `derived_case.py`. The model
+receives an immutable baseline JSON snapshot and exact accepted driver values;
+it returns all registered scalar outputs. A range does not select a midpoint:
+each scenario's chosen point needs its own accepted research receipt and reason.
+
+`build_derived_case_receipt` records model/code/input/output hashes and explicit
+dependencies. Standard inferred underwriting rows reference its immutable file
+with `derived_case_ref` (`schema_version`, `artifact_path`, `artifact_sha256`,
+`output_key`) plus exact `scenario_id`, calendar `year`, `economic_path_id`, value,
+unit and original `source_refs`. The final collector requires the trusted typed
+registry, replays all outputs, checks mode/receipt/source/basis and keeps ordinary
+Bridge/Compiler gates. Registration is API/operator-only, not a serialized
+plugin loader. Pure replay does not prove forecasts; host review must separately
+consider retained cost/mix/reinvestment/capital assumptions and counterevidence.

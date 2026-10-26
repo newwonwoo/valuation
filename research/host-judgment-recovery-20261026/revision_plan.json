@@ -1,0 +1,185 @@
+{
+  "request_id": "lunit-host-judgment-20261026",
+  "base_revision": "25122fcd04456257dece4dc7be109133539e79b0",
+  "clauses": [
+    {
+      "clause_id": "C1",
+      "desired_outcome": "복구 가능한 초기 판단을 근거 결합 호스트 요청으로 전달하고 검증 후 canonical 재실행",
+      "scopes": [
+        "contract_governance"
+      ],
+      "root_unit_ids": [
+        "VALUATION_CONTROL_PLANE",
+        "INDUSTRY_DNA_ROUTER",
+        "INDUSTRY_KNOWLEDGE"
+      ],
+      "acceptance_criteria": [
+        "실제 루닛 단일부문 오독에서 typed 판단 요청 발생",
+        "잘못된 원문/대상/기간/해시와 임의 PASS 거절",
+        "유효한 판단 뒤 동일 canonical 감사와 보고 경로 재실행"
+      ],
+      "material_report_claim": false,
+      "claim_treatment": "not_applicable"
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "scope",
+      "clause_ids": [
+        "C1"
+      ],
+      "owner": "scope-worker",
+      "unit_ids": [
+        "AUDIT_GATE",
+        "DOCTRINE_CONSTITUTION",
+        "INDUSTRY_DNA_ROUTER",
+        "INDUSTRY_KNOWLEDGE",
+        "VALUATION_CONTROL_PLANE"
+      ],
+      "read_set": [
+        "src/valuation_engine/staff_transport.py"
+      ],
+      "write_set": [
+        "src/valuation_engine/host_judgment.py",
+        "src/valuation_engine/company_scope_judgment.py",
+        "src/valuation_engine/generic_kr_industry.py",
+        "src/valuation_engine/generic_live_providers.py",
+        "src/valuation_engine/live_primary_adapters.py",
+        "tests/test_host_judgment.py",
+        "tests/test_company_scope_judgment.py"
+      ],
+      "depends_on": [],
+      "output_ids": [
+        "source-bound scope request/response contract"
+      ],
+      "validators": [
+        "focused scope and authority tests"
+      ]
+    },
+    {
+      "task_id": "coordinator",
+      "clause_ids": [
+        "C1"
+      ],
+      "owner": "coordinator-worker",
+      "unit_ids": [
+        "AUDIT_GATE",
+        "DOCTRINE_CONSTITUTION",
+        "INDUSTRY_DNA_ROUTER",
+        "INDUSTRY_KNOWLEDGE",
+        "VALUATION_CONTROL_PLANE"
+      ],
+      "read_set": [
+        "src/valuation_engine/host_judgment.py"
+      ],
+      "write_set": [
+        "scripts/research_report_completion.py",
+        "scripts/run_research_campaign.py",
+        "scripts/run_kr_live.py",
+        "tests/test_early_judgment_completion.py",
+        "tests/test_research_report_completion.py",
+        "tests/test_research_campaign_cli.py"
+      ],
+      "depends_on": [
+        "scope"
+      ],
+      "output_ids": [
+        "completion dispatch and durable recovery state"
+      ],
+      "validators": [
+        "completion integration tests"
+      ]
+    },
+    {
+      "task_id": "integration",
+      "clause_ids": [
+        "C1"
+      ],
+      "owner": "root",
+      "unit_ids": [
+        "AUDIT_GATE",
+        "DOCTRINE_CONSTITUTION",
+        "INDUSTRY_DNA_ROUTER",
+        "INDUSTRY_KNOWLEDGE",
+        "VALUATION_CONTROL_PLANE"
+      ],
+      "read_set": [
+        "scripts/research_report_completion.py"
+      ],
+      "write_set": [
+        "docs/HOST_JUDGMENT_RECOVERY.md",
+        "research/host-judgment-recovery-20261026/validation.json",
+        "config/work_claims.yaml",
+        "research/host-judgment-recovery-20261026/revision_plan.json"
+      ],
+      "depends_on": [
+        "coordinator"
+      ],
+      "output_ids": [
+        "Lunit rerun and regression verification"
+      ],
+      "validators": [
+        "Lunit actual-source rerun",
+        "full pytest audit OCI gates"
+      ]
+    }
+  ],
+  "waves": [
+    {
+      "ordinal": 1,
+      "task_ids": [
+        "scope"
+      ]
+    },
+    {
+      "ordinal": 2,
+      "task_ids": [
+        "coordinator"
+      ]
+    },
+    {
+      "ordinal": 3,
+      "task_ids": [
+        "integration"
+      ]
+    }
+  ],
+  "selected_unit_ids": [
+    "AUDIT_GATE",
+    "DOCTRINE_CONSTITUTION",
+    "INDUSTRY_DNA_ROUTER",
+    "INDUSTRY_KNOWLEDGE",
+    "VALUATION_CONTROL_PLANE"
+  ],
+  "skipped_unit_ids": [
+    "ASSUMPTION_COMPILER",
+    "BLIND_RED_TEAM_B",
+    "BROKER_RESEARCH",
+    "DECISION_IMPACT",
+    "DETERMINISTIC_VALUATION",
+    "EVIDENCE_LEDGER",
+    "EVIDENCE_TO_ASSUMPTION_BRIDGE",
+    "FINAL_REPORT",
+    "HIERARCHICAL_BETA_ENGINE",
+    "IMPACT_PROPAGATION",
+    "INTRINSIC_FREEZE",
+    "KNOWLEDGE_PLACEMENT_GATE",
+    "LLM_STAFF",
+    "MARKET_COMPARE",
+    "MODULE_PROMOTION",
+    "MODULE_REQUIREMENT_PLAN",
+    "PRIMARY_EVIDENCE_COLLECTION",
+    "REVISION_REQUEST_ORCHESTRATOR",
+    "ROCKET_INSIGHT_SCAN",
+    "SCENARIO_ENGINE",
+    "SIGNAL_INTELLIGENCE",
+    "SOTP_AGGREGATOR",
+    "SOURCE_WATCH",
+    "STATE_LEARNING",
+    "STREET_GAP_ANALYZER",
+    "UPSTREAM_FUNDING_SCAN",
+    "WACC_ENGINE",
+    "WARRANTED_PER_ENGINE"
+  ],
+  "plan_hash": "fc18e7e6cd3441bb9639bcbce553dd2589d342cd4c57d27a391214b117039db2"
+}

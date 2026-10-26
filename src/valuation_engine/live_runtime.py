@@ -92,6 +92,10 @@ from .orchestrator import (
 from .partial_valuation import promote_partial_valuation_plan
 from .per_adapters import PERInputsLoader, live_hierarchical_warranted_per_adapter
 from .post_freeze_adapters import (
+    BrokerReferenceLoader,
+    BrokerOwnMetricsLoader,
+    BrokerReviewOfficer,
+    BrokerReviewContextLoader,
     MarketLoader,
     StreetLoader,
     market_compare_adapter,
@@ -99,6 +103,9 @@ from .post_freeze_adapters import (
     reverse_dcf_expectations_adapter,
     street_gap_analyzer_adapter,
     street_reference_load_adapter,
+    broker_reference_load_adapter,
+    broker_comparison_adapter,
+    broker_review_adapter,
 )
 from .probability_adapter import (
     CalibrationSnapshotLoader,
@@ -174,6 +181,10 @@ PREFREEZE_COMPARISON_FIELDS = frozenset(
         "target_multiple",
         "target_price",
         "target_price_currency",
+        "broker_reference_bundle",
+        "broker_comparison",
+        "broker_review_receipt",
+        "broker_revision_work_order",
     }
 )
 ValuationPlanInputsLoader = Callable[[OrchestratorContext], CompanyValuationPlanInputs]
@@ -194,6 +205,8 @@ _BLOCKED_RESULT_INTRINSIC_KEYS = frozenset(
         "final_report",
         "street_comparison",
         "market_comparison",
+        "broker_comparison",
+        "broker_frozen_operating_metrics",
     }
 )
 
@@ -256,6 +269,10 @@ class LivePrimaryProviders:
     calibration_loader: CalibrationSnapshotLoader | None = None
     street_loader: StreetLoader | None = None
     market_loader: MarketLoader | None = None
+    broker_reference_loader: BrokerReferenceLoader | None = None
+    broker_own_metrics_loader: BrokerOwnMetricsLoader | None = None
+    broker_review_officer: BrokerReviewOfficer | None = None
+    broker_review_context_loader: BrokerReviewContextLoader | None = None
 
     def validate(self) -> None:
         required_callables = (
@@ -582,7 +599,7 @@ def build_live_primary_adapters(
         capacity_per_binding_adapter(),
     )
 
-    street_load = (
+    street_load = broker_reference_load_adapter(loader=providers.broker_reference_loader) if getattr(providers, "broker_reference_loader", None) is not None else (
         street_reference_load_adapter(loader=providers.street_loader)
         if providers.street_loader is not None
         else _unavailable_stage("Street reference")
@@ -679,7 +696,10 @@ def build_live_primary_adapters(
             ),
         ),
         "STREET_REFERENCE_LOAD": street_load,
-        "STREET_GAP_ANALYZER": street_gap_analyzer_adapter(),
+        "STREET_GAP_ANALYZER": (
+            broker_comparison_adapter(own_metrics_loader=providers.broker_own_metrics_loader)
+            if getattr(providers, "broker_reference_loader", None) is not None else street_gap_analyzer_adapter()
+        ),
         "MARKET_PRICE_LOAD": market_load,
         # Reverse DCF is a post-freeze market-comparison tool (references/methods/
         # reverse-dcf.md) and shares the MARKET_COMPARE unit contract, which already
@@ -687,6 +707,8 @@ def build_live_primary_adapters(
         "MARKET_COMPARE": chain_stage_adapters(
             market_compare_adapter(),
             reverse_dcf_expectations_adapter(),
+            *([broker_review_adapter(officer=providers.broker_review_officer, research_context_loader=providers.broker_review_context_loader)]
+              if getattr(providers, "broker_reference_loader", None) is not None else []),
         ),
         "THESIS_DELTA": thesis_delta_adapter(),
         "SAVE_STATE": save_state_adapter(

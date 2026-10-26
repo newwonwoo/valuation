@@ -73,4 +73,4 @@ cross_layer_rules:
   - id: STREET_ECHO
     rule: Distinct brokers sharing one underlying data family count as one underlying corroboration family.
   - id: BLIND_VALUE
-    rule: Target-company Street forecasts, target prices, ratings, target multiples, consensus and current market price remain quarantined until INTRINSIC_VALUE_FREEZE.
+    rule: In BLIND_BASELINE, target-company Street forecasts, targets, ratings, multiples, consensus and current price remain quarantined until INTRINSIC_VALUE_FREEZE. A separate INFORMED_REVISION may admit individually reviewed source-bound analyst underwriting via research/Evidence/Bridge/Compiler; the broker_research layer never directly commits assumptions and market price is never a fit objective.

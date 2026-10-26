@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from enum import Enum
 from hashlib import sha256
@@ -218,6 +218,7 @@ class BrokerResearchAuditResult:
     report: AuditReport
     audit_hash: str
     verification_bindings: tuple[tuple[str, str, tuple[str, ...]], ...] = ()
+    informed_underwriting_bindings: tuple[tuple[str, str, tuple[str, ...]], ...] = ()
 
     @property
     def passed(self) -> bool:
@@ -519,6 +520,242 @@ def broker_aware_rocket_insight_adapter(
     return run
 
 
+def _informed_broker_evidence_binding(item, context: OrchestratorContext, *, derived_cache=None) -> dict:
+    """Validate a reviewed NEW-run assumption; never certify it as primary fact."""
+    from .generic_underwriting import ResearchUnderwritingEvidenceRecord
+    from .research_campaign import fingerprint, validate_response
+
+    if (context.data.get("research_mode") != "INFORMED_REVISION"
+            or not context.data.get("informed_revision_receipt_hash")
+            or not isinstance(item, ResearchUnderwritingEvidenceRecord)
+            or item.source_layer is not EvidenceSourceLayer.ANALYST_UNDERWRITING):
+        raise ValueError("broker source requires an explicitly bound informed underwriting run")
+    derived = getattr(item, "derived_case_ref", None)
+    if sum(authority is not None for authority in (
+        item.research_receipt, item.business_cashflow_receipt, derived
+    )) > 1:
+        raise ValueError("broker Evidence cannot carry multiple research authorities")
+    if derived is not None:
+        return _informed_derived_case_evidence_binding(item, context, cache=derived_cache)
+    if item.business_cashflow_receipt is not None:
+        return _informed_cashflow_evidence_binding(item, context)
+    research = item.research_receipt
+    if not isinstance(research, Mapping):
+        raise ValueError("informed broker Evidence requires its exact research receipt")
+    order = research.get("work_order", {})
+    if not isinstance(order, Mapping) or order.get("research_mode") != "INFORMED_REVISION":
+        raise ValueError("broker Evidence research order is not an informed revision")
+    revision = order.get("informed_revision", {})
+    if (not isinstance(revision, Mapping)
+            or revision.get("new_run_id") != context.run_id
+            or not isinstance(revision.get("review_receipt"), Mapping)
+            or revision["review_receipt"].get("receipt_hash")
+               != context.data["informed_revision_receipt_hash"]):
+        raise ValueError("broker Evidence parent review or actual new-run binding differs")
+    if (order.get("target_id") != item.target
+            or context.data.get("target_id") != item.target
+            or order.get("as_of") != context.data.get("data_cutoff")
+            or item.effective_date != order.get("as_of")
+            or item.observed_date != order.get("as_of")):
+        raise ValueError("broker Evidence target/cutoff differs from the actual run")
+    verified = validate_response(order, research.get("response", {}))
+    if fingerprint(verified) != fingerprint(research) or verified.get("status") != "ACCEPTED":
+        raise ValueError("broker Evidence research receipt fingerprint differs")
+    response = verified["response"]
+    selection = response.get("informed_assumption")
+    if (verified.get("authority") != "analyst_underwriting"
+            or response.get("kind") != "inferred" or not isinstance(selection, Mapping)):
+        raise ValueError("broker Evidence exception requires an individually reviewed inference")
+    if (str(item.value), item.unit, item.metric, item.segment) != (
+            verified["value"], verified["unit"], verified["metric"], verified["segment"]):
+        raise ValueError("broker Evidence value/metric/unit/segment differs from reviewed response")
+    source_refs = tuple(dict.fromkeys(source["url"] for source in response["sources"]))
+    if item.source_refs != source_refs or item.source_ref != source_refs[0]:
+        raise ValueError("broker Evidence source URLs differ from reviewed response")
+    decisions = {row["claim_id"]: row for row in revision["review_receipt"]["decisions"]}
+    reviewed_sources = []
+    for source in response["sources"]:
+        if source.get("kind") not in {"broker_lead", "broker_estimate"}:
+            continue
+        reviewed = decisions.get(source.get("review_claim_id"))
+        if (reviewed is None or reviewed["source_ref"] != source["url"]
+                or reviewed["reference_content_sha256"] != source["content_sha256"]):
+            raise ValueError("broker Evidence source has no exact reviewed claim")
+        reviewed_sources.append(source["url"])
+    if not reviewed_sources or selection["claim_id"] not in decisions:
+        raise ValueError("broker Evidence selected claim lacks an original broker source")
+    return {"evidence_id": item.id, "segment": item.segment, "metric": item.metric,
+            "research_receipt_hash": fingerprint(verified),
+            "review_receipt_hash": context.data["informed_revision_receipt_hash"],
+            "candidate_id": selection["candidate_id"], "claim_id": selection["claim_id"],
+            "reviewed_broker_source_refs": tuple(dict.fromkeys(reviewed_sources)),
+            "authority": "analyst_underwriting"}
+
+
+def _informed_derived_case_evidence_binding(item, context: OrchestratorContext, *, cache=None) -> dict:
+    """Check a registered replay and its original reviewed drivers, never a PASS flag.
+
+    Replay authority is process-local and is established only by the trusted
+    ingress verifier. Persisted proof dictionaries alone cannot authorize a new
+    execution. The full review artifact is checked once per audit, not copied
+    into every derived cashflow/liquidity/terminal/share Evidence row.
+    """
+    from .derived_case import load_derived_case_reference, verified_derived_output
+    from .generic_underwriting import DerivedCaseUnderwritingEvidenceRecord, ResearchUnderwritingEvidenceRecord
+    from .records import EvidenceRecord
+    from .research_campaign import fingerprint
+
+    if not isinstance(item, DerivedCaseUnderwritingEvidenceRecord):
+        raise ValueError("derived broker Evidence requires the registered ingress record type")
+    output = verified_derived_output(item.derived_case_ref, item.derived_case_proof)
+    proof = output.proof
+    if (proof.get("new_run_id") != context.run_id
+            or proof.get("review_receipt_hash") != context.data.get("informed_revision_receipt_hash")
+            or proof.get("target_id") != context.data.get("target_id")
+            or proof.get("target_id") != item.target
+            or proof.get("as_of") != context.data.get("data_cutoff")
+            or item.effective_date != proof.get("as_of") or item.observed_date != proof.get("as_of")):
+        raise ValueError("derived-case Evidence differs from the actual informed run/target/cutoff/review")
+    if (str(item.value), item.unit, item.metric, item.segment, item.scenario_id, item.year,
+            item.economic_path_id, item.source_refs, item.source_ref) != (
+            output.value, output.unit, output.metric, output.segment_id, output.scenario_id, output.year,
+            output.economic_path_id, output.source_refs, output.source_refs[0]
+    ) or (item.year is not None and type(item.year) is not int):
+        raise ValueError("derived-case Evidence differs from the exact registered output contract")
+
+    cache = {} if cache is None else cache
+    key = (item.derived_case_ref["artifact_path"], item.derived_case_ref["artifact_sha256"])
+    if key not in cache:
+        receipt = load_derived_case_reference(item.derived_case_ref)
+        revision = receipt.get("informed_revision", {})
+        if (receipt.get("research_mode") != "INFORMED_REVISION"
+                or revision.get("new_run_id") != context.run_id
+                or revision.get("review_receipt", {}).get("receipt_hash")
+                != context.data.get("informed_revision_receipt_hash")):
+            raise ValueError("derived-case artifact lost actual informed revision bindings")
+        drivers = receipt.get("drivers")
+        if not isinstance(drivers, Mapping) or not drivers:
+            raise ValueError("derived-case artifact has no reviewed driver receipts")
+        driver_bindings = {}
+        for input_name, research in drivers.items():
+            if not isinstance(research, Mapping):
+                raise ValueError("derived-case driver requires its original research receipt")
+            order = research.get("work_order", {})
+            if fingerprint(order.get("informed_revision")) != fingerprint(revision):
+                raise ValueError("derived-case driver differs from its artifact revision lineage")
+            response = research.get("response", {})
+            refs = tuple(dict.fromkeys(source["url"] for source in response.get("sources", ())))
+            if not refs:
+                raise ValueError("derived-case driver has no original source references")
+            ancestor_fields = {name: getattr(item, name) for name in EvidenceRecord.__dataclass_fields__}
+            ancestor_fields.update(
+                id=f"{item.id}:driver:{input_name}", metric=research.get("metric"),
+                value=research.get("value"), unit=research.get("unit"), segment=research.get("segment"),
+                source_ref=refs[0], source_refs=refs, research_receipt=research,
+            )
+            ancestor = ResearchUnderwritingEvidenceRecord(**ancestor_fields)
+            driver_bindings[input_name] = _informed_broker_evidence_binding(ancestor, context)
+        cache[key] = (receipt, driver_bindings)
+    receipt, driver_bindings = cache[key]
+    ancestors = tuple(driver_bindings[name] for name in output.depends_on if name in driver_bindings)
+    matched_sources = {ref for ancestor in ancestors for ref in ancestor["reviewed_broker_source_refs"]}
+    all_reviewed_sources = {ref for binding in driver_bindings.values()
+                            for ref in binding["reviewed_broker_source_refs"]}
+    reviewed_decisions = receipt["informed_revision"]["review_receipt"]["decisions"]
+    broker_sources = all_reviewed_sources | {row["source_ref"] for row in reviewed_decisions}
+    broker_sources.update(getattr(context.data.get("broker_research_prefreeze_result"), "source_refs", ()))
+    if set(output.source_refs) & broker_sources - matched_sources:
+        raise ValueError("derived-case output contains an unreviewed borrowed broker source")
+    return {"evidence_id": item.id, "segment": item.segment, "metric": item.metric,
+            "derived_case_ref": dict(item.derived_case_ref),
+            "derived_case_receipt_hash": proof["receipt_hash"],
+            "review_receipt_hash": proof["review_receipt_hash"],
+            "informed_ancestors": tuple({key: value for key, value in ancestor.items()
+                                         if key != "evidence_id"} for ancestor in ancestors),
+            "reviewed_broker_source_refs": tuple(ref for ref in output.source_refs if ref in matched_sources),
+            "authority": "analyst_underwriting"}
+
+
+def _informed_cashflow_evidence_binding(item, context: OrchestratorContext) -> dict:
+    """Replay derived FCFF and its reviewed ancestors without promoting sources."""
+    from .new_business_research import validate_cashflow_receipt
+    from .research_campaign import fingerprint, validate_response
+
+    business = item.business_cashflow_receipt
+    validate_cashflow_receipt(business, item.metric, str(item.value), item.unit)
+    source_refs = tuple(business.get("source_refs", ()))
+    if not source_refs or item.source_refs != source_refs or item.source_ref != source_refs[0]:
+        raise ValueError("derived broker Evidence source URLs differ from cashflow receipt")
+    if business["path"]["periods"][0]["year"] != int(context.data["data_cutoff"][:4]) + 1:
+        raise ValueError("derived broker Evidence cashflow start differs from run cutoff")
+    assumptions = business.get("assumptions")
+    if not isinstance(assumptions, Mapping) or not assumptions:
+        raise ValueError("derived broker Evidence requires upstream research receipts")
+
+    def drivers(value):
+        if isinstance(value, Mapping):
+            if {"value", "unit", "economic_path_id", "source_refs", "assumption_refs"}.issubset(value):
+                yield value
+            else:
+                for child in value.values():
+                    yield from drivers(child)
+        elif isinstance(value, (list, tuple)):
+            for child in value:
+                yield from drivers(child)
+
+    path_drivers = tuple(drivers(business["path"]))
+    ancestors = []
+    matched_sources = set()
+    reviewed_driver_ids = set()
+    for request_id, research in assumptions.items():
+        if not isinstance(research, Mapping) or research.get("status") != "ACCEPTED":
+            continue
+        order = research.get("work_order", {})
+        revision = order.get("informed_revision", {})
+        if (order.get("research_mode") != "INFORMED_REVISION"
+                or revision.get("new_run_id") != context.run_id
+                or revision.get("review_receipt", {}).get("receipt_hash")
+                   != context.data.get("informed_revision_receipt_hash")
+                or order.get("target_id") != item.target or item.target != context.data.get("target_id")
+                or order.get("as_of") != context.data.get("data_cutoff")
+                or item.effective_date != order.get("as_of") or item.observed_date != order.get("as_of")):
+            raise ValueError("derived broker Evidence ancestor differs from actual informed run")
+        verified = validate_response(order, research.get("response", {}))
+        if fingerprint(verified) != fingerprint(research):
+            raise ValueError("derived broker Evidence ancestor receipt fingerprint differs")
+        if verified.get("status") != "ACCEPTED" or verified["segment"] != item.segment:
+            raise ValueError("derived broker Evidence ancestor status/segment differs")
+        upstream_refs = tuple(dict.fromkeys(source["url"] for source in verified["response"]["sources"]))
+        linked = tuple(driver for driver in path_drivers if request_id in driver["assumption_refs"])
+        if request_id != verified["request_id"] or not linked or any(
+                str(driver["value"]) != verified["value"] or driver["unit"] != verified["unit"]
+                or driver["economic_path_id"] != verified["economic_path_id"]
+                or tuple(driver["source_refs"]) != upstream_refs for driver in linked):
+            raise ValueError("derived broker Evidence ancestor does not bind the actual path driver")
+        if "informed_assumption" not in verified["response"]:
+            continue  # Original fact/calculation research grants no broker-URL exception.
+        ancestor = replace(item, id=f"{item.id}:ancestor:{request_id}",
+            metric=verified["metric"], value=verified["value"], unit=verified["unit"],
+            source_ref=upstream_refs[0], source_refs=upstream_refs,
+            research_receipt=research, business_cashflow_receipt=None)
+        binding = _informed_broker_evidence_binding(ancestor, context)
+        ancestors.append(binding)
+        matched_sources.update(binding["reviewed_broker_source_refs"])
+        reviewed_driver_ids.update(id(driver) for driver in linked)
+    if not ancestors:
+        raise ValueError("derived broker Evidence has no individually reviewed informed ancestor")
+    old_sources = set(getattr(context.data.get("broker_research_prefreeze_result"), "source_refs", ()))
+    if any(set(driver["source_refs"]) & (matched_sources | old_sources)
+           and id(driver) not in reviewed_driver_ids for driver in path_drivers):
+        raise ValueError("derived cashflow contains an unreviewed broker-backed driver")
+    return {"evidence_id": item.id, "segment": item.segment, "metric": item.metric,
+            "business_cashflow_receipt_hash": fingerprint(business),
+            "review_receipt_hash": context.data["informed_revision_receipt_hash"],
+            "informed_ancestors": tuple(ancestors),
+            "reviewed_broker_source_refs": tuple(ref for ref in source_refs if ref in matched_sources),
+            "authority": "analyst_underwriting"}
+
+
 def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
     def run(context: OrchestratorContext) -> StageExecutionResult:
         result = context.data.get("broker_research_prefreeze_result")
@@ -588,17 +825,57 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
         }
         plan_coverage_ok = set(result.verification_rows).issubset(plan_rows)
 
+        active_evidence = ledger.active()
+        broker_source_refs = set(result.source_refs)
+        informed_records: dict[str, dict] = {}
+        informed_errors: list[tuple[str, str]] = []
+        derived_cache: dict[tuple[str, str], tuple] = {}
+        for item in active_evidence:
+            research = getattr(item, "research_receipt", None)
+            response = research.get("response", {}) if isinstance(research, Mapping) else {}
+            order = research.get("work_order", {}) if isinstance(research, Mapping) else {}
+            item_refs = set(getattr(item, "source_refs", ())) | {item.source_ref}
+            # Original primary observed/calculated research is not an exception.
+            # Revalidate every candidate receipt, including one whose caller
+            # stripped outer mode metadata or moved its source URL.
+            candidate_receipt = isinstance(response, Mapping) and "informed_assumption" in response
+            candidate_order = isinstance(order, Mapping) and order.get("research_mode") == "INFORMED_REVISION"
+            business = getattr(item, "business_cashflow_receipt", None)
+            derived = getattr(item, "derived_case_ref", None)
+            business_assumptions = business.get("assumptions", {}) if isinstance(business, Mapping) else {}
+            informed_business = isinstance(business_assumptions, Mapping) and any(
+                isinstance(ancestor, Mapping) and isinstance(ancestor.get("response"), Mapping)
+                and "informed_assumption" in ancestor["response"] for ancestor in business_assumptions.values())
+            if (candidate_receipt or informed_business or derived is not None
+                    or ((candidate_order or business is not None) and item_refs & broker_source_refs)):
+                try:
+                    informed_records[item.id] = _informed_broker_evidence_binding(
+                        item, context, derived_cache=derived_cache
+                    )
+                except (ValueError, TypeError, KeyError, AttributeError, OSError) as exc:
+                    informed_errors.append((item.id, str(exc)))
+
         bindings: list[tuple[str, str, tuple[str, ...]]] = []
+        informed_bindings: list[tuple[str, str, tuple[str, ...]]] = []
         for segment_id, metric in result.verification_rows:
             evidence_ids = tuple(
                 item.id
-                for item in ledger.active()
+                for item in active_evidence
                 if item.segment == segment_id
                 and item.metric == metric
                 and item.source_layer in _PRIMARY_VERIFICATION_LAYERS
             )
             bindings.append((segment_id, metric, evidence_ids))
+            if not evidence_ids:
+                informed_ids = tuple(item.id for item in active_evidence
+                    if item.segment == segment_id and item.metric == metric
+                    and item.id in informed_records)
+                if informed_ids:
+                    informed_bindings.append((segment_id, metric, informed_ids))
         primary_verification_ok = all(binding[2] for binding in bindings)
+        informed_rows = {(segment, metric) for segment, metric, ids in informed_bindings if ids}
+        reviewed_coverage_ok = all(ids or (segment, metric) in informed_rows
+                                  for segment, metric, ids in bindings)
 
         claim_ids = {
             claim.claim_id
@@ -615,9 +892,10 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
         no_direct_broker_evidence = not claim_ids.intersection(
             hypothesis_evidence_ids | bridge_evidence_ids
         )
-        broker_source_refs = set(result.source_refs)
-        no_broker_sources_in_ledger = not broker_source_refs.intersection(
-            item.source_ref for item in ledger.active()
+        no_broker_sources_in_ledger = all(
+            not ((set(getattr(item, "source_refs", ())) | {item.source_ref}) & broker_source_refs
+                 - set(informed_records.get(item.id, {}).get("reviewed_broker_source_refs", ())))
+            for item in active_evidence
         )
         rocket_connected = bool(context.data.get("broker_research_rocket_connected")) and any(
             getattr(item, "scanner_id", None) == "BROKER_RESEARCH"
@@ -630,9 +908,17 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
             AuditFinding("broker_snapshot_exact_hash", exact_hash_ok, True, "broker pre-freeze snapshot hash exactly binds its semantic payload"),
             AuditFinding("broker_target_leads_metric_backed", target_metric_mapping_ok, True, "every target-company broker lead maps to at least one auditable metric"),
             AuditFinding("broker_verification_in_module_plan", plan_coverage_ok, True, "all broker-discovered verification metrics were compiled into required Evidence"),
-            AuditFinding("broker_verification_company_primary", primary_verification_ok, True, "all broker-discovered verification metrics are satisfied only by active company-primary Evidence"),
+            AuditFinding("broker_verification_company_primary", primary_verification_ok,
+                         not reviewed_coverage_ok or primary_verification_ok,
+                         "active company filing/plan rows cover segment+metric only; this is not verification of period, value, accounting basis or support for the broker claim"),
+            *(() if not informed_records and not informed_errors else (
+                AuditFinding("broker_informed_revision_receipts_valid", not informed_errors, True,
+                             "individually reviewed inferred underwriting is bound to this new run, exact parent review, response and Evidence; errors=" + repr(informed_errors)),
+                AuditFinding("broker_verification_reviewed_informed_underwriting", reviewed_coverage_ok, True,
+                             "missing company-primary rows may instead have exact reviewed candidate metric/segment coverage; these remain ANALYST_UNDERWRITING, not primary verification; bindings=" + repr(informed_bindings)),
+            )),
             AuditFinding("broker_claims_not_direct_assumption_evidence", no_direct_broker_evidence, True, "broker claim IDs never became Hypothesis or Bridge Evidence IDs"),
-            AuditFinding("broker_sources_not_in_primary_ledger", no_broker_sources_in_ledger, True, "broker report sources never entered the primary EvidenceLedger"),
+            AuditFinding("broker_sources_not_in_primary_ledger", no_broker_sources_in_ledger, True, "broker report sources are absent except exact reviewed informed-revision ANALYST_UNDERWRITING; they never become primary truth"),
             AuditFinding("broker_research_connected_to_rocket_insight", rocket_connected, True, "Broker Research context and verification leads are present in Rocket Insight outputs"),
         )
         report = AuditReport(findings)
@@ -641,6 +927,8 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
                 "contract": "broker_research_audit/v2",
                 "broker_snapshot_hash": snapshot_hash,
                 "verification_bindings": bindings,
+                "informed_underwriting_bindings": informed_bindings,
+                "informed_evidence_receipts": tuple(informed_records.values()),
                 "rocket_connected": rocket_connected,
                 "findings": tuple(
                     (item.check, item.passed, item.blocking, item.detail)
@@ -652,6 +940,7 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
             report,
             audit_hash,
             tuple(bindings),
+            tuple(informed_bindings),
         )
         outputs = {
             "broker_research_audit_required": True,
@@ -660,6 +949,7 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
             "broker_research_audit_hash": audit_hash,
             "broker_research_audit_passed": report.passed,
             "broker_primary_verification_bindings": tuple(bindings),
+            "broker_informed_underwriting_bindings": tuple(informed_bindings),
         }
         if not report.passed:
             failed = tuple(item.check for item in findings if item.blocking and not item.passed)
@@ -671,7 +961,7 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
             )
         return StageExecutionResult(
             StageStatus.PASS,
-            "Broker Research cutoff, blind-lock, Rocket connection and company-primary verification audit passed",
+            "Broker Research cutoff, blind-lock, Rocket connection and separately labelled primary/informed-underwriting coverage audit passed",
             outputs,
         )
 

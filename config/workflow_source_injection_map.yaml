@@ -1,3 +1,6 @@
+# Raw source-layer placement below is the BLIND_BASELINE contract.
+# A reviewed INFORMED_REVISION hands off validated ANALYST_UNDERWRITING, not raw
+# broker_research/market_reference state; see VALUATION_AGENT_CONTRACTS.md.
 version: 1.0
 stages:
   foundation_load:

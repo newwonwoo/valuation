@@ -84,3 +84,7 @@ Canonical LIVE_PRIMARY broker use is fail-closed:
 - A broker-discovered metric is considered verified only by active company-primary Evidence (`REALIZED_OR_FILING` or `COMPANY_OFFICIAL_PLAN`), with the satisfying Evidence IDs bound into the Broker Research audit. Analyst underwriting and market-data rows cannot satisfy this gate.
 - `checked_at` and every broker `report_date` must be on or before the frozen run `data_cutoff`; later reports hard-fail to prevent look-ahead bias.
 - Broker mechanism context and verification leads are merged into `ROCKET_INSIGHT_SCAN`, while broker claim IDs and report URLs remain forbidden as direct intrinsic-assumption Evidence.
+
+## Informed-revision extension
+
+The pre-freeze field quarantine above remains the blind-baseline rule. The intentional broker-informed revision policy in `VALUATION_AGENT_CONTRACTS.md` permits individually reasoned forecast/method assumption proposals through a validated review receipt and research/Bridge/Compiler handoff in a separate informed run. It does not authorize raw target-price state, automatic source-type decisions or same-run frozen-value edits. NR forecasts and aggregate snapshots are first-class comparison references; original publication time remains distinct from observation time.

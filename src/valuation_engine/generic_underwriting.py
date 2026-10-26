@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from datetime import date
 from hashlib import sha256
 from pathlib import Path
-from typing import Mapping
+from typing import TYPE_CHECKING, Mapping
 
 import yaml
 
@@ -35,6 +35,9 @@ from .evidence_collection import EvidenceCollectionBatch, EvidenceCollectionRequ
 from .live_runtime import LiveCollectorProvider
 from .records import EvidenceRecord, EvidenceSourceLayer
 from .source_reporting import canonical_verification_url
+
+if TYPE_CHECKING:
+    from .derived_case import DerivedCaseRegistry
 
 
 SOURCE_ID = "OPERATOR_UNDERWRITING"
@@ -67,6 +70,60 @@ class ResearchUnderwritingEvidenceRecord(DeclaredUnderwritingEvidenceRecord):
 
     research_receipt: Mapping | None = None
     business_cashflow_receipt: Mapping | None = None
+
+
+@dataclass(frozen=True)
+class DerivedCaseUnderwritingEvidenceRecord(ResearchUnderwritingEvidenceRecord):
+    """One replayed case output, not a separately approved observed fact.
+
+    The large driver/review receipt lives once in a hash-bound artifact. The
+    small proof is useful for persistence, but cannot itself authorize entry:
+    the derived-case verifier must have actually replayed the registered model.
+    """
+
+    derived_case_ref: Mapping | None = None
+    derived_case_proof: Mapping | None = None
+    scenario_id: str = ""
+    year: int | None = None
+    economic_path_id: str = ""
+
+
+def _assert_nested_revision(research: Mapping, outer: Mapping) -> None:
+    """Prevent loss or replacement of informed lineage at the file boundary."""
+    from .research_campaign import fingerprint
+
+    order = research.get("work_order", {})
+    response = research.get("response", {})
+    policy = research.get("broker_source_policy", {})
+    informed = (
+        isinstance(order, Mapping)
+        and (order.get("research_mode") == "INFORMED_REVISION" or "informed_revision" in order)
+    ) or (isinstance(response, Mapping) and "informed_assumption" in response) or (
+        isinstance(policy, Mapping) and policy.get("research_mode") == "INFORMED_REVISION"
+    )
+    if not informed:
+        return
+    if (outer.get("research_mode") != "INFORMED_REVISION"
+            or not isinstance(order, Mapping)
+            or order.get("research_mode") != "INFORMED_REVISION"):
+        raise DeclaredUnderwritingError("nested informed research cannot enter a blind underwriting file")
+    if fingerprint(order.get("informed_revision")) != fingerprint(outer.get("informed_revision")):
+        raise DeclaredUnderwritingError("nested informed research differs from outer revision lineage")
+
+
+def _resolved_derived_reference(reference: object, path: str | Path) -> dict:
+    if (not isinstance(reference, Mapping) or set(reference) != {
+        "schema_version", "artifact_path", "artifact_sha256", "output_key"
+    } or reference.get("schema_version") != "derived-case-reference/v1"):
+        raise DeclaredUnderwritingError("derived_case_ref requires exact artifact/hash/output reference fields")
+    if not isinstance(reference["artifact_path"], str) or not reference["artifact_path"].strip():
+        raise DeclaredUnderwritingError("derived_case_ref requires an artifact path")
+    normalized = dict(reference)
+    artifact_path = Path(str(reference.get("artifact_path") or ""))
+    if not artifact_path.is_absolute():
+        artifact_path = Path(path).resolve().parent / artifact_path
+    normalized["artifact_path"] = str(artifact_path)
+    return normalized
 
 
 def _declared_date(value: str, label: str) -> date:
@@ -142,7 +199,13 @@ def load_declared_underwriting(path: str | Path) -> dict:
         raise DeclaredUnderwritingError(
             "declared underwriting requires a declarations mapping"
         )
+    from .research_campaign import _revision_context, fingerprint
+    try:
+        outer_review = _revision_context(payload)
+    except ValueError as exc:
+        raise DeclaredUnderwritingError(f"invalid underwriting revision context: {exc}") from exc
     normalized_declarations: dict[object, list[dict]] = {}
+    derived_receipts: dict[tuple[str, str], dict] = {}
     for metric, entry in declarations.items():
         # A metric declared once is the historical single-row form. A list of
         # rows declares the same metric for several segments (a multi-segment
@@ -162,6 +225,42 @@ def load_declared_underwriting(path: str | Path) -> dict:
                 raise DeclaredUnderwritingError(
                     f"declaration {metric} must be a mapping"
                 )
+            # Derived business FCFF receipts retain their constituent research
+            # orders too. Neither direct nor derived informed inputs may lose
+            # outer execution mode/lineage at this final file-ingress boundary.
+            research_items = [row.get("research_receipt")]
+            business = row.get("business_cashflow_receipt")
+            if isinstance(business, Mapping):
+                assumptions = business.get("assumptions", {})
+                if isinstance(assumptions, Mapping):
+                    research_items.extend(assumptions.values())
+            derived_ref = row.get("derived_case_ref")
+            if derived_ref is not None:
+                from .derived_case import load_derived_case_reference
+
+                derived_ref = _resolved_derived_reference(derived_ref, path)
+                key = (derived_ref["artifact_path"], str(derived_ref.get("artifact_sha256", "")))
+                try:
+                    if key not in derived_receipts:
+                        derived_receipts[key] = load_derived_case_reference(derived_ref)
+                    derived = derived_receipts[key]
+                    if derived_ref["output_key"] not in derived.get("outputs", {}):
+                        raise DeclaredUnderwritingError("unknown derived output key")
+                except (ValueError, OSError, TypeError, KeyError) as exc:
+                    raise DeclaredUnderwritingError(f"invalid derived-case reference: {exc}") from exc
+                if (outer_review is None or derived.get("research_mode") != "INFORMED_REVISION"
+                        or fingerprint(derived.get("informed_revision")) != fingerprint(payload.get("informed_revision"))):
+                    raise DeclaredUnderwritingError("nested informed derived case differs from outer revision lineage")
+                if (derived.get("target_id"), derived.get("as_of")) != (target_id, as_of):
+                    raise DeclaredUnderwritingError("derived-case receipt target/cutoff mismatch")
+                drivers = derived.get("drivers")
+                if not isinstance(drivers, Mapping) or not drivers:
+                    raise DeclaredUnderwritingError("derived-case receipt requires reviewed driver receipts")
+                research_items.extend(drivers.values())
+            for research in research_items:
+                if not isinstance(research, Mapping):
+                    continue
+                _assert_nested_revision(research, payload)
             if row.get("value") is None or not str(row.get("unit") or ""):
                 raise DeclaredUnderwritingError(
                     f"declaration {metric} requires value and unit"
@@ -191,6 +290,7 @@ def load_declared_underwriting(path: str | Path) -> dict:
                     "source_refs": _declaration_source_refs(
                         row, fallback=source_ref, metric=metric
                     ),
+                    **({"derived_case_ref": derived_ref} if derived_ref is not None else {}),
                 }
             )
         normalized_declarations[metric] = normalized_rows
@@ -200,16 +300,29 @@ def load_declared_underwriting(path: str | Path) -> dict:
         "source_ref": source_ref,
         "declarations": normalized_declarations,
         "file_sha256": sha256(raw.encode("utf-8")).hexdigest(),
+        "research_mode": payload.get("research_mode", "BLIND_BASELINE"),
+        **({"informed_revision": payload["informed_revision"]} if outer_review is not None else {}),
     }
 
 
 def declared_underwriting_collector(
-    path: str | Path, *, run_as_of: str | None = None
+    path: str | Path, *, run_as_of: str | None = None,
+    trusted_derived_case_registry: DerivedCaseRegistry | None = None,
 ):
     """EvidenceCollector serving the operator's declared judgments for one run."""
     payload = load_declared_underwriting(path)
     if run_as_of is not None:
         _assert_knowable_by(payload, run_as_of)
+    if trusted_derived_case_registry is None and any(
+        row.get("derived_case_ref") is not None
+        for rows in payload["declarations"].values() for row in rows
+    ):
+        raise DeclaredUnderwritingError(
+            "WORK_REQUIRED: derived-case declarations require an orchestrator-supplied "
+            "trusted_derived_case_registry; register the reviewed model callable, code "
+            "hash, fixed baseline inputs and driver/output dependency contracts before compilation"
+        )
+    replayed_cases = {}
 
     def collect(request: EvidenceCollectionRequest) -> EvidenceCollectionBatch:
         if request.target_id != payload["target_id"]:
@@ -219,6 +332,7 @@ def declared_underwriting_collector(
             )
         declarations = payload["declarations"]
         records = []
+        checked_derived_receipts = set()
         for metric in request.required_metrics:
             rows = declarations.get(metric)
             if rows is None:
@@ -227,10 +341,43 @@ def declared_underwriting_collector(
                 source_refs = tuple(row["source_refs"])
                 research = row.get("research_receipt")
                 business = row.get("business_cashflow_receipt")
+                derived_ref = row.get("derived_case_ref")
                 record_type = DeclaredUnderwritingEvidenceRecord
                 extra = {}
-                if research is not None and business is not None:
-                    raise DeclaredUnderwritingError("one declaration cannot have two research authorities")
+                if sum(item is not None for item in (research, business, derived_ref)) > 1:
+                    raise DeclaredUnderwritingError("one declaration cannot have multiple research authorities")
+                if derived_ref is not None:
+                    from .derived_case import load_derived_case_reference, verify_derived_case_receipt
+                    from .runtime_authority import DecisionDomain, forbid_llm_decision
+
+                    # A cached deterministic replay is not permission for an
+                    # LLM proposal actor to emit compiled underwriting rows.
+                    forbid_llm_decision(DecisionDomain.ASSUMPTION_COMPILE)
+                    key = (derived_ref["artifact_path"], derived_ref["artifact_sha256"])
+                    try:
+                        if key not in checked_derived_receipts:
+                            receipt = load_derived_case_reference(derived_ref)
+                            checked_derived_receipts.add(key)
+                        if key not in replayed_cases:
+                            replayed_cases[key] = verify_derived_case_receipt(
+                                receipt, trusted_derived_case_registry
+                            )
+                        output = replayed_cases[key].output(derived_ref["output_key"])
+                    except (ValueError, OSError, TypeError, KeyError, AttributeError) as exc:
+                        raise DeclaredUnderwritingError(f"derived-case replay failed: {exc}") from exc
+                    if (str(row["value"]), row["unit"], str(metric), row.get("segment", "core"),
+                            row.get("scenario_id"), row.get("year"), row.get("economic_path_id"), source_refs) != (
+                            output.value, output.unit, output.metric, output.segment_id,
+                            output.scenario_id, output.year, output.economic_path_id, output.source_refs
+                    ) or (row.get("year") is not None and type(row["year"]) is not int):
+                        raise DeclaredUnderwritingError(
+                            "derived-case output does not bind exact declaration value/unit/metric/"
+                            "segment/scenario/year/economic path/source refs"
+                        )
+                    record_type = DerivedCaseUnderwritingEvidenceRecord
+                    extra = {"derived_case_ref": dict(derived_ref), "derived_case_proof": dict(output.proof),
+                             "scenario_id": output.scenario_id, "year": output.year,
+                             "economic_path_id": output.economic_path_id}
                 if research is not None:
                     from .research_campaign import validate_response, fingerprint
 
@@ -315,7 +462,8 @@ def declared_underwriting_collector(
 
 
 def declared_underwriting_provider(
-    path: str | Path, *, run_as_of: str | None = None
+    path: str | Path, *, run_as_of: str | None = None,
+    trusted_derived_case_registry: DerivedCaseRegistry | None = None,
 ) -> LiveCollectorProvider:
     payload = load_declared_underwriting(path)
     if run_as_of is not None:
@@ -330,5 +478,7 @@ def declared_underwriting_provider(
                 "valuation_engine.generic_underwriting.declared_underwriting_collector"
             ),
         ),
-        collector=declared_underwriting_collector(path, run_as_of=run_as_of),
+        collector=declared_underwriting_collector(
+            path, run_as_of=run_as_of, trusted_derived_case_registry=trusted_derived_case_registry
+        ),
     )

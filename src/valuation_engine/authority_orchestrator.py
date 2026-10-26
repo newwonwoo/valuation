@@ -48,6 +48,10 @@ _PREFREEZE_MARKET_OUTPUT_TOKENS = (
     "street_comparison",
     "target_price",
     "target_multiple",
+    "broker_reference_bundle",
+    "broker_comparison",
+    "broker_review_receipt",
+    "broker_revision_work_order",
 )
 _POST_FREEZE_STAGES = frozenset(
     {
