@@ -64,6 +64,26 @@ jobs:
           python-version: '3.11'
       - name: Install
         run: python -m pip install -e '.[dev]'
+      - name: Prepare verified pytest temporary storage
+        run: |
+          PYTHONPATH=src python - <<'PYTEST_STORAGE'
+          import os
+          from pathlib import Path
+          import shlex
+          import tempfile
+
+          from valuation_engine.tunnel_launcher import _require_supported_linux_filesystem
+
+          # /tmp can be tmpfs; preserve the production filesystem allowlist.
+          root = Path(tempfile.mkdtemp(prefix=".pytest-tmp-", dir=os.environ["GITHUB_WORKSPACE"]))
+          filesystem = _require_supported_linux_filesystem(root)
+          print(f"Verified pytest temporary storage: {root} ({filesystem})")
+          # Pytest may clear this dedicated child, never the workspace itself.
+          options = shlex.split(os.environ.get("PYTEST_ADDOPTS", ""))
+          options.extend(["--basetemp", str(root / "tests")])
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as env_file:
+              env_file.write(f"PYTEST_ADDOPTS={shlex.join(options)}\n")
+          PYTEST_STORAGE
       - name: Execute Sanil LIVE_PRIMARY
         run: >-
           PYTHONPATH=src
