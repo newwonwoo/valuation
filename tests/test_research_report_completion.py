@@ -189,7 +189,14 @@ def test_cli_three_research_misses_peer_margin_recovery_to_changed_report(tmp_pa
     assert report.is_file()
     assert '650억원' in report.read_text()
     assert '600억원' not in report.read_text()
-    assert inputs['sources'][0]['url'] in report.read_text()
+    detail = manifests[0].parent / latest['detail_report_filename']
+    assert f']({detail.name})' in report.read_text()
+    assert inputs['sources'][0]['url'] in detail.read_text()
+    assert '650억원' in detail.read_text()
+    assert sha256(detail.read_bytes()).hexdigest() == latest['detail_report_sha256']
+    bundle_manifest = json.loads((report.parent / 'report_bundle_manifest.json').read_text())
+    assert any(row['filename'] == detail.name and row['sha256'] == latest['detail_report_sha256']
+               for row in bundle_manifest['files'])
     numeric_report = (report.parent / 'final_report.md').read_text()
     base_value = re.search(r'기준 시나리오:\*\* 내재가치 주당 ([\d,]+)원', numeric_report)
     assert base_value and int(base_value.group(1).replace(',', '')) > 17339

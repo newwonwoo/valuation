@@ -95,8 +95,7 @@ from valuation_engine.kr_opendart_provider import (  # noqa: E402
 from valuation_engine.investor_report import (  # noqa: E402
     load_investor_report_profile,
     probability_weighted_equity_value,
-    render_distributional_investor_report,
-    render_investor_report,
+    render_investor_report_documents,
 )
 from valuation_engine.live_primary_adapters import (  # noqa: E402
     CompanyResolutionRequest,
@@ -699,14 +698,21 @@ def publish_report_bundle(
             "refusing to expose the developer-facing audit report"
         )
     investor_profile = load_investor_report_profile(investor_profile_path)
-    report = (
-        render_distributional_investor_report(result.data, investor_profile)
-        if isinstance(
-            result.data.get("distributional_primary_result"),
-            DistributionalPrimaryValuationResult,
-        )
-        else render_investor_report(result.data, investor_profile)
+    config = _load_run(run_dir)
+    detail_name = (
+        f"{_safe_artifact_token(str(result.data.get('ticker') or ''))}_"
+        f"{_safe_artifact_token(str(config.get('as_of') or '').replace('-', ''))}_상세자료.md"
     )
+    documents = render_investor_report_documents(
+        result.data, investor_profile, detail_filename=detail_name,
+    )
+    report = documents.main_report
+    detail_report = documents.detail_report
+    for target in re.findall(r"\]\(([^)]+)\)", detail_report):
+        if not target.startswith(("http://", "https://", "#")):
+            detail_target = (source / target).resolve()
+            if source not in detail_target.parents or not detail_target.is_file():
+                raise RunbookError(f"detail report artifact link is missing or unsafe: {target}")
     valuation_hash = str(result.data.get("valuation_hash") or "")
     audit_hash = str(result.data.get("audit_hash") or "")
     run_id = str(getattr(result, "run_id", "") or "")
@@ -728,6 +734,7 @@ def publish_report_bundle(
             audit_hash,
             run_input_sha256,
             sha256(report.encode("utf-8")).hexdigest(),
+            sha256(detail_report.encode("utf-8")).hexdigest(),
             _file_sha256(source / "manifest.json"),
         )
     )
@@ -755,6 +762,21 @@ def publish_report_bundle(
     (bundle_dir / versioned_report_name).write_text(
         report, encoding="utf-8"
     )
+    (bundle_dir / detail_name).write_text(detail_report, encoding="utf-8")
+    if investor_profile.decision_brief is None:
+        from valuation_engine.report_republication import build_report_brief_request
+        brief_request = build_report_brief_request(
+            detail_report, detail_filename=detail_name, run_id=run_id, valuation_hash=valuation_hash,
+        )
+        _write_json_atomic(bundle_dir / "report_brief_request.json", brief_request, token=short_hash)
+        staff_request_path = output_root / "staff_requests" / f"report_editor.{brief_request['source_report_sha256']}.json"
+        staff_request_path.parent.mkdir(parents=True, exist_ok=True)
+        _write_json_atomic(staff_request_path, brief_request, token=short_hash)
+        editorial_status = "HOST_BRIEF_REQUIRED_SAFE_FALLBACK"
+    else:
+        from dataclasses import asdict
+        _write_json_atomic(bundle_dir / "report_editorial_brief.json", asdict(investor_profile.decision_brief), token=short_hash)
+        editorial_status = "SOURCE_BOUND_BRIEF_APPLIED"
     files = tuple(
         {
             "filename": path.relative_to(bundle_dir).as_posix(),
@@ -774,6 +796,8 @@ def publish_report_bundle(
         "audit_hash": audit_hash,
         "run_input_sha256": run_input_sha256,
         "report_filename": versioned_report_name,
+        "detail_report_filename": detail_name,
+        "editorial_status": editorial_status,
         "files": files,
     }
     bundle_manifest_path = bundle_dir / "report_bundle_manifest.json"
@@ -794,6 +818,9 @@ def publish_report_bundle(
             bundle_relative / versioned_report_name
         ).as_posix(),
         "report_sha256": _file_sha256(bundle_dir / versioned_report_name),
+        "detail_report_filename": (bundle_relative / detail_name).as_posix(),
+        "detail_report_sha256": _file_sha256(bundle_dir / detail_name),
+        "editorial_status": editorial_status,
         "valuation_hash": valuation_hash,
         "audit_hash": audit_hash,
         "run_input_sha256": run_input_sha256,
@@ -810,6 +837,7 @@ def publish_report_bundle(
         **latest,
         "latest_manifest_path": str(latest_path),
         "versioned_report_path": str(bundle_dir / versioned_report_name),
+        "versioned_detail_report_path": str(bundle_dir / detail_name),
     }
 
 
@@ -920,6 +948,22 @@ def reuse_published_report_bundle(
             or _file_sha256(versioned_report_path) != latest.get("report_sha256")
         ):
             raise RunbookError("published versioned report hash mismatch")
+        detail_name = bundle_manifest.get("detail_report_filename")
+        if detail_name is not None:
+            detail_path = _resolve_manifest_path(
+                bundle_dir, detail_name, label="detail report"
+            )
+            latest_detail = _resolve_manifest_path(
+                output_root, latest.get("detail_report_filename"), label="detail report"
+            )
+            if (
+                detail_path.parent != bundle_dir or detail_path != latest_detail
+                or not detail_path.is_file()
+                or _file_sha256(detail_path) != latest.get("detail_report_sha256")
+            ):
+                raise RunbookError("published detail report hash/path mismatch")
+            if f"]({detail_name})" not in versioned_report_path.read_text(encoding="utf-8"):
+                raise RunbookError("published main report does not link its details")
         files = bundle_manifest.get("files")
         if not isinstance(files, list) or not files:
             raise RunbookError("published bundle manifest carries no file receipts")
@@ -936,6 +980,8 @@ def reuse_published_report_bundle(
             "execution_attestation.json",
             str(bundle_manifest.get("report_filename") or ""),
         }
+        if detail_name is not None:
+            required_names.add(str(detail_name))
         missing_names = tuple(sorted(required_names - received_names))
         if missing_names:
             raise RunbookError(
@@ -979,6 +1025,7 @@ def reuse_published_report_bundle(
             **latest,
             "latest_manifest_path": str(latest_path),
             "versioned_report_path": str(versioned_report_path),
+            **({"versioned_detail_report_path": str(detail_path)} if detail_name is not None else {}),
             "reused": True,
         }
     return None

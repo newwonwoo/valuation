@@ -9,9 +9,11 @@ stage traces, evidence IDs and model-role explanations are rejected.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import Decimal, ROUND_HALF_UP, localcontext
 from html import escape
+from hashlib import sha256
 from pathlib import Path
+import re
 from typing import Any, Mapping
 
 import yaml
@@ -53,6 +55,58 @@ _FORBIDDEN_PUBLIC_TOKENS = (
 
 
 @dataclass(frozen=True)
+class InvestorReportBrief:
+    """Host-authored editorial selection bound to an exact full public report.
+
+    This is not financial input or an automatic semantic-verification receipt.
+    An operator reviews coverage; the formatter only checks binding/structure.
+    """
+
+    source_report_sha256: str
+    conclusion: str
+    key_assumptions: tuple[str, ...]
+    key_evidence: tuple[str, ...]
+    change_reason: str
+    risks: tuple[str, ...]
+    scope_limits: tuple[str, ...]
+
+    def validate(self) -> None:
+        if not isinstance(self.source_report_sha256, str) or not re.fullmatch(r"[a-f0-9]{64}", self.source_report_sha256):
+            raise ValueError("decision brief requires the full source report SHA-256")
+        fields = [self.conclusion, self.change_reason]
+        for name in ("key_assumptions", "key_evidence", "risks", "scope_limits"):
+            values = getattr(self, name)
+            if not isinstance(values, tuple) or not 1 <= len(values) <= 4:
+                raise ValueError(f"decision brief {name} requires one to four complete items")
+            fields.extend(values)
+        for text in fields:
+            if (not isinstance(text, str) or not text.strip()
+                    or "\n" in text or "\r" in text
+                    or not text.rstrip().endswith((".", "!", "?", "。"))):
+                raise ValueError("decision brief fields require complete single-line sentences")
+            _validate_public_report(text)
+
+
+def investor_report_brief_from_dict(payload: Mapping[str, object]) -> InvestorReportBrief:
+    allowed = {"source_report_sha256", "conclusion", "key_assumptions", "key_evidence",
+               "change_reason", "risks", "scope_limits"}
+    if not isinstance(payload, Mapping) or set(payload) != allowed:
+        raise ValueError("decision brief requires exactly the editorial fields; no financial override fields")
+    lists: dict[str, tuple[str, ...]] = {}
+    for name in ("key_assumptions", "key_evidence", "risks", "scope_limits"):
+        value = payload[name]
+        if not isinstance(value, (list, tuple)):
+            raise ValueError(f"decision brief {name} must be a list")
+        lists[name] = tuple(value)
+    brief = InvestorReportBrief(
+        source_report_sha256=payload["source_report_sha256"], conclusion=payload["conclusion"],
+        change_reason=payload["change_reason"], **lists,
+    )
+    brief.validate()
+    return brief
+
+
+@dataclass(frozen=True)
 class InvestorReportProfile:
     schema_version: str
     conclusion: str
@@ -73,8 +127,13 @@ class InvestorReportProfile:
     prior_scope_label: str = ""
     entry_margin_of_safety: Decimal | None = None
     entry_rule_rationale: str = ""
+    decision_brief: InvestorReportBrief | None = None
 
     def validate(self) -> None:
+        if self.decision_brief is not None:
+            if not isinstance(self.decision_brief, InvestorReportBrief):
+                raise ValueError("decision brief must be typed")
+            self.decision_brief.validate()
         if self.schema_version != "investor_report/v2":
             raise ValueError("investor report requires schema_version=investor_report/v2")
         if len(self.conclusion) < 20:
@@ -154,6 +213,7 @@ def load_investor_report_profile(path: str | Path) -> InvestorReportProfile:
         "prior_reference_per_share",
         "prior_scope_label",
         "entry_rule",
+        "decision_brief",
     }
     unknown_fields = set(payload) - allowed_fields
     if unknown_fields:
@@ -211,6 +271,10 @@ def load_investor_report_profile(path: str | Path) -> InvestorReportProfile:
             Decimal(str(entry_margin)) if entry_margin is not None else None
         ),
         entry_rule_rationale=str(entry_rule.get("rationale") or "").strip(),
+        decision_brief=(
+            investor_report_brief_from_dict(payload["decision_brief"])
+            if payload.get("decision_brief") is not None else None
+        ),
     )
     profile.validate()
     return profile
@@ -352,6 +416,13 @@ def _broker_number(value: object) -> str:
     number = Decimal(str(value))
     if not number.is_finite():
         raise ValueError("broker comparison cannot display a non-finite number")
+    # Presentation precision, not a change to the immutable comparison. Keep
+    # tiny disclosed values exact rather than turning them into a false zero.
+    if abs(number) >= Decimal("0.001"):
+        with localcontext() as context:
+            context.prec = max(28, len(number.as_tuple().digits) + abs(number.adjusted()) + 5)
+            places = max(3, 5 - number.adjusted())
+            number = number.quantize(Decimal(1).scaleb(-places), rounding=ROUND_HALF_UP)
     formatted = f"{number:,f}"
     return formatted.rstrip("0").rstrip(".") if "." in formatted else formatted
 
@@ -582,19 +653,89 @@ def _broker_comparison_lines(data: Mapping[str, object]) -> list[str]:
     if receipt is None:
         lines.append("- 근거의 추가 검토가 필요합니다. 이 비교만으로 새 가정이나 가치 변경을 승인하지 않았습니다.")
     else:
-        from .broker_judgment import BrokerReviewReceipt, broker_review_summary
+        from .broker_judgment import BrokerReviewReceipt
         if not isinstance(receipt, BrokerReviewReceipt):
             raise ValueError("broker interpretation requires a typed review receipt")
         if any(getattr(receipt, field) != getattr(result, field) for field in (
             "target_id", "intrinsic_as_of", "comparison_as_of", "freeze_token_hash",
         )):
             raise ValueError("broker interpretation does not match the frozen comparison")
-        summary_budget = 1000 - len(neutral_note) - 30
-        summary = broker_review_summary(receipt, max_chars=summary_budget)
+        status = render_broker_review_status(receipt)
+        lines.append("- 판단 현황: " + status)
+        summary_budget = 1000 - len(neutral_note) - len(status) - 45
         # Keep the interpretation distinct from the deterministic values above.
-        lines.append("- " + _broker_text(summary)[:summary_budget])
+        lines.append("- " + render_broker_review_summary(receipt, max_chars=summary_budget))
     lines.append("- " + neutral_note)
     return lines
+
+
+_REVIEW_LABELS = {
+    "REFERENCE_ONLY": "참고 유지",
+    "VERIFY_FOR_NEW_RUN": "근거 확인 후 새 평가 검토",
+    "CONDITIONAL_HYPOTHESIS": "조건부 가설로 재조사",
+    "REJECT": "채택하지 않음",
+    "RESEARCH_AND_REVALUE": "근거 재검토 후 재평가",
+    "PROPOSE_NEW_RUN_ASSUMPTION": "새 평가 가정 후보 제안",
+    "UNRESOLVED": "추가 확인 필요",
+}
+
+
+def render_broker_review_status(receipt: object) -> str:
+    """A short factual disposition count, not an economic approval."""
+    from .broker_judgment import BrokerReviewReceipt
+
+    if not isinstance(receipt, BrokerReviewReceipt):
+        raise ValueError("broker interpretation requires a typed review receipt")
+    receipt.validate()
+    counts: dict[str, int] = {}
+    for decision in receipt.decisions:
+        label = _REVIEW_LABELS[decision.disposition]
+        counts[label] = counts.get(label, 0) + 1
+    return " · ".join(f"{label} {count}건" for label, count in counts.items()) + "."
+
+
+def render_broker_review_summary(receipt: object, *, max_chars: int = 900) -> str:
+    """Render complete source-bound paragraphs within the display budget.
+
+    No word/sentence is cut to fit and HTML escaping is accounted for before
+    selection. The full typed receipt remains the complete judgment record.
+    """
+    from .broker_judgment import BrokerReviewReceipt
+
+    if not isinstance(receipt, BrokerReviewReceipt):
+        raise ValueError("broker interpretation requires a typed review receipt")
+    receipt.validate()
+    if not isinstance(max_chars, int) or isinstance(max_chars, bool) or not 250 <= max_chars <= 1000:
+        raise ValueError("broker summary budget must be between 250 and 1000")
+    suffix = (
+        "현재 동결가치·가정은 변경하지 않았습니다. "
+        "재검토 결과는 상향·하향·유지 모두 가능하며, 반영에는 새 계산과 감사가 필요합니다."
+    )
+    detail_note = "나머지 개별 판단과 불확실성은 상세 자료에 보존했습니다."
+    priority = {
+        "PROPOSE_NEW_RUN_ASSUMPTION": 0, "RESEARCH_AND_REVALUE": 1,
+        "CONDITIONAL_HYPOTHESIS": 1, "VERIFY_FOR_NEW_RUN": 1,
+        "UNRESOLVED": 2, "REJECT": 2, "REFERENCE_ONLY": 3,
+    }
+    selected: list[str] = []
+    for decision in sorted(receipt.decisions, key=lambda item: priority[item.disposition]):
+        paragraph = (
+            f"{_REVIEW_LABELS[decision.disposition]}: {decision.rationale} "
+            f"(불확실성: {decision.uncertainty})"
+        )
+        candidate = " ".join((*selected, paragraph, detail_note, suffix))
+        if len(_broker_text(candidate)) > max_chars:
+            break
+        selected.append(paragraph)
+    omitted = len(selected) < len(receipt.decisions)
+    if not selected:
+        selected.append(render_broker_review_status(receipt))
+    if omitted or not receipt.decisions:
+        selected.append(detail_note)
+    rendered = _broker_text(" ".join((*selected, suffix)))
+    if len(rendered) > max_chars:
+        raise ValueError("complete broker summary exceeds its display budget")
+    return rendered
 
 
 def _street_estimate_ko(item: object) -> str:
@@ -1210,10 +1351,308 @@ def render_investor_report(
     return _validate_public_report(report)
 
 
+@dataclass(frozen=True)
+class InvestorReportDocuments:
+    """Two publication views of one valuation; neither recalculates values."""
+
+    main_report: str
+    detail_report: str
+
+
+_DETAIL_HEADINGS = (
+    "## 1. 투자판단 요약",
+    "## 2. 투자논리",
+    "## 3. 가치평가와 민감도",
+    "## 4. 사업부별 평가",
+    "## 5. 위험과 판단 변경 조건",
+    "## 6. 증권사·시장 비교",
+    "## 7. 원문 자료",
+)
+
+
+def _report_sections(report: str) -> tuple[str, dict[str, list[str]]]:
+    """Accept only the known public renderer contract, never arbitrary prose."""
+    lines = report.splitlines()
+    if not lines or not lines[0].startswith("# "):
+        raise ValueError("compact report requires the public report title")
+    headings = tuple(line for line in lines if line.startswith("## "))
+    if headings != _DETAIL_HEADINGS:
+        raise ValueError("compact report requires the complete known seven-section report")
+    sections: dict[str, list[str]] = {}
+    current: str | None = None
+    for line in lines[1:]:
+        if line in _DETAIL_HEADINGS:
+            current = line
+            sections[current] = []
+        elif current is not None:
+            sections[current].append(line)
+        elif line.strip():
+            raise ValueError("unexpected public text before report sections")
+    return lines[0], sections
+
+
+def compact_investor_report(
+    full_report: str,
+    *,
+    detail_filename: str,
+    brief: InvestorReportBrief | None = None,
+) -> str:
+    """Create a concise main from a verified public report without recalculation.
+
+    This pure formatter is also the frozen-report display-only path. Selection
+    moves complete, labelled fields to the linked detail document; it does not
+    summarize source prose, truncate words, choose assumptions or alter values.
+    Critical conclusion, scenario conditions, exclusions, all risks and action
+    conditions remain in the main. The caller must publish ``full_report`` as
+    the linked detail document in the same immutable package.
+    """
+    if not re.fullmatch(r"[\w][\w.-]*\.md", detail_filename) or ".." in detail_filename:
+        raise ValueError("detail filename must be a safe local Markdown filename")
+    _validate_public_report(full_report)
+    title, sections = _report_sections(full_report)
+    summary, thesis, valuation, segments, risks, comparison, sources = (
+        sections[heading] for heading in _DETAIL_HEADINGS
+    )
+    if not any(line.startswith("- 핵심 결론:") for line in summary):
+        raise ValueError("compact report requires the complete conclusion")
+    if not any(line.startswith("- 현재가:") for line in summary):
+        raise ValueError("compact report requires current-price availability and timestamp")
+    if brief is not None:
+        if not isinstance(brief, InvestorReportBrief):
+            raise ValueError("decision brief must be typed")
+        brief.validate()
+        if sha256(full_report.encode("utf-8")).hexdigest() != brief.source_report_sha256:
+            raise ValueError("decision brief is stale or bound to a different full report")
+        return _compact_with_brief(title, sections, brief, detail_filename=detail_filename)
+    detail_link = f"[상세 근거·계산·원문 전체]({detail_filename})"
+    broker_availability = [line for line in summary if line.startswith("- 증권사 참고자료:")]
+    lines = [title, "", "## 1. 결론", *(
+        line for line in summary if line and not line.startswith("- 증권사 참고자료:")
+    ), "", "## 2. 조건별 가치", ""]
+
+    # The main keeps the valuation table's complete conditions, but presents
+    # each scenario as a readable bullet instead of a dense four-column table.
+    before_sensitivity: list[str] = []
+    for line in valuation:
+        if line.startswith("### "):
+            break
+        before_sensitivity.append(line)
+    scenario_count = 0
+    for line in before_sensitivity:
+        if line.startswith("| 시나리오 |") or line.startswith("|---|---:|---|---|"):
+            continue
+        if any(line.startswith(f"| {name} |") for name in ("Down", "Base", "Bull")):
+            cells = [cell.strip() for cell in line.split("|")]
+            if len(cells) != 6:
+                raise ValueError("scenario conditions must use the known four-field table")
+            _, scenario, value, condition, impact, _ = cells
+            lines.append(f"- **{scenario} · {value}** — {condition} {impact}")
+            scenario_count += 1
+        elif line.startswith("- 방법 선택 이유:"):
+            continue
+        elif line:
+            lines.append(line)
+    if scenario_count != 3:
+        raise ValueError("compact report requires all three conditional values")
+
+    # A partial/unvalued business must never disappear into a detail-only view.
+    # Full segment tables belong in detail; explicit unvalued rows stay here.
+    unvalued_rows = [line for line in segments if "| 미평가, 추가 확인 필요 |" in line]
+    if unvalued_rows:
+        lines.extend(("", "미평가 사업부는 0원으로 처리하지 않았습니다."))
+        lines.extend(unvalued_rows)
+    lines.extend(("", "## 3. 핵심 근거", ""))
+    for line in thesis:
+        if line.startswith(("### ", "- 관찰과 가정:", "- 근거:", "- 가치 연결:", "- 반증 조건:")):
+            lines.append(line)
+    lines.extend(("", "## 4. 남은 위험과 판단 조건", *risks))
+
+    lines.extend(("", "## 5. 증권사·시장 비교", *broker_availability))
+    selected_comparison = [line for line in comparison if line.startswith((
+        "- 내재가치 기준일:", "- 판단 현황:",
+        "- 비교 가능한 증권사 자료를 확보하지 못했습니다.",
+        "- 근거의 추가 검토가 필요합니다.",
+    ))]
+    lines.extend(selected_comparison)
+    if not broker_availability and not selected_comparison:
+        # The legacy Street path has no rich coverage header. Retain the count
+        # of original complete rows without suggesting an independent consensus.
+        count = sum(line.startswith("- **") for line in comparison)
+        lines.append(f"- 증권사 자료 {count}건의 시점·기준별 비교는 상세에 보존했습니다.")
+    lines.append(
+        "- 목표가·실적 전망의 원문, 동일기준 차이와 미해결 판단은 상세에서 확인할 수 있습니다. "
+        "가격 차이만으로 가정을 변경하지 않습니다."
+    )
+    lines.extend(("", "## 6. 출처와 상세", f"- {detail_link}"))
+    # Keep a few directly clickable entry sources; every source and all its
+    # claims remain in the detail, not silently discarded by a character limit.
+    linked: set[str] = set()
+    for line in sources:
+        if line.startswith("- ") and "](http" in line and line not in linked:
+            lines.append(line)
+            linked.add(line)
+            if len(linked) == 3:
+                break
+    lines.append(
+        "- 전체 가정·사업부 범위·반증 조건·계산 민감도·비교표·원문 출처는 연결된 상세 자료에 보존했습니다."
+    )
+    # Remove only exact repeated lines. Different caveats are not semantically
+    # deduplicated or treated as equivalent by deterministic string rules.
+    seen: set[str] = set()
+    clean: list[str] = []
+    for line in lines:
+        if line and line in seen:
+            continue
+        if line:
+            seen.add(line)
+        if not line and (not clean or not clean[-1]):
+            continue
+        clean.append(line)
+    return _validate_public_report("\n".join(clean).rstrip() + "\n")
+
+
+def _compact_with_brief(
+    title: str,
+    sections: dict[str, list[str]],
+    brief: InvestorReportBrief,
+    *,
+    detail_filename: str,
+) -> str:
+    """Combine reviewed prose with financial fields only from the frozen text."""
+    summary, _, valuation, segments, risks, comparison, sources = (
+        sections[heading] for heading in _DETAIL_HEADINGS
+    )
+    source_summary = [line.replace("- 현재가:", "- 비교 시세(관측시각):", 1)
+                      for line in summary if line and not line.startswith((
+        "- 핵심 결론:", "- 증권사 참고자료:", "- 판단 근거:",
+    ))]
+    judgment = next((line for line in summary if line.startswith("- 판단 근거:")), "")
+    # These are the existing deterministic renderer's explicit status fields,
+    # not a semantic classifier of source documents or host-authored prose.
+    if any(marker in judgment for marker in (
+        "보정된 시나리오 확률과 확률가중 기대값이 없습니다.",
+        "확률가중 기대값은 산출되지 않았습니다.",
+    )):
+        source_summary.append("- 확률·기대값: 시나리오 확률·확률가중 기대값 미산정.")
+    elif any(line.startswith("- 부분 내재가치:") for line in summary):
+        source_summary.append("- 확률·기대값: 부분 평가이며 확률가중 기대값·상승여력 미산정.")
+    else:
+        statuses = re.findall(
+            r"(?:적용 확률은 .*?입니다\.|확률가중 기대값은 .*?입니다\.|모형 경로 중 .*?입니다\.|보정된 성공확률은 산출하지 않았습니다\.)",
+            judgment,
+        )
+        source_summary.extend("- 확률·기대값: " + status for status in statuses)
+        if judgment and not statuses:
+            # Unknown future renderer shape fails safe: preserve rather than
+            # guessing that a missing status means calibrated/no risk.
+            source_summary.append(judgment)
+    lines = [title, "", "## 1. 결론", *source_summary,
+             "- 핵심 결론: " + _broker_text(brief.conclusion), "", "## 2. 가치와 핵심 가정"]
+    count = 0
+    for line in valuation:
+        if line.startswith("### "):
+            break
+        if any(line.startswith(f"| {name} |") for name in ("Down", "Base", "Bull")):
+            cells = [cell.strip() for cell in line.split("|")]
+            if len(cells) != 6:
+                raise ValueError("scenario conditions must use the known four-field table")
+            lines.append(f"- **{cells[1]} · {cells[2]}**")
+            count += 1
+        elif line.startswith(("- 평가방법:", "- 변경 요약:", "- 매수 규칙:",
+                              "- 유한책임 반영 전 확률가중 잔여가치:", "- 음수 잔여가치")):
+            lines.append(line)
+        elif line.startswith("| 부채 차감 후 주당 잔여가치 |"):
+            cells = [cell.strip() for cell in line.split("|")]
+            if len(cells) != 6:
+                raise ValueError("signed residual disclosure has an unknown shape")
+            lines.append("- 부채 차감 후 잔여가치: " + ", ".join(
+                f"{name} {value}" for name, value in zip(("Down", "Base", "Bull"), cells[2:5])
+            ) + ".")
+    if count != 3:
+        raise ValueError("compact report requires all three conditional values")
+    lines.append("- 변경 이유: " + _broker_text(brief.change_reason))
+    lines.extend("- " + _broker_text(text) for text in brief.key_assumptions)
+    # Scope prose may be condensed by the reviewed brief, but an unvalued
+    # material business is a deterministic fact and cannot be editorially lost.
+    for line in segments:
+        if "| 미평가, 추가 확인 필요 |" in line:
+            lines.append(line)
+    lines.extend(("", "## 3. 핵심 근거"))
+    lines.extend("- " + _broker_text(text) for text in brief.key_evidence)
+    lines.extend(("", "## 4. 위험과 해석 범위"))
+    lines.extend("- " + _broker_text(text) for text in (*brief.risks, *brief.scope_limits))
+    lines.extend(line for line in risks if line.startswith("- 행동 가능 조건:"))
+    lines.extend(("", "## 5. 비교와 출처"))
+    lines.extend(line for line in summary if line.startswith("- 증권사 참고자료:"))
+    lines.extend(line.split(" · 사후 비교 기준시각:", 1)[0] if line.startswith("- 내재가치 기준일:") else line
+                 for line in comparison if line.startswith((
+        "- 내재가치 기준일:", "- 판단 현황:",
+        "- 비교 가능한 증권사 자료를 확보하지 못했습니다.",
+        "- 근거의 추가 검토가 필요합니다.",
+    )))
+    lines.append(f"- [상세 근거·계산·원문 전체]({detail_filename})")
+    source_lines = list(dict.fromkeys(line for line in sources if line.startswith("- ") and "](http" in line))
+    lines.extend(source_lines[:3])
+    return _validate_public_report("\n".join(lines).rstrip() + "\n")
+
+
+def append_report_detail_links(full_report: str, *, has_broker_review: bool) -> str:
+    """Link complete immutable records before binding the editorial brief.
+
+    Idempotent for the same source/record availability. Publication owns checking
+    these relative targets exist in the same immutable bundle.
+    """
+    _validate_public_report(full_report)
+    _report_sections(full_report)
+    links = [
+        "- [계산·감사 상세](final_report.md)",
+        "- [전체 계산 입력·가정](compiled_assumptions.json)",
+        "- [전체 실행 기록](control_plane_trace.json)",
+    ]
+    if has_broker_review:
+        links.append("- [전체 개별 판단·불확실성 기록](broker_review.json)")
+    missing = [line for line in links if line not in full_report.splitlines()]
+    if not missing:
+        return full_report
+    heading = "### 계산·판단 기록"
+    addition = ([] if heading in full_report.splitlines() else [heading]) + missing
+    return full_report.rstrip() + "\n\n" + "\n".join(addition) + "\n"
+
+
+def render_investor_report_documents(
+    data: Mapping[str, object],
+    profile: InvestorReportProfile,
+    *,
+    detail_filename: str,
+) -> InvestorReportDocuments:
+    """Default compact publication plus an unabridged public detail document."""
+    detailed = (
+        render_distributional_investor_report(data, profile)
+        if isinstance(data.get("distributional_primary_result"), DistributionalPrimaryValuationResult)
+        else render_investor_report(data, profile)
+    )
+    detailed = append_report_detail_links(
+        detailed, has_broker_review=data.get("broker_review_receipt") is not None,
+    )
+    return InvestorReportDocuments(
+        main_report=compact_investor_report(detailed, detail_filename=detail_filename,
+                                           brief=profile.decision_brief),
+        detail_report=detailed,
+    )
+
+
 __all__ = [
     "InvestorReportProfile",
+    "InvestorReportDocuments",
+    "InvestorReportBrief",
+    "compact_investor_report",
+    "append_report_detail_links",
     "load_investor_report_profile",
+    "investor_report_brief_from_dict",
     "probability_weighted_equity_value",
     "render_distributional_investor_report",
     "render_investor_report",
+    "render_investor_report_documents",
+    "render_broker_review_status",
+    "render_broker_review_summary",
 ]
