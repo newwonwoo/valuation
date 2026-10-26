@@ -7,6 +7,7 @@ from statistics import fmean
 
 from .official_market_data import BetaEstimate, CountryRisk, SeriesObservation
 from .risk import BetaLevelName
+from .source_reporting import canonical_verification_url
 from .risk_adapters import (
     LiveBetaLevelObservation,
     LiveBetaUniverse,
@@ -133,6 +134,9 @@ class MarginalDebtBenchmark:
     credit_rating: str
     maturity: str
     rating_source_ref: str
+    #: A derived/synthetic benchmark must not be described as an ECOS observation.
+    #: None preserves the historical provider wording exactly.
+    methodology: str | None = None
 
     def validate(self) -> None:
         if not self.credit_rating or not self.maturity or not self.rating_source_ref:
@@ -140,6 +144,7 @@ class MarginalDebtBenchmark:
                 "marginal debt benchmark requires rating, maturity and rating source"
             )
         _series_rate(self.series)
+        _validate_optional_methodology(self.methodology, "marginal debt methodology")
 
 
 @dataclass(frozen=True)
@@ -149,6 +154,11 @@ class AuthorizedKRRiskProviderPack:
     country_risk: CountryRisk
     marginal_debt: MarginalDebtBenchmark
     cash_flow_currency: str = "KRW"
+    risk_free_rate_methodology: str | None = None
+    #: Explicit source-bound policy, not a replacement for the country tax fact.
+    #: Its tax_rate is the usable interest-tax-shield assumption for BOTH Beta
+    #: relevering and WACC; absence retains peer-normalized/country-tax behavior.
+    target_capital_structure_override: LiveCapitalStructureObservation | None = None
 
     def validate(self) -> None:
         expected = (
@@ -168,6 +178,9 @@ class AuthorizedKRRiskProviderPack:
                 "KR authorized risk provider pack supports KRW cash flows only"
             )
         _series_rate(self.risk_free_rate)
+        _validate_optional_methodology(
+            self.risk_free_rate_methodology, "risk-free rate methodology"
+        )
         self.marginal_debt.validate()
         if not self.country_risk.source_ref or not self.country_risk.as_of:
             raise AuthorizedRiskProviderError("country risk source is incomplete")
@@ -176,9 +189,49 @@ class AuthorizedKRRiskProviderPack:
             raise AuthorizedRiskProviderError(
                 "country corporate tax rate must be in [0, 1)"
             )
+        if self.target_capital_structure_override is not None:
+            structure = self.target_capital_structure_override
+            if not isinstance(structure, LiveCapitalStructureObservation):
+                raise AuthorizedRiskProviderError(
+                    "target capital structure override must be a LiveCapitalStructureObservation"
+                )
+            if not isinstance(structure.method, TargetCapitalStructureMethod):
+                raise AuthorizedRiskProviderError(
+                    "target capital structure override requires a supported method"
+                )
+            for value in (structure.equity_weight, structure.debt_weight, structure.tax_rate):
+                if isinstance(value, bool) or not isinstance(value, (int, float)):
+                    raise AuthorizedRiskProviderError(
+                        "target capital structure override weights/tax must be numeric"
+                    )
+            if (
+                not isinstance(structure.as_of, str)
+                or not structure.as_of.strip()
+                or not isinstance(structure.rationale, str)
+                or not structure.rationale.strip()
+            ):
+                raise AuthorizedRiskProviderError(
+                    "target capital structure override date/rationale must be non-empty strings"
+                )
+            if not isinstance(structure.source_refs, tuple) or not structure.source_refs:
+                raise AuthorizedRiskProviderError(
+                    "target capital structure override requires source references"
+                )
+            for ref in structure.source_refs:
+                if not isinstance(ref, str):
+                    raise AuthorizedRiskProviderError(
+                        "target capital structure override requires HTTP provenance"
+                    )
+                if canonical_verification_url(ref) is None:
+                    raise AuthorizedRiskProviderError(
+                        "target capital structure override requires credential-free HTTP(S) provenance"
+                    )
+            structure.validate()
 
     def target_capital_structure(self) -> LiveCapitalStructureObservation:
         self.validate()
+        if self.target_capital_structure_override is not None:
+            return self.target_capital_structure_override
         unique: dict[str, PeerCapitalObservation] = {}
         for level in self.beta_levels:
             for peer in level.peers:
@@ -267,7 +320,11 @@ class AuthorizedKRRiskProviderPack:
             currency="KRW",
             as_of=rf_as_of,
             source_ref=self.risk_free_rate.source_ref,
-            methodology=f"BOK ECOS: {self.risk_free_rate.name}",
+            methodology=(
+                self.risk_free_rate_methodology
+                if self.risk_free_rate_methodology is not None
+                else f"BOK ECOS: {self.risk_free_rate.name}"
+            ),
         )
         erp = RateObservation(
             value=self.country_risk.mature_market_erp,
@@ -289,9 +346,13 @@ class AuthorizedKRRiskProviderPack:
             as_of=debt_as_of,
             source_ref=self.marginal_debt.series.source_ref,
             methodology=(
-                f"BOK ECOS market borrowing benchmark matched to "
-                f"rating={self.marginal_debt.credit_rating}, maturity={self.marginal_debt.maturity}; "
-                f"rating source={self.marginal_debt.rating_source_ref}"
+                self.marginal_debt.methodology
+                if self.marginal_debt.methodology is not None
+                else (
+                    f"BOK ECOS market borrowing benchmark matched to "
+                    f"rating={self.marginal_debt.credit_rating}, maturity={self.marginal_debt.maturity}; "
+                    f"rating source={self.marginal_debt.rating_source_ref}"
+                )
             ),
         )
         result = LiveWACCInputs(
@@ -312,6 +373,11 @@ class AuthorizedKRRiskProviderPack:
         )
         result.validate()
         return result
+
+
+def _validate_optional_methodology(value: str | None, label: str) -> None:
+    if value is not None and (not isinstance(value, str) or not value.strip()):
+        raise AuthorizedRiskProviderError(f"{label} must be a non-empty string when supplied")
 
 
 def _parse_date(value: str, label: str) -> date:

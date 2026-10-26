@@ -24,7 +24,11 @@ This module is the entrance, built like the declared-underwriting door:
   evidence-ID validation then binds the universe to those records — the
   judgment is auditable, not ambient;
 - the file's SHA-256 is the collection batch fingerprint, so the attested hash
-  chain binds the exact risk declaration that produced the discount rate.
+  chain binds the exact risk declaration that produced the discount rate;
+- optional rate ``methodology`` strings preserve derived/synthetic provenance,
+  and an explicit ``target_capital_structure`` policy may supply the existing
+  engine's weights/method/usable interest-tax-shield assumption. The country
+  tax observation remains separate. Omitted fields retain historical defaults.
 
 What this deliberately is NOT: a market-data fetcher. Peer Betas, rates and
 premia are authorized observations the operator assembles and cites; fetching
@@ -57,7 +61,13 @@ from .live_runtime import LiveCollectorProvider
 from .official_market_data import BetaEstimate, CountryRisk, SeriesObservation
 from .records import EvidenceRecord, EvidenceSourceLayer
 from .risk import BETA_LEVEL_ORDER
-from .risk_adapters import LiveBetaUniverse, LiveWACCInputs
+from .source_reporting import canonical_verification_url
+from .risk_adapters import (
+    LiveBetaUniverse,
+    LiveCapitalStructureObservation,
+    LiveWACCInputs,
+    TargetCapitalStructureMethod,
+)
 
 
 SOURCE_ID = "OPERATOR_RISK_DECLARATION"
@@ -127,6 +137,62 @@ def _series(row: object, label: str) -> SeriesObservation:
         name=str(data.get("name") or ""),
         source_ref=_require_http(str(data.get("source_ref") or ""), f"{label}.source_ref"),
     )
+
+
+def _optional_methodology(row: Mapping, label: str) -> str | None:
+    if "methodology" not in row:
+        return None
+    value = row["methodology"]
+    if not isinstance(value, str) or not value.strip():
+        raise DeclaredRiskPackError(f"{label}.methodology must be a non-empty string")
+    return value.strip()
+
+
+def _capital_structure_override(row: object) -> LiveCapitalStructureObservation:
+    """Read an explicit policy without mutating the sourced country tax rate.
+
+    These fields are new, so reject malformed types instead of coercing booleans,
+    references or nulls into a superficially valid policy. Legacy pack parsing is
+    unchanged when this optional declaration is absent.
+    """
+    label = "target_capital_structure"
+    data = _mapping(row, label)
+    expected = {"equity_weight", "debt_weight", "tax_rate", "method", "as_of",
+                "source_refs", "rationale"}
+    if set(data) != expected:
+        raise DeclaredRiskPackError(f"{label} fields must be exactly {sorted(expected)}")
+    for key in ("equity_weight", "debt_weight", "tax_rate"):
+        if isinstance(data[key], bool) or not isinstance(data[key], (int, float)):
+            raise DeclaredRiskPackError(f"{label}.{key} must be numeric, not a coerced value")
+    for key in ("method", "as_of", "rationale"):
+        if not isinstance(data[key], str) or not data[key].strip():
+            raise DeclaredRiskPackError(f"{label}.{key} must be a non-empty string")
+    try:
+        method = TargetCapitalStructureMethod(data["method"])
+    except ValueError as exc:
+        raise DeclaredRiskPackError(f"{label}.method is not a supported method") from exc
+    _declared_date(data["as_of"], f"{label}.as_of")
+    refs = data["source_refs"]
+    if not isinstance(refs, list) or not refs:
+        raise DeclaredRiskPackError(f"{label}.source_refs must be a non-empty list")
+    for ref in refs:
+        if not isinstance(ref, str):
+            raise DeclaredRiskPackError(f"{label}.source_refs requires HTTP provenance links")
+        if canonical_verification_url(ref) is None:
+            raise DeclaredRiskPackError(
+                f"{label}.source_refs requires credential-free HTTP(S) provenance links"
+            )
+    structure = LiveCapitalStructureObservation(
+        equity_weight=float(data["equity_weight"]),
+        debt_weight=float(data["debt_weight"]),
+        tax_rate=float(data["tax_rate"]),
+        method=method,
+        as_of=data["as_of"],
+        source_refs=tuple(refs),
+        rationale=data["rationale"].strip(),
+    )
+    structure.validate()
+    return structure
 
 
 def _peer(row: object, label: str) -> AuthorizedPeerBetaSource:
@@ -212,6 +278,11 @@ class DeclaredRiskPack:
                 self.pack.marginal_debt.series.time,
             ),
         ]
+        if self.pack.target_capital_structure_override is not None:
+            observations.append((
+                "target_capital_structure.as_of",
+                self.pack.target_capital_structure_override.as_of,
+            ))
         for level in self.pack.beta_levels:
             for peer in level.peers:
                 label = f"{level.level.value}.{peer.peer_id}"
@@ -367,13 +438,21 @@ def load_declared_risk_pack(
             str(debt_row.get("rating_source_ref") or ""),
             "marginal_debt.rating_source_ref",
         ),
+        methodology=_optional_methodology(debt_row, "marginal_debt"),
     )
+    risk_free_row = _mapping(payload.get("risk_free_rate"), "risk_free_rate")
     pack = AuthorizedKRRiskProviderPack(
         beta_levels=tuple(levels),
         risk_free_rate=_series(payload.get("risk_free_rate"), "risk_free_rate"),
         country_risk=country,
         marginal_debt=marginal_debt,
         cash_flow_currency=str(payload.get("cash_flow_currency") or "KRW"),
+        risk_free_rate_methodology=_optional_methodology(risk_free_row, "risk_free_rate"),
+        target_capital_structure_override=(
+            _capital_structure_override(payload["target_capital_structure"])
+            if "target_capital_structure" in payload
+            else None
+        ),
     )
     country_risk_lambda = float(payload.get("country_risk_lambda") or 0.0)
     exposure_ref = str(payload.get("country_risk_exposure_source_ref") or "")
