@@ -520,7 +520,7 @@ def broker_aware_rocket_insight_adapter(
     return run
 
 
-def _informed_broker_evidence_binding(item, context: OrchestratorContext) -> dict:
+def _informed_broker_evidence_binding(item, context: OrchestratorContext, *, derived_cache=None) -> dict:
     """Validate a reviewed NEW-run assumption; never certify it as primary fact."""
     from .generic_underwriting import ResearchUnderwritingEvidenceRecord
     from .research_campaign import fingerprint, validate_response
@@ -530,9 +530,14 @@ def _informed_broker_evidence_binding(item, context: OrchestratorContext) -> dic
             or not isinstance(item, ResearchUnderwritingEvidenceRecord)
             or item.source_layer is not EvidenceSourceLayer.ANALYST_UNDERWRITING):
         raise ValueError("broker source requires an explicitly bound informed underwriting run")
+    derived = getattr(item, "derived_case_ref", None)
+    if sum(authority is not None for authority in (
+        item.research_receipt, item.business_cashflow_receipt, derived
+    )) > 1:
+        raise ValueError("broker Evidence cannot carry multiple research authorities")
+    if derived is not None:
+        return _informed_derived_case_evidence_binding(item, context, cache=derived_cache)
     if item.business_cashflow_receipt is not None:
-        if item.research_receipt is not None:
-            raise ValueError("broker Evidence cannot carry two research authorities")
         return _informed_cashflow_evidence_binding(item, context)
     research = item.research_receipt
     if not isinstance(research, Mapping):
@@ -584,6 +589,90 @@ def _informed_broker_evidence_binding(item, context: OrchestratorContext) -> dic
             "review_receipt_hash": context.data["informed_revision_receipt_hash"],
             "candidate_id": selection["candidate_id"], "claim_id": selection["claim_id"],
             "reviewed_broker_source_refs": tuple(dict.fromkeys(reviewed_sources)),
+            "authority": "analyst_underwriting"}
+
+
+def _informed_derived_case_evidence_binding(item, context: OrchestratorContext, *, cache=None) -> dict:
+    """Check a registered replay and its original reviewed drivers, never a PASS flag.
+
+    Replay authority is process-local and is established only by the trusted
+    ingress verifier. Persisted proof dictionaries alone cannot authorize a new
+    execution. The full review artifact is checked once per audit, not copied
+    into every derived cashflow/liquidity/terminal/share Evidence row.
+    """
+    from .derived_case import load_derived_case_reference, verified_derived_output
+    from .generic_underwriting import DerivedCaseUnderwritingEvidenceRecord, ResearchUnderwritingEvidenceRecord
+    from .records import EvidenceRecord
+    from .research_campaign import fingerprint
+
+    if not isinstance(item, DerivedCaseUnderwritingEvidenceRecord):
+        raise ValueError("derived broker Evidence requires the registered ingress record type")
+    output = verified_derived_output(item.derived_case_ref, item.derived_case_proof)
+    proof = output.proof
+    if (proof.get("new_run_id") != context.run_id
+            or proof.get("review_receipt_hash") != context.data.get("informed_revision_receipt_hash")
+            or proof.get("target_id") != context.data.get("target_id")
+            or proof.get("target_id") != item.target
+            or proof.get("as_of") != context.data.get("data_cutoff")
+            or item.effective_date != proof.get("as_of") or item.observed_date != proof.get("as_of")):
+        raise ValueError("derived-case Evidence differs from the actual informed run/target/cutoff/review")
+    if (str(item.value), item.unit, item.metric, item.segment, item.scenario_id, item.year,
+            item.economic_path_id, item.source_refs, item.source_ref) != (
+            output.value, output.unit, output.metric, output.segment_id, output.scenario_id, output.year,
+            output.economic_path_id, output.source_refs, output.source_refs[0]
+    ) or (item.year is not None and type(item.year) is not int):
+        raise ValueError("derived-case Evidence differs from the exact registered output contract")
+
+    cache = {} if cache is None else cache
+    key = (item.derived_case_ref["artifact_path"], item.derived_case_ref["artifact_sha256"])
+    if key not in cache:
+        receipt = load_derived_case_reference(item.derived_case_ref)
+        revision = receipt.get("informed_revision", {})
+        if (receipt.get("research_mode") != "INFORMED_REVISION"
+                or revision.get("new_run_id") != context.run_id
+                or revision.get("review_receipt", {}).get("receipt_hash")
+                != context.data.get("informed_revision_receipt_hash")):
+            raise ValueError("derived-case artifact lost actual informed revision bindings")
+        drivers = receipt.get("drivers")
+        if not isinstance(drivers, Mapping) or not drivers:
+            raise ValueError("derived-case artifact has no reviewed driver receipts")
+        driver_bindings = {}
+        for input_name, research in drivers.items():
+            if not isinstance(research, Mapping):
+                raise ValueError("derived-case driver requires its original research receipt")
+            order = research.get("work_order", {})
+            if fingerprint(order.get("informed_revision")) != fingerprint(revision):
+                raise ValueError("derived-case driver differs from its artifact revision lineage")
+            response = research.get("response", {})
+            refs = tuple(dict.fromkeys(source["url"] for source in response.get("sources", ())))
+            if not refs:
+                raise ValueError("derived-case driver has no original source references")
+            ancestor_fields = {name: getattr(item, name) for name in EvidenceRecord.__dataclass_fields__}
+            ancestor_fields.update(
+                id=f"{item.id}:driver:{input_name}", metric=research.get("metric"),
+                value=research.get("value"), unit=research.get("unit"), segment=research.get("segment"),
+                source_ref=refs[0], source_refs=refs, research_receipt=research,
+            )
+            ancestor = ResearchUnderwritingEvidenceRecord(**ancestor_fields)
+            driver_bindings[input_name] = _informed_broker_evidence_binding(ancestor, context)
+        cache[key] = (receipt, driver_bindings)
+    receipt, driver_bindings = cache[key]
+    ancestors = tuple(driver_bindings[name] for name in output.depends_on if name in driver_bindings)
+    matched_sources = {ref for ancestor in ancestors for ref in ancestor["reviewed_broker_source_refs"]}
+    all_reviewed_sources = {ref for binding in driver_bindings.values()
+                            for ref in binding["reviewed_broker_source_refs"]}
+    reviewed_decisions = receipt["informed_revision"]["review_receipt"]["decisions"]
+    broker_sources = all_reviewed_sources | {row["source_ref"] for row in reviewed_decisions}
+    broker_sources.update(getattr(context.data.get("broker_research_prefreeze_result"), "source_refs", ()))
+    if set(output.source_refs) & broker_sources - matched_sources:
+        raise ValueError("derived-case output contains an unreviewed borrowed broker source")
+    return {"evidence_id": item.id, "segment": item.segment, "metric": item.metric,
+            "derived_case_ref": dict(item.derived_case_ref),
+            "derived_case_receipt_hash": proof["receipt_hash"],
+            "review_receipt_hash": proof["review_receipt_hash"],
+            "informed_ancestors": tuple({key: value for key, value in ancestor.items()
+                                         if key != "evidence_id"} for ancestor in ancestors),
+            "reviewed_broker_source_refs": tuple(ref for ref in output.source_refs if ref in matched_sources),
             "authority": "analyst_underwriting"}
 
 
@@ -740,6 +829,7 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
         broker_source_refs = set(result.source_refs)
         informed_records: dict[str, dict] = {}
         informed_errors: list[tuple[str, str]] = []
+        derived_cache: dict[tuple[str, str], tuple] = {}
         for item in active_evidence:
             research = getattr(item, "research_receipt", None)
             response = research.get("response", {}) if isinstance(research, Mapping) else {}
@@ -751,15 +841,18 @@ def broker_research_audit_adapter(*, required: bool) -> StageAdapter:
             candidate_receipt = isinstance(response, Mapping) and "informed_assumption" in response
             candidate_order = isinstance(order, Mapping) and order.get("research_mode") == "INFORMED_REVISION"
             business = getattr(item, "business_cashflow_receipt", None)
+            derived = getattr(item, "derived_case_ref", None)
             business_assumptions = business.get("assumptions", {}) if isinstance(business, Mapping) else {}
             informed_business = isinstance(business_assumptions, Mapping) and any(
                 isinstance(ancestor, Mapping) and isinstance(ancestor.get("response"), Mapping)
                 and "informed_assumption" in ancestor["response"] for ancestor in business_assumptions.values())
-            if (candidate_receipt or informed_business
+            if (candidate_receipt or informed_business or derived is not None
                     or ((candidate_order or business is not None) and item_refs & broker_source_refs)):
                 try:
-                    informed_records[item.id] = _informed_broker_evidence_binding(item, context)
-                except (ValueError, TypeError, KeyError, AttributeError) as exc:
+                    informed_records[item.id] = _informed_broker_evidence_binding(
+                        item, context, derived_cache=derived_cache
+                    )
+                except (ValueError, TypeError, KeyError, AttributeError, OSError) as exc:
                     informed_errors.append((item.id, str(exc)))
 
         bindings: list[tuple[str, str, tuple[str, ...]]] = []

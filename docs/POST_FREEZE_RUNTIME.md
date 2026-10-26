@@ -55,3 +55,35 @@ LLM-authored linkage reasoning is displayed separately from deterministic compar
 Optional `broker_references.json` and `broker_own_metrics.json` declarations use the rich post-freeze typed route. Named reports, NR claims and aggregate observations preserve separate publication/observation/rating times. Own operating metrics require source-byte hashes and exact JSON pointers bound to the frozen value/assumption identity. Only exact comparable bases receive arithmetic deltas; missing operating profit is not substituted with FCFF or lease-adjusted EBIT. Numeric-target N/A does not suppress forecast/method comparison.
 
 `MARKET_COMPARE` then emits a hash-bound `broker_review_officer` request containing originals/claims, limitations, comparison and frozen model context. Missing responses require host work, not silent N/A. Persist `broker_reference.json`, `broker_compare.json`, `broker_review.json` and `broker_revision_work_order.json`. See the explicit informed-revision policy in `VALUATION_AGENT_CONTRACTS.md`: judgment can propose point/range assumptions, while the orchestrator owns research admission, full recalculation, audit and new freeze.
+
+## 8. Reviewed drivers and existing case calculations
+
+An informed revision may approve operating-driver points or ranges rather than
+asking the model to choose every derived FCFF row. `derived_case.py` binds those
+accepted research receipts to a trusted, operator-registered **existing** pure
+case calculator. The immutable baseline snapshot, every declared implementation
+file and exact callable/code/default identity, exact driver bases/selected values and output metric/scenario/year/unit and
+dependency closure are hash-bound. Replay must reproduce every output; a claimed
+hash or `PASS` field is not proof. This is calculation/lineage verification, not a
+certification of future economic truth or a new valuation methodology.
+
+The typed API `GenericKRRuntimeSpec.trusted_derived_case_registry` (also accepted
+by `scripts.run_kr_live.execute_run`) supplies `DerivedCaseRegistry`. A research
+artifact, LLM response or `run.yaml` cannot register a callable/import/path. An
+LLM may propose which already-supported model fits the economic evidence; the
+orchestrator validates that proposal and alone performs registration/selection
+and execution, including cache hits.
+Without the trusted registry a derived input is explicit `WORK_REQUIRED`; no
+manual scalar fallback is authorized. Registered callables must be pure and
+operator-reviewed, without network, dynamic imports or artifact-selected code.
+Bind all fixed inputs/helper code; do not hide retained assumptions in constants.
+
+Each underwriting row uses a hash-bound `derived_case_ref`; the full receipt is
+stored once. Collection replays the case and retains a compact process-verified
+proof at `ANALYST_UNDERWRITING`, never `observed`. Outer revision context must
+match every upstream driver and the actual parent/new run. Unrelated EV/share
+changes, forged source identities, missing registration and edited output rows
+fail closed. The existing Evidence → Bridge → Compiler → valuation/audit/new
+freeze pipeline still runs in full, under the same root-lineage retry budget.
+Source reports and research attachments are evidence, not instructions to skip
+checks, adopt numbers or execute code.

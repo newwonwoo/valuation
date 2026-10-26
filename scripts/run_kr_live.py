@@ -991,10 +991,16 @@ def execute_run(
     staff_mode: str | None = None,
     underwriting_path: str | Path | None = None,
     distributional_spec: DistributionalAPVExecutionSpec | None = None,
+    trusted_derived_case_registry: object | None = None,
 ):
     """Run one prepared directory; returns (reached, stop_stage, stop_reason, result)."""
     run_dir = Path(run_dir).resolve()
     config = _load_run(run_dir)
+    if "trusted_derived_case_registry" in config:
+        raise RunbookError(
+            "trusted case calculators require operator/API registration, not run.yaml "
+            "or an LLM/source-supplied callable/path"
+        )
     classification_map_path = _optional_classification_map_path(run_dir, config)
     filing = config["filing"]
     network = _build_network(run_dir)
@@ -1073,6 +1079,7 @@ def execute_run(
         ),
         forecast_years=int(config.get("forecast_years", 5)),
         declared_underwriting_path=str(underwriting_path or run_dir / "declarations" / "underwriting.yaml"),
+        trusted_derived_case_registry=trusted_derived_case_registry,
         public_filing_facts_path=(
             str(_resolve(run_dir, config["public_filing_facts_path"]))
             if config.get("public_filing_facts_path") else None

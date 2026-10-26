@@ -652,6 +652,7 @@ def _supplemental_source_lines(
         if not (
             getattr(record, "research_receipt", None)
             or getattr(record, "business_cashflow_receipt", None)
+            or getattr(record, "derived_case_ref", None)
         ):
             continue
         for source in getattr(record, "source_refs", ()):

@@ -187,3 +187,23 @@ Post-freeze `broker_review_context.json` may bind additional local research
 artifacts by exact UTF-8 bytes/hash. This provides evidence to host review, not
 new input authority. Preserve complete receipts privately; public reports contain
 short derived summaries and original-source links, not full broker report bodies.
+
+### Registered derived-case ingress
+
+When a verified existing business calculation cannot be represented honestly by
+`contracted_business`, do not invent capacity/backlog or label forecast outputs
+as observations. An operator may bind accepted informed driver receipts through
+`CaseCalculationModel` / `DerivedCaseRegistry` in `derived_case.py`. The model
+receives an immutable baseline JSON snapshot and exact accepted driver values;
+it returns all registered scalar outputs. A range does not select a midpoint:
+each scenario's chosen point needs its own accepted research receipt and reason.
+
+`build_derived_case_receipt` records model/code/input/output hashes and explicit
+dependencies. Standard inferred underwriting rows reference its immutable file
+with `derived_case_ref` (`schema_version`, `artifact_path`, `artifact_sha256`,
+`output_key`) plus exact `scenario_id`, calendar `year`, `economic_path_id`, value,
+unit and original `source_refs`. The final collector requires the trusted typed
+registry, replays all outputs, checks mode/receipt/source/basis and keeps ordinary
+Bridge/Compiler gates. Registration is API/operator-only, not a serialized
+plugin loader. Pure replay does not prove forecasts; host review must separately
+consider retained cost/mix/reinvestment/capital assumptions and counterevidence.

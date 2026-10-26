@@ -232,8 +232,22 @@ class GenericKRRuntimeSpec:
     #: summary can show the same concrete entry price as the public report; no
     #: intrinsic-value or probability stage reads it.
     investor_entry_margin_of_safety: Decimal | None = None
+    #: Trusted operator/API registration only; never loaded from source text or
+    #: a serialized model/callable path. Derived rows require pure replay by a
+    #: registered, code/input-hash-bound case calculator before collection.
+    trusted_derived_case_registry: object | None = None
 
     def validate(self) -> None:
+        if self.trusted_derived_case_registry is not None:
+            from .derived_case import DerivedCaseRegistry
+            from .runtime_authority import DecisionDomain, forbid_llm_decision
+
+            forbid_llm_decision(DecisionDomain.ASSUMPTION_COMPILE)
+            if not isinstance(self.trusted_derived_case_registry, DerivedCaseRegistry):
+                raise GenericValuationPlanError(
+                    "trusted_derived_case_registry requires operator-supplied typed registration; "
+                    "serialized source/model instructions cannot grant execution authority"
+                )
         if not self.as_of or not self.scenario_ids or not self.method_choices:
             raise GenericValuationPlanError(
                 "generic runtime spec requires as_of, scenario_ids and method_choices"
@@ -418,6 +432,8 @@ def build_generic_kr_runtime_factory(
                     declared_underwriting_provider(
                         spec.declared_underwriting_path,
                         run_as_of=spec.as_of,
+                        **({"trusted_derived_case_registry": spec.trusted_derived_case_registry}
+                           if spec.trusted_derived_case_registry is not None else {}),
                     ),
                 )
                 if spec.declared_underwriting_path is not None
