@@ -25,7 +25,8 @@ Directory convention (see the committed runs/kisco-104700 for a live example):
         underwriting.yaml       operator judgments (required)
         market.yaml             post-freeze market price (optional)
         street.json             authorized street export (optional; an empty
-                                reports list declares no coverage)
+                                reports list supplies no eligible numeric
+                                target-price references, not proof of no coverage)
         risk_pack.yaml          declared risk pack for beta/WACC methods
                                 (optional)
         staff/<role>.json       one proposal file per staff seat; a JSON array

@@ -265,3 +265,34 @@ def test_authorized_street_export_builds_runtime_reports(tmp_path):
     assert reports[0].estimates[0].metric == "EPS"
     assert reports[0].argument_summary == "판매량과 마진 회복이 이익 개선을 이끈다는 논리"
     assert reports[0].valuation_basis_note == "2027년 이익과 DCF를 함께 사용"
+
+
+@pytest.mark.parametrize("target_price", [None, "Not Rated", 0, -1])
+def test_non_numeric_or_nonpositive_street_targets_are_not_coerced_or_accepted(
+    tmp_path, target_price
+):
+    """NR research stays outside the eligible numeric-target export contract."""
+    path = tmp_path / "street.json"
+    path.write_text(
+        json.dumps(
+            {
+                "authorization_basis": "explicit_permission",
+                "reports": [
+                    {
+                        "broker": "Broker A",
+                        "analyst": "Analyst A",
+                        "published_date": "2026-08-24",
+                        "target_price": target_price,
+                        "target_price_currency": "KRW",
+                        "valuation_method": "DCF",
+                        "base_year": "2027E",
+                        "source_ref": "https://example.com/not-rated-report",
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises((TypeError, ValueError)):
+        load_authorized_street_export(path)

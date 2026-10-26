@@ -1,4 +1,5 @@
 from decimal import Decimal
+from hashlib import sha256
 
 from valuation_engine.control_plane import ExecutionMode, StageStatus
 from valuation_engine.generic_reporting import (
@@ -117,6 +118,14 @@ def test_post_freeze_scenario_envelope_state_and_report(tmp_path):
     assert result.freeze_token.ledger_snapshot_hash == "LEDGER_HASH"
     street = result.data["street_comparison"]
     market = result.data["market_comparison"]
+    assert result.data["street_reports"] == reports()
+    payload = "\n".join(
+        sorted(
+            f"{item.broker}|{item.analyst}|{item.published_date}|{item.target_price}|{item.target_price_currency}|{item.valuation_method}|{item.source_ref}"
+            for item in reports()
+        )
+    )
+    assert result.data["street_reference_hash"] == sha256(payload.encode("utf-8")).hexdigest()
     assert street.envelope.expected_gap is None
     assert street.envelope.get("Base").gap_per_share == Decimal("0")
     assert market.envelope.get("Base").gap_per_share == Decimal("5")
@@ -153,23 +162,27 @@ def test_post_freeze_stage_cannot_run_without_token():
     assert "IntrinsicFreezeToken" in result.stage_traces[0].rationale
 
 
-def test_declared_no_coverage_withholds_the_street_reference_and_completes(tmp_path):
-    """A small cap with zero sell-side coverage is a normal company, not an
-    error. An authorized export declaring an EMPTY report set (the live
-    KISCO run's situation) must withhold the Street reference and gap as
-    SKIPPED_NOT_APPLICABLE and still drive the run through to the final
-    report — the report then says the Street target was not obtained."""
+def test_empty_eligible_reference_set_withholds_street_without_changing_value(tmp_path):
+    """No supplied numeric target permits withholding, not a coverage claim."""
     result = run_post_freeze(tmp_path, street_reports=())
     assert result.blocked_reasons == ()
     statuses = {trace.stage: trace.status for trace in result.stage_traces}
     assert statuses["STREET_REFERENCE_LOAD"] is StageStatus.SKIPPED_NOT_APPLICABLE
     assert statuses["STREET_GAP_ANALYZER"] is StageStatus.SKIPPED_NOT_APPLICABLE
     assert statuses["FINAL_REPORT"] is StageStatus.PASS
+    assert result.data["street_reports"] == ()
+    assert "street_reference_hash" not in result.data
     assert "street_comparison" not in result.data
+    assert result.data["generic_valuation_result"] == valuation()
+    assert result.freeze_token.valuation_hash == "VALUATION_HASH"
+    for trace in result.stage_traces:
+        if trace.stage in {"STREET_REFERENCE_LOAD", "STREET_GAP_ANALYZER"}:
+            assert "in the supplied authorized export" in trace.rationale
+            assert "no sell-side coverage" not in trace.rationale
     assert "확보되지 않았습니다" in result.data["final_report"]
 
 
-def test_an_empty_authorized_street_export_loads_as_declared_no_coverage(tmp_path):
+def test_empty_authorized_street_export_loads_as_no_eligible_numeric_references(tmp_path):
     import json as _json
 
     from valuation_engine.official_market_data import (

@@ -31,12 +31,11 @@ def street_reference_load_adapter(*, loader: StreetLoader) -> StageAdapter:
             if not isinstance(reports, tuple):
                 raise ValueError("Street loader must return a tuple")
             if not reports:
-                # A declared-empty authorized export: no coverage exists for
-                # this target. Withhold the Street reference honestly rather
-                # than blocking the run on a report nobody has written.
+                # Empty input establishes only that this authorized export
+                # supplies no eligible numeric targets, not that coverage is absent.
                 return StageExecutionResult(
                     StageStatus.SKIPPED_NOT_APPLICABLE,
-                    "authorized Street export declares no sell-side coverage; "
+                    "no eligible numeric target-price references in the supplied authorized export; "
                     "Street reference withheld",
                     {"street_reports": ()},
                 )
@@ -79,7 +78,7 @@ def street_gap_analyzer_adapter(*, drivers: tuple[StreetGapDriver, ...] = ()) ->
             if not reports:
                 return StageExecutionResult(
                     StageStatus.SKIPPED_NOT_APPLICABLE,
-                    "no sell-side coverage was declared for this target; "
+                    "no eligible numeric target-price references in the supplied authorized export; "
                     "there is no Street target to gap against",
                 )
             if valuation.scope is IntrinsicValuationScope.PARTIAL_INTRINSIC:

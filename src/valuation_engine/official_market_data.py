@@ -471,10 +471,10 @@ def load_authorized_street_export(path: str | Path):
     rows = payload.get("reports")
     if not isinstance(rows, list):
         raise DataCollectionError("Street export requires a reports list")
-    # An authorized export whose reports list is EMPTY is a declaration, not an
-    # omission: this covered-universe query returned no sell-side coverage
-    # (the normal state of a small cap). The Street stages then record the
-    # withholding instead of blocking the report on a reference nobody wrote.
+    # An empty authorized export supplies no eligible numeric target-price
+    # references. It does not establish that sell-side coverage is absent:
+    # Not Rated research or reports outside the supplied export may exist.
+    # The Street stages record the unavailable comparison without inventing a target.
     if not rows:
         return ()
     reports = []

@@ -86,7 +86,7 @@ def distributional_street_gap_adapter() -> StageAdapter:
             if not reports:
                 return StageExecutionResult(
                     StageStatus.SKIPPED_NOT_APPLICABLE,
-                    "no sell-side coverage was declared for this target",
+                    "no eligible numeric target-price references in the supplied authorized export",
                 )
             if not all(isinstance(item, StreetResearchReport) for item in reports):
                 raise TypeError("Street reports contain an invalid object")
