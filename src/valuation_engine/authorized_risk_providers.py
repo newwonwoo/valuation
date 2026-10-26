@@ -297,7 +297,7 @@ class AuthorizedKRRiskProviderPack:
             levels=levels,
             target_capital_structure=structure,
             universe_rationale=(
-                "authorized KRX regression Betas plus Evidence-backed L1→L4 peer routing"
+                "authorized source-bound peer regressions plus Evidence-backed L1→L4 peer routing"
             ),
             source_refs=source_refs,
         )
