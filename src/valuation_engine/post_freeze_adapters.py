@@ -15,6 +15,10 @@ from .valuation_execution import GenericValuationResult, IntrinsicValuationScope
 
 StreetLoader = Callable[[], tuple[StreetResearchReport, ...]]
 MarketLoader = Callable[[], MarketObservation]
+BrokerReferenceLoader = Callable[[], object]
+BrokerOwnMetricsLoader = Callable[[str, str, str], tuple]
+BrokerReviewOfficer = Callable[[object], object]
+BrokerReviewContextLoader = Callable[[], object]
 
 
 def _require_post_freeze(context: OrchestratorContext) -> None:
@@ -41,12 +45,10 @@ def street_reference_load_adapter(*, loader: StreetLoader) -> StageAdapter:
                 )
             if not all(isinstance(item, StreetResearchReport) for item in reports):
                 raise ValueError("Street loader returned an invalid report object")
-            payload = "\n".join(
-                sorted(
-                    f"{item.broker}|{item.analyst}|{item.published_date}|{item.target_price}|{item.target_price_currency}|{item.valuation_method}|{item.source_ref}"
-                    for item in reports
-                )
-            )
+            # Estimates, base year and argument/basis notes affect interpretation.
+            # Hash complete substantive reports, not merely their target prices.
+            from .broker_comparison import broker_content_hash
+            payload = broker_content_hash(reports)
         except Exception as exc:
             return StageExecutionResult(
                 StageStatus.BLOCKED,
@@ -58,7 +60,7 @@ def street_reference_load_adapter(*, loader: StreetLoader) -> StageAdapter:
             "target-company Street references loaded after a valid same-run Freeze Token",
             {
                 "street_reports": reports,
-                "street_reference_hash": sha256(payload.encode("utf-8")).hexdigest(),
+                "street_reference_hash": payload,
             },
         )
 
@@ -111,6 +113,112 @@ def street_gap_analyzer_adapter(*, drivers: tuple[StreetGapDriver, ...] = ()) ->
             {"street_comparison": bundle},
         )
 
+    return run
+
+
+def broker_reference_load_adapter(*, loader: BrokerReferenceLoader) -> StageAdapter:
+    """Load richer references at the existing freeze boundary, never as Evidence."""
+    def run(context: OrchestratorContext) -> StageExecutionResult:
+        from .broker_comparison import BrokerReferenceBundle, broker_content_hash
+        try:
+            _require_post_freeze(context)
+            bundle = loader()
+            if not isinstance(bundle, BrokerReferenceBundle):
+                raise TypeError("broker reference loader must return BrokerReferenceBundle")
+            target_id = context.data.get("target_id")
+            if target_id and bundle.target_id != target_id:
+                raise ValueError("broker reference target differs from the frozen issuer")
+            digest = broker_content_hash(bundle)
+        except Exception as exc:
+            return StageExecutionResult(StageStatus.BLOCKED,
+                f"Broker reference load failed: {type(exc).__name__}: {exc}", blocking=True)
+        return StageExecutionResult(StageStatus.PASS,
+            "post-freeze broker reports and aggregate observations loaded with distinct provenance",
+            {"broker_reference_bundle": bundle, "broker_reference_hash": digest,
+             "street_reports": ()})
+    return run
+
+
+def broker_comparison_adapter(*, own_metrics_loader: BrokerOwnMetricsLoader | None = None) -> StageAdapter:
+    def run(context: OrchestratorContext) -> StageExecutionResult:
+        from .broker_comparison import BrokerReferenceBundle, build_broker_comparison
+        try:
+            _require_post_freeze(context)
+            bundle = context.data.get("broker_reference_bundle")
+            if not isinstance(bundle, BrokerReferenceBundle):
+                raise TypeError("BrokerReferenceBundle is missing")
+            valuation = context.data.get("distributional_primary_result") or context.data.get("generic_valuation_result")
+            token = context.freeze_token
+            metrics = own_metrics_loader(token.token_hash, token.valuation_hash, token.assumption_set_hash) if own_metrics_loader else ()
+            result = build_broker_comparison(bundle, frozen_metrics=metrics,
+                valuation=valuation, freeze_token_hash=token.token_hash,
+                intrinsic_as_of=str(context.data.get("data_cutoff") or bundle.comparison_as_of))
+        except Exception as exc:
+            return StageExecutionResult(StageStatus.BLOCKED,
+                f"Broker comparison failed: {type(exc).__name__}: {exc}", blocking=True)
+        return StageExecutionResult(StageStatus.PASS,
+            "broker forecast/basis comparisons completed; numeric target availability is recorded separately",
+            {"broker_comparison": result, "broker_frozen_operating_metrics": metrics})
+    return run
+
+
+def broker_review_adapter(*, officer: BrokerReviewOfficer | None,
+                          research_context_loader: BrokerReviewContextLoader | None = None) -> StageAdapter:
+    """After MARKET_COMPARE, ask for reasoned proposals, never valuation authority."""
+    def run(context: OrchestratorContext) -> StageExecutionResult:
+        from .broker_comparison import canonical_broker_payload, broker_content_hash
+        from .broker_judgment import (build_broker_judgment_request,
+            validate_broker_judgment_response, build_broker_revision_work_order)
+        from .runtime_authority import llm_proposal_scope
+        try:
+            _require_post_freeze(context)
+            bundle = context.data.get("broker_reference_bundle")
+            comparison = context.data.get("broker_comparison")
+            if bundle is None or comparison is None:
+                raise ValueError("post-freeze broker comparison is missing")
+            combined = {"broker_comparison": canonical_broker_payload(comparison),
+                "market_comparison": canonical_broker_payload(context.data.get("market_comparison")),
+                "reverse_dcf_context": canonical_broker_payload(context.data.get("reverse_dcf_context")),
+                "frozen_model_context": {
+                    "investor_report_profile": canonical_broker_payload(context.data.get("investor_report_profile")),
+                    "hypotheses": canonical_broker_payload(context.data.get("hypotheses", ())),
+                    "red_team_proposal": canonical_broker_payload(context.data.get("red_team_proposal")),
+                    "compiled_assumptions": canonical_broker_payload(context.data.get("compiled_assumption_set")),
+                }}
+            ledger = context.data.get("evidence_ledger")
+            if ledger is not None and callable(getattr(ledger, "active", None)):
+                combined["frozen_model_context"]["evidence"] = canonical_broker_payload(tuple(ledger.active()))
+            if research_context_loader is not None:
+                combined["followup_research_context"] = canonical_broker_payload(research_context_loader())
+            combined["research_mode"] = context.data.get("research_mode", "BLIND_BASELINE")
+            request = build_broker_judgment_request(target_id=bundle.target_id,
+                intrinsic_as_of=comparison.intrinsic_as_of,
+                comparison_as_of=bundle.comparison_as_of, run_id=context.run_id,
+                freeze_token_hash=context.freeze_token.token_hash,
+                comparison_payload=combined,
+                references_payload=canonical_broker_payload(bundle))
+            if officer is None:
+                return StageExecutionResult(StageStatus.RECOVERY_REQUIRED,
+                    "broker review requires a source-bound host proposal",
+                    {"broker_review_request": request.to_dict()}, blocking=True)
+            before = broker_content_hash(combined)
+            with llm_proposal_scope():
+                proposal = officer(request)
+            if broker_content_hash(combined) != before:
+                raise PermissionError("broker reviewer mutated its frozen comparison view")
+            receipt = validate_broker_judgment_response(proposal, request)
+            work_order = build_broker_revision_work_order(receipt)
+        except Exception as exc:
+            from .staff_transport import StaffWorkRequired
+            if isinstance(exc, StaffWorkRequired):
+                return StageExecutionResult(StageStatus.RECOVERY_REQUIRED,
+                    str(exc), {"broker_review_request": request.to_dict()}, blocking=True)
+            return StageExecutionResult(StageStatus.BLOCKED,
+                f"Broker review failed: {type(exc).__name__}: {exc}", blocking=True)
+        return StageExecutionResult(StageStatus.PASS,
+            "source-bound broker/market discrepancy review validated; new-run research proposals do not mutate frozen value",
+            {"broker_review_request": request.to_dict(), "broker_review_receipt": receipt,
+             "broker_revision_work_order": work_order})
     return run
 
 

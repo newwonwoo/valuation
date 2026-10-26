@@ -46,7 +46,8 @@ from .llm_staff import BridgeAnalyst, IntelligenceOfficer, RedTeamOfficer
 from .method_capabilities import MethodCapabilityRegistry
 from .orchestrator import StageAdapter
 from .per_adapters import PERInputsLoader
-from .post_freeze_adapters import MarketLoader, StreetLoader
+from .post_freeze_adapters import (MarketLoader, StreetLoader, BrokerReferenceLoader,
+    BrokerOwnMetricsLoader, BrokerReviewOfficer, BrokerReviewContextLoader)
 from .probability_adapter import CalibrationSnapshotLoader
 from .risk_adapters import BetaUniverseLoader, WACCInputsLoader
 from .runtime_support_adapters import DCFConsistencyFingerprintLoader
@@ -537,6 +538,10 @@ class KRLiveProviderExtensions:
     broker_research_loader: BrokerResearchLoader | None = None
     street_loader: StreetLoader | None = None
     market_loader: MarketLoader | None = None
+    broker_reference_loader: BrokerReferenceLoader | None = None
+    broker_own_metrics_loader: BrokerOwnMetricsLoader | None = None
+    broker_review_officer: BrokerReviewOfficer | None = None
+    broker_review_context_loader: BrokerReviewContextLoader | None = None
 
     def build_providers(
         self,
@@ -568,6 +573,10 @@ class KRLiveProviderExtensions:
             broker_research_loader=self.broker_research_loader,
             street_loader=self.street_loader,
             market_loader=self.market_loader,
+            broker_reference_loader=self.broker_reference_loader,
+            broker_own_metrics_loader=self.broker_own_metrics_loader,
+            broker_review_officer=self.broker_review_officer,
+            broker_review_context_loader=self.broker_review_context_loader,
         )
         providers.validate()
         return providers
@@ -589,6 +598,7 @@ class KRLiveRuntimeFactory:
     impact_config: GenericDecisionImpactConfig | None = None
     initial_data: Mapping[str, object] = field(default_factory=dict)
     core_collector_override: LiveCollectorProvider | None = None
+    run_lineage_validator: Callable[[LiveAnalysisRequest], object] | None = None
 
     def validate(self) -> None:
         self.network.validate()
@@ -620,6 +630,8 @@ class KRLiveRuntimeFactory:
             )
         request.validate()
         self.validate()
+        if self.run_lineage_validator is not None:
+            self.run_lineage_validator(request)
         jurisdiction = normalize_jurisdiction(
             request.jurisdiction or _KR_JURISDICTION
         )

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Mapping
 from urllib.parse import parse_qsl, urlsplit, urlunsplit
 
 from .ledger import EvidenceLedger
@@ -52,6 +53,42 @@ def canonical_verification_url(source_ref: str) -> str | None:
     if query_keys.intersection(_SENSITIVE_QUERY_KEYS):
         return None
     return urlunsplit((parts.scheme, parts.netloc, parts.path, parts.query, ""))
+
+
+def broker_reference_source_links(data: Mapping[str, object]) -> tuple[SourceLink, ...]:
+    """Keep post-freeze broker provenance visible without treating it as Evidence.
+
+    The input is the typed reference bundle installed by the post-freeze adapter.
+    Unknown original publication dates stay unknown; an aggregate observation is
+    never labelled as a named broker report's publication date.
+    """
+    bundle = data.get("broker_reference_bundle")
+    references = getattr(bundle, "references", ())
+    if not references:
+        references = getattr(data.get("broker_comparison"), "references", ())
+    if not isinstance(references, tuple):
+        raise ValueError("broker source references must be a typed tuple")
+    grouped: dict[str, dict[str, set[str]]] = {}
+    for reference in references:
+        source_ref = getattr(reference, "source_ref", None)
+        url = canonical_verification_url(source_ref) if isinstance(source_ref, str) else None
+        if url is None:
+            raise ValueError("broker report requires credential-free HTTP(S) source links")
+        kind = getattr(reference, "reference_kind", "")
+        kind = getattr(kind, "value", kind)
+        provider = str(getattr(reference, "provider_name", "") or "제공처 미확인")
+        broker = str(getattr(reference, "broker", "") or "원 증권사 미확인")
+        label = f"공개 집계: {provider}" if kind == "AGGREGATE_SNAPSHOT" else f"증권사: {broker}"
+        published = getattr(reference, "original_published_at", None)
+        observed = str(getattr(reference, "observed_at", "") or "미확인")
+        coverage = f"원 보고서 발행일 {published or '미확인'} · 자료 확인 {observed} · 동결 후 참고"
+        bucket = grouped.setdefault(url, {"labels": set(), "coverage": set()})
+        bucket["labels"].add(label)
+        bucket["coverage"].add(coverage)
+    return tuple(
+        SourceLink(url, tuple(sorted(row["labels"])), tuple(sorted(row["coverage"])))
+        for url, row in sorted(grouped.items())
+    )
 
 
 def build_source_link_index(
@@ -130,6 +167,11 @@ def build_source_link_index(
                         f"목표가 발표일 {report.published_date[:10]}"
                     ),
                 )
+
+    for link in broker_reference_source_links(data):
+        for label in link.labels:
+            for coverage in link.coverage:
+                add(link.url, label=label, coverage=coverage)
 
     market = data.get("market_observation")
     if isinstance(market, MarketObservation):

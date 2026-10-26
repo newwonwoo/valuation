@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
+from html import escape
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -18,7 +19,7 @@ import yaml
 from .post_freeze import MarketComparisonBundle
 from .records import MarketObservation
 from .ledger import EvidenceLedger
-from .source_reporting import canonical_verification_url
+from .source_reporting import broker_reference_source_links, canonical_verification_url
 from .street import StreetResearchReport
 from .distributional_runtime import DistributionalPrimaryValuationResult
 from .valuation_sensitivity import (
@@ -273,6 +274,8 @@ def _generic_sensitivity_lines(data: Mapping[str, object]) -> list[str]:
 
 
 def _street_comparison_lines(data: Mapping[str, object]) -> list[str]:
+    if data.get("broker_comparison") is not None:
+        return _broker_comparison_lines(data)
     reports = data.get("street_reports")
     if not isinstance(reports, tuple) or not reports or not all(
         isinstance(item, StreetResearchReport) for item in reports
@@ -290,6 +293,307 @@ def _street_comparison_lines(data: Mapping[str, object]) -> list[str]:
         )
         if report.valuation_basis_note:
             lines.append(f"  - 평가식 확인: {report.valuation_basis_note}")
+    return lines
+
+
+def broker_reference_summary(data: Mapping[str, object]) -> str | None:
+    """Summarize rich source availability without inventing a named consensus.
+
+    ``None`` preserves the caller's existing Street fallback. Counts here are
+    original documents or declared aggregate samples, never independent brokers.
+    """
+    from .broker_comparison import BrokerComparisonResult, BrokerReferenceKind
+
+    result = data.get("broker_comparison")
+    if result is None:
+        return None
+    if not isinstance(result, BrokerComparisonResult):
+        raise ValueError("public broker summary requires a typed result")
+    named = tuple(ref for ref in result.references
+                  if ref.reference_kind is BrokerReferenceKind.NAMED_REPORT)
+    targets = tuple(ref for ref in named if ref.target_price is not None)
+    parts = ([f"개별 목표가 원문 {len(targets)}건(시점·기준별 참고)"] if targets
+             else ["확인된 개별 목표가 없음"])
+    nr = tuple(ref for ref in named
+               if str(ref.rating or "").strip().upper().replace(" ", "_") in {"NR", "NOT_RATED"})
+    if nr:
+        with_claims = sum(bool(ref.claims) for ref in nr)
+        parts.append(f"NR 원문 {len(nr)}건 " + ("근거 비교" if with_claims == len(nr)
+                                                 else "확인(일부 근거만 구조화)" if with_claims
+                                                 else "확인(메타데이터)"))
+    other = tuple(ref for ref in named if ref not in nr and ref.target_price is None)
+    if other:
+        parts.append(f"목표가 없는 원문 {len(other)}건 확인")
+    for ref in result.references:
+        if ref.reference_kind is not BrokerReferenceKind.AGGREGATE_SNAPSHOT:
+            continue
+        provider = _broker_text(ref.provider_name)
+        if ref.target_price is None:
+            parts.append(f"{provider} 공개 집계 확인(숫자 목표가 미확인)")
+            continue
+        amount = (_broker_number(ref.target_price) + "원" if ref.target_currency == "KRW"
+                  else _broker_quantity(ref.target_price, ref.target_currency))
+        limited = (ref.target_share_basis == "UNKNOWN" or ref.original_published_at is None
+                   or ref.valuation_method is None or ref.broker is None)
+        qualifier = "기준 미확인·조건부 참고" if limited else "조건부 참고"
+        parts.append(f"{provider} 공개 집계 {amount}(표본 {ref.aggregate_report_count}건, {qualifier})")
+    return " · ".join(parts)
+
+
+def _broker_text(value: object) -> str:
+    """Render source-derived text as text, not table or HTML instructions."""
+    text = escape(" ".join(str(value).split()), quote=False)
+    for character in ("\\", "|", "[", "]", "`"):
+        text = text.replace(character, "\\" + character)
+    return text
+
+
+def _broker_number(value: object) -> str:
+    number = Decimal(str(value))
+    if not number.is_finite():
+        raise ValueError("broker comparison cannot display a non-finite number")
+    formatted = f"{number:,f}"
+    return formatted.rstrip("0").rstrip(".") if "." in formatted else formatted
+
+
+def _broker_quantity(value: object, unit: object, currency: object = "") -> str:
+    label = {
+        "KRW_billion": "십억원", "KRW billion": "십억원",
+        "KRW_million": "백만원", "KRW_thousand": "천원",
+        "KRW": "원", "KRW/share": "원/주", "shares": "주",
+        "USD": "달러", "USD_million": "백만 달러", "USD billion": "십억 달러",
+        "percent": "%", "ratio": "비율",
+    }.get(str(unit), str(unit) or str(currency))
+    return f"{_broker_number(value)} {_broker_text(label)}".rstrip()
+
+
+def _broker_metric_value(metric: Mapping[str, object]) -> str:
+    basis = metric.get("basis", {})
+    if not isinstance(basis, Mapping):
+        raise ValueError("broker comparison metric basis is missing")
+    unit, currency = basis.get("unit", ""), basis.get("currency", "")
+    if metric.get("value") is not None:
+        return _broker_quantity(metric["value"], unit, currency)
+    if metric.get("low") is not None and metric.get("high") is not None:
+        return (
+            _broker_quantity(metric["low"], unit, currency)
+            + " ~ " + _broker_quantity(metric["high"], unit, currency)
+        )
+    return "수치 미공개"
+
+
+def _broker_basis_label(basis: Mapping[str, object]) -> str:
+    metric = {
+        "revenue": "매출", "total_revenue": "총매출",
+        "consolidated_revenue": "연결 매출", "operating_profit": "영업이익",
+        "operating_income": "영업이익", "consolidated_operating_profit": "연결 영업이익",
+        "lease_adjusted_ebit": "리스 조정 영업이익", "fcff": "기업잉여현금흐름",
+        "net_income": "순이익", "EPS": "주당순이익",
+        "scope_revenue": "SCOPE 매출", "oncology_revenue": "종양학 사업 매출",
+        "screening_revenue": "검진 사업 매출",
+    }.get(str(basis.get("metric", "")), str(basis.get("metric", "지표 미확인")))
+    start, end = basis.get("period_start", "UNKNOWN"), basis.get("period_end", "UNKNOWN")
+    period = "기간 미확인" if "UNKNOWN" in {start, end} else f"{start}~{end}"
+    frequency = {"annual": "연간", "ANNUAL": "연간", "quarterly": "분기", "QUARTERLY": "분기"}.get(
+        str(basis.get("frequency", "")), str(basis.get("frequency", ""))
+    )
+    return _broker_text(f"{metric} · {period} · {frequency}".replace("UNKNOWN", "미확인"))
+
+
+def _broker_basis_context(basis: Mapping[str, object]) -> str:
+    labels = {"CONSOLIDATED": "연결", "STANDALONE": "별도",
+              "GROUP_INCLUDING_SUBSIDIARIES": "자회사 포함 전사",
+              "IFRS_REPORTED": "공시 IFRS", "UNKNOWN": "미확인"}
+    return " · ".join(
+        f"{label}: {_broker_text(labels.get(str(basis.get(key)), str(basis.get(key, '미확인'))))}"
+        for key, label in (("scope", "연결·별도"), ("perimeter", "사업 범위"),
+                           ("accounting_basis", "회계 기준"), ("currency", "통화"))
+    )
+
+
+def _broker_reason(reason: object) -> str:
+    text = str(reason)
+    phrases = {
+        "No same-definition own frozen metric was supplied; no proxy substituted.": "동결 모형에 같은 정의의 지표가 없어 대체 지표를 넣지 않았습니다",
+        "No same-period own metric; annual/quarterly or neighboring-year proxies are not substituted.": "동일 기간의 동결 지표가 없어 연간·분기 또는 인접 연도 값으로 대체하지 않았습니다",
+        "Target share/corporate-action basis is unknown; arithmetic is a conditional reference, not a normalized target.": "주식 수·자본변동 조정 기준이 미확인으로, 이 산술 비교는 동일 주식 기준으로 정규화된 목표가 비교가 아닌 조건부 참고입니다",
+        "Original report publication is unknown; the declared snapshot/observation time is not a report publication date.": "원 보고서 발행일은 미확인이며, 집계·관측 시각을 원 보고서 발행일로 간주하지 않았습니다",
+        "Original valuation method is undisclosed.": "원 평가방법이 공개되지 않았습니다",
+        "The declared target horizon has expired.": "명시된 목표가 적용 기간이 지났습니다",
+        "No frozen valuation supplied.": "동결 가치가 제공되지 않아 수치 비교를 하지 않았습니다",
+        "No FX conversion was authorized.": "통화가 달라 수치 차이를 산출하지 않았습니다. 환율 변환을 임의로 적용하지 않았습니다",
+        "A segment subtotal is not a whole-company target.": "사업부 소계를 전사 목표가와 비교하지 않았습니다",
+        "Some forecasts are only juxtaposed because metric/period/basis evidence is incomplete or incompatible.": "지표·기간·기준 근거가 불완전하거나 서로 달라 일부 전망은 차이를 계산하지 않고 나란히 제시했습니다",
+        "later comparison evidence; not knowable at the intrinsic cutoff and not retroactive valuation input.": "내재가치 기준시점 이후 확인된 비교 자료이며 과거 가치평가 입력에 소급 반영하지 않았습니다",
+        "original publication date unknown.": "원 보고서 발행일 미확인",
+    }
+    if text.startswith("Underlying source family "):
+        return "여러 보고서가 동일 원자료를 이용했습니다. 증권사 수를 독립 근거 수로 세지 않았습니다"
+    for before, after in phrases.items():
+        text = text.replace(before, after)
+    for before, after in (
+        ("period_start", "기간 시작"), ("period_end", "기간 종료"),
+        ("accounting_basis", "회계 기준"), ("frequency", "측정 주기"),
+        ("perimeter", "사업 범위"), ("scope", "연결·별도 범위"),
+        ("currency", "통화"), ("unit", "단위"), ("metric", "지표 정의"),
+        ("broker=", "증권사="), ("own=", "동결 모형="), ("UNKNOWN", "미확인"),
+    ):
+        text = text.replace(before, after)
+    return _broker_text(text)
+
+
+def _broker_comparison_lines(data: Mapping[str, object]) -> list[str]:
+    """Display the verified post-freeze comparison, not a new valuation claim."""
+    from .broker_comparison import BrokerComparisonResult, canonical_broker_payload
+
+    result = data.get("broker_comparison")
+    if not isinstance(result, BrokerComparisonResult):
+        raise ValueError("public broker comparison requires a typed result")
+    payload = canonical_broker_payload(result)
+    reference_labels = {
+        reference["reference_id"]: (
+            reference["provider_name"] + " 공개 집계"
+            if reference["reference_kind"] == "AGGREGATE_SNAPSHOT"
+            else reference.get("broker") or reference["provider_name"]
+        )
+        for reference in payload["references"]
+    }
+
+    def reason_text(reason: object) -> str:
+        text = str(reason)
+        for reference_id, label in reference_labels.items():
+            text = text.replace(reference_id + ":", label + ":")
+        return _broker_reason(text)
+    lines = [
+        "### 자료와 계산된 비교",
+        f"- 내재가치 기준일: {_broker_text(payload['intrinsic_as_of'])} · "
+        f"사후 비교 기준시각: {_broker_text(payload['comparison_as_of'])}.",
+        "- 목표가 유무와 투자의견은 별개입니다. 전망·가정의 비교 결과는 동결된 내재가치나 확률을 바꾸지 않습니다.",
+    ]
+    targets = {row["reference_id"]: row for row in payload["target_comparisons"]}
+    for reference in payload["references"]:
+        is_aggregate = reference["reference_kind"] == "AGGREGATE_SNAPSHOT"
+        provider = _broker_text(reference["provider_name"])
+        broker = _broker_text(reference.get("broker") or "원 증권사 미확인")
+        name = f"{provider} 공개 집계" if is_aggregate else broker
+        published = _broker_text(reference.get("original_published_at") or "미확인")
+        observed = _broker_text(reference["observed_at"])
+        lines.extend(("", f"#### {name}", f"- 원 보고서 발행일: {published} · 자료 확인시각: {observed}."))
+        if is_aggregate:
+            lines.append(f"- 귀속: {broker}. 이 집계를 특정 증권사의 개별 보고서로 간주하지 않습니다.")
+            if reference.get("snapshot_as_of"):
+                lines.append(f"- 집계 기준시각: {_broker_text(reference['snapshot_as_of'])}.")
+            if reference.get("last_rating_at"):
+                lines.append(f"- 집계에 표시된 마지막 투자의견 시점: {_broker_text(reference['last_rating_at'])} "
+                             "(원 보고서 발행일과 동일하다고 확인되지 않았습니다).")
+        if reference.get("rating"):
+            lines.append(f"- 원문 투자의견: {_broker_text(reference['rating'])}.")
+        if reference.get("target_price") is None:
+            lines.append("- 숫자 목표가: 미제시·미확인. 목표가 차이는 산출하지 않지만 아래 실적·논리 비교와 구분합니다.")
+        else:
+            target = _broker_quantity(reference["target_price"], reference.get("target_currency", ""))
+            label = "공개 집계 목표가" if is_aggregate else "원문 목표가"
+            lines.append(f"- {label}: {target}.")
+            if is_aggregate and reference.get("aggregate_report_count") is not None:
+                low = _broker_quantity(reference["aggregate_min_target_price"], reference["target_currency"])
+                high = _broker_quantity(reference["aggregate_max_target_price"], reference["target_currency"])
+                lines.append(f"- 집계 표본: {reference['aggregate_report_count']}건 · 범위 {low}~{high}. "
+                             "표본 수가 독립 검증이나 시장 전체의 대표성을 뜻하지 않습니다.")
+        if reference.get("valuation_method") or reference.get("valuation_base_year"):
+            lines.append(f"- 공개된 평가방법: {_broker_text(reference.get('valuation_method') or '미확인')} · "
+                         f"평가 기준연도: {_broker_text(reference.get('valuation_base_year') or '미확인')}.")
+        else:
+            lines.append("- 평가방법·기준연도: 미확인. 목표가에서 역산해 채우지 않았습니다.")
+
+        target_row = targets.get(reference["reference_id"])
+        if target_row and target_row.get("envelope") is not None:
+            envelope = target_row["envelope"]
+            lines.append("- 조건부 주당가치 차이(비교용 주당가치 − 참고 목표가):")
+            for gap in envelope["scenario_gaps"]:
+                value = _broker_quantity(gap["gap_per_share"], envelope["currency"])
+                percent = Decimal(gap["gap_pct_of_reference"])
+                lines.append(f"  - {_broker_text(gap['scenario_id'])}: {value} ({percent:+.1%}).")
+                if gap["limited_liability_floor_applied"]:
+                    signed = _broker_quantity(gap["intrinsic_value_per_share"], envelope["currency"])
+                    compared = _broker_quantity(gap["comparison_equity_value_per_share"], envelope["currency"])
+                    lines.append(f"    - 동결 잔여가치 {signed} 그대로 보존. 유한책임 주식의 비교용 값만 {compared}로 제한했습니다.")
+            if envelope.get("expected_gap") is None:
+                lines.append("  - 확률가중 목표가 차이는 산출하지 않았습니다.")
+            else:
+                expected = envelope["expected_gap"]
+                lines.append("  - 확률가중 차이: " + _broker_quantity(expected["gap_per_share"], envelope["currency"])
+                             + f" ({Decimal(expected['gap_pct_of_reference']):+.1%}).")
+        elif target_row and target_row.get("intrinsic_reference_low") is not None:
+            low = _broker_quantity(target_row["intrinsic_reference_low"], target_row["target_currency"])
+            high = _broker_quantity(target_row["intrinsic_reference_high"], target_row["target_currency"])
+            lines.append(f"- 동결 가치 참고범위: {low}~{high}. 단일 확률가중 값으로 바꾸지 않았습니다.")
+            if target_row.get("target_gap_to_low") is not None and target_row.get("target_gap_to_high") is not None:
+                low_gap = _broker_quantity(target_row["target_gap_to_low"], target_row["target_currency"])
+                high_gap = _broker_quantity(target_row["target_gap_to_high"], target_row["target_currency"])
+                lines.append(f"- 목표가 − 동결 범위 하단: {low_gap}; 목표가 − 동결 범위 상단: {high_gap}.")
+        elif target_row and reference.get("target_price") is not None:
+            lines.append("- 목표가 차이는 산출하지 않았습니다.")
+        if target_row and reference.get("target_price") is not None and target_row["reasons"]:
+            lines.append("- 목표가 비교 제한: " + "; ".join(reason_text(x) for x in target_row["reasons"]) + ".")
+
+        rows = [row for row in payload["metric_comparisons"] if row["reference_id"] == reference["reference_id"]]
+        if rows:
+            lines.extend(("", "| 지표·기간 | 증권사 제시값 | 동결 모형 | 동일기준 차이 |", "|---|---:|---|---|"))
+            for row in rows:
+                metric = row["broker_metric"]
+                own = row.get("own_metric")
+                own_text = "동일 지표 미확보" if own is None else (
+                    f"{_broker_text(own['scenario_id'])} · {_broker_metric_value(own['metric'])}"
+                )
+                difference = "기준 차이·미확인으로 미산출"
+                if row["status"] == "COMPARABLE":
+                    basis = metric["basis"]
+                    if row.get("difference") is not None:
+                        difference = _broker_quantity(row["difference"], basis["unit"], basis["currency"])
+                    elif row.get("difference_low") is not None and row.get("difference_high") is not None:
+                        difference = _broker_quantity(row["difference_low"], basis["unit"], basis["currency"]) + " ~ " + _broker_quantity(row["difference_high"], basis["unit"], basis["currency"])
+                    else:
+                        difference = "차이 미산출"
+                lines.append(f"| {_broker_basis_label(metric['basis'])} | {_broker_metric_value(metric)} | {own_text} | {difference} |")
+            for row in rows:
+                lines.append("- 증권사 지표 기준: " + _broker_basis_context(row["broker_metric"]["basis"]) + ".")
+                if row["reasons"]:
+                    lines.append("- 비교 제한: " + "; ".join(reason_text(x) for x in row["reasons"]) + ".")
+                    own = row.get("own_metric")
+                    if own is not None:
+                        lines.append(f"  - 동결 모형의 지표·기간: {_broker_basis_label(own['metric']['basis'])}.")
+                        lines.append("  - 동결 모형 기준: " + _broker_basis_context(own["metric"]["basis"]) + ".")
+        for claim in reference["claims"]:
+            lines.append(f"- 원문 근거·논리: {_broker_text(claim['summary'])}")
+        if not rows and not reference["claims"]:
+            lines.append("- 실적·논리 항목이 구조화되지 않은 자료로, 원문 메타데이터와 공개된 목표가만 확인했습니다.")
+        url = canonical_verification_url(reference["source_ref"])
+        if url is None:
+            raise ValueError("broker comparison requires public source links")
+        lines.append(f"- [해당 자료 원문]({url})")
+
+    if payload["warnings"]:
+        lines.extend(("", "### 비교의 한계"))
+        lines.extend(f"- {reason_text(warning)}" for warning in payload["warnings"])
+    lines.extend(("", "### 괴리 해석·재검토"))
+    neutral_note = ("괴리는 모형의 누락 또는 시장·증권사 기대의 과도함을 모두 시사할 수 있습니다. "
+                    "재검토가 상향·하향·불변 중 어느 결론인지 새 계산 전에 정하지 않습니다.")
+    receipt = data.get("broker_review_receipt")
+    if receipt is None:
+        lines.append("- 근거의 추가 검토가 필요합니다. 이 비교만으로 새 가정이나 가치 변경을 승인하지 않았습니다.")
+    else:
+        from .broker_judgment import BrokerReviewReceipt, broker_review_summary
+        if not isinstance(receipt, BrokerReviewReceipt):
+            raise ValueError("broker interpretation requires a typed review receipt")
+        if any(getattr(receipt, field) != getattr(result, field) for field in (
+            "target_id", "intrinsic_as_of", "comparison_as_of", "freeze_token_hash",
+        )):
+            raise ValueError("broker interpretation does not match the frozen comparison")
+        summary_budget = 1000 - len(neutral_note) - 30
+        summary = broker_review_summary(receipt, max_chars=summary_budget)
+        # Keep the interpretation distinct from the deterministic values above.
+        lines.append("- " + _broker_text(summary)[:summary_budget])
+    lines.append("- " + neutral_note)
     return lines
 
 
@@ -335,10 +639,15 @@ def _supplemental_source_lines(
     linked: set[str],
 ) -> list[str]:
     """Add newly accepted research URLs without exposing evidence identities."""
+    lines = []
+    for reference in broker_reference_source_links(data):
+        if reference.url not in linked:
+            label = _broker_text(" / ".join(reference.labels))
+            lines.append(f"- 사후 비교 자료: [{label}]({reference.url})")
+            linked.add(reference.url)
     ledger = data.get("evidence_ledger")
     if not isinstance(ledger, EvidenceLedger):
-        return []
-    lines = []
+        return lines
     for record in ledger.active():
         if not (
             getattr(record, "research_receipt", None)
@@ -449,6 +758,7 @@ def render_distributional_investor_report(
 
     scenario_profile = _scenario_profile_map(profile)
     values = {"Down": low, "Base": reference, "Bull": high}
+    broker_summary = broker_reference_summary(data)
     lines = [
         f"# {company} 투자보고서",
         "",
@@ -457,6 +767,7 @@ def render_distributional_investor_report(
         f"- 현재가: {current_price}",
         f"- 기준 내재가치: {_money(reference)}",
         f"- 가치평가 범위: {_money(low)}~{_money(high)} ({range_label})",
+        *((f"- 증권사 참고자료: {broker_summary}",) if broker_summary is not None else ()),
         *(
             (
                 "- 단일 확률가중 목표가: 미산출 — 보정된 단일 확률 대신 허용 가정 조합의 범위를 사용합니다.",
@@ -529,7 +840,7 @@ def render_distributional_investor_report(
         )
     )
     street = data.get("street_comparison")
-    if street is not None and hasattr(street, "mean_target_price"):
+    if data.get("broker_comparison") is None and street is not None and hasattr(street, "mean_target_price"):
         lines.append(
             f"- 증권사 목표가 평균 {_money(getattr(street, 'mean_target_price'))}, "
             f"범위 {_money(getattr(street, 'min_target_price'))}~{_money(getattr(street, 'max_target_price'))} "
@@ -752,6 +1063,9 @@ def render_investor_report(
         f"- 현재가: {current_price}{current_as_of}",
         f"- {reference_label}: {_money(scenarios['Base'])}",
     ]
+    broker_summary = broker_reference_summary(data)
+    if broker_summary is not None:
+        lines.append(f"- 증권사 참고자료: {broker_summary}")
     if probability_target is not None:
         lines.append(f"- 확률가중 목표가: {_money(probability_target)}")
     if declared_entry_price is not None:

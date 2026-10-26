@@ -6,7 +6,7 @@ These preserve mandatory runtime, revision and delivery requirements. Read the a
 1. LLM = evidence interpretation, causal reasoning, Economic-Twin rationale, hypothesis generation, confidence/probability rationale and missing-evidence requests.
 2. Deterministic code = units, valuation math, beta/PER partial pooling, WACC arithmetic, probability weighting, DCF–PER consistency, Street arithmetic, duplicate-path detection and audit tests.
 3. Market price is comparison-only; never solve intrinsic assumptions backwards from price.
-4. Street targets/forecasts are inaccessible until `INTRINSIC_VALUE_FREEZE`; a Street-discovered claim cannot mutate the same frozen run.
+4. In `BLIND_BASELINE`, Street targets/forecasts are inaccessible until `INTRINSIC_VALUE_FREEZE`; no comparison can mutate that frozen run. See the explicit informed-revision policy below.
 5. Evidence, Hypothesis, Bridge, Assumption and Model Output are separate object types.
 6. Segment decomposition → evidence-driven multi-label Industry DNA routing → Module Requirement Plan happens before valuation-method selection/data collection.
 7. Unverified futures are not automatic 0/100. A success probability or single probability-weighted target requires calibration. An `UNCALIBRATED` analyst prior may support only a source-bound ambiguity set: report its expected-value interval and, when every dated payoff is independently authorized, a robust expected-return entry ceiling across complete probability/pricing-model vertices. This is not the branch with the lowest individual probability and must never be described as a calibrated success probability.
@@ -27,7 +27,7 @@ These preserve mandatory runtime, revision and delivery requirements. Read the a
 ## Industry Knowledge / Signal Intelligence gates
 - Freeze Industry Knowledge and source-watch snapshots per run; do not let later publications silently mutate an in-flight valuation.
 - Use `KnowledgeLayer` placement contracts. Structural priors, broker research, alternative data and calibration references cannot bypass primary/company Evidence → Bridge requirements.
-- Broker/IB research before intrinsic freeze is discovery/corroboration only; target-company forecast/target price/rating/multiple/consensus are post-freeze Street objects.
+- In `BLIND_BASELINE`, broker/IB research before intrinsic freeze is discovery/corroboration only; issuer forecasts/targets remain post-freeze objects. An `INFORMED_REVISION` admits only the reviewed underwriting handoff described below, never the raw comparison state.
 - `NOT_OBSERVED` is not `NO_EVENT`; source failure, reporting lag and incomplete coverage cannot be converted into negative evidence.
 - Preserve event/effective/published/first-seen/revision timestamps to prevent look-ahead.
 - Financing-market references may support funding/WACC through an explicit Bridge; positioning signals never mutate intrinsic; target-equity market references are post-freeze only.
@@ -36,7 +36,7 @@ These preserve mandatory runtime, revision and delivery requirements. Read the a
 
 ## Workflow gates
 - Keep root and canonical Skill byte-identical.
-- Do not load Street/current price before Audit PASS and intrinsic freeze.
+- Do not load raw Street/current-price comparison state before Audit PASS and intrinsic freeze. Keep reviewed informed-revision underwriting distinct from that comparison state.
 - Reverse DCF/current-market implied expectations are post-freeze only and cannot mutate the same frozen run.
 - Do not emit intrinsic value from blocked runs; blocked runs cannot replace last-good state.
 - Red Team must not see market/Street targets, intrinsic value, position data or market loaders.
@@ -71,3 +71,34 @@ These preserve mandatory runtime, revision and delivery requirements. Read the a
 
 ## Methodology description
 The v0.4 finance-calibration system is **academically grounded engineering synthesis**. v0.5.2 adds repository-specific evidence-governed Industry Knowledge and Signal Intelligence operating contracts. Established finance/accounting components and repository-specific orchestration must be distinguished explicitly; see `docs/V04_ROCKETSLA_EXTENSION.md`.
+
+## Broker-informed revision policy (intentional 2026-10-26 revision)
+
+The default `BLIND_BASELINE` still excludes issuer Street forecasts/targets and current
+share price until audit and intrinsic freeze. Preserve that immutable baseline.
+After comparison, the host model individually judges missing mechanisms, basis
+mismatches, source dependence, conflicting estimates and possible market overvaluation.
+Claim type and NR status are context, not automatic economic acceptance/rejection.
+A large price gap is a research question, never an objective to fit.
+
+An explicitly labelled `INFORMED_REVISION` may use a source-bound, individually
+reasoned adoption, adjustment or rejection of a broker forecast or method assumption,
+including a numeric point/range proposal. Identical proposed numbers are not by
+themselves proof of unreasoned copying. Preserve the source's forecast status and
+uncertainty; primary-source corroboration strengthens a case but future realization
+is not a mandatory proof gate. The proposal enters the existing research campaign
+as `ANALYST_UNDERWRITING`, then Evidence → Hypothesis → Bridge → Compiler → full
+canonical calculation/audit/new freeze. It cannot commit final value, scenario
+probabilities, PASS or a freeze token, and may not alter the old frozen run. Market
+prices/targets remain comparison observations, not final-value operands. A method
+or operating candidate must identify its actual supported model input and mechanism.
+
+The orchestrator validates exact source/hash/claim and receipt bindings, availability
+and comparison cutoffs, period/perimeter/accounting basis, units, permissions,
+duplicates, authority and calculation consistency. Semantic judgment belongs to the
+host; unknown information remains explicit with a further research question. Maintain
+one baseline/review lineage, the existing retry budget, and evidence or reproducible
+interpretation novelty across renamed runs. The next run is informed, not newly blind.
+Report prior/new value and assumption delta, including an unchanged conclusion; send
+unresolved findings and the new result back to source-bound host review. No claim of
+closed-loop completion is justified by writing a work order alone.

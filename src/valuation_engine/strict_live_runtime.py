@@ -40,6 +40,8 @@ from .recovery_authority import (
     proposal_only_recovery_adapter,
 )
 from .rocket_context_engine import strict_rocket_insight_dispatch_adapter
+from .runtime_support_adapters import chain_stage_adapters
+from .post_freeze_adapters import broker_review_adapter
 from .unit_contracts import UnitContractRegistry, load_unit_contract_registry
 
 
@@ -285,13 +287,18 @@ def run_prism(config: LivePrimaryRuntimeConfig) -> AuthorityControlledResult:
     # Street/market data remain post-freeze. The loaders are shared, while the
     # comparison math and persistence are route-specific and cannot depend on a
     # fabricated GenericValuationResult.
-    adapters["STREET_GAP_ANALYZER"] = distributional_or_generic_adapter(
-        generic_adapter=adapters["STREET_GAP_ANALYZER"],
-        distributional_adapter=distributional_street_gap_adapter(),
-    )
+    if getattr(strict_config.providers, "broker_reference_loader", None) is None:
+        adapters["STREET_GAP_ANALYZER"] = distributional_or_generic_adapter(
+            generic_adapter=adapters["STREET_GAP_ANALYZER"],
+            distributional_adapter=distributional_street_gap_adapter(),
+        )
     adapters["MARKET_COMPARE"] = distributional_or_generic_adapter(
         generic_adapter=adapters["MARKET_COMPARE"],
-        distributional_adapter=distributional_market_compare_adapter(),
+        distributional_adapter=chain_stage_adapters(
+            distributional_market_compare_adapter(),
+            *([broker_review_adapter(officer=strict_config.providers.broker_review_officer, research_context_loader=strict_config.providers.broker_review_context_loader)]
+              if getattr(strict_config.providers, "broker_reference_loader", None) is not None else []),
+        ),
     )
     adapters["SAVE_STATE"] = distributional_or_generic_adapter(
         generic_adapter=adapters["SAVE_STATE"],

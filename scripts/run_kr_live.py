@@ -1089,6 +1089,13 @@ def execute_run(
         parent_adjustments=parent_adjustments,
         market_config_path=market_path,
         street_export_path=_optional_path(run_dir, "street.json"),
+        broker_reference_path=_optional_path(run_dir, "broker_references.json"),
+        broker_own_metrics_path=_optional_path(run_dir, "broker_own_metrics.json"),
+        broker_review_context_path=_optional_path(run_dir, "broker_review_context.json"),
+        informed_revision_parent_freeze_path=(str(_resolve(run_dir, config["informed_revision_parent_freeze_path"])) if config.get("informed_revision_parent_freeze_path") else None),
+        informed_revision_root_freeze_path=(str(_resolve(run_dir, config["informed_revision_root_freeze_path"])) if config.get("informed_revision_root_freeze_path") else None),
+        informed_revision_journal_path=(str(_resolve(run_dir, config["informed_revision_journal_path"])) if config.get("informed_revision_journal_path") else None),
+        informed_revision_max_attempts=int(config.get("informed_revision_max_attempts", 10)),
         market_currency=(
             str(config.get("market_currency", "KRW")) if market_path else None
         ),

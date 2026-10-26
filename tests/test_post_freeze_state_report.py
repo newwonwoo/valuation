@@ -119,13 +119,9 @@ def test_post_freeze_scenario_envelope_state_and_report(tmp_path):
     street = result.data["street_comparison"]
     market = result.data["market_comparison"]
     assert result.data["street_reports"] == reports()
-    payload = "\n".join(
-        sorted(
-            f"{item.broker}|{item.analyst}|{item.published_date}|{item.target_price}|{item.target_price_currency}|{item.valuation_method}|{item.source_ref}"
-            for item in reports()
-        )
-    )
-    assert result.data["street_reference_hash"] == sha256(payload.encode("utf-8")).hexdigest()
+    from valuation_engine.broker_comparison import broker_content_hash
+    # Full semantic hash intentionally replaces the old price-only digest.
+    assert result.data["street_reference_hash"] == broker_content_hash(reports())
     assert street.envelope.expected_gap is None
     assert street.envelope.get("Base").gap_per_share == Decimal("0")
     assert market.envelope.get("Base").gap_per_share == Decimal("5")
@@ -202,3 +198,19 @@ def test_empty_authorized_street_export_loads_as_no_eligible_numeric_references(
 
     with _pytest.raises(Exception, match="authorization_basis"):
         street_loader_from_authorized_export(str(bad))()
+
+
+def test_legacy_street_hash_binds_estimates_base_year_and_argument(tmp_path):
+    from dataclasses import replace
+    from valuation_engine.street import StreetEstimate
+    original=reports()
+    old=run_post_freeze(tmp_path/'base',street_reports=original)
+    variants=(replace(original[0],base_year='2028'),
+              replace(original[0],argument_summary='Different source-bound economic argument'),
+              replace(original[0],valuation_basis_note='Different accounting perimeter'),
+              replace(original[0],estimates=(StreetEstimate('revenue','2027',100,'KRW_billion'),)))
+    for index,changed in enumerate(variants):
+        run=run_post_freeze(tmp_path/str(index),street_reports=(changed,original[1]))
+        assert run.data['street_reference_hash'] != old.data['street_reference_hash']
+        assert run.freeze_token == old.freeze_token
+        assert run.data['generic_valuation_result'] == old.data['generic_valuation_result']

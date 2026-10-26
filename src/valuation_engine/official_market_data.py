@@ -512,3 +512,78 @@ def load_authorized_street_export(path: str | Path):
 
 def street_loader_from_authorized_export(path: str | Path):
     return lambda: load_authorized_street_export(path)
+
+
+def load_broker_own_metric_manifest(path: str | Path, *, freeze_token_hash: str,
+                                   valuation_hash: str, assumption_set_hash: str):
+    """Read source-bound own-model metrics; never accept a newly typed value.
+
+    The manifest is a replay binding to a previously frozen model, not a claim
+    that an arbitrary attachment was itself compiler-verified. The exact source
+    artifact hash and pointed value must agree, as must the frozen model hashes.
+    """
+    from hashlib import sha256
+    from .broker_comparison import parse_frozen_operating_metrics
+    manifest_path = Path(path)
+    payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if payload.get("schema_version") != "broker-own-metrics/v1":
+        raise DataCollectionError("unsupported broker own metric manifest")
+    if payload.get("expected_valuation_hash") != valuation_hash:
+        raise DataCollectionError("own metric manifest is not bound to this frozen valuation")
+    if payload.get("expected_assumption_set_hash") != assumption_set_hash:
+        raise DataCollectionError("own metric manifest is not bound to these frozen assumptions")
+    rows = []
+    for original in payload.get("metrics", []):
+        row = dict(original)
+        artifact = (manifest_path.parent / row["artifact_ref"]).resolve()
+        raw = artifact.read_bytes()
+        if sha256(raw).hexdigest() != row["artifact_sha256"]:
+            raise DataCollectionError("own metric artifact content hash mismatch")
+        value = json.loads(raw)
+        pointer = row["json_pointer"]
+        if not isinstance(pointer, str) or not pointer.startswith("/"):
+            raise DataCollectionError("own metric requires exact JSON pointer")
+        for token in pointer[1:].split("/"):
+            token = token.replace("~1", "/").replace("~0", "~")
+            value = value[int(token)] if isinstance(value, list) else value[token]
+        metric = row["metric"]
+        if metric.get("value") is not None:
+            if Decimal(str(value)) != Decimal(str(metric["value"])):
+                raise DataCollectionError("own metric value differs from its source pointer")
+        elif not isinstance(value, dict) or any(
+            Decimal(str(value.get(bound))) != Decimal(str(metric.get(bound)))
+            for bound in ("low", "high")
+        ):
+            raise DataCollectionError("own metric bounds differ from source pointer")
+        row.update(artifact_ref=str(artifact), freeze_token_hash=freeze_token_hash,
+                   valuation_hash=valuation_hash)
+        rows.append(row)
+    return parse_frozen_operating_metrics(rows)
+
+
+def load_broker_review_context(path: str | Path):
+    """Post-freeze research attachments, bytes/hash bound rather than paraphrase-only.
+
+    These files inform host review; this loader grants no primary-source truth,
+    hypothesis adoption, numeric-input or same-run mutation authority.
+    """
+    from hashlib import sha256
+    from .host_judgment import load_judgment_json
+    manifest = Path(path)
+    payload = load_judgment_json(manifest.read_text(encoding="utf-8"))
+    if set(payload) != {"schema_version", "purpose", "artifacts"} or payload["schema_version"] != "broker-review-context/v1":
+        raise DataCollectionError("unsupported broker review context manifest")
+    if not isinstance(payload["artifacts"], list):
+        raise DataCollectionError("broker review artifacts must be a list")
+    rows = []
+    identities = set()
+    for row in payload["artifacts"]:
+        if set(row) != {"artifact_id", "path", "sha256", "description"} or row["artifact_id"] in identities:
+            raise DataCollectionError("broker context requires unique complete artifact identities")
+        identities.add(row["artifact_id"])
+        artifact = (manifest.parent / row["path"]).resolve()
+        raw = artifact.read_bytes()
+        if sha256(raw).hexdigest() != row["sha256"]:
+            raise DataCollectionError("broker review research artifact hash mismatch")
+        rows.append({**row, "path": str(artifact), "content_text": raw.decode("utf-8")})
+    return {**payload, "artifacts": rows}

@@ -142,6 +142,11 @@ def load_declared_underwriting(path: str | Path) -> dict:
         raise DeclaredUnderwritingError(
             "declared underwriting requires a declarations mapping"
         )
+    from .research_campaign import _revision_context, fingerprint
+    try:
+        outer_review = _revision_context(payload)
+    except ValueError as exc:
+        raise DeclaredUnderwritingError(f"invalid underwriting revision context: {exc}") from exc
     normalized_declarations: dict[object, list[dict]] = {}
     for metric, entry in declarations.items():
         # A metric declared once is the historical single-row form. A list of
@@ -162,6 +167,24 @@ def load_declared_underwriting(path: str | Path) -> dict:
                 raise DeclaredUnderwritingError(
                     f"declaration {metric} must be a mapping"
                 )
+            # Derived business FCFF receipts retain their constituent research
+            # orders too. Neither direct nor derived informed inputs may lose
+            # outer execution mode/lineage at this final file-ingress boundary.
+            research_items = [row.get("research_receipt")]
+            business = row.get("business_cashflow_receipt")
+            if isinstance(business, Mapping):
+                assumptions = business.get("assumptions", {})
+                if isinstance(assumptions, Mapping):
+                    research_items.extend(assumptions.values())
+            for research in research_items:
+                if not isinstance(research, Mapping):
+                    continue
+                order = research.get("work_order", {})
+                if isinstance(order, Mapping) and (order.get("research_mode") == "INFORMED_REVISION" or "informed_revision" in order):
+                    if outer_review is None or order.get("research_mode") != "INFORMED_REVISION":
+                        raise DeclaredUnderwritingError("nested informed research cannot enter a blind underwriting file")
+                    if fingerprint(order.get("informed_revision")) != fingerprint(payload.get("informed_revision")):
+                        raise DeclaredUnderwritingError("nested informed research differs from outer revision lineage")
             if row.get("value") is None or not str(row.get("unit") or ""):
                 raise DeclaredUnderwritingError(
                     f"declaration {metric} requires value and unit"
@@ -200,6 +223,8 @@ def load_declared_underwriting(path: str | Path) -> dict:
         "source_ref": source_ref,
         "declarations": normalized_declarations,
         "file_sha256": sha256(raw.encode("utf-8")).hexdigest(),
+        "research_mode": payload.get("research_mode", "BLIND_BASELINE"),
+        **({"informed_revision": payload["informed_revision"]} if outer_review is not None else {}),
     }
 
 

@@ -40,7 +40,7 @@ After `FINAL_REPORT` passes, the verified controlled-run wrapper includes all fi
 
 The persisted final report contains a direct-verification source section. Street reports and the market observation retain their original HTTP(S) links alongside the pre-freeze Evidence links. `SAVE_STATE` fails closed if any live report source is missing, non-HTTP or credential-bearing, so the immutable report and user-visible report cannot diverge on provenance.
 
-LLM-authored linkage reasoning is displayed only in a separate `인공지능 인사이트` section capped at 1,000 characters. The complete typed linkage artifact remains separately persisted. Neither the compact display nor either SVG card may blur this reasoning into deterministic valuation output or invent a buy price when calibration/entry governance is absent.
+LLM-authored linkage reasoning is displayed separately from deterministic comparison, capped at 1,000 characters. The current public renderer uses the neutral heading `해석·추가 확인` rather than a model-role heading; this reconciles the investor-report contract without hiding the typed reasoning. The complete typed linkage artifact remains separately persisted. Neither the compact display nor either SVG card may blur this reasoning into deterministic valuation output or invent a buy price when calibration/entry governance is absent.
 
 ## 6. Failure policy
 
@@ -49,3 +49,9 @@ LLM-authored linkage reasoning is displayed only in a separate `인공지능 인
 - missing Street/market data in a required stage: `BLOCKED`;
 - uncalibrated scenario weights: scenario envelope continues, Expected Value stays absent;
 - state persistence failure: `BLOCKED`, prior current state remains unchanged.
+
+## 7. Source-bound broker review and informed re-entry
+
+Optional `broker_references.json` and `broker_own_metrics.json` declarations use the rich post-freeze typed route. Named reports, NR claims and aggregate observations preserve separate publication/observation/rating times. Own operating metrics require source-byte hashes and exact JSON pointers bound to the frozen value/assumption identity. Only exact comparable bases receive arithmetic deltas; missing operating profit is not substituted with FCFF or lease-adjusted EBIT. Numeric-target N/A does not suppress forecast/method comparison.
+
+`MARKET_COMPARE` then emits a hash-bound `broker_review_officer` request containing originals/claims, limitations, comparison and frozen model context. Missing responses require host work, not silent N/A. Persist `broker_reference.json`, `broker_compare.json`, `broker_review.json` and `broker_revision_work_order.json`. See the explicit informed-revision policy in `VALUATION_AGENT_CONTRACTS.md`: judgment can propose point/range assumptions, while the orchestrator owns research admission, full recalculation, audit and new freeze.

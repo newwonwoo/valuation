@@ -740,6 +740,8 @@ def render_generic_report(
             f" ({street_bundle.consensus.report_count}건, 가치평가 확정 후 참고)"
         )
     )
+    from .investor_report import broker_reference_summary
+    street_reference = broker_reference_summary(data) or street_reference
     probability_assessment = data.get("scenario_probability_assessment")
     probability_summary = "미산출"
     calibrated_probabilities = {
@@ -999,7 +1001,10 @@ def render_generic_report(
         lines.append("- 미평가 사업부는 0원으로 합산하지 않았습니다.")
 
     lines.extend(("", "## 증권사·시장 비교"))
-    if isinstance(street, StreetComparisonBundle):
+    if data.get("broker_comparison") is not None:
+        from .investor_report import _broker_comparison_lines
+        lines.extend(_broker_comparison_lines(data))
+    elif isinstance(street, StreetComparisonBundle):
         lines.extend((
             f"- **증권사 평균 목표가:** {_fmt_money(street.consensus.mean_target_price, street.consensus.target_price_currency)}"
             f"{currency_label_ko(street.consensus.target_price_currency)} ({street.consensus.report_count}건)",
@@ -1373,6 +1378,13 @@ def save_state_adapter(
                 },
                 "context_strength_linkages.json": _jsonable(linkage_artifact),
                 "street_compare.json": _jsonable(context.data.get("street_comparison")),
+                **({
+                    "broker_reference.json": _jsonable(context.data.get("broker_reference_bundle")),
+                    "broker_compare.json": _jsonable(context.data.get("broker_comparison")),
+                    "broker_review_request.json": _jsonable(context.data.get("broker_review_request")),
+                    "broker_review.json": _jsonable(context.data.get("broker_review_receipt")),
+                    "broker_revision_work_order.json": _jsonable(context.data.get("broker_revision_work_order")),
+                } if context.data.get("broker_reference_bundle") is not None else {}),
                 "market_compare.json": _jsonable(context.data.get("market_comparison")),
                 "reverse_dcf.json": _jsonable(context.data.get("reverse_dcf_context")),
                 "evidence_composition.json": _jsonable(
