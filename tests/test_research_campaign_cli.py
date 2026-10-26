@@ -42,8 +42,22 @@ def test_exhausted_research_is_resumable_without_fabricated_value(tmp_path):
     assert result["status"] == "WORK_REQUIRED" and merged is None
     assert result["continuation"]["status"] == "RESEARCH_BUDGET_REACHED"
     assert "value" not in result["outputs"]["capacity"]
-    resumed, _ = execute_campaign(plan_path, workspace, provider=answer)
+    calls = []
+    resumed, _ = execute_campaign(plan_path, workspace,
+                                  provider=lambda order: calls.append(order) or answer(order))
+    assert resumed["status"] == "WORK_REQUIRED"
+    assert calls == []  # restarting does not replenish the same source/strategy budget
+    order = json.loads(next((workspace / "requests").glob("*.json")).read_text())
+    (workspace / "responses/capacity.json").write_text(json.dumps(answer(order)))
+    resumed, _ = execute_campaign(plan_path, workspace)
     assert resumed["status"] == "READY_FOR_COMPILATION"
+    changed = campaign_plan()
+    changed['source_version'] = 'new-primary-evidence-fixture'
+    plan_path.write_text(yaml.safe_dump(changed))
+    fresh, _ = execute_campaign(plan_path, workspace,
+                                provider=lambda order: calls.append(order) or answer(order))
+    assert fresh['status'] == 'READY_FOR_COMPILATION'
+    assert len(calls) == 1
 
 
 def test_cli_file_handoff_resume_and_changed_code_context(tmp_path, monkeypatch):

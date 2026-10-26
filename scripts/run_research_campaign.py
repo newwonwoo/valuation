@@ -16,6 +16,7 @@ import importlib
 import json
 from pathlib import Path
 import sys
+import threading
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
@@ -117,7 +118,30 @@ def _execute_campaign(plan_path: Path, workspace: Path, *, underwriting_path: Pa
     cache_path = workspace / "cache.json"
     cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
     evaluator = model_evaluator(plan)
+    attempts_path = workspace / "recovery_attempts.json"
+    attempt_state = json.loads(attempts_path.read_text()) if attempts_path.is_file() else {
+        "schema_version": "research-recovery-attempts/v1", "requests": {}}
+    if attempt_state.get("schema_version") != "research-recovery-attempts/v1":
+        raise ResearchCampaignError("unsupported persistent research retry state")
     attempts = {}
+    attempt_lock = threading.Lock()
+
+    def reserve_attempt(order):
+        # The semantic request hash already includes target, period, baseline,
+        # business inputs and code version. Reinvoking the same workspace must
+        # not reset a spent source/strategy budget.
+        with attempt_lock:
+            rid, key = order["request"]["request_id"], order["request_hash"]
+            entry = attempt_state["requests"].setdefault(key, {"request_id": rid, "attempts": 0})
+            attempt = entry["attempts"]
+            attempts[rid] = attempt
+            if attempt >= max_rounds:
+                return None
+            entry["attempts"] = attempts[rid] = attempt + 1
+            temporary = attempts_path.with_suffix(".tmp")
+            temporary.write_text(json.dumps(attempt_state, sort_keys=True) + "\n")
+            temporary.replace(attempts_path)
+            return attempt
 
     def versions():
         return {req["request_id"]: sha256(path.read_bytes()).hexdigest()
@@ -164,11 +188,14 @@ def _execute_campaign(plan_path: Path, workspace: Path, *, underwriting_path: Pa
         # Advisory feedback is outside the canonical work-order identity. The
         # response still cites the original request_hash, never a repaired value.
         rid = order["request"]["request_id"]
-        attempt = attempts.get(rid, 0)
+        attempt = reserve_attempt(order)
+        if attempt is None:
+            # Return any existing reply for its ordinary deterministic verdict;
+            # never issue another paid/network host call for an exhausted order.
+            return json.loads(path.read_text()) if path.is_file() else None
         prompt = {**order, "recovery": research_recovery_context(attempt, feedback)}
         if feedback:
             prompt["repair_feedback"] = feedback
-        attempts[rid] = attempt + 1
         response = provider(prompt)
         write_immutable_json(workspace / "attempt_history", {
             "request_hash": order["request_hash"], "recovery": prompt["recovery"],
@@ -328,6 +355,11 @@ def main(argv=None) -> int:
             path = write_immutable_json(args.workspace / "requests", completion, "valuation-gap")
             print(f"후속 보완: {completion['blocked_stage']} — {completion['reason']}")
             print(f"재개 작업지시: {path}")
+            if completion.get("judgment_request_path"):
+                print(f"판단 요청: {completion['judgment_request_path']}")
+                print(f"판단 응답: {completion['judgment_response_path']}")
+            if completion.get("response_error"):
+                print(f"응답 검증 오류: {completion['response_error']}")
             return 2
         return 0
     except (ValueError, TypeError, OSError) as exc:

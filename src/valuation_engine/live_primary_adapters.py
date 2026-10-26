@@ -11,6 +11,7 @@ from zipfile import BadZipFile, ZipFile
 
 from .control_plane import StageStatus
 from .industry_dna import IndustryDNAProfile
+from .host_judgment import HostJudgmentError, HostJudgmentRequired
 from .live_indexers import require_env_credential
 from .orchestrator import OrchestratorContext, StageAdapter, StageExecutionResult
 from .source_watch import WatchFinding, WatchStatus, requires_revalidation
@@ -448,6 +449,24 @@ def live_industry_snapshot_adapter(
         try:
             snapshot = loader(identity)
             snapshot.validate()
+        except HostJudgmentRequired as exc:
+            outputs = {"host_judgment_request": exc.request.to_dict(),
+                       "host_judgment_status": exc.status}
+            if exc.accepted_receipt is not None:
+                outputs["host_judgment_receipt"] = exc.accepted_receipt
+            return StageExecutionResult(
+                StageStatus.RECOVERY_REQUIRED,
+                f"live Industry Knowledge requires typed host judgment: {exc}",
+                outputs,
+                blocking=True,
+            )
+        except HostJudgmentError as exc:
+            return StageExecutionResult(
+                StageStatus.BLOCKED,
+                f"live Industry Knowledge judgment integrity failure: {exc}",
+                {"host_judgment_status": "HARD_BLOCKED"},
+                blocking=True,
+            )
         except Exception as exc:
             return StageExecutionResult(
                 StageStatus.RECOVERY_REQUIRED,

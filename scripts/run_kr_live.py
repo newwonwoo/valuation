@@ -826,15 +826,17 @@ def reuse_published_report_bundle(
     are byte-identical to their receipts.
     """
     run_dir = Path(run_dir).resolve()
+    output_root = Path(output_dir or run_dir / "out").resolve()
+    # A fresh prepared run has neither a report nor its presentation profile.
+    # Profile absence is an input-recovery concern, not a failed reuse attempt.
+    if not output_root.is_dir() or not any(output_root.glob("*_LATEST_REPORT.json")):
+        return None
     investor_profile_path = run_dir / "declarations" / "investor_report.yaml"
     if not investor_profile_path.is_file():
         raise RunbookError(
             "public report reuse requires declarations/investor_report.yaml; "
             "refusing to expose the developer-facing audit report"
         )
-    output_root = Path(output_dir or run_dir / "out").resolve()
-    if not output_root.is_dir():
-        return None
     config = _load_run(run_dir)
     expected_run_id = str(config.get("run_id", f"RUNBOOK-{run_dir.name}"))
     expected_as_of = str(config.get("as_of") or "")
@@ -1015,7 +1017,7 @@ def execute_run(
         method_choices = (
             SegmentMethodChoice(
                 str(filing.get("segment_id", "core")),
-                *_parse_method(config["method"], "run.yaml method"),
+                *_parse_method(config.get("method", ""), "run.yaml method"),
             ),
         )
 
@@ -1060,6 +1062,7 @@ def execute_run(
         ),
         declared_risk_path=_optional_path(run_dir, "risk_pack.yaml"),
         declared_segments_path=_optional_path(run_dir, "segments.yaml"),
+        company_scope_receipt_path=str(run_dir / "declarations" / "company_scope_receipt.json"),
         declared_broker_research_path=_optional_path(
             run_dir, "broker_research.yaml"
         ),
@@ -1123,11 +1126,38 @@ def execute_run(
         with tempfile.TemporaryDirectory(prefix="kr-live-run-") as root:
             result = run(root)
 
+    return _execution_outcome(result)
+
+
+def _execution_outcome(result):
+    """Do not mistake a *resolved* historical recovery trace for a final stop.
+
+    Only the canonical Red-Team -> research-loop handoff has this relationship.
+    An arbitrary nonblocking recovery warning is not an authorization to pass.
+    """
     reached: list[str] = []
     stop_stage = None
     stop_reason = ""
-    for trace in result.stage_traces:
-        if trace.status in _PASSING:
+    for index, trace in enumerate(result.stage_traces):
+        resolved_handoff = False
+        if (trace.stage == "BLIND_RED_TEAM_B" and
+                trace.status is StageStatus.RECOVERY_REQUIRED and not trace.blocking):
+            later = result.stage_traces[index + 1:]
+            recovery = next((item for item in later if item.stage == "RESEARCH_LOOP"), None)
+            original = result.data.get("red_team_proposal")
+            recovered = result.data.get("recovered_red_team_proposal")
+            original_ids = {item.id for item in getattr(original, "issues", ())
+                            if item.blocking and not item.resolved}
+            recovered_by_id = {item.id: item for item in getattr(recovered, "issues", ())}
+            receipt_ids = set(result.data.get("recovered_red_team_issue_ids", ()))
+            resolved_handoff = bool(
+                recovery is not None and recovery.status is StageStatus.RECOVERED
+                and not recovery.blocking and original_ids and original_ids == receipt_ids
+                and all(key in recovered_by_id and recovered_by_id[key].resolved
+                        for key in original_ids)
+                and not any(item.blocking and not item.resolved for item in recovered_by_id.values())
+            )
+        if trace.status in _PASSING or resolved_handoff:
             reached.append(trace.stage)
         else:
             stop_stage = trace.stage

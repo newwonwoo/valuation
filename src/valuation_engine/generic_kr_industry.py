@@ -281,8 +281,18 @@ def _disclosed_segment_names(document) -> tuple[str, ...]:
     # outrank product/process tables whose "사업부문" column merely splits one
     # integrated segment. Parent-only, subsidiary-only and generic industry
     # prose cannot certify the consolidated reporting scope as single segment.
-    if any(_SINGLE_SEGMENT_DECLARATION.search(text) for text in member_texts):
+    from .company_scope_judgment import (
+        _MULTI, reportable_segment_table_names, unqualified_scope_sentence,
+    )
+
+    accounting_names = reportable_segment_table_names(document)
+
+    if (any(unqualified_scope_sentence(text, match.start(), match.end())
+            for text in member_texts for match in _SINGLE_SEGMENT_DECLARATION.finditer(text))
+            and not any(_MULTI.search(text) for text in member_texts)
+            and not accounting_names):
         return ()
+    names.update(accounting_names)
     for member, text in zip(document.text_members, member_texts, strict=True):
         names.update(_table_segment_names(member.text or ""))
         clauses = _KOREAN_SEGMENT_CLAUSE.findall(text)
@@ -314,6 +324,8 @@ def opendart_filing_snapshot_loader(
     lookback_days: int = 540,
     max_filings: int = 4,
     declared_segments=None,
+    transport=None,
+    company_scope_receipt_path: str | Path | None = None,
 ):
     """IndustrySnapshotLoader: periodic DART filings become the authoritative snapshot.
 
@@ -329,8 +341,18 @@ def opendart_filing_snapshot_loader(
     def load(identity: ResolvedCompanyIdentity) -> IndustryKnowledgeSnapshot:
         identity.validate()
         corp_code = _corp_code(identity)
+        indexed_rows = []
+
+        def bound_index_fetch(url):
+            payload = fetch_text(url)
+            parsed = json.loads(payload)
+            rows = parsed.get("list", []) if isinstance(parsed, dict) else parsed
+            if isinstance(rows, list):
+                indexed_rows.extend(row for row in rows if isinstance(row, dict))
+            return payload
+
         batch = index_opendart_filing_list(
-            fetch_text,
+            bound_index_fetch,
             checked_at=cutoff,
             corp_code=corp_code,
             begin_date=(cutoff - timedelta(days=lookback_days)).strftime("%Y%m%d"),
@@ -364,8 +386,36 @@ def opendart_filing_snapshot_loader(
             checked_at=cutoff,
             api_key=api_key,
         )
+        from .company_scope_judgment import validate_company_scope_source
+        from .host_judgment import HostJudgmentError
+
+        issuer_rows = [row for row in indexed_rows if row.get("rcept_no") == filing.rcept_no]
+        if len(issuer_rows) != 1:
+            raise HostJudgmentError("filing issuer binding is absent or ambiguous; no model override permitted")
+        validate_company_scope_source(
+            identity=identity, as_of=as_of, record=newest, filing=filing, issuer_row=issuer_rows[0])
         disclosed_segments = _disclosed_segment_names(filing)
         newest_lineage = lineage[0]
+        accepted_scope = None
+        has_scope_receipt = (company_scope_receipt_path is not None
+                             and Path(company_scope_receipt_path).is_file())
+        if has_scope_receipt or (len(disclosed_segments) > 1
+                                 and declared_segments is None and transport is not None):
+            from .company_scope_judgment import build_company_scope_request, resolve_company_scope
+            request = build_company_scope_request(
+                identity=identity, as_of=as_of, record=newest, filing=filing,
+                screened_names=disclosed_segments, issuer_row=issuer_rows[0],
+            )
+            accepted_scope = resolve_company_scope(
+                request=request, filing=filing, transport=transport,
+                receipt_path=company_scope_receipt_path,
+            )
+            if accepted_scope["response"]["decision"] == "SINGLE":
+                disclosed_segments = ()
+            else:
+                # Confirmation of MULTI never creates economic classifications
+                # or bypasses the existing source-bound IFRS note declaration.
+                disclosed_segments = tuple(accepted_scope["response"]["proposal"]["reportable_segments"])
 
         def _scope_receipt(segment_id: str | None, revision: str):
             return AuthoritativeEvidenceLineage(
@@ -452,7 +502,9 @@ def opendart_filing_snapshot_loader(
                 "operating segments; remove the declaration rather than "
                 "splitting a company its own filing reports whole"
             )
-        complete_lineage = (*lineage, _scope_receipt(None, "segment-scope-v1"))
+        revision = (f"company-scope-v1:{accepted_scope['receipt_hash']}"
+                    if accepted_scope is not None else "segment-scope-v1")
+        complete_lineage = (*lineage, _scope_receipt(None, revision))
         return IndustryKnowledgeSnapshot.build(
             as_of=as_of,
             source_ids=(OPENDART_SOURCE_ID,),

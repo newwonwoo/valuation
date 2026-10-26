@@ -187,6 +187,9 @@ class GenericKRRuntimeSpec:
     #: here. Required for any issuer whose filing discloses multiple
     #: reportable segments; forbidden for one that reports itself whole.
     declared_segments_path: str | Path | None = None
+    #: Accepted host scope interpretation, promoted between canonical runs.
+    #: Revalidated against the current issuer/filing/member hashes on every read.
+    company_scope_receipt_path: str | Path | None = None
     #: Prepared, metadata-only Broker Research discovery. Target-company
     #: forecasts/targets remain quarantined; company-specific observations may
     #: only request primary-source verification before Intrinsic Freeze.
@@ -420,6 +423,8 @@ def build_generic_kr_runtime_factory(
             as_of=spec.as_of,
             api_key=network.api_key,
             declared_segments=declared_segments,
+            transport=transport,
+            company_scope_receipt_path=spec.company_scope_receipt_path,
         ),
         freshness_loader=filing_cadence_freshness_loader(
             as_of=spec.as_of,
