@@ -345,3 +345,31 @@ def test_generic_profile_summary_shows_rich_reference_availability_without_value
     without_summary = "\n".join(line for line in new.split("## 6.")[0].splitlines()
                                  if not line.startswith("- 증권사 참고자료:")) + "\n"
     assert old.split("## 6.")[0] == without_summary
+
+
+@pytest.mark.parametrize("prior,base,expected", [
+    ("357", "833", "이전 기준가 357원 → 수정 833원, 주당 476원 증가."),
+    ("833", "357", "이전 기준가 833원 → 수정 357원, 주당 476원 감소."),
+    ("833", "833", "이전 기준가 833원 → 수정 833원, 주당가치 변동 없음."),
+    (None, "357", None),
+])
+def test_prior_reference_change_prose_matches_signed_change_and_optional_compatibility(prior, base, expected):
+    from valuation_engine.investor_report import load_investor_report_profile, render_investor_report
+
+    value = Decimal(base)
+    valuation = GenericValuationResult(
+        scenarios=tuple(ScenarioPerShareValue(name, v * 10, "KRW", Decimal(10), v, name, (name,))
+                        for name, v in (("Down", value / 2), ("Base", value), ("Bull", value * 2))),
+        equity_aggregation=ScenarioEquityAggregation((), None, False),
+        expected_value_per_share=None, reporting_unit="KRW", valuation_hash="VALUE")
+    profile = replace(load_investor_report_profile(Path(__file__).resolve().parents[1]
+        / "runs/korean-air-003490/declarations/investor_report.yaml"),
+        prior_reference_per_share=None if prior is None else Decimal(prior), prior_scope_label="")
+    before = asdict(valuation)
+    report = render_investor_report({"company": "테스트 회사", "generic_valuation_result": valuation}, profile)
+    if expected is None:
+        assert "- 변경 요약:" not in report
+    else:
+        assert "- 변경 요약: " + expected in report
+        assert "주당 -" not in report
+    assert asdict(valuation) == before

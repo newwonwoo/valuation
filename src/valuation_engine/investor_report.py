@@ -1139,10 +1139,14 @@ def render_investor_report(
             )
     if profile.prior_reference_per_share is not None:
         delta = scenarios["Base"] - profile.prior_reference_per_share
+        change = (
+            f"주당 {_money(abs(delta))} {'증가' if delta > 0 else '감소'}"
+            if delta != 0 else "주당가치 변동 없음"
+        )
         lines.append(
             "- 변경 요약: 이전 "
             f"{profile.prior_scope_label or '기준가'} {_money(profile.prior_reference_per_share)} → "
-            f"수정 {_money(scenarios['Base'])}, 주당 {_money(delta)} 증가."
+            f"수정 {_money(scenarios['Base'])}, {change}."
         )
 
     lines.extend(("", "### 사업 민감도와 다음 확인지표", ""))
