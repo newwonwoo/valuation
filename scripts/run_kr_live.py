@@ -141,6 +141,19 @@ def _resolve(run_dir: Path, value: str) -> Path:
     return path if path.is_absolute() else (run_dir / path).resolve()
 
 
+def _optional_classification_map_path(run_dir: Path, config: dict) -> Path | None:
+    """Resolve an explicit per-run map; absence preserves the runtime default."""
+    if "classification_map_path" not in config:
+        return None
+    value = config["classification_map_path"]
+    if not isinstance(value, str) or not value.strip():
+        raise RunbookError("classification_map_path must be a non-empty path")
+    path = _resolve(run_dir, value)
+    if not path.is_file():
+        raise RunbookError(f"classification map file is missing: {path}")
+    return path
+
+
 def _build_network(run_dir: Path) -> OpenDartNetwork:
     raw = run_dir / "raw"
     search = json.loads((raw / "corp_search.json").read_text(encoding="utf-8"))
@@ -981,6 +994,7 @@ def execute_run(
     """Run one prepared directory; returns (reached, stop_stage, stop_reason, result)."""
     run_dir = Path(run_dir).resolve()
     config = _load_run(run_dir)
+    classification_map_path = _optional_classification_map_path(run_dir, config)
     filing = config["filing"]
     network = _build_network(run_dir)
     _enforce_production_calibration(run_dir, config, network=network)
@@ -1023,6 +1037,8 @@ def execute_run(
 
     calibration = config.get("calibration")
     spec_kwargs: dict = {}
+    if classification_map_path is not None:
+        spec_kwargs["classification_map_path"] = classification_map_path
     if calibration:
         spec_kwargs.update(
             calibration_snapshot_loader=_calibration_loader(run_dir, calibration)(

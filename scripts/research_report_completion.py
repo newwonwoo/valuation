@@ -196,16 +196,21 @@ def _early_judgment(prepared: Path, input_hash: str):
     # A missing method has a real economic decision contract. Determine choices
     # from the resolved issuer's Industry DNA and actual runtime capabilities.
     if not config.get('segments') and not config.get('method'):
-        from run_kr_live import _build_network, _resolved_target_context
+        from run_kr_live import (
+            _build_network, _optional_classification_map_path, _resolved_target_context,
+        )
         from valuation_engine.generic_kr_industry import load_kr_industry_classification
         from valuation_engine.generic_valuation_plan import SUPPORTED_EXECUTION_FAMILIES
         from valuation_engine.method_capabilities import (
             MethodKind, MethodRuntimeStatus, load_default_method_capability_registry,
         )
         try:
+            classification_path = _optional_classification_map_path(prepared, config)
             network = _build_network(prepared)
             identity, _, company = _resolved_target_context(prepared, config, network)
-            classification = load_kr_industry_classification().lookup(company.induty_code)
+            classification_map = (load_kr_industry_classification(classification_path)
+                                  if classification_path is not None else load_kr_industry_classification())
+            classification = classification_map.lookup(company.induty_code)
             archetypes = {item.value for item in classification.archetypes}
             candidates = [f'{item.archetype}/{item.method}'
                           for item in load_default_method_capability_registry().capabilities
